@@ -22,7 +22,10 @@ func (c *CNPJAdapter) GetCNPJ(ctx context.Context, cnpjToSearch string) (cnpj cn
 
 	entity := CNPJAdapter{}
 
-	url := fmt.Sprintf(c.URLBase, cnpjToSearch, c.Token)
+	// Construir a URL corretamente para a API de CNPJ
+	url := fmt.Sprintf("%s/cnpj/?cnpj=%s&token=%s", c.URLBase, cnpjToSearch, c.Token)
+
+	slog.Debug("Making request to CNPJ API", "url", url, "cnpj", cnpjToSearch)
 
 	// Create a new HTTP request
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

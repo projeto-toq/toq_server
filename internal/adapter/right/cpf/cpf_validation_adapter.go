@@ -26,7 +26,10 @@ func (c *CPFAdapter) GetCpf(ctx context.Context, cpfToSearch string, bornAT time
 
 	entity := CPFAdapter{}
 
-	url := fmt.Sprintf(c.URLBase, cpfToSearch, data, c.Token)
+	// Construir a URL corretamente para a API de CPF
+	url := fmt.Sprintf("%s/cpf/?cpf=%s&data=%s&token=%s", c.URLBase, cpfToSearch, data, c.Token)
+
+	slog.Debug("Making request to CPF API", "url", url, "cpf", cpfToSearch, "bornAt", data)
 
 	// Create a new HTTP request
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)

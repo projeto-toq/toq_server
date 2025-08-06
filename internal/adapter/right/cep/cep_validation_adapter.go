@@ -24,7 +24,10 @@ func (c *CEPAdapter) GetCep(ctx context.Context, cepToSearch string) (cep cepmod
 	// token := "164634160QpAPJYxHbS297241984"
 	entity := CEPAdapter{}
 
-	url := fmt.Sprintf(c.URLBase, cepToSearch, c.Token)
+	// Construir a URL corretamente para a API de CEP
+	url := fmt.Sprintf("%s/cep/?cep=%s&token=%s", c.URLBase, cepToSearch, c.Token)
+
+	slog.Debug("Making request to CEP API", "url", url, "cep", cepToSearch)
 
 	// // Create a new HTTP client with a timeout
 	// client := &http.Client{

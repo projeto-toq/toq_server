@@ -8,6 +8,9 @@ type Environment struct {
 	DB struct {
 		URI string `yaml:"uri"`
 	}
+	REDIS struct {
+		URL string `yaml:"url"`
+	}
 	LOG struct {
 		Level     string `yaml:"level"`
 		AddSource bool   `yaml:"addsource"`

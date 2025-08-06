@@ -64,11 +64,23 @@ func (c *config) InjectDependencies() (close func() error) {
 	c.email = emailadapter.NewEmailAdapter(c.env.EMAIL.SMTPServer, c.env.EMAIL.SMTPPort, c.env.EMAIL.SMTPUser, c.env.EMAIL.SMTPPassword)
 	c.sms = smsadapter.NewSmsAdapter(c.env.SMS.AccountSid, c.env.SMS.AuthToken, c.env.SMS.MyNumber)
 	c.InitGlobalService()
-	c.cache = cache.NewCache(c.globalService)
+
+	// Initialize Redis cache
+	redisCache, err := cache.NewRedisCache(c.env.REDIS.URL, c.globalService)
+	if err != nil {
+		slog.Error("failed to create redis cache", "error", err)
+		os.Exit(1)
+	}
+	c.cache = redisCache
+
 	c.InitComplexHandler()
 	c.InitListingHandler()
 	c.InitUserHandler()
-	return
+
+	// Return cleanup function to close cache connection
+	return func() error {
+		return c.cache.Close()
+	}
 }
 
 func (c *config) InitGlobalService() {

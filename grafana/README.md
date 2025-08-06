@@ -7,7 +7,7 @@ Esta pasta contém as configurações para o Grafana no projeto TOQ Server.
 ```
 grafana/
 ├── datasources/           # Configuração automática de datasources
-│   └── prometheus.yml     # Datasource do Prometheus
+│   └── datasource.yml     # Datasource do Prometheus
 ├── dashboards/           # Configuração de provisioning
 │   └── dashboards.yml    # Define onde encontrar os dashboards
 └── dashboard-files/      # Arquivos JSON dos dashboards
@@ -91,9 +91,18 @@ environment:
 
 ## Acesso
 
+### Acesso Local (no servidor Linux)
 - **URL**: http://localhost:3000
 - **Usuário**: admin
 - **Senha**: admin
+
+### Acesso Remoto (de outras máquinas na rede)
+- **URL**: http://192.168.10.137:3000
+- **Usuário**: admin
+- **Senha**: admin
+
+> **Nota**: Se você configurou redirecionamento no arquivo hosts (`C:\Windows\System32\drivers\etc\hosts` no Windows), 
+> pode usar `localhost:3000` mesmo de máquinas remotas.
 
 ## Troubleshooting
 
@@ -106,6 +115,38 @@ environment:
 - Verifique se o Prometheus está coletando as métricas
 - Confirme que o datasource está configurado corretamente
 - Teste queries diretamente no Prometheus primeiro
+
+### Acesso remoto não funciona
+- Verifique se o firewall do Linux permite conexões na porta 3000
+- Confirme que o Docker está fazendo bind em `0.0.0.0:3000` (não apenas `127.0.0.1`)
+- Teste conectividade: `telnet 192.168.10.137 3000`
+- Se usar arquivo hosts no Windows, verifique: `C:\Windows\System32\drivers\etc\hosts`
+
+### Confusão entre múltiplos serviços na porta 3000
+Se `localhost:3000` no Windows mostra um Grafana diferente do esperado:
+```powershell
+# Verifique se há serviços locais na porta 3000
+netstat -ano | findstr :3000
+
+# Identifique o processo servidor (LISTENING)
+tasklist /FI "PID eq NUMERO_DO_PID_LISTENING"
+```
+
+**Causas comuns:**
+- **VS Code**: Live Server, Preview, ou extensões de desenvolvimento
+- **Docker Desktop**: Port forwarding automático
+- **Node.js/React**: Servidor de desenvolvimento local
+- **WSL2**: Redirecionamento de portas do Linux para Windows
+- **Grafana local**: Instalação separada do Grafana
+
+**Identificação:**
+```powershell
+# Exemplo de saída
+Code.exe                      1544    # VS Code servidor
+chrome.exe                   13240    # Browser cliente
+```
+
+**Solução:** Sempre use o IP direto `http://192.168.10.137:3000` para acessar o Grafana do projeto.
 
 ### Grafana não inicia
 - Verifique se a porta 3000 não está em uso

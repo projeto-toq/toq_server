@@ -57,11 +57,18 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		return
 	}
 
+	//validate the address number
+	if user.GetNumber() == "" {
+		err = status.Error(codes.InvalidArgument, "Address number is required")
+		return
+	}
+
 	user.SetStreet(cep.GetStreet())
 	// user.SetComplement(cep.GetComplement())
 	user.SetNeighborhood(cep.GetNeighborhood())
 	user.SetCity(cep.GetCity())
 	user.SetState(cep.GetState())
+
 	user.SetPassword(us.encryptPassword(user.GetPassword()))
 	user.SetLastActivityAt(now)
 	user.SetDeleted(false)

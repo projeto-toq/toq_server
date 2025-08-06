@@ -11,6 +11,7 @@ import (
 type CacheInterface interface {
 	Get(ctx context.Context, fullMethod string, role usermodel.UserRole) (allowed bool, valid bool, err error)
 	Clean(ctx context.Context)
+	Close() error
 }
 
 var instance *cache

@@ -1,10 +1,9 @@
 package globalservice
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"html/template"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -13,235 +12,128 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Adicione esta função auxiliar no início do arquivo
-func loadEmailTemplate(code string, emailType int) (string, error) {
-	templFile := ""
-	if emailType == 1 {
-		templFile = "../internal/core/templates/email_verification.html"
-	} else if emailType == 2 {
-		templFile = "../internal/core/templates/email_reset_password.html"
-	}
-	tmpl, err := template.ParseFiles(templFile)
-	if err != nil {
-		return "", err
-	}
-
-	var body bytes.Buffer
-	err = tmpl.Execute(&body, struct{ Code string }{Code: code})
-	if err != nil {
-		return "", err
-	}
-
-	return body.String(), nil
+// NotificationService interface para o serviço de notificações
+type NotificationService interface {
+	SendNotification(ctx context.Context, user usermodel.UserInterface, notificationType globalmodel.NotificationType, code ...string) error
 }
 
-func (gs *globalService) SendNotification(ctx context.Context, user usermodel.UserInterface, notificationType globalmodel.NotificationType, code ...string) (err error) {
+// notificationService implementa NotificationService
+type notificationService struct {
+	handler NotificationHandler
+}
+
+// NewNotificationService cria uma nova instância do serviço
+func NewNotificationService(gs *globalService) NotificationService {
+	sender := NewNotificationSender(gs)
+	templateLoader := NewEmailTemplateLoader()
+	handler := NewNotificationHandler(sender, templateLoader)
+
+	return &notificationService{
+		handler: handler,
+	}
+}
+
+// SendNotification é a função principal para envio de notificações
+func (ns *notificationService) SendNotification(ctx context.Context, user usermodel.UserInterface, notificationType globalmodel.NotificationType, code ...string) error {
 	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		slog.Error("Failed to generate tracer", "error", err)
+		return err
 	}
 	defer spanEnd()
 
+	// Validar se código é necessário para tipos específicos
 	iCode := ""
-	if len(code) == 0 &&
-		(notificationType == globalmodel.NotificationEmailChange ||
-			notificationType == globalmodel.NotificationPhoneChange ||
-			notificationType == globalmodel.NotificationPasswordChange) {
-		err = status.Error(codes.Internal, "code is required for this notification type")
-		return
-	} else if len(code) > 0 {
+	if ns.requiresCode(notificationType) && len(code) == 0 {
+		err := status.Error(codes.Internal, "code is required for this notification type")
+		slog.Error("Code required but not provided", "notificationType", notificationType, "error", err)
+		return err
+	}
+
+	if len(code) > 0 {
 		iCode = code[0]
 	}
 
-	switch notificationType {
-	case globalmodel.NotificationEmailChange:
-		htmlBody, err1 := loadEmailTemplate(iCode, 1)
-		if err1 != nil {
-			return err1
-		}
-		notification := globalmodel.Notification{
-			Title: "Confirmação de e-mail da TOQ",
-			Body:  htmlBody,
-			Icon:  "",
-			To:    "giulio.alfieri@gmail.com", // TODO: Change to user.GetEmail(),
-		}
-		err = sendEmail(ctx, gs, notification)
-	case globalmodel.NotificationPhoneChange:
-		notification := globalmodel.Notification{
-			Title: "Confirmação de telefone da TOQ",
-			Body:  fmt.Sprintf("Para validar seu telefone cadastrado na TOQ insira o código %s no App:", iCode),
-			Icon:  "",
-			To:    "+5511999141768", //TODO: Change to user.GetPhoneNumber()
-		}
-		err = sendSMS(ctx, gs, notification)
-	case globalmodel.NotificationPasswordChange:
-		htmlBody, err1 := loadEmailTemplate(iCode, 2)
-		if err1 != nil {
-			return err1
-		}
-		notification := globalmodel.Notification{
-			Title: "Confirmação de troca de senha da TOQ",
-			Body:  htmlBody,
-			Icon:  "",
-			To:    "giulio.alfieri@gmail.com", // TODO: Change to user.GetEmail(),
-		}
-		err = sendEmail(ctx, gs, notification)
-	case globalmodel.NotificationCreciStateUnsupported:
-		notification := globalmodel.Notification{
-			Title: "Erro na validação do Creci",
-			Body:  "O estado informado do seu Creci ainda não é suportado.",
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-	case globalmodel.NotificationInvalidCreciState:
-		notification := globalmodel.Notification{
-			Title: "Erro na validação do Creci",
-			Body:  "O estado do creci informado não corresponde ao estado da imagem. Por favor, tente novamente.",
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-	case globalmodel.NotificationInvalidCreciNumber:
-		notification := globalmodel.Notification{
-			Title: "Erro na validação do Creci",
-			Body:  "O número do creci informado não corresponde ao número da imagem. Por favor, tente novamente.",
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-	case globalmodel.NotificationBadSelfieImage:
-		notification := globalmodel.Notification{
-			Title: "Erro na validação do Creci",
-			Body:  "A imagem da selfie não corresponde a imagem do documento. Por favor, tente novamente.",
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-	case globalmodel.NotificationBadCreciImages:
-		notification := globalmodel.Notification{
-			Title: "Erro na validação do Creci",
-			Body:  "As imagens do seu Creci não puderam ser validadas, pois estão com baixa qualidade. Por favor, tente novamente.",
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-	case globalmodel.NotificationCreciValidated:
-		notification := globalmodel.Notification{
-			Title: "Creci validado",
-			Body:  "Seu Creci foi validado com sucesso! Agora você pode usar a ",
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-	case globalmodel.NotificationRealtorInviteSMS:
-		notification := globalmodel.Notification{
-			Title: "Convite da participar da TOQ",
-			Body:  fmt.Sprintf("A %s está te convidando a participar da TOQ, vinculado(a) a ela. Baixe a aplicação e aeite o convite.", iCode),
-			Icon:  "",
-			To:    "+5511999141768", //TODO: Change to user.GetPhoneNumber()
-		}
-		err = sendSMS(ctx, gs, notification)
-	case globalmodel.NotificationRealtorInvitePush:
-		notification := globalmodel.Notification{
-			Title: "Convite para vinculo a imobiliária.",
-			Body:  fmt.Sprintf("%s, voce tem um convite pendente para vínculo a uma imobiliária.", user.GetNickName()),
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
+	slog.Info("Processing notification",
+		"notificationType", notificationType,
+		"userID", user.GetID(),
+		"hasCode", len(code) > 0)
 
-	case globalmodel.NotificationInviteAccepted:
-		notification := globalmodel.Notification{
-			Title: "Corretor aceitou o convite",
-			Body:  fmt.Sprintf("%s, o corretor %s aceitou seu convite e agora está vinvulado a esta imobiliária.", user.GetNickName(), iCode),
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-	case globalmodel.NotificationInviteRejected:
-		notification := globalmodel.Notification{
-			Title: "Corretor rejeitou o convite",
-			Body:  fmt.Sprintf("%s, o corretor %s rejeitou seu convite para vincular-se a esta imobiliária.", user.GetNickName(), iCode),
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-
-	case globalmodel.NotificationAgencyRemovedFromRealtor:
-		notification := globalmodel.Notification{
-			Title: "Corretor cancelou o vínculo",
-			Body:  fmt.Sprintf("O corretor %s cancelou o vínculado com esta imobiliária.", user.GetNickName()),
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-
-	case globalmodel.NotificationRealtorRemovedFromAgency:
-		notification := globalmodel.Notification{
-			Title: "Imobiliária cacelou o vínculo",
-			Body:  fmt.Sprintf("%s, a imobiliária %s cancelou o vínculado com voce.", user.GetNickName(), iCode),
-			Icon:  "",
-		}
-		if user.GetDeviceToken() == "" {
-			notification.To = "giulio.alfieri@gmail.com" // TODO: Change to user.GetEmail(),
-			err = sendEmail(ctx, gs, notification)
-		} else {
-			notification.DeviceToken = user.GetDeviceToken()
-			err = sendPush(ctx, gs, notification)
-		}
-
+	// Processar notificação baseada no tipo
+	err = ns.routeNotification(ctx, user, notificationType, iCode)
+	if err != nil {
+		slog.Error("Failed to send notification",
+			"notificationType", notificationType,
+			"userID", user.GetID(),
+			"error", err)
+		return fmt.Errorf("failed to send notification: %w", err)
 	}
 
-	return
+	slog.Info("Notification sent successfully",
+		"notificationType", notificationType,
+		"userID", user.GetID())
+
+	return nil
+}
+
+// requiresCode verifica se o tipo de notificação requer código
+func (ns *notificationService) requiresCode(notificationType globalmodel.NotificationType) bool {
+	requiresCodeTypes := []globalmodel.NotificationType{
+		globalmodel.NotificationEmailChange,
+		globalmodel.NotificationPhoneChange,
+		globalmodel.NotificationPasswordChange,
+	}
+
+	for _, reqType := range requiresCodeTypes {
+		if notificationType == reqType {
+			return true
+		}
+	}
+	return false
+}
+
+// routeNotification roteia a notificação para o handler apropriado
+func (ns *notificationService) routeNotification(ctx context.Context, user usermodel.UserInterface, notificationType globalmodel.NotificationType, code string) error {
+	switch notificationType {
+	case globalmodel.NotificationEmailChange:
+		return ns.handler.HandleEmailChange(ctx, code)
+
+	case globalmodel.NotificationPhoneChange:
+		return ns.handler.HandlePhoneChange(ctx, code)
+
+	case globalmodel.NotificationPasswordChange:
+		return ns.handler.HandlePasswordChange(ctx, code)
+
+	case globalmodel.NotificationCreciStateUnsupported,
+		globalmodel.NotificationInvalidCreciState,
+		globalmodel.NotificationInvalidCreciNumber,
+		globalmodel.NotificationBadSelfieImage,
+		globalmodel.NotificationBadCreciImages,
+		globalmodel.NotificationCreciValidated:
+		return ns.handler.HandleCreciNotification(ctx, user, notificationType)
+
+	case globalmodel.NotificationRealtorInviteSMS,
+		globalmodel.NotificationRealtorInvitePush:
+		return ns.handler.HandleRealtorInvite(ctx, user, notificationType, code)
+
+	case globalmodel.NotificationInviteAccepted,
+		globalmodel.NotificationInviteRejected:
+		return ns.handler.HandleInviteResponse(ctx, user, notificationType, code)
+
+	case globalmodel.NotificationAgencyRemovedFromRealtor,
+		globalmodel.NotificationRealtorRemovedFromAgency:
+		return ns.handler.HandleUnlink(ctx, user, notificationType, code)
+
+	default:
+		err := fmt.Errorf("unsupported notification type: %v", notificationType)
+		slog.Error("Unsupported notification type", "notificationType", notificationType)
+		return err
+	}
+}
+
+// SendNotification mantém a compatibilidade com a interface existente
+func (gs *globalService) SendNotification(ctx context.Context, user usermodel.UserInterface, notificationType globalmodel.NotificationType, code ...string) error {
+	// Criar o serviço de notificação lazy
+	notificationSvc := NewNotificationService(gs)
+	return notificationSvc.SendNotification(ctx, user, notificationType, code...)
 }

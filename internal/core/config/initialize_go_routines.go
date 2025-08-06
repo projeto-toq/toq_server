@@ -10,7 +10,7 @@ func (c *config) InitializeGoRoutines() {
 	c.wg.Add(1)
 	go goroutines.GoUpdateLastActivity(c.wg, c.userService, c.activity, c.context)
 	// c.wg.Add(1)
-	// go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)
+	// go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)//TODO: retirar o comentário após reassocia GCS
 	c.wg.Add(1)
 	go goroutines.CleanMemoryCache(&c.cache, c.wg, c.context)
 }
