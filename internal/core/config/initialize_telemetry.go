@@ -19,7 +19,7 @@ func (c *config) InitializeTelemetry() func() {
 	// OTLP trace exporter
 	otlpEndpoint := os.Getenv("OTLP_ENDPOINT")
 	if otlpEndpoint == "" {
-		otlpEndpoint = "localhost:4317" // Use o nome do serviço Docker e a porta OTLP gRPC
+		otlpEndpoint = "otel-collector:4317" // Use o nome do serviço Docker e a porta OTLP gRPC
 	}
 	traceExporter, err := otlptracegrpc.New(c.context,
 		otlptracegrpc.WithInsecure(),
@@ -34,6 +34,7 @@ func (c *config) InitializeTelemetry() func() {
 	res, err := resource.New(c.context,
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String("toq_server"),
+			semconv.ServiceVersionKey.String("v2.1-grpc"),
 		),
 	)
 	if err != nil {

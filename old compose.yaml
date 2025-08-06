@@ -1,0 +1,106 @@
+services:
+#  immigrato-srv:
+#    image: immigrato-server
+#    restart: always
+#    container_name: immigrato-srv
+#    ports:
+#      - "8080:8080"
+#    volumes:
+#      - /home/giulio/immigrato/logs:/immigrato/logs
+#    working_dir: /immigrato
+#    environment:
+#      DB.HOST: db
+#      MAIL.HOST: mailhog
+#    depends_on:
+#      - db
+#      - mailhog
+#    networks:
+#      - immigrato-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mprometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - /home/ubuntu/toq_server/tools/prometheus:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - toq_server-network
+  
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    volumes:
+      - /home/ubuntu/toq_server/tools/grafana/data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER
+    networks:
+      - toq_server-network
+    depends_on:
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    restart: always
+    volumes:
+      - /home/ubuntu/toq_server/tools/jaeger:/data
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC
+      - "14250:14250"  # gRPC Collector with TLS
+      - "14268:14268"  # HTTP Collector
+      - "14269:14269"  # HTTP Collector with TLS
+      - "9411:9411"    # Zipkin
+    networks:
+      - toq_server-network
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mysql_exporter
+    restart: always
+    ports:
+      - "9104:9104"
+    # environment:
+    #   - DATA_SOURCE_NAME=exporter:senha@(db:3306)/
+    volumes:
+      - /home/ubuntu/toq_server/tools/mysql_exporter_my.cnf:/.my.cnf
+    networks:
+      - toq_server-network
+
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: always
+    container_name: mailhog
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # WEB UI
+    networks:
+      - toq_server-network
+
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "senha"
+    ports:
+      - "3306:3306"
+      - "33060:33060"
+    volumes:
+      - /home/ubuntu/toq_server/tools/mysql:/var/lib/mysql
+      - /home/ubuntu/toq_server/tools/mysql-files:/var/lib/mysql-files
+
+    networks:
+      - toq_server-network
+
+networks:
+  toq_server-network:
+    driver: bridge

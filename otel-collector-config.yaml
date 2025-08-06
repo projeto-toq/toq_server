@@ -8,20 +8,37 @@ receivers:
 
 processors:
   batch:
+    timeout: 1s
+    send_batch_size: 1024
+  memory_limiter:
+    limit_mib: 512
 
 exporters:
   debug:
     verbosity: detailed
   prometheus:
     endpoint: "0.0.0.0:8889"
+    const_labels:
+      service: "toq_server"
+  logging:
+    loglevel: info
 
 service:
+  telemetry:
+    logs:
+      level: "info"
+    metrics:
+      address: 0.0.0.0:8888
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug]
+      processors: [memory_limiter, batch]
+      exporters: [debug, logging]
     metrics:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [debug, prometheus]
+      processors: [memory_limiter, batch]
+      exporters: [debug, prometheus, logging]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, logging]
