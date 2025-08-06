@@ -1,0 +1,358 @@
+syntax = "proto3";
+package grpc;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "pb/";
+
+service UserService {
+    //call without Authorization header
+    rpc CreateOwner (CreateOwnerRequest) returns (CreateOwnerResponse);//done
+    rpc CreateRealtor (CreateRealtorRequest) returns (CreateRealtorResponse);//done
+    rpc CreateAgency (CreateAgencyRequest) returns (CreateAgencyResponse);//done
+    rpc SignIn (SignInRequest) returns (SignInResponse);//done
+    rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);//done
+    rpc RequestPasswordChange (RequestPasswordChangeRequest) returns (RequestPasswordChangeResponse);//done
+    rpc ConfirmPasswordChange (ConfirmPasswordChangeRequest) returns (ConfirmPasswordChangeResponse);//done
+
+    //call with Authorization header for Owner, Realtor and Agency
+    rpc SignOut (SignOutRequest) returns (SignOutResponse);//done
+    rpc RequestEmailChange (RequestEmailChangeRequest) returns (RequestEmailChangeResponse);//done
+    rpc ConfirmEmailChange (ConfirmEmailChangeRequest) returns (ConfirmEmailChangeResponse);//done
+    rpc RequestPhoneChange (RequestPhoneChangeRequest) returns (RequestPhoneChangeResponse);//done
+    rpc ConfirmPhoneChange (ConfirmPhoneChangeRequest) returns (ConfirmPhoneChangeResponse);//done
+    rpc VerifyCreciImages (VerifyCreciImagesRequest) returns (VerifyCreciImagesResponse);//done
+    rpc GetProfile (GetProfileRequest) returns (GetProfileResponse);//done
+    rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse);//done
+    rpc GetPhoto (GetPhotoRequest) returns (GetPhotoResponse);//done
+    rpc UpdatePhoto (UpdatePhotoRequest) returns (UpdatePhotoResponse);//done
+    rpc DeleteAccount (google.protobuf.Empty) returns (DeleteAccountResponse);//done
+    rpc GetOnboardingStatus (GetOnboardingStatusRequest) returns (GetOnboardingStatusResponse);//done
+    
+    //call with Authorization header for Owner and Realtor only
+    rpc AddAlternativeUserRole (AddAlternativeUserRoleRequest) returns (AddAlternativeUserRoleResponse);//done
+    rpc GetUserRoles (google.protobuf.Empty) returns (GetUserRolesResponse);//done
+    rpc SwitchUserRole (SwitchUserRoleRequest) returns (SwitchUserRoleResponse);//done
+
+    //call with Authorization header for Agency only
+    rpc InviteRealtor (InviteRealtorRequest) returns (InviteRealtorResponse);//done
+    rpc GetRealtorsByAgency (GetRealtorsByAgencyRequest) returns (GetRealtorsByAgencyResponse);//done
+    rpc GetRealtorByID (GetRealtorByIDRequest) returns (GetRealtorByIDResponse);//done
+    rpc DeleteRealtorByID (DeleteRealtorByIDRequest) returns (DeleteRealtorByIDResponse);//done
+
+    //call with Authorization header for Realtor only
+    rpc AcceptInvitation (AcceptInvitationRequest) returns (AcceptInvitationResponse);//done
+    rpc RejectInvitation (RejectInvitationRequest) returns (RejectInvitationResponse);//done
+    rpc GetAgencyOfRealtor (google.protobuf.Empty) returns (GetAgencyOfRealtorResponse);//done
+    rpc DeleteAgencyOfRealtor (google.protobuf.Empty) returns (DeleteAgencyOfRealtorResponse);//done
+
+    rpc GoHome (google.protobuf.Empty) returns (GoHomeResponse);//TODO a ser removido
+    rpc PushOptIn (PushOptInRequest) returns (PushOptInResponse);//done
+    rpc PushOptOut (google.protobuf.Empty) returns (PushOptOutResponse);//done
+
+}
+
+//messages of CreateOwner
+message CreateOwnerRequest {
+    User owner = 1;
+}
+
+message CreateOwnerResponse {
+    Tokens tokens = 1;
+}
+
+//messages of CreateRealtor
+message CreateRealtorRequest {
+    User realtor = 1;
+}
+
+message CreateRealtorResponse {
+    Tokens tokens = 1;
+}
+
+//messages of CreateAgency
+message CreateAgencyRequest {
+    User agency = 1;
+}
+
+message CreateAgencyResponse {
+    Tokens tokens = 1;
+}
+
+//messages of Signin
+message SignInRequest {
+    string nationalID = 1;
+    string password = 2;
+}
+
+message SignInResponse {
+    Tokens tokens = 1;
+}
+
+//messages of RefreshToken
+message RefreshTokenRequest {
+    string refreshToken = 1;
+}
+
+message RefreshTokenResponse {
+    Tokens tokens = 1;
+}
+
+//messages of SignOut
+message SignOutRequest {
+}
+
+message SignOutResponse {
+    Tokens tokens = 1;
+}
+
+//messages of RequestEmailChange
+message RequestEmailChangeRequest {
+    string newEmail = 1;
+}
+
+message RequestEmailChangeResponse {
+}
+
+//messages of ConfirmEmailChange
+message ConfirmEmailChangeRequest {
+    string code = 1;
+    string deviceToken= 2;
+}
+
+message ConfirmEmailChangeResponse {
+    Tokens tokens = 1;
+}
+
+//messages of RequestPhoneChange
+message RequestPhoneChangeRequest {
+    string newPhoneNumber = 1;
+}
+
+message RequestPhoneChangeResponse {
+}
+
+//messages of ConfirmPhoneChange
+message ConfirmPhoneChangeRequest {
+    string code = 1;
+}
+
+message ConfirmPhoneChangeResponse {
+    Tokens tokens = 1;
+}
+
+//messages of VerifyCreciImages
+message VerifyCreciImagesRequest {
+}
+
+message VerifyCreciImagesResponse {
+}
+
+//messages of RequestPasswordChange
+message RequestPasswordChangeRequest {
+    string nationalID = 1;
+}
+
+message RequestPasswordChangeResponse {
+}
+
+//messages of ResetPassword
+message ConfirmPasswordChangeRequest {
+    string nationalID = 1;
+    string newPassword = 2;
+    string code = 3;
+}
+
+message ConfirmPasswordChangeResponse {
+}
+
+//messages of GetProfile
+message GetProfileRequest {
+}
+
+message GetProfileResponse {
+    User user = 1;
+}
+
+//messages of UpdateProfile
+message UpdateProfileRequest {
+    UpdateUser user = 1;
+}
+
+message UpdateProfileResponse {
+}
+
+//messages of GetPhoto
+message GetPhotoRequest {
+}
+
+message GetPhotoResponse {
+    bytes photo = 1;
+}
+
+//messages of UpdatePhoto
+message UpdatePhotoRequest {
+    bytes photo = 1;
+}
+
+message UpdatePhotoResponse {
+}
+
+//messages of DeleteAccount
+message DeleteAccountResponse {
+    Tokens tokens = 1;
+}
+
+//messages of GetOnboardingStatus
+message GetOnboardingStatusRequest {
+}
+
+message GetOnboardingStatusResponse {
+    string status = 1;
+    string reason = 2;
+}
+
+message AddAlternativeUserRoleRequest {
+    string creciNumber = 1;
+    string creciState = 2;
+    string creciValidity = 3;//format 2006-01-02 = jan 2, 2006
+}
+
+message AddAlternativeUserRoleResponse {
+}
+
+message GetUserRolesResponse {
+    repeated UserRole roles = 1;
+}
+
+message SwitchUserRoleRequest {
+    int64 roleID = 1;
+}
+
+message SwitchUserRoleResponse {
+    Tokens tokens = 1;
+}
+
+//messages of InviteRealtor
+message InviteRealtorRequest {
+    string phoneNumber = 1;
+}
+
+message InviteRealtorResponse {
+}
+
+//messages of GetRealtorsByAgency
+message GetRealtorsByAgencyRequest {
+}
+
+message GetRealtorsByAgencyResponse {
+    repeated User realtors = 1;
+}
+
+//messages of GetRealtorByID
+message GetRealtorByIDRequest {
+    int64 realtorID = 1;
+}
+
+message GetRealtorByIDResponse {
+    User realtor = 1;
+}
+
+//messages of DeleteRealtorByID
+message DeleteRealtorByIDRequest {
+    int64 realtorID = 1;
+}
+
+message DeleteRealtorByIDResponse {
+}
+
+//messages of AcceptInvitation
+message AcceptInvitationRequest {
+}
+
+message AcceptInvitationResponse {
+}
+
+//messages of RejectInvitation
+message RejectInvitationRequest {
+}
+
+message RejectInvitationResponse { 
+}
+
+//messages of GetAgencyOfRealtor
+message GetAgencyOfRealtorResponse {
+    User agency = 1;
+}
+
+//messages of DeleteAgencyOfRealtor
+message DeleteAgencyOfRealtorResponse {
+}
+
+//messages of PushOptIn
+message PushOptInRequest {
+    string deviceToken = 1;
+}
+
+message PushOptInResponse {
+}
+
+//messages of PushOptOut
+message PushOptOutResponse {
+}
+
+//messages of GoHome
+message GoHomeResponse {
+    string message = 1;
+}
+
+//common messages
+message User {
+    int64 id = 1;
+    UserRole activeRole = 2;
+    string fullName = 3;
+    string nickName = 4;
+    string nationalID = 5;
+    string creciNumber = 6;
+    string creciState = 7;
+    string creciValidity = 8;//format 2006-01-02 = jan 2, 2006
+    string bornAT = 9;//format 2006-01-02 = jan 2, 2006
+    string phoneNumber = 10;
+    string email = 11;
+    string zipCode = 12;
+    string street = 13;
+    string number = 14;
+    string complement = 15;
+    string neighborhood = 16;
+    string city = 17;
+    string state = 18;
+    string password = 19;
+    string last_activity = 20;//format 2006-01-02T15:04:05Z = jan 2, 2006 at 15:04:05
+}
+
+message UpdateUser {
+    string nickName = 1;
+    string bornAT = 2; // format 2006-01-02 = jan 2, 2006
+    string zipCode = 3;
+    string street = 4;
+    string number = 5;
+    string complement = 6;
+    string neighborhood = 7;
+    string city = 8;
+    string state = 9;
+}
+
+message Tokens {
+    string accessToken = 1;
+    string refreshToken = 2;
+}
+
+message UserRole {
+    int64 id = 1;
+    int64 user_id = 2;
+    int64 base_role_id = 3;
+    string role = 4;
+    bool active = 5;
+    string status = 6;
+    string status_reason = 7;
+}

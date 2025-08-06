@@ -1,0 +1,41 @@
+package mysqlglobaladapter
+
+import (
+	"context"
+	"database/sql"
+	"log/slog"
+
+	globalconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global/converters"
+	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+func (ga *GlobalAdapter) CreateAudit(ctx context.Context, tx *sql.Tx, audit globalmodel.AuditInterface) (err error) {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return
+	}
+	defer spanEnd()
+
+	query := `INSERT INTO audit
+			(executed_at, executed_by, table_name, table_id, action)
+			VALUES (?, ?, ?, ?, ?);`
+
+	entity := globalconverters.AuditDomainToEntity(ctx, audit)
+
+	id, err := ga.Create(ctx, tx, query,
+		entity.ExecutedAT,
+		entity.ExecutedBY,
+		entity.TableName,
+		entity.TableID,
+		entity.Action)
+	if err != nil {
+		slog.Error("mysqlglobaladapter/CreateAudit: error executing Create", "error", err)
+		return status.Error(codes.Internal, "Failed to create audit record")
+	}
+
+	audit.SetID(id)
+	return
+}

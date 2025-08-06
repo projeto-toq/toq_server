@@ -1,0 +1,20 @@
+package userservices
+
+import (
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
+	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+)
+
+func (us *userService) CreateRootPrivileges() (privileges []usermodel.PrivilegeInterface) {
+
+	for methodID := range pb.UserService_ServiceDesc.Methods {
+
+		privilege := usermodel.NewPrivilege()
+		privilege.SetService(usermodel.ServiceUserService)
+		privilege.SetMethod(uint8(methodID))
+		privilege.SetAllowed(true)
+		privileges = append(privileges, privilege)
+	}
+
+	return
+}

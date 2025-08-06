@@ -1,0 +1,13 @@
+{
+    "protoc": {
+        "compile_on_save": false,
+        "options": [
+            "--plugin=protoc-gen-go-grpc=/home/ubuntu/go/bin/protoc-gen-go-grpc",
+            "--proto_path=${workspaceRoot}/internal/adapter/left/grpc",
+            "--go_out=${workspaceRoot}/internal/adapter/left/grpc",
+            "--go-grpc_out=${workspaceRoot}/internal/adapter/left/grpc",
+        ]
+    },
+    "explorer.compactFolders": false,
+    "makefile.configureOnOpen": false
+}

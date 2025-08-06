@@ -1,0 +1,46 @@
+package mysqluseradapter
+
+import (
+	"context"
+	"database/sql"
+	"log/slog"
+
+	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
+	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+func (ua *UserAdapter) GetUserValidations(ctx context.Context, tx *sql.Tx, id int64) (validation usermodel.ValidationInterface, err error) {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return
+	}
+	defer spanEnd()
+
+	query := `SELECT * FROM temp_user_validations WHERE user_id = ?;`
+
+	entities, err := ua.Read(ctx, tx, query, id)
+	if err != nil {
+		slog.Error("mysqluseradapter/GetUserValidations: error executing Read", "error", err)
+		return nil, status.Error(codes.Internal, "internal server error")
+	}
+
+	if len(entities) == 0 {
+		return nil, status.Error(codes.NotFound, "Role not found")
+	}
+
+	if len(entities) > 1 {
+		slog.Error("mysqluseradapter/GetUserValidations: multiple roles found with the same role", "role", id)
+		return nil, status.Error(codes.Internal, "Internal server error")
+	}
+
+	validation, err = userconverters.UserValidationEntityToDomain(entities[0])
+	if err != nil {
+		return
+	}
+
+	return
+
+}
