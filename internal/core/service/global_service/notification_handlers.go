@@ -51,10 +51,14 @@ func (nh *notificationHandler) HandleEmailChange(ctx context.Context, code strin
 // HandlePhoneChange processa notificação de mudança de telefone
 func (nh *notificationHandler) HandlePhoneChange(ctx context.Context, code string) error {
 	body := fmt.Sprintf("Para validar seu telefone cadastrado na TOQ insira o código %s no App:", code)
-	return nh.sender.SendSMS(ctx,
+
+	// Enviar SMS
+	err := nh.sender.SendSMS(ctx,
 		"Confirmação de telefone da TOQ",
 		body,
 		"+5511999141768") // TODO: Change to user.GetPhoneNumber()
+
+	return err
 }
 
 // HandlePasswordChange processa notificação de mudança de senha

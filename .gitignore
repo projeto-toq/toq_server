@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# Firebase credentials (keep secret!)
+configs/fcm_admin.json
+
 # Binary directory
 /bin/
 

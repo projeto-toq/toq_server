@@ -82,10 +82,7 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	user.SetEmail(userValidation.GetNewEmail())
-	//TODO: Remove this hardcoded deviceToken
-	_ = deviceToken
-	user.SetDeviceToken("dDWfs2iRThyJvzd_dSvyah:APA91bGp1GdU1zNsTzpaNb9gJpPdPTOVvJFpL2vpT52E7wemRocGtCe8HN5rpxk_Ys5NH4qo__7CD4_TZ0ahbTk2CyRaj36gCwlV9IANjFFtiQpQEvbSenw")
-	// user.SetDeviceToken(deviceToken)
+	user.SetDeviceToken(deviceToken)
 
 	//update the user validation
 	userValidation.SetNewEmail("")

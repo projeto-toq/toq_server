@@ -57,7 +57,14 @@ func AuthInterceptor(ctx context.Context, activityTracker *goroutines.ActivityTr
 			return nil, status.Errorf(codes.Unauthenticated, "authorization token is not provided")
 		}
 
-		token := strings.Split(tokens[0], "Bearer ")[1]
+		// Verificar se o token está no formato "Bearer TOKEN"
+		tokenParts := strings.Split(tokens[0], "Bearer ")
+		if len(tokenParts) < 2 || tokenParts[1] == "" {
+			slog.Warn("invalid authorization token format, expected 'Bearer TOKEN'", "token", tokens[0])
+			return nil, status.Errorf(codes.Unauthenticated, "invalid authorization token format")
+		}
+
+		token := tokenParts[1]
 		infos, err := validateAccessToken(token)
 		if err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid access token")

@@ -10,8 +10,7 @@ import (
 	cpfadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cpf"
 	creciadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/creci"
 	emailadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/email"
-
-	// fcmadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/fcm"
+	fcmadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/fcm"
 
 	// gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
@@ -55,12 +54,14 @@ func (c *config) InjectDependencies() (close func() error) {
 	}
 
 	c.creci = creciadapter.NewCreciAdapter(c.context)
-	// fcm, err := fcmadapter.NewFCMAdapter(c.context)
-	// if err != nil {
-	// 	slog.Error("failed to create fcm adapter", "error", err)
-	// 	os.Exit(1)
-	// }
-	// c.firebaseCloudMessaging = fcm
+
+	fcm, err := fcmadapter.NewFCMAdapter(c.context, &c.env)
+	if err != nil {
+		slog.Error("failed to create fcm adapter", "error", err)
+		os.Exit(1)
+	}
+	c.firebaseCloudMessaging = fcm
+
 	c.email = emailadapter.NewEmailAdapter(c.env.EMAIL.SMTPServer, c.env.EMAIL.SMTPPort, c.env.EMAIL.SMTPUser, c.env.EMAIL.SMTPPassword)
 	c.sms = smsadapter.NewSmsAdapter(c.env.SMS.AccountSid, c.env.SMS.AuthToken, c.env.SMS.MyNumber)
 	c.InitGlobalService()

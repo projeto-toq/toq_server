@@ -9,5 +9,9 @@
         ]
     },
     "explorer.compactFolders": false,
-    "makefile.configureOnOpen": false
+    "makefile.configureOnOpen": false,
+    "audioCues.enabled": false,
+    "workbench.enableExperiments": false,
+    "extensions.ignoreRecommendations": true,
+    "accessibility.signalOptions.volume": 0
 }

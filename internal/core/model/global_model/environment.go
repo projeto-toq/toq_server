@@ -48,4 +48,8 @@ type Environment struct {
 		Token   string `yaml:"token"`
 		URLBase string `yaml:"url_base"`
 	}
+	FCM struct {
+		CredentialsFile string `yaml:"credentials_file"`
+		ProjectID       string `yaml:"project_id"`
+	}
 }
