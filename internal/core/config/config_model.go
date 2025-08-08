@@ -8,6 +8,7 @@ import (
 
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
+	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
@@ -32,8 +33,8 @@ type config struct {
 	server                 *grpc.Server
 	context                context.Context
 	cache                  cache.CacheInterface
+	activityTracker        *goroutines.ActivityTracker
 	wg                     *sync.WaitGroup
-	activity               chan int64
 	globalService          globalservice.GlobalServiceInterface
 	userService            userservices.UserServiceInterface
 	listingService         listingservices.ListingServiceInterface
@@ -52,6 +53,7 @@ type ConfigInterface interface {
 	LoadEnv()
 	InitializeLog()
 	InitializeDatabase()
+	InitializeActivityTracker()
 	VerifyDatabase()
 	InitializeTelemetry() func()
 	InitializeGRPC()
@@ -61,18 +63,19 @@ type ConfigInterface interface {
 	InitComplexHandler()
 	InitListingHandler()
 	InitializeGoRoutines()
+	SetActivityTrackerUserService()
 	GetDatabase() *sql.DB
 	GetGRPCServer() *grpc.Server
 	GetListener() net.Listener
 	GetInfos() (serviceQty int, methodQty int)
 	GetWG() *sync.WaitGroup
+	GetActivityTracker() *goroutines.ActivityTracker
 }
 
-func NewConfig(ctx context.Context, activity chan int64) ConfigInterface {
+func NewConfig(ctx context.Context) ConfigInterface {
 	var wg sync.WaitGroup
 	return &config{
-		context:  ctx,
-		activity: activity,
-		wg:       &wg,
+		context: ctx,
+		wg:      &wg,
 	}
 }

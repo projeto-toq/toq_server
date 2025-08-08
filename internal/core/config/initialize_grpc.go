@@ -42,7 +42,7 @@ func (c *config) InitializeGRPC() {
 		})),
 		grpc.ChainUnaryInterceptor(
 			middlewares.TelemetryInterceptor(c.context),
-			middlewares.AuthInterceptor(c.context, c.activity),
+			middlewares.AuthInterceptor(c.context, c.activityTracker),
 			middlewares.AccessControlInterceptor(c.context, &c.cache),
 		),
 	)

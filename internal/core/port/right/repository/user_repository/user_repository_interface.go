@@ -35,6 +35,7 @@ type UserRepoPortInterface interface {
 	UpdateAgencyInviteByID(ctx context.Context, tx *sql.Tx, invite usermodel.InviteInterface) (err error)
 	UpdateUserByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
 	UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, id int64) (err error)
+	BatchUpdateUserLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
 	UpdateUserPhotoByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
 	UpdateUserRole(ctx context.Context, tx *sql.Tx, role usermodel.UserRoleInterface) (err error)

@@ -18,8 +18,14 @@ func (c *config) InitializeDatabase() {
 		panic(err)
 	}
 
+	// Configure connection pool
+	database.SetMaxOpenConns(25)                 // Maximum number of open connections
+	database.SetMaxIdleConns(10)                 // Maximum number of idle connections
+	database.SetConnMaxLifetime(5 * time.Minute) // Connection maximum lifetime
+	database.SetConnMaxIdleTime(2 * time.Minute) // Connection maximum idle time
+
 	//testa se o conexão está viva
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) // Increased timeout
 	defer cancel()
 
 	if err = database.PingContext(ctx); err != nil {

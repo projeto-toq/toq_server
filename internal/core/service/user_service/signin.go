@@ -80,11 +80,8 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationaID string,
 		return
 	}
 
-	//update the lastactivity
-	err = us.repo.UpdateUserLastActivity(ctx, tx, user.GetID())
-	if err != nil {
-		return
-	}
+	// Note: Last activity is now tracked automatically by AuthInterceptor → Redis → Batch worker
+	// No need for direct UpdateUserLastActivity call
 
 	return
 }

@@ -13,7 +13,7 @@ import (
 )
 
 func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error) {
-	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
 	}
@@ -41,10 +41,8 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 		return
 	}
 
-	err = us.repo.UpdateUserLastActivity(ctx, tx, user.GetID())
-	if err != nil {
-		return
-	}
+	// Note: Last activity is now tracked automatically by AuthInterceptor → Redis → Batch worker
+	// No need for direct UpdateUserLastActivity call
 
 	return
 }

@@ -81,7 +81,7 @@ type UserServiceInterface interface {
 	SignIn(ctx context.Context, nationalID string, password string) (tokens usermodel.Tokens, err error)
 	SignOut(ctx context.Context, userID int64) (tokens usermodel.Tokens, err error)
 	SwitchUserRole(ctx context.Context, userID int64, userRoleID int64) (tokens usermodel.Tokens, err error)
-	UpdateLastActivity(ctx context.Context, userID int64) (err error)
+	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	UpdatePhoto(ctx context.Context, userID int64, photo []byte) (err error)
 	UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error)
 	ValidateCreciData(ctx context.Context, realtors []usermodel.UserInterface)

@@ -28,11 +28,8 @@ func main() {
 	ctx = context.WithValue(ctx, globalmodel.TokenKey, infos)
 	ctx = context.WithValue(ctx, globalmodel.RequestIDKey, "configuration_process")
 
-	//create the activity channel to send userID to the goroutine for update last activity
-	activityChannel := make(chan int64)
-
 	//create the config object
-	config := config.NewConfig(ctx, activityChannel)
+	config := config.NewConfig(ctx)
 
 	//load the environment variables
 	config.LoadEnv()
@@ -58,6 +55,9 @@ func main() {
 	shutdownOtel := config.InitializeTelemetry()
 	defer shutdownOtel()
 
+	// Initialize Activity Tracker early (before gRPC middleware)
+	config.InitializeActivityTracker()
+
 	//initialize the grpc server
 	config.InitializeGRPC()
 
@@ -70,6 +70,9 @@ func main() {
 			os.Exit(1)
 		}
 	}()
+
+	// Set user service in activity tracker after dependencies are initialized
+	config.SetActivityTrackerUserService()
 
 	//verify the database is new and should be initialized
 	config.VerifyDatabase()

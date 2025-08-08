@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"strings"
 
+	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/golang-jwt/jwt"
@@ -24,7 +25,7 @@ var nonAuthMethods = []string{
 	"/grpc.UserService/ConfirmPasswordChange",
 }
 
-func AuthInterceptor(ctx context.Context, activity chan int64) grpc.UnaryServerInterceptor {
+func AuthInterceptor(ctx context.Context, activityTracker *goroutines.ActivityTracker) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req any,
@@ -65,7 +66,8 @@ func AuthInterceptor(ctx context.Context, activity chan int64) grpc.UnaryServerI
 		// Aad userinfos to the context
 		ctx = context.WithValue(ctx, globalmodel.TokenKey, infos)
 
-		activity <- infos.ID
+		// Track user activity (non-blocking, fast Redis operation)
+		activityTracker.TrackActivity(ctx, infos.ID)
 
 		return handler(ctx, req)
 	}
