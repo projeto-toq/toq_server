@@ -74,7 +74,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationaID string,
 		}
 	}
 
-	//generate the token
+	//generate the tokens
 	tokens, err = us.CreateTokens(ctx, tx, user, false)
 	if err != nil {
 		return

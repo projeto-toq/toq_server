@@ -9,6 +9,7 @@ import (
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
 	creciport "github.com/giulio-alfieri/toq_server/internal/core/port/right/creci"
 	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
+	sessionrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/user_repository"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
@@ -16,6 +17,7 @@ import (
 
 type userService struct {
 	repo               userrepoport.UserRepoPortInterface
+	sessionRepo        sessionrepoport.SessionRepoPortInterface
 	globalService      globalservice.GlobalServiceInterface
 	listingService     listingservices.ListingServiceInterface
 	cpf                cpfport.CPFPortInterface
@@ -26,6 +28,7 @@ type userService struct {
 
 func NewUserService(
 	ur userrepoport.UserRepoPortInterface,
+	sr sessionrepoport.SessionRepoPortInterface,
 	gsi globalservice.GlobalServiceInterface,
 	listingService listingservices.ListingServiceInterface,
 	cpf cpfport.CPFPortInterface,
@@ -36,6 +39,7 @@ func NewUserService(
 ) UserServiceInterface {
 	return &userService{
 		repo:               ur,
+		sessionRepo:        sr,
 		globalService:      gsi,
 		listingService:     listingService,
 		cpf:                cpf,

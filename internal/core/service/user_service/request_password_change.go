@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -39,21 +39,25 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 		return
 	}
 
-	// Send notification asynchronously (non-blocking goroutine)
-	// This allows gRPC to respond immediately without waiting for email delivery
-	go func() {
-		// Create a new context preserving Request ID but avoiding cancellation
-		notifyCtx := context.Background()
-		if requestID := ctx.Value(globalmodel.RequestIDKey); requestID != nil {
-			notifyCtx = context.WithValue(notifyCtx, globalmodel.RequestIDKey, requestID)
-		}
+	// Send notification (now asynchronous by default in the notification service)
+	// This allows gRPC to respond immediately without needing additional goroutines
 
-		notifyErr := us.globalService.SendNotification(notifyCtx, user, globalmodel.NotificationPasswordChange, validation.GetPasswordCode())
-		if notifyErr != nil {
-			// Log error but don't affect the main operation since transaction is already committed
-			slog.Error("Failed to send password reset notification", "userID", user.GetID(), "error", notifyErr)
-		}
-	}()
+	// Usar o novo sistema unificado de notificação
+	notificationService := us.globalService.GetUnifiedNotificationService()
+
+	// Criar requisição de email para reset de senha
+	emailRequest := globalservice.NotificationRequest{
+		Type:    globalservice.NotificationTypeEmail,
+		To:      user.GetEmail(),
+		Subject: "TOQ - Redefinição de Senha",
+		Body:    "Seu código para redefinir a senha é: " + validation.GetPasswordCode(),
+	}
+
+	notifyErr := notificationService.SendNotification(ctx, emailRequest)
+	if notifyErr != nil {
+		// Log error but don't affect the main operation since transaction is already committed
+		slog.Error("Failed to send password reset notification", "userID", user.GetID(), "error", notifyErr)
+	}
 
 	return
 }

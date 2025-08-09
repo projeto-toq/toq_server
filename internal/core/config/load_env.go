@@ -25,4 +25,13 @@ func (c *config) LoadEnv() {
 
 	c.env = env
 	globalmodel.SetJWTSecret(env.JWT.Secret)
+	if env.AUTH.RefreshTTLDays > 0 {
+		globalmodel.SetRefreshTTL(env.AUTH.RefreshTTLDays)
+	}
+	if env.AUTH.AccessTTLMinutes > 0 {
+		globalmodel.SetAccessTTL(env.AUTH.AccessTTLMinutes)
+	}
+	if env.AUTH.MaxSessionRotations > 0 {
+		globalmodel.SetMaxSessionRotations(env.AUTH.MaxSessionRotations)
+	}
 }

@@ -14,3 +14,5 @@ Necessidades do novo sistema:
     f) token - necessário para fcm, conterá o deviceToken
 4) Construa este novo sistema em substituição ao notificaton_handler e notification_sender.
 5) Verifique as rotinas que chamavam os notificaton_handler e/ou notification_sender e altere para chamar esta novo rotina
+6) Documete as funções e coloque comentários internos, explicando a lógica, em portugês
+

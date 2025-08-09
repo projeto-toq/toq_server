@@ -1,0 +1,305 @@
+"id";"complex_id";"tower";"floors";"total_units";"units_per_floor"
+1;1;"A";0;0;0
+2;1;"B";0;0;0
+3;1;"C";0;0;0
+4;1;"D";0;0;0
+5;2;"A - Aroeira";0;0;0
+6;2;"B - Buriti";0;0;0
+7;2;"C - Cedro";0;0;0
+8;3;"Torre Única";0;0;0
+9;4;"A - Auguste-Blanqui ";0;0;0
+10;4;"B - Bonne Nouvelle";0;0;0
+11;4;"C - Chapelle";0;0;0
+12;4;"D - Saint Denis";0;0;0
+13;4;"E - Emile Augler";0;0;0
+14;4;"F - Flandrin ";0;0;0
+15;5;"A - Figueira";0;0;0
+16;5;"B - Manacá";0;0;0
+17;6;"A - Auguste Renoir";0;0;0
+18;6;"B - Eugéne Boudin";0;0;0
+19;6;"C - Claude Monet ";0;0;0
+20;6;"D - Edgar Degas ";0;0;0
+21;7;"Torre Única";15;0;0
+22;8;"Torre Única";0;120;0
+23;9;"Torre Única";30;0;0
+24;10;"Torre Única";19;76;0
+25;11;"A - San Martin";15;120;0
+26;11;"B - San Diego";0;0;0
+27;12;"A - Ametista";15;300;0
+28;12;"B - Berilo";0;0;0
+29;12;"C - Coral";0;0;0
+30;12;"D - Diamante ";0;0;0
+31;12;"E - Esmeralda ";0;0;0
+32;13;"Torre Única";9;142;0
+33;14;"Torre Única";15;60;0
+34;15;"Torre Única";19;200;0
+35;16;"Torre Única";18;160;0
+36;17;"Polo";25;144;0
+37;17;"Golf";0;0;0
+38;17;"Ski";0;0;0
+39;18;"Torre Única";14;28;0
+40;19;"Comercial";0;132;0
+41;19;"Residencial";0;212;0
+42;20;"A";0;0;0
+43;20;"B";23;92;0
+44;21;"Alphama I ";23;96;0
+45;21;"Alphama II";0;0;0
+46;22;"Edifício A ";12;96;4
+47;22;"Edifício B ";0;0;0
+48;23;"Torre Única";16;32;2
+49;24;"Torre Única";10;160;16
+50;25;"Torre Única";15;240;16
+51;26;"Torre Única";15;15;1
+52;27;"Torre Única";17;131;0
+53;28;"Praia";18;144;8
+54;28;"Campo";0;0;0
+55;29;"Torre Única";18;144;8
+56;30;"Everest Tower";13;156;4
+57;30;"Mont-Blanc Tower";0;0;0
+58;30;"Logan Tower";0;0;0
+59;31;"A";24;96;2
+60;31;"B";0;0;0
+61;32;"Torre Única";17;0;0
+62;33;"Torre Única";18;144;8
+63;34;"Torre Única";15;120;8
+64;35;"Torre Única";19;0;0
+65;36;"Torre Única";20;0;0
+66;37;"Torre Única";32;120;4
+67;38;"Torre Norte";30;240;4
+68;38;"Torre Sul";0;0;0
+69;39;"Bloco A - Mozart ";0;232;4
+70;39;"Bloco B - Monet ";0;0;0
+71;39;"Bloco C - Michelangelo";0;0;0
+72;40;"Torre Única";15;120;8
+73;41;"Torre Única";15;60;4
+74;42;"Itapecuru I ";12;92;0
+75;42;"Itapecuru II ";0;0;0
+76;43;"Bloco A - Ilha de Guam";12;96;4
+77;43;"Bloco B - ilha de Baker";0;0;0
+78;44;"Bloco A";0;0;0
+79;44;"Bloco B";0;0;0
+80;45;"Torre Única";14;167;0
+81;46;"Torre Única";27;216;0
+82;47;"Torre Única";12;96;8
+83;48;"Torre Única";27;243;9
+84;49;"Torre A";23;249;6
+85;49;"Torre B ";0;0;0
+86;50;"Top Ville";0;168;0
+87;50;"Top Space";0;0;0
+88;50;"Top Point ";0;0;0
+89;51;"Bloco A";27;216;4
+90;51;"Bloco B ";0;0;0
+91;52;"Torre 1";27;200;4
+92;52;"Torre 2";0;0;0
+93;53;"The Garden Gramercy Park";31;60;2
+94;53;"The Lake Gramercy Park";34;66;2
+95;54;"Torre Única";26;121;0
+96;55;"Torre Única";28;84;3
+97;56;"Torre 1 - Orizzonte";14;168;4
+98;56;"Torre 2 - Belvedere";0;0;0
+99;56;"Torre 3 - Riserva";0;0;0
+100;57;"Bloco 1 - Edifício Elizabeth";26;200;4
+101;57;"Bloco 2 - Edifício Victória ";0;0;0
+102;58;"Torre Única";20;120;6
+103;59;"Torre Única";28;108;4
+104;60;"Torre 1 - Edifício Ômega";26;364;7
+105;60;"Torre 2 - Edifício Quintana";0;0;0
+106;61;"Torre Única";21;168;8
+107;62;"Torre Única";27;312;12
+108;63;"Torre Única";28;193;0
+109;64;"Daphne e Cloe";0;126;0
+110;64;"Paulo e Virginia";0;0;0
+111;64;"Dante e Beatriz";0;0;0
+112;64;"Marília e Dirceu";0;0;0
+113;64;"Romeu e Julieta";0;0;0
+114;64;"Abelardo e Heloisa";0;0;0
+115;64;"Paris e Helena";0;0;0
+116;64;"Peri e Ceci";0;0;0
+117;64;"Tristão e Isolda";0;0;0
+118;65;"Torre Única";36;108;3
+119;66;"Brascan Century Corporate";0;0;0
+120;66;"Brascan Century Office";0;0;0
+121;66;"Oppen Mall ";0;0;0
+122;67;"Torre A";26;346;0
+123;67;"Torre B ";23;0;0
+124;68;"Torre Única";26;81;3
+125;69;"Torre Única";0;0;0
+126;70;"Bloco A";36;651;0
+127;70;"Bloco B ";0;0;0
+128;70;"Bloco C";0;0;0
+129;70;"Bloco D ";0;0;0
+130;71;"Torre Única";9;0;0
+131;72;"Torre Única";24;184;8
+132;73;"Torre Única";24;138;6
+133;74;"Torre Única";25;168;7
+134;75;"Torre Única";14;84;6
+135;76;"Torre Única";14;84;6
+136;77;"Edifício Dijon";14;112;4
+137;77;"Edifício Lyon ";0;0;0
+138;78;"Torre A1";14;672;0
+139;78;"Torre A2";0;0;0
+140;78;"Torre A3";0;0;0
+141;78;"Torre B1";0;0;0
+142;78;"Torre B2";0;0;0
+143;78;"Torre B3";0;0;0
+144;78;"Torre B4";0;0;0
+145;78;"Torre B5";0;0;0
+146;78;"Torre B6";0;0;0
+147;79;"Bloco 1";13;302;0
+148;79;"Bloco 2 ";0;0;0
+149;79;"Bloco 3";0;0;0
+150;79;"Bloco 4";0;0;0
+151;79;"Bloco 5";0;0;0
+152;80;"Bloco A - Edifício Azaléia ";15;299;4
+153;80;"Bloco B - Edifício Bromélia";0;0;0
+154;80;"Bloco C - Edifício Camélia ";0;0;0
+155;80;"Bloco D - Edifício Dália";0;0;0
+156;80;"Bloco E - Edifício Érica";0;0;0
+157;81;"Bloco A1 - Tribeca";14;112;1
+158;81;"Bloco A2 - Broadway ";0;0;0
+159;81;"Bloco B1 - Queens";0;0;0
+160;81;"Bloco B2 - Manhatan ";0;0;0
+161;81;"Bloco C1 - Times Square ";0;0;0
+162;81;"Bloco C2 - Soho";0;0;0
+163;81;"Bloco C3 - East Village ";0;0;0
+164;81;"Bloco C4 - Brooklin";0;0;0
+165;82;"Torre A1 - Bio";14;504;4
+166;82;"Torre B1 - Geo";0;0;0
+167;82;"Torre A2 - Acqua";0;0;0
+168;82;"Torre B2 - Lumi";0;0;0
+169;82;"Torre A3 - Eco";0;0;0
+170;82;"Torre B3 - Orbis";0;0;0
+171;82;"Torre A4 - Atmosfere";0;0;0
+172;82;"Torre B4 - Arbore";0;0;0
+173;82;"Torre A5 - Ares";0;0;0
+174;83;"Torre Única";14;0;0
+175;84;"Torre Residencial 1 ";23;0;0
+176;84;"Torre Residencial 2";0;0;0
+177;84;"Torre Comercial ";0;0;0
+178;85;"Torre Única";17;153;9
+179;86;"Bloco A - Edifício Paris";22;69;1
+180;86;"Bloco B - Edifício Roma";0;0;0
+181;86;"Bloco C - Edifício Madri";0;0;0
+182;87;"";0;70;0
+183;88;"";0;92;0
+184;89;"Art";20;220;0
+185;89;"Belle";0;0;0
+186;90;"Torre Única";18;0;0
+187;91;"Torre 01";18;0;0
+188;91;"Torre 02";0;0;0
+189;91;"Torre 03";0;0;0
+190;92;"Edifício Comercial 01";0;0;0
+191;92;"Edifício Comercial 02";0;0;0
+192;93;"Bloco Comercial";0;0;0
+193;93;"Edifício Comercial Torre 01";0;0;0
+194;93;"Edifício Comercial Torre 02";0;0;0
+195;94;"Torre Norte";0;0;0
+196;94;"Torre Sul";0;0;0
+197;94;"Condomínio Lojas";0;0;0
+198;95;"Bloco 1";0;0;0
+199;95;"Bloco 2";0;0;0
+200;96;"North tower";0;0;0
+201;96;"South Tower";0;0;0
+202;97;"Torre 1";0;0;0
+203;97;"Torre 2";0;0;0
+204;98;"Torre Única";0;0;0
+205;99;"Torre Única";0;0;0
+206;100;"Bloco A - Edifício Jaçari";0;0;0
+207;100;"Bloco B - Edifício Padauiri";0;0;0
+208;100;"Bloco C - Edifício Demini";0;0;0
+209;100;"Bloco D - Edifício Jauaperi";0;0;0
+210;100;"Bloco Shopping Rio Negro";0;0;0
+211;101;"Torre Única";0;0;0
+212;102;"Torre Única";0;0;0
+213;103;"Torre Única";0;0;0
+214;104;"Bloco A";0;0;0
+215;104;"Bloco B ";0;0;0
+216;104;"Bloco C ";0;0;0
+217;105;"Torre Única";0;0;0
+218;106;"Torre Única";0;0;0
+219;107;"Torre Única";0;0;0
+220;108;"Torre Única";0;0;0
+221;109;"Torre Única";0;0;0
+222;110;"Torre Única";0;0;0
+223;111;"Torre Única";0;0;0
+224;112;"Torre Única";0;0;0
+225;113;"Torre Única";0;0;0
+226;114;"Torre Única";0;0;0
+227;115;"Torre Única";0;0;0
+228;116;"Torre Única";0;0;0
+229;117;"Torre Única";0;0;0
+230;118;"Torre Única";0;0;0
+231;119;"Torre Única";0;0;0
+232;120;"Torre Única";0;0;0
+233;121;"Torre Única";0;0;0
+234;122;"Torre Única";0;0;0
+235;123;"Torre Única";0;0;0
+236;124;"Torre A - Edifício Greene";0;0;0
+237;124;"Torre B - Edifício Spring";0;0;0
+238;124;"Torre C - Edifício Mercer ";0;0;0
+239;125;"Bloco A - Edifício Arpoador";0;0;0
+240;125;"Bloco B - Edifício Boa Viagem";0;0;0
+241;125;"Bloco C - Edifício Camburi";0;0;0
+242;125;"Bloco D - Edifício Dourado";0;0;0
+243;125;"Bloco E - Edifício Enseada";0;0;0
+244;125;"Bloco F - Edifício Fortaleza";0;0;0
+245;125;"Bloco G - Edifício Grumari ";0;0;0
+246;126;"Bloco A - Edifício Acácia";0;0;0
+247;126;"Bloco B - Edifício Ipê";0;0;0
+248;126;"Bloco C - Edifício Flamboyant";0;0;0
+249;126;"Bloco D - Edifício Jacarandá ";0;0;0
+250;127;"Bloco A - Edifício Álamo";0;0;0
+251;127;"Bloco B - Edifício Ébano";0;0;0
+252;127;"Bloco C - Edifício Plátano";0;0;0
+253;128;"Bloco A";0;0;0
+254;128;"Bloco B ";0;0;0
+255;129;"Mall";0;0;0
+256;129;"Torre 1";0;0;0
+257;129;"Torre 2";0;0;0
+258;130;"Torre D";0;0;0
+259;131;"Torre A1/B1";0;0;0
+260;131;"Torre A3/B3";0;0;0
+261;131;"Torre C";0;0;0
+262;132;"Edifício Verone I ";0;0;0
+263;132;"Edifício Verone II";0;0;0
+264;133;"Torre 01";0;0;0
+265;133;"Torre 02";0;0;0
+266;133;"Torre 03";0;0;0
+267;134;"Torre Única";0;0;0
+268;135;"Torre Única";0;0;0
+269;136;"Torre Única";0;0;0
+270;137;"Torre Única";0;0;0
+271;138;"Torre Única";0;0;0
+272;139;"Torre Única";0;0;0
+273;140;"Condomínio de Casas";0;0;0
+274;141;"Condomínio de Casas";0;0;0
+275;142;"Condomínio de Casas";0;0;0
+276;143;"Condomínio de Casas";0;0;0
+277;144;"Torre 01";0;0;0
+278;144;"Torre 02";0;0;0
+279;145;"Torre Única";0;0;0
+280;146;"Torre Única";0;0;0
+281;147;"Torre Única";0;0;0
+282;148;"Torre Única";0;0;0
+283;149;"Torre Única";0;0;0
+284;150;"Torre 1 - Edifício Jacarandá";0;0;0
+285;150;"Torre 2 - Edifício Jatobá";0;0;0
+286;150;"Torre 3 - Edifício Ipê";0;0;0
+287;150;"Torre 4- Edifício Jequitibá";0;0;0
+288;150;"Torre 5 - Edifício Araucária";0;0;0
+289;150;"Torre 6 - Edifício Imbuia";0;0;0
+290;151;"Torre Única";0;0;0
+291;152;"Torre Única";0;0;0
+292;153;"Torre Única";0;0;0
+293;154;"Torre Única";0;0;0
+294;155;"Torre Única";0;0;0
+295;156;"Torre Única";0;0;0
+296;157;"Bloco 1 - Edifício Neroli";0;0;0
+297;157;"Bloco 2 - Edifício Verbena";0;0;0
+298;157;"Bloco 3 - Edifício Vetiver";0;0;0
+299;158;"Torre Única";0;0;0
+300;159;"Torre Única";0;0;0
+301;160;"Torre Única";0;0;0
+302;161;"Torre Única";0;0;0
+303;162;"Torre Única";0;0;0
+304;163;"Torre Única";0;0;0

@@ -7,6 +7,7 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -68,7 +69,17 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 		if err != nil {
 			return
 		}
-		err = us.globalService.SendNotification(ctx, realtor, globalmodel.NotificationRealtorInvitePush, agency.GetNickName())
+
+		// Enviar notificação push para corretor já na plataforma
+		notificationService := us.globalService.GetUnifiedNotificationService()
+		pushRequest := globalservice.NotificationRequest{
+			Type:    globalservice.NotificationTypeFCM,
+			Token:   realtor.GetDeviceToken(),
+			Subject: "Nova Proposta de Trabalho",
+			Body:    fmt.Sprintf("A imobiliária %s quer trabalhar com você!", agency.GetNickName()),
+		}
+
+		err = notificationService.SendNotification(ctx, pushRequest)
 		if err != nil {
 			return err
 		}
@@ -165,9 +176,15 @@ func (us *userService) updateInvite(ctx context.Context, tx *sql.Tx, invite user
 }
 
 func (us *userService) sendSMStoNewRealtor(ctx context.Context, phoneNumber string, agency usermodel.UserInterface) (err error) {
-	realtor := usermodel.NewUser()
-	realtor.SetPhoneNumber(phoneNumber)
-	err = us.globalService.SendNotification(ctx, realtor, globalmodel.NotificationRealtorInviteSMS, agency.GetNickName())
+	// Enviar SMS para corretor que não está na plataforma
+	notificationService := us.globalService.GetUnifiedNotificationService()
+	smsRequest := globalservice.NotificationRequest{
+		Type: globalservice.NotificationTypeSMS,
+		To:   phoneNumber,
+		Body: fmt.Sprintf("A imobiliária %s quer trabalhar com você! Baixe o app TOQ e aceite o convite.", agency.GetNickName()),
+	}
+
+	err = notificationService.SendNotification(ctx, smsRequest)
 	if err != nil {
 		return
 	}
@@ -187,7 +204,16 @@ func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx
 	realtor.GetActiveRole().SetStatusReason(reason)
 
 	if push {
-		err = us.globalService.SendNotification(ctx, realtor, globalmodel.NotificationRealtorInvitePush, agency.GetNickName())
+		// Enviar notificação push para corretor na plataforma
+		notificationService := us.globalService.GetUnifiedNotificationService()
+		pushRequest := globalservice.NotificationRequest{
+			Type:    globalservice.NotificationTypeFCM,
+			Token:   realtor.GetDeviceToken(),
+			Subject: "Nova Proposta de Trabalho",
+			Body:    fmt.Sprintf("A imobiliária %s quer trabalhar com você!", agency.GetNickName()),
+		}
+
+		err = notificationService.SendNotification(ctx, pushRequest)
 		if err != nil {
 			return err
 		}

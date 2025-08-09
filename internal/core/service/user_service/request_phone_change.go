@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -39,21 +39,24 @@ func (us *userService) RequestPhoneChange(ctx context.Context, userID int64, new
 		return
 	}
 
-	// Send notification asynchronously (non-blocking goroutine)
-	// This allows gRPC to respond immediately without waiting for SMS delivery
-	go func() {
-		// Create a new context preserving Request ID but avoiding cancellation
-		notifyCtx := context.Background()
-		if requestID := ctx.Value(globalmodel.RequestIDKey); requestID != nil {
-			notifyCtx = context.WithValue(notifyCtx, globalmodel.RequestIDKey, requestID)
-		}
+	// Send notification (now asynchronous by default in the notification service)
+	// This allows gRPC to respond immediately without needing additional goroutines
 
-		notifyErr := us.globalService.SendNotification(notifyCtx, user, globalmodel.NotificationPhoneChange, validation.GetPhoneCode())
-		if notifyErr != nil {
-			// Log error but don't affect the main operation since transaction is already committed
-			slog.Error("Failed to send SMS notification", "userID", user.GetID(), "error", notifyErr)
-		}
-	}()
+	// Usar o novo sistema unificado de notificação
+	notificationService := us.globalService.GetUnifiedNotificationService()
+
+	// Criar requisição de SMS com código de validação
+	smsRequest := globalservice.NotificationRequest{
+		Type: globalservice.NotificationTypeSMS,
+		To:   user.GetPhoneNumber(),
+		Body: "TOQ - Seu código de validação: " + validation.GetPhoneCode(),
+	}
+
+	notifyErr := notificationService.SendNotification(ctx, smsRequest)
+	if notifyErr != nil {
+		// Log error but don't affect the main operation since transaction is already committed
+		slog.Error("Failed to send SMS notification", "userID", user.GetID(), "error", notifyErr)
+	}
 
 	return
 }

@@ -36,6 +36,25 @@ func updateDB(c *config) {
 	panic("Database version is different from application version. Please update the database.")
 }
 
+// NOTE: Real migration system not implemented yet. To introduce sessions support,
+// add the following DDL manually (idempotent check recommended) until a proper
+// migration tool is integrated.
+//
+// CREATE TABLE IF NOT EXISTS sessions (
+//   id BIGINT AUTO_INCREMENT PRIMARY KEY,
+//   user_id BIGINT NOT NULL,
+//   refresh_hash VARCHAR(255) NOT NULL UNIQUE,
+//   expires_at DATETIME NOT NULL,
+//   created_at DATETIME NOT NULL,
+//   rotated_at DATETIME NULL,
+//   user_agent VARCHAR(255) NULL,
+//   ip VARCHAR(64) NULL,
+//   revoked BOOLEAN NOT NULL DEFAULT FALSE,
+//   INDEX idx_sessions_user_id (user_id),
+//   INDEX idx_sessions_expires_at (expires_at),
+//   INDEX idx_sessions_revoked (revoked)
+// ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 func isEmpty(c *config) bool {
 	_, err := c.userService.GetUsers(c.context)
 	if err != nil {

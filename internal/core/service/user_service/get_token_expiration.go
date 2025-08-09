@@ -10,5 +10,5 @@ func (us *userService) GetTokenExpiration(expired bool) int64 {
 	if expired {
 		return time.Now().UTC().Add(time.Hour * -1).Unix()
 	}
-	return time.Now().UTC().Add(globalmodel.TokenExpiration).Unix()
+	return time.Now().UTC().Add(globalmodel.GetAccessTTL()).Unix()
 }

@@ -21,6 +21,12 @@ type Environment struct {
 	JWT struct {
 		Secret string `yaml:"secret"`
 	}
+	AUTH struct {
+		RefreshTTLDays                int `yaml:"refresh_ttl_days"`
+		AccessTTLMinutes              int `yaml:"access_ttl_minutes"`
+		MaxSessionRotations           int `yaml:"max_session_rotations"`
+		SessionCleanerIntervalSeconds int `yaml:"session_cleaner_interval_seconds"`
+	}
 	GMAIL struct {
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`

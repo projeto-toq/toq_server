@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"log/slog"
+	"net"
 	"strings"
 
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
@@ -70,8 +71,32 @@ func AuthInterceptor(ctx context.Context, activityTracker *goroutines.ActivityTr
 			return nil, status.Errorf(codes.Unauthenticated, "invalid access token")
 		}
 
-		// Aad userinfos to the context
+		// Extract metadata for session (user-agent, ip)
+		userAgent := ""
+		if uaVals := md.Get("user-agent"); len(uaVals) > 0 {
+			userAgent = uaVals[0]
+		}
+		// Try to derive client IP from :authority or forwarded headers
+		clientIP := ""
+		if ipVals := md.Get("x-forwarded-for"); len(ipVals) > 0 {
+			clientIP = strings.Split(ipVals[0], ",")[0]
+		}
+		if clientIP == "" {
+			if peerVals := md.Get(":authority"); len(peerVals) > 0 {
+				host := peerVals[0]
+				hostOnly, _, errHost := net.SplitHostPort(host)
+				if errHost == nil {
+					clientIP = hostOnly
+				} else {
+					clientIP = host
+				}
+			}
+		}
+
+		// Add user infos + meta to context (future: define structured key types)
 		ctx = context.WithValue(ctx, globalmodel.TokenKey, infos)
+		ctx = context.WithValue(ctx, globalmodel.UserAgentKey, userAgent)
+		ctx = context.WithValue(ctx, globalmodel.ClientIPKey, clientIP)
 
 		// Track user activity (non-blocking, fast Redis operation)
 		activityTracker.TrackActivity(ctx, infos.ID)

@@ -17,6 +17,7 @@ import (
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
 	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
+	sessionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service.go"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
@@ -47,6 +48,7 @@ type config struct {
 	sms                    smsport.SMSPortInterface
 	googleCloudStorage     gcsport.GCSPortInterface
 	firebaseCloudMessaging fcmport.FCMPortInterface
+	sessionRepo            sessionrepository.SessionRepoPortInterface
 }
 
 type ConfigInterface interface {

@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -38,16 +39,14 @@ func (us *userService) SignOut(ctx context.Context, userID int64) (tokens usermo
 }
 
 func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64) (tokens usermodel.Tokens, err error) {
-
-	user, err := us.repo.GetUserByID(ctx, tx, userID)
-	if err != nil {
-		return
+	// Revoke all active sessions for the user
+	if us.sessionRepo != nil {
+		if err = us.sessionRepo.RevokeSessionsByUserID(ctx, userID); err != nil {
+			slog.Warn("failed to revoke user sessions on signout", "userID", userID, "err", err)
+		}
 	}
-
-	//generate the expired token
-	tokens, err = us.CreateTokens(ctx, tx, user, true)
-	if err != nil {
-		return
-	}
-	return
+	// Return empty tokens (proto may still expect structure)
+	return usermodel.Tokens{}, nil
 }
+
+// Logout strategy: revoke all user's active sessions and return empty tokens.

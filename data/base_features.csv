@@ -1,0 +1,68 @@
+"id";"feature";"description";"priority"
+1;"Suites";"não considerando os dormitório";1
+2;"Dormitórios";"não considerando as suites";2
+3;"Banheiros";"adicionais aos das suites";3
+4;"Cozinha";"";4
+5;"Copa";"";5
+6;"Closet";"adicionais aos closets sr. E sra";6
+7;"Closet Sr. e Sra.";"";7
+8;"Escritório";"";8
+9;"Home theater";"";9
+10;"Lavabo";"";10
+11;"Sala de almoço";"";11
+12;"Sala de estar";"";12
+13;"Sala de jantar";"";13
+14;"Sala de TV";"";14
+15;"Sala íntima";"";15
+16;"Ar-Condicionado";"";16
+17;"Área de serviço";"";17
+18;"Depósito";"";18
+19;"Despensa";"";19
+20;"Banheiro de Funcionário";"";20
+21;"Vagas cobertas";"";21
+22;"Vagas descobertas";"";22
+23;"Armário no closet";"";23
+24;"Armário na cozinha";"";24
+25;"Armário no banheiro";"";25
+26;"Armário no dormitório";"";26
+27;"Armário no escritório";"";27
+28;"Armário no home theater";"";28
+29;"Armário na área de serviço";"";29
+30;"Armário na sala";"";30
+31;"Armário no corredor";"";31
+32;"Churrasqueira";"";32
+33;"Pé direito duplo";"";33
+34;"Lareira";"";34
+35;"Lavanderia";"";35
+36;"Piscina";"";36
+37;"Jacuzzi";"";37
+38;"Dormitório reversível";"";38
+39;"Terraço";"";39
+40;"Varanda";"";40
+41;"Varanda Gourmet";"";41
+42;"Varanda/Terraço";"";42
+43;"Adega";"";43
+44;"Aquecimento de água a gás";"";44
+45;"Aquecimento de água solar";"";45
+46;"Hidromassagem";"";46
+47;"Sauna";"";47
+48;"Edícula";"";48
+49;"Elevador";"";49
+50;"Jardim de inverno";"";50
+51;"Gerador de energia";"";51
+52;"Placas fotovoltaicas";"";52
+53;"Piso aquecido";"";53
+54;"Piso de madeira";"";54
+55;"Piso de mármore";"";55
+56;"Piso de porcelanato";"";56
+57;"Playground";"";57
+58;"Portão Eletrônico";"";58
+59;"Quadra de tenis";"";59
+60;"Quadra poliesportiva";"";60
+61;"Vestiário";"";61
+62;"Alarme";"";62
+63;"Solarium";"";63
+64;"Campo de futebol";"";64
+65;"Mezanino";"";65
+66;"Ofurô";"";66
+67;"Hall";"";67

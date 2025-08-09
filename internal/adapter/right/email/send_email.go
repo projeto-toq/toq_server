@@ -7,7 +7,7 @@ import (
 
 func (e *EmailAdapter) SendEmail(notification globalmodel.Notification) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "TOQ_APP@gca.dev.br")
+	m.SetHeader("From", "TOQ_APP@toq.app.br")
 	m.SetHeader("To", notification.To)
 	m.SetHeader("Subject", notification.Title)
 	m.SetBody("text/html", notification.Body)

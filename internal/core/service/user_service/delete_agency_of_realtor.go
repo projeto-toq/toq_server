@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -53,7 +54,16 @@ func (us *userService) deleteAgencyOfRealtor(ctx context.Context, tx *sql.Tx, re
 		return
 	}
 
-	err = us.globalService.SendNotification(ctx, realtor, globalmodel.NotificationAgencyRemovedFromRealtor)
+	// Notificar o corretor sobre a saída da imobiliária
+	notificationService := us.globalService.GetUnifiedNotificationService()
+	emailRequest := globalservice.NotificationRequest{
+		Type:    globalservice.NotificationTypeEmail,
+		To:      realtor.GetEmail(),
+		Subject: "Saída de Imobiliária - TOQ",
+		Body:    fmt.Sprintf("Você saiu da imobiliária %s.", agency.GetNickName()),
+	}
+
+	err = notificationService.SendNotification(ctx, emailRequest)
 	if err != nil {
 		return
 	}

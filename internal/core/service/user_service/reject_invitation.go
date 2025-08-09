@@ -3,9 +3,11 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -65,13 +67,23 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 		return
 	}
 
-	status, reason, notification, err := us.updateUserStatus(ctx, tx, realtor.GetActiveRole().GetRole(), usermodel.ActionFinishedInviteRejected)
+	status, reason, _, err := us.updateUserStatus(ctx, tx, realtor.GetActiveRole().GetRole(), usermodel.ActionFinishedInviteRejected)
 	if err != nil {
 		return
 	}
 	realtor.GetActiveRole().SetStatus(status)
 	realtor.GetActiveRole().SetStatusReason(reason)
-	err = us.globalService.SendNotification(ctx, agency, notification, realtor.GetFullName(), realtor.GetFullName())
+
+	// Notificar a imobiliária sobre a rejeição do convite
+	notificationService := us.globalService.GetUnifiedNotificationService()
+	emailRequest := globalservice.NotificationRequest{
+		Type:    globalservice.NotificationTypeEmail,
+		To:      agency.GetEmail(),
+		Subject: "Convite Rejeitado - TOQ",
+		Body:    fmt.Sprintf("O corretor %s rejeitou seu convite para trabalhar com sua imobiliária.", realtor.GetFullName()),
+	}
+
+	err = notificationService.SendNotification(ctx, emailRequest)
 	if err != nil {
 		return
 	}

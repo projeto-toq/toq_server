@@ -2,6 +2,7 @@ package userservices
 
 import (
 	"log/slog"
+	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -10,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *usermodel.Tokens) (err error) {
+func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *usermodel.Tokens, jti string) (err error) {
 
 	var expires int64
 
@@ -24,9 +25,13 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 	}
 
 	//cria os claims
+	now := time.Now().UTC().Unix()
 	claims := jwt.MapClaims{
 		string(globalmodel.TokenKey): infos,
 		"exp":                        expires,
+		"iat":                        now,
+		"iss":                        "toq-server",
+		"jti":                        jti,
 	}
 
 	// cria o refresh token

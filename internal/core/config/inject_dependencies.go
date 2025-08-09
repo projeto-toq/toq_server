@@ -17,6 +17,7 @@ import (
 	mysqlcomplexadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex"
 	mysqlglobaladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global"
 	mysqllistingadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing"
+	sessionmysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session"
 	mysqluseradapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user"
 	smsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/sms"
 
@@ -86,12 +87,14 @@ func (c *config) InjectDependencies() (close func() error) {
 
 func (c *config) InitGlobalService() {
 	repo := mysqlglobaladapter.NewGlobalAdapter(c.database)
+	// Initialize session repository (usage to be integrated in subsequent steps of JWT hardening)
+	c.sessionRepo = sessionmysqladapter.NewMySQLSessionAdapter(c.database.DB)
 	c.globalService = globalservice.NewGlobalService(repo, c.cep, c.firebaseCloudMessaging, c.email, c.sms, c.googleCloudStorage)
 }
 
 func (c *config) InitUserHandler() {
 	repo := mysqluseradapter.NewUserAdapter(c.database)
-	c.userService = userservices.NewUserService(repo, c.globalService, c.listingService, c.cpf, c.cnpj, c.creci, c.googleCloudStorage)
+	c.userService = userservices.NewUserService(repo, c.sessionRepo, c.globalService, c.listingService, c.cpf, c.cnpj, c.creci, c.googleCloudStorage)
 	handler := grpcuserport.NewUserHandler(c.userService)
 	pb.RegisterUserServiceServer(c.server, handler)
 }
