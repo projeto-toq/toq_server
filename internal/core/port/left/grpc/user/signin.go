@@ -14,7 +14,7 @@ func (uh *UserHandler) SignIn(ctx context.Context, in *pb.SignInRequest) (respon
 	}
 	defer spanEnd()
 
-	tokens, err := uh.service.SignIn(ctx, in.NationalID, in.Password)
+	tokens, err := uh.service.SignIn(ctx, in.NationalID, in.Password, in.DeviceToken)
 	if err != nil {
 		return
 	}

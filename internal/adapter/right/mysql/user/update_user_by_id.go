@@ -22,7 +22,7 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 	query := `UPDATE users SET
 			full_name = ?, nick_name = ?, national_id = ?, creci_number = ?, creci_state = ?, creci_validity = ?,
 			born_at = ?, phone_number = ?, email = ?, zip_code = ?, street = ?, number = ?, complement = ?, neighborhood = ?, 
-			city = ?, state = ?, device_token = ?, deleted = ?, last_signin_attempt = ?
+			city = ?, state = ?, opt_status = ?, deleted = ?, last_signin_attempt = ?
 			WHERE id = ?;`
 
 	entity := userconverters.UserDomainToEntity(user)
@@ -44,7 +44,7 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 		entity.Neighborhood,
 		entity.City,
 		entity.State,
-		entity.DeviceToken,
+		entity.OptStatus,
 		entity.Deleted,
 		entity.LastSignInAttempt,
 		entity.ID,

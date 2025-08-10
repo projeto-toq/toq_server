@@ -184,6 +184,7 @@ func (ns *unifiedNotificationService) validateRequest(request NotificationReques
 // sendEmail processa notificação por email usando o email adapter
 // Converte a requisição para o formato esperado pelo adapter de email.
 func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request NotificationRequest) error {
+	_ = ctx //ignorar temporariament
 	slog.Debug("Enviando notificação por email", "to", request.To, "subject", request.Subject)
 
 	// Construir a notificação no formato esperado pelo adapter
@@ -211,6 +212,7 @@ func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request Not
 // sendSMS processa notificação por SMS usando o SMS adapter
 // Converte a requisição para o formato esperado pelo adapter de SMS.
 func (ns *unifiedNotificationService) sendSMS(ctx context.Context, request NotificationRequest) error {
+	_ = ctx //ignorar temporariamente
 	slog.Debug("Enviando notificação por SMS", "to", request.To)
 
 	// Construir a notificação no formato esperado pelo adapter

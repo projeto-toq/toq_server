@@ -13,3 +13,5 @@ func NewDB(db *sql.DB) *Database {
 		DB: db,
 	}
 }
+
+func (d *Database) GetDB() *sql.DB { return d.DB }

@@ -28,7 +28,7 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 	entity.State = domain.GetState()
 	entity.Photo = sql.NullString{String: string(domain.GetPhoto()), Valid: domain.GetPhoto() != nil}
 	entity.Password = domain.GetPassword()
-	entity.DeviceToken = sql.NullString{String: string(domain.GetDeviceToken()), Valid: domain.GetDeviceToken() != ""}
+	entity.OptStatus = domain.IsOptStatus()
 	entity.LastActivityAT = domain.GetLastActivityAt()
 	entity.Deleted = domain.IsDeleted()
 	entity.LastSignInAttempt = sql.NullTime{Time: domain.GetLastSignInAttempt(), Valid: !domain.GetLastSignInAttempt().IsZero()}

@@ -3,19 +3,17 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 	"strings"
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, code string, deviceToken string) (tokens usermodel.Tokens, err error) {
+func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -28,7 +26,7 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, cod
 		return
 	}
 
-	tokens, err = us.confirmEmailChange(ctx, tx, userID, code, deviceToken)
+	tokens, err = us.confirmEmailChange(ctx, tx, userID, code)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -40,33 +38,12 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, cod
 		return
 	}
 
-	// Usar o novo sistema unificado de notificação para enviar FCM de teste
-	if deviceToken != "" {
-		// Obter o serviço de notificação unificado
-		notificationService := us.globalService.GetUnifiedNotificationService()
-
-		// Criar requisição de notificação FCM
-		fcmRequest := globalservice.NotificationRequest{
-			Type:     globalservice.NotificationTypeFCM,
-			Subject:  "TOQ - Email Confirmado! ✉️",
-			Body:     "Seu email foi alterado com sucesso!",
-			Token:    deviceToken,
-			ImageURL: "", // Opcional
-		}
-
-		// Enviar notificação usando o novo sistema (assíncrono por padrão)
-		err = notificationService.SendNotification(ctx, fcmRequest)
-		if err != nil {
-			slog.Error("Erro ao agendar notificação FCM", "userID", userID, "error", err)
-		} else {
-			slog.Info("Notificação FCM agendada com sucesso", "userID", userID, "deviceToken", deviceToken)
-		}
-	}
+	// Push notifications no longer dispatched automatically here.
 
 	return
 }
 
-func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userID int64, code string, deviceToken string) (tokens usermodel.Tokens, err error) {
+func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userID int64, code string) (tokens usermodel.Tokens, err error) {
 
 	now := time.Now()
 
@@ -76,12 +53,12 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 		return
 	}
 
-	//verify is the user is on profile validation where email and phone should be validated
-	//in this case the phone must be validated first
-	if userValidation.GetPhoneCode() != "" {
-		err = status.Error(codes.FailedPrecondition, "Phone must be validated first")
-		return
-	}
+	// //verify is the user is on profile validation where email and phone should be validated
+	// //in this case the phone must be validated first
+	// if userValidation.GetPhoneCode() != "" {
+	// 	err = status.Error(codes.FailedPrecondition, "Phone must be validated first")
+	// 	return
+	// }
 
 	//check if the user is awaiting email validation
 	if userValidation.GetEmailCode() == "" {
@@ -107,7 +84,7 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	user.SetEmail(userValidation.GetNewEmail())
-	user.SetDeviceToken(deviceToken)
+	// Device token capture removed from email confirmation.
 
 	//update the user validation
 	userValidation.SetNewEmail("")

@@ -1,7 +1,8 @@
 syntax = "proto3";
 package grpc;
 
-option go_package = "pb/";
+// Use full module path so generated code is written to pb package directory
+option go_package = "github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb";
 
 service ListingService {
     // call from owner side

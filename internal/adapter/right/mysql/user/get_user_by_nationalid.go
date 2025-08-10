@@ -20,7 +20,7 @@ func (ua *UserAdapter) GetUserByNationalID(ctx context.Context, tx *sql.Tx, nati
 	}
 	defer spanEnd()
 
-	entities, err := ua.Read(ctx, tx, "SELECT * FROM users WHERE national_id = ?", nationalID)
+	entities, err := ua.Read(ctx, tx, "SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, photo, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE national_id = ?", nationalID)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetUserByNationalID: error executing Read", "error", err)
 		return nil, status.Error(codes.Internal, "internal server error")

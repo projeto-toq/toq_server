@@ -157,14 +157,13 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 	}
 	user.SetPassword(string(password))
 
-	if entity[19] != nil {
-		device_token, ok := entity[19].([]byte)
-		if !ok {
-			slog.Error("Error converting device_token to string", "device_token", entity[19])
-			return nil, status.Error(codes.Internal, "Internal server error")
-		}
-		user.SetDeviceToken(string(device_token))
+	// opt_status
+	opt_status, ok := entity[19].(int64)
+	if !ok {
+		slog.Error("Error converting opt_status to bool", "opt_status", entity[19])
+		return nil, status.Error(codes.Internal, "Internal server error")
 	}
+	user.SetOptStatus(opt_status == 1)
 
 	last_activity_at, ok := entity[20].(time.Time)
 	if !ok {

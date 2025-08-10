@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type contextKey string //TODO ajustar criondo tipos para todas as constantes
+type contextKey string
 
 const (
 	// Access token expiration default (override via env) - reduce to 15m

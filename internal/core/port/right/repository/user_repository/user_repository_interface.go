@@ -42,4 +42,7 @@ type UserRepoPortInterface interface {
 	UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error)
 	UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error)
 	VerifyUserDuplicity(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
+	AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string, platform *string) error
+	RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error
+	RemoveAllDeviceTokens(ctx context.Context, tx *sql.Tx, userID int64) error
 }

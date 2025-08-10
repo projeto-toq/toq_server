@@ -44,14 +44,19 @@ type UserInterface interface {
 	SetPhoto([]byte)
 	GetPassword() string
 	SetPassword(string)
-	GetDeviceToken() string
-	SetDeviceToken(string)
+	IsOptStatus() bool
+	SetOptStatus(bool)
 	GetLastActivityAt() time.Time
 	SetLastActivityAt(time.Time)
 	IsDeleted() bool
 	SetDeleted(bool)
 	GetLastSignInAttempt() time.Time
 	SetLastSignInAttempt(time.Time)
+	GetDeviceToken() string
+	SetDeviceToken(string)
+	GetDeviceTokens() []DeviceTokenInterface
+	SetDeviceTokens([]DeviceTokenInterface)
+	AddDeviceToken(string) bool
 }
 
 // Creates a new UserDomain interface

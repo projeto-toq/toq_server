@@ -8,7 +8,9 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) PushOptIn(ctx context.Context, userID int64, deviceToken string) (err error) {
+// PushOptIn sets opt_status=1 for the user indicating consent to receive push notifications.
+// Device tokens are managed during SignIn; this only persists the consent flag.
+func (us *userService) PushOptIn(ctx context.Context, userID int64) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -21,7 +23,7 @@ func (us *userService) PushOptIn(ctx context.Context, userID int64, deviceToken 
 		return
 	}
 
-	err = us.pushOptIn(ctx, tx, userID, deviceToken)
+	err = us.pushOptIn(ctx, tx, userID)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -36,26 +38,19 @@ func (us *userService) PushOptIn(ctx context.Context, userID int64, deviceToken 
 	return
 }
 
-func (us *userService) pushOptIn(ctx context.Context, tx *sql.Tx, userID int64, deviceToken string) (err error) {
+func (us *userService) pushOptIn(ctx context.Context, tx *sql.Tx, userID int64) (err error) {
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		return
 	}
-	//TODO: Remove this hardcoded deviceToken
-	s := "dDWfs2iRThyJvzd_dSvyah:APA91bGp1GdU1zNsTzpaNb9gJpPdPTOVvJFpL2vpT52E7wemRocGtCe8HN5rpxk_Ys5NH4qo__7CD4_TZ0ahbTk2CyRaj36gCwlV9IANjFFtiQpQEvbSenw"
-	user.SetDeviceToken(s)
-	_ = deviceToken
 
-	//TODO: Uncomment this line to use the deviceToken from the request
-	// user.SetDeviceToken(deviceToken)
+	user.SetOptStatus(true)
 
-	err = us.repo.UpdateUserByID(ctx, tx, user)
-	if err != nil {
+	if err = us.repo.UpdateUserByID(ctx, tx, user); err != nil {
 		return
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário aceitou receber notificações")
-	if err != nil {
+	if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário aceitou receber notificações"); err != nil {
 		return
 	}
 

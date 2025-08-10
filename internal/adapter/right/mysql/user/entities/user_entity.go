@@ -25,7 +25,7 @@ type UserEntity struct {
 	State             string
 	Photo             sql.NullString
 	Password          string
-	DeviceToken       sql.NullString
+	OptStatus         bool
 	LastActivityAT    time.Time
 	Deleted           bool
 	LastSignInAttempt sql.NullTime

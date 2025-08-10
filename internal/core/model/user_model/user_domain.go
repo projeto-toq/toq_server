@@ -25,10 +25,11 @@ type user struct {
 	state            string
 	photo            []byte
 	password         string
-	device_token     string
+	optStatus        bool
 	lastActivityAt   time.Time
 	deleted          bool
 	lastSiginAttempt time.Time
+	deviceTokens     []DeviceTokenInterface
 }
 
 func (u *user) GetID() int64 {
@@ -189,12 +190,12 @@ func (u *user) GetPassword() string {
 func (u *user) SetPassword(password string) {
 	u.password = password
 }
-func (u *user) GetDeviceToken() string {
-	return u.device_token
+func (u *user) IsOptStatus() bool {
+	return u.optStatus
 }
 
-func (u *user) SetDeviceToken(deviceToken string) {
-	u.device_token = deviceToken
+func (u *user) SetOptStatus(optStatus bool) {
+	u.optStatus = optStatus
 }
 
 func (u *user) GetLastActivityAt() time.Time {
@@ -218,4 +219,46 @@ func (u *user) GetLastSignInAttempt() time.Time {
 
 func (u *user) SetLastSignInAttempt(lastSignInAttempt time.Time) {
 	u.lastSiginAttempt = lastSignInAttempt
+}
+
+// Backwards-compatible single token accessor (returns first token if exists)
+func (u *user) GetDeviceToken() string {
+	if len(u.deviceTokens) == 0 {
+		return ""
+	}
+	return u.deviceTokens[0].GetDeviceToken()
+}
+
+// Backwards-compatible setter: sets or replaces the first token
+func (u *user) SetDeviceToken(token string) {
+	if len(u.deviceTokens) == 0 {
+		dt := NewDeviceToken()
+		dt.SetDeviceToken(token)
+		u.deviceTokens = []DeviceTokenInterface{dt}
+		return
+	}
+	u.deviceTokens[0].SetDeviceToken(token)
+}
+
+// Full slice getter
+func (u *user) GetDeviceTokens() []DeviceTokenInterface {
+	return u.deviceTokens
+}
+
+// Replace all device tokens
+func (u *user) SetDeviceTokens(tokens []DeviceTokenInterface) {
+	u.deviceTokens = tokens
+}
+
+// AddDeviceToken adds a token if not already present; returns true if added
+func (u *user) AddDeviceToken(token string) bool {
+	for _, t := range u.deviceTokens {
+		if t.GetDeviceToken() == token {
+			return false
+		}
+	}
+	dt := NewDeviceToken()
+	dt.SetDeviceToken(token)
+	u.deviceTokens = append(u.deviceTokens, dt)
+	return true
 }

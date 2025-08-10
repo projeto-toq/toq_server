@@ -22,7 +22,7 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 	sql := `INSERT INTO users (
 			full_name, nick_name, national_id, creci_number, creci_state, creci_validity,
 			born_at, phone_number, email, zip_code, street, number, complement, neighborhood, 
-			city, state, password, device_token, last_activity_at, deleted, last_signin_attempt
+			city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt
 			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
 	entity := userconverters.UserDomainToEntity(user)
@@ -45,7 +45,7 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 		entity.City,
 		entity.State,
 		entity.Password,
-		entity.DeviceToken,
+		entity.OptStatus,
 		entity.LastActivityAT,
 		entity.Deleted,
 		entity.LastSignInAttempt,

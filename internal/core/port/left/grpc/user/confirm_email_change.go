@@ -24,7 +24,7 @@ func (uh *UserHandler) ConfirmEmailChange(ctx context.Context, in *pb.ConfirmEma
 		return
 	}
 
-	tokens, err := uh.service.ConfirmEmailChange(ctx, infos.ID, in.GetCode(), in.GetDeviceToken())
+	tokens, err := uh.service.ConfirmEmailChange(ctx, infos.ID, in.GetCode())
 	if err != nil {
 		return
 	}

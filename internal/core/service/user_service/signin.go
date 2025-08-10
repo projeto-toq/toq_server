@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (us *userService) SignIn(ctx context.Context, nationalID string, password string) (tokens usermodel.Tokens, err error) {
+func (us *userService) SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -24,7 +25,7 @@ func (us *userService) SignIn(ctx context.Context, nationalID string, password s
 		return
 	}
 
-	tokens, err = us.signIn(ctx, tx, nationalID, password)
+	tokens, err = us.signIn(ctx, tx, nationalID, password, deviceToken)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -40,7 +41,7 @@ func (us *userService) SignIn(ctx context.Context, nationalID string, password s
 	return
 }
 
-func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationaID string, password string) (tokens usermodel.Tokens, err error) {
+func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationaID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
 	criptoPassword := us.encryptPassword(password)
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationaID)
 	if err != nil {
@@ -71,6 +72,13 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationaID string,
 	if err != nil {
 		if status.Code(err) != codes.NotFound {
 			return
+		}
+	}
+
+	// Attach device token if provided (add or ignore if duplicate)
+	if deviceToken != "" {
+		if errAdd := us.repo.AddDeviceToken(ctx, tx, user.GetID(), deviceToken, nil); errAdd != nil {
+			slog.Warn("signIn: failed to add device token", "userID", user.GetID(), "err", errAdd)
 		}
 	}
 

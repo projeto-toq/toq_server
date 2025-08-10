@@ -7,7 +7,7 @@ type Tokens struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-type UserInfos struct { //TODO: remover esta estrutura e deixar as informações diretamente no CTX
+type UserInfos struct {
 	ID            int64
 	ProfileStatus bool
 	Role          UserRole
