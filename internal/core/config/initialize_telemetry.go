@@ -1,9 +1,12 @@
 package config
 
 import (
+	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
@@ -15,7 +18,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-func (c *config) InitializeTelemetry() func() {
+func (c *config) InitializeTelemetry() (func(), error) {
 	// OTLP trace exporter
 	otlpEndpoint := os.Getenv("OTLP_ENDPOINT")
 	if otlpEndpoint == "" {
@@ -27,7 +30,7 @@ func (c *config) InitializeTelemetry() func() {
 	)
 	if err != nil {
 		slog.Error("failed to create OTLP trace exporter", "err", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to create OTLP trace exporter: %w", err)
 	}
 
 	// Resource
@@ -39,7 +42,7 @@ func (c *config) InitializeTelemetry() func() {
 	)
 	if err != nil {
 		slog.Error("failed to create resource", "err", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
 	// Tracer provider
@@ -54,7 +57,7 @@ func (c *config) InitializeTelemetry() func() {
 	prometheusExporter, err := prometheus.New(options)
 	if err != nil {
 		slog.Error("failed to create Prometheus exporter", "err", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to create Prometheus exporter: %w", err)
 	}
 
 	// Meter provider
@@ -67,18 +70,31 @@ func (c *config) InitializeTelemetry() func() {
 	// Start Prometheus HTTP server
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		slog.Error("failed to start listen and serve", "err", http.ListenAndServe(":4318", nil))
-		os.Exit(1)
+		if err := http.ListenAndServe(":4318", nil); err != nil {
+			slog.Error("failed to start listen and serve", "err", err)
+			// Em uma goroutine, não podemos retornar erro, então apenas logamos
+		}
 	}()
 
 	return func() {
-		if err := tp.Shutdown(c.context); err != nil {
+		// Create a context with timeout for graceful shutdown
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		slog.Info("Shutting down OpenTelemetry...")
+
+		// Shutdown TracerProvider with timeout
+		if err := tp.Shutdown(shutdownCtx); err != nil {
 			slog.Error("failed to shutdown TracerProvider", "err", err)
-			os.Exit(1)
+		} else {
+			slog.Info("TracerProvider shutdown completed")
 		}
-		if err := mp.Shutdown(c.context); err != nil {
+
+		// Shutdown MeterProvider with timeout
+		if err := mp.Shutdown(shutdownCtx); err != nil {
 			slog.Error("failed to shutdown MeterProvider", "err", err)
-			os.Exit(1)
+		} else {
+			slog.Info("MeterProvider shutdown completed")
 		}
-	}
+	}, nil
 }

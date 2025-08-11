@@ -62,9 +62,9 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	return
 }
 
-func (us *userService) requestPasswordChange(ctx context.Context, tx *sql.Tx, nationaID string) (user usermodel.UserInterface, validation usermodel.ValidationInterface, err error) {
+func (us *userService) requestPasswordChange(ctx context.Context, tx *sql.Tx, nationalID string) (user usermodel.UserInterface, validation usermodel.ValidationInterface, err error) {
 
-	user, err = us.repo.GetUserByNationalID(ctx, tx, nationaID)
+	user, err = us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
 		return
 	}

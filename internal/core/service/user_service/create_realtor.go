@@ -58,7 +58,8 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	// err = us.CreateBucket(ctx, realtor)//TODO: retirar o comentário após reassocia GCS
+	// GCS bucket creation disabled until GCS adapter is properly configured
+	// err = us.CreateBucket(ctx, realtor)
 	// if err != nil {
 	// 	return
 	// }

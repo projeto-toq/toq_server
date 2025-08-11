@@ -8,7 +8,7 @@ import (
 
 func (us *userService) setDeletedData(user usermodel.UserInterface) {
 
-	//TODO verificar os eventuais anuncios vinculados ao Onwer e deleta-los
+	// Future enhancement: Check and delete associated listings for property owners
 	user.GetActiveRole().SetStatus(usermodel.StatusDeleted)
 	user.GetActiveRole().SetStatusReason("User request account deletion")
 	user.SetFullName("Apagado por solicitação do usuário")

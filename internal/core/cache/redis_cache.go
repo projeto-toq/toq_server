@@ -61,6 +61,13 @@ func NewRedisCache(redisURL string, globalService globalservice.GlobalServiceInt
 	}, nil
 }
 
+// SetGlobalService injeta o GlobalService após a criação do cache
+// Usado para resolver dependências circulares entre Cache e GlobalService
+func (rc *RedisCache) SetGlobalService(globalService globalservice.GlobalServiceInterface) {
+	rc.globalService = globalService
+	slog.Debug("GlobalService injected into RedisCache")
+}
+
 // Get recupera uma entrada do cache
 func (rc *RedisCache) Get(ctx context.Context, fullMethod string, role usermodel.UserRole) (allowed bool, valid bool, err error) {
 	key := rc.buildKey(fullMethod, role)

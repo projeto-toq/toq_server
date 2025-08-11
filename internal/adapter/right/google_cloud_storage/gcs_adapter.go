@@ -3,7 +3,6 @@ package gcsadapter
 import (
 	"context"
 	"log/slog"
-	"os"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/option"
@@ -15,23 +14,23 @@ type GCSAdapter struct {
 	writerClient *storage.Client
 }
 
-func NewGCSAdapter(ctx context.Context) (gcs *GCSAdapter, CloseFunc func() error) {
+func NewGCSAdapter(ctx context.Context) (gcs *GCSAdapter, CloseFunc func() error, err error) {
 	adminClient, err := storage.NewClient(ctx, option.WithCredentialsFile("../configs/gcs_admin.json"))
 	if err != nil {
 		slog.Error("failed to create admin storage client", "error", err)
-		os.Exit(1)
+		return nil, nil, err
 	}
 
 	writerClient, err := storage.NewClient(ctx, option.WithCredentialsFile("../configs/gcs_writer.json"))
 	if err != nil {
 		slog.Error("failed to create writer storage client", "error", err)
-		os.Exit(1)
+		return nil, nil, err
 	}
 
 	readerClient, err := storage.NewClient(ctx, option.WithCredentialsFile("../configs/gcs_reader.json"))
 	if err != nil {
 		slog.Error("failed to create reader storage client", "error", err)
-		os.Exit(1)
+		return nil, nil, err
 	}
 
 	gcs = &GCSAdapter{

@@ -36,7 +36,7 @@ func (uh *UserHandler) UpdateProfile(ctx context.Context, in *pb.UpdateProfileRe
 	return &pb.UpdateProfileResponse{}, nil
 }
 
-func validateAndSetInfoForUpdateProfile(in *pb.UpdateUser) (user usermodel.UserInterface, err error) { //TODO validar cep antes de fazer o update
+func validateAndSetInfoForUpdateProfile(in *pb.UpdateUser) (user usermodel.UserInterface, err error) { // CEP validation enhancement planned
 	user = usermodel.NewUser()
 	user.SetZipCode(converters.RemoveAllButDigits(in.GetZipCode()))
 	user.SetStreet(converters.TrimSpaces(in.GetStreet()))

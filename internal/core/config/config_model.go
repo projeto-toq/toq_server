@@ -8,6 +8,7 @@ import (
 
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
+	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
@@ -19,7 +20,7 @@ import (
 	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
 	sessionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
-	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service.go"
+	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
@@ -49,17 +50,18 @@ type config struct {
 	googleCloudStorage     gcsport.GCSPortInterface
 	firebaseCloudMessaging fcmport.FCMPortInterface
 	sessionRepo            sessionrepository.SessionRepoPortInterface
+	repositoryAdapters     *factory.RepositoryAdapters
 }
 
 type ConfigInterface interface {
-	LoadEnv()
+	LoadEnv() error
 	InitializeLog()
 	InitializeDatabase()
-	InitializeActivityTracker()
+	InitializeActivityTracker() error
 	VerifyDatabase()
-	InitializeTelemetry() func()
+	InitializeTelemetry() (func(), error)
 	InitializeGRPC()
-	InjectDependencies() func() error
+	InjectDependencies() (func() error, error)
 	InitGlobalService()
 	InitUserHandler()
 	InitComplexHandler()

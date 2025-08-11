@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "TOQ Server (with OpenTelemetry)",
+            "name": "TOQ Server (Development with pprof)",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -20,9 +20,47 @@
                 "DB_USER": "toq_user",
                 "DB_PASSWORD": "toq_password",
                 "DB_NAME": "toq_db",
-                "PORT": "8080"
+                "PORT": "8080",
+                "ENABLE_PPROF": "true",
+                "PPROF_PORT": "6060",
+                "LOG_LEVEL": "debug"
             },
-            "args": []
+            "args": [],
+            "console": "internalConsole",
+            "showLog": false
+        },
+        {
+            "name": "TOQ Server (Production Mode)",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/toq_server.go",
+            "cwd": "${workspaceFolder}",
+            "output": "${workspaceFolder}/bin/release_bin",
+            "env": {
+                "DISABLE_OTLP": "false",
+                "OTLP_ENDPOINT": "localhost:4317",
+                "DB_HOST": "localhost",
+                "DB_PORT": "3306",
+                "DB_USER": "toq_user",
+                "DB_PASSWORD": "toq_password",
+                "DB_NAME": "toq_db",
+                "PORT": "8080",
+                "ENABLE_PPROF": "false",
+                "LOG_LEVEL": "info"
+            },
+            "args": [],
+            "console": "internalConsole"
+        },
+        {
+            "name": "Attach to running TOQ Server",
+            "type": "go",
+            "request": "attach",
+            "mode": "remote",
+            "remotePath": "",
+            "port": 2345,
+            "host": "127.0.0.1",
+            "showLog": false
         }
     ]
 }

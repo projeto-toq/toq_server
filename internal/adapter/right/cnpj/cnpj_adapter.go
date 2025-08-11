@@ -23,7 +23,7 @@ type CNPJAdapter struct {
 	} `json:"result"`
 }
 
-func NewCNPJAdapater(env *globalmodel.Environment) (*CNPJAdapter, error) {
+func NewCNPJAdapter(env *globalmodel.Environment) (*CNPJAdapter, error) {
 	if env.CNPJ.Token == "" {
 		return nil, fmt.Errorf("CNPJ token is required")
 	}

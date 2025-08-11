@@ -10,13 +10,13 @@ import (
 func (uh *UserHandler) SignIn(ctx context.Context, in *pb.SignInRequest) (response *pb.SignInResponse, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer spanEnd()
 
 	tokens, err := uh.service.SignIn(ctx, in.NationalID, in.Password, in.DeviceToken)
 	if err != nil {
-		return
+		return nil, err
 	}
 	return &pb.SignInResponse{
 		Tokens: &pb.Tokens{

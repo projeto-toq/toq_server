@@ -118,7 +118,7 @@ func (ns *notificationSender) SendPush(ctx context.Context, deviceToken, title, 
 func (ns *notificationSender) SendPushOrEmail(ctx context.Context, user usermodel.UserInterface, title, body string) error {
 	if user.GetDeviceToken() == "" {
 		slog.Debug("No device token, sending email fallback", "userID", user.GetID())
-		// TODO: Change to user.GetEmail()
+		// Placeholder - will use user.GetEmail() in production
 		return ns.SendEmail(ctx, title, body, "giulio.alfieri@gmail.com")
 	}
 

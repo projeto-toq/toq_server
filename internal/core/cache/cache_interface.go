@@ -12,6 +12,7 @@ type CacheInterface interface {
 	Get(ctx context.Context, fullMethod string, role usermodel.UserRole) (allowed bool, valid bool, err error)
 	Clean(ctx context.Context)
 	Close() error
+	SetGlobalService(globalService globalservice.GlobalServiceInterface) // Para injeção posterior
 }
 
 var instance *cache

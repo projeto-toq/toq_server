@@ -1,17 +1,79 @@
 {
+    // Protocol Buffers Configuration
     "protoc": {
         "compile_on_save": false,
         "options": [
-            "--plugin=protoc-gen-go-grpc=/home/ubuntu/go/bin/protoc-gen-go-grpc",
+            "--plugin=protoc-gen-go=/home/giulio/go/bin/protoc-gen-go",
+            "--plugin=protoc-gen-go-grpc=/home/giulio/go/bin/protoc-gen-go-grpc",
             "--proto_path=${workspaceRoot}/internal/adapter/left/grpc",
-            "--go_out=${workspaceRoot}/internal/adapter/left/grpc",
-            "--go-grpc_out=${workspaceRoot}/internal/adapter/left/grpc",
+            "--go_out=paths=source_relative:${workspaceRoot}/internal/adapter/left/grpc/pb",
+            "--go-grpc_out=paths=source_relative:${workspaceRoot}/internal/adapter/left/grpc/pb"
         ]
     },
+    // Go Language Server Configuration
+    "go.lintTool": "golangci-lint",
+    "go.lintOnSave": "package",
+    "go.vetOnSave": "package",
+    "go.formatTool": "goimports",
+    "go.useLanguageServer": true,
+    "go.installDependenciesWhenBuilding": true,
+    // Go Testing Configuration
+    "go.testTimeout": "30s",
+    "go.testFlags": [
+        "-v",
+        "-race"
+    ],
+    "go.coverOnSave": false,
+    "go.coverOnSingleTest": true,
+    "go.coverageDecorator": {
+        "type": "gutter"
+    },
+    // Go Debugging Configuration
+    "go.delveConfig": {
+        "apiVersion": 2,
+        "showGlobalVariables": false
+    },
+    // Go Performance Profiling (pprof) Integration
+    "go.toolsManagement.checkForUpdates": "local",
+    "go.diagnostic.analysisTimeout": "10s",
+    // File Explorer Configuration
     "explorer.compactFolders": false,
+    "files.exclude": {
+        "**/bin/**": true,
+        "**/vendor/**": true,
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true
+    },
+    // Editor Configuration for Go
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.suggest.snippetsPreventQuickSuggestions": false
+    },
+    "[go.mod]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        }
+    },
+    // Development Tools Configuration
     "makefile.configureOnOpen": false,
     "audioCues.enabled": false,
     "workbench.enableExperiments": false,
-    "extensions.ignoreRecommendations": true,
-    "accessibility.signalOptions.volume": 0
+    "extensions.ignoreRecommendations": false,
+    "accessibility.signalOptions.volume": 0,
+    // Terminal Configuration
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.copyOnSelection": true,
+    // Git Configuration
+    "git.autofetch": true,
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false
 }

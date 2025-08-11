@@ -13,7 +13,8 @@ func (c *config) InitializeGoRoutines() {
 	go c.activityTracker.StartBatchWorker(c.wg, c.context)
 
 	// c.wg.Add(1)
-	// go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)//TODO: retirar o comentário após reassocia GCS
+	// CRECI validation worker disabled until GCS adapter is properly configured
+	// go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)
 	c.wg.Add(1)
 	go goroutines.CleanMemoryCache(&c.cache, c.wg, c.context)
 

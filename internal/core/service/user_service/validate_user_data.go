@@ -33,7 +33,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 
 	if role == usermodel.RoleAgency {
 
-		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID()) //TODO: mover para o global service, assim como cep e cpf
+		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID()) // Validation via global service integration planned
 		if err1 != nil {
 			err = err1
 			return

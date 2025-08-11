@@ -41,9 +41,9 @@ func (us *userService) SignIn(ctx context.Context, nationalID string, password s
 	return
 }
 
-func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationaID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
+func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
 	criptoPassword := us.encryptPassword(password)
-	user, err := us.repo.GetUserByNationalID(ctx, tx, nationaID)
+	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			err = status.Error(codes.Unauthenticated, "Invalid National ID or Password")

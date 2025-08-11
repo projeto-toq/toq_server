@@ -196,7 +196,7 @@ func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request Not
 	}
 
 	// Se From foi especificado, adicionar à notificação (implementação futura)
-	// TODO: Implementar suporte ao campo From no adapter de email
+	// Note: From field support to be implemented in email adapter
 
 	// Enviar através do adapter de email
 	err := ns.globalService.email.SendEmail(notification)

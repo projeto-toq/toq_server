@@ -7,7 +7,7 @@ import (
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
 	listingrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/listing_repository"
-	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service.go"
+	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 )
 

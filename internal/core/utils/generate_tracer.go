@@ -44,20 +44,32 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 	requestID, ok := ctx.Value(globalmodel.RequestIDKey).(string)
 	if !ok {
 		slog.Error("Request ID not found in context", "package", packageName, "function", functionName)
+		// Return a no-op function instead of creating span with nil tracer
+		end = func() {}
 		err = status.Error(codes.Unauthenticated, "")
-		return
+		return ctx, end, err
 	}
 
 	tracer := otel.Tracer(requestID)
 	newctx, span := tracer.Start(ctx, packageName+"."+functionName)
 	end = func() {
-		if err != nil {
-			span.SetAttributes(
-				attribute.String("error.message", err.Error()),
-				attribute.String("error.code", status.Code(err).String()),
-			)
+		// Safe span cleanup with panic recovery
+		defer func() {
+			if r := recover(); r != nil {
+				slog.Warn("Recovered from panic in span.End()", "panic", r, "function", packageName+"."+functionName)
+			}
+		}()
+
+		// Only proceed if span is not nil
+		if span != nil {
+			if err != nil {
+				span.SetAttributes(
+					attribute.String("error.message", err.Error()),
+					attribute.String("error.code", status.Code(err).String()),
+				)
+			}
+			span.End()
 		}
-		span.End()
 	}
 
 	return
