@@ -11,6 +11,7 @@ import (
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
 	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
+	devicetokenrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/device_token_repository"
 	globalrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/global_repository"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
 )
@@ -22,6 +23,7 @@ type globalService struct {
 	email                emailport.EmailPortInterface
 	sms                  smsport.SMSPortInterface
 	googleCludStorage    gcsport.GCSPortInterface
+	deviceTokenRepo      devicetokenrepository.DeviceTokenRepoPortInterface
 }
 
 func NewGlobalService(
@@ -31,6 +33,7 @@ func NewGlobalService(
 	email emailport.EmailPortInterface,
 	sms smsport.SMSPortInterface,
 	googleCloudStorage gcsport.GCSPortInterface,
+	deviceTokenRepo devicetokenrepository.DeviceTokenRepoPortInterface,
 ) GlobalServiceInterface {
 	return &globalService{
 		globalRepo:           globalRepo,
@@ -39,6 +42,7 @@ func NewGlobalService(
 		email:                email,
 		sms:                  sms,
 		googleCludStorage:    googleCloudStorage,
+		deviceTokenRepo:      deviceTokenRepo,
 	}
 }
 

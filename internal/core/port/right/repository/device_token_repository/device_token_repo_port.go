@@ -8,4 +8,6 @@ type DeviceTokenRepoPortInterface interface {
 	AddToken(userID int64, token string, platform *string) (usermodel.DeviceTokenInterface, error)
 	RemoveToken(userID int64, token string) error
 	RemoveAllByUserID(userID int64) error
+	ListTokensByOptedInUsers() ([]string, error)
+	ListTokensByUserIDIfOptedIn(userID int64) ([]string, error)
 }

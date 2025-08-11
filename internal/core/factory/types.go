@@ -15,6 +15,7 @@ import (
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
 
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
+	mysqluseradapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user"
 	complexrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/complex_repository"
 	globalrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/global_repository"
 	listingrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/listing_repository"
@@ -47,11 +48,12 @@ type StorageAdapters struct {
 
 // RepositoryAdapters agrupa todos os repositórios MySQL
 type RepositoryAdapters struct {
-	User    userrepoport.UserRepoPortInterface
-	Global  globalrepoport.GlobalRepoPortInterface
-	Complex complexrepoport.ComplexRepoPortInterface
-	Listing listingrepoport.ListingRepoPortInterface
-	Session sessionrepoport.SessionRepoPortInterface
+	User        userrepoport.UserRepoPortInterface
+	Global      globalrepoport.GlobalRepoPortInterface
+	Complex     complexrepoport.ComplexRepoPortInterface
+	Listing     listingrepoport.ListingRepoPortInterface
+	Session     sessionrepoport.SessionRepoPortInterface
+	DeviceToken *mysqluseradapter.DeviceTokenRepository
 }
 
 // AdapterFactoryConfig contém as configurações necessárias para criar adapters

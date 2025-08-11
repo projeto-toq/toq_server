@@ -87,6 +87,7 @@ func (c *config) InitGlobalService() {
 		c.email,
 		c.sms,
 		c.googleCloudStorage,
+		c.repositoryAdapters.DeviceToken,
 	)
 
 	// Injetar GlobalService no cache Redis para resolver dependência circular

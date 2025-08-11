@@ -3,7 +3,7 @@ Baseado que este projeto tem como princípios:
 2) Arquitetura hexagonal;
 3) Não utilização de MOCK e implementação efetiva sempre;
 
-com a troca da forma de armazenar device_tokens de um para vários por usuário, o envio de mensagens push via FCm dever ser alterado para envi
+com a troca da forma de armazenar device_tokens de um para vários por usuário, o envio de mensagens push via FCm dever ser alterado para enviar a todos os device_tokes do usuário, dede que esteja com opt_status=1.
 
 
 

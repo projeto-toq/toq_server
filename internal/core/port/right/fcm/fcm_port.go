@@ -8,4 +8,5 @@ import (
 
 type FCMPortInterface interface {
 	SendSingleMessage(ctx context.Context, message globalmodel.Notification) (err error)
+	SendMultipleMessages(ctx context.Context, message globalmodel.Notification, deviceTokens []string) error
 }

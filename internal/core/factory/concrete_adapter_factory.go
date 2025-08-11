@@ -146,6 +146,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// User Repository
 	userRepo := mysqluseradapter.NewUserAdapter(database)
 
+	// Device Token Repository (access through User Repository)
+	deviceTokenRepo := userRepo.GetDeviceTokenRepository()
+
 	// Global Repository
 	globalRepo := mysqlglobaladapter.NewGlobalAdapter(database)
 
@@ -161,10 +164,11 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
-		User:    userRepo,
-		Global:  globalRepo,
-		Complex: complexRepo,
-		Listing: listingRepo,
-		Session: sessionRepo,
+		User:        userRepo,
+		Global:      globalRepo,
+		Complex:     complexRepo,
+		Listing:     listingRepo,
+		Session:     sessionRepo,
+		DeviceToken: deviceTokenRepo,
 	}, nil
 }
