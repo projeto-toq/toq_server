@@ -104,7 +104,7 @@ func (rc *RedisCache) Get(ctx context.Context, fullMethod string, role usermodel
 func (rc *RedisCache) Clean(ctx context.Context) {
 	pattern := rc.keyPrefix + "*"
 
-	slog.Info("Cleaning cache", "pattern", pattern)
+	slog.Debug("Cleaning cache", "pattern", pattern)
 
 	// Usar SCAN para evitar bloquear o Redis
 	iter := rc.client.Scan(ctx, 0, pattern, 0).Iterator()

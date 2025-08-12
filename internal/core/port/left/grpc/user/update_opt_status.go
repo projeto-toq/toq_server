@@ -7,10 +7,10 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/golang/protobuf/ptypes/empty"
 )
 
-func (uh *UserHandler) PushOptOut(ctx context.Context, empty *empty.Empty) (out *pb.PushOptOutResponse, err error) {
+// UpdateOptStatus updates the user's push notification opt-in status
+func (uh *UserHandler) UpdateOptStatus(ctx context.Context, in *pb.UpdateOptStatusRequest) (out *pb.UpdateOptStatusResponse, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -19,9 +19,10 @@ func (uh *UserHandler) PushOptOut(ctx context.Context, empty *empty.Empty) (out 
 
 	infos := ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos)
 
-	err = uh.service.PushOptOut(ctx, infos.ID)
-	if err != nil {
+	if err = uh.service.UpdateOptStatus(ctx, infos.ID, in.GetOptIn()); err != nil {
 		return nil, err
 	}
+
+	out = &pb.UpdateOptStatusResponse{}
 	return
 }

@@ -51,8 +51,7 @@ const (
 	UserService_GetAgencyOfRealtor_FullMethodName     = "/grpc.UserService/GetAgencyOfRealtor"
 	UserService_DeleteAgencyOfRealtor_FullMethodName  = "/grpc.UserService/DeleteAgencyOfRealtor"
 	UserService_GoHome_FullMethodName                 = "/grpc.UserService/GoHome"
-	UserService_PushOptIn_FullMethodName              = "/grpc.UserService/PushOptIn"
-	UserService_PushOptOut_FullMethodName             = "/grpc.UserService/PushOptOut"
+	UserService_UpdateOptStatus_FullMethodName        = "/grpc.UserService/UpdateOptStatus"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -95,8 +94,7 @@ type UserServiceClient interface {
 	GetAgencyOfRealtor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAgencyOfRealtorResponse, error)
 	DeleteAgencyOfRealtor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DeleteAgencyOfRealtorResponse, error)
 	GoHome(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GoHomeResponse, error)
-	PushOptIn(ctx context.Context, in *PushOptInRequest, opts ...grpc.CallOption) (*PushOptInResponse, error)
-	PushOptOut(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PushOptOutResponse, error)
+	UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error)
 }
 
 type userServiceClient struct {
@@ -417,20 +415,10 @@ func (c *userServiceClient) GoHome(ctx context.Context, in *emptypb.Empty, opts 
 	return out, nil
 }
 
-func (c *userServiceClient) PushOptIn(ctx context.Context, in *PushOptInRequest, opts ...grpc.CallOption) (*PushOptInResponse, error) {
+func (c *userServiceClient) UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PushOptInResponse)
-	err := c.cc.Invoke(ctx, UserService_PushOptIn_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) PushOptOut(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PushOptOutResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PushOptOutResponse)
-	err := c.cc.Invoke(ctx, UserService_PushOptOut_FullMethodName, in, out, cOpts...)
+	out := new(UpdateOptStatusResponse)
+	err := c.cc.Invoke(ctx, UserService_UpdateOptStatus_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -477,8 +465,7 @@ type UserServiceServer interface {
 	GetAgencyOfRealtor(context.Context, *emptypb.Empty) (*GetAgencyOfRealtorResponse, error)
 	DeleteAgencyOfRealtor(context.Context, *emptypb.Empty) (*DeleteAgencyOfRealtorResponse, error)
 	GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error)
-	PushOptIn(context.Context, *PushOptInRequest) (*PushOptInResponse, error)
-	PushOptOut(context.Context, *emptypb.Empty) (*PushOptOutResponse, error)
+	UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -579,11 +566,8 @@ func (UnimplementedUserServiceServer) DeleteAgencyOfRealtor(context.Context, *em
 func (UnimplementedUserServiceServer) GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GoHome not implemented")
 }
-func (UnimplementedUserServiceServer) PushOptIn(context.Context, *PushOptInRequest) (*PushOptInResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PushOptIn not implemented")
-}
-func (UnimplementedUserServiceServer) PushOptOut(context.Context, *emptypb.Empty) (*PushOptOutResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PushOptOut not implemented")
+func (UnimplementedUserServiceServer) UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateOptStatus not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -1156,38 +1140,20 @@ func _UserService_GoHome_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_PushOptIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PushOptInRequest)
+func _UserService_UpdateOptStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOptStatusRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).PushOptIn(ctx, in)
+		return srv.(UserServiceServer).UpdateOptStatus(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_PushOptIn_FullMethodName,
+		FullMethod: UserService_UpdateOptStatus_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).PushOptIn(ctx, req.(*PushOptInRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_PushOptOut_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).PushOptOut(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_PushOptOut_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).PushOptOut(ctx, req.(*emptypb.Empty))
+		return srv.(UserServiceServer).UpdateOptStatus(ctx, req.(*UpdateOptStatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1324,12 +1290,8 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_GoHome_Handler,
 		},
 		{
-			MethodName: "PushOptIn",
-			Handler:    _UserService_PushOptIn_Handler,
-		},
-		{
-			MethodName: "PushOptOut",
-			Handler:    _UserService_PushOptOut_Handler,
+			MethodName: "UpdateOptStatus",
+			Handler:    _UserService_UpdateOptStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

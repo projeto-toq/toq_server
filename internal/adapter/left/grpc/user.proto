@@ -47,10 +47,8 @@ service UserService {
     rpc GetAgencyOfRealtor (google.protobuf.Empty) returns (GetAgencyOfRealtorResponse);
     rpc DeleteAgencyOfRealtor (google.protobuf.Empty) returns (DeleteAgencyOfRealtorResponse);
 
-    rpc GoHome (google.protobuf.Empty) returns (GoHomeResponse);//TODO a ser removido
-    rpc PushOptIn (PushOptInRequest) returns (PushOptInResponse);
-    rpc PushOptOut (google.protobuf.Empty) returns (PushOptOutResponse);
-
+    rpc GoHome (google.protobuf.Empty) returns (GoHomeResponse);
+    rpc UpdateOptStatus (UpdateOptStatusRequest) returns (UpdateOptStatusResponse);//novo rpc
 }
 
 //messages of CreateOwner
@@ -299,8 +297,12 @@ message PushOptInRequest {
 message PushOptInResponse {
 }
 
-//messages of PushOptOut
-message PushOptOutResponse {
+//messages of UpdateOptStatus
+message UpdateOptStatusRequest {
+    bool optIn = 1; // true for opt-in, false for opt-out
+}
+
+message UpdateOptStatusResponse {
 }
 
 //messages of GoHome

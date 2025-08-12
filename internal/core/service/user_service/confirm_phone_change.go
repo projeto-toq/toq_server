@@ -81,7 +81,7 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 	userValidation.SetPhoneCode("")
 	userValidation.SetPhoneCodeExp(time.Time{})
 
-	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
+	err = us.repo.UpdateUserValidations(ctx, tx, userValidation) //TODO: tempuservalidaton tem que ser deletado e não apenas null nos campos
 	if err != nil {
 		return
 	}

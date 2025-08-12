@@ -2,6 +2,7 @@ package grpcuserport
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -29,6 +30,8 @@ func (uh *UserHandler) ConfirmPhoneChange(ctx context.Context, in *pb.ConfirmPho
 	if err != nil {
 		return
 	}
+
+	slog.Info("Phone change confirmed", "userID", infos.ID, "accessToken", tokens.AccessToken)
 
 	response = &pb.ConfirmPhoneChangeResponse{
 		Tokens: &pb.Tokens{

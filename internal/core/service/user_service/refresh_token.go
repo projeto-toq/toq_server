@@ -63,7 +63,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Hash incoming refresh to locate session
 	sum := sha256.Sum256([]byte(refresh))
 	hash := hex.EncodeToString(sum[:])
-	session, sessErr := us.sessionRepo.GetActiveSessionByRefreshHash(ctx, hash)
+	session, sessErr := us.sessionRepo.GetActiveSessionByRefreshHash(ctx, tx, hash)
 	if sessErr != nil {
 		// If session not found treat as invalid refresh
 		slog.Warn("auth.refresh.invalid_session", "error", sessErr, "refresh_hash_prefix", hash[:8])
@@ -72,7 +72,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 
 	// Optional: detect reuse (rotated_at set means token already used)
 	if session.GetRotatedAt() != nil {
-		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, session.GetUserID())
+		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		metricRefreshReuse.Inc()
 		slog.Warn("auth.refresh.reuse_detected", "user_id", session.GetUserID(), "session_id", session.GetID())
 		return tokens, status.Error(codes.Unauthenticated, "refresh token reuse detected")
@@ -89,7 +89,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 
 	// Enforce absolute expiry if set
 	if !session.GetAbsoluteExpiresAt().IsZero() && time.Now().UTC().After(session.GetAbsoluteExpiresAt()) {
-		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, session.GetUserID())
+		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		metricRefreshExpired.Inc()
 		slog.Info("auth.refresh.absolute_expired", "user_id", session.GetUserID(), "session_id", session.GetID())
 		return tokens, status.Error(codes.Unauthenticated, "session expired")
@@ -101,7 +101,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 
 	// Enforce max rotations
 	if session.GetRotationCounter() >= globalmodel.GetMaxSessionRotations() {
-		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, session.GetUserID())
+		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		slog.Warn("auth.refresh.rotation_limit_exceeded", "user_id", session.GetUserID(), "session_id", session.GetID(), "rotation_counter", session.GetRotationCounter())
 		return tokens, status.Error(codes.Unauthenticated, "session rotation limit reached")
 	}
@@ -113,7 +113,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	}
 
 	// Mark old session rotated
-	if err = us.sessionRepo.UpdateSessionRotation(ctx, session.GetID(), session.GetRotationCounter(), time.Now().UTC()); err != nil {
+	if err = us.sessionRepo.UpdateSessionRotation(ctx, tx, session.GetID(), session.GetRotationCounter(), time.Now().UTC()); err != nil {
 		slog.Warn("auth.refresh.update_rotation_failed", "session_id", session.GetID(), "err", err)
 	} else {
 		slog.Info("auth.refresh.ok", "user_id", session.GetUserID(), "prev_session_id", session.GetID())

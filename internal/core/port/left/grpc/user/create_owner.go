@@ -32,3 +32,5 @@ func (uh *UserHandler) CreateOwner(ctx context.Context, in *pb.CreateOwnerReques
 		},
 	}, nil
 }
+
+//TODO: Necessário cria uma rota resend code com os parametros e-mail/senha/telefone

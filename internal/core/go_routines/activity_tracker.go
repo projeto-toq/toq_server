@@ -79,7 +79,7 @@ func (at *ActivityTracker) flushActivitiesToDB(ctx context.Context) {
 		return
 	}
 
-	slog.Info("Processing active users", "count", len(keys))
+	slog.Debug("Processing active users", "count", len(keys))
 
 	// Process in batches
 	for i := 0; i < len(keys); i += at.batchSize {

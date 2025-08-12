@@ -49,8 +49,8 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 			sum := sha256.Sum256([]byte(refreshToken))
 			hash := hex.EncodeToString(sum[:])
 			// Best-effort fetch active session
-			if session, sessErr := us.sessionRepo.GetActiveSessionByRefreshHash(ctx, hash); sessErr == nil {
-				if revokeErr := us.sessionRepo.RevokeSession(ctx, session.GetID()); revokeErr != nil {
+			if session, sessErr := us.sessionRepo.GetActiveSessionByRefreshHash(ctx, tx, hash); sessErr == nil {
+				if revokeErr := us.sessionRepo.RevokeSession(ctx, tx, session.GetID()); revokeErr != nil {
 					slog.Warn("auth.signout.single.revoke_failed", "user_id", userID, "session_id", session.GetID(), "err", revokeErr)
 				}
 			}
@@ -66,7 +66,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 	} else {
 		// Global: revoke all sessions
 		if us.sessionRepo != nil {
-			if revokeAllErr := us.sessionRepo.RevokeSessionsByUserID(ctx, userID); revokeAllErr != nil {
+			if revokeAllErr := us.sessionRepo.RevokeSessionsByUserID(ctx, tx, userID); revokeAllErr != nil {
 				slog.Warn("auth.signout.global.revoke_failed", "user_id", userID, "err", revokeAllErr)
 			}
 		}

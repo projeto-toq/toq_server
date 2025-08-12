@@ -81,8 +81,8 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 			s.SetIP(ip)
 		}
 		// DeviceID placeholder: can be provided via metadata in future
-		if _, errCreate := us.sessionRepo.CreateSession(ctx, s); errCreate != nil {
-			slog.Warn("failed to persist session", "err", errCreate)
+		if err := us.sessionRepo.CreateSession(ctx, tx, s); err != nil {
+			slog.Warn("failed to persist session", "err", err)
 		}
 	}
 

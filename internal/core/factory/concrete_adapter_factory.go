@@ -159,7 +159,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	listingRepo := mysqllistingadapter.NewListingAdapter(database)
 
 	// Session Repository
-	sessionRepo := sessionmysqladapter.NewMySQLSessionAdapter(database.DB)
+	sessionRepo := sessionmysqladapter.NewSessionAdapter(database)
 
 	slog.Info("Successfully created all repository adapters")
 

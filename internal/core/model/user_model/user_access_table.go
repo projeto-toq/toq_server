@@ -22,8 +22,7 @@ var OwnerUserPrivileges = map[string]bool{
 	"GetUserRoles":           true,
 	"SwitchUserRole":         true,
 	"GoHome":                 true,
-	"PushOptIn":              true,
-	"PushOptOut":             true,
+	"UpdateOptStatus":        true,
 }
 
 var OwnerListingPrivileges = map[string]bool{
@@ -79,8 +78,7 @@ var RealtorUserPrivileges = map[string]bool{
 	"GetAgencyOfRealtor":     true,
 	"DeleteAgencyOfRealtor":  true,
 	"GoHome":                 true,
-	"PushOptIn":              true,
-	"PushOptOut":             true,
+	"UpdateOptStatus":        true,
 }
 
 var RealtorListingPrivileges = map[string]bool{
@@ -126,6 +124,5 @@ var AgencyUserPrivileges = map[string]bool{
 	"UpdateRealtorByID":     true,
 	"DeleteRealtorByID":     true,
 	"GoHome":                true,
-	"PushOptIn":             true,
-	"PushOptOut":            true,
+	"UpdateOptStatus":       true,
 }

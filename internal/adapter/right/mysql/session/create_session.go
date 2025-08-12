@@ -1,0 +1,49 @@
+package sessionmysqladapter
+
+import (
+	"context"
+	"database/sql"
+	"log/slog"
+
+	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
+	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session sessionmodel.SessionInterface) (err error) {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return
+	}
+	defer spanEnd()
+
+	query := `INSERT INTO sessions 
+			(user_id, refresh_hash, token_jti, expires_at, absolute_expires_at, created_at, rotated_at, user_agent, ip, device_id, rotation_counter, last_refresh_at, revoked)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+	entity := sessionconverters.SessionDomainToEntity(ctx, session)
+
+	id, err := sa.Create(ctx, tx, query,
+		entity.UserID,
+		entity.RefreshHash,
+		entity.TokenJTI,
+		entity.ExpiresAt,
+		entity.AbsoluteExpiresAt,
+		entity.CreatedAt,
+		entity.RotatedAt,
+		entity.UserAgent,
+		entity.IP,
+		entity.DeviceID,
+		entity.RotationCounter,
+		entity.LastRefreshAt,
+		entity.Revoked)
+	if err != nil {
+		slog.Error("sessionmysqladapter/CreateSession: error executing Create", "error", err)
+		return status.Error(codes.Internal, "Failed to create session")
+	}
+
+	session.SetID(id)
+	return
+}
