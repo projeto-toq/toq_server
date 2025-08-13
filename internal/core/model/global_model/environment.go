@@ -8,6 +8,9 @@ type Environment struct {
 	DB struct {
 		URI string `yaml:"uri"`
 	}
+	DATABASE struct {
+		Populate bool `yaml:"populate"`
+	}
 	REDIS struct {
 		URL string `yaml:"url"`
 	}
@@ -57,5 +60,14 @@ type Environment struct {
 	FCM struct {
 		CredentialsFile string `yaml:"credentials_file"`
 		ProjectID       string `yaml:"project_id"`
+	}
+	GCS struct {
+		ProjectID     string `yaml:"project_id"`
+		AdminSAEmail  string `yaml:"admin_sa_email"`
+		WriterSAEmail string `yaml:"writer_sa_email"`
+		ReaderSAEmail string `yaml:"reader_sa_email"`
+		AdminCreds    string `yaml:"admin_creds_path"`
+		WriterCreds   string `yaml:"writer_creds_path"`
+		ReaderCreds   string `yaml:"reader_creds_path"`
 	}
 }

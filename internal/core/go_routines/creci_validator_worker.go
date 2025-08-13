@@ -36,6 +36,7 @@ func CreciValidationWorker(service userservices.UserServiceInterface, wg *sync.W
 			slog.Info("Creci validation routine stopped")
 			return
 		case <-ticker.C:
+			slog.Info("Creci validation routine ticked")
 			realtorsToValidateData, err := service.GetCrecisToValidateByStatus(ctx, usermodel.StatusPendingOCR)
 			if err != nil {
 				slog.Error("error getting crecis to validate", "error", err)

@@ -67,7 +67,7 @@ func (us *userService) validateCreciData(
 				return err1
 			}
 		}
-
+		//TODO: incluir validação de campo nulo antes de chamar as comparações
 		if !validators.ValidateCreciEquality(creci.GetCreciNumber(), realtor.GetCreciNumber()) {
 			status, reason, notification, err2 := us.updateUserStatus(ctx, tx, realtor.GetActiveRole().GetRole(), usermodel.ActionFinishedCreciNumberDoesntMatch)
 			if err2 != nil {

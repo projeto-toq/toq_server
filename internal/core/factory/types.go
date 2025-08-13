@@ -33,10 +33,11 @@ type ValidationAdapters struct {
 
 // ExternalServiceAdapters agrupa adapters de serviços externos
 type ExternalServiceAdapters struct {
-	FCM   fcmport.FCMPortInterface
-	Email emailport.EmailPortInterface
-	SMS   smsport.SMSPortInterface
-	GCS   gcsport.GCSPortInterface
+	FCM       fcmport.FCMPortInterface
+	Email     emailport.EmailPortInterface
+	SMS       smsport.SMSPortInterface
+	GCS       gcsport.GCSPortInterface
+	CloseFunc func() error // Função para cleanup de recursos
 }
 
 // StorageAdapters agrupa adapters de armazenamento

@@ -20,7 +20,7 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 	}
 	defer spanEnd()
 
-	entities, err := ua.Read(ctx, tx, "SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, photo, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE phone_number = ?", phoneNumber)
+	entities, err := ua.Read(ctx, tx, "SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE phone_number = ?", phoneNumber)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetUserByPhoneNumber: error executing Read", "error", err)
 		return nil, status.Error(codes.Internal, "internal server error")

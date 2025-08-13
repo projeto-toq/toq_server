@@ -58,6 +58,11 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 		return
 	}
 
+	err = us.googleCloudService.CreateUserBucket(ctx, agency.GetID())
+	if err != nil {
+		return
+	}
+
 	tokens, err = us.CreateTokens(ctx, tx, agency, false)
 	if err != nil {
 		return

@@ -7,7 +7,7 @@ import "google/protobuf/empty.proto";
 option go_package = "github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb";
 
 service UserService {
-    //call without Authorization header
+    //call without Authorization header, so don´t need authorization
     rpc CreateOwner (CreateOwnerRequest) returns (CreateOwnerResponse);
     rpc CreateRealtor (CreateRealtorRequest) returns (CreateRealtorResponse);
     rpc CreateAgency (CreateAgencyRequest) returns (CreateAgencyResponse);
@@ -16,23 +16,23 @@ service UserService {
     rpc RequestPasswordChange (RequestPasswordChangeRequest) returns (RequestPasswordChangeResponse);
     rpc ConfirmPasswordChange (ConfirmPasswordChangeRequest) returns (ConfirmPasswordChangeResponse);
 
-    //call with Authorization header for Owner, Realtor and Agency
+    //call with Authorization header for Owner, Realtor, Agency and Admin
     rpc SignOut (SignOutRequest) returns (SignOutResponse);
     rpc RequestEmailChange (RequestEmailChangeRequest) returns (RequestEmailChangeResponse);
     rpc ConfirmEmailChange (ConfirmEmailChangeRequest) returns (ConfirmEmailChangeResponse);
     rpc RequestPhoneChange (RequestPhoneChangeRequest) returns (RequestPhoneChangeResponse);
     rpc ConfirmPhoneChange (ConfirmPhoneChangeRequest) returns (ConfirmPhoneChangeResponse);
-    rpc VerifyCreciImages (VerifyCreciImagesRequest) returns (VerifyCreciImagesResponse);
     rpc GetProfile (GetProfileRequest) returns (GetProfileResponse);
     rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileResponse);
-    rpc GetPhoto (GetPhotoRequest) returns (GetPhotoResponse);
-    rpc UpdatePhoto (UpdatePhotoRequest) returns (UpdatePhotoResponse);
     rpc DeleteAccount (google.protobuf.Empty) returns (DeleteAccountResponse);
     rpc GetOnboardingStatus (GetOnboardingStatusRequest) returns (GetOnboardingStatusResponse);
+    rpc GetUserRoles (google.protobuf.Empty) returns (GetUserRolesResponse);
+    rpc GoHome (google.protobuf.Empty) returns (GoHomeResponse);
+    rpc UpdateOptStatus (UpdateOptStatusRequest) returns (UpdateOptStatusResponse);
+    rpc GenerateGCSUploadURL(GenerateGCSUploadURLRequest) returns (GenerateGCSUploadURLResponse);
     
     //call with Authorization header for Owner and Realtor only
     rpc AddAlternativeUserRole (AddAlternativeUserRoleRequest) returns (AddAlternativeUserRoleResponse);
-    rpc GetUserRoles (google.protobuf.Empty) returns (GetUserRolesResponse);
     rpc SwitchUserRole (SwitchUserRoleRequest) returns (SwitchUserRoleResponse);
 
     //call with Authorization header for Agency only
@@ -42,13 +42,22 @@ service UserService {
     rpc DeleteRealtorByID (DeleteRealtorByIDRequest) returns (DeleteRealtorByIDResponse);
 
     //call with Authorization header for Realtor only
+    rpc VerifyCreciImages (VerifyCreciImagesRequest) returns (VerifyCreciImagesResponse);
     rpc AcceptInvitation (AcceptInvitationRequest) returns (AcceptInvitationResponse);
     rpc RejectInvitation (RejectInvitationRequest) returns (RejectInvitationResponse);
     rpc GetAgencyOfRealtor (google.protobuf.Empty) returns (GetAgencyOfRealtorResponse);
     rpc DeleteAgencyOfRealtor (google.protobuf.Empty) returns (DeleteAgencyOfRealtorResponse);
 
-    rpc GoHome (google.protobuf.Empty) returns (GoHomeResponse);
-    rpc UpdateOptStatus (UpdateOptStatusRequest) returns (UpdateOptStatusResponse);//novo rpc
+}
+
+//messages of GenerateGCSUploadURL
+message GenerateGCSUploadURLRequest {
+  string object_name = 1; // Ex: "profile_photo.jpg" ou "documents/creci_frente.jpg"
+  string content_type = 2; // Ex: "image/jpeg"
+}
+
+message GenerateGCSUploadURLResponse {
+  string signed_url = 1;
 }
 
 //messages of CreateOwner
@@ -181,22 +190,6 @@ message UpdateProfileRequest {
 }
 
 message UpdateProfileResponse {
-}
-
-//messages of GetPhoto
-message GetPhotoRequest {
-}
-
-message GetPhotoResponse {
-    bytes photo = 1;
-}
-
-//messages of UpdatePhoto
-message UpdatePhotoRequest {
-    bytes photo = 1;
-}
-
-message UpdatePhotoResponse {
 }
 
 //messages of DeleteAccount
@@ -332,6 +325,7 @@ message User {
     string state = 18;
     string password = 19;
     string last_activity = 20;//format 2006-01-02T15:04:05Z = jan 2, 2006 at 15:04:05
+    string photoUrl = 21; 
 }
 
 message UpdateUser {

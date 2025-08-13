@@ -12,7 +12,7 @@ DROP SCHEMA IF EXISTS `toq_db` ;
 -- -----------------------------------------------------
 -- Schema toq_db
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `toq_db` DEFAULT CHARACTER SET utf8mb3 ;
+CREATE SCHEMA IF NOT EXISTS `toq_db` DEFAULT CHARACTER SET utf8mb4 ;
 USE `toq_db` ;
 
 -- -----------------------------------------------------
@@ -38,7 +38,6 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`users` (
   `neighborhood` VARCHAR(150) NOT NULL,
   `city` VARCHAR(150) NOT NULL,
   `state` VARCHAR(2) NOT NULL,
-  `photo` LONGBLOB NULL DEFAULT NULL,
   `password` VARCHAR(45) NOT NULL,
   `opt_status` TINYINT UNSIGNED NOT NULL,
   `last_activity_at` TIMESTAMP(6) NOT NULL,
@@ -219,19 +218,19 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listings` (
   `state` VARCHAR(2) NULL,
   `type` TINYINT UNSIGNED NOT NULL,
   `owner` TINYINT UNSIGNED NULL,
-  `land_size` DECIMAL(6,2) UNSIGNED NULL,
+  `land_size` DECIMAL(6,2) NULL,
   `corner` TINYINT UNSIGNED NULL,
-  `non_buildable` DECIMAL(6,2) UNSIGNED NULL DEFAULT NULL,
-  `buildable` DECIMAL(6,2) UNSIGNED NULL,
+  `non_buildable` DECIMAL(6,2) NULL DEFAULT NULL,
+  `buildable` DECIMAL(6,2) NULL,
   `delivered` TINYINT UNSIGNED NULL,
   `who_lives` TINYINT UNSIGNED NULL,
   `description` VARCHAR(255) NULL,
   `transaction` TINYINT UNSIGNED NULL DEFAULT NULL,
-  `sell_net` DECIMAL(12,2) UNSIGNED NULL DEFAULT NULL,
-  `rent_net` DECIMAL(9,2) UNSIGNED NULL DEFAULT NULL,
-  `condominium` DECIMAL(9,2) UNSIGNED NULL DEFAULT NULL,
-  `annual_tax` DECIMAL(9,2) UNSIGNED NULL DEFAULT NULL,
-  `annual_ground_rent` DECIMAL(9,2) UNSIGNED NULL DEFAULT NULL,
+  `sell_net` DECIMAL(12,2) NULL DEFAULT NULL,
+  `rent_net` DECIMAL(9,2) NULL DEFAULT NULL,
+  `condominium` DECIMAL(9,2) NULL DEFAULT NULL,
+  `annual_tax` DECIMAL(9,2) NULL DEFAULT NULL,
+  `annual_ground_rent` DECIMAL(9,2) NULL DEFAULT NULL,
   `exchange` TINYINT UNSIGNED NULL DEFAULT NULL,
   `exchange_perc` TINYINT UNSIGNED NULL DEFAULT NULL,
   `installment` TINYINT UNSIGNED NULL DEFAULT NULL,
@@ -497,7 +496,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`sessions` (
   `device_id` VARCHAR(100) NULL,
   `rotation_counter` INT UNSIGNED NOT NULL DEFAULT 0,
   `last_refresh_at` DATETIME(6) NULL,
-  `revoked` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+  `revoked` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `refresh_hash_UNIQUE` (`refresh_hash` ASC) VISIBLE,
   INDEX `fk_sessions_user_idx` (`user_id` ASC) INVISIBLE,
@@ -522,6 +521,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`device_tokens` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `device_token` VARCHAR(255) NOT NULL,
+  `platform` VARCHAR(45) NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_device_tokens_user_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_device_tokens_user`
@@ -568,42 +568,7 @@ LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (id, complex_id, zip_code);
 
-LOAD DATA INFILE '/var/lib/mysql-files/base_roles.csv'
-INTO TABLE base_roles
-FIELDS TERMINATED BY ';'
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES;
-
-LOAD DATA INFILE '/var/lib/mysql-files/role_privileges.csv'
-INTO TABLE toq_db.role_privileges
-FIELDS TERMINATED BY ';'
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES;
-
-LOAD DATA INFILE '/var/lib/mysql-files/base_features.csv'
-INTO TABLE base_features
-FIELDS TERMINATED BY ';'
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES;
-
-
-
 -- end attached script 'script'
-
--- -----------------------------------------------------
--- Data for table `toq_db`.`users`
--- -----------------------------------------------------
-START TRANSACTION;
-USE `toq_db`;
-INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `photo`, `password`, `opt_status`, `last_activity_at`, `deleted`, `last_signin_attempt`) VALUES (1, 'TOQ Root', 'Root', '52642435000133', NULL, NULL, NULL, '2023-10-01', '+551152413731', 'toq@toq.app.br', '06472-001', 'Av. Copacabana', '268', 'Sala 2305', 'Alphaville', 'Barueri', 'SP', 0x3F, '53ea2cae97fe1ac657f7b044465b2683', 1, '2025-01-25 18:16:25.525020', 0, NULL);
-INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `photo`, `password`, `opt_status`, `last_activity_at`, `deleted`, `last_signin_attempt`) VALUES (2, 'GIULIO CESARE ALFIERI', 'Giulio', '04679654805', NULL, NULL, NULL, '1963-06-14', '+5511999141768', 'giulio.alfieri@gmail.com', '06540400', 'Alameda Jaú', '256', 'Residencial 11', 'Alphaville', 'Santana de Parnaíba', 'SP', 0x3F, '53ea2cae97fe1ac657f7b044465b2683', 1, '2025-01-25 18:18:58.180643', 0, NULL);
-INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `photo`, `password`, `opt_status`, `last_activity_at`, `deleted`, `last_signin_attempt`) VALUES (3, 'VANDA MARQUIOLI DE MORAES ALFIERI', 'Vanda Corretora', '05377401808', '061947', 'SP', '2025-04-05', '1963-12-07', '+5511963871961', 'vanda.alfieri@toq.app.br', '06540400', 'Alameda Jaú', '255', NULL, 'Alphaville', 'Santana de Parnaíba', 'SP', 0x3F, '53ea2cae97fe1ac657f7b044465b2683', 1, '2025-01-25 18:20:35.072002', 0, NULL);
-
-COMMIT;
-
 
 -- -----------------------------------------------------
 -- Data for table `toq_db`.`configuration`
@@ -611,18 +576,6 @@ COMMIT;
 START TRANSACTION;
 USE `toq_db`;
 INSERT INTO `toq_db`.`configuration` (`id`, `key`, `value`) VALUES (1, 'version', '2.0.0');
-
-COMMIT;
-
-
--- -----------------------------------------------------
--- Data for table `toq_db`.`user_roles`
--- -----------------------------------------------------
-START TRANSACTION;
-USE `toq_db`;
-INSERT INTO `toq_db`.`user_roles` (`id`, `user_id`, `base_role_id`, `role`, `active`, `status`, `status_reason`) VALUES (1, 1, 1, 0, 1, 0, 'Root user');
-INSERT INTO `toq_db`.`user_roles` (`id`, `user_id`, `base_role_id`, `role`, `active`, `status`, `status_reason`) VALUES (2, 2, 2, 1, 1, 0, 'User active');
-INSERT INTO `toq_db`.`user_roles` (`id`, `user_id`, `base_role_id`, `role`, `active`, `status`, `status_reason`) VALUES (3, 3, 3, 2, 1, 0, 'User active');
 
 COMMIT;
 

@@ -174,6 +174,7 @@ func main() {
 	select {
 	case <-shutdown:
 		slog.Info("🛑 Shutdown signal received, initiating graceful shutdown...")
+		cancel() // Cancel context to stop background workers
 	case <-ctx.Done():
 		slog.Info("🛑 Context cancelled, initiating graceful shutdown...")
 	}
@@ -207,7 +208,22 @@ func main() {
 
 	// Wait for background workers to complete
 	slog.Info("⏳ Waiting for background workers to complete...")
-	config.GetWG().Wait()
+
+	// Create a channel to signal when workers are done
+	workersDone := make(chan struct{})
+	go func() {
+		config.GetWG().Wait()
+		close(workersDone)
+	}()
+
+	// Wait for workers to complete or timeout
+	workerTimeout := time.Second * 15
+	select {
+	case <-workersDone:
+		slog.Info("✅ Background workers stopped gracefully")
+	case <-time.After(workerTimeout):
+		slog.Warn("⚠️ Background workers timeout, forcing shutdown")
+	}
 
 	slog.Info("👋 TOQ Server shutdown completed successfully")
 }

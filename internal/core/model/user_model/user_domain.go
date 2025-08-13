@@ -23,7 +23,6 @@ type user struct {
 	neighborhood     string
 	city             string
 	state            string
-	photo            []byte
 	password         string
 	optStatus        bool
 	lastActivityAt   time.Time
@@ -173,14 +172,6 @@ func (u *user) GetState() string {
 
 func (u *user) SetState(state string) {
 	u.state = state
-}
-
-func (u *user) GetPhoto() []byte {
-	return u.photo
-}
-
-func (u *user) SetPhoto(photo []byte) {
-	u.photo = photo
 }
 
 func (u *user) GetPassword() string {

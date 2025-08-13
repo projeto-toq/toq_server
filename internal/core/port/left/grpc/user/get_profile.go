@@ -2,6 +2,7 @@ package grpcuserport
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
 
@@ -26,5 +27,12 @@ func (uh *UserHandler) GetProfile(ctx context.Context, in *pb.GetProfileRequest)
 		return nil, err
 	}
 
-	return userHandlerconverters.UserDomainToProfileResponse(user)
+	// Generate signed URL for photo download
+	photoURL, err := uh.service.GeneratePhotoDownloadURL(ctx, infos.ID)
+	if err != nil {
+		slog.Error("failed to generate signed URL for photo", "error", err, "userID", infos.ID)
+		photoURL = "" // Continue with empty photo URL
+	}
+
+	return userHandlerconverters.UserDomainToProfileResponse(user, photoURL)
 }

@@ -12,9 +12,9 @@ func (c *config) InitializeGoRoutines() {
 	c.wg.Add(1)
 	go c.activityTracker.StartBatchWorker(c.wg, c.context)
 
-	// c.wg.Add(1)
-	// CRECI validation worker disabled until GCS adapter is properly configured
-	// go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)
+	c.wg.Add(1)
+	go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)
+
 	c.wg.Add(1)
 	go goroutines.CleanMemoryCache(&c.cache, c.wg, c.context)
 

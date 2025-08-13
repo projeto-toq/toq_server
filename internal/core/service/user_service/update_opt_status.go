@@ -9,12 +9,17 @@ import (
 )
 
 // UpdateOptStatus consolidates opt-in/out behavior with audit and transactions
-func (us *userService) UpdateOptStatus(ctx context.Context, userID int64, opt bool) (err error) {
+func (us *userService) UpdateOptStatus(ctx context.Context, opt bool) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
 	}
 	defer spanEnd()
+
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil {
+		return
+	}
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {

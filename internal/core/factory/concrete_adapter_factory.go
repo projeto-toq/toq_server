@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -14,6 +15,7 @@ import (
 	cnpjadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cnpj"
 	cpfadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cpf"
 	creciadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/creci"
+	gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
 
 	// External service adapters
 	emailadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/email"
@@ -97,13 +99,43 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 		env.SMS.MyNumber,
 	)
 
+	// GCS Adapter
+	adminCreds, err := os.ReadFile(env.GCS.AdminCreds)
+	if err != nil {
+		slog.Warn("failed to read GCS admin credentials, proceeding without it", "error", err)
+	}
+	writerCreds, err := os.ReadFile(env.GCS.WriterCreds)
+	if err != nil {
+		slog.Warn("failed to read GCS writer credentials, proceeding without it", "error", err)
+	}
+	readerCreds, err := os.ReadFile(env.GCS.ReaderCreds)
+	if err != nil {
+		slog.Warn("failed to read GCS reader credentials, proceeding without it", "error", err)
+	}
+
+	gcs, gcsClose, err := gcsadapter.NewGCSAdapter(
+		ctx,
+		env.GCS.ProjectID,
+		adminCreds,
+		writerCreds,
+		readerCreds,
+		env.GCS.AdminSAEmail,
+		env.GCS.WriterSAEmail,
+		env.GCS.ReaderSAEmail,
+	)
+	if err != nil {
+		slog.Warn("failed to create GCS adapter, proceeding without it", "error", err)
+		// Não retorna erro, permite que a aplicação continue sem GCS
+	}
+
 	slog.Info("Successfully created all external service adapters")
 
 	return ExternalServiceAdapters{
-		FCM:   fcm,
-		Email: email,
-		SMS:   sms,
-		GCS:   nil, // TODO: Implementar quando necessário
+		FCM:       fcm,
+		Email:     email,
+		SMS:       sms,
+		GCS:       gcs,
+		CloseFunc: gcsClose,
 	}, nil
 }
 

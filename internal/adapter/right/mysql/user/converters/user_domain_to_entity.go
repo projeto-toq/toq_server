@@ -26,7 +26,6 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 	entity.Neighborhood = domain.GetNeighborhood()
 	entity.City = domain.GetCity()
 	entity.State = domain.GetState()
-	entity.Photo = sql.NullString{String: string(domain.GetPhoto()), Valid: domain.GetPhoto() != nil}
 	entity.Password = domain.GetPassword()
 	entity.OptStatus = domain.IsOptStatus()
 	entity.LastActivityAT = domain.GetLastActivityAt()

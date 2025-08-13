@@ -27,6 +27,11 @@ tidy:
 build:
 	go build ./...
 
+build-bin:
+	@echo "Building toq_server binary to ./bin directory"
+	@mkdir -p bin
+	go build -o bin/toq_server ./cmd/toq_server.go
+
 run:
 	go run ./cmd/toq_server.go
 

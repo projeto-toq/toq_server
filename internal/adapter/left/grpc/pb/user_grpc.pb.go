@@ -35,8 +35,6 @@ const (
 	UserService_VerifyCreciImages_FullMethodName      = "/grpc.UserService/VerifyCreciImages"
 	UserService_GetProfile_FullMethodName             = "/grpc.UserService/GetProfile"
 	UserService_UpdateProfile_FullMethodName          = "/grpc.UserService/UpdateProfile"
-	UserService_GetPhoto_FullMethodName               = "/grpc.UserService/GetPhoto"
-	UserService_UpdatePhoto_FullMethodName            = "/grpc.UserService/UpdatePhoto"
 	UserService_DeleteAccount_FullMethodName          = "/grpc.UserService/DeleteAccount"
 	UserService_GetOnboardingStatus_FullMethodName    = "/grpc.UserService/GetOnboardingStatus"
 	UserService_AddAlternativeUserRole_FullMethodName = "/grpc.UserService/AddAlternativeUserRole"
@@ -52,6 +50,7 @@ const (
 	UserService_DeleteAgencyOfRealtor_FullMethodName  = "/grpc.UserService/DeleteAgencyOfRealtor"
 	UserService_GoHome_FullMethodName                 = "/grpc.UserService/GoHome"
 	UserService_UpdateOptStatus_FullMethodName        = "/grpc.UserService/UpdateOptStatus"
+	UserService_GenerateGCSUploadURL_FullMethodName   = "/grpc.UserService/GenerateGCSUploadURL"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -75,8 +74,6 @@ type UserServiceClient interface {
 	VerifyCreciImages(ctx context.Context, in *VerifyCreciImagesRequest, opts ...grpc.CallOption) (*VerifyCreciImagesResponse, error)
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
-	GetPhoto(ctx context.Context, in *GetPhotoRequest, opts ...grpc.CallOption) (*GetPhotoResponse, error)
-	UpdatePhoto(ctx context.Context, in *UpdatePhotoRequest, opts ...grpc.CallOption) (*UpdatePhotoResponse, error)
 	DeleteAccount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	GetOnboardingStatus(ctx context.Context, in *GetOnboardingStatusRequest, opts ...grpc.CallOption) (*GetOnboardingStatusResponse, error)
 	// call with Authorization header for Owner and Realtor only
@@ -95,6 +92,7 @@ type UserServiceClient interface {
 	DeleteAgencyOfRealtor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DeleteAgencyOfRealtorResponse, error)
 	GoHome(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GoHomeResponse, error)
 	UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error)
+	GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error)
 }
 
 type userServiceClient struct {
@@ -255,26 +253,6 @@ func (c *userServiceClient) UpdateProfile(ctx context.Context, in *UpdateProfile
 	return out, nil
 }
 
-func (c *userServiceClient) GetPhoto(ctx context.Context, in *GetPhotoRequest, opts ...grpc.CallOption) (*GetPhotoResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetPhotoResponse)
-	err := c.cc.Invoke(ctx, UserService_GetPhoto_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) UpdatePhoto(ctx context.Context, in *UpdatePhotoRequest, opts ...grpc.CallOption) (*UpdatePhotoResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdatePhotoResponse)
-	err := c.cc.Invoke(ctx, UserService_UpdatePhoto_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *userServiceClient) DeleteAccount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DeleteAccountResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteAccountResponse)
@@ -425,6 +403,16 @@ func (c *userServiceClient) UpdateOptStatus(ctx context.Context, in *UpdateOptSt
 	return out, nil
 }
 
+func (c *userServiceClient) GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateGCSUploadURLResponse)
+	err := c.cc.Invoke(ctx, UserService_GenerateGCSUploadURL_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -446,8 +434,6 @@ type UserServiceServer interface {
 	VerifyCreciImages(context.Context, *VerifyCreciImagesRequest) (*VerifyCreciImagesResponse, error)
 	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
-	GetPhoto(context.Context, *GetPhotoRequest) (*GetPhotoResponse, error)
-	UpdatePhoto(context.Context, *UpdatePhotoRequest) (*UpdatePhotoResponse, error)
 	DeleteAccount(context.Context, *emptypb.Empty) (*DeleteAccountResponse, error)
 	GetOnboardingStatus(context.Context, *GetOnboardingStatusRequest) (*GetOnboardingStatusResponse, error)
 	// call with Authorization header for Owner and Realtor only
@@ -466,6 +452,7 @@ type UserServiceServer interface {
 	DeleteAgencyOfRealtor(context.Context, *emptypb.Empty) (*DeleteAgencyOfRealtorResponse, error)
 	GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error)
 	UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error)
+	GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -518,12 +505,6 @@ func (UnimplementedUserServiceServer) GetProfile(context.Context, *GetProfileReq
 func (UnimplementedUserServiceServer) UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateProfile not implemented")
 }
-func (UnimplementedUserServiceServer) GetPhoto(context.Context, *GetPhotoRequest) (*GetPhotoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPhoto not implemented")
-}
-func (UnimplementedUserServiceServer) UpdatePhoto(context.Context, *UpdatePhotoRequest) (*UpdatePhotoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdatePhoto not implemented")
-}
 func (UnimplementedUserServiceServer) DeleteAccount(context.Context, *emptypb.Empty) (*DeleteAccountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAccount not implemented")
 }
@@ -568,6 +549,9 @@ func (UnimplementedUserServiceServer) GoHome(context.Context, *emptypb.Empty) (*
 }
 func (UnimplementedUserServiceServer) UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateOptStatus not implemented")
+}
+func (UnimplementedUserServiceServer) GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateGCSUploadURL not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -852,42 +836,6 @@ func _UserService_UpdateProfile_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_GetPhoto_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPhotoRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).GetPhoto(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_GetPhoto_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetPhoto(ctx, req.(*GetPhotoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_UpdatePhoto_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdatePhotoRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).UpdatePhoto(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_UpdatePhoto_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdatePhoto(ctx, req.(*UpdatePhotoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _UserService_DeleteAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -1158,6 +1106,24 @@ func _UserService_UpdateOptStatus_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GenerateGCSUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateGCSUploadURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GenerateGCSUploadURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, req.(*GenerateGCSUploadURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1226,14 +1192,6 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_UpdateProfile_Handler,
 		},
 		{
-			MethodName: "GetPhoto",
-			Handler:    _UserService_GetPhoto_Handler,
-		},
-		{
-			MethodName: "UpdatePhoto",
-			Handler:    _UserService_UpdatePhoto_Handler,
-		},
-		{
 			MethodName: "DeleteAccount",
 			Handler:    _UserService_DeleteAccount_Handler,
 		},
@@ -1292,6 +1250,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateOptStatus",
 			Handler:    _UserService_UpdateOptStatus_Handler,
+		},
+		{
+			MethodName: "GenerateGCSUploadURL",
+			Handler:    _UserService_GenerateGCSUploadURL_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

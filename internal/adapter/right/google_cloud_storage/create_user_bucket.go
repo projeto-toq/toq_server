@@ -25,7 +25,7 @@ func (g *GCSAdapter) CreateUserBucket(ctx context.Context, UserID int64) (err er
 		UniformBucketLevelAccess: storage.UniformBucketLevelAccess{Enabled: true},
 		PublicAccessPrevention:   storage.PublicAccessPreventionEnforced,
 	}
-	if err = bucketHandle.Create(ctx, "toqapp-9853b", bucketAttrs); err != nil {
+	if err = bucketHandle.Create(ctx, g.projectID, bucketAttrs); err != nil {
 		slog.Error("failed to create bucket", "error", err)
 		err = status.Error(codes.Internal, "failed to create bucket")
 		return
@@ -38,9 +38,9 @@ func (g *GCSAdapter) CreateUserBucket(ctx context.Context, UserID int64) (err er
 		return
 	}
 
-	writer := "serviceAccount:storage-writer@toqapp-9853b.iam.gserviceaccount.com" //TODO mover para ENV
+	writer := fmt.Sprintf("serviceAccount:%s", g.writerSAEmail)
 	policy.Add(writer, "roles/storage.legacyBucketWriter")
-	reader := "serviceAccount:storage-reader@toqapp-9853b.iam.gserviceaccount.com"
+	reader := fmt.Sprintf("serviceAccount:%s", g.readerSAEmail)
 	policy.Add(reader, "roles/storage.legacyBucketReader")
 	if err = bucketHandle.IAM().SetPolicy(ctx, policy); err != nil {
 		slog.Error("failed to set IAM policy", "error", err)

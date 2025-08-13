@@ -5,7 +5,7 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 )
 
-func UserDomainToProfileResponse(user usermodel.UserInterface) (response *pb.GetProfileResponse, err error) {
+func UserDomainToProfileResponse(user usermodel.UserInterface, photoURL string) (response *pb.GetProfileResponse, err error) {
 
 	role := pb.UserRole{}
 	role.Id = user.GetActiveRole().GetID()
@@ -33,6 +33,7 @@ func UserDomainToProfileResponse(user usermodel.UserInterface) (response *pb.Get
 		Neighborhood:  user.GetNeighborhood(),
 		City:          user.GetCity(),
 		State:         user.GetState(),
+		PhotoUrl:      photoURL,
 	}
 
 	response = &pb.GetProfileResponse{User: userResp}

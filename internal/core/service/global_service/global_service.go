@@ -63,4 +63,5 @@ type GlobalServiceInterface interface {
 	StartTransaction(ctx context.Context) (tx *sql.Tx, err error)
 	RollbackTransaction(ctx context.Context, tx *sql.Tx) (err error)
 	CommitTransaction(ctx context.Context, tx *sql.Tx) (err error)
+	GetUserIDFromContext(ctx context.Context) (int64, error)
 }

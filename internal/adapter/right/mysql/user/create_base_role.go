@@ -16,6 +16,7 @@ import (
 func (ua *UserAdapter) CreateBaseRole(ctx context.Context, tx *sql.Tx, role usermodel.BaseRoleInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
+		return
 	}
 	defer spanEnd()
 

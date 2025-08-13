@@ -2,7 +2,6 @@ package grpcuserport
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -29,8 +28,6 @@ func (uh *UserHandler) ConfirmEmailChange(ctx context.Context, in *pb.ConfirmEma
 	if err != nil {
 		return
 	}
-
-	slog.Info("Email change confirmed", "userID", infos.ID, "accessToken", tokens.AccessToken)
 
 	response = &pb.ConfirmEmailChangeResponse{
 		Tokens: &pb.Tokens{

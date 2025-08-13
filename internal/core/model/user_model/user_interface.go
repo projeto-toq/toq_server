@@ -39,11 +39,9 @@ type UserInterface interface {
 	GetCity() string
 	SetCity(string)
 	GetState() string
-	SetState(string)
-	GetPhoto() []byte
-	SetPhoto([]byte)
+	SetState(state string)
 	GetPassword() string
-	SetPassword(string)
+	SetPassword(password string)
 	IsOptStatus() bool
 	SetOptStatus(bool)
 	GetLastActivityAt() time.Time

@@ -79,12 +79,6 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int
 		return
 	}
 
-	user.SetPhoto(nil)
-	err = us.repo.UpdateUserPhotoByID(ctx, tx, user)
-	if err != nil {
-		return
-	}
-
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Mascarado dados do usuário (conta apagada)")
 	if err != nil {
 		return

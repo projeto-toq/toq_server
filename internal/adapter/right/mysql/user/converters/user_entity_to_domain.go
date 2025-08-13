@@ -141,48 +141,39 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 	}
 	user.SetState(string(state))
 
-	if entity[17] != nil {
-		photo, ok := entity[17].([]byte)
-		if !ok {
-			slog.Error("Error converting photo to string", "photo", entity[17])
-			return nil, status.Error(codes.Internal, "Internal server error")
-		}
-		user.SetPhoto([]byte(string(photo)))
-	}
-
-	password, ok := entity[18].([]byte)
+	password, ok := entity[17].([]byte)
 	if !ok {
-		slog.Error("Error converting password to string", "password", entity[18])
+		slog.Error("Error converting password to string", "password", entity[17])
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 	user.SetPassword(string(password))
 
 	// opt_status
-	opt_status, ok := entity[19].(int64)
+	opt_status, ok := entity[18].(int64)
 	if !ok {
-		slog.Error("Error converting opt_status to bool", "opt_status", entity[19])
+		slog.Error("Error converting opt_status to bool", "opt_status", entity[18])
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 	user.SetOptStatus(opt_status == 1)
 
-	last_activity_at, ok := entity[20].(time.Time)
+	last_activity_at, ok := entity[19].(time.Time)
 	if !ok {
-		slog.Error("Error converting last_activity_at to time.Time", "last_activity_at", entity[20])
+		slog.Error("Error converting last_activity_at to time.Time", "last_activity_at", entity[19])
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 	user.SetLastActivityAt(last_activity_at)
 
-	deleted, ok := entity[21].(int64)
+	deleted, ok := entity[20].(int64)
 	if !ok {
-		slog.Error("Error converting deleted to bool", "deleted", entity[21])
+		slog.Error("Error converting deleted to bool", "deleted", entity[20])
 		return nil, status.Error(codes.Internal, "Internal server error")
 	}
 	user.SetDeleted(deleted == 1)
 
-	if entity[22] != nil {
-		last_sigin_attempt_at, ok := entity[22].(time.Time)
+	if entity[21] != nil {
+		last_sigin_attempt_at, ok := entity[21].(time.Time)
 		if !ok {
-			slog.Error("Error converting last_sigin_attempt_at to time.Time", "last_sigin_attempt_at", entity[22])
+			slog.Error("Error converting last_sigin_attempt_at to time.Time", "last_sigin_attempt_at", entity[21])
 			return nil, status.Error(codes.Internal, "Internal server error")
 		}
 		user.SetLastSignInAttempt(last_sigin_attempt_at)

@@ -58,6 +58,11 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return
 	}
 
+	err = us.googleCloudService.CreateUserBucket(ctx, owner.GetID())
+	if err != nil {
+		return
+	}
+
 	tokens, err = us.CreateTokens(ctx, tx, owner, false)
 	if err != nil {
 		return

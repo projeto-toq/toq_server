@@ -6,19 +6,18 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (c *config) VerifyDatabase() {
-	//check id the database version is the same as the application version
+	//check if the database version is the same as the application version
 	if getDBVersion(c) != globalmodel.AppVersion {
 		//if not, update the database
 		updateDB(c)
 	}
-	//check if the database is new
-	if isEmpty(c) {
-		//populate the database
+
+	//check if should populate database based on env parameter
+	if c.env.DATABASE.Populate {
+		slog.Info("Populating database (forced by configuration)")
 		populate(c)
 	}
 }
@@ -36,52 +35,46 @@ func updateDB(c *config) {
 	panic("Database version is different from application version. Please update the database.")
 }
 
-// NOTE: Real migration system not implemented yet. To introduce sessions support,
-// add the following DDL manually (idempotent check recommended) until a proper
-// migration tool is integrated.
-//
-// CREATE TABLE IF NOT EXISTS sessions (
-//   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-//   user_id BIGINT NOT NULL,
-//   refresh_hash VARCHAR(255) NOT NULL UNIQUE,
-//   expires_at DATETIME NOT NULL,
-//   created_at DATETIME NOT NULL,
-//   rotated_at DATETIME NULL,
-//   user_agent VARCHAR(255) NULL,
-//   ip VARCHAR(64) NULL,
-//   revoked BOOLEAN NOT NULL DEFAULT FALSE,
-//   INDEX idx_sessions_user_id (user_id),
-//   INDEX idx_sessions_expires_at (expires_at),
-//   INDEX idx_sessions_revoked (revoked)
-// ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-func isEmpty(c *config) bool {
-	_, err := c.userService.GetUsers(c.context)
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return true
-		}
-		slog.Error("error getting users", "error", err)
-		panic(err)
-	}
-
-	return false
-}
-
 func populate(c *config) {
-	slog.Info("Populating database")
+	slog.Info("Starting database population")
+
+	// Criar roles base primeiro
 	createBaseRoles(c)
+	slog.Info("Base roles created successfully")
+
+	// Criar usuário root
 	createRootUser(c)
+	slog.Info("Root user created successfully")
+
+	slog.Info("Database population completed")
 }
 
 func createBaseRoles(c *config) {
-	c.userService.CreateBaseRole(c.context, usermodel.RoleRoot, "Root")
-	c.userService.CreateBaseRole(c.context, usermodel.RoleOwner, "Proprietário")
-	c.userService.CreateBaseRole(c.context, usermodel.RoleRealtor, "Corretor")
-	c.userService.CreateBaseRole(c.context, usermodel.RoleAgency, "Imobiliária")
+	roles := []struct {
+		role usermodel.UserRole
+		name string
+	}{
+		{usermodel.RoleRoot, "Root"},
+		{usermodel.RoleOwner, "Proprietário"},
+		{usermodel.RoleRealtor, "Corretor"},
+		{usermodel.RoleAgency, "Imobiliária"},
+	}
+
+	for _, r := range roles {
+		err := c.userService.CreateBaseRole(c.context, r.role, r.name)
+		if err != nil {
+			slog.Error("error creating base role", "role", r.name, "error", err)
+			// Continue mesmo com erro, pois pode ser que o role já exista
+			slog.Warn("continuing despite base role creation error", "role", r.name)
+		} else {
+			slog.Info("base role created successfully", "role", r.name)
+		}
+	}
 }
 
 func createRootUser(c *config) {
+	slog.Info("Creating root user")
+
 	root := usermodel.NewUser()
 	root.SetID(0)
 	root.SetFullName("TOQ Root")
@@ -105,9 +98,12 @@ func createRootUser(c *config) {
 	root.SetPassword("Senh@123")
 	root.SetLastActivityAt(time.Now().UTC())
 	root.SetDeleted(false)
+
 	err = c.userService.CreateRoot(c.context, root)
 	if err != nil {
 		slog.Error("error creating root user", "error", err)
 		panic(err)
 	}
+
+	slog.Info("root user created successfully", "email", "toq@toq.app.br")
 }

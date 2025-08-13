@@ -58,11 +58,10 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	// GCS bucket creation disabled until GCS adapter is properly configured
-	// err = us.CreateBucket(ctx, realtor)
-	// if err != nil {
-	// 	return
-	// }
+	err = us.googleCloudService.CreateUserBucket(ctx, realtor.GetID())
+	if err != nil {
+		return
+	}
 
 	tokens, err = us.CreateTokens(ctx, tx, realtor, false)
 	if err != nil {

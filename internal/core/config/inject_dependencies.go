@@ -74,8 +74,27 @@ func (c *config) InjectDependencies() (close func() error, err error) {
 
 	slog.Info("Dependency injection completed successfully using Factory Pattern")
 
-	// Retornar função de cleanup
-	return storage.CloseFunc, nil
+	// Retornar função de cleanup combinada
+	closeFunc := func() error {
+		var errs []error
+		if storage.CloseFunc != nil {
+			if err := storage.CloseFunc(); err != nil {
+				errs = append(errs, err)
+			}
+		}
+		if external.CloseFunc != nil {
+			if err := external.CloseFunc(); err != nil {
+				errs = append(errs, err)
+			}
+		}
+		if len(errs) > 0 {
+			// Pode-se usar um pacote de "multierror" aqui para um tratamento mais robusto
+			return fmt.Errorf("errors during cleanup: %v", errs)
+		}
+		return nil
+	}
+
+	return closeFunc, nil
 }
 
 func (c *config) InitGlobalService() {

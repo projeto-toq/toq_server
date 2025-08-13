@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -17,9 +15,7 @@ func (uh *UserHandler) UpdateOptStatus(ctx context.Context, in *pb.UpdateOptStat
 	}
 	defer spanEnd()
 
-	infos := ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos)
-
-	if err = uh.service.UpdateOptStatus(ctx, infos.ID, in.GetOptIn()); err != nil {
+	if err = uh.service.UpdateOptStatus(ctx, in.GetOptIn()); err != nil {
 		return nil, err
 	}
 
