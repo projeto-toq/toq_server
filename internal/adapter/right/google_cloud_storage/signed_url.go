@@ -51,3 +51,15 @@ func (g *GCSAdapter) GenerateV4GetObjectSignedURL(bucketName, objectName string)
 
 	return url, nil
 }
+
+// GeneratePhotoSignedURL gera uma URL para upload de foto específica do usuário.
+func (g *GCSAdapter) GeneratePhotoSignedURL(bucketName string, userID int64, photoType, contentType string) (string, error) {
+	objectPath := fmt.Sprintf("%d/%s", userID, photoType)
+	return g.GenerateV4PutObjectSignedURL(bucketName, objectPath, contentType)
+}
+
+// GeneratePhotoDownloadURL gera uma URL para download de foto específica do usuário.
+func (g *GCSAdapter) GeneratePhotoDownloadURL(bucketName string, userID int64, photoType string) (string, error) {
+	objectPath := fmt.Sprintf("%d/%s", userID, photoType)
+	return g.GenerateV4GetObjectSignedURL(bucketName, objectPath)
+}

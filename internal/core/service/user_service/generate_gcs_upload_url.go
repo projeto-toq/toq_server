@@ -2,8 +2,8 @@ package userservices
 
 import (
 	"context"
-	"fmt"
 
+	gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,9 +25,19 @@ func (us *userService) GenerateGCSUploadURL(ctx context.Context, objectName, con
 		return "", status.Error(codes.Unimplemented, "GCS service is not configured")
 	}
 
-	bucketName := fmt.Sprintf("user-%d-bucket", userID)
+	// Validar se é um tipo de foto válido
+	validPhotoTypes := map[string]bool{
+		gcsadapter.PhotoTypeOriginal: true,
+		gcsadapter.PhotoTypeSmall:    true,
+		gcsadapter.PhotoTypeMedium:   true,
+		gcsadapter.PhotoTypeLarge:    true,
+	}
 
-	signedURL, err = us.googleCloudService.GenerateV4PutObjectSignedURL(bucketName, objectName, contentType)
+	if !validPhotoTypes[objectName] {
+		return "", status.Error(codes.InvalidArgument, "invalid photo type")
+	}
+
+	signedURL, err = us.googleCloudService.GeneratePhotoSignedURL(gcsadapter.UsersBucketName, userID, objectName, contentType)
 	if err != nil {
 		return "", err
 	}

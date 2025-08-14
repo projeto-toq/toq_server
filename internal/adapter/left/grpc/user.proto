@@ -30,6 +30,7 @@ service UserService {
     rpc GoHome (google.protobuf.Empty) returns (GoHomeResponse);
     rpc UpdateOptStatus (UpdateOptStatusRequest) returns (UpdateOptStatusResponse);
     rpc GenerateGCSUploadURL(GenerateGCSUploadURLRequest) returns (GenerateGCSUploadURLResponse);
+    rpc GetProfileThumbnails(GetProfileThumbnailsRequest) returns (GetProfileThumbnailsResponse);
     
     //call with Authorization header for Owner and Realtor only
     rpc AddAlternativeUserRole (AddAlternativeUserRoleRequest) returns (AddAlternativeUserRoleResponse);
@@ -58,6 +59,17 @@ message GenerateGCSUploadURLRequest {
 
 message GenerateGCSUploadURLResponse {
   string signed_url = 1;
+}
+
+//messages of GetProfileThumbnails
+message GetProfileThumbnailsRequest {
+}
+
+message GetProfileThumbnailsResponse {
+    string originalUrl = 1;   // photo.jpg
+    string smallUrl = 2;      // thumbnails/small.jpg  
+    string mediumUrl = 3;     // thumbnails/medium.jpg
+    string largeUrl = 4;      // thumbnails/large.jpg
 }
 
 //messages of CreateOwner
@@ -325,7 +337,7 @@ message User {
     string state = 18;
     string password = 19;
     string last_activity = 20;//format 2006-01-02T15:04:05Z = jan 2, 2006 at 15:04:05
-    string photoUrl = 21; 
+    // photoUrl field removed - use GetProfileThumbnails RPC instead 
 }
 
 message UpdateUser {

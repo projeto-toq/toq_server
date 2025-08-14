@@ -97,7 +97,7 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 			return
 		}
 
-		err = us.CreateBucket(ctx, user)
+		err = us.CreateUserFolder(ctx, user.GetID())
 		if err != nil {
 			return
 		}

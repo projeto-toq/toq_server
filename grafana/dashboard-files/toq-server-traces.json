@@ -1,0 +1,172 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {
+            "datasource": {
+                "type": "jaeger",
+                "uid": "PC9A941E8F2E49454"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        }
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 12,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "search": {
+                    "query": "toq_server",
+                    "service": "toq_server"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "jaeger",
+                        "uid": "PC9A941E8F2E49454"
+                    },
+                    "query": "toq_server",
+                    "refId": "A"
+                }
+            ],
+            "title": "Distributed Traces - gRPC Methods",
+            "type": "traces"
+        },
+        {
+            "datasource": {
+                "type": "jaeger",
+                "uid": "PC9A941E8F2E49454"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        }
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 12
+            },
+            "id": 2,
+            "options": {
+                "search": {
+                    "query": "/grpc.UserService/SignIn",
+                    "service": "toq_server"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "jaeger",
+                        "uid": "PC9A941E8F2E49454"
+                    },
+                    "query": "/grpc.UserService/SignIn",
+                    "refId": "A"
+                }
+            ],
+            "title": "SignIn Method Traces",
+            "type": "traces"
+        },
+        {
+            "datasource": {
+                "type": "jaeger",
+                "uid": "PC9A941E8F2E49454"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "vis": false
+                        }
+                    }
+                }
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 12
+            },
+            "id": 3,
+            "options": {
+                "search": {
+                    "query": "/grpc.UserService/GetProfile",
+                    "service": "toq_server"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "jaeger",
+                        "uid": "PC9A941E8F2E49454"
+                    },
+                    "query": "/grpc.UserService/GetProfile",
+                    "refId": "A"
+                }
+            ],
+            "title": "GetProfile Method Traces",
+            "type": "traces"
+        }
+    ],
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [
+        "toq",
+        "traces",
+        "distributed-tracing"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "TOQ Server - Distributed Traces",
+    "uid": "toq-traces",
+    "version": 1,
+    "weekStart": ""
+}

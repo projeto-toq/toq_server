@@ -33,7 +33,7 @@ func UserDomainToProfileResponse(user usermodel.UserInterface, photoURL string) 
 		Neighborhood:  user.GetNeighborhood(),
 		City:          user.GetCity(),
 		State:         user.GetState(),
-		PhotoUrl:      photoURL,
+		// PhotoUrl field removed - use GetProfileThumbnails RPC instead
 	}
 
 	response = &pb.GetProfileResponse{User: userResp}

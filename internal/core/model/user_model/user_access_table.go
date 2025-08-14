@@ -1,17 +1,13 @@
 package usermodel
 
 var OwnerUserPrivileges = map[string]bool{
-	// "CreateOwner":            true,
-	// "SignIn":                 true,
-	// "RefreshToken":           true,
-	// "RequestPasswordChange":  true,
-	// "ConfirmPasswordChange":  true,
 	"SignOut":                true,
 	"RequestEmailChange":     true,
 	"ConfirmEmailChange":     true,
 	"RequestPhoneChange":     true,
 	"ConfirmPhoneChange":     true,
 	"GetProfile":             true,
+	"GetProfileThumbnails":   true,
 	"UpdateProfile":          true,
 	"DeleteAccount":          true,
 	"GetOnboardingStatus":    true,
@@ -50,11 +46,6 @@ var OwnerListingPrivileges = map[string]bool{
 }
 
 var RealtorUserPrivileges = map[string]bool{
-	// "CreateRealtor":          true,
-	// "SignIn":                 true,
-	// "RefreshToken":           true,
-	// "RequestPasswordChange":  true,
-	// "ConfirmPasswordChange":  true,
 	"SignOut":                true,
 	"RequestEmailChange":     true,
 	"ConfirmEmailChange":     true,
@@ -62,6 +53,7 @@ var RealtorUserPrivileges = map[string]bool{
 	"ConfirmPhoneChange":     true,
 	"VerifyCreciImages":      true,
 	"GetProfile":             true,
+	"GetProfileThumbnails":   true,
 	"UpdateProfile":          true,
 	"DeleteAccount":          true,
 	"GetOnboardingStatus":    true,
@@ -97,17 +89,13 @@ var RealtorListingPrivileges = map[string]bool{
 }
 
 var AgencyUserPrivileges = map[string]bool{
-	// "CreateRealtor":         true,
-	// "SignIn":                true,
-	// "RefreshToken":          true,
-	// "RequestPasswordChange": true,
-	// "ConfirmPasswordChange": true,
 	"SignOut":              true,
 	"RequestEmailChange":   true,
 	"ConfirmEmailChange":   true,
 	"RequestPhoneChange":   true,
 	"ConfirmPhoneChange":   true,
 	"GetProfile":           true,
+	"GetProfileThumbnails": true,
 	"UpdateProfile":        true,
 	"DeleteAccount":        true,
 	"GetOnboardingStatus":  true,

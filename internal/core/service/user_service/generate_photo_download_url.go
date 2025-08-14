@@ -2,22 +2,24 @@ package userservices
 
 import (
 	"context"
-	"fmt"
 
+	gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) GeneratePhotoDownloadURL(ctx context.Context, userID int64) (signedURL string, err error) {
+func (us *userService) GeneratePhotoDownloadURL(ctx context.Context, userID int64, photoType string) (signedURL string, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
 	}
 	defer spanEnd()
 
-	bucketName := fmt.Sprintf("user-%d-bucket", userID)
-	objectName := "photo.jpg"
+	// Se photoType não for especificado, usar o original
+	if photoType == "" {
+		photoType = gcsadapter.PhotoTypeOriginal
+	}
 
-	signedURL, err = us.googleCloudService.GenerateV4GetObjectSignedURL(bucketName, objectName)
+	signedURL, err = us.googleCloudService.GeneratePhotoDownloadURL(gcsadapter.UsersBucketName, userID, photoType)
 	if err != nil {
 		return
 	}

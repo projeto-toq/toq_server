@@ -89,5 +89,8 @@ type UserServiceInterface interface {
 	VerifyCreciImages(ctx context.Context, realtorID int64) (err error)
 	UpdateOptStatus(ctx context.Context, optIn bool) (err error)
 	GenerateGCSUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error)
-	GeneratePhotoDownloadURL(ctx context.Context, userID int64) (signedURL string, err error)
+	GeneratePhotoDownloadURL(ctx context.Context, userID int64, photoType string) (signedURL string, err error)
+	GetProfileThumbnails(ctx context.Context, userID int64) (thumbnails usermodel.ProfileThumbnails, err error)
+	CreateUserFolder(ctx context.Context, userID int64) (err error)
+	DeleteUserFolder(ctx context.Context, userID int64) (err error)
 }

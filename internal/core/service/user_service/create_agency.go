@@ -58,7 +58,7 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 		return
 	}
 
-	err = us.googleCloudService.CreateUserBucket(ctx, agency.GetID())
+	err = us.googleCloudService.CreateUserFolder(ctx, agency.GetID())
 	if err != nil {
 		return
 	}

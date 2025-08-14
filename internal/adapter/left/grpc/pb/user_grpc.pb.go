@@ -32,32 +32,33 @@ const (
 	UserService_ConfirmEmailChange_FullMethodName     = "/grpc.UserService/ConfirmEmailChange"
 	UserService_RequestPhoneChange_FullMethodName     = "/grpc.UserService/RequestPhoneChange"
 	UserService_ConfirmPhoneChange_FullMethodName     = "/grpc.UserService/ConfirmPhoneChange"
-	UserService_VerifyCreciImages_FullMethodName      = "/grpc.UserService/VerifyCreciImages"
 	UserService_GetProfile_FullMethodName             = "/grpc.UserService/GetProfile"
 	UserService_UpdateProfile_FullMethodName          = "/grpc.UserService/UpdateProfile"
 	UserService_DeleteAccount_FullMethodName          = "/grpc.UserService/DeleteAccount"
 	UserService_GetOnboardingStatus_FullMethodName    = "/grpc.UserService/GetOnboardingStatus"
-	UserService_AddAlternativeUserRole_FullMethodName = "/grpc.UserService/AddAlternativeUserRole"
 	UserService_GetUserRoles_FullMethodName           = "/grpc.UserService/GetUserRoles"
+	UserService_GoHome_FullMethodName                 = "/grpc.UserService/GoHome"
+	UserService_UpdateOptStatus_FullMethodName        = "/grpc.UserService/UpdateOptStatus"
+	UserService_GenerateGCSUploadURL_FullMethodName   = "/grpc.UserService/GenerateGCSUploadURL"
+	UserService_GetProfileThumbnails_FullMethodName   = "/grpc.UserService/GetProfileThumbnails"
+	UserService_AddAlternativeUserRole_FullMethodName = "/grpc.UserService/AddAlternativeUserRole"
 	UserService_SwitchUserRole_FullMethodName         = "/grpc.UserService/SwitchUserRole"
 	UserService_InviteRealtor_FullMethodName          = "/grpc.UserService/InviteRealtor"
 	UserService_GetRealtorsByAgency_FullMethodName    = "/grpc.UserService/GetRealtorsByAgency"
 	UserService_GetRealtorByID_FullMethodName         = "/grpc.UserService/GetRealtorByID"
 	UserService_DeleteRealtorByID_FullMethodName      = "/grpc.UserService/DeleteRealtorByID"
+	UserService_VerifyCreciImages_FullMethodName      = "/grpc.UserService/VerifyCreciImages"
 	UserService_AcceptInvitation_FullMethodName       = "/grpc.UserService/AcceptInvitation"
 	UserService_RejectInvitation_FullMethodName       = "/grpc.UserService/RejectInvitation"
 	UserService_GetAgencyOfRealtor_FullMethodName     = "/grpc.UserService/GetAgencyOfRealtor"
 	UserService_DeleteAgencyOfRealtor_FullMethodName  = "/grpc.UserService/DeleteAgencyOfRealtor"
-	UserService_GoHome_FullMethodName                 = "/grpc.UserService/GoHome"
-	UserService_UpdateOptStatus_FullMethodName        = "/grpc.UserService/UpdateOptStatus"
-	UserService_GenerateGCSUploadURL_FullMethodName   = "/grpc.UserService/GenerateGCSUploadURL"
 )
 
 // UserServiceClient is the client API for UserService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
-	// call without Authorization header
+	// call without Authorization header, so don´t need authorization
 	CreateOwner(ctx context.Context, in *CreateOwnerRequest, opts ...grpc.CallOption) (*CreateOwnerResponse, error)
 	CreateRealtor(ctx context.Context, in *CreateRealtorRequest, opts ...grpc.CallOption) (*CreateRealtorResponse, error)
 	CreateAgency(ctx context.Context, in *CreateAgencyRequest, opts ...grpc.CallOption) (*CreateAgencyResponse, error)
@@ -65,20 +66,23 @@ type UserServiceClient interface {
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*RefreshTokenResponse, error)
 	RequestPasswordChange(ctx context.Context, in *RequestPasswordChangeRequest, opts ...grpc.CallOption) (*RequestPasswordChangeResponse, error)
 	ConfirmPasswordChange(ctx context.Context, in *ConfirmPasswordChangeRequest, opts ...grpc.CallOption) (*ConfirmPasswordChangeResponse, error)
-	// call with Authorization header for Owner, Realtor and Agency
+	// call with Authorization header for Owner, Realtor, Agency and Admin
 	SignOut(ctx context.Context, in *SignOutRequest, opts ...grpc.CallOption) (*SignOutResponse, error)
 	RequestEmailChange(ctx context.Context, in *RequestEmailChangeRequest, opts ...grpc.CallOption) (*RequestEmailChangeResponse, error)
 	ConfirmEmailChange(ctx context.Context, in *ConfirmEmailChangeRequest, opts ...grpc.CallOption) (*ConfirmEmailChangeResponse, error)
 	RequestPhoneChange(ctx context.Context, in *RequestPhoneChangeRequest, opts ...grpc.CallOption) (*RequestPhoneChangeResponse, error)
 	ConfirmPhoneChange(ctx context.Context, in *ConfirmPhoneChangeRequest, opts ...grpc.CallOption) (*ConfirmPhoneChangeResponse, error)
-	VerifyCreciImages(ctx context.Context, in *VerifyCreciImagesRequest, opts ...grpc.CallOption) (*VerifyCreciImagesResponse, error)
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
 	DeleteAccount(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	GetOnboardingStatus(ctx context.Context, in *GetOnboardingStatusRequest, opts ...grpc.CallOption) (*GetOnboardingStatusResponse, error)
+	GetUserRoles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserRolesResponse, error)
+	GoHome(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GoHomeResponse, error)
+	UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error)
+	GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error)
+	GetProfileThumbnails(ctx context.Context, in *GetProfileThumbnailsRequest, opts ...grpc.CallOption) (*GetProfileThumbnailsResponse, error)
 	// call with Authorization header for Owner and Realtor only
 	AddAlternativeUserRole(ctx context.Context, in *AddAlternativeUserRoleRequest, opts ...grpc.CallOption) (*AddAlternativeUserRoleResponse, error)
-	GetUserRoles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserRolesResponse, error)
 	SwitchUserRole(ctx context.Context, in *SwitchUserRoleRequest, opts ...grpc.CallOption) (*SwitchUserRoleResponse, error)
 	// call with Authorization header for Agency only
 	InviteRealtor(ctx context.Context, in *InviteRealtorRequest, opts ...grpc.CallOption) (*InviteRealtorResponse, error)
@@ -86,13 +90,11 @@ type UserServiceClient interface {
 	GetRealtorByID(ctx context.Context, in *GetRealtorByIDRequest, opts ...grpc.CallOption) (*GetRealtorByIDResponse, error)
 	DeleteRealtorByID(ctx context.Context, in *DeleteRealtorByIDRequest, opts ...grpc.CallOption) (*DeleteRealtorByIDResponse, error)
 	// call with Authorization header for Realtor only
+	VerifyCreciImages(ctx context.Context, in *VerifyCreciImagesRequest, opts ...grpc.CallOption) (*VerifyCreciImagesResponse, error)
 	AcceptInvitation(ctx context.Context, in *AcceptInvitationRequest, opts ...grpc.CallOption) (*AcceptInvitationResponse, error)
 	RejectInvitation(ctx context.Context, in *RejectInvitationRequest, opts ...grpc.CallOption) (*RejectInvitationResponse, error)
 	GetAgencyOfRealtor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAgencyOfRealtorResponse, error)
 	DeleteAgencyOfRealtor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DeleteAgencyOfRealtorResponse, error)
-	GoHome(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GoHomeResponse, error)
-	UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error)
-	GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error)
 }
 
 type userServiceClient struct {
@@ -223,16 +225,6 @@ func (c *userServiceClient) ConfirmPhoneChange(ctx context.Context, in *ConfirmP
 	return out, nil
 }
 
-func (c *userServiceClient) VerifyCreciImages(ctx context.Context, in *VerifyCreciImagesRequest, opts ...grpc.CallOption) (*VerifyCreciImagesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(VerifyCreciImagesResponse)
-	err := c.cc.Invoke(ctx, UserService_VerifyCreciImages_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *userServiceClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetProfileResponse)
@@ -273,20 +265,60 @@ func (c *userServiceClient) GetOnboardingStatus(ctx context.Context, in *GetOnbo
 	return out, nil
 }
 
-func (c *userServiceClient) AddAlternativeUserRole(ctx context.Context, in *AddAlternativeUserRoleRequest, opts ...grpc.CallOption) (*AddAlternativeUserRoleResponse, error) {
+func (c *userServiceClient) GetUserRoles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserRolesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddAlternativeUserRoleResponse)
-	err := c.cc.Invoke(ctx, UserService_AddAlternativeUserRole_FullMethodName, in, out, cOpts...)
+	out := new(GetUserRolesResponse)
+	err := c.cc.Invoke(ctx, UserService_GetUserRoles_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userServiceClient) GetUserRoles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserRolesResponse, error) {
+func (c *userServiceClient) GoHome(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GoHomeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserRolesResponse)
-	err := c.cc.Invoke(ctx, UserService_GetUserRoles_FullMethodName, in, out, cOpts...)
+	out := new(GoHomeResponse)
+	err := c.cc.Invoke(ctx, UserService_GoHome_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateOptStatusResponse)
+	err := c.cc.Invoke(ctx, UserService_UpdateOptStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GenerateGCSUploadURLResponse)
+	err := c.cc.Invoke(ctx, UserService_GenerateGCSUploadURL_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetProfileThumbnails(ctx context.Context, in *GetProfileThumbnailsRequest, opts ...grpc.CallOption) (*GetProfileThumbnailsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetProfileThumbnailsResponse)
+	err := c.cc.Invoke(ctx, UserService_GetProfileThumbnails_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) AddAlternativeUserRole(ctx context.Context, in *AddAlternativeUserRoleRequest, opts ...grpc.CallOption) (*AddAlternativeUserRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddAlternativeUserRoleResponse)
+	err := c.cc.Invoke(ctx, UserService_AddAlternativeUserRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -343,6 +375,16 @@ func (c *userServiceClient) DeleteRealtorByID(ctx context.Context, in *DeleteRea
 	return out, nil
 }
 
+func (c *userServiceClient) VerifyCreciImages(ctx context.Context, in *VerifyCreciImagesRequest, opts ...grpc.CallOption) (*VerifyCreciImagesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyCreciImagesResponse)
+	err := c.cc.Invoke(ctx, UserService_VerifyCreciImages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) AcceptInvitation(ctx context.Context, in *AcceptInvitationRequest, opts ...grpc.CallOption) (*AcceptInvitationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AcceptInvitationResponse)
@@ -383,41 +425,11 @@ func (c *userServiceClient) DeleteAgencyOfRealtor(ctx context.Context, in *empty
 	return out, nil
 }
 
-func (c *userServiceClient) GoHome(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GoHomeResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GoHomeResponse)
-	err := c.cc.Invoke(ctx, UserService_GoHome_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateOptStatusResponse)
-	err := c.cc.Invoke(ctx, UserService_UpdateOptStatus_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userServiceClient) GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GenerateGCSUploadURLResponse)
-	err := c.cc.Invoke(ctx, UserService_GenerateGCSUploadURL_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
-	// call without Authorization header
+	// call without Authorization header, so don´t need authorization
 	CreateOwner(context.Context, *CreateOwnerRequest) (*CreateOwnerResponse, error)
 	CreateRealtor(context.Context, *CreateRealtorRequest) (*CreateRealtorResponse, error)
 	CreateAgency(context.Context, *CreateAgencyRequest) (*CreateAgencyResponse, error)
@@ -425,20 +437,23 @@ type UserServiceServer interface {
 	RefreshToken(context.Context, *RefreshTokenRequest) (*RefreshTokenResponse, error)
 	RequestPasswordChange(context.Context, *RequestPasswordChangeRequest) (*RequestPasswordChangeResponse, error)
 	ConfirmPasswordChange(context.Context, *ConfirmPasswordChangeRequest) (*ConfirmPasswordChangeResponse, error)
-	// call with Authorization header for Owner, Realtor and Agency
+	// call with Authorization header for Owner, Realtor, Agency and Admin
 	SignOut(context.Context, *SignOutRequest) (*SignOutResponse, error)
 	RequestEmailChange(context.Context, *RequestEmailChangeRequest) (*RequestEmailChangeResponse, error)
 	ConfirmEmailChange(context.Context, *ConfirmEmailChangeRequest) (*ConfirmEmailChangeResponse, error)
 	RequestPhoneChange(context.Context, *RequestPhoneChangeRequest) (*RequestPhoneChangeResponse, error)
 	ConfirmPhoneChange(context.Context, *ConfirmPhoneChangeRequest) (*ConfirmPhoneChangeResponse, error)
-	VerifyCreciImages(context.Context, *VerifyCreciImagesRequest) (*VerifyCreciImagesResponse, error)
 	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
 	DeleteAccount(context.Context, *emptypb.Empty) (*DeleteAccountResponse, error)
 	GetOnboardingStatus(context.Context, *GetOnboardingStatusRequest) (*GetOnboardingStatusResponse, error)
+	GetUserRoles(context.Context, *emptypb.Empty) (*GetUserRolesResponse, error)
+	GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error)
+	UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error)
+	GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error)
+	GetProfileThumbnails(context.Context, *GetProfileThumbnailsRequest) (*GetProfileThumbnailsResponse, error)
 	// call with Authorization header for Owner and Realtor only
 	AddAlternativeUserRole(context.Context, *AddAlternativeUserRoleRequest) (*AddAlternativeUserRoleResponse, error)
-	GetUserRoles(context.Context, *emptypb.Empty) (*GetUserRolesResponse, error)
 	SwitchUserRole(context.Context, *SwitchUserRoleRequest) (*SwitchUserRoleResponse, error)
 	// call with Authorization header for Agency only
 	InviteRealtor(context.Context, *InviteRealtorRequest) (*InviteRealtorResponse, error)
@@ -446,13 +461,11 @@ type UserServiceServer interface {
 	GetRealtorByID(context.Context, *GetRealtorByIDRequest) (*GetRealtorByIDResponse, error)
 	DeleteRealtorByID(context.Context, *DeleteRealtorByIDRequest) (*DeleteRealtorByIDResponse, error)
 	// call with Authorization header for Realtor only
+	VerifyCreciImages(context.Context, *VerifyCreciImagesRequest) (*VerifyCreciImagesResponse, error)
 	AcceptInvitation(context.Context, *AcceptInvitationRequest) (*AcceptInvitationResponse, error)
 	RejectInvitation(context.Context, *RejectInvitationRequest) (*RejectInvitationResponse, error)
 	GetAgencyOfRealtor(context.Context, *emptypb.Empty) (*GetAgencyOfRealtorResponse, error)
 	DeleteAgencyOfRealtor(context.Context, *emptypb.Empty) (*DeleteAgencyOfRealtorResponse, error)
-	GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error)
-	UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error)
-	GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -496,9 +509,6 @@ func (UnimplementedUserServiceServer) RequestPhoneChange(context.Context, *Reque
 func (UnimplementedUserServiceServer) ConfirmPhoneChange(context.Context, *ConfirmPhoneChangeRequest) (*ConfirmPhoneChangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConfirmPhoneChange not implemented")
 }
-func (UnimplementedUserServiceServer) VerifyCreciImages(context.Context, *VerifyCreciImagesRequest) (*VerifyCreciImagesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method VerifyCreciImages not implemented")
-}
 func (UnimplementedUserServiceServer) GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
@@ -511,11 +521,23 @@ func (UnimplementedUserServiceServer) DeleteAccount(context.Context, *emptypb.Em
 func (UnimplementedUserServiceServer) GetOnboardingStatus(context.Context, *GetOnboardingStatusRequest) (*GetOnboardingStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOnboardingStatus not implemented")
 }
-func (UnimplementedUserServiceServer) AddAlternativeUserRole(context.Context, *AddAlternativeUserRoleRequest) (*AddAlternativeUserRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddAlternativeUserRole not implemented")
-}
 func (UnimplementedUserServiceServer) GetUserRoles(context.Context, *emptypb.Empty) (*GetUserRolesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserRoles not implemented")
+}
+func (UnimplementedUserServiceServer) GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GoHome not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateOptStatus not implemented")
+}
+func (UnimplementedUserServiceServer) GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateGCSUploadURL not implemented")
+}
+func (UnimplementedUserServiceServer) GetProfileThumbnails(context.Context, *GetProfileThumbnailsRequest) (*GetProfileThumbnailsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileThumbnails not implemented")
+}
+func (UnimplementedUserServiceServer) AddAlternativeUserRole(context.Context, *AddAlternativeUserRoleRequest) (*AddAlternativeUserRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddAlternativeUserRole not implemented")
 }
 func (UnimplementedUserServiceServer) SwitchUserRole(context.Context, *SwitchUserRoleRequest) (*SwitchUserRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SwitchUserRole not implemented")
@@ -532,6 +554,9 @@ func (UnimplementedUserServiceServer) GetRealtorByID(context.Context, *GetRealto
 func (UnimplementedUserServiceServer) DeleteRealtorByID(context.Context, *DeleteRealtorByIDRequest) (*DeleteRealtorByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRealtorByID not implemented")
 }
+func (UnimplementedUserServiceServer) VerifyCreciImages(context.Context, *VerifyCreciImagesRequest) (*VerifyCreciImagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyCreciImages not implemented")
+}
 func (UnimplementedUserServiceServer) AcceptInvitation(context.Context, *AcceptInvitationRequest) (*AcceptInvitationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptInvitation not implemented")
 }
@@ -543,15 +568,6 @@ func (UnimplementedUserServiceServer) GetAgencyOfRealtor(context.Context, *empty
 }
 func (UnimplementedUserServiceServer) DeleteAgencyOfRealtor(context.Context, *emptypb.Empty) (*DeleteAgencyOfRealtorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAgencyOfRealtor not implemented")
-}
-func (UnimplementedUserServiceServer) GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GoHome not implemented")
-}
-func (UnimplementedUserServiceServer) UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateOptStatus not implemented")
-}
-func (UnimplementedUserServiceServer) GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GenerateGCSUploadURL not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -782,24 +798,6 @@ func _UserService_ConfirmPhoneChange_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_VerifyCreciImages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(VerifyCreciImagesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).VerifyCreciImages(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_VerifyCreciImages_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).VerifyCreciImages(ctx, req.(*VerifyCreciImagesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _UserService_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetProfileRequest)
 	if err := dec(in); err != nil {
@@ -872,24 +870,6 @@ func _UserService_GetOnboardingStatus_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_AddAlternativeUserRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddAlternativeUserRoleRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).AddAlternativeUserRole(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_AddAlternativeUserRole_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).AddAlternativeUserRole(ctx, req.(*AddAlternativeUserRoleRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _UserService_GetUserRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -904,6 +884,96 @@ func _UserService_GetUserRoles_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetUserRoles(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GoHome_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GoHome(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GoHome_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GoHome(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UpdateOptStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOptStatusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateOptStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateOptStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateOptStatus(ctx, req.(*UpdateOptStatusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GenerateGCSUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateGCSUploadURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GenerateGCSUploadURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, req.(*GenerateGCSUploadURLRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetProfileThumbnails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileThumbnailsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetProfileThumbnails(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetProfileThumbnails_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetProfileThumbnails(ctx, req.(*GetProfileThumbnailsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_AddAlternativeUserRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddAlternativeUserRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).AddAlternativeUserRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_AddAlternativeUserRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).AddAlternativeUserRole(ctx, req.(*AddAlternativeUserRoleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -998,6 +1068,24 @@ func _UserService_DeleteRealtorByID_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_VerifyCreciImages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyCreciImagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).VerifyCreciImages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_VerifyCreciImages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).VerifyCreciImages(ctx, req.(*VerifyCreciImagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_AcceptInvitation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AcceptInvitationRequest)
 	if err := dec(in); err != nil {
@@ -1070,60 +1158,6 @@ func _UserService_DeleteAgencyOfRealtor_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_GoHome_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).GoHome(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_GoHome_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GoHome(ctx, req.(*emptypb.Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_UpdateOptStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateOptStatusRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).UpdateOptStatus(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_UpdateOptStatus_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).UpdateOptStatus(ctx, req.(*UpdateOptStatusRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserService_GenerateGCSUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GenerateGCSUploadURLRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: UserService_GenerateGCSUploadURL_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, req.(*GenerateGCSUploadURLRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1180,10 +1214,6 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_ConfirmPhoneChange_Handler,
 		},
 		{
-			MethodName: "VerifyCreciImages",
-			Handler:    _UserService_VerifyCreciImages_Handler,
-		},
-		{
 			MethodName: "GetProfile",
 			Handler:    _UserService_GetProfile_Handler,
 		},
@@ -1200,12 +1230,28 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_GetOnboardingStatus_Handler,
 		},
 		{
-			MethodName: "AddAlternativeUserRole",
-			Handler:    _UserService_AddAlternativeUserRole_Handler,
-		},
-		{
 			MethodName: "GetUserRoles",
 			Handler:    _UserService_GetUserRoles_Handler,
+		},
+		{
+			MethodName: "GoHome",
+			Handler:    _UserService_GoHome_Handler,
+		},
+		{
+			MethodName: "UpdateOptStatus",
+			Handler:    _UserService_UpdateOptStatus_Handler,
+		},
+		{
+			MethodName: "GenerateGCSUploadURL",
+			Handler:    _UserService_GenerateGCSUploadURL_Handler,
+		},
+		{
+			MethodName: "GetProfileThumbnails",
+			Handler:    _UserService_GetProfileThumbnails_Handler,
+		},
+		{
+			MethodName: "AddAlternativeUserRole",
+			Handler:    _UserService_AddAlternativeUserRole_Handler,
 		},
 		{
 			MethodName: "SwitchUserRole",
@@ -1228,6 +1274,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_DeleteRealtorByID_Handler,
 		},
 		{
+			MethodName: "VerifyCreciImages",
+			Handler:    _UserService_VerifyCreciImages_Handler,
+		},
+		{
 			MethodName: "AcceptInvitation",
 			Handler:    _UserService_AcceptInvitation_Handler,
 		},
@@ -1242,18 +1292,6 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteAgencyOfRealtor",
 			Handler:    _UserService_DeleteAgencyOfRealtor_Handler,
-		},
-		{
-			MethodName: "GoHome",
-			Handler:    _UserService_GoHome_Handler,
-		},
-		{
-			MethodName: "UpdateOptStatus",
-			Handler:    _UserService_UpdateOptStatus_Handler,
-		},
-		{
-			MethodName: "GenerateGCSUploadURL",
-			Handler:    _UserService_GenerateGCSUploadURL_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

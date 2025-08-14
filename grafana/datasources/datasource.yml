@@ -1,5 +1,5 @@
-# Grafana Datasource Configuration for Prometheus
-# This file configures Prometheus as a datasource in Grafana
+# Grafana Datasource Configuration for Prometheus and Traces
+# This file configures datasources in Grafana
 apiVersion: 1
 
 datasources:
@@ -14,3 +14,21 @@ datasources:
       httpMethod: POST
       queryTimeout: 60s
       timeInterval: 15s
+
+  # Jaeger datasource for distributed tracing
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://toq_server-jaeger-1:16686
+    editable: true
+    jsonData:
+      httpMethod: GET
+
+  # OpenTelemetry datasource for traces (alternative)
+  - name: OpenTelemetry
+    type: grafana-opentelemetry-datasource
+    access: proxy
+    url: http://otel-collector:4317
+    editable: true
+    jsonData:
+      httpMethod: POST
