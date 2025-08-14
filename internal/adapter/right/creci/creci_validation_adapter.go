@@ -40,7 +40,7 @@ func (ca *CreciAdapter) ValidateCreciNumber(ctx context.Context, realtor usermod
 	}
 	defer ca.Close()
 
-	imageURI := fmt.Sprintf("gs://user-%d-bucket/front.jpg", realtor.GetID())
+	imageURI := fmt.Sprintf("gs://toq_server_users_media/%d/front.jpg", realtor.GetID())
 
 	//recover the images from the request
 	frontText, err := ca.ExtractTextFromImage(ctx, imageURI)
@@ -50,7 +50,7 @@ func (ca *CreciAdapter) ValidateCreciNumber(ctx context.Context, realtor usermod
 		return
 	}
 
-	imageURI = fmt.Sprintf("gs://user-%d-bucket/back.jpg", realtor.GetID())
+	imageURI = fmt.Sprintf("gs://toq_server_users_media/%d/back.jpg", realtor.GetID())
 
 	backText, err := ca.ExtractTextFromImage(ctx, imageURI)
 	if err != nil {
