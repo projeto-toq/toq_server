@@ -17,19 +17,33 @@ func (g *GCSAdapter) CreateUserFolder(ctx context.Context, UserID int64) (err er
 
 	bucketHandle := g.writerClient.Bucket(UsersBucketName)
 
-	// Criar objeto placeholder para garantir que a "pasta" do usuário existe
-	placeholderPath := fmt.Sprintf("%d/.placeholder", UserID)
-
-	writer := bucketHandle.Object(placeholderPath).NewWriter(ctx)
-	defer writer.Close()
-
-	_, err = writer.Write([]byte(""))
-	if err != nil {
-		slog.Error("failed to create user folder", "userID", UserID, "error", err)
-		err = status.Error(codes.Internal, "failed to create user folder")
-		return
+	// Lista de placeholders para criar toda a estrutura de pastas
+	placeholders := []string{
+		fmt.Sprintf("%d/.placeholder", UserID),            // Pasta raiz do usuário
+		fmt.Sprintf("%d/thumbnails/.placeholder", UserID), // Pasta thumbnails
 	}
 
-	slog.Info("user folder created successfully", "userID", UserID, "bucket", UsersBucketName)
+	// Criar cada placeholder para garantir que as "pastas" existam
+	for _, placeholderPath := range placeholders {
+		writer := bucketHandle.Object(placeholderPath).NewWriter(ctx)
+		_, writeErr := writer.Write([]byte(""))
+		closeErr := writer.Close()
+
+		if writeErr != nil {
+			slog.Error("failed to write placeholder", "userID", UserID, "path", placeholderPath, "error", writeErr)
+			err = status.Error(codes.Internal, "failed to create user folder structure")
+			return
+		}
+
+		if closeErr != nil {
+			slog.Error("failed to close placeholder writer", "userID", UserID, "path", placeholderPath, "error", closeErr)
+			err = status.Error(codes.Internal, "failed to create user folder structure")
+			return
+		}
+
+		slog.Debug("placeholder created", "userID", UserID, "path", placeholderPath)
+	}
+
+	slog.Info("user folder structure created successfully", "userID", UserID, "bucket", UsersBucketName)
 	return
 }

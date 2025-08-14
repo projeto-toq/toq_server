@@ -39,7 +39,7 @@ const (
 	UserService_GetUserRoles_FullMethodName           = "/grpc.UserService/GetUserRoles"
 	UserService_GoHome_FullMethodName                 = "/grpc.UserService/GoHome"
 	UserService_UpdateOptStatus_FullMethodName        = "/grpc.UserService/UpdateOptStatus"
-	UserService_GenerateGCSUploadURL_FullMethodName   = "/grpc.UserService/GenerateGCSUploadURL"
+	UserService_GetPhotoUploadURL_FullMethodName      = "/grpc.UserService/GetPhotoUploadURL"
 	UserService_GetProfileThumbnails_FullMethodName   = "/grpc.UserService/GetProfileThumbnails"
 	UserService_AddAlternativeUserRole_FullMethodName = "/grpc.UserService/AddAlternativeUserRole"
 	UserService_SwitchUserRole_FullMethodName         = "/grpc.UserService/SwitchUserRole"
@@ -48,6 +48,7 @@ const (
 	UserService_GetRealtorByID_FullMethodName         = "/grpc.UserService/GetRealtorByID"
 	UserService_DeleteRealtorByID_FullMethodName      = "/grpc.UserService/DeleteRealtorByID"
 	UserService_VerifyCreciImages_FullMethodName      = "/grpc.UserService/VerifyCreciImages"
+	UserService_GetCreciUploadURL_FullMethodName      = "/grpc.UserService/GetCreciUploadURL"
 	UserService_AcceptInvitation_FullMethodName       = "/grpc.UserService/AcceptInvitation"
 	UserService_RejectInvitation_FullMethodName       = "/grpc.UserService/RejectInvitation"
 	UserService_GetAgencyOfRealtor_FullMethodName     = "/grpc.UserService/GetAgencyOfRealtor"
@@ -79,7 +80,7 @@ type UserServiceClient interface {
 	GetUserRoles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetUserRolesResponse, error)
 	GoHome(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GoHomeResponse, error)
 	UpdateOptStatus(ctx context.Context, in *UpdateOptStatusRequest, opts ...grpc.CallOption) (*UpdateOptStatusResponse, error)
-	GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error)
+	GetPhotoUploadURL(ctx context.Context, in *GetPhotoUploadURLRequest, opts ...grpc.CallOption) (*GetPhotoUploadURLResponse, error)
 	GetProfileThumbnails(ctx context.Context, in *GetProfileThumbnailsRequest, opts ...grpc.CallOption) (*GetProfileThumbnailsResponse, error)
 	// call with Authorization header for Owner and Realtor only
 	AddAlternativeUserRole(ctx context.Context, in *AddAlternativeUserRoleRequest, opts ...grpc.CallOption) (*AddAlternativeUserRoleResponse, error)
@@ -91,6 +92,7 @@ type UserServiceClient interface {
 	DeleteRealtorByID(ctx context.Context, in *DeleteRealtorByIDRequest, opts ...grpc.CallOption) (*DeleteRealtorByIDResponse, error)
 	// call with Authorization header for Realtor only
 	VerifyCreciImages(ctx context.Context, in *VerifyCreciImagesRequest, opts ...grpc.CallOption) (*VerifyCreciImagesResponse, error)
+	GetCreciUploadURL(ctx context.Context, in *GetCreciUploadURLRequest, opts ...grpc.CallOption) (*GetCreciUploadURLResponse, error)
 	AcceptInvitation(ctx context.Context, in *AcceptInvitationRequest, opts ...grpc.CallOption) (*AcceptInvitationResponse, error)
 	RejectInvitation(ctx context.Context, in *RejectInvitationRequest, opts ...grpc.CallOption) (*RejectInvitationResponse, error)
 	GetAgencyOfRealtor(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAgencyOfRealtorResponse, error)
@@ -295,10 +297,10 @@ func (c *userServiceClient) UpdateOptStatus(ctx context.Context, in *UpdateOptSt
 	return out, nil
 }
 
-func (c *userServiceClient) GenerateGCSUploadURL(ctx context.Context, in *GenerateGCSUploadURLRequest, opts ...grpc.CallOption) (*GenerateGCSUploadURLResponse, error) {
+func (c *userServiceClient) GetPhotoUploadURL(ctx context.Context, in *GetPhotoUploadURLRequest, opts ...grpc.CallOption) (*GetPhotoUploadURLResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GenerateGCSUploadURLResponse)
-	err := c.cc.Invoke(ctx, UserService_GenerateGCSUploadURL_FullMethodName, in, out, cOpts...)
+	out := new(GetPhotoUploadURLResponse)
+	err := c.cc.Invoke(ctx, UserService_GetPhotoUploadURL_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -385,6 +387,16 @@ func (c *userServiceClient) VerifyCreciImages(ctx context.Context, in *VerifyCre
 	return out, nil
 }
 
+func (c *userServiceClient) GetCreciUploadURL(ctx context.Context, in *GetCreciUploadURLRequest, opts ...grpc.CallOption) (*GetCreciUploadURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCreciUploadURLResponse)
+	err := c.cc.Invoke(ctx, UserService_GetCreciUploadURL_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) AcceptInvitation(ctx context.Context, in *AcceptInvitationRequest, opts ...grpc.CallOption) (*AcceptInvitationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(AcceptInvitationResponse)
@@ -450,7 +462,7 @@ type UserServiceServer interface {
 	GetUserRoles(context.Context, *emptypb.Empty) (*GetUserRolesResponse, error)
 	GoHome(context.Context, *emptypb.Empty) (*GoHomeResponse, error)
 	UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error)
-	GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error)
+	GetPhotoUploadURL(context.Context, *GetPhotoUploadURLRequest) (*GetPhotoUploadURLResponse, error)
 	GetProfileThumbnails(context.Context, *GetProfileThumbnailsRequest) (*GetProfileThumbnailsResponse, error)
 	// call with Authorization header for Owner and Realtor only
 	AddAlternativeUserRole(context.Context, *AddAlternativeUserRoleRequest) (*AddAlternativeUserRoleResponse, error)
@@ -462,6 +474,7 @@ type UserServiceServer interface {
 	DeleteRealtorByID(context.Context, *DeleteRealtorByIDRequest) (*DeleteRealtorByIDResponse, error)
 	// call with Authorization header for Realtor only
 	VerifyCreciImages(context.Context, *VerifyCreciImagesRequest) (*VerifyCreciImagesResponse, error)
+	GetCreciUploadURL(context.Context, *GetCreciUploadURLRequest) (*GetCreciUploadURLResponse, error)
 	AcceptInvitation(context.Context, *AcceptInvitationRequest) (*AcceptInvitationResponse, error)
 	RejectInvitation(context.Context, *RejectInvitationRequest) (*RejectInvitationResponse, error)
 	GetAgencyOfRealtor(context.Context, *emptypb.Empty) (*GetAgencyOfRealtorResponse, error)
@@ -530,8 +543,8 @@ func (UnimplementedUserServiceServer) GoHome(context.Context, *emptypb.Empty) (*
 func (UnimplementedUserServiceServer) UpdateOptStatus(context.Context, *UpdateOptStatusRequest) (*UpdateOptStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateOptStatus not implemented")
 }
-func (UnimplementedUserServiceServer) GenerateGCSUploadURL(context.Context, *GenerateGCSUploadURLRequest) (*GenerateGCSUploadURLResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GenerateGCSUploadURL not implemented")
+func (UnimplementedUserServiceServer) GetPhotoUploadURL(context.Context, *GetPhotoUploadURLRequest) (*GetPhotoUploadURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPhotoUploadURL not implemented")
 }
 func (UnimplementedUserServiceServer) GetProfileThumbnails(context.Context, *GetProfileThumbnailsRequest) (*GetProfileThumbnailsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfileThumbnails not implemented")
@@ -556,6 +569,9 @@ func (UnimplementedUserServiceServer) DeleteRealtorByID(context.Context, *Delete
 }
 func (UnimplementedUserServiceServer) VerifyCreciImages(context.Context, *VerifyCreciImagesRequest) (*VerifyCreciImagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyCreciImages not implemented")
+}
+func (UnimplementedUserServiceServer) GetCreciUploadURL(context.Context, *GetCreciUploadURLRequest) (*GetCreciUploadURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCreciUploadURL not implemented")
 }
 func (UnimplementedUserServiceServer) AcceptInvitation(context.Context, *AcceptInvitationRequest) (*AcceptInvitationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptInvitation not implemented")
@@ -924,20 +940,20 @@ func _UserService_UpdateOptStatus_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_GenerateGCSUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GenerateGCSUploadURLRequest)
+func _UserService_GetPhotoUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPhotoUploadURLRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, in)
+		return srv.(UserServiceServer).GetPhotoUploadURL(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_GenerateGCSUploadURL_FullMethodName,
+		FullMethod: UserService_GetPhotoUploadURL_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GenerateGCSUploadURL(ctx, req.(*GenerateGCSUploadURLRequest))
+		return srv.(UserServiceServer).GetPhotoUploadURL(ctx, req.(*GetPhotoUploadURLRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1082,6 +1098,24 @@ func _UserService_VerifyCreciImages_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).VerifyCreciImages(ctx, req.(*VerifyCreciImagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetCreciUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCreciUploadURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetCreciUploadURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetCreciUploadURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetCreciUploadURL(ctx, req.(*GetCreciUploadURLRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1242,8 +1276,8 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_UpdateOptStatus_Handler,
 		},
 		{
-			MethodName: "GenerateGCSUploadURL",
-			Handler:    _UserService_GenerateGCSUploadURL_Handler,
+			MethodName: "GetPhotoUploadURL",
+			Handler:    _UserService_GetPhotoUploadURL_Handler,
 		},
 		{
 			MethodName: "GetProfileThumbnails",
@@ -1276,6 +1310,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyCreciImages",
 			Handler:    _UserService_VerifyCreciImages_Handler,
+		},
+		{
+			MethodName: "GetCreciUploadURL",
+			Handler:    _UserService_GetCreciUploadURL_Handler,
 		},
 		{
 			MethodName: "AcceptInvitation",

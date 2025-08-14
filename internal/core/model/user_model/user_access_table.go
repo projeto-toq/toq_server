@@ -16,7 +16,7 @@ var OwnerUserPrivileges = map[string]bool{
 	"SwitchUserRole":         true,
 	"GoHome":                 true,
 	"UpdateOptStatus":        true,
-	"GenerateGCSUploadURL":   true,
+	"GetPhotoUploadURL":      true,
 }
 
 var OwnerListingPrivileges = map[string]bool{
@@ -66,7 +66,8 @@ var RealtorUserPrivileges = map[string]bool{
 	"DeleteAgencyOfRealtor":  true,
 	"GoHome":                 true,
 	"UpdateOptStatus":        true,
-	"GenerateGCSUploadURL":   true,
+	"GetPhotoUploadURL":      true,
+	"GetCreciUploadURL":      true,
 }
 
 var RealtorListingPrivileges = map[string]bool{
@@ -106,5 +107,5 @@ var AgencyUserPrivileges = map[string]bool{
 	"DeleteRealtorByID":    true,
 	"GoHome":               true,
 	"UpdateOptStatus":      true,
-	"GenerateGCSUploadURL": true,
+	"GetPhotoUploadURL":    true,
 }

@@ -1,13 +1,4 @@
-A estrutura de bucket do GCS mudou agora teremos:
-toq_server_users_media/
-├── {user_id}/                    # ✅ Estrutura atual mantida
-│   ├── photo.jpg                 # ✅ Foto atual (manter compatibilidade)
-│   │── thumbnails/           # Diferentes resoluções
-│   │   ├── small.jpg         # 150x150
-│   │   ├── medium.jpg        # 300x300
-│   │   └── large.jpg         # 600x600
-
-portanto responder ao rpc GetProfile com a urlAssinada da photo no campo photo nã faz sentido, pois temos 4 tipos diferentes.
+O processo de criação de usuários (createOwner e Createrealtor) as vezes demora mais que 10 segundos para terminar e isto gera timeout no cliente.
 
 ***Baseado que este projeto tem como princípios e que sempre devem ser respeitados:***
 1) Utilização das melhroes práticas GO;(https://go.dev/talks/2013/bestpractices.slide#1, https://google.github.io/styleguide/go/)
@@ -16,15 +7,6 @@ portanto responder ao rpc GetProfile com a urlAssinada da photo no campo photo n
 4) Manter padrão de desenvolvimento entre as funções;
 5) Preservar a injeção de dependencias atualmente implementada;
 
-Assim, verifique as alterações necessárias para implementar o rpc GetProfileThumbnails com
-message GetProfileThumbnailsRequest {
-}
-
-message GetProfileThumbnailsResponse {
-    string originalUrl = 1;   // photo.jpg
-    string smallUrl = 2;      // thumbnails/small.jpg  
-    string mediumUrl = 3;     // thumbnails/medium.jpg
-    string largeUrl = 4;      // thumbnails/large.jpg
-}
+Verifique se é possível alterar a sequencia de criação para col
 
 ***apresente as alterações e só implemente quando eu autorizar***

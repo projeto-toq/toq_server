@@ -29,7 +29,7 @@ service UserService {
     rpc GetUserRoles (google.protobuf.Empty) returns (GetUserRolesResponse);
     rpc GoHome (google.protobuf.Empty) returns (GoHomeResponse);
     rpc UpdateOptStatus (UpdateOptStatusRequest) returns (UpdateOptStatusResponse);
-    rpc GenerateGCSUploadURL(GenerateGCSUploadURLRequest) returns (GenerateGCSUploadURLResponse);
+    rpc GetPhotoUploadURL(GetPhotoUploadURLRequest) returns (GetPhotoUploadURLResponse);
     rpc GetProfileThumbnails(GetProfileThumbnailsRequest) returns (GetProfileThumbnailsResponse);
     
     //call with Authorization header for Owner and Realtor only
@@ -44,6 +44,7 @@ service UserService {
 
     //call with Authorization header for Realtor only
     rpc VerifyCreciImages (VerifyCreciImagesRequest) returns (VerifyCreciImagesResponse);
+    rpc GetCreciUploadURL(GetCreciUploadURLRequest) returns (GetCreciUploadURLResponse);
     rpc AcceptInvitation (AcceptInvitationRequest) returns (AcceptInvitationResponse);
     rpc RejectInvitation (RejectInvitationRequest) returns (RejectInvitationResponse);
     rpc GetAgencyOfRealtor (google.protobuf.Empty) returns (GetAgencyOfRealtorResponse);
@@ -51,13 +52,23 @@ service UserService {
 
 }
 
-//messages of GenerateGCSUploadURL
-message GenerateGCSUploadURLRequest {
-  string object_name = 1; // Ex: "profile_photo.jpg" ou "documents/creci_frente.jpg"
-  string content_type = 2; // Ex: "image/jpeg"
+//messages of GetPhotoUploadURL
+message GetPhotoUploadURLRequest {
+  string object_name = 1; 
+  string content_type = 2; 
 }
 
-message GenerateGCSUploadURLResponse {
+message GetPhotoUploadURLResponse {
+  string signed_url = 1;
+}
+
+//messages of GetCreciUploadURL
+message GetCreciUploadURLRequest {
+  string document_type = 1; // "selfie.jpg", "front.jpg", "back.jpg"
+  string content_type = 2;  // Ex: "image/jpeg"
+}
+
+message GetCreciUploadURLResponse {
   string signed_url = 1;
 }
 

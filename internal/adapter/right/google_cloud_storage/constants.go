@@ -9,4 +9,9 @@ const (
 	PhotoTypeSmall    = "thumbnails/small.jpg"
 	PhotoTypeMedium   = "thumbnails/medium.jpg"
 	PhotoTypeLarge    = "thumbnails/large.jpg"
+
+	// CRECI Document types - caminhos relativos dentro da pasta do usuário
+	CreciDocumentSelfie = "selfie.jpg"
+	CreciDocumentFront  = "front.jpg"
+	CreciDocumentBack   = "back.jpg"
 )

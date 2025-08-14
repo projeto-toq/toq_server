@@ -9,22 +9,27 @@ import (
 )
 
 type CreciAdapter struct {
-	client *vision.ImageAnnotatorClient
+	client      *vision.ImageAnnotatorClient
+	readerCreds []byte
 }
 
-func NewCreciAdapter(ctx context.Context) *CreciAdapter {
-	return &CreciAdapter{}
+func NewCreciAdapter(ctx context.Context, readerCreds []byte) *CreciAdapter {
+	return &CreciAdapter{
+		readerCreds: readerCreds,
+	}
 }
 
 func (ca *CreciAdapter) Close() {
-	ca.client.Close()
+	if ca.client != nil {
+		ca.client.Close()
+	}
 }
 
 func (ca *CreciAdapter) Open(ctx context.Context) (err error) {
 	ca.client, err = vision.NewImageAnnotatorClient(ctx,
-		option.WithCredentialsFile("../configs/gcs_writer.json"))
+		option.WithCredentialsJSON(ca.readerCreds))
 	if err != nil {
-		slog.Error("Failed to create vision client: ", "error:", err.Error())
+		slog.Error("Failed to create vision client", "error", err)
 		return
 	}
 	return

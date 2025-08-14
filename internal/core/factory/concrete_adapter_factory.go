@@ -60,8 +60,14 @@ func (f *ConcreteAdapterFactory) CreateValidationAdapters(env *globalmodel.Envir
 		return ValidationAdapters{}, fmt.Errorf("failed to create CNPJ adapter: %w", err)
 	}
 
+	// Load GCS reader credentials for CRECI adapter (Vision API - read-only operations)
+	readerCredsForCreci, err := os.ReadFile(env.GCS.ReaderCreds)
+	if err != nil {
+		slog.Warn("failed to read GCS reader credentials for CRECI adapter", "error", err)
+	}
+
 	// CRECI Adapter
-	creci := creciadapter.NewCreciAdapter(context.Background())
+	creci := creciadapter.NewCreciAdapter(context.Background(), readerCredsForCreci)
 
 	slog.Info("Successfully created all validation adapters")
 
