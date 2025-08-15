@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"log/slog"
 	"path/filepath"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils/paths"
 )
 
 // EmailTemplateType define os tipos de template de email
@@ -36,39 +38,33 @@ func (etl *emailTemplateLoader) LoadTemplate(templateType EmailTemplateType, cod
 		return "", err
 	}
 
-	templatePath := filepath.Join("internal", "core", "templates", templateFile)
+	base := paths.BaseDir()
+	primary := filepath.Join(base, "internal", "core", "templates", templateFile)
+	candidates := []string{primary}
 
-	slog.Debug("Loading email template",
-		"templateType", templateType,
-		"templatePath", templatePath,
-		"code", code)
+	// fallback subindo diretórios caso executável esteja em /bin
+	if _, _, ok := paths.BestFile(filepath.Join("internal", "core", "templates", templateFile)); ok {
+		found, all, ok2 := paths.BestFile(filepath.Join("internal", "core", "templates", templateFile))
+		candidates = all
+		if ok2 {
+			primary = found
+		}
+	}
 
-	tmpl, err := template.ParseFiles(templatePath)
+	slog.Debug("Loading email template", "templateType", templateType, "candidates", candidates, "chosen", primary)
+
+	tmpl, err := template.ParseFiles(primary)
 	if err != nil {
-		slog.Error("Failed to parse email template",
-			"templatePath", templatePath,
-			"templateType", templateType,
-			"error", err)
-		return "", fmt.Errorf("failed to parse email template %s: %w", templatePath, err)
+		slog.Error("Failed to parse email template", "chosen", primary, "candidates", candidates, "error", err)
+		return "", fmt.Errorf("failed to parse email template %s: %w", primary, err)
 	}
 
 	var body bytes.Buffer
 	templateData := struct{ Code string }{Code: code}
-
-	err = tmpl.Execute(&body, templateData)
-	if err != nil {
-		slog.Error("Failed to execute email template",
-			"templatePath", templatePath,
-			"templateType", templateType,
-			"code", code,
-			"error", err)
+	if err = tmpl.Execute(&body, templateData); err != nil {
+		slog.Error("Failed to execute email template", "chosen", primary, "error", err)
 		return "", fmt.Errorf("failed to execute email template: %w", err)
 	}
-
-	slog.Debug("Email template loaded successfully",
-		"templateType", templateType,
-		"templatePath", templatePath)
-
 	return body.String(), nil
 }
 
