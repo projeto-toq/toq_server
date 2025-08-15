@@ -16,11 +16,11 @@ import (
 
 // InjectDependencies orquestra a criação de todos os adapters usando Factory Pattern
 // Aplica princípios SOLID e melhores práticas Go para injeção de dependências
-func (c *config) InjectDependencies() (close func() error, err error) {
+func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	slog.Info("Starting dependency injection using Factory Pattern")
 
 	// Criar factory
-	adapterFactory := factory.NewAdapterFactory()
+	adapterFactory := factory.NewAdapterFactory(lm)
 
 	// Configuração para factory
 	factoryConfig := factory.AdapterFactoryConfig{
@@ -31,16 +31,19 @@ func (c *config) InjectDependencies() (close func() error, err error) {
 
 	// Validar configuração
 	if err = factory.ValidateFactoryConfig(factoryConfig); err != nil {
-		return nil, fmt.Errorf("invalid factory configuration: %w", err)
+		return fmt.Errorf("invalid factory configuration: %w", err)
 	}
 
 	// 1. Criar Storage Adapters (Database + Cache)
 	slog.Info("Creating storage adapters")
 	storage, err := adapterFactory.CreateStorageAdapters(c.context, &c.env, c.db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create storage adapters: %w", err)
+		return fmt.Errorf("failed to create storage adapters: %w", err)
 	}
 	c.assignStorageAdapters(storage)
+	if storage.CloseFunc != nil {
+		lm.AddCleanupFunc(func() { _ = storage.CloseFunc() })
+	}
 
 	// Atualizar factory config com database
 	factoryConfig.Database = storage.Database
@@ -49,7 +52,7 @@ func (c *config) InjectDependencies() (close func() error, err error) {
 	slog.Info("Creating repository adapters")
 	repositories, err := adapterFactory.CreateRepositoryAdapters(storage.Database)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create repository adapters: %w", err)
+		return fmt.Errorf("failed to create repository adapters: %w", err)
 	}
 	c.assignRepositoryAdapters(repositories)
 
@@ -57,7 +60,7 @@ func (c *config) InjectDependencies() (close func() error, err error) {
 	slog.Info("Creating validation adapters")
 	validation, err := adapterFactory.CreateValidationAdapters(&c.env)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create validation adapters: %w", err)
+		return fmt.Errorf("failed to create validation adapters: %w", err)
 	}
 	c.assignValidationAdapters(validation)
 
@@ -65,36 +68,19 @@ func (c *config) InjectDependencies() (close func() error, err error) {
 	slog.Info("Creating external service adapters")
 	external, err := adapterFactory.CreateExternalServiceAdapters(c.context, &c.env)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create external service adapters: %w", err)
+		return fmt.Errorf("failed to create external service adapters: %w", err)
 	}
 	c.assignExternalServiceAdapters(external)
+	if external.CloseFunc != nil {
+		lm.AddCleanupFunc(func() { _ = external.CloseFunc() })
+	}
 
 	// 5. Inicializar Services
 	c.initializeServices()
 
 	slog.Info("Dependency injection completed successfully using Factory Pattern")
 
-	// Retornar função de cleanup combinada
-	closeFunc := func() error {
-		var errs []error
-		if storage.CloseFunc != nil {
-			if err := storage.CloseFunc(); err != nil {
-				errs = append(errs, err)
-			}
-		}
-		if external.CloseFunc != nil {
-			if err := external.CloseFunc(); err != nil {
-				errs = append(errs, err)
-			}
-		}
-		if len(errs) > 0 {
-			// Pode-se usar um pacote de "multierror" aqui para um tratamento mais robusto
-			return fmt.Errorf("errors during cleanup: %v", errs)
-		}
-		return nil
-	}
-
-	return closeFunc, nil
+	return nil
 }
 
 func (c *config) InitGlobalService() {

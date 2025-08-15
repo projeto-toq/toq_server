@@ -61,7 +61,7 @@ type ConfigInterface interface {
 	VerifyDatabase()
 	InitializeTelemetry() (func(), error)
 	InitializeGRPC()
-	InjectDependencies() (func() error, error)
+	InjectDependencies(*LifecycleManager) error
 	InitGlobalService()
 	InitUserHandler()
 	InitComplexHandler()

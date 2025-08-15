@@ -72,6 +72,9 @@ func main() {
 	slog.Info("🚀 Starting TOQ Server initialization", "version", globalmodel.AppVersion)
 
 	// Phase 3: Configuration and Environment Setup
+	lifecycleManager := config.NewLifecycleManager()
+	defer lifecycleManager.Cleanup()
+
 	config := config.NewConfig(ctx)
 
 	// Load and validate environment configuration
@@ -122,18 +125,11 @@ func main() {
 
 	// Inject all dependencies using Factory Pattern
 	// This creates: validation adapters, external services, storage adapters, repositories
-	resourceCleanup, err := config.InjectDependencies()
+	err = config.InjectDependencies(lifecycleManager)
 	if err != nil {
 		slog.Error("❌ Failed to inject dependencies via Factory Pattern", "error", err)
 		os.Exit(1)
 	}
-	defer func() {
-		if err := resourceCleanup(); err != nil {
-			slog.Error("❌ Error during resource cleanup", "error", err)
-			os.Exit(1)
-		}
-		slog.Info("✅ All resources cleaned up successfully")
-	}()
 	slog.Info("✅ Dependency injection completed via Factory Pattern")
 
 	// Configure activity tracker with user service (post-dependency injection)

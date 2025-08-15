@@ -2,6 +2,7 @@ package creciadapter
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	vision "cloud.google.com/go/vision/v2/apiv1"
@@ -13,24 +14,38 @@ type CreciAdapter struct {
 	readerCreds []byte
 }
 
-func NewCreciAdapter(ctx context.Context, readerCreds []byte) *CreciAdapter {
-	return &CreciAdapter{
-		readerCreds: readerCreds,
+func NewCreciAdapter(ctx context.Context, readerCreds []byte) (*CreciAdapter, func(), error) {
+	client, err := vision.NewImageAnnotatorClient(ctx, option.WithCredentialsJSON(readerCreds))
+	if err != nil {
+		slog.Error("Failed to create vision client", "error", err)
+		return nil, nil, err
 	}
+
+	adapter := &CreciAdapter{
+		client: client,
+	}
+
+	closeFunc := func() {
+		if adapter.client != nil {
+			adapter.client.Close()
+		}
+	}
+
+	return adapter, closeFunc, nil
 }
 
+// As funções Open e Close agora são gerenciadas pelo ciclo de vida do factory
+// e podem ser removidas se não forem mais chamadas diretamente.
+// Por segurança, vamos mantê-las vazias por enquanto.
+
 func (ca *CreciAdapter) Close() {
-	if ca.client != nil {
-		ca.client.Close()
-	}
+	// O cliente agora é fechado pela closeFunc retornada pelo NewCreciAdapter
 }
 
 func (ca *CreciAdapter) Open(ctx context.Context) (err error) {
-	ca.client, err = vision.NewImageAnnotatorClient(ctx,
-		option.WithCredentialsJSON(ca.readerCreds))
-	if err != nil {
-		slog.Error("Failed to create vision client", "error", err)
-		return
+	// O cliente agora é aberto pelo NewCreciAdapter
+	if ca.client == nil {
+		return fmt.Errorf("vision client not initialized")
 	}
-	return
+	return nil
 }

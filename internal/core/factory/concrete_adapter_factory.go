@@ -35,7 +35,9 @@ import (
 
 // ConcreteAdapterFactory implementa a interface AdapterFactory
 // Responsável pela criação concreta de todos os adapters do sistema
-type ConcreteAdapterFactory struct{}
+type ConcreteAdapterFactory struct {
+	lm LifecycleManager
+}
 
 // CreateValidationAdapters cria e configura todos os adapters de validação externa
 // Retorna ValidationAdapters com CEP, CPF, CNPJ e CRECI configurados
@@ -67,7 +69,14 @@ func (f *ConcreteAdapterFactory) CreateValidationAdapters(env *globalmodel.Envir
 	}
 
 	// CRECI Adapter
-	creci := creciadapter.NewCreciAdapter(context.Background(), readerCredsForCreci)
+	creci, creciClose, err := creciadapter.NewCreciAdapter(context.Background(), readerCredsForCreci)
+	if err != nil {
+		slog.Warn("failed to create CRECI adapter, proceeding without it", "error", err)
+	}
+	// Adicionar a função de fechamento ao gerenciador de ciclo de vida
+	if f.lm != nil && creciClose != nil {
+		f.lm.AddCleanupFunc(creciClose)
+	}
 
 	slog.Info("Successfully created all validation adapters")
 

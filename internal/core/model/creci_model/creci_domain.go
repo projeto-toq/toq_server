@@ -42,6 +42,7 @@ var ValidStates = map[string]bool{
 }
 
 const (
-	//Facing Match
-	FaceMatchThreshold = float32(1100.0)
+	// FaceMatchThreshold define o limiar mínimo de similaridade de cosseno (0..1) entre dois vetores faciais
+	// 0.85 é um ponto inicial intermediário; poderá ser ajustado empiricamente em produção.
+	FaceMatchThreshold = float32(0.85)
 )
