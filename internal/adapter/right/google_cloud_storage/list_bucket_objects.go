@@ -14,7 +14,7 @@ func (g *GCSAdapter) ListBucketObjects(ctx context.Context, bucketName string) (
 		err = status.Error(codes.FailedPrecondition, "gcs reader client not initialized")
 		return
 	}
-	bucketHandle := g.adminClient.Bucket(bucketName)
+	bucketHandle := g.readerClient.Bucket(bucketName)
 
 	it := bucketHandle.Objects(ctx, nil)
 	for {

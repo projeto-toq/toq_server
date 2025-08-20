@@ -31,6 +31,8 @@ const (
 	UserService_RequestEmailChange_FullMethodName     = "/grpc.UserService/RequestEmailChange"
 	UserService_ConfirmEmailChange_FullMethodName     = "/grpc.UserService/ConfirmEmailChange"
 	UserService_RequestPhoneChange_FullMethodName     = "/grpc.UserService/RequestPhoneChange"
+	UserService_ResendEmailChangeCode_FullMethodName  = "/grpc.UserService/ResendEmailChangeCode"
+	UserService_ResendPhoneChangeCode_FullMethodName  = "/grpc.UserService/ResendPhoneChangeCode"
 	UserService_ConfirmPhoneChange_FullMethodName     = "/grpc.UserService/ConfirmPhoneChange"
 	UserService_GetProfile_FullMethodName             = "/grpc.UserService/GetProfile"
 	UserService_UpdateProfile_FullMethodName          = "/grpc.UserService/UpdateProfile"
@@ -43,6 +45,7 @@ const (
 	UserService_GetProfileThumbnails_FullMethodName   = "/grpc.UserService/GetProfileThumbnails"
 	UserService_AddAlternativeUserRole_FullMethodName = "/grpc.UserService/AddAlternativeUserRole"
 	UserService_SwitchUserRole_FullMethodName         = "/grpc.UserService/SwitchUserRole"
+	UserService_GetDocumentsUploadURL_FullMethodName  = "/grpc.UserService/GetDocumentsUploadURL"
 	UserService_InviteRealtor_FullMethodName          = "/grpc.UserService/InviteRealtor"
 	UserService_GetRealtorsByAgency_FullMethodName    = "/grpc.UserService/GetRealtorsByAgency"
 	UserService_GetRealtorByID_FullMethodName         = "/grpc.UserService/GetRealtorByID"
@@ -72,6 +75,8 @@ type UserServiceClient interface {
 	RequestEmailChange(ctx context.Context, in *RequestEmailChangeRequest, opts ...grpc.CallOption) (*RequestEmailChangeResponse, error)
 	ConfirmEmailChange(ctx context.Context, in *ConfirmEmailChangeRequest, opts ...grpc.CallOption) (*ConfirmEmailChangeResponse, error)
 	RequestPhoneChange(ctx context.Context, in *RequestPhoneChangeRequest, opts ...grpc.CallOption) (*RequestPhoneChangeResponse, error)
+	ResendEmailChangeCode(ctx context.Context, in *ResendEmailChangeCodeRequest, opts ...grpc.CallOption) (*ResendEmailChangeCodeResponse, error)
+	ResendPhoneChangeCode(ctx context.Context, in *ResendPhoneChangeCodeRequest, opts ...grpc.CallOption) (*ResendPhoneChangeCodeResponse, error)
 	ConfirmPhoneChange(ctx context.Context, in *ConfirmPhoneChangeRequest, opts ...grpc.CallOption) (*ConfirmPhoneChangeResponse, error)
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*UpdateProfileResponse, error)
@@ -86,6 +91,7 @@ type UserServiceClient interface {
 	AddAlternativeUserRole(ctx context.Context, in *AddAlternativeUserRoleRequest, opts ...grpc.CallOption) (*AddAlternativeUserRoleResponse, error)
 	SwitchUserRole(ctx context.Context, in *SwitchUserRoleRequest, opts ...grpc.CallOption) (*SwitchUserRoleResponse, error)
 	// call with Authorization header for Agency only
+	GetDocumentsUploadURL(ctx context.Context, in *GetDocumentsUploadURLRequest, opts ...grpc.CallOption) (*GetDocumentsUploadURLResponse, error)
 	InviteRealtor(ctx context.Context, in *InviteRealtorRequest, opts ...grpc.CallOption) (*InviteRealtorResponse, error)
 	GetRealtorsByAgency(ctx context.Context, in *GetRealtorsByAgencyRequest, opts ...grpc.CallOption) (*GetRealtorsByAgencyResponse, error)
 	GetRealtorByID(ctx context.Context, in *GetRealtorByIDRequest, opts ...grpc.CallOption) (*GetRealtorByIDResponse, error)
@@ -217,6 +223,26 @@ func (c *userServiceClient) RequestPhoneChange(ctx context.Context, in *RequestP
 	return out, nil
 }
 
+func (c *userServiceClient) ResendEmailChangeCode(ctx context.Context, in *ResendEmailChangeCodeRequest, opts ...grpc.CallOption) (*ResendEmailChangeCodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResendEmailChangeCodeResponse)
+	err := c.cc.Invoke(ctx, UserService_ResendEmailChangeCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) ResendPhoneChangeCode(ctx context.Context, in *ResendPhoneChangeCodeRequest, opts ...grpc.CallOption) (*ResendPhoneChangeCodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResendPhoneChangeCodeResponse)
+	err := c.cc.Invoke(ctx, UserService_ResendPhoneChangeCode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) ConfirmPhoneChange(ctx context.Context, in *ConfirmPhoneChangeRequest, opts ...grpc.CallOption) (*ConfirmPhoneChangeResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ConfirmPhoneChangeResponse)
@@ -331,6 +357,16 @@ func (c *userServiceClient) SwitchUserRole(ctx context.Context, in *SwitchUserRo
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SwitchUserRoleResponse)
 	err := c.cc.Invoke(ctx, UserService_SwitchUserRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetDocumentsUploadURL(ctx context.Context, in *GetDocumentsUploadURLRequest, opts ...grpc.CallOption) (*GetDocumentsUploadURLResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDocumentsUploadURLResponse)
+	err := c.cc.Invoke(ctx, UserService_GetDocumentsUploadURL_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -454,6 +490,8 @@ type UserServiceServer interface {
 	RequestEmailChange(context.Context, *RequestEmailChangeRequest) (*RequestEmailChangeResponse, error)
 	ConfirmEmailChange(context.Context, *ConfirmEmailChangeRequest) (*ConfirmEmailChangeResponse, error)
 	RequestPhoneChange(context.Context, *RequestPhoneChangeRequest) (*RequestPhoneChangeResponse, error)
+	ResendEmailChangeCode(context.Context, *ResendEmailChangeCodeRequest) (*ResendEmailChangeCodeResponse, error)
+	ResendPhoneChangeCode(context.Context, *ResendPhoneChangeCodeRequest) (*ResendPhoneChangeCodeResponse, error)
 	ConfirmPhoneChange(context.Context, *ConfirmPhoneChangeRequest) (*ConfirmPhoneChangeResponse, error)
 	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileResponse, error)
@@ -468,6 +506,7 @@ type UserServiceServer interface {
 	AddAlternativeUserRole(context.Context, *AddAlternativeUserRoleRequest) (*AddAlternativeUserRoleResponse, error)
 	SwitchUserRole(context.Context, *SwitchUserRoleRequest) (*SwitchUserRoleResponse, error)
 	// call with Authorization header for Agency only
+	GetDocumentsUploadURL(context.Context, *GetDocumentsUploadURLRequest) (*GetDocumentsUploadURLResponse, error)
 	InviteRealtor(context.Context, *InviteRealtorRequest) (*InviteRealtorResponse, error)
 	GetRealtorsByAgency(context.Context, *GetRealtorsByAgencyRequest) (*GetRealtorsByAgencyResponse, error)
 	GetRealtorByID(context.Context, *GetRealtorByIDRequest) (*GetRealtorByIDResponse, error)
@@ -519,6 +558,12 @@ func (UnimplementedUserServiceServer) ConfirmEmailChange(context.Context, *Confi
 func (UnimplementedUserServiceServer) RequestPhoneChange(context.Context, *RequestPhoneChangeRequest) (*RequestPhoneChangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestPhoneChange not implemented")
 }
+func (UnimplementedUserServiceServer) ResendEmailChangeCode(context.Context, *ResendEmailChangeCodeRequest) (*ResendEmailChangeCodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResendEmailChangeCode not implemented")
+}
+func (UnimplementedUserServiceServer) ResendPhoneChangeCode(context.Context, *ResendPhoneChangeCodeRequest) (*ResendPhoneChangeCodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResendPhoneChangeCode not implemented")
+}
 func (UnimplementedUserServiceServer) ConfirmPhoneChange(context.Context, *ConfirmPhoneChangeRequest) (*ConfirmPhoneChangeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConfirmPhoneChange not implemented")
 }
@@ -554,6 +599,9 @@ func (UnimplementedUserServiceServer) AddAlternativeUserRole(context.Context, *A
 }
 func (UnimplementedUserServiceServer) SwitchUserRole(context.Context, *SwitchUserRoleRequest) (*SwitchUserRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SwitchUserRole not implemented")
+}
+func (UnimplementedUserServiceServer) GetDocumentsUploadURL(context.Context, *GetDocumentsUploadURLRequest) (*GetDocumentsUploadURLResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentsUploadURL not implemented")
 }
 func (UnimplementedUserServiceServer) InviteRealtor(context.Context, *InviteRealtorRequest) (*InviteRealtorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InviteRealtor not implemented")
@@ -796,6 +844,42 @@ func _UserService_RequestPhoneChange_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_ResendEmailChangeCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResendEmailChangeCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).ResendEmailChangeCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_ResendEmailChangeCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).ResendEmailChangeCode(ctx, req.(*ResendEmailChangeCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_ResendPhoneChangeCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResendPhoneChangeCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).ResendPhoneChangeCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_ResendPhoneChangeCode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).ResendPhoneChangeCode(ctx, req.(*ResendPhoneChangeCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_ConfirmPhoneChange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ConfirmPhoneChangeRequest)
 	if err := dec(in); err != nil {
@@ -1008,6 +1092,24 @@ func _UserService_SwitchUserRole_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).SwitchUserRole(ctx, req.(*SwitchUserRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetDocumentsUploadURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDocumentsUploadURLRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetDocumentsUploadURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetDocumentsUploadURL_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetDocumentsUploadURL(ctx, req.(*GetDocumentsUploadURLRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1244,6 +1346,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_RequestPhoneChange_Handler,
 		},
 		{
+			MethodName: "ResendEmailChangeCode",
+			Handler:    _UserService_ResendEmailChangeCode_Handler,
+		},
+		{
+			MethodName: "ResendPhoneChangeCode",
+			Handler:    _UserService_ResendPhoneChangeCode_Handler,
+		},
+		{
 			MethodName: "ConfirmPhoneChange",
 			Handler:    _UserService_ConfirmPhoneChange_Handler,
 		},
@@ -1290,6 +1400,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SwitchUserRole",
 			Handler:    _UserService_SwitchUserRole_Handler,
+		},
+		{
+			MethodName: "GetDocumentsUploadURL",
+			Handler:    _UserService_GetDocumentsUploadURL_Handler,
 		},
 		{
 			MethodName: "InviteRealtor",

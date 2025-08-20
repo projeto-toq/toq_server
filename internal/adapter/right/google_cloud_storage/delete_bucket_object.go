@@ -8,11 +8,11 @@ import (
 )
 
 func (g *GCSAdapter) DeleteBucketObject(ctx context.Context, bucketName, objectName string) (err error) {
-	if g.writerClient == nil {
-		err = status.Error(codes.FailedPrecondition, "gcs writer client not initialized")
+	if g.adminClient == nil {
+		err = status.Error(codes.FailedPrecondition, "gcs admin client not initialized")
 		return
 	}
-	bucketHandle := g.writerClient.Bucket(bucketName)
+	bucketHandle := g.adminClient.Bucket(bucketName)
 
 	err = bucketHandle.Object(objectName).Delete(ctx)
 
