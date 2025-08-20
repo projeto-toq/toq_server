@@ -9,13 +9,13 @@ import (
 
 // GenerateV4PutObjectSignedURL gera uma URL para upload (PUT).
 func (g *GCSAdapter) GenerateV4PutObjectSignedURL(bucketName, objectName, contentType string) (string, error) {
-	if g.writerClient == nil {
-		return "", fmt.Errorf("writer client is not initialized")
+	if g.adminClient == nil {
+		return "", fmt.Errorf("admin client is not initialized")
 	}
 
 	opts := &storage.SignedURLOptions{
-		GoogleAccessID: g.writerSAEmail,
-		PrivateKey:     g.writerPrivateKey,
+		GoogleAccessID: g.adminSAEmail,
+		PrivateKey:     g.adminPrivateKey,
 		Scheme:         storage.SigningSchemeV4,
 		Method:         "PUT",
 		Expires:        time.Now().Add(15 * time.Minute),

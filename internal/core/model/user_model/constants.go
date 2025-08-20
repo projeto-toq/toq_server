@@ -145,6 +145,7 @@ const (
 	ActionFinishedCreciVerified
 	ActionFinishedCreciFaceVerified
 	ActionFinishedCreciManualVerified
+	ActionFinishedCreciImagesUploadedForManualReview
 	ActionFinishedInviteAccepted
 	ActionFinishedInviteRejected
 	ActionFinishedInviteCreated

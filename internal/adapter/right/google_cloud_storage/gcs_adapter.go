@@ -22,6 +22,7 @@ type GCSAdapter struct {
 	adminSAEmail     string
 	writerSAEmail    string
 	readerSAEmail    string
+	adminPrivateKey  []byte
 	writerPrivateKey []byte
 	readerPrivateKey []byte
 }
@@ -46,7 +47,11 @@ func NewGCSAdapter(ctx context.Context, projectID string, adminCreds, writerCred
 	}
 
 	// Parse credentials to extract private keys for signing URLs
-	var writerSA, readerSA serviceAccount
+	var adminSA, writerSA, readerSA serviceAccount
+	if err := json.Unmarshal(adminCreds, &adminSA); err != nil {
+		slog.Error("failed to parse admin service account credentials", "error", err)
+		return nil, nil, err
+	}
 	if err := json.Unmarshal(writerCreds, &writerSA); err != nil {
 		slog.Error("failed to parse writer service account credentials", "error", err)
 		return nil, nil, err
@@ -64,6 +69,7 @@ func NewGCSAdapter(ctx context.Context, projectID string, adminCreds, writerCred
 		adminSAEmail:     adminSAEmail,
 		writerSAEmail:    writerSAEmail,
 		readerSAEmail:    readerSAEmail,
+		adminPrivateKey:  []byte(adminSA.PrivateKey),
 		writerPrivateKey: []byte(writerSA.PrivateKey),
 		readerPrivateKey: []byte(readerSA.PrivateKey),
 	}

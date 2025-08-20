@@ -39,8 +39,6 @@
     // File Explorer Configuration
     "explorer.compactFolders": false,
     "files.exclude": {
-        "**/bin/**": true,
-        "**/vendor/**": true,
         "**/.git": true,
         "**/.DS_Store": true,
         "**/node_modules": true

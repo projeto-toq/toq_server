@@ -12,8 +12,10 @@ func (c *config) InitializeGoRoutines() {
 	c.wg.Add(1)
 	go c.activityTracker.StartBatchWorker(c.wg, c.context)
 
-	c.wg.Add(1)
-	go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)
+	// COMENTADO: Desabilitado processo automático de validação CRECI
+	// Após refatoração, o status é alterado diretamente para StatusPendingManual
+	// c.wg.Add(1)
+	// go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)
 
 	c.wg.Add(1)
 	go goroutines.CleanMemoryCache(&c.cache, c.wg, c.context)

@@ -48,7 +48,7 @@ func (us *userService) verifyCreciImages(ctx context.Context, tx *sql.Tx, realto
 		return
 	}
 
-	status, reason, _, err := us.updateUserStatus(ctx, tx, realtor.GetActiveRole().GetRole(), usermodel.ActionFinishedCreciImagesUploaded)
+	status, reason, _, err := us.updateUserStatus(ctx, tx, realtor.GetActiveRole().GetRole(), usermodel.ActionFinishedCreciImagesUploadedForManualReview)
 	if err != nil {
 		return
 	}

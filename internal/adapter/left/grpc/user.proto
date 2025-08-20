@@ -37,6 +37,7 @@ service UserService {
     rpc SwitchUserRole (SwitchUserRoleRequest) returns (SwitchUserRoleResponse);
 
     //call with Authorization header for Agency only
+    rpc GetDocumentsUploadURL(GetDocumentsUploadURLRequest) returns (GetDocumentsUploadURLResponse);//TODO: a ser implementado
     rpc InviteRealtor (InviteRealtorRequest) returns (InviteRealtorResponse);
     rpc GetRealtorsByAgency (GetRealtorsByAgencyRequest) returns (GetRealtorsByAgencyResponse);
     rpc GetRealtorByID (GetRealtorByIDRequest) returns (GetRealtorByIDResponse);
@@ -59,6 +60,16 @@ message GetPhotoUploadURLRequest {
 }
 
 message GetPhotoUploadURLResponse {
+  string signed_url = 1;
+}
+
+//messages of GetDocumentsUploadURL
+message GetDocumentsUploadURLRequest {
+  string document_type = 1; // "cnpj.jpg", "front.jpg", "back.jpg", "contract.jpg"
+  string content_type = 2;  // Ex: "image/jpeg"
+}
+
+message GetDocumentsUploadURLResponse {
   string signed_url = 1;
 }
 

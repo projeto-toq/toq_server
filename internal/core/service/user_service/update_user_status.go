@@ -112,6 +112,9 @@ func (us *userService) updateUserStatus(
 		nextStatus = usermodel.StatusActive
 		nextStatusReason = "User active"
 		notification = globalmodel.NotificationCreciValidated
+	case usermodel.ActionFinishedCreciImagesUploadedForManualReview:
+		nextStatus = usermodel.StatusPendingManual
+		nextStatusReason = "Awaiting manual verification by administrator"
 	case usermodel.ActionFinishedInviteCreated:
 		nextStatus = usermodel.StatusInvitePending
 		nextStatusReason = "Awaiting invite verification"

@@ -8,10 +8,8 @@
             "name": "TOQ Server (Development with pprof)",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
             "program": "${workspaceFolder}/cmd/toq_server.go",
             "cwd": "${workspaceFolder}",
-            "output": "${workspaceFolder}/bin/debug_bin",
             "env": {
                 "DISABLE_OTLP": "false",
                 "OTLP_ENDPOINT": "localhost:4317",
@@ -26,17 +24,14 @@
                 "LOG_LEVEL": "debug"
             },
             "args": [],
-            "console": "internalConsole",
-            "showLog": false
+            "console": "internalConsole"
         },
         {
             "name": "TOQ Server (Production Mode)",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
             "program": "${workspaceFolder}/cmd/toq_server.go",
             "cwd": "${workspaceFolder}",
-            "output": "${workspaceFolder}/bin/release_bin",
             "env": {
                 "DISABLE_OTLP": "false",
                 "OTLP_ENDPOINT": "localhost:4317",
@@ -56,11 +51,9 @@
             "name": "Attach to running TOQ Server",
             "type": "go",
             "request": "attach",
-            "mode": "remote",
-            "remotePath": "",
+            "processId": 0,
             "port": 2345,
-            "host": "127.0.0.1",
-            "showLog": false
+            "host": "127.0.0.1"
         }
     ]
 }
