@@ -36,7 +36,7 @@ func (c *config) LoadEnv() error {
 		}
 	}
 
-	slog.Info("loading environment file", "candidates", candidates, "chosen", target, "baseDir", paths.BaseDir())
+	slog.Debug("loading environment file", "candidates", candidates, "chosen", target, "baseDir", paths.BaseDir())
 
 	if target == "" {
 		return fmt.Errorf("failed to locate env.yaml; tried=%v", candidates)
@@ -70,7 +70,7 @@ func (c *config) LoadEnv() error {
 		// relativo: tentar fallback subindo diretórios
 		found, cands, ok := paths.BestFile(val)
 		if ok {
-			slog.Info("credential path resolved", "kind", label, "candidates", cands, "chosen", found)
+			slog.Debug("credential path resolved", "kind", label, "candidates", cands, "chosen", found)
 			return found
 		}
 		// não achou – usar resolução direta baseada no BaseDir para erro posterior
