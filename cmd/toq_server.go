@@ -45,9 +45,6 @@ import (
 // 5. gRPC server initialization and startup
 // 6. Background workers and graceful shutdown handling
 func main() {
-	// Setup a temporary logger to stdout to ensure initial logs are not red
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
-
 	// Change working directory to project root if running from cmd
 	if wd, err := os.Getwd(); err == nil {
 		if filepath.Base(wd) == "cmd" {
@@ -92,16 +89,20 @@ func main() {
 
 	config := config.NewConfig(ctx)
 
+	// Initialize structured logging system early (ENV-first with defaults)
+	config.InitializeLog()
+	slog.Debug("early logger initialized from ENV/defaults")
+
 	// Load and validate environment configuration
 	if err := config.LoadEnv(); err != nil {
 		slog.Error("❌ Failed to load environment configuration", "error", err)
 		os.Exit(1)
 	}
-	slog.Info("✅ Environment configuration loaded successfully")
+	slog.Debug("✅ Environment configuration loaded successfully")
 
-	// Initialize structured logging system
+	// Re-apply logging with YAML (ENV still has precedence)
 	config.InitializeLog()
-	slog.Info("✅ Logging system initialized")
+	slog.Debug("✅ Logging system initialized (env > yaml > defaults)")
 
 	slog.Info("🔧 TOQ API Server starting", "version", globalmodel.AppVersion)
 

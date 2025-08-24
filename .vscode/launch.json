@@ -9,9 +9,11 @@
             "type": "go",
             "request": "launch",
             "program": "${workspaceFolder}/cmd/toq_server.go",
+            // Build the debug binary into ./bin when launching
+            "output": "${workspaceFolder}/bin/toq_server",
             "cwd": "${workspaceFolder}",
             "env": {
-                "DISABLE_OTLP": "false",
+                "DISABLE_OTEL": "false",
                 "OTLP_ENDPOINT": "localhost:4317",
                 "DB_HOST": "localhost",
                 "DB_PORT": "3306",
@@ -21,39 +23,12 @@
                 "PORT": "8080",
                 "ENABLE_PPROF": "true",
                 "PPROF_PORT": "6060",
-                "LOG_LEVEL": "debug"
+                "LOG_LEVEL": "info",
+                "LOG_ADDSOURCE": "true",
+                "LOG_TOFILE": "false"
             },
             "args": [],
             "console": "internalConsole"
-        },
-        {
-            "name": "TOQ Server (Production Mode)",
-            "type": "go",
-            "request": "launch",
-            "program": "${workspaceFolder}/cmd/toq_server.go",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "DISABLE_OTLP": "false",
-                "OTLP_ENDPOINT": "localhost:4317",
-                "DB_HOST": "localhost",
-                "DB_PORT": "3306",
-                "DB_USER": "toq_user",
-                "DB_PASSWORD": "toq_password",
-                "DB_NAME": "toq_db",
-                "PORT": "8080",
-                "ENABLE_PPROF": "false",
-                "LOG_LEVEL": "info"
-            },
-            "args": [],
-            "console": "internalConsole"
-        },
-        {
-            "name": "Attach to running TOQ Server",
-            "type": "go",
-            "request": "attach",
-            "processId": 0,
-            "port": 2345,
-            "host": "127.0.0.1"
         }
     ]
 }
