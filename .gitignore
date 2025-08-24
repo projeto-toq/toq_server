@@ -10,6 +10,7 @@
 
 # Binary directory
 /bin/
+/data/mysql_data
 
 # Test binary, built with `go test -c`
 *.test

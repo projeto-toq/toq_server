@@ -4,8 +4,6 @@ import (
 	"crypto/tls"
 	"log/slog"
 	"net"
-	"os"
-	"path/filepath"
 
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/middlewares"
 	"google.golang.org/grpc"
@@ -25,11 +23,8 @@ func (c *config) InitializeGRPC() {
 	slog.Info("Server listening on", "Addr:", c.listener.Addr())
 
 	// Load server's certificate and private key
-	homeDir, _ := os.UserHomeDir()
-	certPath := filepath.Join(homeDir, "grpc-ssl", "fullchain.pem")
-	keyPath := filepath.Join(homeDir, "grpc-ssl", "privkey.pem")
-
-	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+	slog.Debug("attempting to load gRPC TLS certificates", "certPath", c.env.GRPC.CertPath, "keyPath", c.env.GRPC.KeyPath)
+	cert, err := tls.LoadX509KeyPair(c.env.GRPC.CertPath, c.env.GRPC.KeyPath)
 	if err != nil {
 		slog.Error("failed to load key pair", "error", err)
 		panic(err)

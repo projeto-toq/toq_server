@@ -27,10 +27,11 @@ services:
       - MYSQL_PASSWORD=toq_password
     ports:
       - "3306:3306"
+    command: --init-file=/docker-entrypoint-initdb.d/grant_privileges.sql
     volumes:
-      - mysql_data:/var/lib/mysql
-      # - ./scripts/DB_creation.sql:/docker-entrypoint-initdb.d/setup-user.sql
+      - ./data/mysql_data:/var/lib/mysql
       - ./data:/var/lib/mysql-files
+      - ./scripts/grant_privileges.sql:/docker-entrypoint-initdb.d/grant_privileges.sql
     networks:
       - toq-network
 

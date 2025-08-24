@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -41,8 +42,10 @@ func (c *config) InitializeLog() {
 		slog.SetDefault(slog.New(slog.NewJSONHandler(log, &opts)))
 		slog.Debug("log configured to file")
 	} else {
-		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &opts)))
-		slog.Debug("log configured to console")
+		// Custom handler to write to stdout for INFO/DEBUG and stderr for WARN/ERROR
+		handler := NewSplitStreamHandler(os.Stdout, os.Stderr, &opts)
+		slog.SetDefault(slog.New(handler))
+		slog.Debug("log configured to console with split stream")
 	}
 
 }
@@ -72,4 +75,42 @@ func GetLogLevel(level string) (opts slog.HandlerOptions) {
 
 	}
 	return
+}
+
+// NewSplitStreamHandler creates a handler that writes to different streams based on log level.
+type SplitStreamHandler struct {
+	infoHandler slog.Handler
+	errHandler  slog.Handler
+}
+
+func NewSplitStreamHandler(infoStream, errStream *os.File, opts *slog.HandlerOptions) *SplitStreamHandler {
+	return &SplitStreamHandler{
+		infoHandler: slog.NewJSONHandler(infoStream, opts),
+		errHandler:  slog.NewJSONHandler(errStream, opts),
+	}
+}
+
+func (h *SplitStreamHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.infoHandler.Enabled(ctx, level)
+}
+
+func (h *SplitStreamHandler) Handle(ctx context.Context, r slog.Record) error {
+	if r.Level >= slog.LevelWarn {
+		return h.errHandler.Handle(ctx, r)
+	}
+	return h.infoHandler.Handle(ctx, r)
+}
+
+func (h *SplitStreamHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &SplitStreamHandler{
+		infoHandler: h.infoHandler.WithAttrs(attrs),
+		errHandler:  h.errHandler.WithAttrs(attrs),
+	}
+}
+
+func (h *SplitStreamHandler) WithGroup(name string) slog.Handler {
+	return &SplitStreamHandler{
+		infoHandler: h.infoHandler.WithGroup(name),
+		errHandler:  h.errHandler.WithGroup(name),
+	}
 }

@@ -23,6 +23,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -44,6 +45,20 @@ import (
 // 5. gRPC server initialization and startup
 // 6. Background workers and graceful shutdown handling
 func main() {
+	// Setup a temporary logger to stdout to ensure initial logs are not red
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, nil)))
+
+	// Change working directory to project root if running from cmd
+	if wd, err := os.Getwd(); err == nil {
+		if filepath.Base(wd) == "cmd" {
+			if err := os.Chdir(".."); err != nil {
+				slog.Error("failed to change directory to project root", "error", err)
+				os.Exit(1)
+			}
+			slog.Info("changed working directory to project root")
+		}
+	}
+
 	// Phase 1: Setup context and graceful shutdown handling
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

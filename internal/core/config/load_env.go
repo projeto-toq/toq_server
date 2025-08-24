@@ -83,6 +83,8 @@ func (c *config) LoadEnv() error {
 	env.GCS.AdminCreds = resolveCred("admin", env.GCS.AdminCreds)
 	env.GCS.WriterCreds = resolveCred("writer", env.GCS.WriterCreds)
 	env.GCS.ReaderCreds = resolveCred("reader", env.GCS.ReaderCreds)
+	env.GRPC.CertPath = resolveCred("grpc-cert", env.GRPC.CertPath)
+	env.GRPC.KeyPath = resolveCred("grpc-key", env.GRPC.KeyPath)
 
 	// Persistir env
 	c.env = env

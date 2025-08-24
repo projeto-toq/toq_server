@@ -2,8 +2,10 @@ package globalmodel
 
 type Environment struct {
 	GRPC struct {
-		Port    string `yaml:"port"`
-		Network string `yaml:"network"`
+		Port     string `yaml:"port"`
+		Network  string `yaml:"network"`
+		CertPath string `yaml:"cert_path"`
+		KeyPath  string `yaml:"key_path"`
 	}
 	DB struct {
 		URI string `yaml:"uri"`
