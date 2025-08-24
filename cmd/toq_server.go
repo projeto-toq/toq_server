@@ -102,7 +102,10 @@ func main() {
 
 	// Re-apply logging with YAML (ENV still has precedence)
 	config.InitializeLog()
-	slog.Debug("✅ Logging system initialized (env > yaml > defaults)")
+	slog.Info("✅ Logging system initialized (env > yaml > defaults)")
+
+	// Start optional HTTP health endpoints (disabled if port=0)
+	config.StartHTTPHealth()
 
 	slog.Info("🔧 TOQ API Server starting", "version", globalmodel.AppVersion)
 
@@ -172,6 +175,8 @@ func main() {
 	var serverWg sync.WaitGroup
 	serverWg.Add(1)
 
+	// Mark readiness true before Serve starts accepting
+	config.SetHealthServing(true)
 	go func() {
 		defer serverWg.Done()
 		slog.Info("🚀 Starting gRPC server")
@@ -193,6 +198,8 @@ func main() {
 
 	// Graceful shutdown sequence
 	slog.Info("⏳ Stopping gRPC server...")
+	// Mark not ready for traffic
+	config.SetHealthServing(false)
 
 	// Give server time to finish current requests
 	shutdownTimeout := time.Second * 30

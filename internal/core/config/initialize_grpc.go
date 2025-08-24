@@ -2,12 +2,16 @@ package config
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"log/slog"
 	"net"
+	"os"
 
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/middlewares"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/health"
+	grpc_health_v1 "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -22,7 +26,7 @@ func (c *config) InitializeGRPC() {
 
 	slog.Info("Server listening on", "Addr:", c.listener.Addr())
 
-	// Load server's certificate and private key
+	// TLS configuration (server cert) and optional mTLS
 	slog.Debug("attempting to load gRPC TLS certificates", "certPath", c.env.GRPC.CertPath, "keyPath", c.env.GRPC.KeyPath)
 	cert, err := tls.LoadX509KeyPair(c.env.GRPC.CertPath, c.env.GRPC.KeyPath)
 	if err != nil {
@@ -30,11 +34,30 @@ func (c *config) InitializeGRPC() {
 		panic(err)
 	}
 
-	// Create a new gRPC server with the telemetry interceptor and TLS credentials
+	tlsCfg := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS12,
+	}
+
+	if c.env.GRPC.RequireClientCert && c.env.GRPC.ClientCAPath != "" {
+		caPem, err := os.ReadFile(c.env.GRPC.ClientCAPath)
+		if err != nil {
+			slog.Error("failed to read client CA file", "path", c.env.GRPC.ClientCAPath, "error", err)
+			panic(err)
+		}
+		pool := x509.NewCertPool()
+		if !pool.AppendCertsFromPEM(caPem) {
+			slog.Error("failed to append client CA certs")
+			panic("invalid client CA")
+		}
+		tlsCfg.ClientCAs = pool
+		tlsCfg.ClientAuth = tls.RequireAndVerifyClientCert
+		slog.Info("mTLS enabled for gRPC server")
+	}
+
+	// Create a new gRPC server with interceptors and TLS credentials
 	c.server = grpc.NewServer(
-		grpc.Creds(credentials.NewTLS(&tls.Config{
-			Certificates: []tls.Certificate{cert},
-		})),
+		grpc.Creds(credentials.NewTLS(tlsCfg)),
 		grpc.ChainUnaryInterceptor(
 			middlewares.TelemetryInterceptor(c.context),
 			middlewares.AuthInterceptor(c.context, c.activityTracker),
@@ -43,6 +66,11 @@ func (c *config) InitializeGRPC() {
 	)
 
 	reflection.Register(c.server)
+
+	// Register gRPC Health service
+	c.healthSrv = health.NewServer()
+	grpc_health_v1.RegisterHealthServer(c.server, c.healthSrv)
+	slog.Info("gRPC health service registered")
 
 }
 

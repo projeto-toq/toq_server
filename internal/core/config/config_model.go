@@ -25,6 +25,8 @@ import (
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	grpc_health_v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type config struct {
@@ -37,6 +39,8 @@ type config struct {
 	cache                  cache.CacheInterface
 	activityTracker        *goroutines.ActivityTracker
 	wg                     *sync.WaitGroup
+	healthSrv              *health.Server
+	readiness              bool
 	globalService          globalservice.GlobalServiceInterface
 	userService            userservices.UserServiceInterface
 	listingService         listingservices.ListingServiceInterface
@@ -74,6 +78,8 @@ type ConfigInterface interface {
 	GetInfos() (serviceQty int, methodQty int)
 	GetWG() *sync.WaitGroup
 	GetActivityTracker() *goroutines.ActivityTracker
+	SetHealthServing(serving bool)
+	StartHTTPHealth()
 }
 
 func NewConfig(ctx context.Context) ConfigInterface {
@@ -82,4 +88,17 @@ func NewConfig(ctx context.Context) ConfigInterface {
 		context: ctx,
 		wg:      &wg,
 	}
+}
+
+func (c *config) SetHealthServing(serving bool) {
+	if c.healthSrv == nil {
+		c.readiness = serving
+		return
+	}
+	if serving {
+		c.healthSrv.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
+	} else {
+		c.healthSrv.SetServingStatus("", grpc_health_v1.HealthCheckResponse_NOT_SERVING)
+	}
+	c.readiness = serving
 }

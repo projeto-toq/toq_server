@@ -2,10 +2,12 @@ package globalmodel
 
 type Environment struct {
 	GRPC struct {
-		Port     string `yaml:"port"`
-		Network  string `yaml:"network"`
-		CertPath string `yaml:"cert_path"`
-		KeyPath  string `yaml:"key_path"`
+		Port              string `yaml:"port"`
+		Network           string `yaml:"network"`
+		CertPath          string `yaml:"cert_path"`
+		KeyPath           string `yaml:"key_path"`
+		ClientCAPath      string `yaml:"client_ca_path"`
+		RequireClientCert bool   `yaml:"require_client_cert"`
 	}
 	DB struct {
 		URI string `yaml:"uri"`
@@ -71,5 +73,11 @@ type Environment struct {
 		AdminCreds    string `yaml:"admin_creds_path"`
 		WriterCreds   string `yaml:"writer_creds_path"`
 		ReaderCreds   string `yaml:"reader_creds_path"`
+	}
+	HEALTH struct {
+		HTTPPort int    `yaml:"http_port"`
+		UseTLS   bool   `yaml:"use_tls"`
+		CertPath string `yaml:"cert_path"`
+		KeyPath  string `yaml:"key_path"`
 	}
 }
