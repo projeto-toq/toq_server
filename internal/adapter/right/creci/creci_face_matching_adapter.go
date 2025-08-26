@@ -22,7 +22,7 @@ func (ca *CreciAdapter) ValidateFaceMatch(ctx context.Context, realtor usermodel
 	}
 
 	// Detecta rostos na imagem front
-	imageURI := fmt.Sprintf("gs://toq_server_users_media/%d/front.jpg", realtor.GetID())
+	imageURI := fmt.Sprintf("s3://toq-app-media/%d/front.jpg", realtor.GetID())
 	frontFaces, err := detectFaces(ctx, ca.client, imageURI)
 	if err != nil {
 		slog.Error("Failed to detect faces in front image: ", "error:", err.Error())
@@ -30,7 +30,7 @@ func (ca *CreciAdapter) ValidateFaceMatch(ctx context.Context, realtor usermodel
 	}
 
 	// Detecta rostos na imagem selfie
-	imageURI = fmt.Sprintf("gs://toq_server_users_media/%d/selfie.jpg", realtor.GetID())
+	imageURI = fmt.Sprintf("s3://toq-app-media/%d/selfie.jpg", realtor.GetID())
 	selfieFaces, err := detectFaces(ctx, ca.client, imageURI)
 	if err != nil {
 		slog.Error("Failed to detect faces in selfie image: ", "error:", err.Error())

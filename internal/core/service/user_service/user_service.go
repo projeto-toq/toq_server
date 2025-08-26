@@ -8,22 +8,22 @@ import (
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
 	creciport "github.com/giulio-alfieri/toq_server/internal/core/port/right/creci"
-	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
 	sessionrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/user_repository"
+	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 )
 
 type userService struct {
-	repo               userrepoport.UserRepoPortInterface
-	sessionRepo        sessionrepoport.SessionRepoPortInterface
-	globalService      globalservice.GlobalServiceInterface
-	listingService     listingservices.ListingServiceInterface
-	cpf                cpfport.CPFPortInterface
-	cnpj               cnpjport.CNPJPortInterface
-	creci              creciport.CreciPortInterface
-	googleCloudService gcsport.GCSPortInterface
+	repo                userrepoport.UserRepoPortInterface
+	sessionRepo         sessionrepoport.SessionRepoPortInterface
+	globalService       globalservice.GlobalServiceInterface
+	listingService      listingservices.ListingServiceInterface
+	cpf                 cpfport.CPFPortInterface
+	cnpj                cnpjport.CNPJPortInterface
+	creci               creciport.CreciPortInterface
+	cloudStorageService storageport.CloudStoragePortInterface
 }
 
 func NewUserService(
@@ -34,18 +34,18 @@ func NewUserService(
 	cpf cpfport.CPFPortInterface,
 	cnpj cnpjport.CNPJPortInterface,
 	creci creciport.CreciPortInterface, // Pode ser nil temporariamente
-	gcs gcsport.GCSPortInterface,
+	cloudStorage storageport.CloudStoragePortInterface,
 
 ) UserServiceInterface {
 	return &userService{
-		repo:               ur,
-		sessionRepo:        sr,
-		globalService:      gsi,
-		listingService:     listingService,
-		cpf:                cpf,
-		cnpj:               cnpj,
-		creci:              creci, // Pode ser nil
-		googleCloudService: gcs,
+		repo:                ur,
+		sessionRepo:         sr,
+		globalService:       gsi,
+		listingService:      listingService,
+		cpf:                 cpf,
+		cnpj:                cnpj,
+		creci:               creci, // Pode ser nil
+		cloudStorageService: cloudStorage,
 	}
 }
 

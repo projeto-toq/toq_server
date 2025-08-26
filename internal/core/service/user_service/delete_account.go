@@ -84,12 +84,12 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int
 		return
 	}
 
-	// Delete user folder in GCS
-	if us.googleCloudService != nil {
+	// Delete user folder in cloud storage
+	if us.cloudStorageService != nil {
 		folderErr := us.DeleteUserFolder(ctx, user.GetID())
 		if folderErr != nil {
 			// Log error but don't fail the transaction - account deletion should continue
-			// even if GCS cleanup fails
+			// even if cloud storage cleanup fails
 			// Note: This will be handled by span tracing
 		}
 	}

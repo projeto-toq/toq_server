@@ -11,7 +11,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./data/mysql_data:/var/lib/mysql
+      - /codigos/mysql_data:/var/lib/mysql
       - ./data:/var/lib/mysql-files
       - ./scripts/grant_privileges.sql:/docker-entrypoint-initdb.d/grant_privileges.sql
     networks:

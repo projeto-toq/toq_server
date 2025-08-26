@@ -58,7 +58,7 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return
 	}
 
-	err = us.googleCloudService.CreateUserFolder(ctx, owner.GetID())
+	err = us.cloudStorageService.CreateUserFolder(ctx, owner.GetID())
 	if err != nil {
 		return
 	}

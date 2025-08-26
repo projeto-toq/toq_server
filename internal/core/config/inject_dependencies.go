@@ -91,7 +91,7 @@ func (c *config) InitGlobalService() {
 		c.firebaseCloudMessaging,
 		c.email,
 		c.sms,
-		c.googleCloudStorage,
+		c.cloudStorage,
 		c.repositoryAdapters.DeviceToken,
 	)
 
@@ -112,7 +112,7 @@ func (c *config) InitUserHandler() {
 		c.cpf,
 		c.cnpj,
 		nil, // CRECI desabilitado temporariamente após migração
-		c.googleCloudStorage,
+		c.cloudStorage,
 	)
 	handler := grpcuserport.NewUserHandler(c.userService)
 	pb.RegisterUserServiceServer(c.server, handler)
@@ -132,7 +132,7 @@ func (c *config) InitListingHandler() {
 		c.repositoryAdapters.Listing,
 		c.complexService,
 		c.globalService,
-		c.googleCloudStorage,
+		c.cloudStorage,
 	)
 	handler := grpclistingport.NewUserHandler(c.listingService)
 	pb.RegisterListingServiceServer(c.server, handler)

@@ -3,7 +3,7 @@ package userservices
 import (
 	"context"
 
-	gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
+	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -16,10 +16,10 @@ func (us *userService) GeneratePhotoDownloadURL(ctx context.Context, userID int6
 
 	// Se photoType não for especificado, usar o original
 	if photoType == "" {
-		photoType = gcsadapter.PhotoTypeOriginal
+		photoType = string(storagemodel.PhotoOriginal)
 	}
 
-	signedURL, err = us.googleCloudService.GeneratePhotoDownloadURL(gcsadapter.UsersBucketName, userID, photoType)
+	signedURL, err = us.cloudStorageService.GeneratePhotoDownloadURL(userID, storagemodel.PhotoType(photoType))
 	if err != nil {
 		return
 	}

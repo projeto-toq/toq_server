@@ -102,11 +102,11 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 	slog.Info("Successfully created all external service adapters")
 
 	return ExternalServiceAdapters{
-		FCM:       fcm,
-		Email:     email,
-		SMS:       sms,
-		GCS:       s3,      // S3 adapter via interface GCS
-		CloseFunc: s3Close, // Função de cleanup do S3
+		FCM:          fcm,
+		Email:        email,
+		SMS:          sms,
+		CloudStorage: s3,      // S3 adapter via interface CloudStorage
+		CloseFunc:    s3Close, // Função de cleanup do S3
 	}, nil
 }
 

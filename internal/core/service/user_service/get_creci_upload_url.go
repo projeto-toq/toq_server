@@ -3,7 +3,7 @@ package userservices
 import (
 	"context"
 
-	gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
+	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,23 +21,19 @@ func (us *userService) GetCreciUploadURL(ctx context.Context, documentType, cont
 		return
 	}
 
-	if us.googleCloudService == nil {
-		return "", status.Error(codes.Unimplemented, "GCS service is not configured")
+	if us.cloudStorageService == nil {
+		return "", status.Error(codes.Unimplemented, "Cloud storage service is not configured")
 	}
 
-	// Validar se é um tipo de documento CRECI válido
-	validCreciTypes := map[string]bool{
-		gcsadapter.CreciDocumentSelfie: true,
-		gcsadapter.CreciDocumentFront:  true,
-		gcsadapter.CreciDocumentBack:   true,
-	}
+	// Validar se é um tipo de documento CRECI válido usando constantes do domínio
+	validCreciTypes := storagemodel.ValidDocumentTypes()
 
 	if !validCreciTypes[documentType] {
 		return "", status.Error(codes.InvalidArgument, "invalid CRECI document type")
 	}
 
-	// Usar o mesmo método de geração de URL, mas com documentType
-	signedURL, err = us.googleCloudService.GeneratePhotoSignedURL(gcsadapter.UsersBucketName, userID, documentType, contentType)
+	// Usar o novo método da interface de storage
+	signedURL, err = us.cloudStorageService.GenerateDocumentUploadURL(userID, storagemodel.DocumentType(documentType), contentType)
 	if err != nil {
 		return "", err
 	}

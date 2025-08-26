@@ -20,7 +20,7 @@ func (c *config) assignExternalServiceAdapters(adapters factory.ExternalServiceA
 	c.firebaseCloudMessaging = adapters.FCM
 	c.email = adapters.Email
 	c.sms = adapters.SMS
-	c.googleCloudStorage = adapters.GCS // Pode ser nil temporariamente
+	c.cloudStorage = adapters.CloudStorage
 }
 
 // assignStorageAdapters atribui os storage adapters às propriedades do config

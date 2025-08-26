@@ -10,8 +10,8 @@ import (
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
-	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
+	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
 
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
 	mysqluseradapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user"
@@ -31,11 +31,11 @@ type ValidationAdapters struct {
 
 // ExternalServiceAdapters agrupa adapters de serviços externos
 type ExternalServiceAdapters struct {
-	FCM       fcmport.FCMPortInterface
-	Email     emailport.EmailPortInterface
-	SMS       smsport.SMSPortInterface
-	GCS       gcsport.GCSPortInterface
-	CloseFunc func() error // Função para cleanup de recursos
+	FCM          fcmport.FCMPortInterface
+	Email        emailport.EmailPortInterface
+	SMS          smsport.SMSPortInterface
+	CloudStorage storageport.CloudStoragePortInterface
+	CloseFunc    func() error // Função para cleanup de recursos
 }
 
 // StorageAdapters agrupa adapters de armazenamento

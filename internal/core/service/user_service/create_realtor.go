@@ -58,7 +58,7 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	err = us.googleCloudService.CreateUserFolder(ctx, realtor.GetID())
+	err = us.cloudStorageService.CreateUserFolder(ctx, realtor.GetID())
 	if err != nil {
 		return
 	}

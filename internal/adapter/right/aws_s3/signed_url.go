@@ -59,9 +59,3 @@ func (s *S3Adapter) GeneratePhotoSignedURL(bucketName string, userID int64, phot
 	objectPath := fmt.Sprintf("%d/%s", userID, photoType)
 	return s.GenerateV4PutObjectSignedURL(bucketName, objectPath, contentType)
 }
-
-// GeneratePhotoDownloadURL gera uma URL para download de foto específica do usuário
-func (s *S3Adapter) GeneratePhotoDownloadURL(bucketName string, userID int64, photoType string) (string, error) {
-	objectPath := fmt.Sprintf("%d/%s", userID, photoType)
-	return s.GenerateV4GetObjectSignedURL(bucketName, objectPath)
-}

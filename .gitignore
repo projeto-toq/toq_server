@@ -10,7 +10,9 @@
 
 # Binary directory
 /bin/
-/data/mysql_data
+
+# MySQL data is now stored outside the project
+# /codigos/mysql_data (external directory)
 
 # Test binary, built with `go test -c`
 *.test

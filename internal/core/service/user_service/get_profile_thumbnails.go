@@ -3,7 +3,7 @@ package userservices
 import (
 	"context"
 
-	gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
+	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -15,23 +15,23 @@ func (us *userService) GetProfileThumbnails(ctx context.Context, userID int64) (
 	}
 	defer spanEnd()
 
-	// Gerar URLs assinadas para cada tipo de foto
-	originalURL, err := us.googleCloudService.GeneratePhotoDownloadURL(gcsadapter.UsersBucketName, userID, gcsadapter.PhotoTypeOriginal)
+	// Gerar URLs assinadas para cada tipo de foto usando a nova interface
+	originalURL, err := us.cloudStorageService.GeneratePhotoDownloadURL(userID, storagemodel.PhotoOriginal)
 	if err != nil {
 		return
 	}
 
-	smallURL, err := us.googleCloudService.GeneratePhotoDownloadURL(gcsadapter.UsersBucketName, userID, gcsadapter.PhotoTypeSmall)
+	smallURL, err := us.cloudStorageService.GeneratePhotoDownloadURL(userID, storagemodel.PhotoSmall)
 	if err != nil {
 		return
 	}
 
-	mediumURL, err := us.googleCloudService.GeneratePhotoDownloadURL(gcsadapter.UsersBucketName, userID, gcsadapter.PhotoTypeMedium)
+	mediumURL, err := us.cloudStorageService.GeneratePhotoDownloadURL(userID, storagemodel.PhotoMedium)
 	if err != nil {
 		return
 	}
 
-	largeURL, err := us.googleCloudService.GeneratePhotoDownloadURL(gcsadapter.UsersBucketName, userID, gcsadapter.PhotoTypeLarge)
+	largeURL, err := us.cloudStorageService.GeneratePhotoDownloadURL(userID, storagemodel.PhotoLarge)
 	if err != nil {
 		return
 	}

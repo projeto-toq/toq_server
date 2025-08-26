@@ -13,7 +13,7 @@ func (us *userService) CreateUserFolder(ctx context.Context, userID int64) (err 
 	}
 	defer spanEnd()
 
-	err = us.googleCloudService.CreateUserFolder(ctx, userID)
+	err = us.cloudStorageService.CreateUserFolder(ctx, userID)
 	if err != nil {
 		return
 	}

@@ -10,10 +10,10 @@ import (
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
-	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
 	devicetokenrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/device_token_repository"
 	globalrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/global_repository"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
+	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
 )
 
 type globalService struct {
@@ -22,7 +22,7 @@ type globalService struct {
 	firebaseCloudMessage fcmport.FCMPortInterface
 	email                emailport.EmailPortInterface
 	sms                  smsport.SMSPortInterface
-	googleCludStorage    gcsport.GCSPortInterface
+	googleCludStorage    storageport.CloudStoragePortInterface
 	deviceTokenRepo      devicetokenrepository.DeviceTokenRepoPortInterface
 }
 
@@ -32,7 +32,7 @@ func NewGlobalService(
 	firebaseCloudMessage fcmport.FCMPortInterface,
 	email emailport.EmailPortInterface,
 	sms smsport.SMSPortInterface,
-	googleCloudStorage gcsport.GCSPortInterface,
+	googleCloudStorage storageport.CloudStoragePortInterface,
 	deviceTokenRepo devicetokenrepository.DeviceTokenRepoPortInterface,
 ) GlobalServiceInterface {
 	return &globalService{
