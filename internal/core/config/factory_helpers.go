@@ -12,7 +12,6 @@ func (c *config) assignValidationAdapters(adapters factory.ValidationAdapters) {
 	c.cep = adapters.CEP
 	c.cpf = adapters.CPF
 	c.cnpj = adapters.CNPJ
-	c.creci = adapters.CRECI
 }
 
 // assignExternalServiceAdapters atribui os external service adapters às propriedades do config

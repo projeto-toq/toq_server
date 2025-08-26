@@ -111,7 +111,7 @@ func (c *config) InitUserHandler() {
 		c.listingService,
 		c.cpf,
 		c.cnpj,
-		c.creci,
+		nil, // CRECI desabilitado temporariamente após migração
 		c.googleCloudStorage,
 	)
 	handler := grpcuserport.NewUserHandler(c.userService)

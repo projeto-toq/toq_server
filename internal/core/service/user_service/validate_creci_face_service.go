@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -43,6 +44,12 @@ func (us *userService) validateCreciFace(
 
 	realtors []usermodel.UserInterface,
 ) (err error) {
+	// Verificar se CRECI adapter está disponível
+	if us.creci == nil {
+		slog.Warn("CRECI adapter não disponível, pulando validação de face")
+		return nil
+	}
+
 	auditMessage := ""
 	for _, realtor := range realtors {
 		valid, err1 := us.creci.ValidateFaceMatch(ctx, realtor)

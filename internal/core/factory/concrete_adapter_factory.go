@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"os"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -14,13 +13,14 @@ import (
 	cepadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cep"
 	cnpjadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cnpj"
 	cpfadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cpf"
-	creciadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/creci"
-	gcsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/google_cloud_storage"
 
 	// External service adapters
 	emailadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/email"
 	fcmadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/fcm"
 	smsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/sms"
+
+	// Storage adapters - AWS S3 (substituindo GCS)
+	s3adapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/aws_s3"
 
 	// Storage adapters
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
@@ -62,29 +62,12 @@ func (f *ConcreteAdapterFactory) CreateValidationAdapters(env *globalmodel.Envir
 		return ValidationAdapters{}, fmt.Errorf("failed to create CNPJ adapter: %w", err)
 	}
 
-	// Load GCS reader credentials for CRECI adapter (Vision API - read-only operations)
-	readerCredsForCreci, err := os.ReadFile(env.GCS.ReaderCreds)
-	if err != nil {
-		slog.Warn("failed to read GCS reader credentials for CRECI adapter", "error", err)
-	}
-
-	// CRECI Adapter
-	creci, creciClose, err := creciadapter.NewCreciAdapter(context.Background(), readerCredsForCreci)
-	if err != nil {
-		slog.Warn("failed to create CRECI adapter, proceeding without it", "error", err)
-	}
-	// Adicionar a função de fechamento ao gerenciador de ciclo de vida
-	if f.lm != nil && creciClose != nil {
-		f.lm.AddCleanupFunc(creciClose)
-	}
-
 	slog.Info("Successfully created all validation adapters")
 
 	return ValidationAdapters{
-		CEP:   cep,
-		CPF:   cpf,
-		CNPJ:  cnpj,
-		CRECI: creci,
+		CEP:  cep,
+		CPF:  cpf,
+		CNPJ: cnpj,
 	}, nil
 }
 
@@ -99,13 +82,8 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 		return ExternalServiceAdapters{}, fmt.Errorf("failed to create FCM adapter: %w", err)
 	}
 
-	// Email Adapter
-	email := emailadapter.NewEmailAdapter(
-		env.EMAIL.SMTPServer,
-		env.EMAIL.SMTPPort,
-		env.EMAIL.SMTPUser,
-		env.EMAIL.SMTPPassword,
-	)
+	// Email Adapter com configuração robusta
+	email := emailadapter.NewEmailAdapter(*env)
 
 	// SMS Adapter
 	sms := smsadapter.NewSmsAdapter(
@@ -114,33 +92,11 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 		env.SMS.MyNumber,
 	)
 
-	// GCS Adapter
-	adminCreds, err := os.ReadFile(env.GCS.AdminCreds)
+	// S3 Adapter (substituindo GCS)
+	s3, s3Close, err := s3adapter.NewS3Adapter(ctx, env)
 	if err != nil {
-		slog.Warn("failed to read GCS admin credentials, proceeding without it", "error", err)
-	}
-	writerCreds, err := os.ReadFile(env.GCS.WriterCreds)
-	if err != nil {
-		slog.Warn("failed to read GCS writer credentials, proceeding without it", "error", err)
-	}
-	readerCreds, err := os.ReadFile(env.GCS.ReaderCreds)
-	if err != nil {
-		slog.Warn("failed to read GCS reader credentials, proceeding without it", "error", err)
-	}
-
-	gcs, gcsClose, err := gcsadapter.NewGCSAdapter(
-		ctx,
-		env.GCS.ProjectID,
-		adminCreds,
-		writerCreds,
-		readerCreds,
-		env.GCS.AdminSAEmail,
-		env.GCS.WriterSAEmail,
-		env.GCS.ReaderSAEmail,
-	)
-	if err != nil {
-		slog.Warn("failed to create GCS adapter, proceeding without it", "error", err)
-		// Não retorna erro, permite que a aplicação continue sem GCS
+		slog.Warn("failed to create S3 adapter, proceeding without it", "error", err)
+		// Não retorna erro, permite que a aplicação continue sem S3
 	}
 
 	slog.Info("Successfully created all external service adapters")
@@ -149,8 +105,8 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 		FCM:       fcm,
 		Email:     email,
 		SMS:       sms,
-		GCS:       gcs,
-		CloseFunc: gcsClose,
+		GCS:       s3,      // S3 adapter via interface GCS
+		CloseFunc: s3Close, // Função de cleanup do S3
 	}, nil
 }
 

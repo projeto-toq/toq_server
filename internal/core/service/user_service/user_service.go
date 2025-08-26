@@ -33,7 +33,7 @@ func NewUserService(
 	listingService listingservices.ListingServiceInterface,
 	cpf cpfport.CPFPortInterface,
 	cnpj cnpjport.CNPJPortInterface,
-	creci creciport.CreciPortInterface,
+	creci creciport.CreciPortInterface, // Pode ser nil temporariamente
 	gcs gcsport.GCSPortInterface,
 
 ) UserServiceInterface {
@@ -44,7 +44,7 @@ func NewUserService(
 		listingService:     listingService,
 		cpf:                cpf,
 		cnpj:               cnpj,
-		creci:              creci,
+		creci:              creci, // Pode ser nil
 		googleCloudService: gcs,
 	}
 }

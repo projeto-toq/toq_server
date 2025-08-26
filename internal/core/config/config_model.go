@@ -14,7 +14,6 @@ import (
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
-	creciport "github.com/giulio-alfieri/toq_server/internal/core/port/right/creci"
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
 	gcsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/gcs"
@@ -48,7 +47,6 @@ type config struct {
 	cep                    cepport.CEPPortInterface
 	cpf                    cpfport.CPFPortInterface
 	cnpj                   cnpjport.CNPJPortInterface
-	creci                  creciport.CreciPortInterface
 	email                  emailport.EmailPortInterface
 	sms                    smsport.SMSPortInterface
 	googleCloudStorage     gcsport.GCSPortInterface

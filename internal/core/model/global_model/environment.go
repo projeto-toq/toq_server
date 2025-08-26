@@ -48,6 +48,13 @@ type Environment struct {
 		SMTPPort     int    `yaml:"smtp_port"`
 		SMTPUser     string `yaml:"smtp_user"`
 		SMTPPassword string `yaml:"smtp_password"`
+		UseTLS       bool   `yaml:"use_tls"`
+		UseSSL       bool   `yaml:"use_ssl"`
+		SkipVerify   bool   `yaml:"skip_verify"`
+		FromEmail    string `yaml:"from_email"`
+		FromName     string `yaml:"from_name"`
+		MaxRetries   int    `yaml:"max_retries"`
+		TimeoutSecs  int    `yaml:"timeout_seconds"`
 	}
 	CNPJ struct {
 		Token   string `yaml:"token"`
@@ -64,6 +71,18 @@ type Environment struct {
 	FCM struct {
 		CredentialsFile string `yaml:"credentials_file"`
 		ProjectID       string `yaml:"project_id"`
+	}
+	S3 struct {
+		Region     string `yaml:"region"`
+		BucketName string `yaml:"bucket_name"`
+		AdminRole  struct {
+			AccessKeyID     string `yaml:"access_key_id"`
+			SecretAccessKey string `yaml:"secret_access_key"`
+		} `yaml:"admin"`
+		ReaderRole struct {
+			AccessKeyID     string `yaml:"access_key_id"`
+			SecretAccessKey string `yaml:"secret_access_key"`
+		} `yaml:"reader"`
 	}
 	GCS struct {
 		ProjectID     string `yaml:"project_id"`

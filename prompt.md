@@ -1,11 +1,12 @@
 ## 🛠️ Problema
-Temos um nginx instalado e rodando escutando chamadas http e https. existe uma página em /codigos/web_server/index.html que responde ao / do dominio www.gca.dev.br.
-precisamos:
-- criar 3 botões na página, seguindo o mesmo padrão visual da página:
-   1 - Login no APP -> ainda sem função será implementado em seguida;
-   2 - Grafana - redireciona para o serviço grafana rodando no docker (veja docker-compose-yml)
-   3 - Jaeger - redireciona para o serviço jaeger rodando no docker (veja docker-compose-yml)
-   4 - Prometheus - redireciona para o serviço prometheus rodando no docker (veja docker-compose-yml)
+ao criar um usuário, na etapa de envio de e-mail com o código de verificação de e-mail recebemos este warning:
+{"time":"2025-08-26T18:02:08.38974604Z","level":"INFO","msg":"Processando requisição de notificação","type":"email","to":"giulio.alfieri@gmail.com","subject":"TOQ - Confirmação de Alteração de Email"}
+{"time":"2025-08-26T18:02:08.790439443Z","level":"WARN","msg":"Falha no envio de email","attempt":1,"error":"535 5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d75a77b69052e-4b2b8c61627sm74332611cf.8 - gsmtp","to":"giulio.alfieri@gmail.com"}
+{"time":"2025-08-26T18:02:10.084500406Z","level":"WARN","msg":"Falha no envio de email","attempt":2,"error":"535 5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials d75a77b69052e-4b2b8c9660csm73302311cf.16 - gsmtp","to":"giulio.alfieri@gmail.com"}
+{"time":"2025-08-26T18:02:12.408113831Z","level":"WARN","msg":"Falha no envio de email","attempt":3,"error":"535 5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials af79cd13be357-7ebf4178d59sm721125085a.66 - gsmtp","to":"giulio.alfieri@gmail.com"}
+{"time":"2025-08-26T18:02:15.967619997Z","level":"WARN","msg":"Falha no envio de email","attempt":4,"error":"535 5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials 6a1803df08f44-70da728544fsm70083396d6.43 - gsmtp","to":"giulio.alfieri@gmail.com"}
+{"time":"2025-08-26T18:02:15.967725018Z","level":"ERROR","msg":"Falha ao enviar email","error":"failed to send email after 4 attempts: 535 5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials 6a1803df08f44-70da728544fsm70083396d6.43 - gsmtp","to":"giulio.alfieri@gmail.com"}
+{"time":"2025-08-26T18:02:15.967775898Z","level":"ERROR","msg":"Erro no envio assíncrono de notificação","type":"email","to":"giulio.alfieri@gmail.com","token":"","error":"falha ao enviar email: failed to send email after 4 attempts: 535 5.7.8 Username and Password not accepted. For more information, go to\n5.7.8  https://support.google.com/mail/?p=BadCredentials 6a1803df08f44-70da728544fsm70083396d6.43 - gsmtp"}
 
 ## ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 
@@ -23,4 +24,4 @@ precisamos:
 ## 📌 Instruções finais
 
 - **Não implemente nada até que eu autorize.**
-- Analise e apresente a refatoração necessária para implementar
+- Analise e apresente um plano detalhado para a correção da causa raiz
