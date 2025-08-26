@@ -1,21 +1,4 @@
 services:
-  # # TOQ Server HTTP/REST API
-  # toq-server:
-  #   build: .
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - DB_HOST=mysql
-  #     - DB_PORT=3306
-  #     - DB_USER=root
-  #     - DB_PASSWORD=rootpassword
-  #     - DB_NAME=toq_db
-  #   depends_on:
-  #     - mysql
-  #   volumes:
-  #     - ./configs:/root/configs
-  #   networks:
-  #     - toq-network
 
   # MySQL Database
   mysql:
@@ -27,7 +10,6 @@ services:
       - MYSQL_PASSWORD=toq_password
     ports:
       - "3306:3306"
-    command: --init-file=/docker-entrypoint-initdb.d/grant_privileges.sql
     volumes:
       - ./data/mysql_data:/var/lib/mysql
       - ./data:/var/lib/mysql-files
@@ -50,6 +32,11 @@ services:
       - "9091:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
     networks:
       - toq-network
 
@@ -71,18 +58,6 @@ services:
       - prometheus
     networks:
       - toq-network
-
-  # # Swagger UI (standalone)
-  # swagger-ui:
-  #   image: swaggerapi/swagger-ui
-  #   ports:
-  #     - "8081:8080"
-  #   environment:
-  #     - SWAGGER_JSON=/docs/swagger.json
-  #   volumes:
-  #     - ./docs:/docs
-  #   networks:
-  #     - toq-network
 
   # OpenTelemetry Collector
   otel-collector:

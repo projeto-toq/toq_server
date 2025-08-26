@@ -1,0 +1,29 @@
+# Dados do MySQL (causa lentidão no build)
+data/mysql_data/
+
+# Binários
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Arquivos de desenvolvimento
+.git/
+.gitignore
+README.md
+*.md
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Temporários
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
