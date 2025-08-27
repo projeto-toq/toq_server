@@ -1,6 +1,12 @@
 package globalmodel
 
 type Environment struct {
+	HTTP struct {
+		Port           string `yaml:"port"`
+		ReadTimeout    string `yaml:"read_timeout"`
+		WriteTimeout   string `yaml:"write_timeout"`
+		MaxHeaderBytes int    `yaml:"max_header_bytes"`
+	}
 	GRPC struct {
 		Port              string `yaml:"port"`
 		Network           string `yaml:"network"`
