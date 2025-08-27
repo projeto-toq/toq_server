@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/routes"
+	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 )
 
@@ -20,6 +21,7 @@ type ServerConfig struct {
 	WriteTimeout    time.Duration
 	MaxHeaderBytes  int
 	ActivityTracker *goroutines.ActivityTracker
+	HTTPHandlers    *factory.HTTPHandlers
 	// Cache will be added later when access control middleware is implemented
 }
 
@@ -56,8 +58,8 @@ func NewServer(config *ServerConfig) *Server {
 	// api.Use(middlewares.AccessControlMiddleware(config.Cache))
 
 	// Register API routes
-	routes.RegisterUserRoutes(api)
-	routes.RegisterListingRoutes(api)
+	routes.RegisterUserRoutes(api, config.HTTPHandlers)
+	routes.RegisterListingRoutes(api, config.HTTPHandlers)
 
 	// Create HTTP server
 	httpServer := &http.Server{

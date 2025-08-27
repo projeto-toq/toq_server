@@ -11,7 +11,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		AllowOrigins: []string{
 			"https://gca.dev.br",
 			"https://www.gca.dev.br",
-			"http://localhost:3000",  // Development
+			"http://localhost:3000", // Development
 			"http://localhost:5173", // Vite dev server
 		},
 		AllowMethods: []string{
@@ -33,7 +33,7 @@ func CORSMiddleware() gin.HandlerFunc {
 			"X-API-Version",
 		},
 		AllowCredentials: true,
-		MaxAge: 43200, // 12 hours
+		MaxAge:           43200, // 12 hours
 	}
 
 	return cors.New(config)

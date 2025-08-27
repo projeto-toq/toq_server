@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc/codes"
 )
 
@@ -29,6 +30,16 @@ func NewHTTPError(code int, message string, details ...interface{}) *HTTPError {
 		httpErr.Details = details[0]
 	}
 	return httpErr
+}
+
+// SendHTTPError sends an HTTP error response using Gin
+func SendHTTPError(c *gin.Context, statusCode int, errorCode, message string) {
+	c.JSON(statusCode, gin.H{
+		"error": gin.H{
+			"code":    errorCode,
+			"message": message,
+		},
+	})
 }
 
 // Predefined HTTP errors

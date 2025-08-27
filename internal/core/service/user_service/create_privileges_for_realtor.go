@@ -14,22 +14,26 @@ func (us *userService) CreateRealtorPrivileges() (privileges []usermodel.Privile
 
 func (us *userService) AddUserRealtorUserPrivileges(methods []grpc.MethodDesc, privileges *[]usermodel.PrivilegeInterface) {
 
-	for methodID, method := range methods {
+	for methodID := range methods {
 		privilege := usermodel.NewPrivilege()
 		privilege.SetService(usermodel.ServiceUserService)
 		privilege.SetMethod(uint8(methodID))
-		privilege.SetAllowed(usermodel.RealtorUserPrivileges[method.MethodName])
+		// TODO: Replace with HTTP privileges after migration
+		// privilege.SetAllowed(usermodel.RealtorUserPrivileges[method.MethodName])
+		privilege.SetAllowed(false) // Temporarily disabled during HTTP migration
 		*privileges = append(*privileges, privilege)
 	}
 }
 
 func (us *userService) AddListingRealtorUserPrivileges(methods []grpc.MethodDesc, privileges *[]usermodel.PrivilegeInterface) {
 
-	for methodID, method := range methods {
+	for methodID := range methods {
 		privilege := usermodel.NewPrivilege()
 		privilege.SetService(usermodel.ServiceListingService)
 		privilege.SetMethod(uint8(methodID))
-		privilege.SetAllowed(usermodel.RealtorListingPrivileges[method.MethodName])
+		// TODO: Replace with HTTP privileges after migration
+		// privilege.SetAllowed(usermodel.RealtorListingPrivileges[method.MethodName])
+		privilege.SetAllowed(false) // Temporarily disabled during HTTP migration
 		*privileges = append(*privileges, privilege)
 	}
 }

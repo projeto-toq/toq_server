@@ -5,6 +5,8 @@ import (
 
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	listinghandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/listinghandler"
+	userhandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/userhandler"
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
@@ -53,6 +55,12 @@ type RepositoryAdapters struct {
 	Listing     listingrepoport.ListingRepoPortInterface
 	Session     sessionrepoport.SessionRepoPortInterface
 	DeviceToken *mysqluseradapter.DeviceTokenRepository
+}
+
+// HTTPHandlers agrupa todos os handlers HTTP
+type HTTPHandlers struct {
+	UserHandler    userhandlerport.UserHandlerPort
+	ListingHandler listinghandlerport.ListingHandlerPort
 }
 
 // AdapterFactoryConfig contém as configurações necessárias para criar adapters

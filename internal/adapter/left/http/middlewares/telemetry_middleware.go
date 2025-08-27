@@ -11,7 +11,7 @@ import (
 func TelemetryMiddleware() gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
 		ctx := c.Request.Context()
-		
+
 		// Generate tracer for the request
 		ctx, spanEnd, err := utils.GenerateTracer(ctx)
 		if err != nil {

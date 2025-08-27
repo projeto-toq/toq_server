@@ -14,26 +14,13 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-// Public endpoints that don't require authentication
-var publicEndpoints = []string{
-	"/api/v1/auth/owner",
-	"/api/v1/auth/realtor",
-	"/api/v1/auth/agency",
-	"/api/v1/auth/signin",
-	"/api/v1/auth/refresh",
-	"/api/v1/auth/password/request",
-	"/api/v1/auth/password/confirm",
-	"/healthz",
-	"/readyz",
-}
-
 // AuthMiddleware handles JWT authentication
 func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
 		path := c.Request.URL.Path
 
 		// Skip authentication for public endpoints
-		if isPublicEndpoint(path) {
+		if !isAuthRequiredEndpoint(path) {
 			setRootUserContext(c)
 			c.Next()
 			return
@@ -76,16 +63,6 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 	})
 }
 
-// isPublicEndpoint checks if the path is a public endpoint
-func isPublicEndpoint(path string) bool {
-	for _, endpoint := range publicEndpoints {
-		if path == endpoint || strings.HasPrefix(path, endpoint) {
-			return true
-		}
-	}
-	return false
-}
-
 // setRootUserContext sets the root user context for public endpoints
 func setRootUserContext(c *gin.Context) {
 	infos := usermodel.UserInfos{
@@ -98,9 +75,9 @@ func setRootUserContext(c *gin.Context) {
 	ctx := context.WithValue(c.Request.Context(), globalmodel.TokenKey, infos)
 	ctx = context.WithValue(ctx, globalmodel.UserAgentKey, c.GetHeader("User-Agent"))
 	ctx = context.WithValue(ctx, globalmodel.ClientIPKey, c.ClientIP())
-	
+
 	c.Request = c.Request.WithContext(ctx)
-	
+
 	// Set Gin context values
 	c.Set("userInfo", infos)
 	c.Set("userAgent", c.GetHeader("User-Agent"))
@@ -113,9 +90,9 @@ func setUserContext(c *gin.Context, userInfo usermodel.UserInfos) {
 	ctx := context.WithValue(c.Request.Context(), globalmodel.TokenKey, userInfo)
 	ctx = context.WithValue(ctx, globalmodel.UserAgentKey, c.GetHeader("User-Agent"))
 	ctx = context.WithValue(ctx, globalmodel.ClientIPKey, c.ClientIP())
-	
+
 	c.Request = c.Request.WithContext(ctx)
-	
+
 	// Set Gin context values for easy access in handlers
 	c.Set("userInfo", userInfo)
 	c.Set("userAgent", c.GetHeader("User-Agent"))
@@ -126,7 +103,7 @@ func setUserContext(c *gin.Context, userInfo usermodel.UserInfos) {
 func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
 	// This is a simplified version - we'll need to implement the actual JWT validation
 	// For now, using the same logic from the gRPC auth interceptor
-	
+
 	claims := &jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		// TODO: Get secret from environment configuration
@@ -163,7 +140,7 @@ func GetUserInfoFromContext(c *gin.Context) (usermodel.UserInfos, bool) {
 	if !exists {
 		return usermodel.UserInfos{}, false
 	}
-	
+
 	info, ok := userInfo.(usermodel.UserInfos)
 	return info, ok
 }
