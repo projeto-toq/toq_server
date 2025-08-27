@@ -31,7 +31,6 @@ type UserHandlerPort interface {
 	SwitchUserRole(c *gin.Context)
 
 	// Agency handlers
-	GetDocumentsUploadURL(c *gin.Context)
 	InviteRealtor(c *gin.Context)
 	GetRealtorsByAgency(c *gin.Context)
 	GetRealtorByID(c *gin.Context)

@@ -155,11 +155,10 @@ var AgencyHTTPPrivileges = map[string]bool{
 	"POST /api/v1/user/phone/resend":  true,
 
 	// Agency specific operations
-	"POST /api/v1/agency/documents/upload-url": true,
-	"POST /api/v1/agency/invite-realtor":       true,
-	"GET /api/v1/agency/realtors":              true,
-	"GET /api/v1/agency/realtors/:id":          true,
-	"DELETE /api/v1/agency/realtors/:id":       true,
+	"POST /api/v1/agency/invite-realtor": true,
+	"GET /api/v1/agency/realtors":        true,
+	"GET /api/v1/agency/realtors/:id":    true,
+	"DELETE /api/v1/agency/realtors/:id": true,
 
 	// Listing operations (basic read access)
 	"GET /api/v1/listings":            true,

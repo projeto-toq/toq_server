@@ -69,11 +69,10 @@ func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers)
 	// Agency routes (Agency only)
 	agency := router.Group("/agency")
 	{
-		agency.POST("/documents/upload-url", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetDocumentsUploadURL
-		agency.POST("/invite-realtor", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // InviteRealtor
-		agency.GET("/realtors", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })              // GetRealtorsByAgency
-		agency.GET("/realtors/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // GetRealtorByID
-		agency.DELETE("/realtors/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // DeleteRealtorByID
+		agency.POST("/invite-realtor", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // InviteRealtor
+		agency.GET("/realtors", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })        // GetRealtorsByAgency
+		agency.GET("/realtors/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // GetRealtorByID
+		agency.DELETE("/realtors/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // DeleteRealtorByID
 	}
 
 	// Realtor routes (Realtor only)
