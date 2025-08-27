@@ -1,15 +1,16 @@
 ## 🛠️ Problema
-Creio que temos um problema de arquitetura.
-Na arquitetura hexagonal existe a criação de adapters que são usados na implementação dos ports.
-Os services recebem as injeções de ports que serão usados nas funções.
-Mas vejo que get_photo_upload_url.go usa diretamtne o adpter s3
-   s3adapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/aws_s3"
-   	validPhotoTypes := map[string]bool{
-		s3adapter.PhotoTypeOriginal: true,
-		s3adapter.PhotoTypeSmall:    true,
-		s3adapter.PhotoTypeMedium:   true,
-		s3adapter.PhotoTypeLarge:    true,
-	}
+Temos que refatorar o projeto substituindo grpc por http. Assim temos que:
+1) verificar cada chamada grpc do user.proto e listing.proto e substituir por handlers http
+2) todas as chamadas grpc devem ser substituídas, nenhuma deve permanecer grpc
+3) crie um conjunto de erros http para substituir os tratamentos de erro status.Error ecodes.Internal do grpc
+4) utilize gim como servidor ao invés do http nativo
+5) altere a inicialização do sistema para gim ao invés de grpc
+6) altere a factory a injeção de dependencias, quando necessaário
+7) altere os middlewares de authentication, access_control e telemetry, quando necessário
+8) considere que a aplicação estará usando um nginx como proxy reverso, escutando https, com certificados lets encrypt
+9) func (c *config) StartHTTPHealth() deve ser transferido para um caminho normal do gim
+10) o atual projeto tem no github tags. elas deverão ser eliminadas, deverá ser criada um tag grpc para o atual estado no github e o próximo commit&push, com as primeiras alterações desta refatoação, estarão na tag http
+11) Devido ao tamanho divida o plano em etapas e crie prompts ao final de cada etapa para que eu reenvie para o github copilot continuar continuar do ponto em que parou, evitando erros por perda de contexto
 
 ## ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 
@@ -27,6 +28,4 @@ Mas vejo que get_photo_upload_url.go usa diretamtne o adpter s3
 ## 📌 Instruções finais
 
 - **Não implemente nada até que eu autorize.**
-- Analise as diversão funções e services e apresente um plano detalhado refatoração de:
-   ports, adapter, injeção correta nos services e uso desacoplado
-- Ainda que tenha dado como exemplo o get_photo_uploada creio que existem outros
+- Analise a solicitação e o código atual e apresente um plano detalhado da refatoração.
