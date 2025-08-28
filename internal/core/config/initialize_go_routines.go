@@ -17,8 +17,10 @@ func (c *config) InitializeGoRoutines() {
 	// c.wg.Add(1)
 	// go goroutines.CreciValidationWorker(c.userService, c.wg, c.context)
 
-	c.wg.Add(1)
-	go goroutines.CleanMemoryCache(&c.cache, c.wg, c.context)
+	// REMOVIDO: Memory Cache Cleaner não é mais necessário com Redis
+	// Redis gerencia automaticamente TTL e expiração de chaves
+	// c.wg.Add(1)
+	// go goroutines.CleanMemoryCache(&c.cache, c.wg, c.context)
 
 	// Start Session Cleaner worker (default interval 5m if not configured)
 	intervalSeconds := c.env.AUTH.SessionCleanerIntervalSeconds
