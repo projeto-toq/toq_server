@@ -12,16 +12,18 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/routes"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
+	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 )
 
 // ServerConfig holds the HTTP server configuration
 type ServerConfig struct {
-	Port            string
-	ReadTimeout     time.Duration
-	WriteTimeout    time.Duration
-	MaxHeaderBytes  int
-	ActivityTracker *goroutines.ActivityTracker
-	HTTPHandlers    *factory.HTTPHandlers
+	Port              string
+	ReadTimeout       time.Duration
+	WriteTimeout      time.Duration
+	MaxHeaderBytes    int
+	ActivityTracker   *goroutines.ActivityTracker
+	HTTPHandlers      *factory.HTTPHandlers
+	PermissionService permissionservice.PermissionServiceInterface
 	// Cache will be added later when access control middleware is implemented
 }
 
@@ -51,11 +53,10 @@ func NewServer(config *ServerConfig) *Server {
 	router.GET("/healthz", healthzHandler)
 	router.GET("/readyz", readyzHandler)
 
-	// API routes with authentication
+	// API routes with authentication and permissions
 	api := router.Group("/api/v1")
 	api.Use(middlewares.AuthMiddleware(config.ActivityTracker))
-	// TODO: Add access control middleware when implemented
-	// api.Use(middlewares.AccessControlMiddleware(config.Cache))
+	api.Use(middlewares.PermissionMiddleware(config.PermissionService))
 
 	// Register API routes
 	routes.RegisterUserRoutes(api, config.HTTPHandlers)

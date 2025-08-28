@@ -24,6 +24,7 @@ import (
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
+	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 )
 
@@ -43,6 +44,7 @@ type config struct {
 	userService            userservices.UserServiceInterface
 	listingService         listingservices.ListingServiceInterface
 	complexService         complexservices.ComplexServiceInterface
+	permissionService      permissionservices.PermissionServiceInterface
 	cep                    cepport.CEPPortInterface
 	cpf                    cpfport.CPFPortInterface
 	cnpj                   cnpjport.CNPJPortInterface

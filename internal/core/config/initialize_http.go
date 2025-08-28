@@ -29,10 +29,10 @@ func (c *config) InitializeHTTP() {
 	c.ginRouter.GET("/healthz", c.healthzHandler)
 	c.ginRouter.GET("/readyz", c.readyzHandler)
 
-	// API routes with authentication
+	// API routes with authentication and permissions
 	api := c.ginRouter.Group("/api/v1")
 	api.Use(middlewares.AuthMiddleware(c.activityTracker))
-	api.Use(middlewares.AccessControlMiddleware())
+	api.Use(middlewares.PermissionMiddleware(c.permissionService))
 
 	// Note: HTTP handlers will be initialized after dependency injection
 	// and routes will be set up at that time

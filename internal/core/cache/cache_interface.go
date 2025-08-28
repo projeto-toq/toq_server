@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"sync"
+	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
@@ -13,6 +14,11 @@ type CacheInterface interface {
 	Clean(ctx context.Context)
 	Close() error
 	SetGlobalService(globalService globalservice.GlobalServiceInterface) // Para injeção posterior
+
+	// Métodos específicos para cache de permissões
+	GetUserPermissions(ctx context.Context, userID int64) ([]byte, error)
+	SetUserPermissions(ctx context.Context, userID int64, permissionsJSON []byte, ttl time.Duration) error
+	DeleteUserPermissions(ctx context.Context, userID int64) error
 }
 
 var instance *cache

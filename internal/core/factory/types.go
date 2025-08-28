@@ -20,6 +20,7 @@ import (
 	complexrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/complex_repository"
 	globalrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/global_repository"
 	listingrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/listing_repository"
+	permissionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/permission_repository"
 	sessionrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/user_repository"
 )
@@ -54,6 +55,7 @@ type RepositoryAdapters struct {
 	Complex     complexrepoport.ComplexRepoPortInterface
 	Listing     listingrepoport.ListingRepoPortInterface
 	Session     sessionrepoport.SessionRepoPortInterface
+	Permission  permissionrepository.PermissionRepositoryInterface
 	DeviceToken *mysqluseradapter.DeviceTokenRepository
 }
 

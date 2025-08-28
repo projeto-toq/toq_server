@@ -8,6 +8,7 @@ import (
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
+	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 )
 
@@ -131,4 +132,13 @@ func (c *config) InitListingHandler() {
 		c.cloudStorage,
 	)
 	// HTTP handler initialization is done during HTTP server setup
+}
+
+func (c *config) InitPermissionHandler() {
+	slog.Debug("Initializing Permission Handler")
+	c.permissionService = permissionservices.NewPermissionService(
+		c.repositoryAdapters.Permission,
+		c.cache,
+		c.globalService,
+	)
 }

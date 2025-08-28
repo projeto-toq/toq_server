@@ -244,3 +244,45 @@ func (rc *RedisCache) fetchFromService(ctx context.Context, fullMethod string, r
 func (rc *RedisCache) Close() error {
 	return rc.client.Close()
 }
+
+// GetUserPermissions busca permissões de usuário do Redis
+func (rc *RedisCache) GetUserPermissions(ctx context.Context, userID int64) ([]byte, error) {
+	key := fmt.Sprintf("%suser_permissions:%d", rc.keyPrefix, userID)
+
+	result, err := rc.client.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return nil, fmt.Errorf("cache miss - user permissions not found for user %d", userID)
+		}
+		return nil, fmt.Errorf("failed to get user permissions from Redis: %w", err)
+	}
+
+	slog.Debug("User permissions cache hit", "userID", userID, "dataSize", len(result))
+	return []byte(result), nil
+}
+
+// SetUserPermissions armazena permissões de usuário no Redis
+func (rc *RedisCache) SetUserPermissions(ctx context.Context, userID int64, permissionsJSON []byte, ttl time.Duration) error {
+	key := fmt.Sprintf("%suser_permissions:%d", rc.keyPrefix, userID)
+
+	err := rc.client.Set(ctx, key, permissionsJSON, ttl).Err()
+	if err != nil {
+		return fmt.Errorf("failed to set user permissions in Redis: %w", err)
+	}
+
+	slog.Debug("User permissions cached", "userID", userID, "ttl", ttl, "dataSize", len(permissionsJSON))
+	return nil
+}
+
+// DeleteUserPermissions remove permissões de usuário do Redis
+func (rc *RedisCache) DeleteUserPermissions(ctx context.Context, userID int64) error {
+	key := fmt.Sprintf("%suser_permissions:%d", rc.keyPrefix, userID)
+
+	err := rc.client.Del(ctx, key).Err()
+	if err != nil {
+		return fmt.Errorf("failed to delete user permissions from Redis: %w", err)
+	}
+
+	slog.Debug("User permissions cache invalidated", "userID", userID)
+	return nil
+}

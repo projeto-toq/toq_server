@@ -33,6 +33,7 @@ import (
 	mysqlcomplexadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex"
 	mysqlglobaladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global"
 	mysqllistingadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing"
+	mysqlpermissionadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission"
 	sessionmysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session"
 	mysqluseradapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user"
 
@@ -152,7 +153,7 @@ func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env 
 }
 
 // CreateRepositoryAdapters cria todos os repositórios MySQL
-// Agrupa repositórios por domínio (User, Global, Complex, Listing, Session)
+// Agrupa repositórios por domínio (User, Global, Complex, Listing, Session, Permission)
 func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter.Database) (RepositoryAdapters, error) {
 	slog.Info("Creating repository adapters")
 
@@ -174,6 +175,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Session Repository
 	sessionRepo := sessionmysqladapter.NewSessionAdapter(database)
 
+	// Permission Repository
+	permissionRepo := mysqlpermissionadapter.NewPermissionAdapter(database)
+
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
@@ -182,6 +186,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 		Complex:     complexRepo,
 		Listing:     listingRepo,
 		Session:     sessionRepo,
+		Permission:  permissionRepo,
 		DeviceToken: deviceTokenRepo,
 	}, nil
 }

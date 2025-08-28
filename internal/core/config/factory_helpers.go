@@ -46,6 +46,7 @@ func (c *config) initializeServices() {
 	c.InitComplexHandler()
 	c.InitListingHandler()
 	c.InitUserHandler()
+	c.InitPermissionHandler()
 
 	slog.Info("All services initialized successfully")
 }
