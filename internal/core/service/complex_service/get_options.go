@@ -6,8 +6,6 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number string) (propertyTypes globalmodel.PropertyType, err error) {
@@ -41,7 +39,7 @@ func (cs *complexService) getOptions(ctx context.Context, tx *sql.Tx, zipCode st
 	callhorizontal := false
 	complex, err := cs.complexRepository.GetVerticalComplex(ctx, tx, zipCode, number)
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if err == sql.ErrNoRows {
 			callhorizontal = true
 		} else {
 			return
@@ -50,8 +48,8 @@ func (cs *complexService) getOptions(ctx context.Context, tx *sql.Tx, zipCode st
 	if callhorizontal {
 		complex, err = cs.complexRepository.GetHorizontalComplex(ctx, tx, zipCode)
 		if err != nil {
-			if status.Code(err) == codes.NotFound {
-				return propertyTypes, status.Error(codes.InvalidArgument, "Area not covered yet")
+			if err == sql.ErrNoRows {
+				return propertyTypes, utils.ValidationError("area_not_covered", "Area not covered yet")
 			} else {
 				return
 			}

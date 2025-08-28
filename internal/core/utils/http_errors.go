@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"google.golang.org/grpc/codes"
 )
 
 // HTTPError represents a structured HTTP error response
@@ -57,41 +56,6 @@ var (
 	ErrServiceUnavailable  = &HTTPError{Code: http.StatusServiceUnavailable, Message: "Service Unavailable"}
 	ErrGatewayTimeout      = &HTTPError{Code: http.StatusGatewayTimeout, Message: "Gateway Timeout"}
 )
-
-// gRPC to HTTP status code mapping
-var grpcToHTTPStatusMap = map[codes.Code]int{
-	codes.OK:                 http.StatusOK,
-	codes.Canceled:           http.StatusRequestTimeout,
-	codes.Unknown:            http.StatusInternalServerError,
-	codes.InvalidArgument:    http.StatusBadRequest,
-	codes.DeadlineExceeded:   http.StatusGatewayTimeout,
-	codes.NotFound:           http.StatusNotFound,
-	codes.AlreadyExists:      http.StatusConflict,
-	codes.PermissionDenied:   http.StatusForbidden,
-	codes.ResourceExhausted:  http.StatusTooManyRequests,
-	codes.FailedPrecondition: http.StatusBadRequest,
-	codes.Aborted:            http.StatusConflict,
-	codes.OutOfRange:         http.StatusBadRequest,
-	codes.Unimplemented:      http.StatusNotImplemented,
-	codes.Internal:           http.StatusInternalServerError,
-	codes.Unavailable:        http.StatusServiceUnavailable,
-	codes.DataLoss:           http.StatusInternalServerError,
-	codes.Unauthenticated:    http.StatusUnauthorized,
-}
-
-// GRPCCodeToHTTPStatus converts gRPC status codes to HTTP status codes
-func GRPCCodeToHTTPStatus(code codes.Code) int {
-	if httpStatus, exists := grpcToHTTPStatusMap[code]; exists {
-		return httpStatus
-	}
-	return http.StatusInternalServerError
-}
-
-// ConvertGRPCErrorToHTTP converts a gRPC error to an HTTP error
-func ConvertGRPCErrorToHTTP(grpcCode codes.Code, message string, details ...interface{}) *HTTPError {
-	httpCode := GRPCCodeToHTTPStatus(grpcCode)
-	return NewHTTPError(httpCode, message, details...)
-}
 
 // ValidationError creates a structured validation error
 func ValidationError(field, message string) *HTTPError {

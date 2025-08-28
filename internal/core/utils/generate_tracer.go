@@ -9,22 +9,20 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), err error) {
 	pc, _, _, ok := runtime.Caller(1)
 	if !ok {
 		slog.Error("Failed to get caller information")
-		err = status.Errorf(codes.Internal, "failed to get caller information")
+		err = ErrInternalServer
 		return
 	}
 
 	fn := runtime.FuncForPC(pc)
 	if fn == nil {
 		slog.Error("Failed to get function information")
-		err = status.Errorf(codes.Internal, "failed to get function information")
+		err = ErrInternalServer
 		return
 	}
 
@@ -34,7 +32,7 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 	nameParts := strings.Split(lastPart, ".")
 	if len(nameParts) < 2 {
 		slog.Error("Failed to get package and function name", "full_name", fullName)
-		err = status.Errorf(codes.Internal, "failed to get package and function name")
+		err = ErrInternalServer
 		return
 	}
 
@@ -46,7 +44,7 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 		slog.Error("Request ID not found in context", "package", packageName, "function", functionName)
 		// Return a no-op function instead of creating span with nil tracer
 		end = func() {}
-		err = status.Error(codes.Unauthenticated, "")
+		err = ErrUnauthorized
 		return ctx, end, err
 	}
 
@@ -63,9 +61,15 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 		// Only proceed if span is not nil
 		if span != nil {
 			if err != nil {
+				// Extract HTTP status code from HTTPError if possible
+				var statusCode int = 500
+				if httpErr, ok := err.(*HTTPError); ok {
+					statusCode = httpErr.Code
+				}
+
 				span.SetAttributes(
 					attribute.String("error.message", err.Error()),
-					attribute.String("error.code", status.Code(err).String()),
+					attribute.Int("error.code", statusCode),
 				)
 			}
 			span.End()

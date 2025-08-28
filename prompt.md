@@ -1,6 +1,17 @@
 ## 🛠️ Problema
-Estávamos no processo de refatoração de grpc para http:
-- a inicialização segue com grpc e não http. precismao alterar o processo de inicilização do sistema.
+Atualmente temos um sistema de permissões contruído sobre user_roles e http requests.
+- 3 perfils fixos com vários usuário: owner, realtor, agency
+- perfils adm que serão criados durante a execução e variam quanto a permissões:
+   * root -> unico usuário e imutável com acesso total e irrestrito e criado durante a criação da base pela primeira vez. database: populate: true
+   * admin -> vários com permissões e acessos variáveis segundo a função: atendente proprietário, atendente corretor etc
+   * fotografo -> vários usuários com acessos variáveis
+- /model/user_model/user_acess_table tem a lista de chamdas http e, para cada user_role, se true tem permissão.
+- esse conjunto de permissões são carregados em cache e verificados em cada chamada por access_control_middleware autorizando ou não.
+- o contjunto de previleges são persistidos em role_privileges
+problemas desta implementação:
+- está hardcode e em caso de mudança necessário novo build
+- para perfils básicos owner, realtor, agency menos impactante, mas para perfils adm o sistema falaha na criação de roles_privileges, pois o role adm terá sempre as mesmas role_privileges.
+- uso de redis, está confuso
 
 ## ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 
@@ -18,4 +29,7 @@ Estávamos no processo de refatoração de grpc para http:
 ## 📌 Instruções finais
 
 - **Não implemente nada até que eu autorize.**
-- Analise a solicitação e o código atual e apresente um plano detalhado da refatoração.
+- Analise a solicitação e o código atual e apresente um plano detalhado para criação de um novo sistema de permissões, que:
+   a) substituirá completamente o atual
+   b) seja simples, moderno e eficiente
+   

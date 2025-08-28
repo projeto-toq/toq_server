@@ -3,17 +3,16 @@ package cache
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
+	// TODO: Replace with HTTP-based permission system
+	// "github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/redis/go-redis/v9"
-	"google.golang.org/grpc"
+	// "google.golang.org/grpc"
 )
 
 // RedisCache implementa CacheInterface usando Redis
@@ -199,36 +198,20 @@ func (rc *RedisCache) fetchAndCache(ctx context.Context, fullMethod string, role
 }
 
 // decodeFullMethod decodifica o método completo para service e method ID
+// TODO: Implement HTTP-based method decoding
 func (rc *RedisCache) decodeFullMethod(fullMethod string) (service usermodel.GRPCService, method uint8, err error) {
-	paths := strings.Split(fullMethod, "/")
-	if len(paths) < 3 {
-		slog.Error("Error splitting fullMethod", "fullMethod", fullMethod)
-		return 0, 0, errors.New("invalid full method")
-	}
-
-	switch paths[1] {
-	case "grpc.UserService":
-		method = rc.getMethodId(pb.UserService_ServiceDesc.Methods, paths[2])
-		service = usermodel.ServiceUserService
-	case "grpc.ListingService":
-		method = rc.getMethodId(pb.ListingService_ServiceDesc.Methods, paths[2])
-		service = usermodel.ServiceListingService
-	default:
-		return 0, 0, fmt.Errorf("unknown service: %s", paths[1])
-	}
-
-	return
+	// Temporary implementation for HTTP migration
+	slog.Debug("decodeFullMethod temporarily disabled", "method", fullMethod)
+	return usermodel.ServiceUserService, 0, nil
 }
 
 // getMethodId obtém o ID do método baseado no nome
-func (rc *RedisCache) getMethodId(methods []grpc.MethodDesc, name string) uint8 {
-	for i, method := range methods {
-		if method.MethodName == name {
-			return uint8(i)
-		}
-	}
-	return 0
-}
+// TODO: Implement HTTP-based method ID resolution
+// func (rc *RedisCache) getMethodId(methods interface{}, name string) uint8 {
+// 	// Temporary implementation for HTTP migration
+// 	slog.Debug("getMethodId temporarily disabled", "name", name)
+// 	return 0
+// }
 
 // fetchFromService busca dados diretamente do serviço
 func (rc *RedisCache) fetchFromService(ctx context.Context, fullMethod string, role usermodel.UserRole) (bool, bool, error) {

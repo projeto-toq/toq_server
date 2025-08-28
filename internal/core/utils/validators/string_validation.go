@@ -3,17 +3,16 @@ package validators
 import (
 	"regexp"
 
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/converters"
 	"github.com/nyaruka/phonenumbers"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func ValidateNoSpecialCharacters(str string) (err error) {
+func ValidateNoSpecialCharacters(str string) error {
 	// validate if the string has only letters (including accented characters) and spaces
 	re := regexp.MustCompile(`^[a-zA-ZÀ-ÿ\s'-]+$`)
 	if !re.MatchString(str) {
-		return status.Error(codes.InvalidArgument, str+" contains special characters")
+		return utils.ValidationError("text", "contains special characters")
 	}
 	return nil
 }
@@ -22,7 +21,7 @@ func ValidateOnlyNumbers(str string) error {
 	// validate if the string has only numbers
 	re := regexp.MustCompile(`^[0-9]+$`)
 	if !re.MatchString(str) {
-		return status.Error(codes.InvalidArgument, str+" contains non-numeric characters")
+		return utils.ValidationError("number", "must contain only numeric characters")
 	}
 	return nil
 }
@@ -41,12 +40,12 @@ func ValidateE164(phoneNumber string) error {
 	// Parse the phone number
 	num, err := phonenumbers.Parse(phoneNumber, "")
 	if err != nil {
-		return status.Error(codes.InvalidArgument, "Invalid phone number")
+		return utils.ValidationError("phone_number", "invalid phone number format")
 	}
 
 	// Check if the phone number is valid and in E.164 format
 	if !phonenumbers.IsValidNumber(num) || phonenumbers.Format(num, phonenumbers.E164) != phoneNumber {
-		return status.Error(codes.InvalidArgument, "Invalid phone number")
+		return utils.ValidationError("phone_number", "must be in valid E.164 format")
 	}
 
 	return nil
@@ -56,7 +55,7 @@ func ValidateEmail(email string) error {
 	// validate if the email is in a valid format
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	if !re.MatchString(email) {
-		return status.Error(codes.InvalidArgument, "Invalid email format")
+		return utils.ValidationError("email", "invalid email format")
 	}
 	return nil
 }
@@ -65,7 +64,7 @@ func ValidateCode(code string) error {
 	// validate if the code has only letters and numbers and is 6 characters long
 	re := regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
 	if !re.MatchString(code) {
-		return status.Error(codes.InvalidArgument, "Invalid code format")
+		return utils.ValidationError("code", "must be 6 alphanumeric characters")
 	}
 	return nil
 }

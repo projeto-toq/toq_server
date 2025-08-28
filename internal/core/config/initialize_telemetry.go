@@ -10,7 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -40,9 +40,9 @@ func (c *config) InitializeTelemetry() (func(), error) {
 	ctx, cancel := context.WithTimeout(c.context, 5*time.Second)
 	defer cancel()
 
-	traceExporter, err := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithInsecure(),
-		otlptracegrpc.WithEndpoint(otlpEndpoint),
+	traceExporter, err := otlptracehttp.New(ctx,
+		otlptracehttp.WithInsecure(),
+		otlptracehttp.WithEndpoint(fmt.Sprintf("http://%s", otlpEndpoint)),
 	)
 	if err != nil {
 		slog.Warn("failed to create OTLP trace exporter, continuing without distributed tracing", "endpoint", otlpEndpoint, "err", err)
@@ -56,7 +56,7 @@ func (c *config) InitializeTelemetry() (func(), error) {
 	res, err := resource.New(c.context,
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String("toq_server"),
-			semconv.ServiceVersionKey.String("v2.1-grpc"),
+			semconv.ServiceVersionKey.String("v2.1-http"),
 		),
 	)
 	if err != nil {
