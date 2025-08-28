@@ -86,10 +86,6 @@ services:
     networks:
       - toq-network
 
-networks:
-  toq-network:
-    driver: bridge
-
   # Swagger UI for API documentation
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
@@ -99,5 +95,14 @@ networks:
       - SWAGGER_JSON_URL=http://host.docker.internal:8080/swagger/doc.json
     networks:
       - toq-network
-    depends_on:
-      - toq-server
+    # Remove depends_on toq-server since it runs on host
+
+networks:
+  toq-network:
+    driver: bridge
+
+  swagger-ui:
+    driver: bridge
+
+volumes:
+  grafana_data:
