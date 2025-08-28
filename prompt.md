@@ -7,7 +7,7 @@ Atualmente temos um sistema de permissões contruído sobre user_roles e http re
    * fotografo -> vários usuários com acessos variáveis
 - /model/user_model/user_acess_table tem a lista de chamdas http e, para cada user_role, se true tem permissão.
 - esse conjunto de permissões são carregados em cache e verificados em cada chamada por access_control_middleware autorizando ou não.
-- o contjunto de previleges são persistidos em role_privileges
+- o contjunto de previleges são persistidos em role_privileges ecarregados pelo cache redis
 problemas desta implementação:
 - está hardcode e em caso de mudança necessário novo build
 - para perfils básicos owner, realtor, agency menos impactante, mas para perfils adm o sistema falaha na criação de roles_privileges, pois o role adm terá sempre as mesmas role_privileges.
@@ -19,9 +19,13 @@ problemas desta implementação:
    - [Go Best Practices](https://go.dev/talks/2013/bestpractices.slide#1)  
    - [Google Go Style Guide](https://google.github.io/styleguide/go/)
 2. Adoção da arquitetura hexagonal.
+   - Injeção de dependencia nos services via factory na inicialização
+   - Adapter inicializados uma única vez na inicialização e seus respsctivos ports sendo injetados
+   - Interfaces em arquivos separados das implementações, que terão seus próprios arquivos
+   - domain e interface em arquivos separados
 3. Implementação efetiva (sem uso de mocks).
 4. Manutenção do padrão de desenvolvimento entre funções.
-5. Preservação da injeção de dependências já implementada.
+5. Erros sempre utilzando utils/http_errors
 6. Eliminação completa de código legado após refatoração.
 
 ---
