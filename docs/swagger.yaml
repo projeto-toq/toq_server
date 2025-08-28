@@ -1,0 +1,408 @@
+basePath: /api/v1
+definitions:
+  dto.BaseFeature:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      details: {}
+      message:
+        type: string
+    type: object
+  dto.GetAllListingsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.ListingResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.PaginationResponse'
+    type: object
+  dto.GetBaseFeaturesResponse:
+    properties:
+      features:
+        items:
+          $ref: '#/definitions/dto.BaseFeature'
+        type: array
+    type: object
+  dto.GetOptionsResponse:
+    properties:
+      propertyTypes:
+        items:
+          $ref: '#/definitions/dto.PropertyTypeOption'
+        type: array
+      statuses:
+        items:
+          $ref: '#/definitions/dto.StatusOption'
+        type: array
+    type: object
+  dto.ListingResponse:
+    properties:
+      complexId:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      number:
+        type: string
+      price:
+        type: number
+      propertyType:
+        type: integer
+      status:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: integer
+      zipCode:
+        type: string
+    type: object
+  dto.PaginationResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  dto.PropertyTypeOption:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  dto.StartListingRequest:
+    properties:
+      number:
+        type: string
+      propertyType:
+        type: integer
+      zipCode:
+        type: string
+    required:
+    - number
+    - propertyType
+    - zipCode
+    type: object
+  dto.StartListingResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  dto.StatusOption:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@toq.com
+    name: TOQ Development Team
+    url: https://github.com/giulio-alfieri/toq_server
+  description: TOQ Server - Real Estate HTTP API Server with hexagonal architecture
+  license:
+    name: MIT
+    url: https://github.com/giulio-alfieri/toq_server/blob/main/LICENSE
+  termsOfService: http://swagger.io/terms/
+  title: TOQ Server API
+  version: "1.0"
+paths:
+  /listings:
+    get:
+      consumes:
+      - application/json
+      description: Get all listings with optional filters for status, location, price
+        range, etc.
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10)'
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - description: Filter by listing status
+        in: query
+        name: status
+        type: string
+      - description: Filter by user ID
+        in: query
+        name: userId
+        type: string
+      - description: Filter by zip code
+        in: query
+        name: zipCode
+        type: string
+      - description: Minimum price filter
+        in: query
+        name: minPrice
+        type: integer
+      - description: Maximum price filter
+        in: query
+        name: maxPrice
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetAllListingsResponse'
+        "400":
+          description: Invalid request parameters
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "501":
+          description: Service method not implemented
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all listings with pagination and filters
+      tags:
+      - Listings
+    post:
+      consumes:
+      - application/json
+      description: Create a new listing with basic information (zip code, number,
+        property type)
+      parameters:
+      - description: Listing creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StartListingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.StartListingResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Start a new listing
+      tags:
+      - Listings
+  /listings/features/base:
+    get:
+      consumes:
+      - application/json
+      description: Get all available base features that can be associated with listings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetBaseFeaturesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get base features
+      tags:
+      - Listings
+  /listings/options:
+    get:
+      consumes:
+      - application/json
+      description: Get available property types and statuses for listings based on
+        location
+      parameters:
+      - description: Zip code for location-based options
+        in: query
+        name: zipCode
+        required: true
+        type: string
+      - description: Property number
+        in: query
+        name: number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetOptionsResponse'
+        "400":
+          description: Missing required parameters
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get listing options
+      tags:
+      - Listings
+  /user/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get the current authenticated user's profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile data with user information
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - User
+  /user/signout:
+    post:
+      consumes:
+      - application/json
+      description: Sign out the current user and invalidate their session tokens
+      parameters:
+      - description: Sign out data
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      - description: Device token to invalidate
+        in: body
+        name: request.device_token
+        schema:
+          type: string
+      - description: Refresh token to invalidate
+        in: body
+        name: request.refresh_token
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sign out confirmation message
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Sign out user
+      tags:
+      - User
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

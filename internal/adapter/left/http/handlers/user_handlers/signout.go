@@ -10,6 +10,22 @@ import (
 )
 
 // SignOut handles user sign out
+//
+//	@Summary		Sign out user
+//	@Description	Sign out the current user and invalidate their session tokens
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		object					true	"Sign out data"
+//	@Param			request.device_token	body		string	false	"Device token to invalidate"
+//	@Param			request.refresh_token	body		string	false	"Refresh token to invalidate"
+//	@Success		200		{object}	map[string]string	"Sign out confirmation message"
+//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
+//	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure		403		{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
+//	@Router			/user/signout [post]
+//	@Security		BearerAuth
 func (uh *UserHandler) SignOut(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {

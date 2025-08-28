@@ -10,6 +10,20 @@ import (
 )
 
 // StartListing handles creating a new listing
+//
+//	@Summary		Start a new listing
+//	@Description	Create a new listing with basic information (zip code, number, property type)
+//	@Tags			Listings
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.StartListingRequest	true	"Listing creation data"
+//	@Success		201		{object}	dto.StartListingResponse
+//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
+//	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure		403		{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
+//	@Router			/listings [post]
+//	@Security		BearerAuth
 func (lh *ListingHandler) StartListing(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {

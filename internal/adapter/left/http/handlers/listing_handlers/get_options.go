@@ -9,6 +9,21 @@ import (
 )
 
 // GetOptions handles getting available options for listings
+//
+//	@Summary		Get listing options
+//	@Description	Get available property types and statuses for listings based on location
+//	@Tags			Listings
+//	@Accept			json
+//	@Produce		json
+//	@Param			zipCode	query		string					true	"Zip code for location-based options"
+//	@Param			number	query		string					true	"Property number"
+//	@Success		200		{object}	dto.GetOptionsResponse
+//	@Failure		400		{object}	dto.ErrorResponse	"Missing required parameters"
+//	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure		403		{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
+//	@Router			/listings/options [get]
+//	@Security		BearerAuth
 func (lh *ListingHandler) GetOptions(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {

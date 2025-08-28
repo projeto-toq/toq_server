@@ -9,6 +9,18 @@ import (
 )
 
 // GetBaseFeatures handles getting available base features for listings
+//
+//	@Summary		Get base features
+//	@Description	Get all available base features that can be associated with listings
+//	@Tags			Listings
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	dto.GetBaseFeaturesResponse
+//	@Failure		401	{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure		403	{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure		500	{object}	dto.ErrorResponse	"Internal server error"
+//	@Router			/listings/features/base [get]
+//	@Security		BearerAuth
 func (lh *ListingHandler) GetBaseFeatures(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {

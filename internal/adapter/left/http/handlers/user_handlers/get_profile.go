@@ -10,6 +10,18 @@ import (
 )
 
 // GetProfile handles getting user profile
+//
+//	@Summary		Get user profile
+//	@Description	Get the current authenticated user's profile information
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	map[string]interface{}	"Profile data with user information"
+//	@Failure		401	{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure		403	{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure		500	{object}	dto.ErrorResponse	"Internal server error"
+//	@Router			/user/profile [get]
+//	@Security		BearerAuth
 func (uh *UserHandler) GetProfile(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {

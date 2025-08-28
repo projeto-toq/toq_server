@@ -16,6 +16,29 @@
 // Framework: HTTP/Gin with OpenTelemetry observability
 // Storage: MySQL with Redis caching
 // External Services: FCM, SMS, Email, CEP/CPF/CNPJ validation
+
+//	@title			TOQ Server API
+//	@version		1.0
+//	@description	TOQ Server - Real Estate HTTP API Server with hexagonal architecture
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	TOQ Development Team
+//	@contact.url	https://github.com/giulio-alfieri/toq_server
+//	@contact.email	support@toq.com
+
+//	@license.name	MIT
+//	@license.url	https://github.com/giulio-alfieri/toq_server/blob/main/LICENSE
+
+//	@host		localhost:8080
+//	@BasePath	/api/v1
+
+//	@securityDefinitions.apikey	BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Type "Bearer" followed by a space and JWT token.
+
+//	@externalDocs.description	OpenAPI
+//	@externalDocs.url			https://swagger.io/resources/open-api/
 package main
 
 import (
@@ -29,7 +52,7 @@ import (
 	"time"
 
 	"net/http"
-	_ "net/http/pprof" // Enable pprof debugging endpoints
+	_ "github.com/giulio-alfieri/toq_server/docs" // This is required for Swagger
 
 	"github.com/giulio-alfieri/toq_server/internal/core/config"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"

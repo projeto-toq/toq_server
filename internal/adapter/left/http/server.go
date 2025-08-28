@@ -8,6 +8,8 @@ import (
 
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	swaggerFiles "github.com/swaggo/files"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/routes"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
@@ -52,6 +54,9 @@ func NewServer(config *ServerConfig) *Server {
 	// Health check endpoints (no auth required)
 	router.GET("/healthz", healthzHandler)
 	router.GET("/readyz", readyzHandler)
+
+	// Swagger documentation endpoint (no auth required)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// API routes with authentication and permissions
 	api := router.Group("/api/v1")
