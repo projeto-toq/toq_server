@@ -25,127 +25,27 @@ func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers)
 	// Authentication routes (public - without auth middleware)
 	auth := router.Group("/auth")
 	{
-		// CreateOwner godoc
-		//	@Summary		Create owner account
-		//	@Description	Create a new owner account with user information
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.CreateOwnerRequest	true	"Owner creation data"
-		//	@Success		201		{object}	dto.CreateOwnerResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		409		{object}	dto.ErrorResponse	"User already exists"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/owner [post]
-		auth.POST("/owner", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })            // CreateOwner
+		// CreateOwner
+		auth.POST("/owner", handlers.AuthHandler.CreateOwner) // CreateOwner
 
-		// CreateRealtor godoc
-		//	@Summary		Create realtor account
-		//	@Description	Create a new realtor account with user and CRECI information
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.CreateRealtorRequest	true	"Realtor creation data"
-		//	@Success		201		{object}	dto.CreateRealtorResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		409		{object}	dto.ErrorResponse	"User already exists"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/realtor [post]
-		auth.POST("/realtor", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // CreateRealtor
+		// CreateRealtor
+		auth.POST("/realtor", handlers.AuthHandler.CreateRealtor) // CreateRealtor
 
-		// CreateAgency godoc
-		//	@Summary		Create agency account
-		//	@Description	Create a new agency account with user information
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.CreateAgencyRequest	true	"Agency creation data"
-		//	@Success		201		{object}	dto.CreateAgencyResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		409		{object}	dto.ErrorResponse	"User already exists"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/agency [post]
-		auth.POST("/agency", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })           // CreateAgency
+		// CreateAgency
+		auth.POST("/agency", handlers.AuthHandler.CreateAgency) // CreateAgency
 
-		// SignIn godoc
-		//	@Summary		User sign in
-		//	@Description	Authenticate user with national ID and password
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.SignInRequest	true	"Sign in credentials"
-		//	@Success		200		{object}	dto.SignInResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		401		{object}	dto.ErrorResponse	"Invalid credentials"
-		//	@Failure		429		{object}	dto.ErrorResponse	"Too many attempts"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/signin [post]
-		auth.POST("/signin", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })           // SignIn
+		// SignIn
+		auth.POST("/signin", handlers.AuthHandler.SignIn) // SignIn
 
-		// RefreshToken godoc
-		//	@Summary		Refresh access token
-		//	@Description	Generate new access token using refresh token
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.RefreshTokenRequest	true	"Refresh token data"
-		//	@Success		200		{object}	dto.RefreshTokenResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		401		{object}	dto.ErrorResponse	"Invalid refresh token"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/refresh [post]
-		auth.POST("/refresh", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // RefreshToken
+		// RefreshToken
+		auth.POST("/refresh", handlers.AuthHandler.RefreshToken)                   // RefreshToken		// RequestPasswordChange
+		auth.POST("/password/request", handlers.AuthHandler.RequestPasswordChange) // RequestPasswordChange
 
-		// RequestPasswordChange godoc
-		//	@Summary		Request password change
-		//	@Description	Initiate password change process by sending verification code
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.RequestPasswordChangeRequest	true	"Password change request data"
-		//	@Success		200		{object}	dto.RequestPasswordChangeResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		404		{object}	dto.ErrorResponse	"User not found"
-		//	@Failure		429		{object}	dto.ErrorResponse	"Too many requests"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/password/request [post]
-		auth.POST("/password/request", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RequestPasswordChange
+		// ConfirmPasswordChange
+		auth.POST("/password/confirm", handlers.AuthHandler.ConfirmPasswordChange) // ConfirmPasswordChange
 
-		// ConfirmPasswordChange godoc
-		//	@Summary		Confirm password change
-		//	@Description	Confirm password change using verification code
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.ConfirmPasswordChangeRequest	true	"Password change confirmation data"
-		//	@Success		200		{object}	dto.ConfirmPasswordChangeResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		401		{object}	dto.ErrorResponse	"Invalid verification code"
-		//	@Failure		404		{object}	dto.ErrorResponse	"User not found"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/password/confirm [post]
-		auth.POST("/password/confirm", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ConfirmPasswordChange
-
-		// SignOut godoc (public endpoint for token invalidation)
-		//	@Summary		Sign out (public)
-		//	@Description	Sign out user from public endpoint (alternative to authenticated /user/signout)
-		//	@Tags			Authentication
-		//	@Accept			json
-		//	@Produce		json
-		//	@Param			request	body		dto.SignOutRequest	true	"Sign out data"
-		//	@Success		200		{object}	dto.SignOutResponse
-		//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-		//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-		//	@Failure		501		{object}	dto.ErrorResponse	"Endpoint not implemented yet"
-		//	@Router			/auth/signout [post]
-		auth.POST("/signout", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // SignOut
+		// SignOut moved to user group (authenticated endpoint)
+		// auth.POST("/signout", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SignOut - MOVED TO USER GROUP
 	}
 
 	// User routes (authenticated - Owner, Realtor, Agency and Admin)
@@ -159,6 +59,9 @@ func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers)
 		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // GetUserRoles
 		user.GET("/home", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // GoHome
 		user.PUT("/opt-status", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // UpdateOptStatus
+
+		// SignOut (authenticated endpoint)
+		user.POST("/signout", handlers.UserHandler.SignOut) // SignOut
 
 		// Photo management
 		user.POST("/photo/upload-url", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetPhotoUploadURL

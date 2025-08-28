@@ -5,6 +5,7 @@ import (
 
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	authhandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/authhandler"
 	listinghandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/listinghandler"
 	userhandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/userhandler"
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
@@ -63,6 +64,7 @@ type RepositoryAdapters struct {
 type HTTPHandlers struct {
 	UserHandler    userhandlerport.UserHandlerPort
 	ListingHandler listinghandlerport.ListingHandlerPort
+	AuthHandler    authhandlerport.AuthHandlerPort
 }
 
 // AdapterFactoryConfig contém as configurações necessárias para criar adapters

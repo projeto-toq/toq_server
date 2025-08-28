@@ -37,8 +37,8 @@
 //	@name						Authorization
 //	@description				Type "Bearer" followed by a space and JWT token.
 
-//	@externalDocs.description	OpenAPI
-//	@externalDocs.url			https://swagger.io/resources/open-api/
+// @externalDocs.description	OpenAPI
+// @externalDocs.url			https://swagger.io/resources/open-api/
 package main
 
 import (
@@ -52,6 +52,7 @@ import (
 	"time"
 
 	"net/http"
+
 	_ "github.com/giulio-alfieri/toq_server/docs" // This is required for Swagger
 
 	"github.com/giulio-alfieri/toq_server/internal/core/config"

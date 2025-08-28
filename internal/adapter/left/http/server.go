@@ -8,13 +8,13 @@ import (
 
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	swaggerFiles "github.com/swaggo/files"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/routes"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // ServerConfig holds the HTTP server configuration

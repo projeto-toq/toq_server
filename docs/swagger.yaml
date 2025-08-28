@@ -11,6 +11,61 @@ definitions:
       name:
         type: string
     type: object
+  dto.ConfirmPasswordChangeRequest:
+    properties:
+      code:
+        type: string
+      nationalID:
+        type: string
+      newPassword:
+        minLength: 6
+        type: string
+    required:
+    - code
+    - nationalID
+    - newPassword
+    type: object
+  dto.ConfirmPasswordChangeResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.CreateAgencyRequest:
+    properties:
+      agency:
+        $ref: '#/definitions/dto.UserCreateRequest'
+    required:
+    - agency
+    type: object
+  dto.CreateAgencyResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/dto.TokensResponse'
+    type: object
+  dto.CreateOwnerRequest:
+    properties:
+      owner:
+        $ref: '#/definitions/dto.UserCreateRequest'
+    required:
+    - owner
+    type: object
+  dto.CreateOwnerResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/dto.TokensResponse'
+    type: object
+  dto.CreateRealtorRequest:
+    properties:
+      realtor:
+        $ref: '#/definitions/dto.UserCreateRequest'
+    required:
+    - realtor
+    type: object
+  dto.CreateRealtorResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/dto.TokensResponse'
+    type: object
   dto.ErrorResponse:
     properties:
       code:
@@ -91,6 +146,47 @@ definitions:
       name:
         type: string
     type: object
+  dto.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  dto.RefreshTokenResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/dto.TokensResponse'
+    type: object
+  dto.RequestPasswordChangeRequest:
+    properties:
+      nationalID:
+        type: string
+    required:
+    - nationalID
+    type: object
+  dto.RequestPasswordChangeResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.SignInRequest:
+    properties:
+      deviceToken:
+        type: string
+      nationalID:
+        type: string
+      password:
+        type: string
+    required:
+    - nationalID
+    - password
+    type: object
+  dto.SignInResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/dto.TokensResponse'
+    type: object
   dto.StartListingRequest:
     properties:
       number:
@@ -116,6 +212,71 @@ definitions:
       name:
         type: string
     type: object
+  dto.TokensResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  dto.UserCreateRequest:
+    properties:
+      bornAt:
+        description: 'format: 2006-01-02'
+        type: string
+      city:
+        type: string
+      complement:
+        type: string
+      creciNumber:
+        type: string
+      creciState:
+        type: string
+      creciValidity:
+        description: 'format: 2006-01-02'
+        type: string
+      email:
+        type: string
+      fullName:
+        maxLength: 100
+        minLength: 2
+        type: string
+      nationalID:
+        type: string
+      neighborhood:
+        type: string
+      nickName:
+        maxLength: 50
+        minLength: 2
+        type: string
+      number:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phoneNumber:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      zipCode:
+        type: string
+    required:
+    - bornAt
+    - city
+    - email
+    - fullName
+    - nationalID
+    - neighborhood
+    - nickName
+    - number
+    - password
+    - phoneNumber
+    - state
+    - street
+    - zipCode
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -133,6 +294,260 @@ info:
   title: TOQ Server API
   version: "1.0"
 paths:
+  /auth/agency:
+    post:
+      consumes:
+      - application/json
+      description: Create a new agency account with user information
+      parameters:
+      - description: Agency creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAgencyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateAgencyResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Create agency account
+      tags:
+      - Authentication
+  /auth/owner:
+    post:
+      consumes:
+      - application/json
+      description: Create a new owner account with user information
+      parameters:
+      - description: Owner creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateOwnerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateOwnerResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Create owner account
+      tags:
+      - Authentication
+  /auth/password/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm password change using verification code
+      parameters:
+      - description: Password change confirmation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ConfirmPasswordChangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ConfirmPasswordChangeResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Invalid verification code
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "422":
+          description: Password validation failed
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Confirm password change
+      tags:
+      - Authentication
+  /auth/password/request:
+    post:
+      consumes:
+      - application/json
+      description: Initiate password change process by sending verification code
+      parameters:
+      - description: Password change request data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestPasswordChangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RequestPasswordChangeResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "429":
+          description: Too many requests
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Request password change
+      tags:
+      - Authentication
+  /auth/realtor:
+    post:
+      consumes:
+      - application/json
+      description: Create a new realtor account with user and CRECI information
+      parameters:
+      - description: Realtor creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRealtorRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateRealtorResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Create realtor account
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Generate new access token using refresh token
+      parameters:
+      - description: Refresh token data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RefreshTokenResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Invalid refresh token
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with national ID and password
+      parameters:
+      - description: Sign in credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SignInResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "429":
+          description: Too many attempts
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: User sign in
+      tags:
+      - Authentication
   /listings:
     get:
       consumes:

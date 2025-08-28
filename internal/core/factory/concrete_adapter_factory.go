@@ -10,6 +10,7 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 
 	// HTTP handlers
+	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
 
@@ -207,6 +208,11 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		complexService,
 	)
 
+	// Create auth handler using the adapter
+	authHandler := authhandlers.NewAuthHandlerAdapter(
+		userService,
+	)
+
 	// Create listing handler using the adapter
 	listingHandler := listinghandlers.NewListingHandlerAdapter(
 		listingService,
@@ -219,5 +225,6 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	return HTTPHandlers{
 		UserHandler:    userHandler,
 		ListingHandler: listingHandler,
+		AuthHandler:    authHandler,
 	}
 }
