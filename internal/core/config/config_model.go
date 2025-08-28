@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
@@ -34,6 +35,8 @@ type config struct {
 	database               *mysqladapter.Database
 	listener               net.Listener
 	server                 *grpc.Server
+	ginRouter              *gin.Engine
+	httpHandlers           factory.HTTPHandlers
 	context                context.Context
 	cache                  cache.CacheInterface
 	activityTracker        *goroutines.ActivityTracker
@@ -53,6 +56,7 @@ type config struct {
 	firebaseCloudMessaging fcmport.FCMPortInterface
 	sessionRepo            sessionrepository.SessionRepoPortInterface
 	repositoryAdapters     *factory.RepositoryAdapters
+	adapterFactory         factory.AdapterFactory
 }
 
 type ConfigInterface interface {
@@ -63,6 +67,7 @@ type ConfigInterface interface {
 	VerifyDatabase()
 	InitializeTelemetry() (func(), error)
 	InitializeGRPC()
+	InitializeHTTP()
 	InjectDependencies(*LifecycleManager) error
 	InitGlobalService()
 	InitUserHandler()
@@ -72,6 +77,8 @@ type ConfigInterface interface {
 	SetActivityTrackerUserService()
 	GetDatabase() *sql.DB
 	GetGRPCServer() *grpc.Server
+	GetGinRouter() *gin.Engine
+	GetHTTPHandlers() *factory.HTTPHandlers
 	GetListener() net.Listener
 	GetInfos() (serviceQty int, methodQty int)
 	GetWG() *sync.WaitGroup

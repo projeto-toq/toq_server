@@ -10,27 +10,28 @@ func (us *userService) CreateOwnerPrivileges() (privileges []usermodel.Privilege
 	us.AddOwnerUserPrivileges(pb.UserService_ServiceDesc.Methods, &privileges)
 	us.AddOwnerListingPrivileges(pb.ListingService_ServiceDesc.Methods, &privileges)
 	return
-
 }
 
 func (us *userService) AddOwnerUserPrivileges(methods []grpc.MethodDesc, privileges *[]usermodel.PrivilegeInterface) {
-
-	for methodID, method := range methods {
+	for methodID := range methods {
 		privilege := usermodel.NewPrivilege()
 		privilege.SetService(usermodel.ServiceUserService)
 		privilege.SetMethod(uint8(methodID))
-		privilege.SetAllowed(usermodel.OwnerUserPrivileges[method.MethodName])
+		// TODO: Replace with HTTP privileges after migration
+		// privilege.SetAllowed(usermodel.OwnerUserPrivileges[method.MethodName])
+		privilege.SetAllowed(false) // Temporarily disabled during HTTP migration
 		*privileges = append(*privileges, privilege)
 	}
 }
 
 func (us *userService) AddOwnerListingPrivileges(methods []grpc.MethodDesc, privileges *[]usermodel.PrivilegeInterface) {
-	for methodID, method := range methods {
+	for methodID := range methods {
 		privilege := usermodel.NewPrivilege()
 		privilege.SetService(usermodel.ServiceListingService)
 		privilege.SetMethod(uint8(methodID))
-		privilege.SetAllowed(usermodel.OwnerListingPrivileges[method.MethodName])
+		// TODO: Replace with HTTP privileges after migration
+		// privilege.SetAllowed(usermodel.OwnerListingPrivileges[method.MethodName])
+		privilege.SetAllowed(false) // Temporarily disabled during HTTP migration
 		*privileges = append(*privileges, privilege)
 	}
-
 }

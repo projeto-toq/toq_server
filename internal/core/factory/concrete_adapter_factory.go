@@ -9,6 +9,10 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 
+	// HTTP handlers
+	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
+
 	// Validation adapters
 	cepadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cep"
 	cnpjadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cnpj"
@@ -31,6 +35,12 @@ import (
 	mysqllistingadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing"
 	sessionmysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session"
 	mysqluseradapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user"
+
+	// Core services
+	complexservice "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
+	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	listingservice "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
+	userservice "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 )
 
 // ConcreteAdapterFactory implementa a interface AdapterFactory
@@ -174,4 +184,35 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 		Session:     sessionRepo,
 		DeviceToken: deviceTokenRepo,
 	}, nil
+}
+
+// CreateHTTPHandlers creates and returns all HTTP handlers
+func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
+	userService userservice.UserServiceInterface,
+	globalService globalservice.GlobalServiceInterface,
+	listingService listingservice.ListingServiceInterface,
+	complexService complexservice.ComplexServiceInterface,
+) HTTPHandlers {
+	slog.Info("Creating HTTP handlers")
+
+	// Create user handler using the adapter
+	userHandler := userhandlers.NewUserHandlerAdapter(
+		userService,
+		globalService,
+		complexService,
+	)
+
+	// Create listing handler using the adapter
+	listingHandler := listinghandlers.NewListingHandlerAdapter(
+		listingService,
+		globalService,
+		complexService,
+	)
+
+	slog.Info("Successfully created all HTTP handlers")
+
+	return HTTPHandlers{
+		UserHandler:    userHandler,
+		ListingHandler: listingHandler,
+	}
 }

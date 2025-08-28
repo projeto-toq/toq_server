@@ -19,8 +19,8 @@ import (
 func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	slog.Info("Starting dependency injection using Factory Pattern")
 
-	// Criar factory
-	adapterFactory := factory.NewAdapterFactory(lm)
+	// Criar factory e salvar no config
+	c.adapterFactory = factory.NewAdapterFactory(lm)
 
 	// Configuração para factory
 	factoryConfig := factory.AdapterFactoryConfig{
@@ -36,7 +36,7 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 
 	// 1. Criar Storage Adapters (Database + Cache)
 	slog.Info("Creating storage adapters")
-	storage, err := adapterFactory.CreateStorageAdapters(c.context, &c.env, c.db)
+	storage, err := c.adapterFactory.CreateStorageAdapters(c.context, &c.env, c.db)
 	if err != nil {
 		return fmt.Errorf("failed to create storage adapters: %w", err)
 	}
@@ -50,7 +50,7 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 
 	// 2. Criar Repository Adapters
 	slog.Info("Creating repository adapters")
-	repositories, err := adapterFactory.CreateRepositoryAdapters(storage.Database)
+	repositories, err := c.adapterFactory.CreateRepositoryAdapters(storage.Database)
 	if err != nil {
 		return fmt.Errorf("failed to create repository adapters: %w", err)
 	}
@@ -58,7 +58,7 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 
 	// 3. Criar Validation Adapters (CEP, CPF, CNPJ, CRECI)
 	slog.Info("Creating validation adapters")
-	validation, err := adapterFactory.CreateValidationAdapters(&c.env)
+	validation, err := c.adapterFactory.CreateValidationAdapters(&c.env)
 	if err != nil {
 		return fmt.Errorf("failed to create validation adapters: %w", err)
 	}
@@ -66,7 +66,7 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 
 	// 4. Criar External Service Adapters (FCM, Email, SMS)
 	slog.Info("Creating external service adapters")
-	external, err := adapterFactory.CreateExternalServiceAdapters(c.context, &c.env)
+	external, err := c.adapterFactory.CreateExternalServiceAdapters(c.context, &c.env)
 	if err != nil {
 		return fmt.Errorf("failed to create external service adapters: %w", err)
 	}
