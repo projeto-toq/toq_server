@@ -1,7 +1,7 @@
-// TOQ Server - Real Estate gRPC API Server
+// TOQ Server - Real Estate HTTP API Server
 //
 // This server implements a hexagonal architecture with the following layers:
-// - Adapter Layer: gRPC handlers, external service integrations, database adapters
+// - Adapter Layer: HTTP handlers, external service integrations, database adapters
 // - Port Layer: Interfaces defining contracts between layers
 // - Core Layer: Business logic, domain models, services
 //
@@ -13,7 +13,7 @@
 // - Clean shutdown with signal handling
 //
 // Architecture: Hexagonal (Ports & Adapters)
-// Framework: gRPC with OpenTelemetry observability
+// Framework: HTTP/Gin with OpenTelemetry observability
 // Storage: MySQL with Redis caching
 // External Services: FCM, SMS, Email, CEP/CPF/CNPJ validation
 package main
@@ -36,13 +36,13 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 )
 
-// main is the entry point of the TOQ gRPC server.
+// main is the entry point of the TOQ HTTP server.
 // It orchestrates the complete server initialization following these phases:
 // 1. Context and signal setup for graceful shutdown
 // 2. Environment and logging configuration
 // 3. Core infrastructure (database, telemetry, activity tracking)
 // 4. Dependency injection using Factory Pattern
-// 5. gRPC server initialization and startup
+// 5. HTTP server initialization and startup
 // 6. Background workers and graceful shutdown handling
 func main() {
 	// Change working directory to project root if running from cmd
@@ -104,9 +104,6 @@ func main() {
 	config.InitializeLog()
 	slog.Info("✅ Logging system initialized (env > yaml > defaults)")
 
-	// Start optional HTTP health endpoints (disabled if port=0)
-	config.StartHTTPHealth()
-
 	slog.Info("🔧 TOQ API Server starting", "version", globalmodel.AppVersion)
 
 	// Phase 4: Core Infrastructure Initialization
@@ -137,10 +134,11 @@ func main() {
 	}
 	slog.Info("✅ Activity tracking system initialized")
 
-	// Phase 5: gRPC Server and Dependency Injection
-	// Initialize gRPC server with TLS and interceptors
-	config.InitializeGRPC()
-	slog.Info("✅ gRPC server configured with TLS and interceptors")
+	// Phase 5: HTTP Server and Dependency Injection
+	// Initialize HTTP server with TLS and middleware
+	config.InitializeHTTP()
+	defer config.CloseHTTPServer()
+	slog.Info("✅ HTTP server configured with TLS and middleware")
 
 	// Inject all dependencies using Factory Pattern
 	// This creates: validation adapters, external services, storage adapters, repositories
@@ -150,6 +148,10 @@ func main() {
 		os.Exit(1)
 	}
 	slog.Info("✅ Dependency injection completed via Factory Pattern")
+
+	// Setup HTTP handlers and routes after dependency injection
+	config.SetupHTTPHandlersAndRoutes()
+	slog.Info("✅ HTTP handlers and routes configured")
 
 	// Configure activity tracker with user service (post-dependency injection)
 	config.SetActivityTrackerUserService()
@@ -165,23 +167,20 @@ func main() {
 	slog.Info("✅ Background workers initialized")
 
 	// Phase 7: Server Startup and Runtime Management
-	serviceQty, methodQty := config.GetInfos()
 	slog.Info("🌟 TOQ Server ready to serve",
-		"services", serviceQty,
-		"methods", methodQty,
 		"version", globalmodel.AppVersion)
 
 	// Start server in goroutine to allow graceful shutdown handling
 	var serverWg sync.WaitGroup
 	serverWg.Add(1)
 
-	// Mark readiness true before Serve starts accepting
+	// Mark readiness true before server starts accepting connections
 	config.SetHealthServing(true)
 	go func() {
 		defer serverWg.Done()
-		slog.Info("🚀 Starting gRPC server")
-		if err := config.GetGRPCServer().Serve(config.GetListener()); err != nil {
-			slog.Error("❌ gRPC server failed", "error", err)
+		slog.Info("🚀 Starting HTTP server")
+		if err := config.GetHTTPServer().ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("❌ HTTP server failed", "error", err)
 			cancel() // Trigger shutdown
 		}
 	}()
@@ -197,7 +196,7 @@ func main() {
 	}
 
 	// Graceful shutdown sequence
-	slog.Info("⏳ Stopping gRPC server...")
+	slog.Info("⏳ Stopping HTTP server...")
 	// Mark not ready for traffic
 	config.SetHealthServing(false)
 
@@ -206,23 +205,11 @@ func main() {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
 
-	// Stop accepting new connections and wait for current requests
-	config.GetGRPCServer().GracefulStop()
-
-	// Wait for server goroutine to finish
-	done := make(chan struct{})
-	go func() {
-		serverWg.Wait()
-		close(done)
-	}()
-
-	// Wait for graceful stop or timeout
-	select {
-	case <-done:
-		slog.Info("✅ gRPC server stopped gracefully")
-	case <-shutdownCtx.Done():
-		slog.Warn("⚠️ Graceful shutdown timeout, forcing stop")
-		config.GetGRPCServer().Stop()
+	// Gracefully shutdown the HTTP server
+	if err := config.GetHTTPServer().Shutdown(shutdownCtx); err != nil {
+		slog.Error("❌ HTTP server forced shutdown", "error", err)
+	} else {
+		slog.Info("✅ HTTP server stopped gracefully")
 	}
 
 	// Wait for background workers to complete

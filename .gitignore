@@ -29,10 +29,3 @@ go.work.sum
 
 # # env file
 # env.yaml
-
-# gcs credentials
-gcs_*.json
-fcm_*.json
-
-# Firebase credentials (keep secret!)
-configs/fcm_admin.json

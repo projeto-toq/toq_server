@@ -4,10 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
-	grpclistingport "github.com/giulio-alfieri/toq_server/internal/core/port/left/grpc/listing"
-	grpcuserport "github.com/giulio-alfieri/toq_server/internal/core/port/left/grpc/user"
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
@@ -111,11 +108,10 @@ func (c *config) InitUserHandler() {
 		c.listingService,
 		c.cpf,
 		c.cnpj,
-		nil, // CRECI desabilitado temporariamente após migração
+		nil, // creci temporarily disabled
 		c.cloudStorage,
 	)
-	handler := grpcuserport.NewUserHandler(c.userService)
-	pb.RegisterUserServiceServer(c.server, handler)
+	// HTTP handler initialization is done during HTTP server setup
 }
 
 func (c *config) InitComplexHandler() {
@@ -134,6 +130,5 @@ func (c *config) InitListingHandler() {
 		c.globalService,
 		c.cloudStorage,
 	)
-	handler := grpclistingport.NewUserHandler(c.listingService)
-	pb.RegisterListingServiceServer(c.server, handler)
+	// HTTP handler initialization is done during HTTP server setup
 }

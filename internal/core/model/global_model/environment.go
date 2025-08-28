@@ -3,17 +3,15 @@ package globalmodel
 type Environment struct {
 	HTTP struct {
 		Port           string `yaml:"port"`
+		Network        string `yaml:"network"`
 		ReadTimeout    string `yaml:"read_timeout"`
 		WriteTimeout   string `yaml:"write_timeout"`
 		MaxHeaderBytes int    `yaml:"max_header_bytes"`
-	}
-	GRPC struct {
-		Port              string `yaml:"port"`
-		Network           string `yaml:"network"`
-		CertPath          string `yaml:"cert_path"`
-		KeyPath           string `yaml:"key_path"`
-		ClientCAPath      string `yaml:"client_ca_path"`
-		RequireClientCert bool   `yaml:"require_client_cert"`
+		TLS            struct {
+			Enabled  bool   `yaml:"enabled"`
+			CertPath string `yaml:"cert_path"`
+			KeyPath  string `yaml:"key_path"`
+		} `yaml:"tls"`
 	}
 	DB struct {
 		URI string `yaml:"uri"`
@@ -99,10 +97,6 @@ type Environment struct {
 		WriterCreds   string `yaml:"writer_creds_path"`
 		ReaderCreds   string `yaml:"reader_creds_path"`
 	}
-	HEALTH struct {
-		HTTPPort int    `yaml:"http_port"`
-		UseTLS   bool   `yaml:"use_tls"`
-		CertPath string `yaml:"cert_path"`
-		KeyPath  string `yaml:"key_path"`
-	}
+	// Health endpoints are now integrated into the main HTTP server
+	// No separate health configuration needed
 }

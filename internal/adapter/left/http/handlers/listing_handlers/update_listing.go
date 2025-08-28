@@ -1,0 +1,53 @@
+package listinghandlers
+
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+)
+
+// UpdateListing handles updating an existing listing
+func (lh *ListingHandler) UpdateListing(c *gin.Context) {
+	_, spanEnd, err := utils.GenerateTracer(c.Request.Context())
+	if err != nil {
+		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		return
+	}
+	defer spanEnd()
+
+	// Get user info from context (set by auth middleware)
+	_, exists := c.Get(string(globalmodel.TokenKey))
+	if !exists {
+		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		return
+	}
+
+	// Get listing ID from URL parameter
+	listingIDStr := c.Param("id")
+	if listingIDStr == "" {
+		utils.SendHTTPError(c, http.StatusBadRequest, "MISSING_ID", "Listing ID is required")
+		return
+	}
+
+	_, err = strconv.ParseInt(listingIDStr, 10, 64)
+	if err != nil {
+		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_ID", "Invalid listing ID")
+		return
+	}
+
+	// Parse request body using DTO
+	var request dto.UpdateListingRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		return
+	}
+
+	// Note: The service UpdateListing expects a ListingInterface, not individual fields
+	// This would require first getting the listing, then updating it, then calling the service
+	// For now, we'll return a not implemented response since the service signature doesn't match our needs
+	utils.SendHTTPError(c, http.StatusNotImplemented, "UPDATE_NOT_IMPLEMENTED", "Update listing service needs refactoring for HTTP usage")
+}

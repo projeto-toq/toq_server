@@ -3,8 +3,9 @@ package config
 import (
 	"context"
 	"database/sql"
-	"net"
+	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
@@ -24,24 +25,19 @@ import (
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/health"
-	grpc_health_v1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type config struct {
 	env                    globalmodel.Environment
 	db                     *sql.DB
 	database               *mysqladapter.Database
-	listener               net.Listener
-	server                 *grpc.Server
+	httpServer             *http.Server
 	ginRouter              *gin.Engine
 	httpHandlers           factory.HTTPHandlers
 	context                context.Context
 	cache                  cache.CacheInterface
 	activityTracker        *goroutines.ActivityTracker
 	wg                     *sync.WaitGroup
-	healthSrv              *health.Server
 	readiness              bool
 	globalService          globalservice.GlobalServiceInterface
 	userService            userservices.UserServiceInterface
@@ -66,8 +62,8 @@ type ConfigInterface interface {
 	InitializeActivityTracker() error
 	VerifyDatabase()
 	InitializeTelemetry() (func(), error)
-	InitializeGRPC()
 	InitializeHTTP()
+	SetupHTTPHandlersAndRoutes()
 	InjectDependencies(*LifecycleManager) error
 	InitGlobalService()
 	InitUserHandler()
@@ -76,15 +72,13 @@ type ConfigInterface interface {
 	InitializeGoRoutines()
 	SetActivityTrackerUserService()
 	GetDatabase() *sql.DB
-	GetGRPCServer() *grpc.Server
+	GetHTTPServer() *http.Server
+	CloseHTTPServer()
 	GetGinRouter() *gin.Engine
 	GetHTTPHandlers() *factory.HTTPHandlers
-	GetListener() net.Listener
-	GetInfos() (serviceQty int, methodQty int)
 	GetWG() *sync.WaitGroup
 	GetActivityTracker() *goroutines.ActivityTracker
 	SetHealthServing(serving bool)
-	StartHTTPHealth()
 }
 
 func NewConfig(ctx context.Context) ConfigInterface {
@@ -96,14 +90,25 @@ func NewConfig(ctx context.Context) ConfigInterface {
 }
 
 func (c *config) SetHealthServing(serving bool) {
-	if c.healthSrv == nil {
-		c.readiness = serving
-		return
-	}
-	if serving {
-		c.healthSrv.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
-	} else {
-		c.healthSrv.SetServingStatus("", grpc_health_v1.HealthCheckResponse_NOT_SERVING)
-	}
 	c.readiness = serving
+}
+
+func (c *config) GetHTTPServer() *http.Server {
+	return c.httpServer
+}
+
+func (c *config) CloseHTTPServer() {
+	if c.httpServer != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		c.httpServer.Shutdown(ctx)
+	}
+}
+
+func (c *config) GetGinRouter() *gin.Engine {
+	return c.ginRouter
+}
+
+func (c *config) GetHTTPHandlers() *factory.HTTPHandlers {
+	return &c.httpHandlers
 }
