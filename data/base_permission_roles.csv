@@ -1,0 +1,7 @@
+id;name;slug;description;is_system_role;is_active
+1;Administrador;admin;Acesso total ao sistema;1;1
+2;Corretor;corretor;Corretor - visualização e busca de imóveis;1;1
+3;Proprietário;proprietario;Proprietário - gerencia seus próprios imóveis;1;1
+4;Gerente;gerente;Gerente com acesso a relatórios e gestão;1;1
+5;Atendente Corretor;atendente_corretor;Atendente - gerencia perfis de corretor e busca imóveis;1;1
+6;Atendente Proprietário;atendente_proprietario;Atendente - gerencia perfis de proprietário e imóveis cadastrados;1;1

@@ -84,20 +84,6 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`base_roles`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`base_roles` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`base_roles` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `role` TINYINT UNSIGNED NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
 -- Table `toq_db`.`complex`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `toq_db`.`complex` ;
@@ -278,26 +264,6 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`role_privileges`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`role_privileges` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`role_privileges` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `role_id` INT UNSIGNED NOT NULL,
-  `service` TINYINT UNSIGNED NOT NULL,
-  `method` TINYINT UNSIGNED NOT NULL,
-  `allowed` TINYINT UNSIGNED NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_to roles_idx` (`role_id` ASC) VISIBLE,
-  CONSTRAINT `fk_to roles`
-    FOREIGN KEY (`role_id`)
-    REFERENCES `toq_db`.`base_roles` (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
 -- Table `toq_db`.`temp_user_validations`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `toq_db`.`temp_user_validations` ;
@@ -340,6 +306,25 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
+-- Table `toq_db`.`roles`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`roles` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`roles` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  `slug` VARCHAR(100) NOT NULL,
+  `description` TEXT NULL,
+  `is_system_role` TINYINT NOT NULL DEFAULT 0,
+  `is_active` TINYINT NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  INDEX `uk_roles_slug` (`slug` ASC) INVISIBLE,
+  INDEX `idx_roles_is_active` (`is_active` ASC) INVISIBLE,
+  INDEX `idx_roles_system` (`is_system_role` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `toq_db`.`user_roles`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `toq_db`.`user_roles` ;
@@ -347,21 +332,25 @@ DROP TABLE IF EXISTS `toq_db`.`user_roles` ;
 CREATE TABLE IF NOT EXISTS `toq_db`.`user_roles` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
-  `base_role_id` INT UNSIGNED NOT NULL,
-  `role` TINYINT UNSIGNED NOT NULL,
-  `active` TINYINT UNSIGNED NOT NULL,
-  `status` TINYINT UNSIGNED NOT NULL,
-  `status_reason` VARCHAR(150) NULL DEFAULT NULL,
+  `role_id` INT UNSIGNED NOT NULL,
+  `is_active` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `expires_at` TIMESTAMP(6) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_user_idx` (`user_id` ASC) VISIBLE,
-  INDEX `fk_role_to_role_idx` (`base_role_id` ASC) VISIBLE,
-  CONSTRAINT `fk_role_to_role`
-    FOREIGN KEY (`base_role_id`)
-    REFERENCES `toq_db`.`base_roles` (`id`),
-  CONSTRAINT `fk_role_to_user`
+  INDEX `uk_user_roles` (`user_id` ASC, `role_id` ASC) INVISIBLE,
+  INDEX `idx_user_roles_user` (`user_id` ASC) INVISIBLE,
+  INDEX `idx_user_roles_role` (`role_id` ASC) INVISIBLE,
+  INDEX `idx_user_roles_active` (`is_active` ASC) INVISIBLE,
+  INDEX `idx_user_roles_expires` (`expires_at` ASC) VISIBLE,
+  CONSTRAINT `fk_user_roles_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `toq_db`.`users` (`id`)
-    ON DELETE CASCADE)
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_user_roles_role`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `toq_db`.`roles` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -532,10 +521,66 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`device_tokens` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `toq_db`.`permissions`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`permissions` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`permissions` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  `resource` VARCHAR(50) NOT NULL,
+  `action` VARCHAR(50) NOT NULL,
+  `description` TEXT NULL,
+  `conditions` JSON NULL,
+  `is_active` TINYINT NOT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  INDEX `uk_permissions_resource_action` (`resource` ASC, `action` ASC) INVISIBLE,
+  INDEX `idx_permissions_resource` (`resource` ASC) INVISIBLE,
+  INDEX `idx_permissions_action` (`action` ASC) INVISIBLE,
+  INDEX `idx_permissions_active` (`is_active` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`role_permissions`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`role_permissions` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`role_permissions` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `role_id` INT UNSIGNED NOT NULL,
+  `permission_id` INT UNSIGNED NOT NULL,
+  `granted` TINYINT NOT NULL DEFAULT 1,
+  `conditions` JSON NULL,
+  PRIMARY KEY (`id`),
+  INDEX `uk_role_permissions` (`role_id` ASC, `permission_id` ASC) INVISIBLE,
+  INDEX `idx_role_permissions_role` (`role_id` ASC) INVISIBLE,
+  INDEX `idx_role_permissions_permission` (`permission_id` ASC) INVISIBLE,
+  INDEX `idx_role_permissions_granted` (`granted` ASC) VISIBLE,
+  CONSTRAINT `fk_role_permissions_role`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `toq_db`.`roles` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_role_permissions_permission`
+    FOREIGN KEY (`permission_id`)
+    REFERENCES `toq_db`.`permissions` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 -- begin attached script 'script'
+-- Desabilitar verificações temporariamente
+SET FOREIGN_KEY_CHECKS = 0;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
+
 LOAD DATA INFILE '/var/lib/mysql-files/complex.csv'
 INTO TABLE complex
 FIELDS TERMINATED BY ';'
@@ -568,6 +613,49 @@ LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (id, complex_id, zip_code);
 
+
+-- Importar roles
+LOAD DATA INFILE '/var/lib/mysql-files/base_permission_roles.csv'
+INTO TABLE roles
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(id, name, slug, description, is_system_role, is_active);
+
+-- Importar permissions
+LOAD DATA INFILE '/var/lib/mysql-files/base_permissions.csv'
+INTO TABLE permissions
+FIELDS TERMINATED BY ';'
+OPTIONALLY ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(id, name, resource, action, description, @conditions, is_active)
+SET conditions = NULLIF(@conditions, 'NULL');
+
+-- Importar role_permissions
+LOAD DATA INFILE '/var/lib/mysql-files/base_role_permissions.csv'
+INTO TABLE role_permissions
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(id, role_id, permission_id, granted, @conditions)
+SET conditions = NULLIF(@conditions, 'NULL');
+
+-- Importar user_roles (opcional - apenas se você tem usuários de teste)
+LOAD DATA INFILE '/var/lib/mysql-files/base_user_roles.csv'
+INTO TABLE user_roles
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(id, user_id, role_id, is_active, @expires_at)
+SET expires_at = NULLIF(@expires_at, 'NULL');
+
+-- Reabilitar verificações
+SET FOREIGN_KEY_CHECKS = 1;
+COMMIT;
 -- end attached script 'script'
 
 -- -----------------------------------------------------
