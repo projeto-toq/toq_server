@@ -1,6 +1,5 @@
 🛠️ Problema
-ao inicializar o sistema aparece este warning:
-time=2025-08-29T20:14:10.227Z level=WARN msg="Activity tracker or user service not available for connection"
+ao inicializar o sistema aparecem erros listados no log.md
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 - Adoção das melhores práticas de desenvolvimento em Go

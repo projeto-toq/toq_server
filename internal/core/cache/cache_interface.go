@@ -5,6 +5,7 @@ import (
 	"time"
 
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	"github.com/redis/go-redis/v9"
 )
 
 // CacheInterface define a interface para operações de cache Redis
@@ -21,4 +22,7 @@ type CacheInterface interface {
 
 	// Injeção de dependências
 	SetGlobalService(globalService globalservice.GlobalServiceInterface)
+
+	// Acesso ao cliente Redis para componentes internos
+	GetRedisClient() *redis.Client
 }

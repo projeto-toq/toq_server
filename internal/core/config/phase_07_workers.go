@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 // Phase07_StartBackgroundWorkers inicializa os workers em background
 // Esta fase configura:
 // - Session cleaner (limpeza de sessões expiradas)
@@ -42,7 +44,12 @@ func (b *Bootstrap) initializeSystemGoroutines() error {
 
 // linkActivityTrackerToUserService conecta o activity tracker ao user service
 func (b *Bootstrap) linkActivityTrackerToUserService() error {
-	b.logger.Debug("Conectando activity tracker ao user service")
+	b.logger.Debug("Verificando e conectando activity tracker ao user service")
+
+	// Verificar se ActivityTracker foi criado na Phase 04
+	if b.config.GetActivityTracker() == nil {
+		return fmt.Errorf("ActivityTracker não foi criado na Phase 04")
+	}
 
 	// Configurar activity tracker com user service
 	b.config.SetActivityTrackerUserService()

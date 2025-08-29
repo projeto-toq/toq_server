@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
+	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
@@ -52,6 +53,11 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	c.assignStorageAdapters(storage)
 	if storage.CloseFunc != nil {
 		lm.AddCleanupFunc(func() { _ = storage.CloseFunc() })
+	}
+
+	// NOVO: Criar ActivityTracker após cache estar disponível
+	if err := c.createActivityTracker(); err != nil {
+		return fmt.Errorf("failed to create activity tracker: %w", err)
 	}
 
 	// Atualizar factory config com database
@@ -187,4 +193,23 @@ func (c *config) InitPermissionHandler() {
 		c.cache,
 		c.globalService,
 	)
+}
+
+// createActivityTracker inicializa o ActivityTracker com Redis client
+func (c *config) createActivityTracker() error {
+	if c.cache == nil {
+		return fmt.Errorf("cache não inicializado - necessário para ActivityTracker")
+	}
+
+	// Obter Redis client do cache
+	redisClient := c.cache.GetRedisClient()
+	if redisClient == nil {
+		return fmt.Errorf("Redis client não disponível no cache")
+	}
+
+	// Criar ActivityTracker sem userService (será definido na Phase 07)
+	c.activityTracker = goroutines.NewActivityTracker(redisClient, nil)
+
+	slog.Info("✅ ActivityTracker criado com sucesso com Redis client")
+	return nil
 }

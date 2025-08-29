@@ -12,7 +12,7 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/redis/go-redis/v9"
-	// 
+	//
 )
 
 // RedisCache implementa CacheInterface usando Redis
@@ -65,6 +65,12 @@ func NewRedisCache(redisURL string, globalService globalservice.GlobalServiceInt
 func (rc *RedisCache) SetGlobalService(globalService globalservice.GlobalServiceInterface) {
 	rc.globalService = globalService
 	slog.Debug("GlobalService injected into RedisCache")
+}
+
+// GetRedisClient retorna o cliente Redis para uso interno
+// Usado pelo ActivityTracker para operações diretas no Redis
+func (rc *RedisCache) GetRedisClient() *redis.Client {
+	return rc.client
 }
 
 // Get recupera uma entrada do cache

@@ -210,11 +210,14 @@ func (c *config) GetWG() *sync.WaitGroup {
 	return c.wg
 }
 
-// InitializeActivityTracker inicializa o activity tracker
+// InitializeActivityTracker verifica se o activity tracker foi criado
 func (c *config) InitializeActivityTracker() error {
-	// O ActivityTracker será inicializado quando o Redis e UserService estiverem disponíveis
-	// Isso acontece na Phase 04 (InjectDependencies) e Phase 07 (StartBackgroundWorkers)
-	slog.Info("Activity tracker initialization deferred to Phase 07")
+	if c.activityTracker == nil {
+		slog.Error("ActivityTracker não foi criado na Phase 04 - falha na inicialização")
+		return fmt.Errorf("ActivityTracker não foi inicializado")
+	}
+
+	slog.Info("✅ ActivityTracker verificado e disponível")
 	return nil
 }
 

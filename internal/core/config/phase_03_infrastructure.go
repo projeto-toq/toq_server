@@ -32,11 +32,6 @@ func (b *Bootstrap) Phase03_InitializeInfrastructure() error {
 		return NewBootstrapError("Phase03", "telemetry", "Failed to initialize OpenTelemetry", err)
 	}
 
-	// 4. Inicializar activity tracker
-	if err := b.initializeActivityTracker(); err != nil {
-		return NewBootstrapError("Phase03", "activity_tracker", "Failed to initialize activity tracker", err)
-	}
-
 	b.logger.Info("✅ Infraestrutura core inicializada com sucesso")
 	return nil
 }
@@ -103,18 +98,6 @@ func (b *Bootstrap) initializeTelemetry() error {
 	})
 
 	b.logger.Info("✅ OpenTelemetry inicializado (tracing + metrics)")
-	return nil
-}
-
-// initializeActivityTracker inicializa o sistema de rastreamento de atividades
-func (b *Bootstrap) initializeActivityTracker() error {
-	b.logger.Debug("Inicializando activity tracker para sessões")
-
-	if err := b.config.InitializeActivityTracker(); err != nil {
-		return fmt.Errorf("failed to initialize activity tracker: %w", err)
-	}
-
-	b.logger.Info("✅ Activity tracker inicializado")
 	return nil
 }
 
