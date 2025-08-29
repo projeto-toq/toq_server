@@ -42,7 +42,7 @@ func (c *config) InitializeTelemetry() (func(), error) {
 
 	traceExporter, err := otlptracehttp.New(ctx,
 		otlptracehttp.WithInsecure(),
-		otlptracehttp.WithEndpoint(fmt.Sprintf("http://%s", otlpEndpoint)),
+		otlptracehttp.WithEndpoint(otlpEndpoint),
 	)
 	if err != nil {
 		slog.Warn("failed to create OTLP trace exporter, continuing without distributed tracing", "endpoint", otlpEndpoint, "err", err)

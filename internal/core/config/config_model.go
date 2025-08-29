@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -103,7 +104,9 @@ func (c *config) CloseHTTPServer() {
 	if c.httpServer != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		c.httpServer.Shutdown(ctx)
+		if err := c.httpServer.Shutdown(ctx); err != nil {
+			slog.Error("Error shutting down HTTP server", "error", err)
+		}
 	}
 }
 
