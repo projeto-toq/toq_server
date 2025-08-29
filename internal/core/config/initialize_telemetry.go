@@ -28,12 +28,20 @@ func (c *config) InitializeTelemetry() (func(), error) {
 	// OTLP trace exporter
 	otlpEndpoint := os.Getenv("OTLP_ENDPOINT")
 	if otlpEndpoint == "" {
-		// Check if running in Docker by looking for /.dockerenv file
+		// Default endpoints for different protocols
 		if _, err := os.Stat("/.dockerenv"); err == nil {
-			otlpEndpoint = "otel-collector:4317" // Dentro do Docker
+			otlpEndpoint = "otel-collector:4318" // HTTP endpoint dentro do Docker
 		} else {
-			otlpEndpoint = "localhost:4317" // Fora do Docker
+			otlpEndpoint = "localhost:4318" // HTTP endpoint fora do Docker
 		}
+	}
+
+	// Allow disabling OTLP via environment variable
+	if os.Getenv("DISABLE_OTLP") == "true" {
+		slog.Info("OTLP tracing disabled by environment variable")
+		return func() {
+			slog.Info("OpenTelemetry cleanup (OTLP disabled)")
+		}, nil
 	}
 
 	// Try to create OTLP exporter with timeout
