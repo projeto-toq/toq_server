@@ -63,7 +63,6 @@ type UserServiceInterface interface {
 	CreateBaseRole(ctx context.Context, role usermodel.UserRole, name string) (err error)
 	CreateOwner(ctx context.Context, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error)
 	CreateRealtor(ctx context.Context, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error)
-	CreateRoot(ctx context.Context, root usermodel.UserInterface) (err error)
 	CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error)
 	DeleteAccount(ctx context.Context, userID int64) (tokens usermodel.Tokens, err error)
 	DeleteAgencyOfRealtor(ctx context.Context, realtorID int64) (err error)

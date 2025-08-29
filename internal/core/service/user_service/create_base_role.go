@@ -45,7 +45,7 @@ func (us *userService) createBaseRole(ctx context.Context, tx *sql.Tx, role user
 
 	switch role {
 	case usermodel.RoleRoot:
-		baseRole.SetPrivileges(us.CreateRootPrivileges())
+		// Admin privileges will be handled by permission system
 	case usermodel.RoleOwner:
 		baseRole.SetPrivileges(us.CreateOwnerPrivileges())
 	case usermodel.RoleRealtor:

@@ -33,7 +33,7 @@ func (us *userService) updateUserStatus(
 		switch role {
 		case usermodel.RoleRoot:
 			nextStatus = usermodel.StatusActive
-			nextStatusReason = "Root user"
+			nextStatusReason = "Admin user"
 		default:
 			nextStatus = usermodel.StatusPendingProfile
 			nextStatusReason = "Phone and email validation pending"

@@ -42,9 +42,9 @@ func updateDB(c *config) {
 // 	createBaseRoles(c)
 // 	slog.Info("Base roles created successfully")
 
-// 	// Criar usuário root
-// 	createRootUser(c)
-// 	slog.Info("Root user created successfully")
+// 	// Criar usuário admin
+// 	createAdminUser(c)
+// 	slog.Info("Admin user created successfully")
 
 // 	slog.Info("Database population completed")
 // }
@@ -54,7 +54,7 @@ func updateDB(c *config) {
 // 		role usermodel.UserRole
 // 		name string
 // 	}{
-// 		{usermodel.RoleRoot, "Root"},
+// 		{usermodel.RoleRoot, "Admin"},
 // 		{usermodel.RoleOwner, "Proprietário"},
 // 		{usermodel.RoleRealtor, "Corretor"},
 // 		{usermodel.RoleAgency, "Imobiliária"},
@@ -72,7 +72,7 @@ func updateDB(c *config) {
 // 	}
 // }
 
-// func createRootUser(c *config) {
+// func createAdminUser(c *config) {
 // 	slog.Info("Creating root user")
 
 // 	root := usermodel.NewUser()

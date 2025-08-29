@@ -3,10 +3,15 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // SetupRoutes configura todas as rotas HTTP
 func SetupRoutes(router *gin.Engine, handlers *factory.HTTPHandlers) {
+	// Swagger documentation routes
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 

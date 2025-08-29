@@ -172,9 +172,9 @@ var AgencyHTTPPrivileges = map[string]bool{
 	"GET /api/v1/offers": true,
 }
 
-// RootHTTPPrivileges defines endpoints accessible by Root role (full access)
-var RootHTTPPrivileges = map[string]bool{
-	// Root (Admin) has access to everything - this will be handled differently
+// AdminHTTPPrivileges defines endpoints accessible by Admin role (full access)
+var AdminHTTPPrivileges = map[string]bool{
+	// Admin has access to everything - this will be handled differently
 	// in the IsHTTPEndpointAllowed function by returning true for all endpoints
 }
 
@@ -182,7 +182,7 @@ var RootHTTPPrivileges = map[string]bool{
 func GetHTTPPrivilegesForRole(role UserRole) map[string]bool {
 	switch role {
 	case RoleRoot:
-		return RootHTTPPrivileges // Root has full access
+		return AdminHTTPPrivileges // Admin has full access
 	case RoleOwner:
 		return OwnerHTTPPrivileges
 	case RoleRealtor:
@@ -196,7 +196,7 @@ func GetHTTPPrivilegesForRole(role UserRole) map[string]bool {
 
 // IsHTTPEndpointAllowed checks if a user role has access to a specific HTTP endpoint
 func IsHTTPEndpointAllowed(role UserRole, method, path string) bool {
-	// Root role has access to everything
+	// Admin role has access to everything
 	if role == RoleRoot {
 		return true
 	}

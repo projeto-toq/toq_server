@@ -15,7 +15,7 @@ const (
 
 func (ur UserRole) String() string {
 	roles := [...]string{
-		"Root",
+		"Admin",
 		"Owner",
 		"Realtor",
 		"Agency",

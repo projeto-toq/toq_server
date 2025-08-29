@@ -17,7 +17,7 @@ func NewConditionEvaluator() *ConditionEvaluator {
 
 // Evaluate avalia se as condições são atendidas pelo contexto
 func (e *ConditionEvaluator) Evaluate(conditions map[string]interface{}, context *permissionmodel.PermissionContext) bool {
-	if conditions == nil || len(conditions) == 0 {
+	if len(conditions) == 0 {
 		return true // Sem condições = permitido
 	}
 

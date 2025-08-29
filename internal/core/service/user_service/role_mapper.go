@@ -25,7 +25,7 @@ func (us *userService) getRoleBySlug(ctx context.Context, slug string) (permissi
 // getLegacyRoleBySlug converte slug para usermodel.UserRole (para compatibilidade com métodos antigos)
 func (us *userService) getLegacyRoleBySlug(roleSlug string) (usermodel.UserRole, error) {
 	switch roleSlug {
-	case "root":
+	case "admin":
 		return usermodel.RoleRoot, nil
 	case "owner":
 		return usermodel.RoleOwner, nil

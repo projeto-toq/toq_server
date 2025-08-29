@@ -570,11 +570,11 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`role_permissions` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 -- begin attached script 'script'
+-- Desabilitar verificação de foreign keys durante o LOAD DATA
+SET FOREIGN_KEY_CHECKS = 0;
+START TRANSACTION;
+
 LOAD DATA INFILE '/var/lib/mysql-files/complex.csv'
 INTO TABLE complex
 FIELDS TERMINATED BY ';'
@@ -638,15 +638,29 @@ IGNORE 1 ROWS
 SET conditions = NULLIF(@conditions, 'NULL');
 
 -- Importar user_roles (opcional - apenas se você tem usuários de teste)
--- LOAD DATA INFILE '/var/lib/mysql-files/base_user_roles.csv'
--- INTO TABLE user_roles
--- FIELDS TERMINATED BY ';'
--- ENCLOSED BY '"'
--- LINES TERMINATED BY '\n'
--- IGNORE 1 ROWS
--- (id, user_id, role_id, is_active, @expires_at)
--- SET expires_at = NULLIF(@expires_at, 'NULL');
+LOAD DATA INFILE '/var/lib/mysql-files/base_user_roles.csv'
+INTO TABLE user_roles
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS
+(id, user_id, role_id, is_active, @expires_at)
+SET expires_at = NULLIF(@expires_at, 'NULL');
+
+-- Reabilitar verificação de foreign keys
+SET FOREIGN_KEY_CHECKS = 1;
+COMMIT;
 -- end attached script 'script'
+
+-- -----------------------------------------------------
+-- Data for table `toq_db`.`users`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `toq_db`;
+INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `password`, `opt_status`, `last_activity_at`, `deleted`, `last_signin_attempt`) VALUES (1, 'Administrador', 'Admin', '52642435000133', NULL, NULL, NULL, '2023-10-24', '+551152413731', 'toq@toq.app.br', '06472001', 'Av Copacabana', '268', 'sala 2305 - 23 andar', 'Dezoito do forte', 'Barueri', 'SP', 'dsindisfhdsjsd8678fnf98', 1, '2025-08-29 00:00:00.000000', 0, NULL);
+
+COMMIT;
+
 
 -- -----------------------------------------------------
 -- Data for table `toq_db`.`configuration`
@@ -667,3 +681,7 @@ INSERT INTO `toq_db`.`listing_sequence` (`id`) VALUES (1000);
 
 COMMIT;
 
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/routes"
 )
 
 func (c *config) InitializeHTTP() {
@@ -95,6 +96,9 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.listingService,
 		c.complexService,
 	)
+
+	// Setup routes using the routes package
+	routes.SetupRoutes(c.ginRouter, &c.httpHandlers)
 
 	// Note: Routes will be manually configured for now until dynamic import is implemented
 	slog.Debug("HTTP handlers configured successfully (routes pending)")
