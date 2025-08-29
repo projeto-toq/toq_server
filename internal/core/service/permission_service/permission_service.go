@@ -2,6 +2,7 @@ package permissionservice
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	cacheport "github.com/giulio-alfieri/toq_server/internal/core/cache"
@@ -58,4 +59,11 @@ type PermissionServiceInterface interface {
 	GetActiveUserRole(ctx context.Context, userID int64) (permissionmodel.UserRoleInterface, error)
 	DeactivateAllUserRoles(ctx context.Context, userID int64) error
 	GetRoleBySlug(ctx context.Context, slug string) (permissionmodel.RoleInterface, error)
+
+	// Métodos com transação (para uso em fluxos maiores)
+	GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug string) (permissionmodel.RoleInterface, error)
+	AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time) error
+	GetUserPermissionsWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
+	GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
+	SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error
 }

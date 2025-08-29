@@ -1,7 +1,6 @@
 🛠️ Problema
-após várias refatorações, o sistema está de forma intermitente apresentando warnings e alertas.
-assim verifique o projeto como um todo em busca de problemas de lint, erros não tratados etc
-
+ao inicializar o sistema aparece este warning:
+time=2025-08-29T20:14:10.227Z level=WARN msg="Activity tracker or user service not available for connection"
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 - Adoção das melhores práticas de desenvolvimento em Go
@@ -17,8 +16,9 @@ assim verifique o projeto como um todo em busca de problemas de lint, erros não
 - Manutenção da consistência no padrão de desenvolvimento entre funções
 - Tratamento de erros sempre utilizando utils/http_errors
 - Remoção completa de código legado após a refatoração, dado que estamos em fase ativa de desenvolvimento
-- Eventuais alterações no DB são feitas por MySQL Workbench, portatno apenas indique as modificação e não crie/altere scripts para migração de dados/tabelas.
-- Erros devem ser logados no momento do erro e retornados para a chamador para tratamento,
+- Eventuais alterações no DB são feitas por MySQL Workbench, não crie/altere scripts para migração de dados/tabelas.
+- Erros devem ser logados no momento do erro etransformados em utils/http_errors e retornados para a chamador
+- chamadores intermediários apenas repassam o erro sem logging ou recriação do erro
 - Todo erro deve ser verificado.
 
 📌 Instruções finais

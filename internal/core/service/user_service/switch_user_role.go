@@ -6,9 +6,8 @@ import (
 	"fmt"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) SwitchUserRole(ctx context.Context, userID int64, roleSlug string) (tokens usermodel.Tokens, err error) {
@@ -74,13 +73,13 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	}
 
 	// Mapear roleSlug para roleID e usar permission service
-	role, roleErr := us.getRoleBySlug(ctx, roleSlug)
+	role, roleErr := us.getRoleBySlug(ctx, tx, roleSlug)
 	if roleErr != nil {
 		err = roleErr
 		return
 	}
 
-	err = us.permissionService.SwitchActiveRole(ctx, userID, role.GetID())
+	err = us.permissionService.SwitchActiveRoleWithTx(ctx, tx, userID, role.GetID())
 	if err != nil {
 		return
 	}

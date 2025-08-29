@@ -2,21 +2,22 @@ package userservices
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // getRoleBySlug busca um role pelo slug usando o permission service
-func (us *userService) getRoleBySlug(ctx context.Context, slug string) (permissionmodel.RoleInterface, error) {
+func (us *userService) getRoleBySlug(ctx context.Context, tx *sql.Tx, slug string) (permissionmodel.RoleInterface, error) {
 	if us.permissionService == nil {
-		return nil, fmt.Errorf("permission service not available")
+		return nil, utils.ErrInternalServer
 	}
 
-	role, err := us.permissionService.GetRoleBySlug(ctx, slug)
+	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, slug)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get role by slug '%s': %w", slug, err)
+		return nil, utils.ErrInternalServer
 	}
 
 	return role, nil
@@ -34,24 +35,24 @@ func (us *userService) getLegacyRoleBySlug(roleSlug string) (usermodel.UserRole,
 	case "agency":
 		return usermodel.RoleAgency, nil
 	default:
-		return usermodel.UserRole(0), fmt.Errorf("unknown role slug: %s", roleSlug)
+		return usermodel.UserRole(0), utils.ErrBadRequest
 	}
 }
 
 // assignRoleToUser atribui um role ao usuário usando o permission service
-func (us *userService) assignRoleToUser(ctx context.Context, userID int64, roleSlug string) error {
+func (us *userService) assignRoleToUser(ctx context.Context, tx *sql.Tx, userID int64, roleSlug string) error {
 	if us.permissionService == nil {
-		return fmt.Errorf("permission service not available")
+		return utils.ErrInternalServer
 	}
 
-	role, err := us.getRoleBySlug(ctx, roleSlug)
+	role, err := us.getRoleBySlug(ctx, tx, roleSlug)
 	if err != nil {
 		return err
 	}
 
-	err = us.permissionService.AssignRoleToUser(ctx, userID, role.GetID(), nil)
+	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil)
 	if err != nil {
-		return fmt.Errorf("failed to assign role '%s' to user %d: %w", roleSlug, userID, err)
+		return utils.ErrInternalServer
 	}
 
 	return nil

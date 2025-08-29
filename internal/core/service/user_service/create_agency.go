@@ -6,7 +6,7 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
@@ -53,7 +53,7 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 		return
 	}
 
-	err = us.assignRoleToUser(ctx, agency.GetID(), "agency")
+	err = us.assignRoleToUser(ctx, tx, agency.GetID(), "agency")
 	if err != nil {
 		return
 	}

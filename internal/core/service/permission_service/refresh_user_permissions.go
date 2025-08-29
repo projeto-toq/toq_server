@@ -2,14 +2,15 @@ package permissionservice
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // RefreshUserPermissions atualiza o cache de permissões de um usuário
 func (p *permissionServiceImpl) RefreshUserPermissions(ctx context.Context, userID int64) error {
 	if userID <= 0 {
-		return fmt.Errorf("invalid user ID: %d", userID)
+		return utils.ErrBadRequest
 	}
 
 	slog.Debug("Refreshing user permissions", "userID", userID)
@@ -22,7 +23,7 @@ func (p *permissionServiceImpl) RefreshUserPermissions(ctx context.Context, user
 	// Buscar permissões atuais do banco e recriar cache
 	_, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("failed to refresh user permissions: %w", err)
+		return utils.ErrInternalServer
 	}
 
 	slog.Info("User permissions refreshed", "userID", userID)

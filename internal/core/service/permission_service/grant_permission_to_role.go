@@ -2,46 +2,53 @@ package permissionservice
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GrantPermissionToRole concede uma permissão a um role
 func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleID, permissionID int64) error {
 	if roleID <= 0 {
-		return fmt.Errorf("invalid role ID: %d", roleID)
+		return utils.ErrBadRequest
 	}
 
 	if permissionID <= 0 {
-		return fmt.Errorf("invalid permission ID: %d", permissionID)
+		return utils.ErrBadRequest
 	}
 
 	slog.Debug("Granting permission to role", "roleID", roleID, "permissionID", permissionID)
 
-	// Verificar se o role existe
-	role, err := p.permissionRepository.GetRoleByID(ctx, nil, roleID)
+	// Start transaction
+	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to verify role existence: %w", err)
+		return utils.ErrInternalServer
+	}
+	defer p.globalService.RollbackTransaction(ctx, tx)
+
+	// Verificar se o role existe
+	role, err := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
+	if err != nil {
+		return utils.ErrInternalServer
 	}
 	if role == nil {
-		return fmt.Errorf("role with ID %d does not exist", roleID)
+		return utils.ErrNotFound
 	}
 
 	// Verificar se a permissão existe
-	permission, err := p.permissionRepository.GetPermissionByID(ctx, nil, permissionID)
+	permission, err := p.permissionRepository.GetPermissionByID(ctx, tx, permissionID)
 	if err != nil {
-		return fmt.Errorf("failed to verify permission existence: %w", err)
+		return utils.ErrInternalServer
 	}
 	if permission == nil {
-		return fmt.Errorf("permission with ID %d does not exist", permissionID)
+		return utils.ErrNotFound
 	}
 
 	// Verificar se a relação já existe
-	existingRolePermission, err := p.permissionRepository.GetRolePermissionByRoleIDAndPermissionID(ctx, nil, roleID, permissionID)
+	existingRolePermission, err := p.permissionRepository.GetRolePermissionByRoleIDAndPermissionID(ctx, tx, roleID, permissionID)
 	if err == nil && existingRolePermission != nil {
-		return fmt.Errorf("role %d already has permission %d", roleID, permissionID)
+		return utils.ErrConflict
 	}
 
 	// Criar a nova RolePermission
@@ -51,9 +58,15 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	rolePermission.SetGranted(true)
 
 	// Salvar no banco
-	err = p.permissionRepository.CreateRolePermission(ctx, nil, rolePermission)
+	err = p.permissionRepository.CreateRolePermission(ctx, tx, rolePermission)
 	if err != nil {
-		return fmt.Errorf("failed to grant permission to role: %w", err)
+		return utils.ErrInternalServer
+	}
+
+	// Commit the transaction
+	err = p.globalService.CommitTransaction(ctx, tx)
+	if err != nil {
+		return utils.ErrInternalServer
 	}
 
 	slog.Info("Permission granted to role successfully", "roleID", roleID, "permissionID", permissionID)

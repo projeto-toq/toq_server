@@ -8,16 +8,17 @@ import (
 	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // HasPermission verifica se o usuário tem uma permissão específica
 func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64, resource, action string, permContext *permissionmodel.PermissionContext) (bool, error) {
 	if userID <= 0 {
-		return false, fmt.Errorf("invalid user ID: %d", userID)
+		return false, utils.ErrBadRequest
 	}
 
 	if resource == "" || action == "" {
-		return false, fmt.Errorf("resource and action cannot be empty")
+		return false, utils.ErrBadRequest
 	}
 
 	slog.Debug("Checking permission", "userID", userID, "resource", resource, "action", action)
@@ -25,7 +26,7 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 	// Tentar buscar permissões do cache primeiro
 	userPermissions, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
-		return false, fmt.Errorf("failed to get user permissions: %w", err)
+		return false, utils.ErrInternalServer
 	}
 
 	// Verificar cada permissão
@@ -73,7 +74,7 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 	// Cache miss ou erro - buscar do banco
 	permissions, err := p.getUserPermissionsFromDB(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user permissions from database: %w", err)
+		return nil, utils.ErrInternalServer
 	}
 
 	// Armazenar no cache para próximas consultas
@@ -92,13 +93,13 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 // getUserPermissionsFromCache busca permissões do cache Redis
 func (p *permissionServiceImpl) getUserPermissionsFromCache(ctx context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
 	if p.cache == nil {
-		return nil, fmt.Errorf("cache not available")
+		return nil, utils.ErrInternalServer
 	}
 
 	// Extrair userID da cacheKey (formato: "user_permissions:123")
 	var userID int64
 	if _, err := fmt.Sscanf(cacheKey, "user_permissions:%d", &userID); err != nil {
-		return nil, fmt.Errorf("invalid cache key format: %s", cacheKey)
+		return nil, utils.ErrBadRequest
 	}
 
 	// Buscar dados do Redis
@@ -110,7 +111,7 @@ func (p *permissionServiceImpl) getUserPermissionsFromCache(ctx context.Context,
 	// Deserializar JSON para interfaces de permissão
 	var permissionsData []map[string]interface{}
 	if err := json.Unmarshal(permissionsJSON, &permissionsData); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal cached permissions: %w", err)
+		return nil, utils.ErrInternalServer
 	}
 
 	// Converter para interfaces de permissão
@@ -150,13 +151,13 @@ func (p *permissionServiceImpl) setUserPermissionsInCache(ctx context.Context, c
 	}
 
 	if p.cache == nil {
-		return fmt.Errorf("cache not available")
+		return utils.ErrInternalServer
 	}
 
 	// Extrair userID da cacheKey
 	var userID int64
 	if _, err := fmt.Sscanf(cacheKey, "user_permissions:%d", &userID); err != nil {
-		return fmt.Errorf("invalid cache key format: %s", cacheKey)
+		return utils.ErrBadRequest
 	}
 
 	// Serializar permissões para JSON
@@ -174,7 +175,7 @@ func (p *permissionServiceImpl) setUserPermissionsInCache(ctx context.Context, c
 
 	jsonData, err := json.Marshal(permissionsData)
 	if err != nil {
-		return fmt.Errorf("failed to marshal permissions: %w", err)
+		return utils.ErrInternalServer
 	}
 
 	// Armazenar no Redis com TTL de 15 minutos
@@ -184,10 +185,24 @@ func (p *permissionServiceImpl) setUserPermissionsInCache(ctx context.Context, c
 
 // getUserPermissionsFromDB busca permissões do usuário no banco de dados
 func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, userID int64) ([]permissionmodel.PermissionInterface, error) {
-	// Usar o método do repositório para buscar todas as permissões do usuário
-	permissions, err := p.permissionRepository.GetUserPermissions(ctx, nil, userID)
+	// Start transaction
+	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user permissions from repository: %w", err)
+		return nil, utils.ErrInternalServer
+	}
+
+	// Usar o método do repositório para buscar todas as permissões do usuário
+	permissions, err := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
+	if err != nil {
+		p.globalService.RollbackTransaction(ctx, tx)
+		return nil, utils.ErrInternalServer
+	}
+
+	// Commit the transaction
+	err = p.globalService.CommitTransaction(ctx, tx)
+	if err != nil {
+		p.globalService.RollbackTransaction(ctx, tx)
+		return nil, utils.ErrInternalServer
 	}
 
 	return permissions, nil

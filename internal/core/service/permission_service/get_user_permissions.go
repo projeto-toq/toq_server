@@ -2,20 +2,49 @@ package permissionservice
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetUserPermissions retorna todas as permissões de um usuário
 func (p *permissionServiceImpl) GetUserPermissions(ctx context.Context, userID int64) ([]permissionmodel.PermissionInterface, error) {
 	if userID <= 0 {
-		return nil, fmt.Errorf("invalid user ID: %d", userID)
+		return nil, utils.ErrBadRequest
 	}
 
-	permissions, err := p.permissionRepository.GetUserPermissions(ctx, nil, userID)
+	// Start transaction
+	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user permissions: %w", err)
+		return nil, utils.ErrInternalServer
+	}
+
+	permissions, err := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
+	if err != nil {
+		p.globalService.RollbackTransaction(ctx, tx)
+		return nil, utils.ErrInternalServer
+	}
+
+	// Commit the transaction
+	err = p.globalService.CommitTransaction(ctx, tx)
+	if err != nil {
+		p.globalService.RollbackTransaction(ctx, tx)
+		return nil, utils.ErrInternalServer
+	}
+
+	return permissions, nil
+}
+
+// GetUserPermissionsWithTx retorna todas as permissões de um usuário (com transação - uso em fluxos)
+func (p *permissionServiceImpl) GetUserPermissionsWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error) {
+	if userID <= 0 {
+		return nil, utils.ErrBadRequest
+	}
+
+	permissions, err := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
+	if err != nil {
+		return nil, utils.ErrInternalServer
 	}
 
 	return permissions, nil

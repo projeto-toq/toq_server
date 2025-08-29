@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/routes"
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
@@ -396,23 +397,27 @@ func (c *config) InitializeTelemetry() (func(), error) {
 
 // InitializeHTTP inicializa o servidor HTTP (implementação real)
 func (c *config) InitializeHTTP() {
-	// Criar Gin router se não existir
+	if err := c.SetupHTTPServer(); err != nil {
+		slog.Error("Failed to setup HTTP server", "error", err)
+		return
+	}
+	slog.Info("HTTP server initialization completed")
+}
+func (c *config) SetupHTTPServer() error {
 	if c.ginRouter == nil {
-		c.ginRouter = gin.Default()
+		c.ginRouter = gin.New() // Usar gin.New() para controle manual dos middlewares
 	}
 
-	// Criar servidor HTTP com configurações do environment
 	c.httpServer = &http.Server{
-		Addr:         c.env.HTTP.Port,
-		Handler:      c.ginRouter,
-		ReadTimeout:  parseDuration(c.env.HTTP.ReadTimeout),
-		WriteTimeout: parseDuration(c.env.HTTP.WriteTimeout),
+		Addr:           c.env.HTTP.Port,
+		Handler:        c.ginRouter,
+		ReadTimeout:    parseDuration(c.env.HTTP.ReadTimeout),
+		WriteTimeout:   parseDuration(c.env.HTTP.WriteTimeout),
+		MaxHeaderBytes: c.env.HTTP.MaxHeaderBytes,
 	}
 
-	slog.Info("HTTP server initialized",
-		"port", c.env.HTTP.Port,
-		"read_timeout", c.env.HTTP.ReadTimeout,
-		"write_timeout", c.env.HTTP.WriteTimeout)
+	slog.Info("HTTP server initialized", "port", c.env.HTTP.Port, "read_timeout", c.env.HTTP.ReadTimeout, "write_timeout", c.env.HTTP.WriteTimeout)
+	return nil
 }
 
 // parseDuration converte string de duração para time.Duration
@@ -435,10 +440,42 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		return
 	}
 
-	// Configurar rotas básicas de health check
+	// 1. Criar handlers via factory pattern
+	if err := c.createHTTPHandlers(); err != nil {
+		slog.Error("Failed to create HTTP handlers", "error", err)
+		return
+	}
+
+	// 2. Configurar rotas básicas de health check
 	c.setupBasicRoutes()
 
+	// 3. Registrar todas as rotas (auth, user, listing) via routes package
+	routes.SetupRoutes(c.ginRouter, &c.httpHandlers)
+
 	slog.Info("HTTP handlers and routes configured successfully")
+}
+
+// createHTTPHandlers creates HTTP handlers using the factory pattern
+func (c *config) createHTTPHandlers() error {
+	slog.Debug("Creating HTTP handlers via factory pattern")
+
+	if c.userService == nil || c.globalService == nil || c.listingService == nil || c.complexService == nil {
+		return fmt.Errorf("required services not initialized")
+	}
+
+	// Create factory instance
+	adapterFactory := &factory.ConcreteAdapterFactory{}
+
+	// Create handlers using factory
+	c.httpHandlers = adapterFactory.CreateHTTPHandlers(
+		c.userService,
+		c.globalService,
+		c.listingService,
+		c.complexService,
+	)
+
+	slog.Info("✅ HTTP handlers created successfully via factory")
+	return nil
 }
 
 // setupBasicRoutes configura rotas básicas

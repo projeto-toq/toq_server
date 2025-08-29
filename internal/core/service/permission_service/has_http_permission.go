@@ -6,16 +6,17 @@ import (
 	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // HasHTTPPermission verifica se o usuário tem permissão para um endpoint HTTP específico
 func (p *permissionServiceImpl) HasHTTPPermission(ctx context.Context, userID int64, method, path string) (bool, error) {
 	if userID <= 0 {
-		return false, fmt.Errorf("invalid user ID: %d", userID)
+		return false, utils.ErrBadRequest
 	}
 
 	if method == "" || path == "" {
-		return false, fmt.Errorf("method and path cannot be empty")
+		return false, utils.ErrBadRequest
 	}
 
 	slog.Debug("Checking HTTP permission", "userID", userID, "method", method, "path", path)

@@ -54,8 +54,8 @@ func (b *Bootstrap) initializeHTTPServer() error {
 func (b *Bootstrap) createHTTPHandlers() error {
 	b.logger.Debug("Criando handlers HTTP via Factory Pattern")
 
-	// Os handlers serão criados durante SetupHTTPHandlersAndRoutes
-	// Por enquanto, apenas log
+	// Os handlers são criados durante SetupHTTPHandlersAndRoutes
+	// Este método agora é apenas um placeholder para consistência com o bootstrap flow
 	b.logger.Info("✅ Handlers HTTP preparados para criação")
 	return nil
 }

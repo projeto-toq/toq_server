@@ -6,7 +6,7 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
@@ -53,7 +53,7 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return
 	}
 
-	err = us.assignRoleToUser(ctx, owner.GetID(), "owner")
+	err = us.assignRoleToUser(ctx, tx, owner.GetID(), "owner")
 	if err != nil {
 		return
 	}

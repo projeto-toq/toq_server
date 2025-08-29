@@ -6,7 +6,7 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
@@ -53,7 +53,7 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	err = us.assignRoleToUser(ctx, realtor.GetID(), "realtor")
+	err = us.assignRoleToUser(ctx, tx, realtor.GetID(), "realtor")
 	if err != nil {
 		return
 	}

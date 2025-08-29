@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -9,6 +10,9 @@ import (
 
 // SetupRoutes configura todas as rotas HTTP
 func SetupRoutes(router *gin.Engine, handlers *factory.HTTPHandlers) {
+	// Configurar middlewares globais na ordem correta
+	setupGlobalMiddlewares(router)
+
 	// Swagger documentation routes
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -20,6 +24,26 @@ func SetupRoutes(router *gin.Engine, handlers *factory.HTTPHandlers) {
 
 	// Register listing routes
 	RegisterListingRoutes(v1, handlers)
+}
+
+// setupGlobalMiddlewares configura middlewares globais na ordem correta
+func setupGlobalMiddlewares(router *gin.Engine) {
+	// 1. RequestIDMiddleware - DEVE ser o primeiro para gerar Request ID
+	router.Use(middlewares.RequestIDMiddleware())
+
+	// 2. Recovery - Captura panics
+	router.Use(gin.Recovery())
+
+	// 3. Logger - Log de requisições (opcional, pode usar gin.Logger() se necessário)
+	// router.Use(gin.Logger())
+
+	// 4. CORSMiddleware - Configuração CORS
+	router.Use(middlewares.CORSMiddleware())
+
+	// 5. TelemetryMiddleware - Tracing OpenTelemetry
+	router.Use(middlewares.TelemetryMiddleware())
+
+	// Nota: AuthMiddleware e PermissionMiddleware são aplicados apenas em rotas específicas
 }
 
 // RegisterUserRoutes registers all user-related routes
