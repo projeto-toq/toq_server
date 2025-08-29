@@ -5,8 +5,10 @@ import (
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"errors"
+"database/sql"
 )
 
 func (us *userService) CleanRealtorPending(ctx context.Context, realtor usermodel.UserInterface) (err error) {
@@ -34,7 +36,7 @@ func (us *userService) CleanRealtorPending(ctx context.Context, realtor usermode
 	}
 
 	err = us.DeleteAgencyOfRealtor(ctx, realtor.GetID())
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return
 	}
 

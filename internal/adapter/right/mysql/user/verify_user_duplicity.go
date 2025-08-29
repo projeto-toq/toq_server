@@ -6,9 +6,9 @@ import (
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) VerifyUserDuplicity(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error) {
@@ -28,13 +28,13 @@ func (ua *UserAdapter) VerifyUserDuplicity(ctx context.Context, tx *sql.Tx, user
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/VerifyUserDuplicity: error executing Read", "error", err)
-		return false, status.Error(codes.Internal, "Internal server error")
+		return false, utils.ErrInternalServer
 	}
 
 	qty, ok := entities[0][0].(int64)
 	if !ok {
 		slog.Error("mysqluseradapter/VerifyUserDuplicity: error converting qty to int64", "qty", entities[0][0])
-		return false, status.Error(codes.Internal, "Internal server error")
+		return false, utils.ErrInternalServer
 	}
 
 	exist = qty > 0

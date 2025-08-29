@@ -4,9 +4,9 @@ import (
 	"context"
 
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) GetPhotoUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error) {
@@ -22,14 +22,14 @@ func (us *userService) GetPhotoUploadURL(ctx context.Context, objectName, conten
 	}
 
 	if us.cloudStorageService == nil {
-		return "", status.Error(codes.Unimplemented, "Cloud storage service is not configured")
+		return "", utils.ErrInternalServer
 	}
 
 	// Validar se é um tipo de foto válido usando constantes do domínio
 	validPhotoTypes := storagemodel.ValidPhotoTypes()
 
 	if !validPhotoTypes[objectName] {
-		return "", status.Error(codes.InvalidArgument, "invalid photo type")
+		return "", utils.ErrInternalServer
 	}
 
 	signedURL, err = us.cloudStorageService.GeneratePhotoUploadURL(userID, storagemodel.PhotoType(objectName), contentType)

@@ -8,9 +8,9 @@ import (
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetUserByNationalID(ctx context.Context, tx *sql.Tx, nationalID string) (user usermodel.UserInterface, err error) {
@@ -23,16 +23,16 @@ func (ua *UserAdapter) GetUserByNationalID(ctx context.Context, tx *sql.Tx, nati
 	entities, err := ua.Read(ctx, tx, "SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE national_id = ?", nationalID)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetUserByNationalID: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "User not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) > 1 {
 		slog.Error("mysqluseradapter/GetUserByNationalID: multiple users found with the same nationalID", "nationalID", nationalID)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	user, err = userconverters.UserEntityToDomain(entities[0])

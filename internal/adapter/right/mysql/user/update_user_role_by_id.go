@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateUserRole(ctx context.Context, tx *sql.Tx, role usermodel.UserRoleInterface) (err error) {
@@ -31,7 +31,7 @@ func (ua *UserAdapter) UpdateUserRole(ctx context.Context, tx *sql.Tx, role user
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateUserRole: error executing Update", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 

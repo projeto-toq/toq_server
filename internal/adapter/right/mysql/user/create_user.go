@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error) {
@@ -52,7 +52,7 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/CreateUser: error executing Create", "error", err)
-		return status.Error(codes.Internal, "internal server error")
+		return utils.ErrInternalServer
 	}
 
 	user.SetID(id)

@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err error) {
@@ -19,7 +19,7 @@ func (ga *GlobalAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err 
 	tx, err = ga.db.DB.BeginTx(ctx, nil)
 	if err != nil {
 		slog.Error("Error starting transaction", "error", err)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 	return tx, nil
 }
@@ -33,7 +33,7 @@ func (ga *GlobalAdapter) RollbackTransaction(ctx context.Context, tx *sql.Tx) (e
 	err = tx.Rollback()
 	if err != nil {
 		slog.Error("Error rolling back transaction", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 	return nil
 }
@@ -47,7 +47,7 @@ func (ga *GlobalAdapter) CommitTransaction(ctx context.Context, tx *sql.Tx) (err
 	err = tx.Commit()
 	if err != nil {
 		slog.Error("Error committing transaction", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 	return nil
 }

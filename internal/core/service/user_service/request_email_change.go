@@ -3,14 +3,13 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log/slog"
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (us *userService) RequestEmailChange(ctx context.Context, userID int64, newEmail string) (err error) {
@@ -72,7 +71,7 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 	//set the user validation as pending for email
 	validation, err = us.repo.GetUserValidations(ctx, tx, user.GetID())
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if !errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 		validation = usermodel.NewValidation()

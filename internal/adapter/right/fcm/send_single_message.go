@@ -6,8 +6,9 @@ import (
 
 	"firebase.google.com/go/messaging"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (f *FCMAdapter) SendSingleMessage(ctx context.Context, message globalmodel.Notification) (err error) {
@@ -23,7 +24,7 @@ func (f *FCMAdapter) SendSingleMessage(ctx context.Context, message globalmodel.
 	response, err := f.client.Send(ctx, iMessage)
 	if err != nil {
 		slog.Error("failed to send message", "error", err)
-		err = status.Error(codes.Internal, "internal error")
+		err = utils.ErrInternalServer
 		return
 	}
 	slog.Info("message sent", "response", response)

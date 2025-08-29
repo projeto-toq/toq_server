@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) RevokeSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) error {
@@ -22,7 +22,7 @@ func (sa *SessionAdapter) RevokeSessionsByUserID(ctx context.Context, tx *sql.Tx
 	_, err = sa.Update(ctx, tx, query, userID)
 	if err != nil {
 		slog.Error("sessionmysqladapter/RevokeSessionsByUserID: error executing Update", "error", err)
-		return status.Error(codes.Internal, "Failed to revoke sessions by user ID")
+		return utils.ErrInternalServer
 	}
 
 	return nil

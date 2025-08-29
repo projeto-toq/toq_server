@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetListingByZipNumber(ctx context.Context, tx *sql.Tx, zip string, number string) (listing listingmodel.ListingInterface, err error) {

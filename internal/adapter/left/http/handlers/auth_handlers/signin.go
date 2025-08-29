@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // SignIn handles user authentication (public endpoint)

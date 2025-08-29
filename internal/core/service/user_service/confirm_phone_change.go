@@ -8,9 +8,9 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) ConfirmPhoneChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error) {
@@ -52,19 +52,19 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 
 	//check if the user is awaiting phone validation
 	if userValidation.GetPhoneCode() == "" {
-		err = status.Error(codes.FailedPrecondition, "User is not awaiting phone validation")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the code is correct
 	if !strings.EqualFold(userValidation.GetPhoneCode(), code) {
-		err = status.Error(codes.InvalidArgument, "Invalid code")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the validation is in time
 	if userValidation.GetPhoneCodeExp().Before(now) {
-		err = status.Error(codes.InvalidArgument, "Code expired")
+		err = utils.ErrInternalServer
 		return
 	}
 

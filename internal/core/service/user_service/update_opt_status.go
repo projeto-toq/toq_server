@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // UpdateOptStatus consolidates opt-in/out behavior with audit and transactions

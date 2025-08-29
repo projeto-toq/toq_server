@@ -7,7 +7,7 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // NotificationSender interface para envio de notificações

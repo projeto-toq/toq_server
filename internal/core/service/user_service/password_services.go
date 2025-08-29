@@ -5,8 +5,9 @@ import (
 	"encoding/hex"
 	"regexp"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // Encrypt the user password
@@ -21,7 +22,7 @@ func (us *userService) encryptPassword(password string) (hashPassword string) {
 
 func validatePassword(password string) (err error) {
 	if len(password) < 8 {
-		return status.Error(codes.InvalidArgument, "Password must be at least 8 characters")
+		return utils.ErrInternalServer
 	}
 
 	var hasUpper, hasLower, hasNumber, hasSpecial bool
@@ -39,7 +40,7 @@ func validatePassword(password string) (err error) {
 	}
 
 	if !(hasUpper && hasLower && hasNumber && hasSpecial) {
-		return status.Error(codes.InvalidArgument, "Password must include a mix of uppercase, lowercase, numbers, and special characters")
+		return utils.ErrInternalServer
 	}
 	return
 }

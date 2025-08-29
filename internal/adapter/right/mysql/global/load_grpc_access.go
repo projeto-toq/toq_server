@@ -7,9 +7,9 @@ import (
 
 	globalconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) LoadGRPCAccess(ctx context.Context, tx *sql.Tx, service usermodel.GRPCService, method uint8, role usermodel.UserRole) (privilege usermodel.PrivilegeInterface, err error) {
@@ -29,14 +29,14 @@ func (ga *GlobalAdapter) LoadGRPCAccess(ctx context.Context, tx *sql.Tx, service
 	entities, err := ga.Read(ctx, tx, query, uint8(role))
 	if err != nil {
 		slog.Error("mysqluseradapter/GetPrivilegesByBaseRoleID: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	slog.Debug("LoadGRPCAccess query result", "role", role, "entities_count", len(entities))
 
 	if len(entities) == 0 {
 		slog.Debug("No privileges found for role", "role", role)
-		return nil, status.Error(codes.NotFound, "User not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	for _, entity := range entities {

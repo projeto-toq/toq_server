@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetProfile handles getting user profile

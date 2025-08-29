@@ -7,9 +7,9 @@ import (
 
 	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) GetSessionByID(ctx context.Context, tx *sql.Tx, id int64) (session sessionmodel.SessionInterface, err error) {
@@ -24,16 +24,16 @@ func (sa *SessionAdapter) GetSessionByID(ctx context.Context, tx *sql.Tx, id int
 	entities, err := sa.Read(ctx, tx, query, id)
 	if err != nil {
 		slog.Error("sessionmysqladapter/GetSessionByID: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "Session not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) > 1 {
 		slog.Error("sessionmysqladapter/GetSessionByID: multiple sessions found with the same ID", "ID", id)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	session, err = sessionconverters.SessionEntityToDomain(entities[0])

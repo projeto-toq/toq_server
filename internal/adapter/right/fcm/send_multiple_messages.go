@@ -6,8 +6,9 @@ import (
 
 	"firebase.google.com/go/messaging"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // SendMultipleMessages sends a notification to multiple device tokens
@@ -52,7 +53,7 @@ func (f *FCMAdapter) sendBatch(ctx context.Context, message globalmodel.Notifica
 	response, err := f.client.SendMulticast(ctx, multicastMessage)
 	if err != nil {
 		slog.Error("failed to send multicast message", "error", err)
-		return status.Error(codes.Internal, "failed to send push notification")
+		return utils.ErrInternalServer
 	}
 
 	// Log results

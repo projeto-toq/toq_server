@@ -7,7 +7,7 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) DeleteRealtorOfAgency(ctx context.Context, agencyID int64, realtorID int64) (err error) {

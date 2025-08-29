@@ -6,9 +6,9 @@ import (
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) CreateAgencyInvite(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, phoneNumber string) (err error) {
@@ -23,7 +23,7 @@ func (ua *UserAdapter) CreateAgencyInvite(ctx context.Context, tx *sql.Tx, agenc
 	id, err := ua.Create(ctx, tx, sql, agency.GetID(), phoneNumber)
 	if err != nil {
 		slog.Error("mysqluseradapter/CreateAgencyInvite: error executing Create", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	agency.SetID(id)

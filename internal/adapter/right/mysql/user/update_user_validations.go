@@ -8,9 +8,10 @@ import (
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error) {
@@ -23,7 +24,7 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 	// Verify if the row should be blank at the end of the function and delete the row if it is
 	if validation.GetEmailCode() == "" && validation.GetPhoneCode() == "" && validation.GetPasswordCode() == "" {
 		_, err = ua.DeleteValidation(ctx, tx, validation.GetUserID())
-		if err != nil && status.Code(err) != codes.NotFound {
+		if err != nil && errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 	}
@@ -57,7 +58,7 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateUserValidations: error executing Update", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	validation.SetUserID(id)

@@ -155,7 +155,6 @@ func (c *config) InitUserHandler() {
 		c.listingService,
 		c.cpf,
 		c.cnpj,
-		nil, // creci temporarily disabled
 		c.cloudStorage,
 		c.permissionService,
 	)

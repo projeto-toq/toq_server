@@ -7,9 +7,10 @@ import (
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (us *userService) SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
@@ -45,15 +46,15 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	criptoPassword := us.encryptPassword(password)
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			err = status.Error(codes.Unauthenticated, "Invalid National ID or Password")
+		if errors.Is(err, sql.ErrNoRows) {
+			err = utils.ErrInternalServer
 			return
 		}
 		return
 	}
 
 	if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
-		err = status.Error(codes.Unauthenticated, "User is blocked")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -64,13 +65,13 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 			return
 		}
 
-		err = status.Error(codes.Unauthenticated, "Invalid National ID or Password")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	_, err = us.repo.DeleteWrongSignInByUserID(ctx, tx, user.GetID())
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 	}
@@ -98,7 +99,7 @@ func checkWrongSignin(ctx context.Context, tx *sql.Tx, us *userService, user use
 
 	wrongSignin, err := us.repo.GetWrongSigninByUserID(ctx, tx, user.GetID())
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
 		wrongSignin = usermodel.NewWrongSignin()

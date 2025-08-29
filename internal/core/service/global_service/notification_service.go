@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // NotificationType define os tipos de notificação suportados

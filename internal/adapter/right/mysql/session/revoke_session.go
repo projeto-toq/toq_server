@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) RevokeSession(ctx context.Context, tx *sql.Tx, id int64) error {
@@ -22,7 +22,7 @@ func (sa *SessionAdapter) RevokeSession(ctx context.Context, tx *sql.Tx, id int6
 	_, err = sa.Update(ctx, tx, query, id)
 	if err != nil {
 		slog.Error("sessionmysqladapter/RevokeSession: error executing Update", "error", err)
-		return status.Error(codes.Internal, "Failed to revoke session")
+		return utils.ErrInternalServer
 	}
 
 	return nil

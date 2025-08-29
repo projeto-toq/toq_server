@@ -3,7 +3,7 @@ package listingservices
 import (
 	"context"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) GetOptions(ctx context.Context, zipCode string, number string) (types []int64, err error) {

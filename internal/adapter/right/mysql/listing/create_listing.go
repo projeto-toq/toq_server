@@ -7,9 +7,9 @@ import (
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error) {
@@ -29,7 +29,7 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("Error preparing statement on msqllistingadapter/CreateListing", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -49,14 +49,14 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 		listing.TenantPhone(), listing.Accompanying(), listing.Deleted())
 	if err != nil {
 		slog.Error("Error executing statement on msqllistingadapter/CreateListing", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
 		slog.Error("Error getting last insert id on msqllistingadapter/CreateListing", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 

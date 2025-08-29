@@ -2,13 +2,13 @@ package userhandlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/converters"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
@@ -32,7 +32,7 @@ func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
 	}
 
 	// Validate and clean email
-	email := converters.TrimSpaces(request.NewEmail)
+	email := strings.TrimSpace(request.NewEmail)
 	if err := validators.ValidateEmail(email); err != nil {
 		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_EMAIL", "Invalid email format")
 		return

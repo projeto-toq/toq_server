@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // StartListing handles creating a new listing

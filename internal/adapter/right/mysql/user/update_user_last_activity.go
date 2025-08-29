@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, id int64) (err error) {
@@ -26,7 +26,7 @@ func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, i
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateUserLastActivity: error executing Update", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	return

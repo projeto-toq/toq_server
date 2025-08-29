@@ -5,10 +5,11 @@ import (
 	"database/sql"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, features []listingmodel.FeatureInterface) (err error) {
@@ -27,7 +28,7 @@ func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, featur
 	err = la.DeleteListingFeatures(ctx, tx, features[0].ListingID())
 	if err != nil {
 		//check if the error is not found, because it's ok if there is no row to delete
-		if status.Code(err) != codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 	}

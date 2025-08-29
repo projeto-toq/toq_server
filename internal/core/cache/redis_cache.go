@@ -12,7 +12,7 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/redis/go-redis/v9"
-	// "google.golang.org/grpc"
+	// 
 )
 
 // RedisCache implementa CacheInterface usando Redis

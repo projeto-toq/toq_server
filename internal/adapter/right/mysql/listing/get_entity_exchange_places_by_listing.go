@@ -6,9 +6,9 @@ import (
 	"log/slog"
 
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, tx *sql.Tx, listingID int64) (places []listingentity.EntityExchangePlace, err error) {
@@ -23,7 +23,7 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error("Error preparing statement in GetEntityExchangePlacesByListing", "error", err)
-		err = status.Error(codes.Internal, "Failed to prepare statement")
+		err = utils.ErrInternalServer
 		return
 	}
 	defer stmt.Close()
@@ -31,7 +31,7 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 	rows, err := stmt.QueryContext(ctx, listingID)
 	if err != nil && err != sql.ErrNoRows {
 		slog.Error("Error executing query in GetEntityExchangePlacesByListing", "error", err)
-		err = status.Error(codes.Internal, "Failed to execute query")
+		err = utils.ErrInternalServer
 		return
 	}
 	defer rows.Close()
@@ -47,7 +47,7 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 		)
 		if err != nil {
 			slog.Error("Error scanning row in GetEntityExchangePlacesByListing", "error", err)
-			err = status.Error(codes.Internal, "Failed to scan row")
+			err = utils.ErrInternalServer
 			return
 		}
 
@@ -56,7 +56,7 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 
 	if err = rows.Err(); err != nil {
 		slog.Error("Error iterating over rows in GetEntityExchangePlacesByListing", "error", err)
-		err = status.Error(codes.Internal, "Failed to iterate over rows")
+		err = utils.ErrInternalServer
 		return
 	}
 

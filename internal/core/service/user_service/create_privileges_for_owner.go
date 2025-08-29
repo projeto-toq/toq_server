@@ -3,7 +3,7 @@ package userservices
 import (
 	// "github.com/giulio-alfieri/toq_server/internal/adapter/left/grpc/pb"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	// "google.golang.org/grpc"
+	// 
 )
 
 func (us *userService) CreateOwnerPrivileges() (privileges []usermodel.PrivilegeInterface) {

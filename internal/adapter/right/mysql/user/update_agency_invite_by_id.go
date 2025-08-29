@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateAgencyInviteByID(ctx context.Context, tx *sql.Tx, invite usermodel.InviteInterface) (err error) {
@@ -30,7 +30,7 @@ func (ua *UserAdapter) UpdateAgencyInviteByID(ctx context.Context, tx *sql.Tx, i
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateAgencyInviteByID: error executing Update", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	return

@@ -8,8 +8,9 @@ import (
 	"firebase.google.com/go/messaging"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"google.golang.org/api/option"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 type FCMAdapter struct {
@@ -21,14 +22,14 @@ func NewFCMAdapter(ctx context.Context, env *globalmodel.Environment) (fcm *FCMA
 		nil, option.WithCredentialsFile(env.FCM.CredentialsFile))
 	if err != nil {
 		slog.Error("failed to create fcm app", "error", err)
-		err = status.Error(codes.Internal, "internal error")
+		err = utils.ErrInternalServer
 		return
 	}
 	fcm = &FCMAdapter{}
 	client, err := app.Messaging(ctx)
 	if err != nil {
 		slog.Error("failed to create fcm client", "error", err)
-		err = status.Error(codes.Internal, "internal error")
+		err = utils.ErrInternalServer
 		return
 	}
 

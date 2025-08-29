@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetBaseRoles(ctx context.Context, tx *sql.Tx) (roles []usermodel.BaseRoleInterface, err error) {
@@ -24,11 +24,11 @@ func (ua *UserAdapter) GetBaseRoles(ctx context.Context, tx *sql.Tx) (roles []us
 	entities, err := ua.Read(ctx, tx, query)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetBaseRoles: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "Base roles not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	for _, entity := range entities {

@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error) {
@@ -24,16 +24,16 @@ func (ua *UserAdapter) GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (u
 	entities, err := ua.Read(ctx, tx, query, id)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetUserByID: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "User not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) > 1 {
 		slog.Error("mysqluseradapter/GetUserByID: multiple users found with the same ID", "ID", id)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	user, err = userconverters.UserEntityToDomain(entities[0])

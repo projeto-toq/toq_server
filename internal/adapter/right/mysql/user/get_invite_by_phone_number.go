@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (invite usermodel.InviteInterface, err error) {
@@ -24,11 +24,11 @@ func (ua *UserAdapter) GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, p
 	entities, err := ua.Read(ctx, tx, query, phoneNumber)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetInviteByPhoneNumber: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "Invite not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	invite, err = userconverters.AgencyInviteEntityToDomain(entities[0])

@@ -10,7 +10,7 @@ import (
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // PermissionMiddleware verifica permissões específicas usando o sistema de permissões avançado

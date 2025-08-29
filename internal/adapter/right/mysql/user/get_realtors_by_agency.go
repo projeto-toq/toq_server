@@ -7,9 +7,9 @@ import (
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agencyID int64) (users []usermodel.UserInterface, err error) {
@@ -25,18 +25,18 @@ func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agen
 	entities, err := ua.Read(ctx, tx, query, agencyID)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetRealtorsByAgency: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "Base roles not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	for _, entity := range entities {
 		id, ok := entity[0].(int64)
 		if !ok {
 			slog.Error("mysqluseradapter/GetRealtorsByAgency: error converting ID to int64", "value", entity[0])
-			return nil, status.Error(codes.Internal, "Internal server error")
+			return nil, utils.ErrInternalServer
 		}
 		user, err1 := ua.GetUserByID(ctx, tx, id)
 		if err1 != nil {

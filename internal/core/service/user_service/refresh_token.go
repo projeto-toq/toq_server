@@ -10,10 +10,10 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 var (
@@ -67,7 +67,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if sessErr != nil {
 		// If session not found treat as invalid refresh
 		slog.Warn("auth.refresh.invalid_session", "error", sessErr, "refresh_hash_prefix", hash[:8])
-		return tokens, status.Error(codes.Unauthenticated, "invalid refresh token")
+		return tokens, utils.ErrInternalServer
 	}
 
 	// Optional: detect reuse (rotated_at set means token already used)
@@ -75,7 +75,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		metricRefreshReuse.Inc()
 		slog.Warn("auth.refresh.reuse_detected", "user_id", session.GetUserID(), "session_id", session.GetID())
-		return tokens, status.Error(codes.Unauthenticated, "refresh token reuse detected")
+		return tokens, utils.ErrInternalServer
 	}
 
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
@@ -83,7 +83,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		return
 	}
 	if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
-		err = status.Errorf(codes.PermissionDenied, "User is blocked")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -92,7 +92,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		metricRefreshExpired.Inc()
 		slog.Info("auth.refresh.absolute_expired", "user_id", session.GetUserID(), "session_id", session.GetID())
-		return tokens, status.Error(codes.Unauthenticated, "session expired")
+		return tokens, utils.ErrInternalServer
 	}
 
 	// Pass chain info through context so CreateTokens can continue absolute expiry and increment rotation counter
@@ -103,7 +103,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if session.GetRotationCounter() >= globalmodel.GetMaxSessionRotations() {
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		slog.Warn("auth.refresh.rotation_limit_exceeded", "user_id", session.GetUserID(), "session_id", session.GetID(), "rotation_counter", session.GetRotationCounter())
-		return tokens, status.Error(codes.Unauthenticated, "session rotation limit reached")
+		return tokens, utils.ErrInternalServer
 	}
 
 	// Issue new tokens (new session persisted with incremented rotation counter)

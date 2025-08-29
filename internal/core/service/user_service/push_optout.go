@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // PushOptOut revoga consentimento de notificações push: limpa tokens e seta opt_status=0.

@@ -7,9 +7,9 @@ import (
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) CreateExchangePlace(ctx context.Context, tx *sql.Tx, place listingmodel.ExchangePlaceInterface) (err error) {
@@ -24,7 +24,7 @@ func (la *ListingAdapter) CreateExchangePlace(ctx context.Context, tx *sql.Tx, p
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateExchangePlace: error preparing statement", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 	defer stmt.Close()
@@ -32,14 +32,14 @@ func (la *ListingAdapter) CreateExchangePlace(ctx context.Context, tx *sql.Tx, p
 	result, err := stmt.ExecContext(ctx, place.ListingID(), place.Neighborhood(), place.City(), place.State())
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateExchangePlace: error executing statement", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateExchangePlace: error getting last insert ID", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 

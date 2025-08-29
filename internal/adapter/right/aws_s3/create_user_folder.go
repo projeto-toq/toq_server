@@ -7,13 +7,12 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err error) {
 	if s.adminClient == nil {
-		err = status.Error(codes.FailedPrecondition, "s3 admin client not initialized")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -35,7 +34,7 @@ func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err err
 
 		if err != nil {
 			slog.Error("failed to create placeholder in S3", "userID", UserID, "path", placeholderPath, "error", err)
-			return status.Error(codes.Internal, "failed to create user folder structure")
+			return utils.ErrInternalServer
 		}
 
 		slog.Debug("placeholder created in S3", "userID", UserID, "path", placeholderPath)

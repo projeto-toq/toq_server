@@ -12,10 +12,10 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error) {
@@ -29,7 +29,7 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 
 	if tx == nil {
 		slog.Warn("Transaction is nil on generate tokens")
-		return tokens, status.Errorf(codes.Internal, "Internal server error")
+		return tokens, utils.ErrInternalServer
 	}
 
 	secret := globalmodel.GetJWTSecret()

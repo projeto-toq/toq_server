@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) UpdateSessionRotation(ctx context.Context, tx *sql.Tx, id int64, rotationCounter int, lastRefreshAt time.Time) error {
@@ -23,7 +23,7 @@ func (sa *SessionAdapter) UpdateSessionRotation(ctx context.Context, tx *sql.Tx,
 	_, err = sa.Update(ctx, tx, query, rotationCounter, lastRefreshAt, id)
 	if err != nil {
 		slog.Error("sessionmysqladapter/UpdateSessionRotation: error executing Update", "error", err)
-		return status.Error(codes.Internal, "Failed to update session rotation")
+		return utils.ErrInternalServer
 	}
 
 	return nil

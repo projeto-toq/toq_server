@@ -6,13 +6,14 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (objects []string, err error) {
 	if s.readerClient == nil {
-		err = status.Error(codes.FailedPrecondition, "s3 reader client not initialized")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -28,7 +29,7 @@ func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (o
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			slog.Error("failed to iterate over bucket objects in S3", "error", err)
-			return nil, status.Error(codes.Internal, "failed to iterate over bucket objects")
+			return nil, utils.ErrInternalServer
 		}
 
 		for _, obj := range output.Contents {

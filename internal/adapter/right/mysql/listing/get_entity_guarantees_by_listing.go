@@ -6,9 +6,9 @@ import (
 	"log/slog"
 
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *sql.Tx, listingID int64) (guarantees []listingentity.EntityGuarantee, err error) {
@@ -23,7 +23,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error("Error preparing statement in GetEntityGuaranteesByListing", "error", err)
-		err = status.Error(codes.Internal, "Failed to prepare statement")
+		err = utils.ErrInternalServer
 		return
 	}
 	defer stmt.Close()
@@ -31,7 +31,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 	rows, err := stmt.QueryContext(ctx, listingID)
 	if err != nil && err != sql.ErrNoRows {
 		slog.Error("Error executing query in GetEntityGuaranteesByListing", "error", err)
-		err = status.Error(codes.Internal, "Failed to execute query")
+		err = utils.ErrInternalServer
 		return
 	}
 	defer rows.Close()
@@ -46,7 +46,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 		)
 		if err != nil {
 			slog.Error("Error scanning row in GetEntityGuaranteesByListing", "error", err)
-			err = status.Error(codes.Internal, "Failed to scan row")
+			err = utils.ErrInternalServer
 			return
 		}
 
@@ -55,7 +55,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 
 	if err = rows.Err(); err != nil {
 		slog.Error("Error iterating over rows in GetEntityGuaranteesByListing", "error", err)
-		err = status.Error(codes.Internal, "Failed to iterate over rows")
+		err = utils.ErrInternalServer
 		return
 	}
 

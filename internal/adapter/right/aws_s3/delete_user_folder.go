@@ -9,13 +9,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) DeleteUserFolder(ctx context.Context, userID int64) error {
 	if s.adminClient == nil {
-		return status.Error(codes.FailedPrecondition, "s3 admin client not initialized")
+		return utils.ErrInternalServer
 	}
 
 	prefix := fmt.Sprintf("%d/", userID)
@@ -55,7 +56,7 @@ func (s *S3Adapter) listAllObjectsWithPrefix(ctx context.Context, prefix string,
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			slog.Error("failed to list objects in S3", "userID", userID, "error", err)
-			return nil, status.Error(codes.Internal, "failed to list objects")
+			return nil, utils.ErrInternalServer
 		}
 
 		for _, obj := range output.Contents {
@@ -123,7 +124,7 @@ func (s *S3Adapter) deleteObjectsInBatches(ctx context.Context, objects []string
 	for err := range errChan {
 		if err != nil {
 			slog.Error("parallel deletion failed", "userID", userID, "error", err)
-			return status.Error(codes.Internal, "parallel deletion failed")
+			return utils.ErrInternalServer
 		}
 	}
 

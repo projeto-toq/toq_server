@@ -10,8 +10,8 @@ import (
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/golang-jwt/jwt"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // AuthMiddleware handles JWT authentication

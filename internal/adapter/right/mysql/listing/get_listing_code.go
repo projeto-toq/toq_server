@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetListingCode(ctx context.Context, tx *sql.Tx) (code uint32, err error) {
@@ -22,21 +22,21 @@ func (la *ListingAdapter) GetListingCode(ctx context.Context, tx *sql.Tx) (code 
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("Error preparing statement on msqllistingadapter/GetListingCode", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	result, err := stmt.ExecContext(ctx)
 	if err != nil {
 		slog.Error("Error executing statement on msqllistingadapter/GetListingCode", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	code64, err := result.LastInsertId()
 	if err != nil {
 		slog.Error("Error getting last insert id on msqllistingadapter/GetListingCode", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 

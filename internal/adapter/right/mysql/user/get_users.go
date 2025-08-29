@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermodel.UserInterface, err error) {
@@ -24,11 +24,11 @@ func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermo
 	entities, err := ua.Read(ctx, tx, query)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetUsers: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "User not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	for _, entity := range entities {

@@ -5,7 +5,7 @@ import (
 
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) GetProfileThumbnails(ctx context.Context, userID int64) (thumbnails usermodel.ProfileThumbnails, err error) {

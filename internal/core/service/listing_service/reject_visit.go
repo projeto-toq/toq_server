@@ -3,7 +3,7 @@ package listingservices
 import (
 	"context"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) RejectVisit(ctx context.Context, visitID int64) (err error) {

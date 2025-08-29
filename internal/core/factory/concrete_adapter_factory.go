@@ -52,7 +52,7 @@ type ConcreteAdapterFactory struct {
 }
 
 // CreateValidationAdapters cria e configura todos os adapters de validação externa
-// Retorna ValidationAdapters com CEP, CPF, CNPJ e CRECI configurados
+// Retorna ValidationAdapters com CEP, CPF e CNPJ configurados
 func (f *ConcreteAdapterFactory) CreateValidationAdapters(env *globalmodel.Environment) (ValidationAdapters, error) {
 	slog.Info("Creating validation adapters")
 

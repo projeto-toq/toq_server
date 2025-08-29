@@ -3,12 +3,11 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus usermodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
@@ -45,7 +44,7 @@ func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.
 	// Read the realtors user with given status from the database
 	realtors, err = us.repo.GetUsersByStatus(ctx, tx, UserRoleStatus, usermodel.RoleRealtor)
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if !errors.Is(err, sql.ErrNoRows) {
 			slog.Error("Failed to read realtor users with status in GetCrecisToValidateByStatus", "error", err)
 			return
 		}

@@ -8,9 +8,10 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (us *userService) InviteRealtor(ctx context.Context, phoneNumber string) (err error) {
@@ -125,7 +126,7 @@ func (us *userService) isOnPlataform(ctx context.Context, tx *sql.Tx, phoneNumbe
 
 	realtor, err = us.repo.GetUserByPhoneNumber(ctx, tx, phoneNumber)
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 	}
@@ -144,18 +145,18 @@ func (us *userService) isAlreadyLinked(ctx context.Context, tx *sql.Tx, realtorI
 
 	_, err = us.repo.GetAgencyOfRealtor(ctx, tx, realtorID)
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 		return nil
 	}
-	return status.Error(codes.FailedPrecondition, "Realtor already linked to an agency")
+	return utils.ErrInternalServer
 }
 
 func (us *userService) isInvited(ctx context.Context, tx *sql.Tx, phoneNumber string) (invite usermodel.InviteInterface, isInvited bool, err error) {
 	invite, err = us.repo.GetInviteByPhoneNumber(ctx, tx, phoneNumber)
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 

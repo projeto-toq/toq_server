@@ -7,9 +7,9 @@ import (
 
 	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session sessionmodel.SessionInterface) (err error) {
@@ -41,7 +41,7 @@ func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session
 		entity.Revoked)
 	if err != nil {
 		slog.Error("sessionmysqladapter/CreateSession: error executing Create", "error", err)
-		return status.Error(codes.Internal, "Failed to create session")
+		return utils.ErrInternalServer
 	}
 
 	session.SetID(id)

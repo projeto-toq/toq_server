@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err error) {
@@ -19,7 +19,7 @@ func (ua *UserAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err er
 	tx, err = ua.db.DB.BeginTx(ctx, nil)
 	if err != nil {
 		slog.Error("mysqluseradapter/StartTransaction: error starting transaction", "error", err)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 	return tx, nil
 }
@@ -33,7 +33,7 @@ func (ua *UserAdapter) RollbackTransaction(ctx context.Context, tx *sql.Tx) (err
 	err = tx.Rollback()
 	if err != nil {
 		slog.Error("mysqluseradapter/RollbackTransaction: error rolling back transaction", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 	return nil
 }
@@ -47,7 +47,7 @@ func (ua *UserAdapter) CommitTransaction(ctx context.Context, tx *sql.Tx) (err e
 	err = tx.Commit()
 	if err != nil {
 		slog.Error("mysqluseradapter/CommitTransaction: error committing transaction", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 	return nil
 }

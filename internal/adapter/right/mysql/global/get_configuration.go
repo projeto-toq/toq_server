@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (configuration map[string]string, err error) {
@@ -22,11 +22,11 @@ func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (conf
 	entities, err := ga.Read(ctx, tx, query)
 	if err != nil {
 		slog.Error("mysqlglobaladapter/GetConfiguration: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "Error reading configuration from database")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "Configuration not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	configuration = make(map[string]string)
@@ -35,13 +35,13 @@ func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (conf
 		key, ok := entity[1].([]byte)
 		if !ok {
 			slog.Error("mysqlglobaladapter/GetConfiguration: error converting key to []byte", "key", entity[1])
-			return nil, status.Error(codes.Internal, "Internal server error")
+			return nil, utils.ErrInternalServer
 		}
 
 		value, ok := entity[2].([]byte)
 		if !ok {
 			slog.Error("mysqlglobaladapter/GetConfiguration: error converting value to []byte", "value", entity[2])
-			return nil, status.Error(codes.Internal, "Internal server error")
+			return nil, utils.ErrInternalServer
 		}
 		configuration[string(key)] = string(value)
 	}

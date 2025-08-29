@@ -7,9 +7,10 @@ import (
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error) {
@@ -56,19 +57,19 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 
 	//check if the user is awaiting password reset
 	if userValidation.GetPasswordCode() == "" {
-		err = status.Error(codes.FailedPrecondition, "User is not awaiting password validation")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the code is correct
 	if !strings.EqualFold(userValidation.GetPasswordCode(), code) {
-		err = status.Error(codes.InvalidArgument, "Invalid code")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the validation is in time
 	if userValidation.GetPasswordCodeExp().Before(now) {
-		err = status.Error(codes.InvalidArgument, "Code expired")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -85,7 +86,7 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 
 	//delete the temp_wrong_signin
 	_, err = us.repo.DeleteWrongSignInByUserID(ctx, tx, user.GetID())
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return
 	}
 

@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realtorID int64) (agency usermodel.UserInterface, err error) {
@@ -28,16 +28,16 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 	entities, err := ua.Read(ctx, tx, query, realtorID)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetAgencyOfRealtor: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "Agency not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) > 1 {
 		slog.Error("mysqluseradapter.GetAgencyOfRealtor: Multiple agencies found for the same realtor ID", "realtorID", realtorID)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	return userconverters.UserEntityToDomain(entities[0])

@@ -7,9 +7,9 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetBaseRoleByRole(ctx context.Context, tx *sql.Tx, roleName usermodel.UserRole) (role usermodel.BaseRoleInterface, err error) {
@@ -24,16 +24,16 @@ func (ua *UserAdapter) GetBaseRoleByRole(ctx context.Context, tx *sql.Tx, roleNa
 	entities, err := ua.Read(ctx, tx, query, roleName)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetBaseRoleByRole: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "User not found")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) > 1 {
 		slog.Error("UserAdapter.GetBaseRoleByRole: Multiple users found with the same role", "roleName", roleName)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	role, err = userconverters.BaseRoleEntityToDomain(entities[0])

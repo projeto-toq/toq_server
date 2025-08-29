@@ -5,9 +5,9 @@ import (
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) Home(ctx context.Context, userID int64) (user usermodel.UserInterface, err error) {
@@ -26,7 +26,7 @@ func (us *userService) Home(ctx context.Context, userID int64) (user usermodel.U
 	user, err = us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		slog.Error("Error getting user by ID", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}

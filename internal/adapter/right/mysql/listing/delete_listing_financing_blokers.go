@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) DeleteListingFinancingBlockers(ctx context.Context, tx *sql.Tx, listingID int64) (err error) {
@@ -22,7 +22,7 @@ func (la *ListingAdapter) DeleteListingFinancingBlockers(ctx context.Context, tx
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("mysqllistingadapter/DeleteListingListingBlockers: error preparing statement", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 	defer stmt.Close()
@@ -30,19 +30,19 @@ func (la *ListingAdapter) DeleteListingFinancingBlockers(ctx context.Context, tx
 	result, err := stmt.ExecContext(ctx, listingID)
 	if err != nil {
 		slog.Error("mysqllistingadapter/DeleteListingListingBlockers: error executing statement", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	qty, err := result.RowsAffected()
 	if err != nil {
 		slog.Error("mysqllistingadapter/DeleteListingListingBlockers: error getting rows affected", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	if qty == 0 {
-		err = status.Error(codes.NotFound, "Listing blocker not found")
+		err = utils.ErrInternalServer
 		return
 	}
 

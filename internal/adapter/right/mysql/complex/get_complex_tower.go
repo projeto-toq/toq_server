@@ -7,9 +7,9 @@ import (
 
 	complexrepoconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex/converters"
 	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ca *ComplexAdapter) GetComplexTowers(ctx context.Context, tx *sql.Tx, complexID int64) (complexTowers []complexmodel.ComplexTowerInterface, err error) {
@@ -24,17 +24,17 @@ func (ca *ComplexAdapter) GetComplexTowers(ctx context.Context, tx *sql.Tx, comp
 	entities, err := ca.Read(ctx, tx, query, complexID)
 	if err != nil {
 		slog.Error("mysqlcomplexadapter/GetComplexTowers: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "No complex towers found for the given complex ID")
+		return nil, utils.ErrInternalServer
 	}
 
 	for _, entity := range entities {
 		complexTower, err := complexrepoconverters.ComplexTowerEntityToDomain(entity)
 		if err != nil {
-			return nil, status.Error(codes.Internal, "Internal server error")
+			return nil, utils.ErrInternalServer
 		}
 
 		complexTowers = append(complexTowers, complexTower)

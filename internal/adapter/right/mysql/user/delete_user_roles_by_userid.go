@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) DeleteUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) (deleted int64, err error) {
@@ -22,11 +22,11 @@ func (ua *UserAdapter) DeleteUserRolesByUserID(ctx context.Context, tx *sql.Tx, 
 	deleted, err = ua.Delete(ctx, tx, query, userID)
 	if err != nil {
 		slog.Error("mysqluseradapter/DeleteUserRolesByUserID: error executing Delete", "error", err)
-		return 0, status.Error(codes.Internal, "internal server error")
+		return 0, utils.ErrInternalServer
 	}
 
 	if deleted == 0 {
-		return 0, status.Error(codes.NotFound, "user roles not found")
+		return 0, utils.ErrInternalServer
 	}
 
 	return

@@ -4,7 +4,6 @@ import (
 	"regexp"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/converters"
 	"github.com/nyaruka/phonenumbers"
 )
 
@@ -77,8 +76,8 @@ func ValidateCode(code string) error {
 //
 // Returns:
 // - isEqual: A boolean indicating whether the two CRECI numbers are equal after normalization.
-func ValidateCreciEquality(creciNumber1 string, creciNumber2 string) (isEqual bool) {
-	creciNumber1 = converters.NormalizeAndTrimString(creciNumber1)
-	creciNumber2 = converters.NormalizeAndTrimString(creciNumber2)
-	return creciNumber1 == creciNumber2
-}
+// func ValidateCreciEquality(creciNumber1 string, creciNumber2 string) (isEqual bool) {
+// 	creciNumber1 = converters.NormalizeAndTrimString(creciNumber1)
+// 	creciNumber2 = converters.NormalizeAndTrimString(creciNumber2)
+// 	return creciNumber1 == creciNumber2
+// }

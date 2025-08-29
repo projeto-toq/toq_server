@@ -7,8 +7,8 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
 func (uh *UserHandler) ConfirmEmailChange(c *gin.Context) {

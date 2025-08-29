@@ -7,9 +7,9 @@ import (
 
 	complexrepoconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex/converters"
 	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ca *ComplexAdapter) GetHorizontalComplex(ctx context.Context, tx *sql.Tx, zipCode string) (complex complexmodel.ComplexInterface, err error) {
@@ -27,17 +27,17 @@ func (ca *ComplexAdapter) GetHorizontalComplex(ctx context.Context, tx *sql.Tx, 
 	entities, err := ca.Read(ctx, tx, query, zipCode)
 	if err != nil {
 		slog.Error("mysqlcomplexadapter/GetHorizontalComplex: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	if len(entities) == 0 {
-		return nil, status.Error(codes.NotFound, "No complex found for the provided zip code")
+		return nil, utils.ErrInternalServer
 	}
 
 	for _, entity := range entities {
 		complex, err = complexrepoconverters.ComplexEntityToDomain(entity)
 		if err != nil {
-			return nil, status.Error(codes.Internal, "Internal server error")
+			return nil, utils.ErrInternalServer
 		}
 	}
 

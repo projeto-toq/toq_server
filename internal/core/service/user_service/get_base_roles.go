@@ -4,7 +4,7 @@ import (
 	"context"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) GetBaseRoles(ctx context.Context) (roles []usermodel.BaseRoleInterface, err error) {

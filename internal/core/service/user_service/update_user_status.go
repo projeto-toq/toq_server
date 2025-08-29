@@ -6,9 +6,10 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (us *userService) updateUserStatus(
@@ -91,7 +92,7 @@ func (us *userService) updateUserStatus(
 		exist := false
 		_, err := us.repo.GetInviteByPhoneNumber(ctx, tx, iUser.GetPhoneNumber())
 		if err != nil {
-			if status.Code(err) != codes.NotFound {
+			if errors.Is(err, sql.ErrNoRows) {
 				return 0, "", 0, err
 			}
 		} else {

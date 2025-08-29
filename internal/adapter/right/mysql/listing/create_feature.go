@@ -7,9 +7,9 @@ import (
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) CreateFeature(ctx context.Context, tx *sql.Tx, feature listingmodel.FeatureInterface) (err error) {
@@ -24,7 +24,7 @@ func (la *ListingAdapter) CreateFeature(ctx context.Context, tx *sql.Tx, feature
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateFeature: error preparing statement", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 	defer stmt.Close()
@@ -32,14 +32,14 @@ func (la *ListingAdapter) CreateFeature(ctx context.Context, tx *sql.Tx, feature
 	result, err := stmt.ExecContext(ctx, feature.ListingID(), feature.FeatureID(), feature.Quantity())
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateFeature: error executing statement", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateFeature: error getting last insert ID", "error", err)
-		err = status.Error(codes.Internal, "Internal server error")
+		err = utils.ErrInternalServer
 		return
 	}
 

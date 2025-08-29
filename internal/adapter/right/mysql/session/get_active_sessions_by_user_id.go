@@ -7,9 +7,9 @@ import (
 
 	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) GetActiveSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) (sessions []sessionmodel.SessionInterface, err error) {
@@ -26,7 +26,7 @@ func (sa *SessionAdapter) GetActiveSessionsByUserID(ctx context.Context, tx *sql
 	entities, err := sa.Read(ctx, tx, query, userID)
 	if err != nil {
 		slog.Error("sessionmysqladapter/GetActiveSessionsByUserID: error executing Read", "error", err)
-		return nil, status.Error(codes.Internal, "Failed to get active sessions by user ID")
+		return nil, utils.ErrInternalServer
 	}
 
 	sessions = make([]sessionmodel.SessionInterface, 0, len(entities))

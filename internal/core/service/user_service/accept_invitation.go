@@ -8,9 +8,10 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (us *userService) AcceptInvitation(ctx context.Context, userID int64) (err error) {
@@ -50,8 +51,8 @@ func (us *userService) acceptInvitation(ctx context.Context, tx *sql.Tx, userID 
 	//recover the agency invitation
 	invite, err := us.repo.GetInviteByPhoneNumber(ctx, tx, realtor.GetPhoneNumber())
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return 0, status.Error(codes.FailedPrecondition, "Invite not found")
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, utils.ErrInternalServer
 		}
 	}
 

@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) SwitchUserRole(ctx context.Context, userID int64, roleSlug string) (tokens usermodel.Tokens, err error) {
@@ -47,7 +47,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	}
 
 	if len(userRoles) == 1 {
-		err = status.Error(codes.FailedPrecondition, "User has only one role")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -69,7 +69,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	}
 
 	if !roleExists {
-		err = status.Error(codes.InvalidArgument, fmt.Sprintf("Role '%s' not found for user", roleSlug))
+		err = utils.NewHTTPError(400, fmt.Sprintf("Role '%s' not found for user", roleSlug))
 		return
 	}
 

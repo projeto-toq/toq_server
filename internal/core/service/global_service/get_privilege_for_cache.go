@@ -3,11 +3,10 @@ package globalservice
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (gs *globalService) GetPrivilegeForCache(ctx context.Context, service usermodel.GRPCService, method uint8, role usermodel.UserRole) (privilege usermodel.PrivilegeInterface, err error) {
@@ -41,7 +40,7 @@ func (gs *globalService) GetPrivilegeForCache(ctx context.Context, service userm
 func (gs *globalService) getPrivilegeForCache(ctx context.Context, tx *sql.Tx, service usermodel.GRPCService, method uint8, role usermodel.UserRole) (privilege usermodel.PrivilegeInterface, err error) {
 	privilege, err = gs.globalRepo.LoadGRPCAccess(ctx, tx, service, method, role)
 	if err != nil {
-		if codes.NotFound == status.Code(err) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		} else {
 			return

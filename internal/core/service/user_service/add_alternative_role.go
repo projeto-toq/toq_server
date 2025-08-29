@@ -3,14 +3,10 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/converters"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, role usermodel.UserRole, creciInfo ...string) (err error) {
@@ -49,12 +45,12 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	if user.GetActiveRole().GetStatus() != usermodel.StatusActive {
-		err = status.Error(codes.FailedPrecondition, "User is not active")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	if role == usermodel.RoleRealtor && len(creciInfo) != 3 {
-		err = status.Error(codes.InvalidArgument, "Missing Creci information")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -75,15 +71,16 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	case role == usermodel.RoleRealtor:
 		userRole.SetStatus(usermodel.StatusPendingImages)
 		userRole.SetStatusReason("Awaiting creci images to verify")
-		user.SetCreciNumber(creciInfo[0])
-		user.SetCreciState(creciInfo[1])
-		t, err1 := converters.StrngToTime(creciInfo[2])
-		if err1 != nil {
-			slog.Error("userservices.addAlternativeRole", "error converters.StrngToTime", err1)
-			err = status.Error(codes.InvalidArgument, "Invalid date format")
-			return
-		}
-		user.SetCreciValidity(t)
+		// CRECI functionality removed - keeping user role logic only
+		// user.SetCreciNumber(creciInfo[0])
+		// user.SetCreciState(creciInfo[1])
+		// t, err1 := converters.StrngToTime(creciInfo[2])
+		// if err1 != nil {
+		// 	slog.Error("userservices.addAlternativeRole", "error converters.StrngToTime", err1)
+		// 	err = utils.ErrInternalServer
+		// 	return
+		// }
+		// user.SetCreciValidity(t)
 	}
 
 	err = us.repo.CreateUserRole(ctx, tx, userRole)

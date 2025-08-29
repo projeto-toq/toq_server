@@ -7,7 +7,8 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
-	creciport "github.com/giulio-alfieri/toq_server/internal/core/port/right/creci"
+
+	// creciport "github.com/giulio-alfieri/toq_server/internal/core/port/right/creci"
 	sessionrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
@@ -17,13 +18,13 @@ import (
 )
 
 type userService struct {
-	repo                userrepoport.UserRepoPortInterface
-	sessionRepo         sessionrepoport.SessionRepoPortInterface
-	globalService       globalservice.GlobalServiceInterface
-	listingService      listingservices.ListingServiceInterface
-	cpf                 cpfport.CPFPortInterface
-	cnpj                cnpjport.CNPJPortInterface
-	creci               creciport.CreciPortInterface
+	repo           userrepoport.UserRepoPortInterface
+	sessionRepo    sessionrepoport.SessionRepoPortInterface
+	globalService  globalservice.GlobalServiceInterface
+	listingService listingservices.ListingServiceInterface
+	cpf            cpfport.CPFPortInterface
+	cnpj           cnpjport.CNPJPortInterface
+	// creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
 }
@@ -35,19 +36,19 @@ func NewUserService(
 	listingService listingservices.ListingServiceInterface,
 	cpf cpfport.CPFPortInterface,
 	cnpj cnpjport.CNPJPortInterface,
-	creci creciport.CreciPortInterface, // Pode ser nil temporariamente
+	// creci creciport.CreciPortInterface, // Pode ser nil temporariamente
 	cloudStorage storageport.CloudStoragePortInterface,
 	permissionService permissionservices.PermissionServiceInterface, // NOVO
 
 ) UserServiceInterface {
 	return &userService{
-		repo:                ur,
-		sessionRepo:         sr,
-		globalService:       gsi,
-		listingService:      listingService,
-		cpf:                 cpf,
-		cnpj:                cnpj,
-		creci:               creci, // Pode ser nil
+		repo:           ur,
+		sessionRepo:    sr,
+		globalService:  gsi,
+		listingService: listingService,
+		cpf:            cpf,
+		cnpj:           cnpj,
+		// creci:               creci, // Pode ser nil
 		cloudStorageService: cloudStorage,
 		permissionService:   permissionService, // NOVO
 	}
@@ -69,7 +70,7 @@ type UserServiceInterface interface {
 	DeleteRealtorOfAgency(ctx context.Context, agencyID int64, realtorID int64) (err error)
 	GetAgencyOfRealtor(ctx context.Context, realtorID int64) (agency usermodel.UserInterface, err error)
 	GetBaseRoles(ctx context.Context) (roles []usermodel.BaseRoleInterface, err error)
-	GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus usermodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error)
+	// GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus usermodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error)
 	GetOnboardingStatus(ctx context.Context, userID int64) (UserRoleStatus string, reason string, err error)
 	GetProfile(ctx context.Context, userID int64) (user usermodel.UserInterface, err error)
 	GetRealtorsByAgency(ctx context.Context, agencyID int64) (realtors []usermodel.UserInterface, err error)
@@ -89,12 +90,12 @@ type UserServiceInterface interface {
 	SwitchUserRole(ctx context.Context, userID int64, roleSlug string) (tokens usermodel.Tokens, err error)
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error)
-	ValidateCreciData(ctx context.Context, realtors []usermodel.UserInterface)
-	ValidateCreciFace(ctx context.Context, realtors []usermodel.UserInterface)
-	VerifyCreciImages(ctx context.Context, realtorID int64) (err error)
+	// ValidateCreciData(ctx context.Context, realtors []usermodel.UserInterface)
+	// ValidateCreciFace(ctx context.Context, realtors []usermodel.UserInterface)
+	// VerifyCreciImages(ctx context.Context, realtorID int64) (err error)
 	UpdateOptStatus(ctx context.Context, optIn bool) (err error)
 	GetPhotoUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error)
-	GetCreciUploadURL(ctx context.Context, documentType, contentType string) (signedURL string, err error)
+	// GetCreciUploadURL(ctx context.Context, documentType, contentType string) (signedURL string, err error)
 	GeneratePhotoDownloadURL(ctx context.Context, userID int64, photoType string) (signedURL string, err error)
 	GetProfileThumbnails(ctx context.Context, userID int64) (thumbnails usermodel.ProfileThumbnails, err error)
 	CreateUserFolder(ctx context.Context, userID int64) (err error)

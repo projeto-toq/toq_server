@@ -6,8 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (gs *globalService) StartTransaction(ctx context.Context) (tx *sql.Tx, err error) {
@@ -20,7 +18,7 @@ func (gs *globalService) StartTransaction(ctx context.Context) (tx *sql.Tx, err 
 	tx, err = gs.globalRepo.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("Error starting transaction", "error", err)
-		return nil, status.Error(codes.Internal, "Internal server error")
+		return nil, utils.ErrInternalServer
 	}
 
 	return
@@ -36,7 +34,7 @@ func (gs *globalService) RollbackTransaction(ctx context.Context, tx *sql.Tx) (e
 	err = gs.globalRepo.RollbackTransaction(ctx, tx)
 	if err != nil {
 		slog.Error("Error rolling back transaction", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	return
@@ -52,7 +50,7 @@ func (gs *globalService) CommitTransaction(ctx context.Context, tx *sql.Tx) (err
 	err = gs.globalRepo.CommitTransaction(ctx, tx)
 	if err != nil {
 		slog.Error("Error committing transaction", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	return

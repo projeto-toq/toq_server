@@ -5,9 +5,10 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (us *userService) ResendEmailChangeCode(ctx context.Context, userID int64) (code string, err error) {
@@ -40,21 +41,21 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context, userID int64) 
 func (us *userService) resendEmailChangeCode(ctx context.Context, tx *sql.Tx, userID int64) (code string, err error) {
 	validation, err := us.repo.GetUserValidations(ctx, tx, userID)
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			err = status.Error(codes.InvalidArgument, "No code available")
+		if errors.Is(err, sql.ErrNoRows) {
+			err = utils.ErrInternalServer
 		}
 		return
 	}
 
 	emailCode := validation.GetEmailCode()
 	if emailCode == "" {
-		err = status.Error(codes.InvalidArgument, "No code available")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	// Verificar se código não expirou
 	if time.Now().UTC().After(validation.GetEmailCodeExp()) {
-		err = status.Error(codes.InvalidArgument, "No code available")
+		err = utils.ErrInternalServer
 		return
 	}
 

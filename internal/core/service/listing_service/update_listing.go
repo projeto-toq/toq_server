@@ -7,9 +7,10 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (ls *listingService) UpdateListing(ctx context.Context, listing listingmodel.ListingInterface) (err error) {
@@ -45,7 +46,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, listing
 	//check if exists the listing
 	existing, err := ls.listingRepository.GetListingByID(ctx, tx, listing.ID())
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			exist = false
 		} else {
 			return
@@ -53,20 +54,20 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, listing
 	}
 
 	if !exist {
-		err = status.Error(codes.InvalidArgument, "Listing doesnt exists")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the listing is in draft status
 	if existing.Status() != listingmodel.StatusDraft {
-		err = status.Error(codes.InvalidArgument, "Listing must be in draft status")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the user is the owner of the listing
 	infos := ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos)
 	if existing.UserID() != infos.ID {
-		err = status.Error(codes.PermissionDenied, "User is not the owner of the listing")
+		err = utils.ErrInternalServer
 		return
 	}
 

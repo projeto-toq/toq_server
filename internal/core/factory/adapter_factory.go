@@ -21,7 +21,7 @@ type LifecycleManager interface {
 // AdapterFactory define a interface principal para criação de adapters
 // Implementa o Abstract Factory pattern para organizar a criação de dependências
 type AdapterFactory interface {
-	// CreateValidationAdapters cria todos os adapters de validação externa (CEP, CPF, CNPJ, CRECI)
+	// CreateValidationAdapters cria todos os adapters de validação externa (CEP, CPF, CNPJ)
 	CreateValidationAdapters(env *globalmodel.Environment) (ValidationAdapters, error)
 
 	// CreateExternalServiceAdapters cria adapters de serviços externos (FCM, Email, SMS, GCS)

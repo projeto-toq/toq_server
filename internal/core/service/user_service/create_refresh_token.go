@@ -7,8 +7,9 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/golang-jwt/jwt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *usermodel.Tokens, jti string) (err error) {
@@ -41,7 +42,7 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 	refreshToken, err := token.SignedString([]byte(secret))
 	if err != nil {
 		slog.Error("error trying to generate jwt refresh token", "error", err)
-		return status.Errorf(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	//salva na estrutura

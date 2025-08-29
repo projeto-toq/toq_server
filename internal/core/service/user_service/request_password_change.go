@@ -8,9 +8,10 @@ import (
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"errors"
 )
 
 func (us *userService) RequestPasswordChange(ctx context.Context, nationalID string) (err error) {
@@ -72,7 +73,7 @@ func (us *userService) requestPasswordChange(ctx context.Context, tx *sql.Tx, na
 	//set the user validation as pending for password
 	validation, err = us.repo.GetUserValidations(ctx, tx, user.GetID())
 	if err != nil {
-		if status.Code(err) != codes.NotFound {
+		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
 		validation = usermodel.NewValidation()

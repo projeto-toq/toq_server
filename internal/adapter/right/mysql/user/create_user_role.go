@@ -9,9 +9,9 @@ import (
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) CreateUserRole(ctx context.Context, tx *sql.Tx, role usermodel.UserRoleInterface) (err error) {
@@ -35,7 +35,7 @@ func (ua *UserAdapter) CreateUserRole(ctx context.Context, tx *sql.Tx, role user
 		entity.StatusReason)
 	if err != nil {
 		slog.Error("mysqluseradapter/CreateUserRole: error executing Create", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 
 	}
 

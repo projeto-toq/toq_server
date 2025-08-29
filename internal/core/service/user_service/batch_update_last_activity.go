@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error) {

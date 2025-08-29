@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) BatchUpdateUserLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error) {
@@ -55,14 +55,14 @@ func (ua *UserAdapter) BatchUpdateUserLastActivity(ctx context.Context, userIDs 
 	stmt, err := ua.db.DB.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error("mysqluseradapter/BatchUpdateUserLastActivity: error preparing statement", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
 		slog.Error("mysqluseradapter/BatchUpdateUserLastActivity: error executing statement", "error", err)
-		return status.Error(codes.Internal, "Internal server error")
+		return utils.ErrInternalServer
 	}
 
 	affected, err := result.RowsAffected()

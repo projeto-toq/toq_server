@@ -6,8 +6,9 @@ import (
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, role usermodel.UserRole) (err error) {
@@ -21,7 +22,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	}
 
 	if exist {
-		err = status.Error(codes.AlreadyExists, "User already exists")
+		err = utils.ErrInternalServer
 		return
 	}
 
@@ -59,7 +60,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 
 	//validate the address number
 	if user.GetNumber() == "" {
-		err = status.Error(codes.InvalidArgument, "Address number is required")
+		err = utils.ErrInternalServer
 		return
 	}
 

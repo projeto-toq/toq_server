@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // TelemetryMiddleware adds OpenTelemetry tracing to HTTP requests

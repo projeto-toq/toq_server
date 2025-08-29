@@ -8,8 +8,6 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // NotificationService interface para o serviço de notificações
@@ -45,7 +43,7 @@ func (ns *notificationService) SendNotification(ctx context.Context, user usermo
 	// Validar se código é necessário para tipos específicos
 	iCode := ""
 	if ns.requiresCode(notificationType) && len(code) == 0 {
-		err := status.Error(codes.Internal, "code is required for this notification type")
+		err := utils.ErrInternalServer
 		slog.Error("Code required but not provided", "notificationType", notificationType, "error", err)
 		return err
 	}
@@ -104,13 +102,14 @@ func (ns *notificationService) routeNotification(ctx context.Context, user userm
 	case globalmodel.NotificationPasswordChange:
 		return ns.handler.HandlePasswordChange(ctx, code)
 
-	case globalmodel.NotificationCreciStateUnsupported,
-		globalmodel.NotificationInvalidCreciState,
-		globalmodel.NotificationInvalidCreciNumber,
-		globalmodel.NotificationBadSelfieImage,
-		globalmodel.NotificationBadCreciImages,
-		globalmodel.NotificationCreciValidated:
-		return ns.handler.HandleCreciNotification(ctx, user, notificationType)
+	// CRECI notifications removed - system no longer used
+	// case globalmodel.NotificationCreciStateUnsupported,
+	// 	globalmodel.NotificationInvalidCreciState,
+	// 	globalmodel.NotificationInvalidCreciNumber,
+	// 	globalmodel.NotificationBadSelfieImage,
+	// 	globalmodel.NotificationBadCreciImages,
+	// 	globalmodel.NotificationCreciValidated:
+	// 	return ns.handler.HandleCreciNotification(ctx, user, notificationType)
 
 	case globalmodel.NotificationRealtorInviteSMS,
 		globalmodel.NotificationRealtorInvitePush:

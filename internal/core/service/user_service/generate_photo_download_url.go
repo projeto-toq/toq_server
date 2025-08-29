@@ -4,7 +4,7 @@ import (
 	"context"
 
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) GeneratePhotoDownloadURL(ctx context.Context, userID int64, photoType string) (signedURL string, err error) {

@@ -8,8 +8,9 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateAccessToken(secret string, user usermodel.UserInterface, expires int64) (accessToken string, err error) {
@@ -32,7 +33,7 @@ func (us *userService) CreateAccessToken(secret string, user usermodel.UserInter
 	accessToken, err = token.SignedString([]byte(secret))
 	if err != nil {
 		slog.Error("Error trying to generate JWT access token", "err", err)
-		return "", status.Errorf(codes.Internal, "Internal server error")
+		return "", utils.ErrInternalServer
 	}
 
 	return

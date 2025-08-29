@@ -8,9 +8,9 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error) {
@@ -56,25 +56,25 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	// //verify is the user is on profile validation where email and phone should be validated
 	// //in this case the phone must be validated first
 	// if userValidation.GetPhoneCode() != "" {
-	// 	err = status.Error(codes.FailedPrecondition, "Phone must be validated first")
+	// 	err = utils.ErrInternalServer
 	// 	return
 	// }
 
 	//check if the user is awaiting email validation
 	if userValidation.GetEmailCode() == "" {
-		err = status.Error(codes.FailedPrecondition, "User is not awaiting email validation")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the code is correct
 	if !strings.EqualFold(userValidation.GetEmailCode(), code) {
-		err = status.Error(codes.InvalidArgument, "Invalid code")
+		err = utils.ErrInternalServer
 		return
 	}
 
 	//check if the validation is in time
 	if userValidation.GetEmailCodeExp().Before(now) {
-		err = status.Error(codes.InvalidArgument, "Code expired")
+		err = utils.ErrInternalServer
 		return
 	}
 

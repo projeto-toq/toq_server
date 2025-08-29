@@ -7,9 +7,9 @@ import (
 
 	globalconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global/converters"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	
+	
+"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) CreateAudit(ctx context.Context, tx *sql.Tx, audit globalmodel.AuditInterface) (err error) {
@@ -33,7 +33,7 @@ func (ga *GlobalAdapter) CreateAudit(ctx context.Context, tx *sql.Tx, audit glob
 		entity.Action)
 	if err != nil {
 		slog.Error("mysqlglobaladapter/CreateAudit: error executing Create", "error", err)
-		return status.Error(codes.Internal, "Failed to create audit record")
+		return utils.ErrInternalServer
 	}
 
 	audit.SetID(id)
