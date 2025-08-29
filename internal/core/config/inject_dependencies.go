@@ -16,6 +16,17 @@ import (
 // Aplica princípios SOLID e melhores práticas Go para injeção de dependências
 func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	slog.Info("Starting dependency injection using Factory Pattern")
+	slog.Info("DEBUG: InjectDependencies method called on config instance")
+
+	if c == nil {
+		slog.Error("DEBUG: config instance is nil")
+		return fmt.Errorf("config instance is nil")
+	}
+
+	if lm == nil {
+		slog.Error("DEBUG: LifecycleManager is nil")
+		return fmt.Errorf("lifecycle manager is nil")
+	}
 
 	// Criar factory e salvar no config
 	c.adapterFactory = factory.NewAdapterFactory(lm)
@@ -83,6 +94,41 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 
 func (c *config) InitGlobalService() {
 	slog.Debug("Initializing Global Service")
+
+	// Debug: verificar se os adapters estão nil
+	if c.repositoryAdapters == nil {
+		slog.Error("repositoryAdapters is nil")
+		return
+	}
+	if c.repositoryAdapters.Global == nil {
+		slog.Error("repositoryAdapters.Global is nil")
+		return
+	}
+	if c.cep == nil {
+		slog.Error("cep adapter is nil")
+		return
+	}
+	if c.firebaseCloudMessaging == nil {
+		slog.Error("firebaseCloudMessaging adapter is nil")
+		return
+	}
+	if c.email == nil {
+		slog.Error("email adapter is nil")
+		return
+	}
+	if c.sms == nil {
+		slog.Error("sms adapter is nil")
+		return
+	}
+	if c.cloudStorage == nil {
+		slog.Error("cloudStorage adapter is nil")
+		return
+	}
+	if c.repositoryAdapters.DeviceToken == nil {
+		slog.Error("repositoryAdapters.DeviceToken is nil")
+		return
+	}
+
 	c.globalService = globalservice.NewGlobalService(
 		c.repositoryAdapters.Global,
 		c.cep,

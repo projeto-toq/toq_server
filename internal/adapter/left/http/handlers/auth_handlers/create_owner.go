@@ -99,6 +99,14 @@ func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role use
 	user.SetCity(dtoUser.City)
 	user.SetState(dtoUser.State)
 	user.SetPassword(dtoUser.Password)
+
+	// Create and set active role
+	activeRole := usermodel.NewUserRole()
+	activeRole.SetRole(role)
+	activeRole.SetActive(true)
+	activeRole.SetStatus(usermodel.StatusActive)
+	user.SetActiveRole(activeRole)
+
 	user.SetOptStatus(false) // Default opt-in status
 	user.SetDeleted(false)
 

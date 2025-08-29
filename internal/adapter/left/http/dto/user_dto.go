@@ -34,7 +34,7 @@ type CreateAgencyResponse struct {
 
 // UserCreateRequest represents user creation data
 type UserCreateRequest struct {
-	FullName      string `json:"fullName" binding:"required,min=2,max=100"`
+	FullName      string `json:"fullName,omitempty" binding:"omitempty,min=2,max=100"`
 	NickName      string `json:"nickName" binding:"required,min=2,max=50"`
 	NationalID    string `json:"nationalID" binding:"required"`
 	CreciNumber   string `json:"creciNumber,omitempty"`
@@ -44,12 +44,12 @@ type UserCreateRequest struct {
 	PhoneNumber   string `json:"phoneNumber" binding:"required"`
 	Email         string `json:"email" binding:"required,email"`
 	ZipCode       string `json:"zipCode" binding:"required"`
-	Street        string `json:"street" binding:"required"`
-	Number        string `json:"number" binding:"required"`
+	Street        string `json:"street,omitempty"`
+	Number        string `json:"number,omitempty"`
 	Complement    string `json:"complement,omitempty"`
-	Neighborhood  string `json:"neighborhood" binding:"required"`
-	City          string `json:"city" binding:"required"`
-	State         string `json:"state" binding:"required,len=2"`
+	Neighborhood  string `json:"neighborhood,omitempty"`
+	City          string `json:"city,omitempty"`
+	State         string `json:"state,omitempty" binding:"omitempty,len=2"`
 	Password      string `json:"password" binding:"required,min=6"`
 }
 

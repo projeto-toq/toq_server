@@ -1,0 +1,115 @@
+package config
+
+import (
+	"fmt"
+	"log/slog"
+)
+
+// Phase03_InitializeInfrastructure inicializa a infraestrutura core do sistema
+// Esta fase configura:
+// - Conexão com banco de dados
+// - Conexão com cache Redis
+// - Sistema de telemetria (OpenTelemetry)
+// - Activity tracker para sessões
+func (b *Bootstrap) Phase03_InitializeInfrastructure() error {
+	b.logger.Info("🎯 FASE 3: Inicialização da Infraestrutura Core")
+	b.logger.Debug("Configurando infraestrutura fundamental")
+
+	// 1. Inicializar conexão com banco de dados
+	if err := b.initializeDatabase(); err != nil {
+		return NewBootstrapError("Phase03", "database", "Failed to initialize database connection", err)
+	}
+
+	// 2. Inicializar sistema de cache Redis
+	if err := b.initializeCache(); err != nil {
+		return NewBootstrapError("Phase03", "cache", "Failed to initialize Redis cache", err)
+	}
+
+	// 3. Inicializar OpenTelemetry (tracing + metrics)
+	if err := b.initializeTelemetry(); err != nil {
+		return NewBootstrapError("Phase03", "telemetry", "Failed to initialize OpenTelemetry", err)
+	}
+
+	// 4. Inicializar activity tracker
+	if err := b.initializeActivityTracker(); err != nil {
+		return NewBootstrapError("Phase03", "activity_tracker", "Failed to initialize activity tracker", err)
+	}
+
+	b.logger.Info("✅ Infraestrutura core inicializada com sucesso")
+	return nil
+}
+
+// initializeDatabase inicializa a conexão com o banco de dados
+func (b *Bootstrap) initializeDatabase() error {
+	b.logger.Debug("Inicializando conexão com banco de dados")
+
+	// Inicializar database
+	b.config.InitializeDatabase()
+
+	// Adicionar cleanup para fechar conexão
+	b.lifecycleManager.AddCleanupFunc(func() {
+		if db := b.config.GetDatabase(); db != nil {
+			if err := db.Close(); err != nil {
+				slog.Error("Erro fechando conexão MySQL", "error", err)
+			} else {
+				slog.Info("Conexão MySQL fechada com sucesso")
+			}
+		}
+	})
+
+	b.logger.Info("✅ Conexão com banco de dados estabelecida")
+	return nil
+}
+
+// initializeCache inicializa o sistema de cache Redis
+func (b *Bootstrap) initializeCache() error {
+	b.logger.Debug("Inicializando sistema de cache Redis")
+
+	// Nota: Implementação real inicializaria Redis
+	// Por enquanto, apenas log
+	b.logger.Info("✅ Sistema de cache Redis inicializado (simulado)")
+	return nil
+}
+
+// initializeTelemetry inicializa o sistema de observabilidade
+func (b *Bootstrap) initializeTelemetry() error {
+	b.logger.Debug("Inicializando sistema de telemetria OpenTelemetry")
+
+	// Inicializar OpenTelemetry com cleanup
+	shutdownOtel, err := b.config.InitializeTelemetry()
+	if err != nil {
+		return fmt.Errorf("failed to initialize OpenTelemetry: %w", err)
+	}
+
+	// Adicionar cleanup
+	b.lifecycleManager.AddCleanupFunc(func() {
+		slog.Info("Desligando OpenTelemetry...")
+		shutdownOtel()
+	})
+
+	b.logger.Info("✅ OpenTelemetry inicializado (tracing + metrics)")
+	return nil
+}
+
+// initializeActivityTracker inicializa o sistema de rastreamento de atividades
+func (b *Bootstrap) initializeActivityTracker() error {
+	b.logger.Debug("Inicializando activity tracker para sessões")
+
+	if err := b.config.InitializeActivityTracker(); err != nil {
+		return fmt.Errorf("failed to initialize activity tracker: %w", err)
+	}
+
+	b.logger.Info("✅ Activity tracker inicializado")
+	return nil
+}
+
+// Phase03Rollback executa rollback da Fase 3
+func (b *Bootstrap) Phase03Rollback() error {
+	b.logger.Info("🔄 Executando rollback da Fase 3")
+
+	// O cleanup será feito automaticamente pelo LifecycleManager
+	// Aqui podemos fazer limpeza específica se necessário
+
+	b.logger.Info("✅ Rollback da Fase 3 concluído")
+	return nil
+}

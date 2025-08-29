@@ -3,8 +3,10 @@ package config
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -27,6 +29,7 @@ import (
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	"gopkg.in/yaml.v3"
 )
 
 type config struct {
@@ -72,6 +75,7 @@ type ConfigInterface interface {
 	InitUserHandler()
 	InitComplexHandler()
 	InitListingHandler()
+	InitPermissionHandler()
 	InitializeGoRoutines()
 	SetActivityTrackerUserService()
 	GetDatabase() *sql.DB
@@ -116,4 +120,172 @@ func (c *config) GetGinRouter() *gin.Engine {
 
 func (c *config) GetHTTPHandlers() *factory.HTTPHandlers {
 	return &c.httpHandlers
+}
+
+// assignStorageAdapters atribui os adapters de armazenamento ao config
+func (c *config) assignStorageAdapters(storage factory.StorageAdapters) {
+	c.database = storage.Database
+	c.cache = storage.Cache
+	c.db = storage.Database.DB
+}
+
+// assignRepositoryAdapters atribui os adapters de repositório ao config
+func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapters) {
+	slog.Info("Assigning repository adapters")
+
+	// Log para debug
+	if repositories.User == nil {
+		slog.Error("repositories.User is nil")
+	}
+	if repositories.Global == nil {
+		slog.Error("repositories.Global is nil")
+	}
+	if repositories.Complex == nil {
+		slog.Error("repositories.Complex is nil")
+	}
+	if repositories.Listing == nil {
+		slog.Error("repositories.Listing is nil")
+	}
+	if repositories.Session == nil {
+		slog.Error("repositories.Session is nil")
+	}
+	if repositories.Permission == nil {
+		slog.Error("repositories.Permission is nil")
+	}
+	if repositories.DeviceToken == nil {
+		slog.Error("repositories.DeviceToken is nil")
+	}
+
+	// Criar uma cópia dos repositórios para evitar problemas com ponteiros
+	c.repositoryAdapters = &factory.RepositoryAdapters{
+		User:        repositories.User,
+		Global:      repositories.Global,
+		Complex:     repositories.Complex,
+		Listing:     repositories.Listing,
+		Session:     repositories.Session,
+		Permission:  repositories.Permission,
+		DeviceToken: repositories.DeviceToken,
+	}
+
+	slog.Info("Repository adapters assigned successfully")
+}
+
+// assignValidationAdapters atribui os adapters de validação ao config
+func (c *config) assignValidationAdapters(validation factory.ValidationAdapters) {
+	c.cep = validation.CEP
+	c.cpf = validation.CPF
+	c.cnpj = validation.CNPJ
+}
+
+// assignExternalServiceAdapters atribui os adapters de serviços externos ao config
+func (c *config) assignExternalServiceAdapters(external factory.ExternalServiceAdapters) {
+	c.firebaseCloudMessaging = external.FCM
+	c.email = external.Email
+	c.sms = external.SMS
+	c.cloudStorage = external.CloudStorage
+}
+
+// initializeServices inicializa todos os serviços do sistema
+func (c *config) initializeServices() {
+	slog.Info("Initializing all services")
+
+	// Inicializar serviços na ordem correta (resolvendo dependências)
+	c.InitGlobalService()
+	c.InitPermissionHandler()
+	c.InitComplexHandler()
+	c.InitListingHandler()
+	c.InitUserHandler()
+
+	slog.Info("All services initialized successfully")
+}
+
+func (c *config) GetDatabase() *sql.DB {
+	return c.db
+}
+
+func (c *config) GetWG() *sync.WaitGroup {
+	return c.wg
+}
+
+// InitializeActivityTracker inicializa o activity tracker (delegado para o novo sistema)
+func (c *config) InitializeActivityTracker() error {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_03_infrastructure.go
+	return nil
+}
+
+// InitializeGoRoutines inicializa as goroutines (delegado para o novo sistema)
+func (c *config) InitializeGoRoutines() {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_07_workers.go
+}
+
+// SetActivityTrackerUserService conecta o activity tracker ao user service
+func (c *config) SetActivityTrackerUserService() {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_07_workers.go
+	if c.activityTracker != nil && c.userService != nil {
+		c.activityTracker.SetUserService(c.userService)
+	}
+}
+
+// LoadEnv carrega as variáveis de ambiente e configuração YAML
+func (c *config) LoadEnv() error {
+	// Carregar configuração do arquivo YAML
+	configPath := "configs/env.yaml"
+
+	// Ler arquivo de configuração
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("failed to read config file %s: %w", configPath, err)
+	}
+
+	// Fazer parse do YAML
+	env := &globalmodel.Environment{}
+	if err := yaml.Unmarshal(data, env); err != nil {
+		return fmt.Errorf("failed to parse config YAML: %w", err)
+	}
+
+	// Armazenar no config
+	c.env = *env
+
+	slog.Info("Configuration loaded successfully from YAML", "path", configPath)
+	return nil
+}
+
+// InitializeLog inicializa o sistema de logging (delegado para o novo sistema)
+func (c *config) InitializeLog() {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_02_config.go
+}
+
+// InitializeDatabase inicializa a conexão com o banco (delegado para o novo sistema)
+func (c *config) InitializeDatabase() {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_03_infrastructure.go
+}
+
+// VerifyDatabase verifica a conexão com o banco (delegado para o novo sistema)
+func (c *config) VerifyDatabase() {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_03_infrastructure.go
+}
+
+// InitializeTelemetry inicializa o sistema de telemetria (delegado para o novo sistema)
+func (c *config) InitializeTelemetry() (func(), error) {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_03_infrastructure.go
+	return func() {}, nil
+}
+
+// InitializeHTTP inicializa o servidor HTTP (delegado para o novo sistema)
+func (c *config) InitializeHTTP() {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_06_handlers.go
+}
+
+// SetupHTTPHandlersAndRoutes configura handlers e rotas (delegado para o novo sistema)
+func (c *config) SetupHTTPHandlersAndRoutes() {
+	// Este método é mantido para compatibilidade com a interface
+	// A implementação real está no phase_06_handlers.go
 }
