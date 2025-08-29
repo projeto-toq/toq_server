@@ -23,6 +23,7 @@ func (c *config) InitializeHTTP() {
 	// Add global middlewares
 	c.ginRouter.Use(gin.Logger())
 	c.ginRouter.Use(gin.Recovery())
+	c.ginRouter.Use(middlewares.RequestIDMiddleware()) // Must be first to set request ID
 	c.ginRouter.Use(middlewares.CORSMiddleware())
 	c.ginRouter.Use(middlewares.TelemetryMiddleware())
 
