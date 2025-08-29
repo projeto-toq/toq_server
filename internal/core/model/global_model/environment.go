@@ -29,6 +29,17 @@ type Environment struct {
 		Path      string `yaml:"path"`
 		Filename  string `yaml:"filename"`
 	}
+	TELEMETRY struct {
+		Enabled bool `yaml:"enabled"`
+		OTLP    struct {
+			Enabled  bool   `yaml:"enabled"`
+			Endpoint string `yaml:"endpoint"`
+			Insecure bool   `yaml:"insecure"`
+		} `yaml:"otlp"`
+		METRICS struct {
+			Port string `yaml:"port"`
+		} `yaml:"metrics"`
+	}
 	JWT struct {
 		Secret string `yaml:"secret"`
 	}

@@ -19,26 +19,26 @@ import (
 )
 
 func (c *config) InitializeTelemetry() (func(), error) {
-	// Check if OTEL should be disabled
-	if os.Getenv("DISABLE_OTEL") == "true" {
+	// Check if OTEL should be disabled via env.yaml or environment variable
+	if !c.env.TELEMETRY.Enabled || os.Getenv("DISABLE_OTEL") == "true" {
 		slog.Info("OpenTelemetry disabled by configuration")
 		return func() {}, nil
 	}
 
 	// OTLP trace exporter
-	otlpEndpoint := os.Getenv("OTLP_ENDPOINT")
+	otlpEndpoint := c.env.TELEMETRY.OTLP.Endpoint
 	if otlpEndpoint == "" {
-		// Default endpoints for different protocols
+		// Check if running in Docker by looking for /.dockerenv file
 		if _, err := os.Stat("/.dockerenv"); err == nil {
-			otlpEndpoint = "otel-collector:4318" // HTTP endpoint dentro do Docker
+			otlpEndpoint = "jaeger:4318" // HTTP endpoint dentro do Docker (porta interna do Jaeger)
 		} else {
-			otlpEndpoint = "localhost:4318" // HTTP endpoint fora do Docker
+			otlpEndpoint = "localhost:14318" // HTTP endpoint fora do Docker (porta externa mapeada)
 		}
 	}
 
-	// Allow disabling OTLP via environment variable
-	if os.Getenv("DISABLE_OTLP") == "true" {
-		slog.Info("OTLP tracing disabled by environment variable")
+	// Allow disabling OTLP via environment variable (for debugging)
+	if !c.env.TELEMETRY.OTLP.Enabled || os.Getenv("DISABLE_OTLP") == "true" {
+		slog.Info("OTLP tracing disabled by configuration")
 		return func() {
 			slog.Info("OpenTelemetry cleanup (OTLP disabled)")
 		}, nil
@@ -48,10 +48,16 @@ func (c *config) InitializeTelemetry() (func(), error) {
 	ctx, cancel := context.WithTimeout(c.context, 5*time.Second)
 	defer cancel()
 
-	traceExporter, err := otlptracehttp.New(ctx,
-		otlptracehttp.WithInsecure(),
-		otlptracehttp.WithEndpoint(otlpEndpoint),
-	)
+	// Configure OTLP exporter options based on env.yaml
+	var exporterOptions []otlptracehttp.Option
+	exporterOptions = append(exporterOptions, otlptracehttp.WithEndpoint(otlpEndpoint))
+
+	// Use insecure connection if configured in env.yaml
+	if c.env.TELEMETRY.OTLP.Insecure {
+		exporterOptions = append(exporterOptions, otlptracehttp.WithInsecure())
+	}
+
+	traceExporter, err := otlptracehttp.New(ctx, exporterOptions...)
 	if err != nil {
 		slog.Warn("failed to create OTLP trace exporter, continuing without distributed tracing", "endpoint", otlpEndpoint, "err", err)
 		// Return empty cleanup function if OTLP fails
@@ -96,8 +102,12 @@ func (c *config) InitializeTelemetry() (func(), error) {
 
 	// Start Prometheus HTTP server
 	go func() {
+		metricsPort := c.env.TELEMETRY.METRICS.Port
+		if metricsPort == "" {
+			metricsPort = ":4318" // Default port
+		}
 		http.Handle("/metrics", promhttp.Handler())
-		if err := http.ListenAndServe(":4318", nil); err != nil {
+		if err := http.ListenAndServe(metricsPort, nil); err != nil {
 			slog.Error("failed to start listen and serve", "err", err)
 			// Em uma goroutine, não podemos retornar erro, então apenas logamos
 		}
