@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"log/slog"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 )
 
 // Phase03_InitializeInfrastructure inicializa a infraestrutura core do sistema
@@ -65,9 +67,22 @@ func (b *Bootstrap) initializeDatabase() error {
 func (b *Bootstrap) initializeCache() error {
 	b.logger.Debug("Inicializando sistema de cache Redis")
 
-	// Nota: Implementação real inicializaria Redis
-	// Por enquanto, apenas log
-	b.logger.Info("✅ Sistema de cache Redis inicializado (simulado)")
+	// Obter configuração do Redis do environment
+	redisURL := b.env.REDIS.URL
+	if redisURL == "" {
+		return NewBootstrapError("Phase03", "redis_config", "Redis URL not configured", nil)
+	}
+
+	b.logger.Debug("Conectando ao Redis", "url", redisURL)
+
+	// Testar conexão com Redis
+	_, err := cache.NewRedisCache(redisURL, nil)
+	if err != nil {
+		return NewBootstrapError("Phase03", "redis_connection", "Failed to initialize Redis cache", err)
+	}
+
+	// O cache será configurado quando os adapters forem criados na Phase 04
+	b.logger.Info("✅ Sistema de cache Redis inicializado com sucesso")
 	return nil
 }
 

@@ -1,6 +1,10 @@
 package config
 
 import (
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -37,8 +41,10 @@ func (b *Bootstrap) Phase08_StartServer() error {
 func (b *Bootstrap) markServerReady() error {
 	b.logger.Debug("Marcando servidor como pronto para tráfego")
 
-	// Nota: Implementação real chamaria b.config.SetHealthServing(true)
-	b.logger.Info("✅ Servidor marcado como ready")
+	// Marcar como pronto para receber tráfego
+	b.config.SetHealthServing(true)
+
+	b.logger.Info("✅ Servidor marcado como ready para receber tráfego")
 	return nil
 }
 
@@ -46,25 +52,48 @@ func (b *Bootstrap) markServerReady() error {
 func (b *Bootstrap) startHTTPServer() error {
 	b.logger.Debug("Iniciando servidor HTTP")
 
+	// Verificar se o servidor HTTP foi configurado
+	httpServer := b.config.GetHTTPServer()
+	if httpServer == nil {
+		return NewBootstrapError("Phase08", "http_server", "HTTP server not configured", nil)
+	}
+
 	// Adicionar ao wait group
 	b.wg.Add(1)
+
+	// Canal para sinalizar quando o servidor parar
+	serverDone := make(chan error, 1)
 
 	// Iniciar servidor em goroutine
 	go func() {
 		defer b.wg.Done()
 
-		b.logger.Info("🚀 Iniciando servidor HTTP")
+		b.logger.Info("🚀 Iniciando servidor HTTP na porta configurada")
 
-		// Nota: Implementação real usaria b.config.GetHTTPServer().ListenAndServe()
-		// if err := b.config.GetHTTPServer().ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		//     b.logger.Error("Servidor HTTP falhou", "error", err)
-		//     // Trigger shutdown
-		// }
-
-		// Simulação para desenvolvimento
-		b.logger.Info("✅ Servidor HTTP iniciado (simulado)")
+		// Iniciar servidor HTTP
+		err := httpServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			b.logger.Error("Servidor HTTP falhou", "error", err)
+			serverDone <- err
+		} else {
+			serverDone <- nil
+		}
 	}()
 
+	// Aguardar um momento para verificar se o servidor iniciou corretamente
+	time.Sleep(100 * time.Millisecond)
+
+	// Verificar se houve erro na inicialização
+	select {
+	case err := <-serverDone:
+		if err != nil {
+			return NewBootstrapError("Phase08", "http_server_start", "Failed to start HTTP server", err)
+		}
+	default:
+		// Servidor iniciou corretamente
+	}
+
+	b.logger.Info("✅ Servidor HTTP iniciado com sucesso")
 	return nil
 }
 
@@ -102,10 +131,19 @@ func (b *Bootstrap) startHealthMonitoring() {
 func (b *Bootstrap) WaitForShutdown() {
 	b.logger.Info("⏳ Aguardando sinal de shutdown...")
 
-	// Aguardar sinal de shutdown
-	<-b.shutdownChan
+	// Configurar canal para sinais do sistema
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	b.logger.Info("🛑 Sinal de shutdown recebido, iniciando graceful shutdown...")
+	// Aguardar sinal de shutdown ou sinal do sistema
+	select {
+	case <-b.shutdownChan:
+		b.logger.Info("🛑 Sinal de shutdown interno recebido")
+	case sig := <-sigChan:
+		b.logger.Info("🛑 Sinal do sistema recebido", "signal", sig)
+	}
+
+	b.logger.Info("🛑 Iniciando graceful shutdown...")
 
 	// Executar shutdown
 	b.Shutdown()

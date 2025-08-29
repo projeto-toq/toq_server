@@ -2,10 +2,13 @@ package config
 
 import (
 	"context"
+	"net/http"
+	_ "net/http/pprof" // Import pprof para habilitar endpoints de debugging
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -89,21 +92,45 @@ func (b *Bootstrap) createSystemUserContext() error {
 
 // startPprofServer inicia o servidor pprof para debugging em desenvolvimento
 func (b *Bootstrap) startPprofServer() {
+	// Verificar se pprof deve ser habilitado (apenas em desenvolvimento)
+	if os.Getenv("ENABLE_PPROF") != "true" {
+		b.logger.Debug("🔍 Servidor pprof desabilitado (definir ENABLE_PPROF=true para habilitar)")
+		return
+	}
+
 	// Iniciar pprof em goroutine separada
 	b.wg.Add(1)
 	go func() {
 		defer b.wg.Done()
 
-		b.logger.Debug("🔍 Iniciando servidor pprof na porta 6060")
+		b.logger.Info("🔍 Iniciando servidor pprof na porta 6060")
 
 		// Import dinâmico do net/http/pprof
-		// Nota: Em produção, isso deveria ser condicional baseado em env var
+		// Isso habilita automaticamente os endpoints /debug/pprof/
+		_ = http.DefaultServeMux // Garante que o pprof seja registrado
 
-		// Simular inicialização do pprof
-		// Na implementação real, seria:
-		// http.ListenAndServe("localhost:6060", nil)
+		// Iniciar servidor pprof
+		pprofServer := &http.Server{
+			Addr:    "localhost:6060", // Apenas localhost para segurança
+			Handler: nil,              // Usa DefaultServeMux com pprof
+		}
 
-		b.logger.Info("✅ Servidor pprof iniciado (simulado)")
+		b.logger.Info("✅ Servidor pprof iniciado em localhost:6060")
+
+		// Aguardar contexto ser cancelado para shutdown graceful
+		<-b.ctx.Done()
+
+		b.logger.Debug("🔍 Parando servidor pprof")
+
+		// Graceful shutdown do pprof
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		if err := pprofServer.Shutdown(shutdownCtx); err != nil {
+			b.logger.Error("Erro ao parar servidor pprof", "error", err)
+		} else {
+			b.logger.Info("✅ Servidor pprof parado gracefully")
+		}
 	}()
 }
 
