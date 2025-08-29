@@ -1,5 +1,7 @@
 ## 🛠️ Problema
-Implementar handlers de autenticação para substituir os placeholders
+com a migração do sistema de permissionamento para /permission_service agora é necessário rever o serviço de criação de usuários create_owner.go, create_agency.go, create_realtor.go para adequar-se a nova estrutura:
+- rever constantes de perfils base seguno slug do base_permission
+- rever as funções do fluxo de criação para adequar-se a nova estrutura;
 
 ## ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 
@@ -24,7 +26,3 @@ Implementar handlers de autenticação para substituir os placeholders
 - **Não implemente nada até que eu autorize.**
 - Analise a solicitação e o código atual e apresente um plano detalhado de implementação
    
-
-
-Implementar handlers de autenticação para substituir os placeholders
-Documentar handlers de user restantes conforme forem implementados

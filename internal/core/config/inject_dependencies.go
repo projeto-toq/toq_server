@@ -111,6 +111,7 @@ func (c *config) InitUserHandler() {
 		c.cnpj,
 		nil, // creci temporarily disabled
 		c.cloudStorage,
+		c.permissionService,
 	)
 	// HTTP handler initialization is done during HTTP server setup
 }

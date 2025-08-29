@@ -275,7 +275,7 @@ type AddAlternativeUserRoleResponse struct {
 }
 
 type SwitchUserRoleRequest struct {
-	RoleID int64 `json:"roleId" binding:"required"`
+	RoleSlug string `json:"roleSlug" binding:"required"`
 }
 
 type SwitchUserRoleResponse struct {

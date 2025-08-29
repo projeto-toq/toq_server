@@ -38,7 +38,12 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 
 func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
 
-	err = us.ValidateUserData(ctx, tx, realtor, usermodel.RoleRealtor)
+	legacyRole, err := us.getLegacyRoleBySlug("realtor")
+	if err != nil {
+		return
+	}
+
+	err = us.ValidateUserData(ctx, tx, realtor, legacyRole)
 	if err != nil {
 		return
 	}
@@ -48,7 +53,7 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	err = us.AddFirstUserRole(ctx, tx, realtor, usermodel.RoleRealtor)
+	err = us.assignRoleToUser(ctx, realtor.GetID(), "realtor")
 	if err != nil {
 		return
 	}

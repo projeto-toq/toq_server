@@ -38,7 +38,12 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 
 func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
 
-	err = us.ValidateUserData(ctx, tx, owner, usermodel.RoleOwner)
+	legacyRole, err := us.getLegacyRoleBySlug("owner")
+	if err != nil {
+		return
+	}
+
+	err = us.ValidateUserData(ctx, tx, owner, legacyRole)
 	if err != nil {
 		return
 	}
@@ -48,7 +53,7 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return
 	}
 
-	err = us.AddFirstUserRole(ctx, tx, owner, usermodel.RoleOwner)
+	err = us.assignRoleToUser(ctx, owner.GetID(), "owner")
 	if err != nil {
 		return
 	}

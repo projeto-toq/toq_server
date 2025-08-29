@@ -30,9 +30,12 @@ type PermissionRepositoryInterface interface {
 	CreateUserRole(ctx context.Context, tx *sql.Tx, userRole permissionmodel.UserRoleInterface) error
 	GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
 	GetActiveUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
+	GetActiveUserRoleByUserID(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error)
 	GetUserRoleByUserIDAndRoleID(ctx context.Context, tx *sql.Tx, userID, roleID int64) (permissionmodel.UserRoleInterface, error)
 	UpdateUserRole(ctx context.Context, tx *sql.Tx, userRole permissionmodel.UserRoleInterface) error
 	DeleteUserRole(ctx context.Context, tx *sql.Tx, userRoleID int64) error
+	DeactivateAllUserRoles(ctx context.Context, tx *sql.Tx, userID int64) error
+	ActivateUserRole(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
 
 	// RolePermission operations
 	CreateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) error

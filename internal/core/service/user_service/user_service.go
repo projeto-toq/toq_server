@@ -13,6 +13,7 @@ import (
 	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
+	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 )
 
 type userService struct {
@@ -24,6 +25,7 @@ type userService struct {
 	cnpj                cnpjport.CNPJPortInterface
 	creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
+	permissionService   permissionservices.PermissionServiceInterface // NOVO
 }
 
 func NewUserService(
@@ -35,6 +37,7 @@ func NewUserService(
 	cnpj cnpjport.CNPJPortInterface,
 	creci creciport.CreciPortInterface, // Pode ser nil temporariamente
 	cloudStorage storageport.CloudStoragePortInterface,
+	permissionService permissionservices.PermissionServiceInterface, // NOVO
 
 ) UserServiceInterface {
 	return &userService{
@@ -46,6 +49,7 @@ func NewUserService(
 		cnpj:                cnpj,
 		creci:               creci, // Pode ser nil
 		cloudStorageService: cloudStorage,
+		permissionService:   permissionService, // NOVO
 	}
 }
 
@@ -83,7 +87,7 @@ type UserServiceInterface interface {
 	ResendPhoneChangeCode(ctx context.Context, userID int64) (code string, err error)
 	SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error)
 	SignOut(ctx context.Context, userID int64, deviceToken, refreshToken string) (err error)
-	SwitchUserRole(ctx context.Context, userID int64, userRoleID int64) (tokens usermodel.Tokens, err error)
+	SwitchUserRole(ctx context.Context, userID int64, roleSlug string) (tokens usermodel.Tokens, err error)
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error)
 	ValidateCreciData(ctx context.Context, realtors []usermodel.UserInterface)

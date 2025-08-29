@@ -30,7 +30,7 @@ func (uh *UserHandler) SwitchUserRole(c *gin.Context) {
 	}
 
 	// Call service to switch user role
-	tokens, err := uh.userService.SwitchUserRole(ctx, userInfo.ID, request.RoleID)
+	tokens, err := uh.userService.SwitchUserRole(ctx, userInfo.ID, request.RoleSlug)
 	if err != nil {
 		utils.SendHTTPError(c, http.StatusInternalServerError, "SWITCH_USER_ROLE_FAILED", "Failed to switch user role")
 		return

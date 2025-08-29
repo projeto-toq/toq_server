@@ -52,4 +52,10 @@ type PermissionServiceInterface interface {
 	GetUserRoles(ctx context.Context, userID int64) ([]permissionmodel.UserRoleInterface, error)
 	GetUserPermissions(ctx context.Context, userID int64) ([]permissionmodel.PermissionInterface, error)
 	GetRolePermissions(ctx context.Context, roleID int64) ([]permissionmodel.PermissionInterface, error)
+
+	// NOVOS: Controle de múltiplos roles ativos
+	SwitchActiveRole(ctx context.Context, userID, newRoleID int64) error
+	GetActiveUserRole(ctx context.Context, userID int64) (permissionmodel.UserRoleInterface, error)
+	DeactivateAllUserRoles(ctx context.Context, userID int64) error
+	GetRoleBySlug(ctx context.Context, slug string) (permissionmodel.RoleInterface, error)
 }

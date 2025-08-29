@@ -2,10 +2,10 @@ package config
 
 import (
 	"log/slog"
-	"time"
+	// "time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	// usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 )
 
 func (c *config) VerifyDatabase() {
@@ -15,11 +15,11 @@ func (c *config) VerifyDatabase() {
 		updateDB(c)
 	}
 
-	//check if should populate database based on env parameter
-	if c.env.DATABASE.Populate {
-		slog.Info("Populating database (forced by configuration)")
-		populate(c)
-	}
+	// //check if should populate database based on env parameter
+	// if c.env.DATABASE.Populate {
+	// 	slog.Info("Populating database (forced by configuration)")
+	// 	populate(c)
+	// }
 }
 
 func getDBVersion(c *config) string {
@@ -35,75 +35,75 @@ func updateDB(c *config) {
 	panic("Database version is different from application version. Please update the database.")
 }
 
-func populate(c *config) {
-	slog.Info("Starting database population")
+// func populate(c *config) {
+// 	slog.Info("Starting database population")
 
-	// Criar roles base primeiro
-	createBaseRoles(c)
-	slog.Info("Base roles created successfully")
+// 	// Criar roles base primeiro
+// 	createBaseRoles(c)
+// 	slog.Info("Base roles created successfully")
 
-	// Criar usuário root
-	createRootUser(c)
-	slog.Info("Root user created successfully")
+// 	// Criar usuário root
+// 	createRootUser(c)
+// 	slog.Info("Root user created successfully")
 
-	slog.Info("Database population completed")
-}
+// 	slog.Info("Database population completed")
+// }
 
-func createBaseRoles(c *config) {
-	roles := []struct {
-		role usermodel.UserRole
-		name string
-	}{
-		{usermodel.RoleRoot, "Root"},
-		{usermodel.RoleOwner, "Proprietário"},
-		{usermodel.RoleRealtor, "Corretor"},
-		{usermodel.RoleAgency, "Imobiliária"},
-	}
+// func createBaseRoles(c *config) {
+// 	roles := []struct {
+// 		role usermodel.UserRole
+// 		name string
+// 	}{
+// 		{usermodel.RoleRoot, "Root"},
+// 		{usermodel.RoleOwner, "Proprietário"},
+// 		{usermodel.RoleRealtor, "Corretor"},
+// 		{usermodel.RoleAgency, "Imobiliária"},
+// 	}
 
-	for _, r := range roles {
-		err := c.userService.CreateBaseRole(c.context, r.role, r.name)
-		if err != nil {
-			slog.Error("error creating base role", "role", r.name, "error", err)
-			// Continue mesmo com erro, pois pode ser que o role já exista
-			slog.Warn("continuing despite base role creation error", "role", r.name)
-		} else {
-			slog.Info("base role created successfully", "role", r.name)
-		}
-	}
-}
+// 	for _, r := range roles {
+// 		err := c.userService.CreateBaseRole(c.context, r.role, r.name)
+// 		if err != nil {
+// 			slog.Error("error creating base role", "role", r.name, "error", err)
+// 			// Continue mesmo com erro, pois pode ser que o role já exista
+// 			slog.Warn("continuing despite base role creation error", "role", r.name)
+// 		} else {
+// 			slog.Info("base role created successfully", "role", r.name)
+// 		}
+// 	}
+// }
 
-func createRootUser(c *config) {
-	slog.Info("Creating root user")
+// func createRootUser(c *config) {
+// 	slog.Info("Creating root user")
 
-	root := usermodel.NewUser()
-	root.SetID(0)
-	root.SetFullName("TOQ Root")
-	root.SetNickName("Root")
-	root.SetNationalID("52642435000133")
-	born, err := time.Parse("2006-01-02", "2023-10-01")
-	if err != nil {
-		slog.Error("error parsing date on Root User creation", "error", err)
-		panic(err)
-	}
-	root.SetBornAt(born)
-	root.SetPhoneNumber("+551152413731")
-	root.SetEmail("toq@toq.app.br")
-	root.SetZipCode("06472-001")
-	root.SetStreet("Av. Copacabana")
-	root.SetNumber("268")
-	root.SetComplement("Sala 2305")
-	root.SetNeighborhood("Alphaville")
-	root.SetCity("Barueri")
-	root.SetState("SP")
-	root.SetPassword("Senh@123")
-	root.SetLastActivityAt(time.Now().UTC())
-	root.SetDeleted(false)
+// 	root := usermodel.NewUser()
+// 	root.SetID(0)
+// 	root.SetFullName("TOQ Root")
+// 	root.SetNickName("Root")
+// 	root.SetNationalID("52642435000133")
+// 	born, err := time.Parse("2006-01-02", "2023-10-01")
+// 	if err != nil {
+// 		slog.Error("error parsing date on Root User creation", "error", err)
+// 		panic(err)
+// 	}
+// 	root.SetBornAt(born)
+// 	root.SetPhoneNumber("+551152413731")
+// 	root.SetEmail("toq@toq.app.br")
+// 	root.SetZipCode("06472-001")
+// 	root.SetStreet("Av. Copacabana")
+// 	root.SetNumber("268")
+// 	root.SetComplement("Sala 2305")
+// 	root.SetNeighborhood("Alphaville")
+// 	root.SetCity("Barueri")
+// 	root.SetState("SP")
+// 	root.SetPassword("Senh@123")
+// 	root.SetLastActivityAt(time.Now().UTC())
+// 	root.SetDeleted(false)
 
-	err = c.userService.CreateRoot(c.context, root)
-	if err != nil {
-		slog.Error("error creating root user", "error", err)
-		panic(err)
-	}
+// 	err = c.userService.CreateRoot(c.context, root)
+// 	if err != nil {
+// 		slog.Error("error creating root user", "error", err)
+// 		panic(err)
+// 	}
 
-	slog.Info("root user created successfully", "email", "toq@toq.app.br")
-}
+// 	slog.Info("root user created successfully", "email", "toq@toq.app.br")
+// }

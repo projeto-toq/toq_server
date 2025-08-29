@@ -39,12 +39,17 @@ func (us *userService) CreateRoot(ctx context.Context, root usermodel.UserInterf
 func (us *userService) createRoot(ctx context.Context, tx *sql.Tx, root usermodel.UserInterface) (err error) {
 
 	root.SetPassword(us.encryptPassword(root.GetPassword()))
-	err = us.repo.CreateUser(ctx, tx, root)
+	legacyRole, err := us.getLegacyRoleBySlug("root")
 	if err != nil {
 		return
 	}
 
-	err = us.AddFirstUserRole(ctx, tx, root, usermodel.RoleRoot)
+	err = us.ValidateUserData(ctx, tx, root, legacyRole)
+	if err != nil {
+		return
+	}
+
+	err = us.assignRoleToUser(ctx, root.GetID(), "root")
 	if err != nil {
 		return
 	}

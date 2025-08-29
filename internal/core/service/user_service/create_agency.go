@@ -38,7 +38,12 @@ func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserIn
 
 func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
 
-	err = us.ValidateUserData(ctx, tx, agency, usermodel.RoleAgency)
+	legacyRole, err := us.getLegacyRoleBySlug("agency")
+	if err != nil {
+		return
+	}
+
+	err = us.ValidateUserData(ctx, tx, agency, legacyRole)
 	if err != nil {
 		return
 	}
@@ -48,7 +53,7 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 		return
 	}
 
-	err = us.AddFirstUserRole(ctx, tx, agency, usermodel.RoleAgency)
+	err = us.assignRoleToUser(ctx, agency.GetID(), "agency")
 	if err != nil {
 		return
 	}
