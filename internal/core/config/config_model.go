@@ -29,6 +29,7 @@ import (
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"gopkg.in/yaml.v3"
 )
 
@@ -79,6 +80,7 @@ type ConfigInterface interface {
 	InitializeGoRoutines()
 	SetActivityTrackerUserService()
 	GetDatabase() *sql.DB
+	GetEnvironment() (*globalmodel.Environment, error)
 	GetHTTPServer() *http.Server
 	CloseHTTPServer()
 	GetGinRouter() *gin.Engine
@@ -207,25 +209,33 @@ func (c *config) GetWG() *sync.WaitGroup {
 	return c.wg
 }
 
-// InitializeActivityTracker inicializa o activity tracker (delegado para o novo sistema)
+// InitializeActivityTracker inicializa o activity tracker
 func (c *config) InitializeActivityTracker() error {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_03_infrastructure.go
+	// O ActivityTracker será inicializado quando o Redis e UserService estiverem disponíveis
+	// Isso acontece na Phase 04 (InjectDependencies) e Phase 07 (StartBackgroundWorkers)
+	slog.Info("Activity tracker initialization deferred to Phase 07")
 	return nil
 }
 
-// InitializeGoRoutines inicializa as goroutines (delegado para o novo sistema)
+// InitializeGoRoutines inicializa as goroutines do sistema
 func (c *config) InitializeGoRoutines() {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_07_workers.go
+	if c.activityTracker != nil && c.wg != nil {
+		// Iniciar worker do activity tracker
+		c.wg.Add(1)
+		go c.activityTracker.StartBatchWorker(c.wg, c.context)
+		slog.Info("Activity tracker batch worker started")
+	} else {
+		slog.Warn("Activity tracker or wait group not available for goroutine initialization")
+	}
 }
 
 // SetActivityTrackerUserService conecta o activity tracker ao user service
 func (c *config) SetActivityTrackerUserService() {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_07_workers.go
 	if c.activityTracker != nil && c.userService != nil {
 		c.activityTracker.SetUserService(c.userService)
+		slog.Info("Activity tracker connected to user service")
+	} else {
+		slog.Warn("Activity tracker or user service not available for connection")
 	}
 }
 
@@ -253,39 +263,204 @@ func (c *config) LoadEnv() error {
 	return nil
 }
 
-// InitializeLog inicializa o sistema de logging (delegado para o novo sistema)
+// InitializeLog inicializa o sistema de logging
 func (c *config) InitializeLog() {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_02_config.go
+	// Configurar nível de log baseado no environment
+	level := slog.LevelInfo
+	if c.env.LOG.Level != "" {
+		switch c.env.LOG.Level {
+		case "debug":
+			level = slog.LevelDebug
+		case "info":
+			level = slog.LevelInfo
+		case "warn":
+			level = slog.LevelWarn
+		case "error":
+			level = slog.LevelError
+		}
+	}
+
+	// Configurar handler com nível e opções
+	opts := &slog.HandlerOptions{
+		Level:     level,
+		AddSource: c.env.LOG.AddSource,
+	}
+
+	var handler slog.Handler
+	if c.env.LOG.ToFile {
+		// Configurar log para arquivo
+		logFile := c.env.LOG.Filename
+		if logFile == "" {
+			logFile = "toq_server.log"
+		}
+		logPath := c.env.LOG.Path
+		if logPath == "" {
+			logPath = "logs"
+		}
+
+		// Criar diretório se não existir
+		if err := os.MkdirAll(logPath, 0755); err != nil {
+			slog.Error("Failed to create log directory", "path", logPath, "error", err)
+			return
+		}
+
+		file, err := os.OpenFile(logPath+"/"+logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			slog.Error("Failed to open log file", "file", logPath+"/"+logFile, "error", err)
+			return
+		}
+
+		handler = slog.NewTextHandler(file, opts)
+	} else {
+		// Log para stdout
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	}
+
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
+	slog.Info("Logging system initialized",
+		"level", level,
+		"to_file", c.env.LOG.ToFile,
+		"add_source", c.env.LOG.AddSource)
 }
 
-// InitializeDatabase inicializa a conexão com o banco (delegado para o novo sistema)
+// InitializeDatabase inicializa a conexão com o banco de dados
 func (c *config) InitializeDatabase() {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_03_infrastructure.go
+	if c.database != nil {
+		slog.Info("Database already initialized")
+		return
+	}
+
+	// Abrir conexão MySQL
+	db, err := sql.Open("mysql", c.env.DB.URI)
+	if err != nil {
+		slog.Error("Failed to open database connection", "error", err)
+		return
+	}
+
+	// Testar conexão
+	if err := db.Ping(); err != nil {
+		slog.Error("Failed to ping database", "error", err)
+		db.Close()
+		return
+	}
+
+	// Configurar pool de conexões
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	// Criar wrapper Database
+	c.database = mysqladapter.NewDB(db)
+	c.db = db
+
+	slog.Info("Database connection initialized", "uri", c.env.DB.URI)
 }
 
-// VerifyDatabase verifica a conexão com o banco (delegado para o novo sistema)
+// VerifyDatabase verifica a conexão com o banco de dados
 func (c *config) VerifyDatabase() {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_03_infrastructure.go
+	if c.db == nil {
+		slog.Error("Database connection not initialized")
+		return
+	}
+
+	// Testar conexão
+	if err := c.db.Ping(); err != nil {
+		slog.Error("Database connection verification failed", "error", err)
+		return
+	}
+
+	slog.Info("Database connection verified successfully")
 }
 
-// InitializeTelemetry inicializa o sistema de telemetria (delegado para o novo sistema)
+// InitializeTelemetry inicializa o sistema de telemetria OpenTelemetry
 func (c *config) InitializeTelemetry() (func(), error) {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_03_infrastructure.go
-	return func() {}, nil
+	if !c.env.TELEMETRY.Enabled {
+		slog.Info("OpenTelemetry disabled by configuration")
+		return func() {}, nil
+	}
+
+	// TODO: Implementar inicialização completa do OpenTelemetry
+	// Por enquanto, apenas log
+	slog.Info("OpenTelemetry initialization placeholder - not fully implemented",
+		"enabled", c.env.TELEMETRY.Enabled,
+		"otlp_enabled", c.env.TELEMETRY.OTLP.Enabled,
+		"endpoint", c.env.TELEMETRY.OTLP.Endpoint)
+
+	// Retornar função de shutdown vazia
+	return func() {
+		slog.Info("OpenTelemetry shutdown (placeholder)")
+	}, nil
 }
 
-// InitializeHTTP inicializa o servidor HTTP (delegado para o novo sistema)
+// InitializeHTTP inicializa o servidor HTTP (implementação real)
 func (c *config) InitializeHTTP() {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_06_handlers.go
+	// Criar Gin router se não existir
+	if c.ginRouter == nil {
+		c.ginRouter = gin.Default()
+	}
+
+	// Criar servidor HTTP com configurações do environment
+	c.httpServer = &http.Server{
+		Addr:         c.env.HTTP.Port,
+		Handler:      c.ginRouter,
+		ReadTimeout:  parseDuration(c.env.HTTP.ReadTimeout),
+		WriteTimeout: parseDuration(c.env.HTTP.WriteTimeout),
+	}
+
+	slog.Info("HTTP server initialized",
+		"port", c.env.HTTP.Port,
+		"read_timeout", c.env.HTTP.ReadTimeout,
+		"write_timeout", c.env.HTTP.WriteTimeout)
 }
 
-// SetupHTTPHandlersAndRoutes configura handlers e rotas (delegado para o novo sistema)
+// parseDuration converte string de duração para time.Duration
+func parseDuration(durationStr string) time.Duration {
+	if durationStr == "" {
+		return 30 * time.Second // default
+	}
+	duration, err := time.ParseDuration(durationStr)
+	if err != nil {
+		slog.Warn("Invalid duration format, using default", "duration", durationStr, "error", err)
+		return 30 * time.Second
+	}
+	return duration
+}
+
+// SetupHTTPHandlersAndRoutes configura handlers e rotas
 func (c *config) SetupHTTPHandlersAndRoutes() {
-	// Este método é mantido para compatibilidade com a interface
-	// A implementação real está no phase_06_handlers.go
+	if c.ginRouter == nil {
+		slog.Error("Gin router not initialized")
+		return
+	}
+
+	// Configurar rotas básicas de health check
+	c.setupBasicRoutes()
+
+	slog.Info("HTTP handlers and routes configured successfully")
+}
+
+// setupBasicRoutes configura rotas básicas
+func (c *config) setupBasicRoutes() {
+	// Health check endpoints
+	c.ginRouter.GET("/healthz", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{"status": "ok"})
+	})
+
+	c.ginRouter.GET("/readyz", func(ctx *gin.Context) {
+		if c.readiness {
+			ctx.JSON(200, gin.H{"status": "ready"})
+		} else {
+			ctx.JSON(503, gin.H{"status": "not ready"})
+		}
+	})
+
+	// API v1 group
+	v1 := c.ginRouter.Group("/api/v1")
+	{
+		v1.GET("/ping", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{"message": "pong"})
+		})
+	}
 }

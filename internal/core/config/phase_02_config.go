@@ -2,6 +2,9 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 )
@@ -50,9 +53,13 @@ func (b *Bootstrap) loadEnvironmentConfig() error {
 		return fmt.Errorf("failed to load environment: %w", err)
 	}
 
+	// Obter o environment carregado do config
+	env, err := b.config.GetEnvironment()
+	if err != nil {
+		return fmt.Errorf("failed to get environment from config: %w", err)
+	}
+
 	// Armazenar referência para uso posterior
-	env := &globalmodel.Environment{}
-	// Nota: Em implementação real, obter o env do config
 	b.env = env
 
 	b.logger.Debug("✅ Variáveis de ambiente carregadas")
@@ -117,29 +124,203 @@ func (b *Bootstrap) validateConfiguration() error {
 
 // validateDatabaseConfig valida configuração do banco de dados
 func (b *Bootstrap) validateDatabaseConfig() error {
-	// Nota: Implementação real validaria URI, conexões, etc.
 	b.logger.Debug("Validando configuração do banco de dados")
+
+	if b.env.DB.URI == "" {
+		return fmt.Errorf("database URI is required")
+	}
+
+	// Validar formato da URI MySQL
+	uri := b.env.DB.URI
+
+	// Verificar se começa com usuário
+	if !strings.Contains(uri, ":") {
+		return fmt.Errorf("invalid database URI format: missing user credentials")
+	}
+
+	// Verificar se tem @tcp(
+	if !strings.Contains(uri, "@tcp(") {
+		return fmt.Errorf("invalid database URI format: missing @tcp(")
+	}
+
+	// Verificar se tem porta
+	if !strings.Contains(uri, ":") || !strings.Contains(uri, ")/") {
+		return fmt.Errorf("invalid database URI format: missing port or database name")
+	}
+
+	// Verificar se tem nome do banco
+	// Para MySQL DSN, verificar se contém o nome do banco
+	if !strings.Contains(uri, "/toq_db") {
+		return fmt.Errorf("invalid database URI format: missing database name '/toq_db'")
+	}
+
+	// Verificar parâmetros opcionais
+	if strings.Contains(uri, "?") {
+		params := strings.Split(uri, "?")[1]
+		if params != "" && !strings.Contains(params, "=") {
+			return fmt.Errorf("invalid database URI format: malformed parameters")
+		}
+	}
+
+	b.logger.Debug("✅ Configuração do banco de dados validada com sucesso")
 	return nil
 }
 
 // validateHTTPConfig valida configuração HTTP
 func (b *Bootstrap) validateHTTPConfig() error {
-	// Nota: Implementação real validaria portas, TLS, etc.
 	b.logger.Debug("Validando configuração HTTP")
+
+	// Validar porta HTTP (converter string para int)
+	if b.env.HTTP.Port == "" {
+		return fmt.Errorf("HTTP port is required")
+	}
+
+	portStr := b.env.HTTP.Port
+	// Remover ":" incondicionalmente
+	portStr = strings.TrimPrefix(portStr, ":")
+
+	portInt := 0
+	if _, err := fmt.Sscanf(portStr, "%d", &portInt); err != nil {
+		return fmt.Errorf("invalid HTTP port format: %s", b.env.HTTP.Port)
+	}
+
+	if portInt <= 0 || portInt > 65535 {
+		return fmt.Errorf("invalid HTTP port: %d (must be between 1 and 65535)", portInt)
+	}
+
+	// Validar network
+	if b.env.HTTP.Network != "" && b.env.HTTP.Network != "tcp" && b.env.HTTP.Network != "tcp4" && b.env.HTTP.Network != "tcp6" {
+		return fmt.Errorf("invalid network: %s (must be tcp, tcp4, or tcp6)", b.env.HTTP.Network)
+	}
+
+	// Validar timeouts (strings devem ser parseáveis como duration)
+	if b.env.HTTP.ReadTimeout != "" {
+		if _, err := time.ParseDuration(b.env.HTTP.ReadTimeout); err != nil {
+			return fmt.Errorf("invalid read timeout format: %s", b.env.HTTP.ReadTimeout)
+		}
+	}
+
+	if b.env.HTTP.WriteTimeout != "" {
+		if _, err := time.ParseDuration(b.env.HTTP.WriteTimeout); err != nil {
+			return fmt.Errorf("invalid write timeout format: %s", b.env.HTTP.WriteTimeout)
+		}
+	}
+
+	// Validar MaxHeaderBytes
+	if b.env.HTTP.MaxHeaderBytes < 0 {
+		return fmt.Errorf("invalid max header bytes: %d (must be non-negative)", b.env.HTTP.MaxHeaderBytes)
+	}
+
+	// Validar TLS se habilitado
+	if b.env.HTTP.TLS.Enabled {
+		if b.env.HTTP.TLS.CertPath == "" {
+			return fmt.Errorf("TLS enabled but cert path is empty")
+		}
+		if b.env.HTTP.TLS.KeyPath == "" {
+			return fmt.Errorf("TLS enabled but key path is empty")
+		}
+
+		// Verificar se os arquivos existem
+		if _, err := os.Stat(b.env.HTTP.TLS.CertPath); os.IsNotExist(err) {
+			return fmt.Errorf("TLS cert file does not exist: %s", b.env.HTTP.TLS.CertPath)
+		}
+		if _, err := os.Stat(b.env.HTTP.TLS.KeyPath); os.IsNotExist(err) {
+			return fmt.Errorf("TLS key file does not exist: %s", b.env.HTTP.TLS.KeyPath)
+		}
+	}
+
+	b.logger.Debug("✅ Configuração HTTP validada com sucesso")
 	return nil
 }
 
 // validateLoggingConfig valida configuração de logging
 func (b *Bootstrap) validateLoggingConfig() error {
-	// Nota: Implementação real validaria caminhos, níveis, etc.
 	b.logger.Debug("Validando configuração de logging")
+
+	// Validar nível de log
+	validLevels := []string{"DEBUG", "INFO", "WARN", "ERROR"}
+	levelValid := false
+	for _, level := range validLevels {
+		if strings.ToUpper(b.env.LOG.Level) == level {
+			levelValid = true
+			break
+		}
+	}
+	if !levelValid {
+		return fmt.Errorf("invalid log level: %s (must be one of: %v)", b.env.LOG.Level, validLevels)
+	}
+
+	// Validar configuração de arquivo se habilitada
+	if b.env.LOG.ToFile {
+		if b.env.LOG.Path == "" {
+			return fmt.Errorf("log to file enabled but path is empty")
+		}
+
+		if b.env.LOG.Filename == "" {
+			return fmt.Errorf("log to file enabled but filename is empty")
+		}
+
+		// Verificar se o diretório existe ou pode ser criado
+		if _, err := os.Stat(b.env.LOG.Path); os.IsNotExist(err) {
+			// Tentar criar o diretório
+			if err := os.MkdirAll(b.env.LOG.Path, 0755); err != nil {
+				return fmt.Errorf("cannot create log directory: %s", b.env.LOG.Path)
+			}
+		}
+
+		// Verificar se podemos escrever no diretório
+		testFile := fmt.Sprintf("%s/.log_test", b.env.LOG.Path)
+		if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+			return fmt.Errorf("cannot write to log directory: %s", b.env.LOG.Path)
+		}
+		os.Remove(testFile) // Limpar arquivo de teste
+	}
+
+	b.logger.Debug("✅ Configuração de logging validada com sucesso")
 	return nil
 }
 
 // validateTelemetryConfig valida configuração de telemetria
 func (b *Bootstrap) validateTelemetryConfig() error {
-	// Nota: Implementação real validaria endpoints, chaves, etc.
 	b.logger.Debug("Validando configuração de telemetria")
+
+	// Se telemetria estiver desabilitada, não há validação adicional necessária
+	if !b.env.TELEMETRY.Enabled {
+		b.logger.Debug("Telemetria desabilitada, pulando validação")
+		return nil
+	}
+
+	// Validar OTLP se habilitado
+	if b.env.TELEMETRY.OTLP.Enabled {
+		if b.env.TELEMETRY.OTLP.Endpoint == "" {
+			return fmt.Errorf("OTLP enabled but endpoint is empty")
+		}
+
+		// Validar formato do endpoint
+		if !strings.HasPrefix(b.env.TELEMETRY.OTLP.Endpoint, "http://") &&
+			!strings.HasPrefix(b.env.TELEMETRY.OTLP.Endpoint, "https://") &&
+			!strings.HasPrefix(b.env.TELEMETRY.OTLP.Endpoint, "grpc://") {
+			return fmt.Errorf("invalid OTLP endpoint format: %s (must start with http://, https://, or grpc://)", b.env.TELEMETRY.OTLP.Endpoint)
+		}
+	}
+
+	// Validar porta de métricas se especificada
+	if b.env.TELEMETRY.METRICS.Port != "" {
+		portStr := b.env.TELEMETRY.METRICS.Port
+		// Remover ":" incondicionalmente
+		portStr = strings.TrimPrefix(portStr, ":")
+
+		portInt := 0
+		if _, err := fmt.Sscanf(portStr, "%d", &portInt); err != nil {
+			return fmt.Errorf("invalid metrics port format: %s", b.env.TELEMETRY.METRICS.Port)
+		}
+
+		if portInt <= 0 || portInt > 65535 {
+			return fmt.Errorf("invalid metrics port: %d (must be between 1 and 65535)", portInt)
+		}
+	}
+
+	b.logger.Debug("✅ Configuração de telemetria validada com sucesso")
 	return nil
 }
 
