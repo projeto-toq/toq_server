@@ -1,18 +1,6 @@
 🛠️ Problema
-após várias refatorações, o processo de inicialização do sistema como um todo sendo realizada no /config e cmd/toq_server está confuso, complexo e instável. várias funções duplicadas e ações endo pulaas por não chamar a rotina certa. 
-Exemplo foi sua recente descoberta:
-1. Função initializeServices() Inexistente
-Localização: /codigos/go_code/toq_server/internal/core/config/inject_dependencies.go:77
-Problema: A função é chamada mas não foi implementada
-Impacto: Os serviços não são inicializados, incluindo permissionService
-2. PermissionService Nil
-Localização: role_mapper.go - verificação us.permissionService == nil
-Causa: permissionService não é inicializado devido ao problema #1
-Sintomas: Erro durante criação de owner quando tenta usar permission service
-3. Logging Inadequado de Erros
-Localização: Toda implementação de permission service
-Problema: Erros são detectados mas não logados adequadamente
-Impacto: Dificuldade de debug e monitoramento
+após várias refatorações, o sistema está de forma intermitente apresentando warnings e alertas.
+assim verifique o projeto como um todo em busca de problemas de lint, erros não tratados etc
 
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
@@ -35,4 +23,4 @@ Impacto: Dificuldade de debug e monitoramento
 
 📌 Instruções finais
 - Não implemente nada até que eu autorize.
-- Analise cuidadosamente a solicitação e o código atual, e apresente um plano detalhado de implementação para rescrever totalmente a inicillização do sistema para que fique eficiente, limpa, de fácil manutenção, clara.
+- Analise cuidadosamente a solicitação e o código atual, e apresente um plano detalhado de implementação das correções
