@@ -4,28 +4,23 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
-)
-
-// SignOut handles user sign out
-//
-//	@Summary		Sign out user
-//	@Description	Sign out the current user and invalidate their session tokens
-//	@Tags			User
-//	@Accept			json
-//	@Produce		json
-//	@Param			request	body		object					true	"Sign out data"
-//	@Param			request.device_token	body		string	false	"Device token to invalidate"
-//	@Param			request.refresh_token	body		string	false	"Refresh token to invalidate"
-//	@Success		200		{object}	map[string]string	"Sign out confirmation message"
-//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-//	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
-//	@Failure		403		{object}	dto.ErrorResponse	"Forbidden"
-//	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-//	@Router			/user/signout [post]
-//	@Security		BearerAuth
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+) // SignOut handles user sign out
+// @Summary		Sign out user
+// @Description	Sign out the current user and invalidate their session tokens
+// @Tags			User
+// @Accept			json
+// @Produce		json
+// @Param			request	body		object					true	"Sign out data"
+// @Param			request.device_token	body		string	false	"Device token to invalidate"
+// @Param			request.refresh_token	body		string	false	"Refresh token to invalidate"
+// @Success		200		{object}	map[string]string	"Sign out confirmation message"
+// @Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
+// @Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
+// @Failure		403		{object}	dto.ErrorResponse	"Forbidden"
+// @Failure		500		{object}	dto.ErrorResponse	"Internal server error"
+// @Router			/user/signout [post]
+// @Security		BearerAuth
 func (uh *UserHandler) SignOut(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
@@ -34,14 +29,12 @@ func (uh *UserHandler) SignOut(c *gin.Context) {
 	}
 	defer spanEnd()
 
-	// Get user info from context (set by auth middleware)
-	infos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
+	// Get user info from context using Context Utils (set by auth middleware)
+	userInfos, err := utils.GetUserInfoFromGinContext(c)
+	if err != nil {
 		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
-
-	userInfos := infos.(usermodel.UserInfos)
 
 	// Parse request body
 	var request struct {

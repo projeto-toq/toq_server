@@ -4,12 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
+	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
+	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// SetupRoutes configura todas as rotas HTTP
-func SetupRoutes(router *gin.Engine, handlers *factory.HTTPHandlers) {
+// SetupRoutes configura todas as rotas HTTP com middlewares e dependências injetadas
+func SetupRoutes(
+	router *gin.Engine,
+	handlers *factory.HTTPHandlers,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
 	// Configurar middlewares globais na ordem correta
 	setupGlobalMiddlewares(router)
 
@@ -19,11 +26,11 @@ func SetupRoutes(router *gin.Engine, handlers *factory.HTTPHandlers) {
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 
-	// Register user routes
-	RegisterUserRoutes(v1, handlers)
+	// Register user routes with dependencies
+	RegisterUserRoutes(v1, handlers, activityTracker, permissionService)
 
-	// Register listing routes
-	RegisterListingRoutes(v1, handlers)
+	// Register listing routes with dependencies
+	RegisterListingRoutes(v1, handlers, activityTracker, permissionService)
 }
 
 // setupGlobalMiddlewares configura middlewares globais na ordem correta
@@ -34,8 +41,8 @@ func setupGlobalMiddlewares(router *gin.Engine) {
 	// 2. Recovery - Captura panics
 	router.Use(gin.Recovery())
 
-	// 3. Logger - Log de requisições (opcional, pode usar gin.Logger() se necessário)
-	// router.Use(gin.Logger())
+	// 3. StructuredLoggingMiddleware - Log estruturado JSON com separação stdout/stderr
+	router.Use(middlewares.StructuredLoggingMiddleware())
 
 	// 4. CORSMiddleware - Configuração CORS
 	router.Use(middlewares.CORSMiddleware())
@@ -46,11 +53,13 @@ func setupGlobalMiddlewares(router *gin.Engine) {
 	// Nota: AuthMiddleware e PermissionMiddleware são aplicados apenas em rotas específicas
 }
 
-// RegisterUserRoutes registers all user-related routes
-func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers) {
-	// TODO: Implement user routes in Etapa 2
-	// This is a placeholder for now
-
+// RegisterUserRoutes registers all user-related routes with middleware dependencies
+func RegisterUserRoutes(
+	router *gin.RouterGroup,
+	handlers *factory.HTTPHandlers,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
 	// Authentication routes (public - without auth middleware)
 	auth := router.Group("/auth")
 	{
@@ -79,6 +88,9 @@ func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers)
 
 	// User routes (authenticated - Owner, Realtor, Agency and Admin)
 	user := router.Group("/user")
+	// Apply security middlewares to authenticated routes
+	user.Use(middlewares.AuthMiddleware(activityTracker))
+	user.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		// Profile management
 		user.GET("/profile", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // GetProfile
@@ -113,6 +125,9 @@ func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers)
 
 	// Agency routes (Agency only)
 	agency := router.Group("/agency")
+	// Apply security middlewares to authenticated routes
+	agency.Use(middlewares.AuthMiddleware(activityTracker))
+	agency.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		agency.POST("/invite-realtor", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // InviteRealtor
 		agency.GET("/realtors", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })        // GetRealtorsByAgency
@@ -122,6 +137,9 @@ func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers)
 
 	// Realtor routes (Realtor only)
 	realtor := router.Group("/realtor")
+	// Apply security middlewares to authenticated routes
+	realtor.Use(middlewares.AuthMiddleware(activityTracker))
+	realtor.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		realtor.POST("/creci/verify", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // VerifyCreciImages
 		realtor.POST("/creci/upload-url", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetCreciUploadURL
@@ -132,13 +150,18 @@ func RegisterUserRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers)
 	}
 }
 
-// RegisterListingRoutes registers all listing-related routes
-func RegisterListingRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandlers) {
-	// TODO: Implement listing routes in Etapa 3
-	// This is a placeholder for now
-
-	// Main listing routes
+// RegisterListingRoutes registers all listing-related routes with middleware dependencies
+func RegisterListingRoutes(
+	router *gin.RouterGroup,
+	handlers *factory.HTTPHandlers,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
+	// Main listing routes (all require authentication)
 	listings := router.Group("/listings")
+	// Apply security middlewares to authenticated routes
+	listings.Use(middlewares.AuthMiddleware(activityTracker))
+	listings.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		// Basic CRUD
 		listings.GET("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })               // GetAllListings
@@ -178,8 +201,11 @@ func RegisterListingRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandle
 		listings.GET("/:id/offers", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetOffers
 	}
 
-	// Visit management
+	// Visit management (all require authentication)
 	visits := router.Group("/visits")
+	// Apply security middlewares to authenticated routes
+	visits.Use(middlewares.AuthMiddleware(activityTracker))
+	visits.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		visits.GET("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })              // GetAllVisits
 		visits.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // CancelVisit
@@ -188,8 +214,11 @@ func RegisterListingRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandle
 		visits.POST("/:id/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // RejectVisiting
 	}
 
-	// Offer management
+	// Offer management (all require authentication)
 	offers := router.Group("/offers")
+	// Apply security middlewares to authenticated routes
+	offers.Use(middlewares.AuthMiddleware(activityTracker))
+	offers.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		offers.GET("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })              // GetAllOffers
 		offers.PUT("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // UpdateOffer
@@ -199,13 +228,19 @@ func RegisterListingRoutes(router *gin.RouterGroup, handlers *factory.HTTPHandle
 		offers.POST("/:id/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // RejectOffer
 	}
 
-	// Evaluation routes
+	// Evaluation routes (all require authentication)
 	realtors := router.Group("/realtors")
+	// Apply security middlewares to authenticated routes
+	realtors.Use(middlewares.AuthMiddleware(activityTracker))
+	realtors.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		realtors.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateRealtor
 	}
 
 	owners := router.Group("/owners")
+	// Apply security middlewares to authenticated routes
+	owners.Use(middlewares.AuthMiddleware(activityTracker))
+	owners.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		owners.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateOwner
 	}

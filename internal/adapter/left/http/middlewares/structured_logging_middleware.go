@@ -1,0 +1,227 @@
+package middlewares
+
+import (
+	"context"
+	"log/slog"
+	"os"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+)
+
+// StructuredLoggingMiddleware provides structured JSON logging with stdout/stderr separation
+// Follows Go best practices and Google Style Guide
+// Integrates with existing slog system
+func StructuredLoggingMiddleware() gin.HandlerFunc {
+	// Create separate handlers for stdout (INFO/DEBUG) and stderr (WARN/ERROR)
+	stdoutHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     slog.LevelDebug,
+		AddSource: false,
+	})
+
+	stderrHandler := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level:     slog.LevelWarn,
+		AddSource: true,
+	})
+
+	return gin.HandlerFunc(func(c *gin.Context) {
+		start := time.Now()
+		path := c.Request.URL.Path
+		method := c.Request.Method
+
+		// Get request info before processing
+		requestID := utils.GetRequestIDFromGinContext(c)
+		clientIP := utils.GetClientIPFromGinContext(c)
+		userAgent := utils.GetUserAgentFromGinContext(c)
+
+		// Process request
+		c.Next()
+
+		// Calculate processing time
+		duration := time.Since(start)
+		status := c.Writer.Status()
+		size := c.Writer.Size()
+
+		// Build base log fields
+		fields := []slog.Attr{
+			slog.String("request_id", requestID),
+			slog.String("method", method),
+			slog.String("path", path),
+			slog.Int("status", status),
+			slog.Duration("duration", duration),
+			slog.Int("size", size),
+			slog.String("client_ip", clientIP),
+			slog.String("user_agent", userAgent),
+		}
+
+		// Add query parameters if present
+		if rawQuery := c.Request.URL.RawQuery; rawQuery != "" {
+			fields = append(fields, slog.String("query", rawQuery))
+		}
+
+		// Add user info if available (authenticated request)
+		if userInfo, err := utils.GetUserInfoFromGinContext(c); err == nil {
+			fields = append(fields,
+				slog.Int64("user_id", userInfo.ID),
+				slog.String("user_role", userInfo.Role.String()),
+				slog.Bool("profile_complete", userInfo.ProfileStatus),
+			)
+		}
+
+		// Add error information if present
+		if len(c.Errors) > 0 {
+			errorMessages := make([]string, len(c.Errors))
+			for i, err := range c.Errors {
+				errorMessages[i] = err.Error()
+			}
+			fields = append(fields, slog.Any("errors", errorMessages))
+		}
+
+		// Determine log level and handler based on HTTP status
+		logLevel := slog.LevelInfo
+		var logger *slog.Logger
+
+		switch {
+		case status >= 500:
+			logLevel = slog.LevelError
+			logger = slog.New(stderrHandler)
+		case status >= 400:
+			logLevel = slog.LevelWarn
+			logger = slog.New(stderrHandler)
+		case status >= 300:
+			logLevel = slog.LevelInfo
+			logger = slog.New(stdoutHandler)
+		default:
+			logLevel = slog.LevelInfo
+			logger = slog.New(stdoutHandler)
+		}
+
+		// Create log message
+		message := "HTTP Request"
+		if status >= 400 {
+			message = "HTTP Error"
+		}
+
+		// Log with appropriate handler (stdout/stderr separation)
+		logger.LogAttrs(context.Background(), logLevel, message, fields...)
+	})
+}
+
+// RequestLoggingMiddleware is a lighter version for basic request logging
+// Can be used in development or for specific routes
+func RequestLoggingMiddleware() gin.HandlerFunc {
+	return gin.HandlerFunc(func(c *gin.Context) {
+		start := time.Now()
+
+		// Process request
+		c.Next()
+
+		// Simple structured log
+		slog.Info("Request processed",
+			"method", c.Request.Method,
+			"path", c.Request.URL.Path,
+			"status", c.Writer.Status(),
+			"duration", time.Since(start),
+			"client_ip", c.ClientIP(),
+		)
+	})
+}
+
+// ErrorLoggingMiddleware logs only errors and warnings
+// Useful for production environments with high traffic
+func ErrorLoggingMiddleware() gin.HandlerFunc {
+	stderrHandler := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level:     slog.LevelWarn,
+		AddSource: true,
+	})
+
+	return gin.HandlerFunc(func(c *gin.Context) {
+		start := time.Now()
+
+		// Process request
+		c.Next()
+
+		status := c.Writer.Status()
+
+		// Only log errors and warnings
+		if status >= 400 {
+			fields := []slog.Attr{
+				slog.String("request_id", utils.GetRequestIDFromGinContext(c)),
+				slog.String("method", c.Request.Method),
+				slog.String("path", c.Request.URL.Path),
+				slog.Int("status", status),
+				slog.Duration("duration", time.Since(start)),
+				slog.String("client_ip", utils.GetClientIPFromGinContext(c)),
+			}
+
+			// Add user info if available
+			if userInfo, err := utils.GetUserInfoFromGinContext(c); err == nil {
+				fields = append(fields, slog.Int64("user_id", userInfo.ID))
+			}
+
+			// Add errors if present
+			if len(c.Errors) > 0 {
+				errorMessages := make([]string, len(c.Errors))
+				for i, err := range c.Errors {
+					errorMessages[i] = err.Error()
+				}
+				fields = append(fields, slog.Any("errors", errorMessages))
+			}
+
+			logLevel := slog.LevelWarn
+			if status >= 500 {
+				logLevel = slog.LevelError
+			}
+
+			logger := slog.New(stderrHandler)
+			logger.LogAttrs(context.Background(), logLevel, "HTTP Error", fields...)
+		}
+	})
+}
+
+// LoggingConfig allows customization of logging behavior
+type LoggingConfig struct {
+	EnableStdoutStderrSeparation bool
+	LogLevel                     slog.Level
+	AddSource                    bool
+	LogOnlyErrors                bool
+	IncludeRequestBody           bool
+	IncludeResponseBody          bool
+}
+
+// ConfigurableLoggingMiddleware creates a logging middleware with custom config
+func ConfigurableLoggingMiddleware(config LoggingConfig) gin.HandlerFunc {
+	if config.LogOnlyErrors {
+		return ErrorLoggingMiddleware()
+	}
+
+	if config.EnableStdoutStderrSeparation {
+		return StructuredLoggingMiddleware()
+	}
+
+	// Default single handler
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     config.LogLevel,
+		AddSource: config.AddSource,
+	})
+
+	return gin.HandlerFunc(func(c *gin.Context) {
+		start := time.Now()
+
+		// Process request
+		c.Next()
+
+		fields := []slog.Attr{
+			slog.String("request_id", utils.GetRequestIDFromGinContext(c)),
+			slog.String("method", c.Request.Method),
+			slog.String("path", c.Request.URL.Path),
+			slog.Int("status", c.Writer.Status()),
+			slog.Duration("duration", time.Since(start)),
+			slog.String("client_ip", utils.GetClientIPFromGinContext(c)),
+		}
+
+		logger := slog.New(handler)
+		logger.LogAttrs(context.Background(), slog.LevelInfo, "HTTP Request", fields...)
+	})
+}

@@ -452,8 +452,8 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 	// 2. Configurar rotas básicas de health check
 	c.setupBasicRoutes()
 
-	// 3. Registrar todas as rotas (auth, user, listing) via routes package
-	routes.SetupRoutes(c.ginRouter, &c.httpHandlers)
+	// 3. Registrar todas as rotas (auth, user, listing) via routes package com dependências injetadas
+	routes.SetupRoutes(c.ginRouter, &c.httpHandlers, c.activityTracker, c.permissionService)
 
 	slog.Info("HTTP handlers and routes configured successfully")
 }
