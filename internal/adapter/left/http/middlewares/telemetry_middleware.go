@@ -4,11 +4,13 @@ import (
 	"log/slog"
 
 	"github.com/gin-gonic/gin"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // TelemetryMiddleware adds OpenTelemetry tracing to HTTP requests
-func TelemetryMiddleware() gin.HandlerFunc {
+// Now also integrates with metrics collection
+func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
 		ctx := c.Request.Context()
 
@@ -16,15 +18,18 @@ func TelemetryMiddleware() gin.HandlerFunc {
 		ctx, spanEnd, err := utils.GenerateTracer(ctx)
 		if err != nil {
 			slog.Warn("Failed to generate tracer", "error", err, "path", c.Request.URL.Path)
-			c.Next()
-			return
+			// Continue even if tracing fails
+		} else {
+			// Update request context with tracing context
+			c.Request = c.Request.WithContext(ctx)
+			defer spanEnd()
 		}
-		defer spanEnd()
 
-		// Update request context with tracing context
-		c.Request = c.Request.WithContext(ctx)
-
-		// Continue with the request
-		c.Next()
+		// Apply metrics middleware if adapter is provided
+		if metricsAdapter != nil {
+			MetricsMiddleware(metricsAdapter)(c)
+		} else {
+			c.Next()
+		}
 	})
 }

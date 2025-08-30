@@ -10,9 +10,13 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 
 	// HTTP handlers
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers"
 	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
+
+	// Metrics adapter
+	prometheusadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/prometheus"
 
 	// Validation adapters
 	cepadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cep"
@@ -50,6 +54,17 @@ import (
 // Responsável pela criação concreta de todos os adapters do sistema
 type ConcreteAdapterFactory struct {
 	lm LifecycleManager
+}
+
+// CreateMetricsAdapter cria o adapter de métricas Prometheus
+func (f *ConcreteAdapterFactory) CreateMetricsAdapter() *MetricsAdapter {
+	slog.Info("Creating metrics adapter")
+
+	prometheusAdapter := prometheusadapter.NewPrometheusAdapter()
+
+	return &MetricsAdapter{
+		Prometheus: prometheusAdapter,
+	}
 }
 
 // CreateValidationAdapters cria e configura todos os adapters de validação externa
@@ -200,6 +215,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	listingService listingservice.ListingServiceInterface,
 	complexService complexservice.ComplexServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
+	metricsAdapter *MetricsAdapter,
 ) HTTPHandlers {
 	slog.Info("Creating HTTP handlers")
 
@@ -223,11 +239,15 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		complexService,
 	)
 
+	// Create metrics handler
+	metricsHandler := handlers.NewMetricsHandler(metricsAdapter.Prometheus)
+
 	slog.Info("Successfully created all HTTP handlers")
 
 	return HTTPHandlers{
 		UserHandler:    userHandler,
 		ListingHandler: listingHandler,
 		AuthHandler:    authHandler,
+		MetricsHandler: metricsHandler,
 	}
 }

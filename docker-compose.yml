@@ -50,7 +50,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
-      - grafana_data:/var/lib/grafana
+      - /codigos/grafana:/var/lib/grafana
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
       - ./grafana/dashboard-files:/var/lib/grafana/dashboards
@@ -104,6 +104,3 @@ networks:
 
   swagger-ui:
     driver: bridge
-
-volumes:
-  grafana_data:

@@ -51,6 +51,7 @@ type config struct {
 	listingService         listingservices.ListingServiceInterface
 	complexService         complexservices.ComplexServiceInterface
 	permissionService      permissionservices.PermissionServiceInterface
+	metricsAdapter         *factory.MetricsAdapter
 	cep                    cepport.CEPPortInterface
 	cpf                    cpfport.CPFPortInterface
 	cnpj                   cnpjport.CNPJPortInterface
@@ -385,17 +386,16 @@ func (c *config) InitializeTelemetry() (func(), error) {
 		return func() {}, nil
 	}
 
-	// TODO: Implementar inicialização completa do OpenTelemetry
-	// Por enquanto, apenas log
-	slog.Info("OpenTelemetry initialization placeholder - not fully implemented",
-		"enabled", c.env.TELEMETRY.Enabled,
-		"otlp_enabled", c.env.TELEMETRY.OTLP.Enabled,
-		"endpoint", c.env.TELEMETRY.OTLP.Endpoint)
+	// Usar o novo TelemetryManager
+	telemetryManager := NewTelemetryManager(c.env)
 
-	// Retornar função de shutdown vazia
-	return func() {
-		slog.Info("OpenTelemetry shutdown (placeholder)")
-	}, nil
+	shutdownFunc, err := telemetryManager.Initialize(c.context)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize telemetry: %w", err)
+	}
+
+	slog.Info("OpenTelemetry initialized successfully")
+	return shutdownFunc, nil
 }
 
 // InitializeHTTP inicializa o servidor HTTP (implementação real)
@@ -453,7 +453,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 	c.setupBasicRoutes()
 
 	// 3. Registrar todas as rotas (auth, user, listing) via routes package com dependências injetadas
-	routes.SetupRoutes(c.ginRouter, &c.httpHandlers, c.activityTracker, c.permissionService)
+	routes.SetupRoutes(c.ginRouter, &c.httpHandlers, c.activityTracker, c.permissionService, c.metricsAdapter)
 
 	slog.Info("HTTP handlers and routes configured successfully")
 }
@@ -476,6 +476,7 @@ func (c *config) createHTTPHandlers() error {
 		c.listingService,
 		c.complexService,
 		c.permissionService,
+		c.metricsAdapter,
 	)
 
 	slog.Info("✅ HTTP handlers created successfully via factory")
@@ -496,6 +497,13 @@ func (c *config) setupBasicRoutes() {
 			ctx.JSON(503, gin.H{"status": "not ready"})
 		}
 	})
+
+	// Metrics endpoint
+	if c.metricsAdapter != nil && c.httpHandlers.MetricsHandler != nil {
+		if metricsHandler, ok := c.httpHandlers.MetricsHandler.(interface{ GetMetrics(c *gin.Context) }); ok {
+			c.ginRouter.GET("/metrics", metricsHandler.GetMetrics)
+		}
+	}
 
 	// API v1 group
 	v1 := c.ginRouter.Group("/api/v1")

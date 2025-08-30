@@ -34,6 +34,9 @@ type AdapterFactory interface {
 	// CreateRepositoryAdapters cria todos os repositórios MySQL
 	CreateRepositoryAdapters(database *mysqladapter.Database) (RepositoryAdapters, error)
 
+	// CreateMetricsAdapter cria o adapter de métricas
+	CreateMetricsAdapter() *MetricsAdapter
+
 	// CreateHTTPHandlers cria todos os handlers HTTP
 	CreateHTTPHandlers(
 		userService userservices.UserServiceInterface,
@@ -41,10 +44,13 @@ type AdapterFactory interface {
 		listingService listingservices.ListingServiceInterface,
 		complexService complexservices.ComplexServiceInterface,
 		permissionService permissionservices.PermissionServiceInterface,
+		metricsAdapter *MetricsAdapter,
 	) HTTPHandlers
 }
 
-// NewAdapterFactory cria uma nova instância da factory concreta
+// NewAdapterFactory creates a new concrete adapter factory instance
 func NewAdapterFactory(lm LifecycleManager) AdapterFactory {
-	return &ConcreteAdapterFactory{lm: lm}
+	return &ConcreteAdapterFactory{
+		lm: lm,
+	}
 }

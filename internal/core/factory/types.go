@@ -5,14 +5,12 @@ import (
 
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	authhandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/authhandler"
-	listinghandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/listinghandler"
-	userhandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/userhandler"
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
+	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
 	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
 
@@ -62,9 +60,15 @@ type RepositoryAdapters struct {
 
 // HTTPHandlers agrupa todos os handlers HTTP
 type HTTPHandlers struct {
-	UserHandler    userhandlerport.UserHandlerPort
-	ListingHandler listinghandlerport.ListingHandlerPort
-	AuthHandler    authhandlerport.AuthHandlerPort
+	UserHandler    interface{} // User handler interface
+	ListingHandler interface{} // Listing handler interface
+	AuthHandler    interface{} // Auth handler interface
+	MetricsHandler interface{} // Handler para endpoint /metrics
+}
+
+// MetricsAdapter contém o adapter de métricas
+type MetricsAdapter struct {
+	Prometheus metricsport.MetricsPortInterface
 }
 
 // AdapterFactoryConfig contém as configurações necessárias para criar adapters
@@ -72,4 +76,5 @@ type AdapterFactoryConfig struct {
 	Context     context.Context
 	Environment *globalmodel.Environment
 	Database    *mysqladapter.Database
+	Metrics     *MetricsAdapter
 }

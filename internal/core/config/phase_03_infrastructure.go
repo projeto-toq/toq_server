@@ -1,10 +1,12 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
+	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 )
 
 // Phase03_InitializeInfrastructure inicializa a infraestrutura core do sistema
@@ -30,6 +32,11 @@ func (b *Bootstrap) Phase03_InitializeInfrastructure() error {
 	// 3. Inicializar OpenTelemetry (tracing + metrics)
 	if err := b.initializeTelemetry(); err != nil {
 		return NewBootstrapError("Phase03", "telemetry", "Failed to initialize OpenTelemetry", err)
+	}
+
+	// 4. Inicializar adapter de métricas
+	if err := b.initializeMetrics(); err != nil {
+		return NewBootstrapError("Phase03", "metrics", "Failed to initialize metrics adapter", err)
 	}
 
 	b.logger.Info("✅ Infraestrutura core inicializada com sucesso")
@@ -98,6 +105,37 @@ func (b *Bootstrap) initializeTelemetry() error {
 	})
 
 	b.logger.Info("✅ OpenTelemetry inicializado (tracing + metrics)")
+	return nil
+}
+
+// initializeMetrics inicializa o adapter de métricas Prometheus
+func (b *Bootstrap) initializeMetrics() error {
+	b.logger.Debug("Inicializando adapter de métricas Prometheus")
+
+	// Criar factory de adapters
+	adapterFactory := factory.NewAdapterFactory(b.lifecycleManager)
+
+	// Criar adapter de métricas
+	metricsAdapter := adapterFactory.CreateMetricsAdapter()
+
+	// Inicializar métricas
+	ctx := context.Background()
+	if err := metricsAdapter.Prometheus.Initialize(ctx); err != nil {
+		return fmt.Errorf("failed to initialize metrics: %w", err)
+	}
+
+	// Armazenar no config
+	b.config.(*config).metricsAdapter = metricsAdapter
+
+	// Adicionar cleanup
+	b.lifecycleManager.AddCleanupFunc(func() {
+		ctx := context.Background()
+		if err := metricsAdapter.Prometheus.Shutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown metrics", "error", err)
+		}
+	})
+
+	b.logger.Info("✅ Adapter de métricas Prometheus inicializado")
 	return nil
 }
 

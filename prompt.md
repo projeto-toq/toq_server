@@ -1,5 +1,9 @@
 🛠️ Problema
-Erro recebido ao tentar fazer login. log em log.md
+o sistema de métrica está configurado para antiga versão do sistema, que era GRPC.
+A metricas são geradas no telemetry middleware, exportadas para o prometheus e visualizadas no Grafana.
+Estes serviços rodan no docker, veja docker-compose.yml
+Assim necessito alterar para http e criar um conjunto básico de métricas para análise do sistema no Grafana.
+A persistência do grafana deve estar em /codigos/grafana
 
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
@@ -23,4 +27,4 @@ Erro recebido ao tentar fazer login. log em log.md
 
 📌 Instruções finais
 - Não implemente nada até que eu autorize.
-- Analise cuidadosamente a solicitação e o código atual, localize a causa raiz e apresenta a solução propsota
+- Analise cuidadosamente a solicitação e o código atual, proponha a implementação

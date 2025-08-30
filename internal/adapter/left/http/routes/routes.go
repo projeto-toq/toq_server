@@ -2,9 +2,13 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
+	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
+	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -16,26 +20,34 @@ func SetupRoutes(
 	handlers *factory.HTTPHandlers,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	metricsAdapter *factory.MetricsAdapter,
 ) {
 	// Configurar middlewares globais na ordem correta
-	setupGlobalMiddlewares(router)
+	setupGlobalMiddlewares(router, metricsAdapter)
 
 	// Swagger documentation routes
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Convert handlers to typed handlers
+	authHandler := handlers.AuthHandler.(*authhandlers.AuthHandler)
+	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
+	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 
 	// Register user routes with dependencies
-	RegisterUserRoutes(v1, handlers, activityTracker, permissionService)
+	RegisterUserRoutes(v1, authHandler, userHandler, activityTracker, permissionService)
 
 	// Register listing routes with dependencies
-	RegisterListingRoutes(v1, handlers, activityTracker, permissionService)
+	RegisterListingRoutes(v1, listingHandler, activityTracker, permissionService)
 }
 
-// setupGlobalMiddlewares configura middlewares globais na ordem correta
-func setupGlobalMiddlewares(router *gin.Engine) {
-	// 1. RequestIDMiddleware - DEVE ser o primeiro para gerar Request ID
+// setupGlobalMiddlewares configura middlewares aplicados a todas as rotas
+func setupGlobalMiddlewares(router *gin.Engine, metricsAdapter *factory.MetricsAdapter) {
+	// Ordem específica dos middlewares para otimização e segurança
+
+	// 1. RequestIDMiddleware - Gera ID único para cada request
 	router.Use(middlewares.RequestIDMiddleware())
 
 	// 2. Recovery - Captura panics
@@ -47,8 +59,12 @@ func setupGlobalMiddlewares(router *gin.Engine) {
 	// 4. CORSMiddleware - Configuração CORS
 	router.Use(middlewares.CORSMiddleware())
 
-	// 5. TelemetryMiddleware - Tracing OpenTelemetry
-	router.Use(middlewares.TelemetryMiddleware())
+	// 5. TelemetryMiddleware - Tracing OpenTelemetry + Métricas
+	var metricsPort metricsport.MetricsPortInterface
+	if metricsAdapter != nil {
+		metricsPort = metricsAdapter.Prometheus
+	}
+	router.Use(middlewares.TelemetryMiddleware(metricsPort))
 
 	// Nota: AuthMiddleware e PermissionMiddleware são aplicados apenas em rotas específicas
 }
@@ -56,7 +72,8 @@ func setupGlobalMiddlewares(router *gin.Engine) {
 // RegisterUserRoutes registers all user-related routes with middleware dependencies
 func RegisterUserRoutes(
 	router *gin.RouterGroup,
-	handlers *factory.HTTPHandlers,
+	authHandler *authhandlers.AuthHandler,
+	userHandler *userhandlers.UserHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
 ) {
@@ -64,26 +81,25 @@ func RegisterUserRoutes(
 	auth := router.Group("/auth")
 	{
 		// CreateOwner
-		auth.POST("/owner", handlers.AuthHandler.CreateOwner) // CreateOwner
+		auth.POST("/owner", authHandler.CreateOwner) // CreateOwner
 
 		// CreateRealtor
-		auth.POST("/realtor", handlers.AuthHandler.CreateRealtor) // CreateRealtor
+		auth.POST("/realtor", authHandler.CreateRealtor) // CreateRealtor
 
 		// CreateAgency
-		auth.POST("/agency", handlers.AuthHandler.CreateAgency) // CreateAgency
+		auth.POST("/agency", authHandler.CreateAgency) // CreateAgency
 
 		// SignIn
-		auth.POST("/signin", handlers.AuthHandler.SignIn) // SignIn
+		auth.POST("/signin", authHandler.SignIn) // SignIn
 
 		// RefreshToken
-		auth.POST("/refresh", handlers.AuthHandler.RefreshToken)                   // RefreshToken		// RequestPasswordChange
-		auth.POST("/password/request", handlers.AuthHandler.RequestPasswordChange) // RequestPasswordChange
+		auth.POST("/refresh", authHandler.RefreshToken) // RefreshToken
+
+		// RequestPasswordChange
+		auth.POST("/password/request", authHandler.RequestPasswordChange) // RequestPasswordChange
 
 		// ConfirmPasswordChange
-		auth.POST("/password/confirm", handlers.AuthHandler.ConfirmPasswordChange) // ConfirmPasswordChange
-
-		// SignOut moved to user group (authenticated endpoint)
-		// auth.POST("/signout", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SignOut - MOVED TO USER GROUP
+		auth.POST("/password/confirm", authHandler.ConfirmPasswordChange) // ConfirmPasswordChange
 	}
 
 	// User routes (authenticated - Owner, Realtor, Agency and Admin)
@@ -102,7 +118,7 @@ func RegisterUserRoutes(
 		user.PUT("/opt-status", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // UpdateOptStatus
 
 		// SignOut (authenticated endpoint)
-		user.POST("/signout", handlers.UserHandler.SignOut) // SignOut
+		user.POST("/signout", userHandler.SignOut) // SignOut
 
 		// Photo management
 		user.POST("/photo/upload-url", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetPhotoUploadURL
@@ -153,7 +169,7 @@ func RegisterUserRoutes(
 // RegisterListingRoutes registers all listing-related routes with middleware dependencies
 func RegisterListingRoutes(
 	router *gin.RouterGroup,
-	handlers *factory.HTTPHandlers,
+	listingHandler *listinghandlers.ListingHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
 ) {
