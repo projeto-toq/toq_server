@@ -16,14 +16,15 @@ func (pa *PermissionAdapter) CreateUserRole(ctx context.Context, tx *sql.Tx, use
 	}
 
 	query := `
-		INSERT INTO user_roles (user_id, role_id, is_active, expires_at)
-		VALUES (?, ?, ?, ?)
+		INSERT INTO user_roles (user_id, role_id, is_active, status, expires_at)
+		VALUES (?, ?, ?, ?, ?)
 	`
 
 	id, err := pa.Create(ctx, tx, query,
 		entity.UserID,
 		entity.RoleID,
 		entity.IsActive,
+		entity.Status,
 		entity.ExpiresAt,
 	)
 	if err != nil {

@@ -5,11 +5,12 @@ import (
 	"database/sql"
 	"log/slog"
 
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus usermodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
+func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -38,7 +39,7 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	return
 }
 
-func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus usermodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
+func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
 
 	// TODO: Reimplementar busca por status após migração do sistema de status
 	// O método GetUsersByStatus precisa ser atualizado para o novo sistema de permissões

@@ -17,7 +17,7 @@ func (us *userService) updateUserStatus(
 	role permissionmodel.RoleSlug,
 	actonFinished usermodel.ActionFinished,
 	user ...usermodel.UserInterface) (
-	nextStatus usermodel.UserRoleStatus,
+	nextStatus permissionmodel.UserRoleStatus,
 	nextStatusReason string,
 	notification globalmodel.NotificationType,
 	err error) {
@@ -32,56 +32,56 @@ func (us *userService) updateUserStatus(
 	case usermodel.ActionFinishedCreated: //after user is created
 		switch role {
 		case permissionmodel.RoleSlugRoot:
-			nextStatus = usermodel.StatusActive
+			nextStatus = permissionmodel.StatusActive
 			nextStatusReason = "Admin user"
 		default:
-			nextStatus = usermodel.StatusPendingProfile
+			nextStatus = permissionmodel.StatusPendingEmail
 			nextStatusReason = "Phone and email validation pending"
 		}
 	case usermodel.ActionFinishedPhoneVerified: //after phone is verified, what is always first
-		nextStatus = usermodel.StatusPendingProfile
+		nextStatus = permissionmodel.StatusPendingEmail
 		nextStatusReason = "Email validation pending"
 	case usermodel.ActionFinishedEmailVerified: //after email is verified. the profile is OK
 		switch role {
 		case permissionmodel.RoleSlugOwner:
-			nextStatus = usermodel.StatusActive
+			nextStatus = permissionmodel.StatusActive
 			nextStatusReason = "User active"
 		case permissionmodel.RoleSlugRealtor:
-			nextStatus = usermodel.StatusPendingImages
+			nextStatus = permissionmodel.StatusPendingImages
 			nextStatusReason = "Awaiting creci images to verify"
 		case permissionmodel.RoleSlugAgency:
-			nextStatus = usermodel.StatusPendingManual
+			nextStatus = permissionmodel.StatusPendingManual
 			nextStatusReason = "Awaiting administrator approval"
 		}
 	case usermodel.ActionFinishedCreciImagesUploaded:
-		nextStatus = usermodel.StatusPendingOCR
+		nextStatus = permissionmodel.StatusPendingOCR
 		nextStatusReason = "Awaiting OCR verification"
 	case usermodel.ActionFinishedCreciNumberDoesntMatch:
-		nextStatus = usermodel.StatusRejectByOCR
+		nextStatus = permissionmodel.StatusRejectByOCR
 		nextStatusReason = "Creci number doesn't match"
 		notification = globalmodel.NotificationInvalidCreciNumber
 	case usermodel.ActionFinishedCreciStateDoesntMatch:
-		nextStatus = usermodel.StatusRejectByOCR
+		nextStatus = permissionmodel.StatusRejectByOCR
 		nextStatusReason = "Creci state doesn't match"
 		notification = globalmodel.NotificationInvalidCreciState
 	case usermodel.ActionFinishedCreciStateUnsupported:
-		nextStatus = usermodel.StatusRejectByOCR
+		nextStatus = permissionmodel.StatusRejectByOCR
 		nextStatusReason = "Creci state unsupported"
 		notification = globalmodel.NotificationCreciStateUnsupported
 	case usermodel.ActionFinishedBadCreciImages:
-		nextStatus = usermodel.StatusRejectByOCR
+		nextStatus = permissionmodel.StatusRejectByOCR
 		nextStatusReason = "Bad creci images"
 		notification = globalmodel.NotificationBadCreciImages
 	case usermodel.ActionFinishedBadSelfieImage:
-		nextStatus = usermodel.StatusRejectByFace
+		nextStatus = permissionmodel.StatusRejectByFace
 		nextStatusReason = "Bad Selfie image"
 		notification = globalmodel.NotificationBadSelfieImage
 	case usermodel.ActionFinishedSelfieDoesntMatch:
-		nextStatus = usermodel.StatusRejectByFace
+		nextStatus = permissionmodel.StatusRejectByFace
 		nextStatusReason = "Selfie doesn't match"
 		notification = globalmodel.NotificationBadSelfieImage
 	case usermodel.ActionFinishedCreciVerified:
-		nextStatus = usermodel.StatusPendingFace
+		nextStatus = permissionmodel.StatusPendingFace
 		nextStatusReason = "Awaiting face verification"
 	case usermodel.ActionFinishedCreciFaceVerified:
 		iUser := usermodel.NewUser()
@@ -99,32 +99,32 @@ func (us *userService) updateUserStatus(
 		}
 
 		if exist {
-			nextStatus = usermodel.StatusInvitePending
+			nextStatus = permissionmodel.StatusInvitePending
 			nextStatusReason = "Awaiting invite verification"
 			notification = globalmodel.NotificationRealtorInvitePush
 		} else {
-			nextStatus = usermodel.StatusActive
+			nextStatus = permissionmodel.StatusActive
 			nextStatusReason = "User active"
 			notification = globalmodel.NotificationCreciValidated
 		}
 
 	case usermodel.ActionFinishedCreciManualVerified:
-		nextStatus = usermodel.StatusActive
+		nextStatus = permissionmodel.StatusActive
 		nextStatusReason = "User active"
 		notification = globalmodel.NotificationCreciValidated
 	case usermodel.ActionFinishedCreciImagesUploadedForManualReview:
-		nextStatus = usermodel.StatusPendingManual
+		nextStatus = permissionmodel.StatusPendingManual
 		nextStatusReason = "Awaiting manual verification by administrator"
 	case usermodel.ActionFinishedInviteCreated:
-		nextStatus = usermodel.StatusInvitePending
+		nextStatus = permissionmodel.StatusInvitePending
 		nextStatusReason = "Awaiting invite verification"
 		notification = globalmodel.NotificationRealtorInvitePush
 	case usermodel.ActionFinishedInviteAccepted:
-		nextStatus = usermodel.StatusActive
+		nextStatus = permissionmodel.StatusActive
 		nextStatusReason = "User active"
 		notification = globalmodel.NotificationInviteAccepted
 	case usermodel.ActionFinishedInviteRejected:
-		nextStatus = usermodel.StatusActive
+		nextStatus = permissionmodel.StatusActive
 		nextStatusReason = "User active"
 		notification = globalmodel.NotificationInviteRejected
 	}

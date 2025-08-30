@@ -87,3 +87,43 @@ func (pa PermissionAction) IsValid() bool {
 		return false
 	}
 }
+
+// UserRoleStatus representa os possíveis status de um user_role
+type UserRoleStatus int
+
+const (
+	StatusActive        UserRoleStatus = iota // normal user status
+	StatusBlocked                             // blocked by admin
+	StatusPendingEmail                        // awaiting email confirmation
+	StatusPendingPhone                        // awaiting phone confirmation
+	StatusPendingImages                       // awaiting creci images to be uploaded
+	StatusPendingOCR                          // awaiting creci images to be OCR'd by AI
+	StatusRejectByOCR                         // creci images were rejected by AI
+	StatusPendingFace                         // awaiting face image to be verified by AI
+	StatusRejectByFace                        // face image was rejected by AI
+	StatusPendingManual                       // awaiting manual verification by admin
+	StatusDeleted                             // user request the deletion of the account
+	StatusInvitePending                       // realtor was invited and is pending acceptance
+)
+
+// String implementa fmt.Stringer para UserRoleStatus
+func (us UserRoleStatus) String() string {
+	statuses := [...]string{
+		"active",
+		"blocked",
+		"pending_email",
+		"pending_phone",
+		"pending_images",
+		"pending_ocr",
+		"reject_by_ocr",
+		"pending_face",
+		"reject_by_face",
+		"pending_manual",
+		"deleted",
+		"invite_pending",
+	}
+	if us < StatusActive || int(us) >= len(statuses) {
+		return "unknown"
+	}
+	return statuses[us]
+}

@@ -341,3 +341,25 @@ type GetAgencyOfRealtorResponse struct {
 type DeleteAgencyOfRealtorResponse struct {
 	Message string `json:"message"`
 }
+
+// User Role Status Management DTOs
+
+// UpdateUserRoleStatusRequest represents a request to update user role status
+type UpdateUserRoleStatusRequest struct {
+	Status string `json:"status" binding:"required"`
+}
+
+// UpdateUserRoleStatusResponse represents response for status update
+type UpdateUserRoleStatusResponse struct {
+	UserID   int64  `json:"userId"`
+	RoleSlug string `json:"roleSlug"`
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+}
+
+// GetUserRoleStatusResponse represents response for status query
+type GetUserRoleStatusResponse struct {
+	UserID   int64  `json:"userId"`
+	RoleSlug string `json:"roleSlug"`
+	Status   string `json:"status"`
+}

@@ -38,8 +38,8 @@ func (uh *UserHandler) GetUserRoles(c *gin.Context) {
 			BaseRoleID:   role.GetRoleID(),
 			Role:         role.GetRole().GetSlug(),
 			Active:       role.GetIsActive(),
-			Status:       "active", // TODO: Implement status system
-			StatusReason: "",       // TODO: Implement status reason system
+			Status:       role.GetStatus().String(),
+			StatusReason: "", // Removed as per requirements - status is self-explanatory
 		}
 		roleResponses = append(roleResponses, roleResponse)
 	}

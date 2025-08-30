@@ -8,6 +8,7 @@ type userRole struct {
 	userID    int64
 	roleID    int64
 	isActive  bool
+	status    UserRoleStatus
 	expiresAt *time.Time
 	role      RoleInterface
 }
@@ -15,6 +16,7 @@ type userRole struct {
 func NewUserRole() UserRoleInterface {
 	return &userRole{
 		isActive: true,
+		status:   StatusActive,
 	}
 }
 
@@ -48,6 +50,14 @@ func (ur *userRole) GetIsActive() bool {
 
 func (ur *userRole) SetIsActive(isActive bool) {
 	ur.isActive = isActive
+}
+
+func (ur *userRole) GetStatus() UserRoleStatus {
+	return ur.status
+}
+
+func (ur *userRole) SetStatus(status UserRoleStatus) {
+	ur.status = status
 }
 
 func (ur *userRole) GetExpiresAt() *time.Time {

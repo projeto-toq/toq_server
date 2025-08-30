@@ -16,6 +16,7 @@ func UserRoleDomainToEntity(userRole permissionmodel.UserRoleInterface) *permiss
 		UserID:   userRole.GetUserID(),
 		RoleID:   userRole.GetRoleID(),
 		IsActive: userRole.GetIsActive(),
+		Status:   int64(userRole.GetStatus()),
 	}
 
 	if expiresAt := userRole.GetExpiresAt(); expiresAt != nil {

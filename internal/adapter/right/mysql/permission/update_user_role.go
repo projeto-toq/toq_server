@@ -17,7 +17,7 @@ func (pa *PermissionAdapter) UpdateUserRole(ctx context.Context, tx *sql.Tx, use
 
 	query := `
 		UPDATE user_roles 
-		SET user_id = ?, role_id = ?, is_active = ?, expires_at = ?
+		SET user_id = ?, role_id = ?, is_active = ?, status = ?, expires_at = ?
 		WHERE id = ?
 	`
 
@@ -25,6 +25,7 @@ func (pa *PermissionAdapter) UpdateUserRole(ctx context.Context, tx *sql.Tx, use
 		entity.UserID,
 		entity.RoleID,
 		entity.IsActive,
+		entity.Status,
 		entity.ExpiresAt,
 		entity.ID,
 	)

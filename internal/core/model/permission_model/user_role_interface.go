@@ -11,6 +11,8 @@ type UserRoleInterface interface {
 	SetRoleID(roleID int64)
 	GetIsActive() bool
 	SetIsActive(isActive bool)
+	GetStatus() UserRoleStatus
+	SetStatus(status UserRoleStatus)
 	GetExpiresAt() *time.Time
 	SetExpiresAt(expiresAt *time.Time)
 	GetRole() RoleInterface

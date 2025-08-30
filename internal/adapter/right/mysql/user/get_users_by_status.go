@@ -10,7 +10,7 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (ua *UserAdapter) GetUsersByStatus(ctx context.Context, tx *sql.Tx, userRoleStatus usermodel.UserRoleStatus, roleSlug permissionmodel.RoleSlug) (users []usermodel.UserInterface, err error) {
+func (ua *UserAdapter) GetUsersByStatus(ctx context.Context, tx *sql.Tx, userRoleStatus permissionmodel.UserRoleStatus, roleSlug permissionmodel.RoleSlug) (users []usermodel.UserInterface, err error) {
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

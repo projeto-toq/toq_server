@@ -14,7 +14,7 @@ import (
 // GetActiveUserRoleByUserID retorna o role ativo único do usuário
 func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error) {
 	query := `
-		SELECT ur.id, ur.user_id, ur.role_id, ur.is_active, ur.expires_at
+		SELECT ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at
 		FROM user_roles ur
 		WHERE ur.user_id = ? AND ur.is_active = 1
 		LIMIT 1
@@ -29,8 +29,8 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 		return nil, nil // Nenhum role ativo encontrado
 	}
 
-	if len(row) != 5 {
-		return nil, fmt.Errorf("unexpected number of columns: expected 5, got %d", len(row))
+	if len(row) != 6 {
+		return nil, fmt.Errorf("unexpected number of columns: expected 6, got %d", len(row))
 	}
 
 	entity := &permissionentities.UserRoleEntity{
@@ -38,11 +38,12 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 		UserID:   row[1].(int64),
 		RoleID:   row[2].(int64),
 		IsActive: row[3].(int64) == 1,
+		Status:   row[4].(int64),
 	}
 
 	// Handle expires_at (pode ser NULL)
-	if row[4] != nil {
-		if expiresAt, ok := row[4].(time.Time); ok {
+	if row[5] != nil {
+		if expiresAt, ok := row[5].(time.Time); ok {
 			entity.ExpiresAt = &expiresAt
 		}
 	}

@@ -4,9 +4,8 @@ import (
 	"log/slog"
 
 	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.ComplexTowerInterface, err error) {
@@ -34,28 +33,28 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 	}
 	complexTower.SetTower(string(tower))
 
-	if entity[3] == nil {
-		floors, ok := entity[3].(int32)
+	if entity[3] != nil {
+		floors, ok := entity[3].(int64)
 		if !ok {
-			slog.Error("Error converting floors to int32", "floors", entity[3])
+			slog.Error("Error converting floors to int64", "floors", entity[3])
 			return nil, utils.ErrInternalServer
 		}
 		complexTower.SetFloors(int(floors))
 	}
 
-	if entity[4] == nil {
-		total_units, ok := entity[4].(int32)
+	if entity[4] != nil {
+		total_units, ok := entity[4].(int64)
 		if !ok {
-			slog.Error("Error converting total_units to int32", "total_units", entity[4])
+			slog.Error("Error converting total_units to int64", "total_units", entity[4])
 			return nil, utils.ErrInternalServer
 		}
 		complexTower.SetTotalUnits(int(total_units))
 	}
 
-	if entity[5] == nil {
-		units_per_floor, ok := entity[5].(int32)
+	if entity[5] != nil {
+		units_per_floor, ok := entity[5].(int64)
 		if !ok {
-			slog.Error("Error converting units_per_floor to int32", "units_per_floor", entity[5])
+			slog.Error("Error converting units_per_floor to int64", "units_per_floor", entity[5])
 			return nil, utils.ErrInternalServer
 		}
 		complexTower.SetUnitsPerFloor(int(units_per_floor))
