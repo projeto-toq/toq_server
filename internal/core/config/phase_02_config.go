@@ -14,27 +14,16 @@ import (
 // - Carregamento de variáveis de ambiente
 // - Carregamento de configuração YAML
 // - Validação de configuração
-// - Inicialização do sistema de logging
 func (b *Bootstrap) Phase02_LoadConfiguration() error {
 	b.logger.Info("🎯 FASE 2: Carregamento e Validação de Configuração")
 	b.logger.Debug("Carregando configuração do sistema")
 
-	// 1. Carregar variáveis de ambiente
+	// 1. Carregar configuração YAML
 	if err := b.loadEnvironmentConfig(); err != nil {
-		return NewBootstrapError("Phase02", "env_load", "Failed to load environment configuration", err)
+		return NewBootstrapError("Phase02", "load_config", "Failed to load configuration", err)
 	}
 
-	// 2. Inicializar sistema de logging (primeira vez com env)
-	if err := b.initializeEarlyLogging(); err != nil {
-		return NewBootstrapError("Phase02", "early_logging", "Failed to initialize early logging", err)
-	}
-
-	// 3. Reconfigurar logging com YAML (ENV ainda tem prioridade)
-	if err := b.reconfigureLoggingWithYAML(); err != nil {
-		return NewBootstrapError("Phase02", "yaml_logging", "Failed to reconfigure logging with YAML", err)
-	}
-
-	// 4. Validar configuração completa
+	// 2. Validar configuração completa
 	if err := b.validateConfiguration(); err != nil {
 		return NewBootstrapError("Phase02", "validation", "Configuration validation failed", err)
 	}
@@ -66,28 +55,6 @@ func (b *Bootstrap) loadEnvironmentConfig() error {
 	return nil
 }
 
-// initializeEarlyLogging inicializa o logging baseado apenas em variáveis de ambiente
-func (b *Bootstrap) initializeEarlyLogging() error {
-	b.logger.Debug("Inicializando logging baseado em variáveis de ambiente")
-
-	// Inicializar logging com configuração de ambiente
-	b.config.InitializeLog()
-
-	b.logger.Info("✅ Logging inicial baseado em ENV configurado")
-	return nil
-}
-
-// reconfigureLoggingWithYAML reconfigura o logging com valores do YAML
-func (b *Bootstrap) reconfigureLoggingWithYAML() error {
-	b.logger.Debug("Reconfigurando logging com valores YAML")
-
-	// Re-inicializar logging com configuração completa (ENV > YAML > defaults)
-	b.config.InitializeLog()
-
-	b.logger.Info("✅ Logging reconfigurado com prioridade ENV > YAML > defaults")
-	return nil
-}
-
 // validateConfiguration valida toda a configuração carregada
 func (b *Bootstrap) validateConfiguration() error {
 	b.logger.Debug("Validando configuração completa")
@@ -99,7 +66,6 @@ func (b *Bootstrap) validateConfiguration() error {
 	}{
 		{"database_config", b.validateDatabaseConfig},
 		{"http_config", b.validateHTTPConfig},
-		{"logging_config", b.validateLoggingConfig},
 		{"telemetry_config", b.validateTelemetryConfig},
 	}
 
@@ -234,52 +200,6 @@ func (b *Bootstrap) validateHTTPConfig() error {
 }
 
 // validateLoggingConfig valida configuração de logging
-func (b *Bootstrap) validateLoggingConfig() error {
-	b.logger.Debug("Validando configuração de logging")
-
-	// Validar nível de log
-	validLevels := []string{"DEBUG", "INFO", "WARN", "ERROR"}
-	levelValid := false
-	for _, level := range validLevels {
-		if strings.ToUpper(b.env.LOG.Level) == level {
-			levelValid = true
-			break
-		}
-	}
-	if !levelValid {
-		return fmt.Errorf("invalid log level: %s (must be one of: %v)", b.env.LOG.Level, validLevels)
-	}
-
-	// Validar configuração de arquivo se habilitada
-	if b.env.LOG.ToFile {
-		if b.env.LOG.Path == "" {
-			return fmt.Errorf("log to file enabled but path is empty")
-		}
-
-		if b.env.LOG.Filename == "" {
-			return fmt.Errorf("log to file enabled but filename is empty")
-		}
-
-		// Verificar se o diretório existe ou pode ser criado
-		if _, err := os.Stat(b.env.LOG.Path); os.IsNotExist(err) {
-			// Tentar criar o diretório
-			if err := os.MkdirAll(b.env.LOG.Path, 0755); err != nil {
-				return fmt.Errorf("cannot create log directory: %s", b.env.LOG.Path)
-			}
-		}
-
-		// Verificar se podemos escrever no diretório
-		testFile := fmt.Sprintf("%s/.log_test", b.env.LOG.Path)
-		if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
-			return fmt.Errorf("cannot write to log directory: %s", b.env.LOG.Path)
-		}
-		os.Remove(testFile) // Limpar arquivo de teste
-	}
-
-	b.logger.Debug("✅ Configuração de logging validada com sucesso")
-	return nil
-}
-
 // validateTelemetryConfig valida configuração de telemetria
 func (b *Bootstrap) validateTelemetryConfig() error {
 	b.logger.Debug("Validando configuração de telemetria")

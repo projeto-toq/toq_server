@@ -79,17 +79,29 @@ func NewBootstrap() *Bootstrap {
 		healthStatus: HealthStatus{
 			Phases: make(map[string]PhaseHealth),
 		},
-		logger: slog.Default(),
+		logger: slog.Default(), // Já configurado via CLI flags
 	}
+}
+
+// logPhaseStart registra o início de uma fase do bootstrap
+func (b *Bootstrap) logPhaseStart(phaseName string) {
+	b.logger.Info("▶️ Executando fase",
+		"phase", phaseName,
+		"component", "bootstrap",
+		"timestamp", time.Now().Format(time.RFC3339))
+}
+
+// logPhaseEnd registra o fim de uma fase do bootstrap
+func (b *Bootstrap) logPhaseEnd(phaseName string, duration time.Duration) {
+	b.logger.Info("✅ Fase concluída",
+		"phase", phaseName,
+		"component", "bootstrap",
+		"duration", duration.String())
 }
 
 // Bootstrap executa todo o processo de inicialização do sistema
 // Esta é a função principal que orquestra todas as fases
 func (b *Bootstrap) Bootstrap() error {
-	b.logger.Info("🚀 Iniciando TOQ Server Bootstrap",
-		"version", globalmodel.AppVersion,
-		"timestamp", b.startTime.Format(time.RFC3339))
-
 	defer func() {
 		if r := recover(); r != nil {
 			b.logger.Error("💥 Panic durante inicialização", "panic", r)
@@ -123,7 +135,8 @@ func (b *Bootstrap) Bootstrap() error {
 	}
 
 	b.logger.Info("🎉 TOQ Server inicializado com sucesso",
-		"total_time", time.Since(b.startTime))
+		"component", "bootstrap",
+		"total_time", time.Since(b.startTime).String())
 
 	return nil
 }
@@ -139,9 +152,7 @@ func (b *Bootstrap) executePhase(phaseName string, phaseFunc func() error) error
 	b.phaseMutex.Unlock()
 
 	start := time.Now()
-	b.logger.Info("▶️ Executando fase",
-		"phase", phaseName,
-		"timestamp", start.Format(time.RFC3339))
+	b.logPhaseStart(phaseName)
 
 	// Executar fase com timeout
 	done := make(chan error, 1)
@@ -163,13 +174,12 @@ func (b *Bootstrap) executePhase(phaseName string, phaseFunc func() error) error
 			b.healthStatus.ErrorCount++
 			b.logger.Error("❌ Fase falhou",
 				"phase", phaseName,
-				"duration", duration,
+				"component", "bootstrap",
+				"duration", duration.String(),
 				"error", err)
 		} else {
 			phase.Status = "completed"
-			b.logger.Info("✅ Fase concluída",
-				"phase", phaseName,
-				"duration", duration)
+			b.logPhaseEnd(phaseName, duration)
 		}
 
 		b.healthStatus.Phases[phaseName] = phase

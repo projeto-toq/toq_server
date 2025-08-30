@@ -7,9 +7,8 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetActiveUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) (role usermodel.UserRoleInterface, err error) {
@@ -19,7 +18,7 @@ func (ua *UserAdapter) GetActiveUserRolesByUserID(ctx context.Context, tx *sql.T
 	}
 	defer spanEnd()
 
-	entities, err := ua.Read(ctx, tx, "SELECT * FROM user_roles WHERE user_id = ? AND active = 1", userID)
+	entities, err := ua.Read(ctx, tx, "SELECT * FROM user_roles WHERE user_id = ? AND is_active = 1", userID)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetActiveUserRolesByUserID: error executing Read", "error", err)
 		return nil, utils.ErrInternalServer

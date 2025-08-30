@@ -7,9 +7,8 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermodel.UserInterface, err error) {
@@ -37,15 +36,10 @@ func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermo
 			return nil, err1
 		}
 
-		role, err1 := ua.GetActiveUserRolesByUserID(ctx, tx, user.GetID())
-		if err != nil {
-			return nil, err1
-		}
-
-		user.SetActiveRole(role)
+		// Note: Active role should be set by the calling service using Permission Service
+		// This maintains separation of concerns between User and Permission domains
 
 		users = append(users, user)
-
 	}
 
 	return

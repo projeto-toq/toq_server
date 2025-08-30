@@ -1,6 +1,9 @@
 🛠️ Problema
-Após a última fatoração, realizei o teste chamando o /auth/owner pelo postman. este foi o log gerado:
-{"time":"2025-08-30T12:56:56.364694554Z","level":"INFO","msg":"HTTP Request","request_id":"","method":"POST","path":"/api/v1/auth/owner","status":201,"duration":358789627,"size":600,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0"}
+Erro recebido ao tentar signin
+{"time":"2025-08-30T13:59:16.800798592Z","level":"DEBUG","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares.RequestIDMiddleware.func1","file":"/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/request_id_middleware.go","line":30},"msg":"Request ID generated","request_id":"d58174aa-f989-42d3-9919-1f32e7f9a3e5","path":"/api/v1/auth/signin"}
+{"time":"2025-08-30T13:59:16.803695567Z","level":"ERROR","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user.(*UserAdapter).Read","file":"/codigos/go_code/toq_server/internal/adapter/right/mysql/user/basic_read.go","line":20},"msg":"Error preparing statement on mysqluseradapter/Read","error":"Error 1054 (42S22): Unknown column 'active' in 'where clause'"}
+{"time":"2025-08-30T13:59:16.803911233Z","level":"ERROR","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user.(*UserAdapter).GetActiveUserRolesByUserID","file":"/codigos/go_code/toq_server/internal/adapter/right/mysql/user/get_active_user_roles_by_userid.go","line":24},"msg":"mysqluseradapter/GetActiveUserRolesByUserID: error executing Read","error":"Error 1054 (42S22): Unknown column 'active' in 'where clause'"}
+{"time":"2025-08-30T13:59:16.804602403Z","level":"WARN","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares.StructuredLoggingMiddleware.func1","file":"/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/structured_logging_middleware.go","line":107},"msg":"HTTP Error","request_id":"d58174aa-f989-42d3-9919-1f32e7f9a3e5","method":"POST","path":"/api/v1/auth/signin","status":401,"duration":3603066,"size":72,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0"}
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 - Adoção das melhores práticas de desenvolvimento em Go
@@ -23,4 +26,4 @@ Após a última fatoração, realizei o teste chamando o /auth/owner pelo postma
 
 📌 Instruções finais
 - Não implemente nada até que eu autorize.
-- Analise cuidadosamente a solicitação e o código atual e responda porque o request_id está em branco
+- Analise cuidadosamente a solicitação e o código atual e busque a causa raiz e pssíveis correções

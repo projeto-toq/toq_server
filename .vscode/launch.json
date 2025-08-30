@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "TOQ Server (Development with pprof)",
+            "name": "TOQ Server (Development)",
             "type": "go",
             "request": "launch",
             "program": "${workspaceFolder}/cmd/toq_server.go",
@@ -22,12 +22,68 @@
                 "DB_NAME": "toq_db",
                 "PORT": "8080",
                 "ENABLE_PPROF": "true",
-                "PPROF_PORT": "6060",
-                "LOG_LEVEL": "info",
-                "LOG_ADDSOURCE": "true",
-                "LOG_TOFILE": "false"
+                "PPROF_PORT": "6060"
             },
-            "args": [],
+            "args": [
+                "--log-level=info",
+                "--log-format=json",
+                "--log-output=stdout",
+                "--log-add-source=false"
+            ],
+            "console": "internalConsole"
+        },
+        {
+            "name": "TOQ Server (Production Mode)",
+            "type": "go",
+            "request": "launch",
+            "program": "${workspaceFolder}/cmd/toq_server.go",
+            "output": "${workspaceFolder}/bin/toq_server",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "DISABLE_OTEL": "false",
+                "OTLP_ENDPOINT": "localhost:4318",
+                "DB_HOST": "localhost",
+                "DB_PORT": "3306",
+                "DB_USER": "toq_user",
+                "DB_PASSWORD": "toq_password",
+                "DB_NAME": "toq_db",
+                "PORT": "8080",
+                "ENABLE_PPROF": "false",
+                "PPROF_PORT": "6060"
+            },
+            "args": [
+                "--log-level=info",
+                "--log-format=json",
+                "--log-output=file",
+                "--log-add-source=false"
+            ],
+            "console": "internalConsole"
+        },
+        {
+            "name": "TOQ Server (Debug)",
+            "type": "go",
+            "request": "launch",
+            "program": "${workspaceFolder}/cmd/toq_server.go",
+            "output": "${workspaceFolder}/bin/toq_server",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "DISABLE_OTEL": "false",
+                "OTLP_ENDPOINT": "localhost:4318",
+                "DB_HOST": "localhost",
+                "DB_PORT": "3306",
+                "DB_USER": "toq_user",
+                "DB_PASSWORD": "toq_password",
+                "DB_NAME": "toq_db",
+                "PORT": "8080",
+                "ENABLE_PPROF": "true",
+                "PPROF_PORT": "6060"
+            },
+            "args": [
+                "--log-level=debug",
+                "--log-format=json",
+                "--log-output=stdout",
+                "--log-add-source=true"
+            ],
             "console": "internalConsole"
         }
     ]

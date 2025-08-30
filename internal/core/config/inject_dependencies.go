@@ -17,7 +17,7 @@ import (
 // Aplica princípios SOLID e melhores práticas Go para injeção de dependências
 func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	slog.Info("Starting dependency injection using Factory Pattern")
-	slog.Info("DEBUG: InjectDependencies method called on config instance")
+	slog.Debug("InjectDependencies method called on config instance")
 
 	if c == nil {
 		slog.Error("DEBUG: config instance is nil")
@@ -45,7 +45,7 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	}
 
 	// 1. Criar Storage Adapters (Database + Cache)
-	slog.Info("Creating storage adapters")
+
 	storage, err := c.adapterFactory.CreateStorageAdapters(c.context, &c.env, c.db)
 	if err != nil {
 		return fmt.Errorf("failed to create storage adapters: %w", err)
@@ -64,7 +64,7 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	factoryConfig.Database = storage.Database
 
 	// 2. Criar Repository Adapters
-	slog.Info("Creating repository adapters")
+
 	repositories, err := c.adapterFactory.CreateRepositoryAdapters(storage.Database)
 	if err != nil {
 		return fmt.Errorf("failed to create repository adapters: %w", err)
@@ -72,7 +72,7 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	c.assignRepositoryAdapters(repositories)
 
 	// 3. Criar Validation Adapters (CEP, CPF, CNPJ, CRECI)
-	slog.Info("Creating validation adapters")
+
 	validation, err := c.adapterFactory.CreateValidationAdapters(&c.env)
 	if err != nil {
 		return fmt.Errorf("failed to create validation adapters: %w", err)

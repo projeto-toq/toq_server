@@ -7,10 +7,10 @@ import (
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
-"errors"
+
+	"errors"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
@@ -52,6 +52,27 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		}
 		return
 	}
+
+	// Get active roles via Permission Service
+	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, user.GetID())
+	if err != nil {
+		return
+	}
+
+	if len(userRoles) == 0 {
+		err = utils.ErrInternalServer
+		return
+	}
+
+	// Convert permission model to user model (get the first active role)
+	// TODO: Implement proper active role selection logic based on business rules
+	activeRole := usermodel.NewUserRole()
+	activeRole.SetID(userRoles[0].GetID())
+	activeRole.SetUserID(userRoles[0].GetUserID())
+	activeRole.SetBaseRoleID(userRoles[0].GetRoleID())
+	activeRole.SetActive(userRoles[0].GetIsActive())
+
+	user.SetActiveRole(activeRole)
 
 	if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
 		err = utils.ErrInternalServer
