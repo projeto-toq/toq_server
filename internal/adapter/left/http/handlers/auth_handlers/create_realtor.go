@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // CreateRealtor handles realtor account creation (public endpoint)
@@ -38,7 +38,7 @@ func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 	}
 
 	// Create user model from DTO
-	user, err := ah.createUserFromDTO(request.Realtor, usermodel.RoleRealtor)
+	user, err := ah.createUserFromDTO(request.Realtor, permissionmodel.RoleSlugRealtor)
 	if err != nil {
 		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_USER_DATA", "Invalid user data")
 		return

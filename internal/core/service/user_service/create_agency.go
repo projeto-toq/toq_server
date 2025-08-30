@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -38,12 +39,13 @@ func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserIn
 
 func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
 
-	legacyRole, err := us.getLegacyRoleBySlug("agency")
+	// Usar permission service com constante tipada
+	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, permissionmodel.RoleSlugAgency)
 	if err != nil {
 		return
 	}
 
-	err = us.ValidateUserData(ctx, tx, agency, legacyRole)
+	err = us.ValidateUserData(ctx, tx, agency, permissionmodel.RoleSlugAgency)
 	if err != nil {
 		return
 	}
@@ -53,7 +55,8 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 		return
 	}
 
-	err = us.assignRoleToUser(ctx, tx, agency.GetID(), "agency")
+	// Usar permission service diretamente para atribuir role
+	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, agency.GetID(), role.GetID(), nil)
 	if err != nil {
 		return
 	}

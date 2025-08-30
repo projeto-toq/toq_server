@@ -42,6 +42,7 @@ import (
 	complexservice "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservice "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
+	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	userservice "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 )
 
@@ -198,6 +199,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	globalService globalservice.GlobalServiceInterface,
 	listingService listingservice.ListingServiceInterface,
 	complexService complexservice.ComplexServiceInterface,
+	permissionService permissionservice.PermissionServiceInterface,
 ) HTTPHandlers {
 	slog.Info("Creating HTTP handlers")
 
@@ -206,6 +208,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		userService,
 		globalService,
 		complexService,
+		permissionService,
 	)
 
 	// Create auth handler using the adapter

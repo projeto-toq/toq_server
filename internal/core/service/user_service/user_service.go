@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
@@ -43,11 +44,11 @@ func (us *userService) setUserActiveRole(ctx context.Context, tx *sql.Tx, user u
 
 	// Convert permission model to user model (get the first active role)
 	// TODO: Implement proper active role selection logic based on business rules
-	activeRole := usermodel.NewUserRole()
+	activeRole := permissionmodel.NewUserRole()
 	activeRole.SetID(userRoles[0].GetID())
 	activeRole.SetUserID(userRoles[0].GetUserID())
-	activeRole.SetBaseRoleID(userRoles[0].GetRoleID())
-	activeRole.SetActive(userRoles[0].GetIsActive())
+	activeRole.SetRoleID(userRoles[0].GetRoleID())
+	activeRole.SetIsActive(userRoles[0].GetIsActive())
 
 	user.SetActiveRole(activeRole)
 	return nil
@@ -80,12 +81,11 @@ func NewUserService(
 
 type UserServiceInterface interface {
 	AcceptInvitation(ctx context.Context, userID int64) (err error)
-	AddAlternativeRole(ctx context.Context, userID int64, role usermodel.UserRole, creciInfo ...string) (err error)
+	AddAlternativeRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug, creciInfo ...string) (err error)
 	ConfirmEmailChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error)
 	ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error)
 	ConfirmPhoneChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error)
 	CreateAgency(ctx context.Context, agency usermodel.UserInterface) (tokens usermodel.Tokens, err error)
-	CreateBaseRole(ctx context.Context, role usermodel.UserRole, name string) (err error)
 	CreateOwner(ctx context.Context, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error)
 	CreateRealtor(ctx context.Context, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error)
 	CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error)
@@ -93,12 +93,9 @@ type UserServiceInterface interface {
 	DeleteAgencyOfRealtor(ctx context.Context, realtorID int64) (err error)
 	DeleteRealtorOfAgency(ctx context.Context, agencyID int64, realtorID int64) (err error)
 	GetAgencyOfRealtor(ctx context.Context, realtorID int64) (agency usermodel.UserInterface, err error)
-	GetBaseRoles(ctx context.Context) (roles []usermodel.BaseRoleInterface, err error)
-	// GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus usermodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error)
 	GetOnboardingStatus(ctx context.Context, userID int64) (UserRoleStatus string, reason string, err error)
 	GetProfile(ctx context.Context, userID int64) (user usermodel.UserInterface, err error)
 	GetRealtorsByAgency(ctx context.Context, agencyID int64) (realtors []usermodel.UserInterface, err error)
-	GetUserRolesByUser(ctx context.Context, userID int64) (roles []usermodel.UserRoleInterface, err error)
 	GetUsers(ctx context.Context) (users []usermodel.UserInterface, err error)
 	Home(ctx context.Context, userID int64) (user usermodel.UserInterface, err error)
 	InviteRealtor(ctx context.Context, phoneNumber string) (err error)
@@ -111,15 +108,11 @@ type UserServiceInterface interface {
 	ResendPhoneChangeCode(ctx context.Context, userID int64) (code string, err error)
 	SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error)
 	SignOut(ctx context.Context, userID int64, deviceToken, refreshToken string) (err error)
-	SwitchUserRole(ctx context.Context, userID int64, roleSlug string) (tokens usermodel.Tokens, err error)
+	SwitchUserRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error)
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error)
-	// ValidateCreciData(ctx context.Context, realtors []usermodel.UserInterface)
-	// ValidateCreciFace(ctx context.Context, realtors []usermodel.UserInterface)
-	// VerifyCreciImages(ctx context.Context, realtorID int64) (err error)
 	UpdateOptStatus(ctx context.Context, optIn bool) (err error)
 	GetPhotoUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error)
-	// GetCreciUploadURL(ctx context.Context, documentType, contentType string) (signedURL string, err error)
 	GeneratePhotoDownloadURL(ctx context.Context, userID int64, photoType string) (signedURL string, err error)
 	GetProfileThumbnails(ctx context.Context, userID int64) (thumbnails usermodel.ProfileThumbnails, err error)
 	CreateUserFolder(ctx context.Context, userID int64) (err error)

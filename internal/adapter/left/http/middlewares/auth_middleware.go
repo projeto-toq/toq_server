@@ -9,9 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/golang-jwt/jwt"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // AuthMiddleware handles JWT authentication
@@ -67,7 +68,7 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 func setRootUserContext(c *gin.Context) {
 	infos := usermodel.UserInfos{
 		ID:            0,
-		Role:          usermodel.UserRole(0),
+		Role:          permissionmodel.RoleSlugRoot, // Use RoleSlug instead of UserRole
 		ProfileStatus: false,
 	}
 
@@ -97,6 +98,22 @@ func setUserContext(c *gin.Context, userInfo usermodel.UserInfos) {
 	c.Set("userInfo", userInfo)
 	c.Set("userAgent", c.GetHeader("User-Agent"))
 	c.Set("clientIP", c.ClientIP())
+}
+
+// convertRoleNumberToSlug converts legacy role numbers to role slugs
+func convertRoleNumberToSlug(roleNumber float64) permissionmodel.RoleSlug {
+	switch int(roleNumber) {
+	case 1:
+		return permissionmodel.RoleSlugRoot
+	case 2:
+		return permissionmodel.RoleSlugOwner
+	case 3:
+		return permissionmodel.RoleSlugRealtor
+	case 4:
+		return permissionmodel.RoleSlugAgency
+	default:
+		return permissionmodel.RoleSlugOwner // Default fallback
+	}
 }
 
 // validateAccessToken validates the JWT token and extracts user information
@@ -129,7 +146,7 @@ func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
 
 	return usermodel.UserInfos{
 		ID:            int64(userID),
-		Role:          usermodel.UserRole(role),
+		Role:          convertRoleNumberToSlug(role),
 		ProfileStatus: profileStatus,
 	}, nil
 }

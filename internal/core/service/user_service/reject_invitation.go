@@ -3,15 +3,14 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
-"errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) RejectInvitation(ctx context.Context, realtorID int64) (err error) {
@@ -68,12 +67,15 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 		return
 	}
 
-	status, reason, _, err := us.updateUserStatus(ctx, tx, realtor.GetActiveRole().GetRole(), usermodel.ActionFinishedInviteRejected)
+	// Converter RoleInterface para RoleSlug
+	roleSlug := permissionmodel.RoleSlug(realtor.GetActiveRole().GetRole().GetSlug())
+	_, _, _, err = us.updateUserStatus(ctx, tx, roleSlug, usermodel.ActionFinishedInviteRejected)
 	if err != nil {
 		return
 	}
-	realtor.GetActiveRole().SetStatus(status)
-	realtor.GetActiveRole().SetStatusReason(reason)
+	// TODO: Implementar atualização de status via permission service
+	// realtor.GetActiveRole().SetStatus(status)
+	// realtor.GetActiveRole().SetStatusReason(reason)
 
 	// Notificar a imobiliária sobre a rejeição do convite
 	notificationService := us.globalService.GetUnifiedNotificationService()

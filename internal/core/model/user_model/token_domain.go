@@ -1,5 +1,7 @@
 package usermodel
 
+import permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+
 type Tokens struct {
 	//the token to be used on request
 	AccessToken string `json:"access_token"`
@@ -10,7 +12,7 @@ type Tokens struct {
 type UserInfos struct {
 	ID            int64
 	ProfileStatus bool
-	Role          UserRole
+	Role          permissionmodel.RoleSlug // Usar RoleSlug ao invés de UserRole
 }
 
 type JWT struct {

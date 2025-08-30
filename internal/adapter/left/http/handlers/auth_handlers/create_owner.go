@@ -6,8 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // CreateOwner handles owner account creation (public endpoint)
@@ -39,7 +40,7 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	}
 
 	// Create user model from DTO
-	user, err := ah.createUserFromDTO(request.Owner, usermodel.RoleOwner)
+	user, err := ah.createUserFromDTO(request.Owner, permissionmodel.RoleSlugOwner)
 	if err != nil {
 		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_USER_DATA", "Invalid user data")
 		return
@@ -62,7 +63,7 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 }
 
 // createUserFromDTO converts DTO to User model
-func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role usermodel.UserRole) (usermodel.UserInterface, error) {
+func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role permissionmodel.RoleSlug) (usermodel.UserInterface, error) {
 	user := usermodel.NewUser()
 
 	// Parse dates
@@ -100,12 +101,7 @@ func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role use
 	user.SetState(dtoUser.State)
 	user.SetPassword(dtoUser.Password)
 
-	// Create and set active role
-	activeRole := usermodel.NewUserRole()
-	activeRole.SetRole(role)
-	activeRole.SetActive(true)
-	activeRole.SetStatus(usermodel.StatusActive)
-	user.SetActiveRole(activeRole)
+	// Note: Active role will be set by the service layer, not the handler
 
 	user.SetOptStatus(false) // Default opt-in status
 	user.SetDeleted(false)

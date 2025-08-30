@@ -66,18 +66,15 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 
 	// Convert permission model to user model (get the first active role)
 	// TODO: Implement proper active role selection logic based on business rules
-	activeRole := usermodel.NewUserRole()
-	activeRole.SetID(userRoles[0].GetID())
-	activeRole.SetUserID(userRoles[0].GetUserID())
-	activeRole.SetBaseRoleID(userRoles[0].GetRoleID())
-	activeRole.SetActive(userRoles[0].GetIsActive())
-
-	user.SetActiveRole(activeRole)
-
-	if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
-		err = utils.ErrInternalServer
-		return
+	if len(userRoles) > 0 {
+		user.SetActiveRole(userRoles[0])
 	}
+
+	// TODO: Implementar verificação de status bloqueado via permission service
+	// if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
+	// 	err = utils.ErrInternalServer
+	// 	return
+	// }
 
 	//compare the password with cripto password
 	if user.GetPassword() != criptoPassword {
@@ -134,8 +131,9 @@ func checkWrongSignin(ctx context.Context, tx *sql.Tx, us *userService, user use
 	}
 
 	if wrongSignin.GetFailedAttempts() >= usermodel.MaxWrongSigninAttempts {
-		user.GetActiveRole().SetStatus(usermodel.StatusBlocked)
-		user.GetActiveRole().SetStatusReason("Too many wrong signins attempts")
+		// TODO: Implementar bloqueio de usuário via permission service
+		// user.GetActiveRole().SetStatus(usermodel.StatusBlocked)
+		// user.GetActiveRole().SetStatusReason("Too many wrong signins attempts")
 		user.SetLastSignInAttempt(time.Now().UTC())
 		err = us.repo.UpdateUserByID(ctx, tx, user)
 		if err != nil {

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -38,12 +39,13 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 
 func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
 
-	legacyRole, err := us.getLegacyRoleBySlug("owner")
+	// Usar permission service diretamente para buscar role
+	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, permissionmodel.RoleSlugOwner)
 	if err != nil {
 		return
 	}
 
-	err = us.ValidateUserData(ctx, tx, owner, legacyRole)
+	err = us.ValidateUserData(ctx, tx, owner, permissionmodel.RoleSlugOwner)
 	if err != nil {
 		return
 	}
@@ -53,7 +55,8 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return
 	}
 
-	err = us.assignRoleToUser(ctx, tx, owner.GetID(), "owner")
+	// Usar permission service diretamente para atribuir role
+	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, owner.GetID(), role.GetID(), nil)
 	if err != nil {
 		return
 	}

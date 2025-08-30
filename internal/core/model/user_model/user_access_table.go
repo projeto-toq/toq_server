@@ -1,5 +1,7 @@
 package usermodel
 
+import permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+
 // HTTP Access Control Tables
 // Each map defines which HTTP endpoints each user role can access
 
@@ -179,15 +181,15 @@ var AdminHTTPPrivileges = map[string]bool{
 }
 
 // GetHTTPPrivilegesForRole returns the privileges map for a given role
-func GetHTTPPrivilegesForRole(role UserRole) map[string]bool {
+func GetHTTPPrivilegesForRole(role permissionmodel.RoleSlug) map[string]bool {
 	switch role {
-	case RoleRoot:
+	case permissionmodel.RoleSlugRoot:
 		return AdminHTTPPrivileges // Admin has full access
-	case RoleOwner:
+	case permissionmodel.RoleSlugOwner:
 		return OwnerHTTPPrivileges
-	case RoleRealtor:
+	case permissionmodel.RoleSlugRealtor:
 		return RealtorHTTPPrivileges
-	case RoleAgency:
+	case permissionmodel.RoleSlugAgency:
 		return AgencyHTTPPrivileges
 	default:
 		return make(map[string]bool) // No access for unknown roles
@@ -195,9 +197,9 @@ func GetHTTPPrivilegesForRole(role UserRole) map[string]bool {
 }
 
 // IsHTTPEndpointAllowed checks if a user role has access to a specific HTTP endpoint
-func IsHTTPEndpointAllowed(role UserRole, method, path string) bool {
+func IsHTTPEndpointAllowed(role permissionmodel.RoleSlug, method, path string) bool {
 	// Admin role has access to everything
-	if role == RoleRoot {
+	if role == permissionmodel.RoleSlugRoot {
 		return true
 	}
 

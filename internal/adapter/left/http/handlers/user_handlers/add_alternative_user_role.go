@@ -6,8 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
@@ -30,11 +31,11 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 	}
 
 	// Determine alternative role based on current role
-	var alternativeRole usermodel.UserRole
-	if userInfo.Role == usermodel.RoleOwner {
-		alternativeRole = usermodel.RoleRealtor
+	var alternativeRole permissionmodel.RoleSlug
+	if userInfo.Role == permissionmodel.RoleSlugOwner {
+		alternativeRole = permissionmodel.RoleSlugRealtor
 	} else {
-		alternativeRole = usermodel.RoleOwner
+		alternativeRole = permissionmodel.RoleSlugOwner
 	}
 
 	// Call service to add alternative role

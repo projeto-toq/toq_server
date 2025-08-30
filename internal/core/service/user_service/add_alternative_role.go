@@ -5,11 +5,11 @@ import (
 	"database/sql"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, role usermodel.UserRole, creciInfo ...string) (err error) {
+func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug, creciInfo ...string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -21,7 +21,7 @@ func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, rol
 		return
 	}
 
-	_, err = us.addAlternativeRole(ctx, tx, userID, role, creciInfo...)
+	err = us.addAlternativeRole(ctx, tx, userID, roleSlug, creciInfo...)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -36,7 +36,7 @@ func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, rol
 	return
 }
 
-func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userID int64, role usermodel.UserRole, creciInfo ...string) (userRole usermodel.UserRoleInterface, err error) {
+func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userID int64, roleSlug permissionmodel.RoleSlug, creciInfo ...string) (err error) {
 
 	//verify if the user is on active status
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
@@ -44,56 +44,33 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 		return
 	}
 
-	if user.GetActiveRole().GetStatus() != usermodel.StatusActive {
+	// Check if user has active role
+	activeRole := user.GetActiveRole()
+	if activeRole == nil {
 		err = utils.ErrInternalServer
 		return
 	}
 
-	if role == usermodel.RoleRealtor && len(creciInfo) != 3 {
+	// Validate creci info for realtor role
+	if roleSlug == permissionmodel.RoleSlugRealtor && len(creciInfo) != 3 {
 		err = utils.ErrInternalServer
 		return
 	}
 
-	baseRole, err := us.repo.GetBaseRoleByRole(ctx, tx, role)
+	// Get role from permission service
+	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, roleSlug)
 	if err != nil {
 		return
 	}
 
-	userRole = usermodel.NewUserRole()
-	userRole.SetUserID(userID)
-	userRole.SetBaseRoleID(baseRole.GetID())
-	userRole.SetRole(baseRole.GetRole())
-	userRole.SetActive(false)
-	switch {
-	case role == usermodel.RoleOwner:
-		userRole.SetStatus(usermodel.StatusActive)
-		userRole.SetStatusReason("")
-	case role == usermodel.RoleRealtor:
-		userRole.SetStatus(usermodel.StatusPendingImages)
-		userRole.SetStatusReason("Awaiting creci images to verify")
-		// CRECI functionality removed - keeping user role logic only
-		// user.SetCreciNumber(creciInfo[0])
-		// user.SetCreciState(creciInfo[1])
-		// t, err1 := converters.StrngToTime(creciInfo[2])
-		// if err1 != nil {
-		// 	slog.Error("userservices.addAlternativeRole", "error converters.StrngToTime", err1)
-		// 	err = utils.ErrInternalServer
-		// 	return
-		// }
-		// user.SetCreciValidity(t)
-	}
-
-	err = us.repo.CreateUserRole(ctx, tx, userRole)
+	// Create user role using permission service (not active by default)
+	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil)
 	if err != nil {
 		return
 	}
 
-	if role == usermodel.RoleRealtor {
-		err = us.repo.UpdateUserByID(ctx, tx, user)
-		if err != nil {
-			return
-		}
-
+	// Handle realtor-specific setup
+	if roleSlug == permissionmodel.RoleSlugRealtor {
 		err = us.CreateUserFolder(ctx, user.GetID())
 		if err != nil {
 			return

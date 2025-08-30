@@ -16,11 +16,7 @@ func (p *permissionServiceImpl) InvalidateUserCache(ctx context.Context, userID 
 	slog.Debug("Invalidating user cache", "userID", userID)
 
 	if p.cache != nil {
-		err := p.cache.DeleteUserPermissions(ctx, userID)
-		if err != nil {
-			slog.Warn("Failed to invalidate user cache in Redis", "userID", userID, "error", err)
-			return utils.ErrInternalServer
-		}
+		p.cache.CleanByUser(ctx, userID)
 		slog.Info("User cache invalidated successfully", "userID", userID)
 	} else {
 		slog.Debug("Cache not available, skipping invalidation", "userID", userID)

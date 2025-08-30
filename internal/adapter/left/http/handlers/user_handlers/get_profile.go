@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetProfile handles getting user profile
@@ -56,11 +56,12 @@ func (uh *UserHandler) GetProfile(c *gin.Context) {
 			"nick_name":    user.GetNickName(),
 			"national_id":  user.GetNationalID(),
 			"active_role": gin.H{
-				"id":            user.GetActiveRole().GetID(),
-				"role":          user.GetActiveRole().GetRole(),
-				"active":        user.GetActiveRole().IsActive(),
-				"status":        user.GetActiveRole().GetStatus(),
-				"status_reason": user.GetActiveRole().GetStatusReason(),
+				"id":   user.GetActiveRole().GetID(),
+				"role": user.GetActiveRole().GetRole(),
+				// TODO: Implementar campos de status após migração completa
+				"active":        user.GetActiveRole().GetIsActive(),
+				"status":        "migrating", // Temporário durante migração
+				"status_reason": "Status system under migration",
 			},
 			"born_at":  user.GetBornAt().Format("2006-01-02"),
 			"zip_code": user.GetZipCode(),

@@ -2,6 +2,7 @@ package permissionservice
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -35,5 +36,36 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 	}
 
 	slog.Info("Role removed from user successfully", "userID", userID, "roleID", roleID)
+	return nil
+}
+
+// RemoveRoleFromUserWithTx remove um role de um usuário usando uma transação existente
+func (p *permissionServiceImpl) RemoveRoleFromUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64) error {
+	if userID <= 0 {
+		return utils.ErrBadRequest
+	}
+
+	if roleID <= 0 {
+		return utils.ErrBadRequest
+	}
+
+	slog.Debug("Removing role from user with transaction", "userID", userID, "roleID", roleID)
+
+	// Buscar o UserRole existente
+	userRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, tx, userID, roleID)
+	if err != nil {
+		return utils.ErrInternalServer
+	}
+	if userRole == nil {
+		return utils.ErrNotFound
+	}
+
+	// Remover o UserRole
+	err = p.permissionRepository.DeleteUserRole(ctx, tx, userRole.GetID())
+	if err != nil {
+		return utils.ErrInternalServer
+	}
+
+	slog.Info("Role removed from user successfully with transaction", "userID", userID, "roleID", roleID)
 	return nil
 }

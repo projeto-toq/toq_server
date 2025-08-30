@@ -7,9 +7,8 @@ import (
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error) {
@@ -54,11 +53,7 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 		return utils.ErrInternalServer
 	}
 
-	// Update user_role
-	err = ua.UpdateUserRole(ctx, tx, user.GetActiveRole())
-	if err != nil {
-		return
-	}
+	// Note: User role updates are now handled by permission service
 
 	return
 }

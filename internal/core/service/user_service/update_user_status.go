@@ -3,19 +3,18 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
-"errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) updateUserStatus(
 	ctx context.Context,
 	tx *sql.Tx,
-	role usermodel.UserRole,
+	role permissionmodel.RoleSlug,
 	actonFinished usermodel.ActionFinished,
 	user ...usermodel.UserInterface) (
 	nextStatus usermodel.UserRoleStatus,
@@ -32,7 +31,7 @@ func (us *userService) updateUserStatus(
 	switch actonFinished {
 	case usermodel.ActionFinishedCreated: //after user is created
 		switch role {
-		case usermodel.RoleRoot:
+		case permissionmodel.RoleSlugRoot:
 			nextStatus = usermodel.StatusActive
 			nextStatusReason = "Admin user"
 		default:
@@ -44,13 +43,13 @@ func (us *userService) updateUserStatus(
 		nextStatusReason = "Email validation pending"
 	case usermodel.ActionFinishedEmailVerified: //after email is verified. the profile is OK
 		switch role {
-		case usermodel.RoleOwner:
+		case permissionmodel.RoleSlugOwner:
 			nextStatus = usermodel.StatusActive
 			nextStatusReason = "User active"
-		case usermodel.RoleRealtor:
+		case permissionmodel.RoleSlugRealtor:
 			nextStatus = usermodel.StatusPendingImages
 			nextStatusReason = "Awaiting creci images to verify"
-		case usermodel.RoleAgency:
+		case permissionmodel.RoleSlugAgency:
 			nextStatus = usermodel.StatusPendingManual
 			nextStatusReason = "Awaiting administrator approval"
 		}

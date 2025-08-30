@@ -1,13 +1,17 @@
 package usermodel
 
-import "time"
+import (
+	"time"
+
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+)
 
 // Defines the interface methods for the userDomain interface
 type UserInterface interface {
 	GetID() int64
 	SetID(int64)
-	GetActiveRole() UserRoleInterface
-	SetActiveRole(active UserRoleInterface)
+	GetActiveRole() permissionmodel.UserRoleInterface
+	SetActiveRole(active permissionmodel.UserRoleInterface)
 	GetFullName() string
 	SetFullName(string)
 	GetNickName() string

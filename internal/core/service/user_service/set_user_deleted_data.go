@@ -9,8 +9,9 @@ import (
 func (us *userService) setDeletedData(user usermodel.UserInterface) {
 
 	// Future enhancement: Check and delete associated listings for property owners
-	user.GetActiveRole().SetStatus(usermodel.StatusDeleted)
-	user.GetActiveRole().SetStatusReason("User request account deletion")
+	// TODO: Implementar definição de status via permission service
+	// user.GetActiveRole().SetStatus(usermodel.StatusDeleted)
+	// user.GetActiveRole().SetStatusReason("User request account deletion")
 	user.SetFullName("Apagado por solicitação do usuário")
 	user.SetNickName("Apagado")
 	user.SetNationalID("00000000000")

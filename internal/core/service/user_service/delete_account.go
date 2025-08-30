@@ -5,8 +5,9 @@ import (
 	"database/sql"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) DeleteAccount(ctx context.Context, userID int64) (tokens usermodel.Tokens, err error) {
@@ -43,21 +44,25 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int
 		return
 	}
 	//delete the account dependencies
-	switch user.GetActiveRole().GetRole() {
-	case usermodel.RoleOwner:
-		err = us.CleanOwnerPending(ctx, user)
-		if err != nil {
-			return
-		}
-	case usermodel.RoleRealtor:
-		err = us.CleanRealtorPending(ctx, user)
-		if err != nil {
-			return
-		}
-	case usermodel.RoleAgency:
-		err = us.CleanAgencyPending(ctx, user)
-		if err != nil {
-			return
+	activeRole := user.GetActiveRole()
+	if activeRole != nil && activeRole.GetRole() != nil {
+		roleSlug := permissionmodel.RoleSlug(activeRole.GetRole().GetSlug())
+		switch roleSlug {
+		case permissionmodel.RoleSlugOwner:
+			err = us.CleanOwnerPending(ctx, user)
+			if err != nil {
+				return
+			}
+		case permissionmodel.RoleSlugRealtor:
+			err = us.CleanRealtorPending(ctx, user)
+			if err != nil {
+				return
+			}
+		case permissionmodel.RoleSlugAgency:
+			err = us.CleanAgencyPending(ctx, user)
+			if err != nil {
+				return
+			}
 		}
 	}
 
@@ -94,9 +99,19 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int
 		}
 	}
 
-	_, err = us.repo.DeleteUserRolesByUserID(ctx, tx, user.GetID())
+	// Remover todos os roles do usuário
+	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, user.GetID())
 	if err != nil {
 		return
+	}
+
+	for _, userRole := range userRoles {
+		if userRole.GetRole() != nil {
+			err = us.permissionService.RemoveRoleFromUserWithTx(ctx, tx, user.GetID(), userRole.GetRole().GetID())
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Apagados os papéis do usuário, pois a conta foi apagada")

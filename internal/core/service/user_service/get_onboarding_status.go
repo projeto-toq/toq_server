@@ -4,8 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) GetOnboardingStatus(ctx context.Context, userID int64) (UserRoleStatus string, reason string, err error) {
@@ -43,6 +42,18 @@ func (us *userService) getOnboardingStatus(ctx context.Context, tx *sql.Tx, user
 		return
 	}
 
+	// TODO: Reimplementar verificação de status após migração completa do sistema de status
+	// Por enquanto, retornar status genérico baseado na existência de role ativo
+	if user.GetActiveRole() != nil {
+		UserRoleStatus = "User has active role - status system under migration"
+		reason = "Status verification temporarily disabled during migration"
+	} else {
+		UserRoleStatus = "No active role found"
+		reason = "User has no active role assigned"
+	}
+	return
+
+	/* Código original comentado durante migração:
 	switch user.GetActiveRole().GetStatus() {
 	case usermodel.StatusActive:
 		UserRoleStatus = "Onboarding finished. User is active."
@@ -76,4 +87,5 @@ func (us *userService) getOnboardingStatus(ctx context.Context, tx *sql.Tx, user
 		reason = user.GetActiveRole().GetStatusReason()
 	}
 	return
+	*/
 }

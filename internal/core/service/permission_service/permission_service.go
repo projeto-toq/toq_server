@@ -37,7 +37,7 @@ type PermissionServiceInterface interface {
 	HasHTTPPermission(ctx context.Context, userID int64, method, path string) (bool, error)
 
 	// Gestão de roles
-	CreateRole(ctx context.Context, name, slug, description string, isSystemRole bool) (permissionmodel.RoleInterface, error)
+	CreateRole(ctx context.Context, name string, slug permissionmodel.RoleSlug, description string, isSystemRole bool) (permissionmodel.RoleInterface, error)
 	AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time) error
 	RemoveRoleFromUser(ctx context.Context, userID, roleID int64) error
 
@@ -58,11 +58,12 @@ type PermissionServiceInterface interface {
 	SwitchActiveRole(ctx context.Context, userID, newRoleID int64) error
 	GetActiveUserRole(ctx context.Context, userID int64) (permissionmodel.UserRoleInterface, error)
 	DeactivateAllUserRoles(ctx context.Context, userID int64) error
-	GetRoleBySlug(ctx context.Context, slug string) (permissionmodel.RoleInterface, error)
+	GetRoleBySlug(ctx context.Context, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
 
 	// Métodos com transação (para uso em fluxos maiores)
-	GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug string) (permissionmodel.RoleInterface, error)
+	GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
 	AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time) error
+	RemoveRoleFromUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
 	GetUserPermissionsWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
 	GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
 	SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error

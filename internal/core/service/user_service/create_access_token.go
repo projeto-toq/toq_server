@@ -5,19 +5,31 @@ import (
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateAccessToken(secret string, user usermodel.UserInterface, expires int64) (accessToken string, err error) {
+	// TODO: Implementar verificação de status quando sistema for migrado
+	// Por enquanto, assumir que perfil está ativo se tem role ativo
+	profileStatus := user.GetActiveRole() != nil
+
+	// Converter RoleInterface para RoleSlug
+	var roleSlug permissionmodel.RoleSlug
+	if activeRole := user.GetActiveRole(); activeRole != nil {
+		if role := activeRole.GetRole(); role != nil {
+			roleSlug = permissionmodel.RoleSlug(role.GetSlug())
+		}
+	}
+
 	infos := usermodel.UserInfos{
 		ID:            user.GetID(),
-		ProfileStatus: user.GetActiveRole().GetStatus() != usermodel.StatusPendingProfile,
-		Role:          user.GetActiveRole().GetRole(),
+		ProfileStatus: profileStatus,
+		Role:          roleSlug,
 	}
 	now := time.Now().UTC().Unix()
 	claims := jwt.MapClaims{

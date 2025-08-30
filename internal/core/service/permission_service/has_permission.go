@@ -2,10 +2,8 @@ package permissionservice
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
-	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -92,95 +90,18 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 
 // getUserPermissionsFromCache busca permissões do cache Redis
 func (p *permissionServiceImpl) getUserPermissionsFromCache(ctx context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
-	if p.cache == nil {
-		return nil, utils.ErrInternalServer
-	}
-
-	// Extrair userID da cacheKey (formato: "user_permissions:123")
-	var userID int64
-	if _, err := fmt.Sscanf(cacheKey, "user_permissions:%d", &userID); err != nil {
-		return nil, utils.ErrBadRequest
-	}
-
-	// Buscar dados do Redis
-	permissionsJSON, err := p.cache.GetUserPermissions(ctx, userID)
-	if err != nil {
-		return nil, err // Cache miss ou erro
-	}
-
-	// Deserializar JSON para interfaces de permissão
-	var permissionsData []map[string]interface{}
-	if err := json.Unmarshal(permissionsJSON, &permissionsData); err != nil {
-		return nil, utils.ErrInternalServer
-	}
-
-	// Converter para interfaces de permissão
-	permissions := make([]permissionmodel.PermissionInterface, 0, len(permissionsData))
-	for _, data := range permissionsData {
-		perm := permissionmodel.NewPermission()
-
-		if id, ok := data["id"].(float64); ok {
-			perm.SetID(int64(id))
-		}
-		if name, ok := data["name"].(string); ok {
-			perm.SetName(name)
-		}
-		if desc, ok := data["description"].(string); ok {
-			perm.SetDescription(desc)
-		}
-		if resource, ok := data["resource"].(string); ok {
-			perm.SetResource(resource)
-		}
-		if action, ok := data["action"].(string); ok {
-			perm.SetAction(action)
-		}
-		if conditions, ok := data["conditions"].(map[string]interface{}); ok {
-			perm.SetConditions(conditions)
-		}
-
-		permissions = append(permissions, perm)
-	}
-
-	return permissions, nil
+	// TODO: Implementar cache otimizado para o novo sistema
+	// Por enquanto, sempre retorna cache miss para forçar busca no banco
+	slog.Debug("Cache temporarily disabled for user permissions", "cache_key", cacheKey)
+	return nil, fmt.Errorf("cache miss - using database")
 }
 
 // setUserPermissionsInCache armazena permissões no cache Redis
 func (p *permissionServiceImpl) setUserPermissionsInCache(ctx context.Context, cacheKey string, permissions []permissionmodel.PermissionInterface) error {
-	if len(permissions) == 0 {
-		return nil
-	}
-
-	if p.cache == nil {
-		return utils.ErrInternalServer
-	}
-
-	// Extrair userID da cacheKey
-	var userID int64
-	if _, err := fmt.Sscanf(cacheKey, "user_permissions:%d", &userID); err != nil {
-		return utils.ErrBadRequest
-	}
-
-	// Serializar permissões para JSON
-	permissionsData := make([]map[string]interface{}, len(permissions))
-	for i, perm := range permissions {
-		permissionsData[i] = map[string]interface{}{
-			"id":          perm.GetID(),
-			"name":        perm.GetName(),
-			"resource":    perm.GetResource(),
-			"action":      perm.GetAction(),
-			"description": perm.GetDescription(),
-			"conditions":  perm.GetConditions(),
-		}
-	}
-
-	jsonData, err := json.Marshal(permissionsData)
-	if err != nil {
-		return utils.ErrInternalServer
-	}
-
-	// Armazenar no Redis com TTL de 15 minutos
-	ttl := 15 * time.Minute
-	return p.cache.SetUserPermissions(ctx, userID, jsonData, ttl)
+	// TODO: Implementar cache otimizado para o novo sistema
+	// Por enquanto, não faz cache para simplificar a migração
+	slog.Debug("Cache temporarily disabled for storing user permissions", "cache_key", cacheKey, "count", len(permissions))
+	return nil
 }
 
 // getUserPermissionsFromDB busca permissões do usuário no banco de dados

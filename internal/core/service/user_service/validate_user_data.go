@@ -5,13 +5,12 @@ import (
 	"database/sql"
 	"time"
 
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, role usermodel.UserRole) (err error) {
+func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, role permissionmodel.RoleSlug) (err error) {
 
 	now := time.Now().UTC()
 
@@ -32,7 +31,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		return
 	}
 
-	if role == usermodel.RoleAgency {
+	if role == permissionmodel.RoleSlugAgency {
 
 		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID()) // Validation via global service integration planned
 		if err1 != nil {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 )
 
@@ -183,17 +184,17 @@ func IsPublicEndpoint(path string) bool {
 }
 
 // GetUserRoleFromContext extrai o role do usuário do contexto
-func GetUserRoleFromContext(ctx context.Context) (usermodel.UserRole, error) {
+func GetUserRoleFromContext(ctx context.Context) (permissionmodel.RoleSlug, error) {
 	userInfo, err := GetUserInfoFromContext(ctx)
 	if err != nil {
-		return usermodel.UserRole(0), fmt.Errorf("failed to get user info: %w", err)
+		return "", fmt.Errorf("failed to get user info: %w", err)
 	}
 
 	return userInfo.Role, nil
 }
 
 // HasRoleInContext verifica se o usuário tem um role específico
-func HasRoleInContext(ctx context.Context, requiredRole usermodel.UserRole) bool {
+func HasRoleInContext(ctx context.Context, requiredRole permissionmodel.RoleSlug) bool {
 	userRole, err := GetUserRoleFromContext(ctx)
 	if err != nil {
 		return false
@@ -204,5 +205,5 @@ func HasRoleInContext(ctx context.Context, requiredRole usermodel.UserRole) bool
 
 // IsAdminInContext verifica se o usuário é admin
 func IsAdminInContext(ctx context.Context) bool {
-	return HasRoleInContext(ctx, usermodel.RoleRoot)
+	return HasRoleInContext(ctx, permissionmodel.RoleSlugRoot)
 }

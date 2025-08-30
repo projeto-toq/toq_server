@@ -10,19 +10,19 @@ import (
 )
 
 // CreateRole cria um novo role no sistema
-func (p *permissionServiceImpl) CreateRole(ctx context.Context, name, slug, description string, isSystemRole bool) (permissionmodel.RoleInterface, error) {
+func (p *permissionServiceImpl) CreateRole(ctx context.Context, name string, slug permissionmodel.RoleSlug, description string, isSystemRole bool) (permissionmodel.RoleInterface, error) {
 	if strings.TrimSpace(name) == "" {
 		return nil, fmt.Errorf("role name cannot be empty")
 	}
 
-	if strings.TrimSpace(slug) == "" {
-		return nil, fmt.Errorf("role slug cannot be empty")
+	if !slug.IsValid() {
+		return nil, fmt.Errorf("invalid role slug: %s", slug)
 	}
 
 	slog.Debug("Creating role", "name", name, "slug", slug, "isSystemRole", isSystemRole)
 
 	// Verificar se o slug já existe
-	existingRole, err := p.permissionRepository.GetRoleBySlug(ctx, nil, slug)
+	existingRole, err := p.permissionRepository.GetRoleBySlug(ctx, nil, slug.String())
 	if err == nil && existingRole != nil {
 		return nil, fmt.Errorf("role with slug '%s' already exists", slug)
 	}
@@ -30,7 +30,7 @@ func (p *permissionServiceImpl) CreateRole(ctx context.Context, name, slug, desc
 	// Criar o novo role
 	newRole := permissionmodel.NewRole()
 	newRole.SetName(name)
-	newRole.SetSlug(slug)
+	newRole.SetSlug(slug.String())
 	newRole.SetDescription(description)
 	newRole.SetIsSystemRole(isSystemRole)
 	newRole.SetIsActive(true)

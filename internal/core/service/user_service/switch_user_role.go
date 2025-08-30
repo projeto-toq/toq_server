@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) SwitchUserRole(ctx context.Context, userID int64, roleSlug string) (tokens usermodel.Tokens, err error) {
+func (us *userService) SwitchUserRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -38,9 +39,9 @@ func (us *userService) SwitchUserRole(ctx context.Context, userID int64, roleSlu
 	return
 }
 
-func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID int64, roleSlug string) (tokens usermodel.Tokens, err error) {
-	// Verificar se o usuário tem múltiplos roles
-	userRoles, err := us.repo.GetUserRolesByUserID(ctx, tx, userID)
+func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID int64, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error) {
+	// Verificar se o usuário tem múltiplos roles usando permission service
+	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, userID)
 	if err != nil {
 		return
 	}
@@ -53,17 +54,14 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	// Verificar se o role solicitado existe para o usuário
 	roleExists := false
 	for _, userRole := range userRoles {
-		if userRole.GetRole() == usermodel.RoleRealtor && roleSlug == "realtor" {
-			roleExists = true
-			break
-		}
-		if userRole.GetRole() == usermodel.RoleOwner && roleSlug == "owner" {
-			roleExists = true
-			break
-		}
-		if userRole.GetRole() == usermodel.RoleAgency && roleSlug == "agency" {
-			roleExists = true
-			break
+		// Usar a role do banco diretamente para comparar com o slug fornecido
+		role := userRole.GetRole()
+		if role != nil {
+			roleSlugFromDB := permissionmodel.RoleSlug(role.GetSlug())
+			if roleSlugFromDB == roleSlug {
+				roleExists = true
+				break
+			}
 		}
 	}
 
@@ -72,8 +70,8 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 		return
 	}
 
-	// Mapear roleSlug para roleID e usar permission service
-	role, roleErr := us.getRoleBySlug(ctx, tx, roleSlug)
+	// Usar permission service diretamente para buscar role
+	role, roleErr := us.permissionService.GetRoleBySlugWithTx(ctx, tx, roleSlug)
 	if roleErr != nil {
 		err = roleErr
 		return

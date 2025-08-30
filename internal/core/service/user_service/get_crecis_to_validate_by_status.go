@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -41,15 +40,24 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 
 func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus usermodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
 
-	// Read the realtors user with given status from the database
-	realtors, err = us.repo.GetUsersByStatus(ctx, tx, UserRoleStatus, usermodel.RoleRealtor)
-	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			slog.Error("Failed to read realtor users with status in GetCrecisToValidateByStatus", "error", err)
-			return
-		}
-		return nil, nil
-	}
+	// TODO: Reimplementar busca por status após migração do sistema de status
+	// O método GetUsersByStatus precisa ser atualizado para o novo sistema de permissões
+	// Por enquanto, retornar lista vazia
+	slog.Warn("getCrecisToValidateByStatus temporarily disabled during migration", "status", UserRoleStatus)
+	return []usermodel.UserInterface{}, nil
 
-	return
+	/*
+		// Código original comentado durante migração:
+		// Read the realtors user with given status from the database
+		realtors, err = us.repo.GetUsersByStatus(ctx, tx, UserRoleStatus, permissionmodel.RoleSlugRealtor)
+		if err != nil {
+			if !errors.Is(err, sql.ErrNoRows) {
+				slog.Error("Failed to read realtor users with status in GetCrecisToValidateByStatus", "error", err)
+				return
+			}
+			return nil, nil
+		}
+
+		return
+	*/
 }

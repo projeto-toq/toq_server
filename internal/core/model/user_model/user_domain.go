@@ -2,11 +2,13 @@ package usermodel
 
 import (
 	"time"
+
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 )
 
 type user struct {
 	id               int64
-	activeRole       UserRoleInterface
+	activeRole       permissionmodel.UserRoleInterface
 	fullName         string
 	nickName         string
 	nationalID       string
@@ -38,11 +40,11 @@ func (u *user) GetID() int64 {
 func (u *user) SetID(id int64) {
 	u.id = id
 }
-func (u *user) GetActiveRole() UserRoleInterface {
+func (u *user) GetActiveRole() permissionmodel.UserRoleInterface {
 	return u.activeRole
 }
 
-func (u *user) SetActiveRole(activeRole UserRoleInterface) {
+func (u *user) SetActiveRole(activeRole permissionmodel.UserRoleInterface) {
 	u.activeRole = activeRole
 }
 

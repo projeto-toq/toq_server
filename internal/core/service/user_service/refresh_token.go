@@ -11,9 +11,8 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/prometheus/client_golang/prometheus"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 var (
@@ -82,10 +81,11 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if err != nil {
 		return
 	}
-	if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
-		err = utils.ErrInternalServer
-		return
-	}
+	// TODO: Implementar verificação de status bloqueado via permission service
+	// if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
+	// 	err = utils.ErrInternalServer
+	// 	return
+	// }
 
 	// Enforce absolute expiry if set
 	if !session.GetAbsoluteExpiresAt().IsZero() && time.Now().UTC().After(session.GetAbsoluteExpiresAt()) {

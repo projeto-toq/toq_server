@@ -123,7 +123,7 @@ func (p *permissionServiceImpl) DeactivateAllUserRoles(ctx context.Context, user
 }
 
 // GetRoleBySlug busca um role pelo slug (sem transação - uso direto)
-func (p *permissionServiceImpl) GetRoleBySlug(ctx context.Context, slug string) (permissionmodel.RoleInterface, error) {
+func (p *permissionServiceImpl) GetRoleBySlug(ctx context.Context, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error) {
 	if slug == "" {
 		return nil, utils.ErrBadRequest
 	}
@@ -150,18 +150,10 @@ func (p *permissionServiceImpl) GetRoleBySlug(ctx context.Context, slug string) 
 }
 
 // GetRoleBySlugWithTx busca um role pelo slug (com transação - uso em fluxos)
-func (p *permissionServiceImpl) GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug string) (permissionmodel.RoleInterface, error) {
-	if slug == "" {
-		return nil, utils.ErrBadRequest
-	}
-
-	role, err := p.permissionRepository.GetRoleBySlug(ctx, tx, slug)
+func (p *permissionServiceImpl) GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error) {
+	role, err := p.permissionRepository.GetRoleBySlug(ctx, tx, slug.String())
 	if err != nil {
-		return nil, utils.ErrInternalServer
-	}
-
-	if role == nil {
-		return nil, utils.ErrNotFound
+		return nil, err
 	}
 
 	return role, nil

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -38,12 +39,13 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 
 func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
 
-	legacyRole, err := us.getLegacyRoleBySlug("realtor")
+	// Usar permission service diretamente para buscar role
+	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, permissionmodel.RoleSlugRealtor)
 	if err != nil {
 		return
 	}
 
-	err = us.ValidateUserData(ctx, tx, realtor, legacyRole)
+	err = us.ValidateUserData(ctx, tx, realtor, permissionmodel.RoleSlugRealtor)
 	if err != nil {
 		return
 	}
@@ -53,7 +55,8 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	err = us.assignRoleToUser(ctx, tx, realtor.GetID(), "realtor")
+	// Usar permission service diretamente para atribuir role
+	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, realtor.GetID(), role.GetID(), nil)
 	if err != nil {
 		return
 	}

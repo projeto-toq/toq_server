@@ -57,7 +57,6 @@ type GlobalServiceInterface interface {
 	// DEPRECATED: SendNotification será removido em favor do sistema unificado
 	SendNotification(ctx context.Context, user usermodel.UserInterface, notificationType globalmodel.NotificationType, code ...string) (err error)
 
-	GetPrivilegeForCache(ctx context.Context, service usermodel.GRPCService, method uint8, role usermodel.UserRole) (privilege usermodel.PrivilegeInterface, err error)
 	GetCEP(ctx context.Context, cep string) (address cepmodel.CEPInterface, err error)
 
 	StartTransaction(ctx context.Context) (tx *sql.Tx, err error)

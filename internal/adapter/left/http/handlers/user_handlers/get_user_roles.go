@@ -7,7 +7,7 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) GetUserRoles(c *gin.Context) {
@@ -22,30 +22,31 @@ func (uh *UserHandler) GetUserRoles(c *gin.Context) {
 
 	userInfo := userInfos.(usermodel.UserInfos)
 
-	// Call service to get user roles
-	roles, err := uh.userService.GetUserRolesByUser(ctx, userInfo.ID)
+	// Call permission service directly to get user roles (no business logic required)
+	roles, err := uh.permissionService.GetUserRoles(ctx, userInfo.ID)
 	if err != nil {
 		utils.SendHTTPError(c, http.StatusInternalServerError, "GET_USER_ROLES_FAILED", "Failed to get user roles")
 		return
 	}
 
-	// Convert roles to DTO
-	rolesResponse := make([]dto.UserRoleResponse, len(roles))
-	for i, role := range roles {
-		rolesResponse[i] = dto.UserRoleResponse{
+	// Convert roles to DTO format
+	var roleResponses []dto.UserRoleResponse
+	for _, role := range roles {
+		roleResponse := dto.UserRoleResponse{
 			ID:           role.GetID(),
 			UserID:       role.GetUserID(),
-			BaseRoleID:   role.GetBaseRoleID(),
-			Role:         role.GetRole().String(),
-			Active:       role.IsActive(),
-			Status:       role.GetStatus().String(),
-			StatusReason: role.GetStatusReason(),
+			BaseRoleID:   role.GetRoleID(),
+			Role:         role.GetRole().GetSlug(),
+			Active:       role.GetIsActive(),
+			Status:       "active", // TODO: Implement status system
+			StatusReason: "",       // TODO: Implement status reason system
 		}
+		roleResponses = append(roleResponses, roleResponse)
 	}
 
 	// Prepare response
 	response := dto.GetUserRolesResponse{
-		Roles: rolesResponse,
+		Roles: roleResponses,
 	}
 
 	c.JSON(http.StatusOK, response)

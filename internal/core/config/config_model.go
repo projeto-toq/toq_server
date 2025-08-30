@@ -475,6 +475,7 @@ func (c *config) createHTTPHandlers() error {
 		c.globalService,
 		c.listingService,
 		c.complexService,
+		c.permissionService,
 	)
 
 	slog.Info("✅ HTTP handlers created successfully via factory")
