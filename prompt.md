@@ -1,9 +1,5 @@
 🛠️ Problema
-o sistema de métrica está configurado para antiga versão do sistema, que era GRPC.
-A metricas são geradas no telemetry middleware, exportadas para o prometheus e visualizadas no Grafana.
-Estes serviços rodan no docker, veja docker-compose.yml
-Assim necessito alterar para http e criar um conjunto básico de métricas para análise do sistema no Grafana.
-A persistência do grafana deve estar em /codigos/grafana
+recebi o erro em log.md ao tentar iniciar o sistema
 
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
@@ -27,4 +23,4 @@ A persistência do grafana deve estar em /codigos/grafana
 
 📌 Instruções finais
 - Não implemente nada até que eu autorize.
-- Analise cuidadosamente a solicitação e o código atual, proponha a implementação
+- Analise cuidadosamente a solicitação e o código atual, descubra a causa raiz e proponha a solução

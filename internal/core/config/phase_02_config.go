@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strings"
 	"time"
@@ -217,10 +218,14 @@ func (b *Bootstrap) validateTelemetryConfig() error {
 		}
 
 		// Validar formato do endpoint
+		// Accept either a full URL with scheme or a host:port
 		if !strings.HasPrefix(b.env.TELEMETRY.OTLP.Endpoint, "http://") &&
 			!strings.HasPrefix(b.env.TELEMETRY.OTLP.Endpoint, "https://") &&
 			!strings.HasPrefix(b.env.TELEMETRY.OTLP.Endpoint, "grpc://") {
-			return fmt.Errorf("invalid OTLP endpoint format: %s (must start with http://, https://, or grpc://)", b.env.TELEMETRY.OTLP.Endpoint)
+			// Try parsing as host:port
+			if _, _, err := net.SplitHostPort(b.env.TELEMETRY.OTLP.Endpoint); err != nil {
+				return fmt.Errorf("invalid OTLP endpoint format: %s (must be scheme://host:port or host:port)", b.env.TELEMETRY.OTLP.Endpoint)
+			}
 		}
 	}
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -87,9 +89,15 @@ func (tm *TelemetryManager) initializeTracing(ctx context.Context, res *resource
 		return nil
 	}
 
+	// Normalizar endpoint (aceita tanto host:port quanto http(s)://host:port)
+	endpoint, err := normalizeOTLPEndpoint(tm.env.TELEMETRY.OTLP.Endpoint)
+	if err != nil {
+		return fmt.Errorf("invalid OTLP trace endpoint: %w", err)
+	}
+
 	// Configurar opções do exporter
 	options := []otlptracehttp.Option{
-		otlptracehttp.WithEndpoint(tm.env.TELEMETRY.OTLP.Endpoint),
+		otlptracehttp.WithEndpoint(endpoint),
 	}
 
 	if tm.env.TELEMETRY.OTLP.Insecure {
@@ -123,9 +131,15 @@ func (tm *TelemetryManager) initializeMetrics(ctx context.Context, res *resource
 		return nil
 	}
 
+	// Normalizar endpoint (aceita tanto host:port quanto http(s)://host:port)
+	endpoint, err := normalizeOTLPEndpoint(tm.env.TELEMETRY.OTLP.Endpoint)
+	if err != nil {
+		return fmt.Errorf("invalid OTLP metric endpoint: %w", err)
+	}
+
 	// Configurar opções do exporter
 	options := []otlpmetrichttp.Option{
-		otlpmetrichttp.WithEndpoint(tm.env.TELEMETRY.OTLP.Endpoint),
+		otlpmetrichttp.WithEndpoint(endpoint),
 	}
 
 	if tm.env.TELEMETRY.OTLP.Insecure {
@@ -150,6 +164,32 @@ func (tm *TelemetryManager) initializeMetrics(ctx context.Context, res *resource
 
 	slog.Info("OpenTelemetry metrics initialized", "endpoint", tm.env.TELEMETRY.OTLP.Endpoint)
 	return nil
+}
+
+// normalizeOTLPEndpoint aceita formatos com e sem esquema e retorna host:port
+func normalizeOTLPEndpoint(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", fmt.Errorf("empty endpoint")
+	}
+
+	// Se já contém esquema, parsear e extrair Host
+	if strings.HasPrefix(raw, "http://") || strings.HasPrefix(raw, "https://") || strings.HasPrefix(raw, "grpc://") {
+		u, err := url.Parse(raw)
+		if err != nil {
+			return "", fmt.Errorf("failed to parse endpoint: %w", err)
+		}
+		if u.Host == "" {
+			return "", fmt.Errorf("parsed endpoint has empty host")
+		}
+		return u.Host, nil
+	}
+
+	// Caso já esteja no formato host:port, validar minimamente
+	if !strings.Contains(raw, ":") {
+		return "", fmt.Errorf("endpoint must include port: %s", raw)
+	}
+	return raw, nil
 }
 
 // configurePropagators configura os propagators para tracing distribuído
