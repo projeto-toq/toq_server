@@ -2,12 +2,32 @@ package permissionservice
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strconv"
+	"strings"
+	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
+
+// CachedUserPermissions representa as permissões de usuário serializadas para cache
+type CachedUserPermissions struct {
+	CachedAt    time.Time                `json:"cached_at"`
+	Permissions []PermissionSerializable `json:"permissions"`
+}
+
+// PermissionSerializable representa uma permissão serializada para JSON
+type PermissionSerializable struct {
+	ID          int64                  `json:"id"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Resource    string                 `json:"resource"`
+	Action      string                 `json:"action"`
+	Conditions  map[string]interface{} `json:"conditions,omitempty"`
+}
 
 // HasPermission verifica se o usuário tem uma permissão específica
 func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64, resource, action string, permContext *permissionmodel.PermissionContext) (bool, error) {
@@ -89,18 +109,109 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 }
 
 // getUserPermissionsFromCache busca permissões do cache Redis
-func (p *permissionServiceImpl) getUserPermissionsFromCache(_ context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
-	// TODO: Implementar cache otimizado para o novo sistema
-	// Por enquanto, sempre retorna cache miss para forçar busca no banco
-	slog.Debug("Cache temporarily disabled for user permissions", "cache_key", cacheKey)
-	return nil, fmt.Errorf("cache miss - using database")
+func (p *permissionServiceImpl) getUserPermissionsFromCache(ctx context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
+	// Extrair userID da cacheKey (formato: "user_permissions:%d")
+	parts := strings.Split(cacheKey, ":")
+	if len(parts) != 2 {
+		slog.Error("Invalid cache key format", "cache_key", cacheKey)
+		return nil, fmt.Errorf("cache miss - invalid key format")
+	}
+
+	userID, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		slog.Error("Failed to parse userID from cache key", "cache_key", cacheKey, "error", err)
+		return nil, fmt.Errorf("cache miss - invalid user ID")
+	}
+
+	// Buscar do Redis usando os métodos existentes
+	permissionsJSON, err := p.cache.GetUserPermissions(ctx, userID)
+	if err != nil {
+		// Cache miss é esperado e não é erro crítico
+		slog.Debug("Cache miss for user permissions", "userID", userID, "error", err)
+		return nil, fmt.Errorf("cache miss - %w", err)
+	}
+
+	// Deserializar JSON
+	var cachedPermissions CachedUserPermissions
+	if err := json.Unmarshal(permissionsJSON, &cachedPermissions); err != nil {
+		slog.Error("Failed to unmarshal cached permissions", "userID", userID, "error", err)
+		// Cache corrompido - limpar e forçar reload
+		if deleteErr := p.cache.DeleteUserPermissions(ctx, userID); deleteErr != nil {
+			slog.Warn("Failed to delete corrupted cache", "userID", userID, "error", deleteErr)
+		}
+		return nil, fmt.Errorf("cache miss - corrupted data")
+	}
+
+	// Converter structs serializáveis de volta para interfaces
+	permissions := make([]permissionmodel.PermissionInterface, 0, len(cachedPermissions.Permissions))
+	for _, perm := range cachedPermissions.Permissions {
+		permission := permissionmodel.NewPermission()
+		permission.SetID(perm.ID)
+		permission.SetName(perm.Name)
+		permission.SetDescription(perm.Description)
+		permission.SetResource(perm.Resource)
+		permission.SetAction(perm.Action)
+		if perm.Conditions != nil {
+			permission.SetConditions(perm.Conditions)
+		}
+		permissions = append(permissions, permission)
+	}
+
+	slog.Debug("User permissions cache hit", "userID", userID, "count", len(permissions), "cached_at", cachedPermissions.CachedAt)
+	return permissions, nil
 }
 
 // setUserPermissionsInCache armazena permissões no cache Redis
-func (p *permissionServiceImpl) setUserPermissionsInCache(_ context.Context, cacheKey string, permissions []permissionmodel.PermissionInterface) error {
-	// TODO: Implementar cache otimizado para o novo sistema
-	// Por enquanto, não faz cache para simplificar a migração
-	slog.Debug("Cache temporarily disabled for storing user permissions", "cache_key", cacheKey, "count", len(permissions))
+func (p *permissionServiceImpl) setUserPermissionsInCache(ctx context.Context, cacheKey string, permissions []permissionmodel.PermissionInterface) error {
+	// Extrair userID da cacheKey (formato: "user_permissions:%d")
+	parts := strings.Split(cacheKey, ":")
+	if len(parts) != 2 {
+		slog.Error("Invalid cache key format for storing", "cache_key", cacheKey)
+		return fmt.Errorf("invalid cache key format")
+	}
+
+	userID, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		slog.Error("Failed to parse userID from cache key for storing", "cache_key", cacheKey, "error", err)
+		return fmt.Errorf("invalid user ID in cache key: %w", err)
+	}
+
+	// Converter interfaces para structs serializáveis
+	serializable := make([]PermissionSerializable, 0, len(permissions))
+	for _, perm := range permissions {
+		permStruct := PermissionSerializable{
+			ID:          perm.GetID(),
+			Name:        perm.GetName(),
+			Description: perm.GetDescription(),
+			Resource:    perm.GetResource(),
+			Action:      perm.GetAction(),
+			Conditions:  perm.GetConditions(),
+		}
+		serializable = append(serializable, permStruct)
+	}
+
+	// Criar estrutura com timestamp
+	cachedPermissions := CachedUserPermissions{
+		CachedAt:    time.Now(),
+		Permissions: serializable,
+	}
+
+	// Serializar para JSON
+	permissionsJSON, err := json.Marshal(cachedPermissions)
+	if err != nil {
+		slog.Error("Failed to marshal permissions for cache", "userID", userID, "error", err)
+		return fmt.Errorf("failed to serialize permissions: %w", err)
+	}
+
+	// Armazenar no Redis usando TTL padrão do cache
+	// O TTL é definido internamente pelo RedisCache (15 minutos por padrão)
+	err = p.cache.SetUserPermissions(ctx, userID, permissionsJSON, 15*time.Minute)
+	if err != nil {
+		slog.Error("Failed to store permissions in cache", "userID", userID, "error", err)
+		return fmt.Errorf("failed to store in cache: %w", err)
+	}
+
+	slog.Debug("User permissions cached successfully", "userID", userID, "count", len(permissions), "dataSize", len(permissionsJSON))
 	return nil
 }
 

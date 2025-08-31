@@ -64,17 +64,9 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		return
 	}
 
-	// Convert permission model to user model (get the first active role)
-	// TODO: Implement proper active role selection logic based on business rules
 	if len(userRoles) > 0 {
 		user.SetActiveRole(userRoles[0])
 	}
-
-	// TODO: Implementar verificação de status bloqueado via permission service
-	// if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
-	// 	err = utils.ErrInternalServer
-	// 	return
-	// }
 
 	//compare the password with cripto password
 	if user.GetPassword() != criptoPassword {

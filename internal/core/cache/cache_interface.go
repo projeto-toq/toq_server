@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
@@ -23,6 +24,11 @@ type CacheInterface interface {
 	CleanByUser(ctx context.Context, userID int64)                                    // Limpar cache de um usuário específico
 	CleanByResource(ctx context.Context, resource permissionmodel.PermissionResource) // Limpar cache de um recurso específico
 	Clean(ctx context.Context)                                                        // Limpeza geral do cache Redis
+
+	// Métodos de cache de permissões de usuário
+	GetUserPermissions(ctx context.Context, userID int64) ([]byte, error)
+	SetUserPermissions(ctx context.Context, userID int64, permissionsJSON []byte, ttl time.Duration) error
+	DeleteUserPermissions(ctx context.Context, userID int64) error
 
 	// Métodos de administração
 	Close() error // Fechar conexão Redis
