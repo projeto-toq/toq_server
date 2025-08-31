@@ -10,9 +10,9 @@ type Tokens struct {
 }
 
 type UserInfos struct {
-	ID            int64
-	ProfileStatus bool
-	Role          permissionmodel.RoleSlug // Usar RoleSlug ao invés de UserRole
+	ID         int64                          // ID do usuário
+	UserRoleID int64                          // ID do UserRole ativo
+	RoleStatus permissionmodel.UserRoleStatus // Status detalhado da role
 }
 
 type JWT struct {

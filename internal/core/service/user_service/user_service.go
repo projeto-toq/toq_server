@@ -16,7 +16,6 @@ import (
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 type userService struct {
@@ -29,29 +28,6 @@ type userService struct {
 	// creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
-}
-
-// setUserActiveRole sets the active role for a user using Permission Service
-func (us *userService) setUserActiveRole(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) error {
-	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, user.GetID())
-	if err != nil {
-		return err
-	}
-
-	if len(userRoles) == 0 {
-		return utils.ErrInternalServer
-	}
-
-	// Convert permission model to user model (get the first active role)
-	// TODO: Implement proper active role selection logic based on business rules
-	activeRole := permissionmodel.NewUserRole()
-	activeRole.SetID(userRoles[0].GetID())
-	activeRole.SetUserID(userRoles[0].GetUserID())
-	activeRole.SetRoleID(userRoles[0].GetRoleID())
-	activeRole.SetIsActive(userRoles[0].GetIsActive())
-
-	user.SetActiveRole(activeRole)
-	return nil
 }
 
 func NewUserService(

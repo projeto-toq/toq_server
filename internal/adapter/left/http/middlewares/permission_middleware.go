@@ -10,7 +10,7 @@ import (
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // PermissionMiddleware verifica permissões específicas usando o sistema de permissões avançado
@@ -109,10 +109,7 @@ func RequirePermission(permissionService permissionservice.PermissionServiceInte
 
 // buildPermissionContext constrói o contexto de permissão baseado na requisição
 func buildPermissionContext(c *gin.Context, userInfo usermodel.UserInfos) *permissionmodel.PermissionContext {
-	context := permissionmodel.NewPermissionContext(userInfo.ID)
-
-	// Adicionar role do usuário
-	context.WithRoles([]string{userInfo.Role.String()})
+	context := permissionmodel.NewPermissionContext(userInfo.ID, userInfo.UserRoleID, userInfo.RoleStatus)
 
 	// Adicionar metadados da requisição
 	context.AddMetadata("request_ip", c.ClientIP()).

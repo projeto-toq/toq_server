@@ -17,7 +17,11 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 	if err != nil {
 		return utils.ErrInternalServer
 	}
-	defer p.globalService.RollbackTransaction(ctx, tx)
+	defer func() {
+		if rollbackErr := p.globalService.RollbackTransaction(ctx, tx); rollbackErr != nil {
+			slog.Error("Failed to rollback transaction", "error", rollbackErr)
+		}
+	}()
 
 	err = p.AssignRoleToUserWithTx(ctx, tx, userID, roleID, expiresAt)
 	if err != nil {

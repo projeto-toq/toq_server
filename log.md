@@ -1,21 +1,170 @@
-Starting: /home/toq_admin/go/bin/dlv dap --listen=127.0.0.1:40667 --log-dest=3 from /codigos/go_code/toq_server/cmd
-DAP server listening at: 127.0.0.1:40667
-Type 'dlv help' for list of commands.
-{"time":"2025-08-31T12:53:45.932271089Z","level":"INFO","source":{"function":"main.main","file":"/codigos/go_code/toq_server/cmd/toq_server.go","line":220},"msg":"🚀 Iniciando TOQ Server Bootstrap","version":"2.0.0","component":"bootstrap","log_level":"debug","log_format":"json","log_output":"stdout"}
-{"time":"2025-08-31T12:53:45.932433502Z","level":"INFO","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).logPhaseStart","file":"/codigos/go_code/toq_server/internal/core/config/bootstrap.go","line":88},"msg":"▶️ Executando fase","phase":"Phase01_InitializeContext","component":"bootstrap","timestamp":"2025-08-31T12:53:45Z"}
-{"time":"2025-08-31T12:53:45.932508333Z","level":"INFO","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).Phase01_InitializeContext","file":"/codigos/go_code/toq_server/internal/core/config/phase_01_context.go","line":24},"msg":"🎯 FASE 1: Inicialização de Contexto e Sinais"}
-{"time":"2025-08-31T12:53:45.932597575Z","level":"DEBUG","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).Phase01_InitializeContext","file":"/codigos/go_code/toq_server/internal/core/config/phase_01_context.go","line":25},"msg":"Configurando contexto base do sistema"}
-{"time":"2025-08-31T12:53:45.932618166Z","level":"DEBUG","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).Phase01_InitializeContext","file":"/codigos/go_code/toq_server/internal/core/config/phase_01_context.go","line":28},"msg":"Configurando sinais de shutdown graceful"}
-{"time":"2025-08-31T12:53:45.933136656Z","level":"DEBUG","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).createSystemUserContext","file":"/codigos/go_code/toq_server/internal/core/config/phase_01_context.go","line":87},"msg":"👤 Contexto do usuário sistema criado","user_id":0}
-{"time":"2025-08-31T12:53:45.933182107Z","level":"INFO","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).Phase01_InitializeContext","file":"/codigos/go_code/toq_server/internal/core/config/phase_01_context.go","line":47},"msg":"✅ Contexto e sinais inicializados com sucesso"}
-{"time":"2025-08-31T12:53:45.933209488Z","level":"INFO","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).logPhaseEnd","file":"/codigos/go_code/toq_server/internal/core/config/bootstrap.go","line":96},"msg":"✅ Fase concluída","phase":"Phase01_InitializeContext","component":"bootstrap","duration":"777.696µs"}
-{"time":"2025-08-31T12:53:45.933236608Z","level":"INFO","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).logPhaseStart","file":"/codigos/go_code/toq_server/internal/core/config/bootstrap.go","line":88},"msg":"▶️ Executando fase","phase":"Phase02_LoadConfiguration","component":"bootstrap","timestamp":"2025-08-31T12:53:45Z"}
-{"time":"2025-08-31T12:53:45.933274429Z","level":"INFO","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).Phase02_LoadConfiguration","file":"/codigos/go_code/toq_server/internal/core/config/phase_02_config.go","line":19},"msg":"🎯 FASE 2: Carregamento e Validação de Configuração"}
-{"time":"2025-08-31T12:53:45.93330741Z","level":"DEBUG","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).Phase02_LoadConfiguration","file":"/codigos/go_code/toq_server/internal/core/config/phase_02_config.go","line":20},"msg":"Carregando configuração do sistema"}
-{"time":"2025-08-31T12:53:45.93332637Z","level":"DEBUG","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).loadEnvironmentConfig","file":"/codigos/go_code/toq_server/internal/core/config/phase_02_config.go","line":40},"msg":"Carregando variáveis de ambiente"}
-{"time":"2025-08-31T12:53:45.934004774Z","level":"ERROR","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).executePhase","file":"/codigos/go_code/toq_server/internal/core/config/bootstrap.go","line":175},"msg":"❌ Fase falhou","phase":"Phase02_LoadConfiguration","component":"bootstrap","duration":"762.816µs","error":"[Phase02] load_config: Failed to load configuration (failed to load environment: failed to parse config YAML: yaml: line 30: did not find expected key)"}
-{"time":"2025-08-31T12:53:45.934069015Z","level":"ERROR","source":{"function":"github.com/giulio-alfieri/toq_server/internal/core/config.(*Bootstrap).Bootstrap","file":"/codigos/go_code/toq_server/internal/core/config/bootstrap.go","line":130},"msg":"❌ Falha na fase de inicialização","phase":"Phase02_LoadConfiguration","error":"[Phase02] load_config: Failed to load configuration (failed to load environment: failed to parse config YAML: yaml: line 30: did not find expected key)"}
-{"time":"2025-08-31T12:53:45.934117186Z","level":"ERROR","source":{"function":"main.main","file":"/codigos/go_code/toq_server/cmd/toq_server.go","line":232},"msg":"❌ Falha crítica durante inicialização","error":"bootstrap failed at phase Phase02_LoadConfiguration: [Phase02] load_config: Failed to load configuration (failed to load environment: failed to parse config YAML: yaml: line 30: did not find expected key)","component":"bootstrap"}
-Process 7924 has exited with status 1
-Detaching
-dlv dap (7881) exited with code: 0
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/permission_service/assign_role_to_user.go",
+	"owner": "go-golangci-lint",
+	"severity": 4,
+	"message": "Error return value of `p.globalService.RollbackTransaction` is not checked (errcheck)",
+	"source": "go-golangci-lint",
+	"startLineNumber": 20,
+	"startColumn": 43,
+	"endLineNumber": 20,
+	"endColumn": 44,
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/permission_service/condition_evaluator.go",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "default",
+		"target": {
+			"$mid": 1,
+			"path": "/golang.org/x/tools/gopls/internal/analysis/unusedfunc",
+			"scheme": "https",
+			"authority": "pkg.go.dev"
+		}
+	},
+	"severity": 2,
+	"message": "method \"hasRole\" is unused",
+	"source": "unusedfunc",
+	"startLineNumber": 147,
+	"startColumn": 30,
+	"endLineNumber": 147,
+	"endColumn": 37,
+	"tags": [
+		1
+	],
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/permission_service/condition_evaluator.go",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "unusedparams",
+		"target": {
+			"$mid": 1,
+			"path": "/golang.org/x/tools/gopls/internal/analysis/unusedparams",
+			"scheme": "https",
+			"authority": "pkg.go.dev",
+			"fragment": "unusedparams"
+		}
+	},
+	"severity": 2,
+	"message": "unused parameter: targetRole",
+	"source": "unusedparams",
+	"startLineNumber": 157,
+	"startColumn": 42,
+	"endLineNumber": 157,
+	"endColumn": 59,
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/permission_service/has_permission.go",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "unusedparams",
+		"target": {
+			"$mid": 1,
+			"path": "/golang.org/x/tools/gopls/internal/analysis/unusedparams",
+			"scheme": "https",
+			"authority": "pkg.go.dev",
+			"fragment": "unusedparams"
+		}
+	},
+	"severity": 2,
+	"message": "unused parameter: ctx",
+	"source": "unusedparams",
+	"startLineNumber": 92,
+	"startColumn": 61,
+	"endLineNumber": 92,
+	"endColumn": 80,
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/permission_service/has_permission.go",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "unusedparams",
+		"target": {
+			"$mid": 1,
+			"path": "/golang.org/x/tools/gopls/internal/analysis/unusedparams",
+			"scheme": "https",
+			"authority": "pkg.go.dev",
+			"fragment": "unusedparams"
+		}
+	},
+	"severity": 2,
+	"message": "unused parameter: ctx",
+	"source": "unusedparams",
+	"startLineNumber": 92,
+	"startColumn": 61,
+	"endLineNumber": 92,
+	"endColumn": 80,
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/user_service/get_crecis_to_validate_by_status.go",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "unusedparams",
+		"target": {
+			"$mid": 1,
+			"path": "/golang.org/x/tools/gopls/internal/analysis/unusedparams",
+			"scheme": "https",
+			"authority": "pkg.go.dev",
+			"fragment": "unusedparams"
+		}
+	},
+	"severity": 2,
+	"message": "unused parameter: ctx",
+	"source": "unusedparams",
+	"startLineNumber": 42,
+	"startColumn": 52,
+	"endLineNumber": 42,
+	"endColumn": 71,
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/user_service/get_crecis_to_validate_by_status.go",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "unusedparams",
+		"target": {
+			"$mid": 1,
+			"path": "/golang.org/x/tools/gopls/internal/analysis/unusedparams",
+			"scheme": "https",
+			"authority": "pkg.go.dev",
+			"fragment": "unusedparams"
+		}
+	},
+	"severity": 2,
+	"message": "unused parameter: tx",
+	"source": "unusedparams",
+	"startLineNumber": 42,
+	"startColumn": 73,
+	"endLineNumber": 42,
+	"endColumn": 83,
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/core/service/user_service/user_service.go",
+	"owner": "_generated_diagnostic_collection_name_#0",
+	"code": {
+		"value": "default",
+		"target": {
+			"$mid": 1,
+			"path": "/golang.org/x/tools/gopls/internal/analysis/unusedfunc",
+			"scheme": "https",
+			"authority": "pkg.go.dev"
+		}
+	},
+	"severity": 2,
+	"message": "method \"setUserActiveRole\" is unused",
+	"source": "unusedfunc",
+	"startLineNumber": 35,
+	"startColumn": 24,
+	"endLineNumber": 35,
+	"endColumn": 41,
+	"tags": [
+		1
+	],
+	"origin": "extHost2"
+}]

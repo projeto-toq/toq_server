@@ -30,9 +30,17 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 		return
 	}
 
-	// Determine alternative role based on current role
+	// Get user to determine current role - precisamos buscar o usuário para obter o role
+	user, err := uh.userService.GetProfile(ctx, userInfo.ID)
+	if err != nil {
+		utils.SendHTTPError(c, http.StatusInternalServerError, "GET_USER_FAILED", "Failed to get user information")
+		return
+	}
+
+	// Determine alternative role based on current active role
 	var alternativeRole permissionmodel.RoleSlug
-	if userInfo.Role == permissionmodel.RoleSlugOwner {
+	currentRole := utils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
+	if currentRole == permissionmodel.RoleSlugOwner {
 		alternativeRole = permissionmodel.RoleSlugRealtor
 	} else {
 		alternativeRole = permissionmodel.RoleSlugOwner

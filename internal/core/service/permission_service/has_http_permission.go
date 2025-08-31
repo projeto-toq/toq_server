@@ -21,12 +21,24 @@ func (p *permissionServiceImpl) HasHTTPPermission(ctx context.Context, userID in
 
 	slog.Debug("Checking HTTP permission", "userID", userID, "method", method, "path", path)
 
+	// Buscar informações do usuário para obter UserRoleID e RoleStatus
+	userRole, err := p.permissionRepository.GetActiveUserRoleByUserID(ctx, nil, userID)
+	if err != nil {
+		slog.Error("Failed to get user active role", "userID", userID, "error", err)
+		return false, err
+	}
+
+	if userRole == nil {
+		slog.Warn("User has no active role", "userID", userID)
+		return false, nil
+	}
+
 	// Mapear HTTP method+path para resource+action
 	resource := "http"
 	action := fmt.Sprintf("%s:%s", method, path)
 
-	// Criar contexto básico para HTTP
-	permContext := permissionmodel.NewPermissionContext(userID)
+	// Criar contexto com as informações completas do usuário
+	permContext := permissionmodel.NewPermissionContext(userID, userRole.GetID(), userRole.GetStatus())
 	permContext.AddMetadata("http_method", method)
 	permContext.AddMetadata("http_path", path)
 

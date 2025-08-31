@@ -39,7 +39,7 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	return
 }
 
-func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
+func (us *userService) getCrecisToValidateByStatus(_ context.Context, _ *sql.Tx, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
 
 	// TODO: Reimplementar busca por status após migração do sistema de status
 	// O método GetUsersByStatus precisa ser atualizado para o novo sistema de permissões

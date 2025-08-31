@@ -67,9 +67,9 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 // setRootUserContext sets the root user context for public endpoints
 func setRootUserContext(c *gin.Context) {
 	infos := usermodel.UserInfos{
-		ID:            0,
-		Role:          permissionmodel.RoleSlugRoot, // Use RoleSlug instead of UserRole
-		ProfileStatus: false,
+		ID:         0,
+		UserRoleID: 0,
+		RoleStatus: permissionmodel.StatusActive,
 	}
 
 	// Set context values for compatibility
@@ -100,54 +100,49 @@ func setUserContext(c *gin.Context, userInfo usermodel.UserInfos) {
 	c.Set("clientIP", c.ClientIP())
 }
 
-// convertRoleNumberToSlug converts legacy role numbers to role slugs
-func convertRoleNumberToSlug(roleNumber float64) permissionmodel.RoleSlug {
-	switch int(roleNumber) {
-	case 1:
-		return permissionmodel.RoleSlugRoot
-	case 2:
-		return permissionmodel.RoleSlugOwner
-	case 3:
-		return permissionmodel.RoleSlugRealtor
-	case 4:
-		return permissionmodel.RoleSlugAgency
-	default:
-		return permissionmodel.RoleSlugOwner // Default fallback
-	}
-}
-
 // validateAccessToken validates the JWT token and extracts user information
 func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
-	// This is a simplified version - we'll need to implement the actual JWT validation
-	// For now, using the same logic from the gRPC auth interceptor
-
 	claims := &jwt.MapClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		// TODO: Get secret from environment configuration
-		return []byte("Senh@123"), nil // This should come from config
+		// Get secret from global configuration
+		return []byte(globalmodel.GetJWTSecret()), nil
 	})
 
 	if err != nil || !token.Valid {
 		return usermodel.UserInfos{}, err
 	}
 
-	// Extract user information from claims
-	userID, ok := (*claims)["user_id"].(float64)
+	// Extract user information from new token structure
+	userInfoClaim, ok := (*claims)[string(globalmodel.TokenKey)]
 	if !ok {
-		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user_id claim", jwt.ValidationErrorClaimsInvalid)
+		return usermodel.UserInfos{}, jwt.NewValidationError("missing user info claim", jwt.ValidationErrorClaimsInvalid)
 	}
 
-	role, ok := (*claims)["role"].(float64)
+	// Parse UserInfos from claim
+	userInfoMap, ok := userInfoClaim.(map[string]interface{})
 	if !ok {
-		return usermodel.UserInfos{}, jwt.NewValidationError("invalid role claim", jwt.ValidationErrorClaimsInvalid)
+		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user info format", jwt.ValidationErrorClaimsInvalid)
 	}
 
-	profileStatus, _ := (*claims)["profile_status"].(bool)
+	userID, ok := userInfoMap["ID"].(float64)
+	if !ok {
+		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user ID claim", jwt.ValidationErrorClaimsInvalid)
+	}
+
+	userRoleID, ok := userInfoMap["UserRoleID"].(float64)
+	if !ok {
+		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user role ID claim", jwt.ValidationErrorClaimsInvalid)
+	}
+
+	roleStatus, ok := userInfoMap["RoleStatus"].(float64)
+	if !ok {
+		return usermodel.UserInfos{}, jwt.NewValidationError("invalid role status claim", jwt.ValidationErrorClaimsInvalid)
+	}
 
 	return usermodel.UserInfos{
-		ID:            int64(userID),
-		Role:          convertRoleNumberToSlug(role),
-		ProfileStatus: profileStatus,
+		ID:         int64(userID),
+		UserRoleID: int64(userRoleID),
+		RoleStatus: permissionmodel.UserRoleStatus(roleStatus),
 	}, nil
 }
 

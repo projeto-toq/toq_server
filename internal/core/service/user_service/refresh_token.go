@@ -81,11 +81,12 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if err != nil {
 		return
 	}
-	// TODO: Implementar verificação de status bloqueado via permission service
-	// if user.GetActiveRole().GetStatus() == usermodel.StatusBlocked {
-	// 	err = utils.ErrInternalServer
-	// 	return
-	// }
+
+	// Validar se usuário ainda tem role ativa
+	if user.GetActiveRole() == nil {
+		slog.Warn("User has no active role during refresh", "user_id", userID)
+		return tokens, utils.ErrInternalServer
+	}
 
 	// Enforce absolute expiry if set
 	if !session.GetAbsoluteExpiresAt().IsZero() && time.Now().UTC().After(session.GetAbsoluteExpiresAt()) {

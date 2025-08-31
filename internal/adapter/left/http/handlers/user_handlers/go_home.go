@@ -8,7 +8,7 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) GoHome(c *gin.Context) {
@@ -31,8 +31,11 @@ func (uh *UserHandler) GoHome(c *gin.Context) {
 	}
 
 	// Prepare response with welcome message
+	currentRole := utils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
+	isActive := utils.IsProfileActiveFromStatus(userInfo.RoleStatus)
+
 	response := dto.GoHomeResponse{
-		Message: fmt.Sprintf("Welcome %s. Seu Role é %s, e seu perfil está %v", user.GetNickName(), userInfo.Role, userInfo.ProfileStatus),
+		Message: fmt.Sprintf("Welcome %s. Seu Role é %s, e seu perfil está %v", user.GetNickName(), currentRole, isActive),
 	}
 
 	c.JSON(http.StatusOK, response)

@@ -1,10 +1,20 @@
 🛠️ Problema
-Agora, com o Prometheus coletando métricas recorrentemente, temos uma poluição de mensagens de log, traces e métricas pelo próprio sistema de telemetria.
-{"time":"2025-08-31T14:11:59.439667845Z","level":"INFO","msg":"HTTP Request","request_id":"873c8356-23bd-4e3b-baaa-12043cdd9579","method":"GET","path":"/metrics","status":200,"duration":725581,"size":194,"client_ip":"172.18.0.4","user_agent":"Prometheus/3.5.0"}
-{"time":"2025-08-31T14:12:09.439145655Z","level":"INFO","msg":"HTTP Request","request_id":"cd754ad6-7fd4-4753-b844-90e5d60da78e","method":"GET","path":"/metrics","status":200,"duration":688430,"size":444,"client_ip":"172.18.0.4","user_agent":"Prometheus/3.5.0"}
-{"time":"2025-08-31T14:12:19.440042299Z","level":"INFO","msg":"HTTP Request","request_id":"ab2aab9c-179f-414e-8dfc-6b13ff2008c9","method":"GET","path":"/metrics","status":200,"duration":768871,"size":449,"client_ip":"172.18.0.4","user_agent":"Prometheus/3.5.0"}
-{"time":"2025-08-31T14:12:29.440644976Z","level":"INFO","msg":"HTTP Request","request_id":"98591cbc-1e93-4725-b43a-0c795c9ff68c","method":"GET","path":"/metrics","status":200,"duration":1447422,"size":449,"client_ip":"172.18.0.4","user_agent":"Prometheus/3.5.0"}
-{"time":"2025-08-31T14:12:39.43967117Z","level":"INFO","msg":"HTTP Request","request_id":"1fcb6f65-05f1-452e-80ef-95b50925218b","method":"GET","path":"/metrics","status":200,"duration":990485,"size":444,"client_ip":"172.18.0.4","user_agent":"Prometheus/3.5.0"}
+apesar de claramente dizer que - Implementação efetiva (sem uso de mocks) - inssitemente prompts enviados geram códigos como:
+// getUserPermissionsFromCache busca permissões do cache Redis
+func (p *permissionServiceImpl) getUserPermissionsFromCache(_ context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
+	// TODO: Implementar cache otimizado para o novo sistema
+	// Por enquanto, sempre retorna cache miss para forçar busca no banco
+	slog.Debug("Cache temporarily disabled for user permissions", "cache_key", cacheKey)
+	return nil, fmt.Errorf("cache miss - using database")
+}
+
+// setUserPermissionsInCache armazena permissões no cache Redis
+func (p *permissionServiceImpl) setUserPermissionsInCache(_ context.Context, cacheKey string, permissions []permissionmodel.PermissionInterface) error {
+	// TODO: Implementar cache otimizado para o novo sistema
+	// Por enquanto, não faz cache para simplificar a migração
+	slog.Debug("Cache temporarily disabled for storing user permissions", "cache_key", cacheKey, "count", len(permissions))
+	return nil
+}
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 - Adoção das melhores práticas de desenvolvimento em Go
@@ -27,4 +37,4 @@ Agora, com o Prometheus coletando métricas recorrentemente, temos uma poluiçã
 
 📌 Instruções finais
 - Não implemente nada até que eu autorize.
-- Analise cuidadosamente a solicitação e o código atual, descubra a causa raiz e proponha a solução
+- Analise cuidadosamente a solicitação e o código atual, e apresente a melhor forma para fazer a refatoração buscando simplicade e melhores práticas

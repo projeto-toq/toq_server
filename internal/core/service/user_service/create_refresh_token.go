@@ -5,11 +5,11 @@ import (
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/golang-jwt/jwt"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *usermodel.Tokens, jti string) (err error) {
@@ -21,8 +21,9 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 	expires = us.GetTokenExpiration(expired)
 
 	infos := usermodel.UserInfos{
-		ID:            userID,
-		ProfileStatus: false,
+		ID:         userID,
+		UserRoleID: 0,                            // Refresh token não precisa de UserRoleID específico
+		RoleStatus: permissionmodel.StatusActive, // Status padrão para refresh token
 	}
 
 	//cria os claims

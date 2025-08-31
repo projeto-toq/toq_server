@@ -89,7 +89,7 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 }
 
 // getUserPermissionsFromCache busca permissões do cache Redis
-func (p *permissionServiceImpl) getUserPermissionsFromCache(ctx context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
+func (p *permissionServiceImpl) getUserPermissionsFromCache(_ context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
 	// TODO: Implementar cache otimizado para o novo sistema
 	// Por enquanto, sempre retorna cache miss para forçar busca no banco
 	slog.Debug("Cache temporarily disabled for user permissions", "cache_key", cacheKey)
@@ -97,7 +97,7 @@ func (p *permissionServiceImpl) getUserPermissionsFromCache(ctx context.Context,
 }
 
 // setUserPermissionsInCache armazena permissões no cache Redis
-func (p *permissionServiceImpl) setUserPermissionsInCache(ctx context.Context, cacheKey string, permissions []permissionmodel.PermissionInterface) error {
+func (p *permissionServiceImpl) setUserPermissionsInCache(_ context.Context, cacheKey string, permissions []permissionmodel.PermissionInterface) error {
 	// TODO: Implementar cache otimizado para o novo sistema
 	// Por enquanto, não faz cache para simplificar a migração
 	slog.Debug("Cache temporarily disabled for storing user permissions", "cache_key", cacheKey, "count", len(permissions))

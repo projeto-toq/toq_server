@@ -80,8 +80,8 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 		if userInfo, err := utils.GetUserInfoFromGinContext(c); err == nil {
 			fields = append(fields,
 				slog.Int64("user_id", userInfo.ID),
-				slog.String("user_role", userInfo.Role.String()),
-				slog.Bool("profile_complete", userInfo.ProfileStatus),
+				slog.Int64("user_role_id", userInfo.UserRoleID),
+				slog.String("role_status", userInfo.RoleStatus.String()),
 			)
 		}
 
