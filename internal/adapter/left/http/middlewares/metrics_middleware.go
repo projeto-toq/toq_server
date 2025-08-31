@@ -16,8 +16,13 @@ func MetricsMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Hand
 		path := c.Request.URL.Path
 		method := c.Request.Method
 
-		// Incrementar requests em progresso
-		metricsAdapter.SetHTTPRequestsInFlight(1) // Simplified - in production would track actual count
+		// Incrementar requests em progresso de forma thread-safe
+		metricsAdapter.IncrementHTTPRequestsInFlight()
+
+		// Garantir que o decremento sempre aconteça, mesmo em caso de panic
+		defer func() {
+			metricsAdapter.DecrementHTTPRequestsInFlight()
+		}()
 
 		// Processar request
 		c.Next()
@@ -31,8 +36,5 @@ func MetricsMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Hand
 		metricsAdapter.IncrementHTTPRequests(method, path, status)
 		metricsAdapter.ObserveHTTPDuration(method, path, duration)
 		metricsAdapter.ObserveHTTPResponseSize(method, path, size)
-
-		// Decrementar requests em progresso
-		metricsAdapter.SetHTTPRequestsInFlight(0) // Simplified - in production would track actual count
 	})
 }

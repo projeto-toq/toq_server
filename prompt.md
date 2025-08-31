@@ -1,6 +1,7 @@
 🛠️ Problema
-recebi o erro em log.md ao tentar iniciar o sistema
-
+As métricas não aparecem no grafana, que mostram apenas a mensagem no data.
+O metrics_middleware tem uma mensagem // Simplified - in production would track actual count.
+Este sistema está em desenvolvimento mas sendo preparado para produção portanto deveria "track actual count"
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 - Adoção das melhores práticas de desenvolvimento em Go

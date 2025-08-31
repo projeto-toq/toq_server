@@ -2,6 +2,7 @@ package prometheusadapter
 
 import (
 	"context"
+	"sync/atomic"
 	"time"
 
 	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
@@ -12,6 +13,9 @@ import (
 // PrometheusAdapter implementa MetricsPortInterface usando Prometheus
 type PrometheusAdapter struct {
 	registry *prometheus.Registry
+
+	// Thread-safe counter for requests in flight
+	requestsInFlightCounter int64
 
 	// HTTP Metrics
 	httpRequestsTotal    *prometheus.CounterVec
@@ -145,7 +149,23 @@ func (p *PrometheusAdapter) ObserveHTTPDuration(method, path string, duration ti
 }
 
 func (p *PrometheusAdapter) SetHTTPRequestsInFlight(count int64) {
+	atomic.StoreInt64(&p.requestsInFlightCounter, count)
 	p.httpRequestsInFlight.Set(float64(count))
+}
+
+func (p *PrometheusAdapter) IncrementHTTPRequestsInFlight() {
+	newCount := atomic.AddInt64(&p.requestsInFlightCounter, 1)
+	p.httpRequestsInFlight.Set(float64(newCount))
+}
+
+func (p *PrometheusAdapter) DecrementHTTPRequestsInFlight() {
+	newCount := atomic.AddInt64(&p.requestsInFlightCounter, -1)
+	// Garantir que nunca seja negativo
+	if newCount < 0 {
+		atomic.StoreInt64(&p.requestsInFlightCounter, 0)
+		newCount = 0
+	}
+	p.httpRequestsInFlight.Set(float64(newCount))
 }
 
 func (p *PrometheusAdapter) ObserveHTTPResponseSize(method, path string, size int64) {

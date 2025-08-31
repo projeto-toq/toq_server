@@ -12,6 +12,8 @@ type MetricsPortInterface interface {
 	IncrementHTTPRequests(method, path, status string)
 	ObserveHTTPDuration(method, path string, duration time.Duration)
 	SetHTTPRequestsInFlight(count int64)
+	IncrementHTTPRequestsInFlight()
+	DecrementHTTPRequestsInFlight()
 	ObserveHTTPResponseSize(method, path string, size int64)
 
 	// Business Metrics

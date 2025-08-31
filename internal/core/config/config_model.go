@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/routes"
 	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
 	"github.com/giulio-alfieri/toq_server/internal/core/cache"
@@ -449,11 +450,12 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		return
 	}
 
-	// 2. Configurar rotas básicas de health check
-	c.setupBasicRoutes()
-
-	// 3. Registrar todas as rotas (auth, user, listing) via routes package com dependências injetadas
+	// 2. Registrar todas as rotas (auth, user, listing) via routes package com dependências injetadas
+	// Isso aplicará os middlewares globais primeiro
 	routes.SetupRoutes(c.ginRouter, &c.httpHandlers, c.activityTracker, c.permissionService, c.metricsAdapter)
+
+	// 3. Configurar rotas básicas de health check APÓS middlewares globais serem aplicados
+	c.setupBasicRoutes()
 
 	slog.Info("HTTP handlers and routes configured successfully")
 }
@@ -483,14 +485,22 @@ func (c *config) createHTTPHandlers() error {
 	return nil
 }
 
-// setupBasicRoutes configura rotas básicas
+// setupBasicRoutes configura rotas básicas com middlewares de métricas
 func (c *config) setupBasicRoutes() {
-	// Health check endpoints
-	c.ginRouter.GET("/healthz", func(ctx *gin.Context) {
+	// Aplicar middlewares de métricas às rotas básicas
+	var metricsMiddleware gin.HandlerFunc
+	if c.metricsAdapter != nil {
+		metricsMiddleware = middlewares.TelemetryMiddleware(c.metricsAdapter.Prometheus)
+	} else {
+		metricsMiddleware = gin.HandlerFunc(func(ctx *gin.Context) { ctx.Next() })
+	}
+
+	// Health check endpoints com middleware de métricas
+	c.ginRouter.GET("/healthz", metricsMiddleware, func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{"status": "ok"})
 	})
 
-	c.ginRouter.GET("/readyz", func(ctx *gin.Context) {
+	c.ginRouter.GET("/readyz", metricsMiddleware, func(ctx *gin.Context) {
 		if c.readiness {
 			ctx.JSON(200, gin.H{"status": "ready"})
 		} else {
@@ -498,7 +508,7 @@ func (c *config) setupBasicRoutes() {
 		}
 	})
 
-	// Metrics endpoint
+	// Metrics endpoint (sem middleware adicional para evitar recursão)
 	if c.metricsAdapter != nil && c.httpHandlers.MetricsHandler != nil {
 		if metricsHandler, ok := c.httpHandlers.MetricsHandler.(interface{ GetMetrics(c *gin.Context) }); ok {
 			c.ginRouter.GET("/metrics", metricsHandler.GetMetrics)

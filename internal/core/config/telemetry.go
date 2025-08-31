@@ -162,6 +162,11 @@ func (tm *TelemetryManager) initializeMetrics(ctx context.Context, res *resource
 	// Definir como provider global
 	otel.SetMeterProvider(tm.metricProvider)
 
+	// Garantir que erros do OpenTelemetry sejam registrados como ERROR (ex: falha ao enviar métricas)
+	otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) {
+		slog.Error("OpenTelemetry error", "component", "otlp.metrics", "endpoint", tm.env.TELEMETRY.OTLP.Endpoint, "error", err)
+	}))
+
 	slog.Info("OpenTelemetry metrics initialized", "endpoint", tm.env.TELEMETRY.OTLP.Endpoint)
 	return nil
 }
