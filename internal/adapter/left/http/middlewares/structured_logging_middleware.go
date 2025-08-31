@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,15 @@ import (
 // StructuredLoggingMiddleware provides structured JSON logging with stdout/stderr separation
 // Follows Go best practices and Google Style Guide
 // Integrates with existing slog system
+// Filters out telemetry and monitoring requests to reduce log noise
 func StructuredLoggingMiddleware() gin.HandlerFunc {
+	// Paths that should not generate access logs (telemetry/health/monitoring)
+	skipLoggingPaths := map[string]bool{
+		"/metrics": true,
+		"/healthz": true,
+		"/readyz":  true,
+	}
+
 	// Create separate handlers for stdout (INFO/DEBUG) and stderr (WARN/ERROR)
 	stdoutHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     slog.LevelDebug,
@@ -29,11 +38,18 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 		start := time.Now()
 		path := c.Request.URL.Path
 		method := c.Request.Method
+		userAgent := c.Request.UserAgent()
+
+		// Skip logging for telemetry/monitoring requests
+		if skipLoggingPaths[path] || strings.Contains(userAgent, "Prometheus") {
+			c.Next()
+			return
+		}
 
 		// Get request info before processing
 		requestID := utils.GetRequestIDFromGinContext(c)
 		clientIP := utils.GetClientIPFromGinContext(c)
-		userAgent := utils.GetUserAgentFromGinContext(c)
+		// userAgent already declared above for filtering
 
 		// Process request
 		c.Next()
@@ -129,7 +145,15 @@ func RequestLoggingMiddleware() gin.HandlerFunc {
 
 // ErrorLoggingMiddleware logs only errors and warnings
 // Useful for production environments with high traffic
+// Filters out telemetry and monitoring requests to reduce log noise
 func ErrorLoggingMiddleware() gin.HandlerFunc {
+	// Paths that should not generate access logs (telemetry/health/monitoring)
+	skipLoggingPaths := map[string]bool{
+		"/metrics": true,
+		"/healthz": true,
+		"/readyz":  true,
+	}
+
 	stderrHandler := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level:     slog.LevelWarn,
 		AddSource: true,
@@ -137,11 +161,18 @@ func ErrorLoggingMiddleware() gin.HandlerFunc {
 
 	return gin.HandlerFunc(func(c *gin.Context) {
 		start := time.Now()
+		path := c.Request.URL.Path
+		userAgent := c.Request.UserAgent()
 
 		// Process request
 		c.Next()
 
 		status := c.Writer.Status()
+
+		// Skip logging for telemetry/monitoring requests (even errors)
+		if skipLoggingPaths[path] || strings.Contains(userAgent, "Prometheus") {
+			return
+		}
 
 		// Only log errors and warnings
 		if status >= 400 {

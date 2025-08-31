@@ -38,11 +38,15 @@ func NewPrometheusAdapter() metricsport.MetricsPortInterface {
 	registry := prometheus.NewRegistry()
 
 	adapter := &PrometheusAdapter{
-		registry: registry,
+		registry:                registry,
+		requestsInFlightCounter: 0, // Explicitly initialize counter to 0
 	}
 
 	adapter.initializeMetrics()
 	adapter.registerMetrics()
+
+	// Ensure the gauge starts at 0
+	adapter.httpRequestsInFlight.Set(0)
 
 	return adapter
 }

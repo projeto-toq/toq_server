@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
@@ -15,8 +16,26 @@ import (
 // TelemetryMiddleware adds OpenTelemetry tracing to HTTP requests
 // Follows OpenTelemetry HTTP semantic conventions for span naming and attributes
 // Integrates with metrics collection and provides request correlation
+// Filters out telemetry and monitoring requests to reduce trace noise
 func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.HandlerFunc {
+	// Paths that should not generate traces (telemetry/health/monitoring)
+	skipTracingPaths := map[string]bool{
+		"/metrics": true,
+		"/healthz": true,
+		"/readyz":  true,
+	}
+
 	return gin.HandlerFunc(func(c *gin.Context) {
+		path := c.Request.URL.Path
+		userAgent := c.Request.UserAgent()
+
+		// Skip tracing AND metrics for telemetry/monitoring requests
+		if skipTracingPaths[path] || strings.Contains(userAgent, "Prometheus") {
+			// Just continue without telemetry overhead
+			c.Next()
+			return
+		}
+
 		ctx := c.Request.Context()
 
 		// Get request ID for correlation with logs
@@ -28,7 +47,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 		// Create span following OpenTelemetry HTTP semantic conventions
 		// Format: "{HTTP_METHOD} {HTTP_ROUTE}" (e.g., "GET /api/users/{id}")
 		method := c.Request.Method
-		path := c.Request.URL.Path
+		// path already declared above for filtering
 		spanName := fmt.Sprintf("%s %s", method, path)
 
 		// Create tracer and span
