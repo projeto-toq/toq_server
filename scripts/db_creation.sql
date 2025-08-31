@@ -336,6 +336,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`user_roles` (
   `is_active` TINYINT UNSIGNED NOT NULL DEFAULT 1,
   `status` TINYINT NOT NULL DEFAULT 0,
   `expires_at` TIMESTAMP(6) NULL DEFAULT NULL,
+  `blocked_until` DATETIME NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_user_idx` (`user_id` ASC) VISIBLE,
   INDEX `uk_user_roles` (`user_id` ASC, `role_id` ASC) INVISIBLE,
@@ -645,7 +646,7 @@ FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
-(id, user_id, role_id, is_active, status, @expires_at)
+(id, user_id, role_id, is_active, status, blocked_until, @expires_at)
 SET expires_at = NULLIF(@expires_at, 'NULL');
 
 -- Reabilitar verificação de foreign keys

@@ -4,13 +4,14 @@ import "time"
 
 // userRole representa a associação entre usuário e role
 type userRole struct {
-	id        int64
-	userID    int64
-	roleID    int64
-	isActive  bool
-	status    UserRoleStatus
-	expiresAt *time.Time
-	role      RoleInterface
+	id           int64
+	userID       int64
+	roleID       int64
+	isActive     bool
+	status       UserRoleStatus
+	expiresAt    *time.Time
+	blockedUntil *time.Time
+	role         RoleInterface
 }
 
 func NewUserRole() UserRoleInterface {
@@ -66,6 +67,14 @@ func (ur *userRole) GetExpiresAt() *time.Time {
 
 func (ur *userRole) SetExpiresAt(expiresAt *time.Time) {
 	ur.expiresAt = expiresAt
+}
+
+func (ur *userRole) GetBlockedUntil() *time.Time {
+	return ur.blockedUntil
+}
+
+func (ur *userRole) SetBlockedUntil(blockedUntil *time.Time) {
+	ur.blockedUntil = blockedUntil
 }
 
 func (ur *userRole) GetRole() RoleInterface {

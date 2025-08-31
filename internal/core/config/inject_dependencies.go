@@ -93,6 +93,11 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	// 5. Inicializar Services
 	c.initializeServices()
 
+	// 6. Inicializar TempBlockCleanerWorker após permission service estar disponível
+	if err := c.InitializeTempBlockCleaner(); err != nil {
+		return fmt.Errorf("failed to initialize temp block cleaner: %w", err)
+	}
+
 	slog.Info("Dependency injection completed successfully using Factory Pattern")
 
 	return nil

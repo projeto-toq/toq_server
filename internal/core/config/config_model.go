@@ -45,6 +45,7 @@ type config struct {
 	context                context.Context
 	cache                  cache.CacheInterface
 	activityTracker        *goroutines.ActivityTracker
+	tempBlockCleaner       *goroutines.TempBlockCleanerWorker
 	wg                     *sync.WaitGroup
 	readiness              bool
 	globalService          globalservice.GlobalServiceInterface
@@ -82,6 +83,7 @@ type ConfigInterface interface {
 	InitPermissionHandler()
 	InitializeGoRoutines()
 	SetActivityTrackerUserService()
+	InitializeTempBlockCleaner() error
 	GetDatabase() *sql.DB
 	GetEnvironment() (*globalmodel.Environment, error)
 	GetHTTPServer() *http.Server
@@ -233,6 +235,18 @@ func (c *config) InitializeGoRoutines() {
 	} else {
 		slog.Warn("Activity tracker or wait group not available for goroutine initialization")
 	}
+
+	if c.tempBlockCleaner != nil {
+		// Iniciar worker de limpeza de bloqueios temporários
+		c.wg.Add(1)
+		go func() {
+			defer c.wg.Done()
+			c.tempBlockCleaner.Start(c.context)
+		}()
+		slog.Info("Temp block cleaner worker started")
+	} else {
+		slog.Warn("Temp block cleaner not available for goroutine initialization")
+	}
 }
 
 // SetActivityTrackerUserService conecta o activity tracker ao user service
@@ -243,6 +257,28 @@ func (c *config) SetActivityTrackerUserService() {
 	} else {
 		slog.Warn("Activity tracker or user service not available for connection")
 	}
+}
+
+// InitializeTempBlockCleaner inicializa o worker de limpeza de bloqueios temporários
+func (c *config) InitializeTempBlockCleaner() error {
+	if c.permissionService == nil {
+		slog.Error("Permission service not available for temp block cleaner initialization")
+		return fmt.Errorf("permission service not initialized")
+	}
+
+	if c.globalService == nil {
+		slog.Error("Global service not available for temp block cleaner initialization")
+		return fmt.Errorf("global service not initialized")
+	}
+
+	c.tempBlockCleaner = goroutines.NewTempBlockCleanerWorker(c.permissionService, c.globalService)
+	slog.Info("✅ TempBlockCleanerWorker initialized")
+	return nil
+}
+
+// GetTempBlockCleaner retorna o worker de limpeza de bloqueios temporários
+func (c *config) GetTempBlockCleaner() *goroutines.TempBlockCleanerWorker {
+	return c.tempBlockCleaner
 }
 
 // LoadEnv carrega as variáveis de ambiente e configuração YAML

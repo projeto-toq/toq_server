@@ -1,2 +1,2 @@
-id;user_id;role_id;is_active;status;expires_at
-1;1;1;1;0;NULL
+id;user_id;role_id;is_active;status;blocked_until;expires_at
+1;1;1;1;0;NULL;NULL

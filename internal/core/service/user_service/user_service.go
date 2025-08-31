@@ -86,6 +86,8 @@ type UserServiceInterface interface {
 	SignOut(ctx context.Context, userID int64, deviceToken, refreshToken string) (err error)
 	SwitchUserRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error)
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
+	BlockUserTemporarily(ctx context.Context, userID int64) (err error)
+	UnblockUserTemporarily(ctx context.Context, userID int64) (err error)
 	UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error)
 	UpdateOptStatus(ctx context.Context, optIn bool) (err error)
 	GetPhotoUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error)

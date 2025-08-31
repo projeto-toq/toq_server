@@ -15,6 +15,8 @@ const (
 
 	//user wrong signin attempts
 	MaxWrongSigninAttempts = 3
+	//temporary block duration for failed signin attempts
+	TempBlockDuration = 15 * time.Minute
 )
 
 type ActionFinished int

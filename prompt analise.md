@@ -1,20 +1,8 @@
 🛠️ Problema
-estamos com estas  funcções necessiando implementação real:
-// getUserPermissionsFromCache busca permissões do cache Redis
-func (p *permissionServiceImpl) getUserPermissionsFromCache(_ context.Context, cacheKey string) ([]permissionmodel.PermissionInterface, error) {
-    // TODO: Implementar cache otimizado para o novo sistema
-    // Por enquanto, sempre retorna cache miss para forçar busca no banco
-    slog.Debug("Cache temporarily disabled for user permissions", "cache_key", cacheKey)
-    return nil, fmt.Errorf("cache miss - using database")
-}
+Durante o processo de signin o usuário pode tentar fazer login um numero de vezes definifd em usermodel.MaxWrongSigninAttempts.
+verifique se o procesos de signin está correto,incrmentand a ccada tentativa de erro, para usuários que possuem cadastro, e após exceder o máximo de tentativas bloqueia o usuário colocando um novo status e só permitindo após tempo a ser feinido no usermodel.
 
-// setUserPermissionsInCache armazena permissões no cache Redis
-func (p *permissionServiceImpl) setUserPermissionsInCache(_ context.Context, cacheKey string, permissions []permissionmodel.PermissionInterface) error {
-    // TODO: Implementar cache otimizado para o novo sistema
-    // Por enquanto, não faz cache para simplificar a migração
-    slog.Debug("Cache temporarily disabled for storing user permissions", "cache_key", cacheKey, "count", len(permissions))
-    return nil
-}
+Caso falte passos ou esteja incorreto apresente um plano de refatoração.
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção:
 - Adoção das melhores práticas de desenvolvimento em Go (Go Best Practices, Google Go Style Guide).

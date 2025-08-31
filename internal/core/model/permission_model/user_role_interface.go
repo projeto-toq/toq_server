@@ -15,6 +15,8 @@ type UserRoleInterface interface {
 	SetStatus(status UserRoleStatus)
 	GetExpiresAt() *time.Time
 	SetExpiresAt(expiresAt *time.Time)
+	GetBlockedUntil() *time.Time
+	SetBlockedUntil(blockedUntil *time.Time)
 	GetRole() RoleInterface
 	SetRole(role RoleInterface)
 }

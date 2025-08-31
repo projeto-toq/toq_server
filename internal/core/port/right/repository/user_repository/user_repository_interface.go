@@ -30,6 +30,8 @@ type UserRepoPortInterface interface {
 	UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
 	UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error)
 	UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error)
+	UpdateUserRoleStatusByUserID(ctx context.Context, userID int64, status int) (err error)
+	ResetUserWrongSigninAttempts(ctx context.Context, userID int64) (err error)
 	VerifyUserDuplicity(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
 	AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string, platform *string) error
 	RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error

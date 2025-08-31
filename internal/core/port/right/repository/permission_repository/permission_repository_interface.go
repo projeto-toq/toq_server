@@ -3,6 +3,7 @@ package permissionrepository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 )
@@ -44,6 +45,11 @@ type PermissionRepositoryInterface interface {
 	GetRolePermissionByRoleIDAndPermissionID(ctx context.Context, tx *sql.Tx, roleID, permissionID int64) (permissionmodel.RolePermissionInterface, error)
 	UpdateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) error
 	DeleteRolePermission(ctx context.Context, tx *sql.Tx, rolePermissionID int64) error
+
+	// User blocking operations
+	BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time, reason string) error
+	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
+	GetExpiredTempBlockedUsers(ctx context.Context, tx *sql.Tx) ([]permissionmodel.UserRoleInterface, error)
 
 	// Complex queries for permission checking
 	GetUserPermissions(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)

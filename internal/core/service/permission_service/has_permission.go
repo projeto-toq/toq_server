@@ -239,3 +239,19 @@ func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, us
 
 	return permissions, nil
 }
+
+// ClearUserPermissionsCache remove as permissões do usuário do cache
+func (p *permissionServiceImpl) ClearUserPermissionsCache(ctx context.Context, userID int64) error {
+	if userID <= 0 {
+		return utils.ErrBadRequest
+	}
+
+	err := p.cache.DeleteUserPermissions(ctx, userID)
+	if err != nil {
+		slog.Error("Failed to clear user permissions cache", "userID", userID, "error", err)
+		return fmt.Errorf("failed to clear permissions cache: %w", err)
+	}
+
+	slog.Debug("User permissions cache cleared", "userID", userID)
+	return nil
+}

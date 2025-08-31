@@ -47,6 +47,7 @@ type PermissionServiceInterface interface {
 
 	// Cache management
 	InvalidateUserCache(ctx context.Context, userID int64) error
+	ClearUserPermissionsCache(ctx context.Context, userID int64) error
 	RefreshUserPermissions(ctx context.Context, userID int64) error
 
 	// Query helpers
@@ -67,4 +68,10 @@ type PermissionServiceInterface interface {
 	GetUserPermissionsWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
 	GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
 	SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error
+
+	// User blocking operations
+	BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, reason string) error
+	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
+	IsUserTempBlocked(ctx context.Context, userID int64) (bool, error)
+	GetExpiredTempBlockedUsers(ctx context.Context) ([]permissionmodel.UserRoleInterface, error)
 }
