@@ -1,7 +1,29 @@
 🛠️ Problema
-As métricas não aparecem no grafana, que mostram apenas a mensagem no data.
-O metrics_middleware tem uma mensagem // Simplified - in production would track actual count.
-Este sistema está em desenvolvimento mas sendo preparado para produção portanto deveria "track actual count"
+Alertas do projeto
+[{
+	"resource": "/codigos/go_code/toq_server/go.mod",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"severity": 4,
+	"message": "go.opentelemetry.io/otel/trace should be direct",
+	"source": "go mod tidy",
+	"startLineNumber": 117,
+	"startColumn": 41,
+	"endLineNumber": 117,
+	"endColumn": 52,
+	"origin": "extHost2"
+}]
+[{
+	"resource": "/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/structured_logging_middleware.go",
+	"owner": "go-golangci-lint",
+	"severity": 4,
+	"message": "ineffectual assignment to logLevel (ineffassign)",
+	"source": "go-golangci-lint",
+	"startLineNumber": 82,
+	"startColumn": 3,
+	"endLineNumber": 82,
+	"endColumn": 4,
+	"origin": "extHost2"
+}]
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção
 - Adoção das melhores práticas de desenvolvimento em Go

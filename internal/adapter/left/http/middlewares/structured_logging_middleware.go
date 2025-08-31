@@ -78,29 +78,28 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 			fields = append(fields, slog.Any("errors", errorMessages))
 		}
 
-		// Determine log level and handler based on HTTP status
-		logLevel := slog.LevelInfo
+		// Determine appropriate logger and log level based on HTTP status
 		var logger *slog.Logger
+		var logLevel slog.Level
+		var message string
 
 		switch {
 		case status >= 500:
+			logger = slog.New(stderrHandler)
 			logLevel = slog.LevelError
-			logger = slog.New(stderrHandler)
-		case status >= 400:
-			logLevel = slog.LevelWarn
-			logger = slog.New(stderrHandler)
-		case status >= 300:
-			logLevel = slog.LevelInfo
-			logger = slog.New(stdoutHandler)
-		default:
-			logLevel = slog.LevelInfo
-			logger = slog.New(stdoutHandler)
-		}
-
-		// Create log message
-		message := "HTTP Request"
-		if status >= 400 {
 			message = "HTTP Error"
+		case status >= 400:
+			logger = slog.New(stderrHandler)
+			logLevel = slog.LevelWarn
+			message = "HTTP Error"
+		case status >= 300:
+			logger = slog.New(stdoutHandler)
+			logLevel = slog.LevelInfo
+			message = "HTTP Request"
+		default:
+			logger = slog.New(stdoutHandler)
+			logLevel = slog.LevelInfo
+			message = "HTTP Request"
 		}
 
 		// Log with appropriate handler (stdout/stderr separation)
