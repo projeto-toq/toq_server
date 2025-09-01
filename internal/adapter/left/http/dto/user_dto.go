@@ -53,16 +53,33 @@ type UserCreateRequest struct {
 	Password      string `json:"password" binding:"required,min=6"`
 }
 
-// SignInRequest represents sign in request
+// SignInRequest represents sign in request with user credentials
+//
+// Example:
+//
+//	{
+//	  "nationalID": "12345678901",
+//	  "password": "securePassword123",
+//	  "deviceToken": "fcm_token_optional"
+//	}
 type SignInRequest struct {
-	NationalID  string `json:"nationalID" binding:"required"`
-	Password    string `json:"password" binding:"required"`
-	DeviceToken string `json:"deviceToken"`
+	NationalID  string `json:"nationalID" binding:"required" example:"12345678901" description:"User's CPF or CNPJ"`
+	Password    string `json:"password" binding:"required" example:"securePassword123" description:"User's password"`
+	DeviceToken string `json:"deviceToken" example:"fcm_device_token" description:"Optional FCM device token for push notifications"`
 }
 
-// SignInResponse represents sign in response
+// SignInResponse represents successful sign in response with authentication tokens
+//
+// Example:
+//
+//	{
+//	  "tokens": {
+//	    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//	    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+//	  }
+//	}
 type SignInResponse struct {
-	Tokens TokensResponse `json:"tokens"`
+	Tokens TokensResponse `json:"tokens" description:"Authentication tokens"`
 }
 
 // RefreshTokenRequest represents refresh token request

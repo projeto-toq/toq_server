@@ -105,3 +105,27 @@ func ConflictError(message string) *HTTPError {
 	}
 	return NewHTTPError(http.StatusConflict, message)
 }
+
+// UserBlockedError creates a user blocked error (423 Locked)
+func UserBlockedError(message string) *HTTPError {
+	if message == "" {
+		message = "Account temporarily blocked due to security measures"
+	}
+	return NewHTTPError(http.StatusLocked, message)
+}
+
+// TooManyAttemptsError creates a rate limiting error
+func TooManyAttemptsError(message string) *HTTPError {
+	if message == "" {
+		message = "Too many failed attempts"
+	}
+	return NewHTTPError(http.StatusTooManyRequests, message)
+}
+
+// InvalidRequestFormatError creates a request format error
+func InvalidRequestFormatError(message string) *HTTPError {
+	if message == "" {
+		message = "Invalid request format"
+	}
+	return NewHTTPError(http.StatusBadRequest, message)
+}

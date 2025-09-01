@@ -1,8 +1,9 @@
 🛠️ Problema
-Durante o processo de signin o usuário pode tentar fazer login um numero de vezes definifd em usermodel.MaxWrongSigninAttempts.
-verifique se o procesos de signin está correto,incrmentand a ccada tentativa de erro, para usuários que possuem cadastro, e após exceder o máximo de tentativas bloqueia o usuário colocando um novo status e só permitindo após tempo a ser feinido no usermodel.
-
-Caso falte passos ou esteja incorreto apresente um plano de refatoração.
+Considerando a refatoação recem implementada sobre o fluxo de signIn, e como existe um session_model e session_repository, analise se:
+- existe algum sobreposição;
+- sesson está sendo utilizada;
+- existe alguma integração entre session e o login não implementada;
+- existe otimização possível;
 
 ✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção:
 - Adoção das melhores práticas de desenvolvimento em Go (Go Best Practices, Google Go Style Guide).

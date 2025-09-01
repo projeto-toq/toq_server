@@ -28,6 +28,7 @@ type userService struct {
 	// creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
+	securityLogger      SecurityEventLoggerInterface                  // NOVO - Logger de eventos de segurança
 }
 
 func NewUserService(
@@ -51,7 +52,8 @@ func NewUserService(
 		cnpj:           cnpj,
 		// creci:               creci, // Pode ser nil
 		cloudStorageService: cloudStorage,
-		permissionService:   permissionService, // NOVO
+		permissionService:   permissionService,        // NOVO
+		securityLogger:      NewSecurityEventLogger(), // NOVO - Inicializa o logger
 	}
 }
 
@@ -83,6 +85,7 @@ type UserServiceInterface interface {
 	ResendEmailChangeCode(ctx context.Context, userID int64) (code string, err error)
 	ResendPhoneChangeCode(ctx context.Context, userID int64) (code string, err error)
 	SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error)
+	SignInWithContext(ctx context.Context, nationalID string, password string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
 	SignOut(ctx context.Context, userID int64, deviceToken, refreshToken string) (err error)
 	SwitchUserRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error)
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)

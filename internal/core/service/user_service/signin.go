@@ -13,8 +13,13 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
+// SignIn autentica um usuário e retorna tokens de acesso
 func (us *userService) SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
+	return us.SignInWithContext(ctx, nationalID, password, deviceToken, "", "")
+}
 
+// SignInWithContext autentica um usuário com contexto de requisição completo
+func (us *userService) SignInWithContext(ctx context.Context, nationalID string, password string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -26,7 +31,7 @@ func (us *userService) SignIn(ctx context.Context, nationalID string, password s
 		return
 	}
 
-	tokens, err = us.signIn(ctx, tx, nationalID, password, deviceToken)
+	tokens, err = us.signIn(ctx, tx, nationalID, password, deviceToken, ipAddress, userAgent)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -42,11 +47,16 @@ func (us *userService) SignIn(ctx context.Context, nationalID string, password s
 	return
 }
 
-func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
+// signIn executa o processo interno de autenticação com melhor tratamento de erros e logging
+func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
 	criptoPassword := us.encryptPassword(password)
+
+	// Busca o usuário pelo nationalID
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			// Log da tentativa com nationalID inexistente (sem expor se existe ou não)
+			us.securityLogger.LogInvalidCredentials(ctx, nationalID, ipAddress, userAgent)
 			slog.Warn("Signin attempt with non-existent nationalID", "nationalID", nationalID)
 			err = utils.AuthenticationError("Invalid credentials")
 			return
@@ -56,31 +66,37 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		return
 	}
 
-	// Check if user is temporarily blocked before any password validation
-	isBlocked, err := us.permissionService.IsUserTempBlocked(ctx, user.GetID())
+	userID := user.GetID()
+
+	// Verificação única de bloqueio temporário ANTES de qualquer validação
+	isBlocked, err := us.permissionService.IsUserTempBlocked(ctx, userID)
 	if err != nil {
-		slog.Error("Failed to check if user is temporarily blocked", "userID", user.GetID(), "error", err)
+		slog.Error("Failed to check if user is temporarily blocked", "userID", userID, "error", err)
 		err = utils.InternalError("Failed to validate user status")
 		return
 	}
 
 	if isBlocked {
-		slog.Warn("Signin attempt from temporarily blocked user", "userID", user.GetID(), "nationalID", nationalID)
-		err = utils.AuthenticationError("Account temporarily blocked due to too many failed attempts")
+		// Log do bloqueio
+		us.securityLogger.LogSigninAttempt(ctx, nationalID, &userID, false, &[]usermodel.SigninErrorType{usermodel.SigninErrorUserBlocked}[0], ipAddress, userAgent)
+		slog.Warn("Signin attempt from temporarily blocked user", "userID", userID, "nationalID", nationalID)
+		err = utils.UserBlockedError("Account temporarily blocked due to too many failed attempts")
 		return
 	}
 
-	// Get active roles via Permission Service
-	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, user.GetID())
+	// Busca os roles ativos via Permission Service
+	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, userID)
 	if err != nil {
-		slog.Error("Failed to get user roles", "userID", user.GetID(), "error", err)
+		slog.Error("Failed to get user roles", "userID", userID, "error", err)
 		err = utils.InternalError("Failed to validate user permissions")
 		return
 	}
 
 	if len(userRoles) == 0 {
-		slog.Warn("User has no active roles", "userID", user.GetID())
-		err = utils.AuthenticationError("No active user roles")
+		// Log da tentativa sem roles ativos
+		us.securityLogger.LogNoActiveRoles(ctx, userID, nationalID, ipAddress, userAgent)
+		slog.Warn("User has no active roles", "userID", userID)
+		err = utils.AuthorizationError("No active user roles")
 		return
 	}
 
@@ -88,98 +104,128 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		user.SetActiveRole(userRoles[0])
 	}
 
-	//compare the password with cripto password
+	// Verifica senha
 	if user.GetPassword() != criptoPassword {
-		err = checkWrongSignin(ctx, tx, us, user)
+		err = us.processWrongSignin(ctx, tx, user, nationalID, ipAddress, userAgent)
 		if err != nil {
 			return
 		}
 
-		slog.Warn("Invalid password attempt", "userID", user.GetID(), "nationalID", nationalID)
+		// Log da tentativa com credenciais inválidas
+		us.securityLogger.LogSigninAttempt(ctx, nationalID, &userID, false, &[]usermodel.SigninErrorType{usermodel.SigninErrorInvalidCredentials}[0], ipAddress, userAgent)
+		slog.Warn("Invalid password attempt", "userID", userID, "nationalID", nationalID)
 		err = utils.AuthenticationError("Invalid credentials")
 		return
 	}
 
-	_, err = us.repo.DeleteWrongSignInByUserID(ctx, tx, user.GetID())
+	// Limpa registros de tentativas erradas em caso de sucesso
+	_, err = us.repo.DeleteWrongSignInByUserID(ctx, tx, userID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			slog.Error("Failed to delete wrong signin record", "userID", user.GetID(), "error", err)
+			slog.Error("Failed to delete wrong signin record", "userID", userID, "error", err)
 			err = utils.InternalError("Failed to clear signin attempts")
 			return
 		}
 	}
 
-	// Clear any temporary blocks since login was successful
-	isBlocked, errBlock := us.permissionService.IsUserTempBlocked(ctx, user.GetID())
-	if errBlock != nil {
-		slog.Warn("Failed to check temp block status after successful login", "userID", user.GetID(), "error", errBlock)
-	} else if isBlocked {
-		errUnblock := us.permissionService.UnblockUser(ctx, tx, user.GetID())
-		if errUnblock != nil {
-			slog.Error("Failed to unblock user after successful login", "userID", user.GetID(), "error", errUnblock)
-		} else {
-			slog.Info("User unblocked after successful login", "userID", user.GetID())
-		}
+	// Remove bloqueio temporário se login foi bem-sucedido
+	err = us.clearTemporaryBlockOnSuccess(ctx, tx, userID)
+	if err != nil {
+		// Não falha o login por problema de desbloqueio, apenas loga
+		slog.Warn("Failed to clear temporary block after successful login", "userID", userID, "error", err)
 	}
 
-	// Attach device token if provided (add or ignore if duplicate)
+	// Adiciona device token se fornecido
 	if deviceToken != "" {
-		if errAdd := us.repo.AddDeviceToken(ctx, tx, user.GetID(), deviceToken, nil); errAdd != nil {
-			slog.Warn("signIn: failed to add device token", "userID", user.GetID(), "err", errAdd)
+		if errAdd := us.repo.AddDeviceToken(ctx, tx, userID, deviceToken, nil); errAdd != nil {
+			slog.Warn("signIn: failed to add device token", "userID", userID, "err", errAdd)
 		}
 	}
 
-	//generate the tokens
+	// Gera os tokens
 	tokens, err = us.CreateTokens(ctx, tx, user, false)
 	if err != nil {
 		return
 	}
 
-	// Note: Last activity is now tracked automatically by AuthInterceptor → Redis → Batch worker
-	// No need for direct UpdateUserLastActivity call
+	// Log do sucesso no signin
+	us.securityLogger.LogSigninAttempt(ctx, nationalID, &userID, true, nil, ipAddress, userAgent)
+	slog.Info("User signed in successfully", "userID", userID)
+
+	// Note: Last activity é rastreada automaticamente pelo AuthInterceptor → Redis → Batch worker
+	// Não é necessário chamar UpdateUserLastActivity diretamente
 
 	return
 }
 
-func checkWrongSignin(ctx context.Context, tx *sql.Tx, us *userService, user usermodel.UserInterface) (err error) {
+// processWrongSignin processa tentativas de signin incorretas com melhor logging
+func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, nationalID string, ipAddress string, userAgent string) error {
+	userID := user.GetID()
 
-	wrongSignin, err := us.repo.GetWrongSigninByUserID(ctx, tx, user.GetID())
+	wrongSignin, err := us.repo.GetWrongSigninByUserID(ctx, tx, userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			wrongSignin = usermodel.NewWrongSignin()
 		} else {
-			slog.Error("Failed to get wrong signin record", "userID", user.GetID(), "error", err)
+			slog.Error("Failed to get wrong signin record", "userID", userID, "error", err)
 			return utils.InternalError("Failed to check signin attempts")
 		}
 	}
 
-	wrongSignin.SetUserID(user.GetID())
+	wrongSignin.SetUserID(userID)
 	wrongSignin.SetLastAttemptAt(time.Now().UTC())
 	wrongSignin.SetFailedAttempts(wrongSignin.GetFailedAttempts() + 1)
 
 	err = us.repo.UpdateWrongSignIn(ctx, tx, wrongSignin)
 	if err != nil {
-		slog.Error("Failed to update wrong signin record", "userID", user.GetID(), "error", err)
+		slog.Error("Failed to update wrong signin record", "userID", userID, "error", err)
 		return utils.InternalError("Failed to update signin attempts")
 	}
 
+	// Verifica se deve bloquear o usuário
 	if wrongSignin.GetFailedAttempts() >= usermodel.MaxWrongSigninAttempts {
-		// Block user temporarily using permission service
-		err = us.permissionService.BlockUserTemporarily(ctx, tx, user.GetID(), "Too many failed signin attempts")
+		// Bloqueia usuário temporariamente usando permission service
+		err = us.permissionService.BlockUserTemporarily(ctx, tx, userID, "Too many failed signin attempts")
 		if err != nil {
-			slog.Error("Failed to block user temporarily", "userID", user.GetID(), "error", err)
+			slog.Error("Failed to block user temporarily", "userID", userID, "error", err)
 			return utils.InternalError("Failed to process security measures")
 		}
 
+		// Atualiza última tentativa de signin
 		user.SetLastSignInAttempt(time.Now().UTC())
 		err = us.repo.UpdateUserByID(ctx, tx, user)
 		if err != nil {
-			slog.Error("Failed to update user last signin attempt", "userID", user.GetID(), "error", err)
+			slog.Error("Failed to update user last signin attempt", "userID", userID, "error", err)
 			return utils.InternalError("Failed to update user record")
 		}
 
-		slog.Warn("User temporarily blocked due to too many failed signin attempts", "userID", user.GetID(), "attempts", wrongSignin.GetFailedAttempts())
+		// Log do bloqueio
+		us.securityLogger.LogUserBlocked(ctx, userID, "Too many failed signin attempts", ipAddress, userAgent)
+		slog.Warn("User temporarily blocked due to too many failed signin attempts",
+			"userID", userID,
+			"attempts", wrongSignin.GetFailedAttempts())
 	}
 
-	return
+	return nil
+}
+
+// clearTemporaryBlockOnSuccess remove bloqueio temporário após login bem-sucedido
+func (us *userService) clearTemporaryBlockOnSuccess(ctx context.Context, tx *sql.Tx, userID int64) error {
+	isBlocked, err := us.permissionService.IsUserTempBlocked(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	if isBlocked {
+		err = us.permissionService.UnblockUser(ctx, tx, userID)
+		if err != nil {
+			return err
+		}
+
+		// Log do desbloqueio
+		us.securityLogger.LogUserUnblocked(ctx, userID, "Successful login after temporary block")
+		slog.Info("User unblocked after successful login", "userID", userID)
+	}
+
+	return nil
 }
