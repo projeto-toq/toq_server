@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature:
+  dto.BaseFeature:
     properties:
       category:
         type: string
@@ -11,7 +11,7 @@ definitions:
       name:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPasswordChangeRequest:
+  dto.ConfirmPasswordChangeRequest:
     properties:
       code:
         type: string
@@ -25,60 +25,60 @@ definitions:
     - nationalID
     - newPassword
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPasswordChangeResponse:
+  dto.ConfirmPasswordChangeResponse:
     properties:
       message:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPhoneChangeRequest:
+  dto.ConfirmPhoneChangeRequest:
     properties:
       code:
         type: string
     required:
     - code
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPhoneChangeResponse:
+  dto.ConfirmPhoneChangeResponse:
     properties:
       tokens:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
+        $ref: '#/definitions/dto.TokensResponse'
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateAgencyRequest:
+  dto.CreateAgencyRequest:
     properties:
       agency:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserCreateRequest'
+        $ref: '#/definitions/dto.UserCreateRequest'
     required:
     - agency
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateAgencyResponse:
+  dto.CreateAgencyResponse:
     properties:
       tokens:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
+        $ref: '#/definitions/dto.TokensResponse'
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateOwnerRequest:
+  dto.CreateOwnerRequest:
     properties:
       owner:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserCreateRequest'
+        $ref: '#/definitions/dto.UserCreateRequest'
     required:
     - owner
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateOwnerResponse:
+  dto.CreateOwnerResponse:
     properties:
       tokens:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
+        $ref: '#/definitions/dto.TokensResponse'
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateRealtorRequest:
+  dto.CreateRealtorRequest:
     properties:
       realtor:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserCreateRequest'
+        $ref: '#/definitions/dto.UserCreateRequest'
     required:
     - realtor
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateRealtorResponse:
+  dto.CreateRealtorResponse:
     properties:
       tokens:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
+        $ref: '#/definitions/dto.TokensResponse'
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse:
+  dto.ErrorResponse:
     properties:
       code:
         type: integer
@@ -87,34 +87,34 @@ definitions:
       message:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetAllListingsResponse:
+  dto.GetAllListingsResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ListingResponse'
+          $ref: '#/definitions/dto.ListingResponse'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+        $ref: '#/definitions/dto.PaginationResponse'
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetBaseFeaturesResponse:
+  dto.GetBaseFeaturesResponse:
     properties:
       features:
         items:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature'
+          $ref: '#/definitions/dto.BaseFeature'
         type: array
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetOptionsResponse:
+  dto.GetOptionsResponse:
     properties:
       propertyTypes:
         items:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.PropertyTypeOption'
+          $ref: '#/definitions/dto.PropertyTypeOption'
         type: array
       statuses:
         items:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StatusOption'
+          $ref: '#/definitions/dto.StatusOption'
         type: array
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ListingResponse:
+  dto.ListingResponse:
     properties:
       complexId:
         type: string
@@ -141,7 +141,7 @@ definitions:
       zipCode:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.PaginationResponse:
+  dto.PaginationResponse:
     properties:
       limit:
         type: integer
@@ -152,38 +152,38 @@ definitions:
       totalPages:
         type: integer
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.PropertyTypeOption:
+  dto.PropertyTypeOption:
     properties:
       id:
         type: integer
       name:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RefreshTokenRequest:
+  dto.RefreshTokenRequest:
     properties:
       refreshToken:
         type: string
     required:
     - refreshToken
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RefreshTokenResponse:
+  dto.RefreshTokenResponse:
     properties:
       tokens:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
+        $ref: '#/definitions/dto.TokensResponse'
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPasswordChangeRequest:
+  dto.RequestPasswordChangeRequest:
     properties:
       nationalID:
         type: string
     required:
     - nationalID
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPasswordChangeResponse:
+  dto.RequestPasswordChangeResponse:
     properties:
       message:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.SignInRequest:
+  dto.SignInRequest:
     properties:
       deviceToken:
         example: fcm_device_token
@@ -198,12 +198,12 @@ definitions:
     - nationalID
     - password
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.SignInResponse:
+  dto.SignInResponse:
     properties:
       tokens:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
+        $ref: '#/definitions/dto.TokensResponse'
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StartListingRequest:
+  dto.StartListingRequest:
     properties:
       number:
         type: string
@@ -216,26 +216,26 @@ definitions:
     - propertyType
     - zipCode
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StartListingResponse:
+  dto.StartListingResponse:
     properties:
       id:
         type: integer
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StatusOption:
+  dto.StatusOption:
     properties:
       id:
         type: string
       name:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse:
+  dto.TokensResponse:
     properties:
       accessToken:
         type: string
       refreshToken:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserCreateRequest:
+  dto.UserCreateRequest:
     properties:
       bornAt:
         description: 'format: 2006-01-02'
@@ -315,30 +315,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateAgencyRequest'
+          $ref: '#/definitions/dto.CreateAgencyRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateAgencyResponse'
+            $ref: '#/definitions/dto.CreateAgencyResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "409":
           description: User already exists
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "422":
           description: Validation failed
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Create agency account
       tags:
       - Authentication
@@ -353,30 +353,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateOwnerRequest'
+          $ref: '#/definitions/dto.CreateOwnerRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateOwnerResponse'
+            $ref: '#/definitions/dto.CreateOwnerResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "409":
           description: User already exists
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "422":
           description: Validation failed
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Create owner account
       tags:
       - Authentication
@@ -391,34 +391,34 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPasswordChangeRequest'
+          $ref: '#/definitions/dto.ConfirmPasswordChangeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPasswordChangeResponse'
+            $ref: '#/definitions/dto.ConfirmPasswordChangeResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Invalid verification code
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: User not found
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "422":
           description: Password validation failed
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Confirm password change
       tags:
       - Authentication
@@ -433,30 +433,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPasswordChangeRequest'
+          $ref: '#/definitions/dto.RequestPasswordChangeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPasswordChangeResponse'
+            $ref: '#/definitions/dto.RequestPasswordChangeResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: User not found
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "429":
           description: Too many requests
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Request password change
       tags:
       - Authentication
@@ -471,30 +471,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateRealtorRequest'
+          $ref: '#/definitions/dto.CreateRealtorRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateRealtorResponse'
+            $ref: '#/definitions/dto.CreateRealtorResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "409":
           description: User already exists
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "422":
           description: Validation failed
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Create realtor account
       tags:
       - Authentication
@@ -509,26 +509,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RefreshTokenRequest'
+          $ref: '#/definitions/dto.RefreshTokenRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RefreshTokenResponse'
+            $ref: '#/definitions/dto.RefreshTokenResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Invalid refresh token
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Refresh access token
       tags:
       - Authentication
@@ -543,38 +543,38 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.SignInRequest'
+          $ref: '#/definitions/dto.SignInRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Successful authentication
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.SignInResponse'
+            $ref: '#/definitions/dto.SignInResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Invalid credentials
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: No active user roles
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "423":
           description: Account temporarily locked due to security measures
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "429":
           description: Too many attempts
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: User sign in
       tags:
       - Authentication
@@ -622,27 +622,27 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetAllListingsResponse'
+            $ref: '#/definitions/dto.GetAllListingsResponse'
         "400":
           description: Invalid request parameters
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "501":
           description: Service method not implemented
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all listings with pagination and filters
@@ -659,30 +659,30 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StartListingRequest'
+          $ref: '#/definitions/dto.StartListingRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StartListingResponse'
+            $ref: '#/definitions/dto.StartListingResponse'
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Start a new listing
@@ -699,19 +699,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetBaseFeaturesResponse'
+            $ref: '#/definitions/dto.GetBaseFeaturesResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get base features
@@ -740,23 +740,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetOptionsResponse'
+            $ref: '#/definitions/dto.GetOptionsResponse'
         "400":
           description: Missing required parameters
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get listing options
@@ -774,26 +774,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPhoneChangeRequest'
+          $ref: '#/definitions/dto.ConfirmPhoneChangeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPhoneChangeResponse'
+            $ref: '#/definitions/dto.ConfirmPhoneChangeResponse'
         "400":
           description: Invalid request format or code
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Confirm phone number change
@@ -815,15 +815,15 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get user profile
@@ -863,19 +863,19 @@ paths:
         "400":
           description: Invalid request format
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Sign out user
