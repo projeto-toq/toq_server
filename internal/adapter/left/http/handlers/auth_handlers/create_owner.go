@@ -23,11 +23,12 @@ import (
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
 //	@Failure		409		{object}	dto.ErrorResponse	"User already exists"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
+//	@Failure		422		{object}	dto.ErrorResponse	"Validation failed"
 //	@Router			/auth/owner [post]
 func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusInternalServerError, "Failed to generate tracer"))
 		return
 	}
 	defer spanEnd()
@@ -35,21 +36,26 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	// Parse request
 	var request dto.CreateOwnerRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid request format"))
 		return
 	}
 
 	// Create user model from DTO
 	user, err := ah.createUserFromDTO(request.Owner, permissionmodel.RoleSlugOwner)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_USER_DATA", "Invalid user data")
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid user data"))
 		return
 	}
 
 	// Call service
 	tokens, err := ah.userService.CreateOwner(ctx, user)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusConflict, "USER_CREATION_FAILED", "Failed to create owner")
+		if httpErr, ok := err.(*utils.HTTPError); ok {
+			utils.SendHTTPErrorObj(c, httpErr)
+			return
+		}
+		// Fallback: conflito genérico
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusConflict, "Failed to create owner"))
 		return
 	}
 

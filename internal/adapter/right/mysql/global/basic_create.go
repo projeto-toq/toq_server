@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) Create(ctx context.Context, tx *sql.Tx, query string, args ...any) (id int64, err error) {
@@ -25,13 +25,13 @@ func (ga *GlobalAdapter) Create(ctx context.Context, tx *sql.Tx, query string, a
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
 		slog.Error("mysqluseradapter/Create: error executing statement", "error", err)
-		return id, nil
+		return 0, err
 	}
 
 	id, err = result.LastInsertId()
 	if err != nil {
 		slog.Error("mysqluseradapter/Create: error getting last insert ID", "error", err)
-		return
+		return 0, err
 	}
 
 	return

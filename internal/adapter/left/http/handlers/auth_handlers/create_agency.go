@@ -19,13 +19,14 @@ import (
 //	@Param			request	body		dto.CreateAgencyRequest	true	"Agency creation data"
 //	@Success		201		{object}	dto.CreateAgencyResponse
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
+//	@Failure		422		{object}	dto.ErrorResponse	"Validation failed"
 //	@Failure		409		{object}	dto.ErrorResponse	"User already exists"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/auth/agency [post]
 func (ah *AuthHandler) CreateAgency(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusInternalServerError, "Failed to generate tracer"))
 		return
 	}
 	defer spanEnd()
@@ -33,21 +34,25 @@ func (ah *AuthHandler) CreateAgency(c *gin.Context) {
 	// Parse request
 	var request dto.CreateAgencyRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid request format"))
 		return
 	}
 
 	// Create user model from DTO
 	user, err := ah.createUserFromDTO(request.Agency, permissionmodel.RoleSlugAgency)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_USER_DATA", "Invalid user data")
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid user data"))
 		return
 	}
 
 	// Call service
 	tokens, err := ah.userService.CreateAgency(ctx, user)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusConflict, "USER_CREATION_FAILED", "Failed to create agency")
+		if httpErr, ok := err.(*utils.HTTPError); ok {
+			utils.SendHTTPErrorObj(c, httpErr)
+			return
+		}
+		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusConflict, "Failed to create agency"))
 		return
 	}
 

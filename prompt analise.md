@@ -1,8 +1,5 @@
 🛠️ Problema
-porque estou recendo este erro:
-cannot use &PermissionAdapter{…} (value of type *PermissionAdapter) as permissionrepository.PermissionRepositoryInterface value in return statement: *PermissionAdapter does not implement permissionrepository.PermissionRepositoryInterface (wrong type for method CreateUserRole)
-		have CreateUserRole(context.Context, *sql.Tx, permissionmodel.UserRoleInterface) (permissionmodel.UserRoleInterface, error)
-		want CreateUserRole(context.Context, *sql.Tx, permissionmodel.UserRoleInterface) error
+O projeto centraliza a gestão de transações sql em global_services/transacton. onde existe um startTransactions, um commit e um rollback.
 
 ✅ Requisitos OBRIGATÓRIOS a serem respeitados
 1. Padrões de Arquitetura e Código
@@ -43,3 +40,4 @@ Compatibilidade: Não é necessária retrocompatibilidade com versões anteriore
   - A ordem das etapas de refatoração para garantir uma transição suave e sem quebras.
 - Certifique-se de que o plano esteja completo e não inclua mocks ou soluções temporárias.
 - Apenas apresente o plano, sem gerar o código.
+- Se o plano for muito grande, divida em etapas que possam ser implementadas separadamente.

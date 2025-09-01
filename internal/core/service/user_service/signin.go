@@ -11,6 +11,7 @@ import (
 	"errors"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (us *userService) SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
@@ -43,7 +44,6 @@ func (us *userService) SignIn(ctx context.Context, nationalID string, password s
 }
 
 func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
-	criptoPassword := us.encryptPassword(password)
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -88,8 +88,8 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		user.SetActiveRole(userRoles[0])
 	}
 
-	//compare the password with cripto password
-	if user.GetPassword() != criptoPassword {
+	// Comparar a senha fornecida com o hash armazenado (bcrypt)
+	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {
 		err = checkWrongSignin(ctx, tx, us, user)
 		if err != nil {
 			return

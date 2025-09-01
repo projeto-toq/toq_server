@@ -1,5 +1,5 @@
  🛠️ Problema
-Baseado no plano de refatoração que você apresentou, agora implemente o código.
+Baseado no plano de refatoração que você apresentou e guardou, agora implemente o código considerando que a tabela users já foi ajustada para o campo password VARCHAR(100)
 
 ✅ Requisitos OBRIGATÓRIOS a serem respeitados
 1. Padrões de Arquitetura e Código
@@ -30,13 +30,7 @@ Compatibilidade: Não é necessária retrocompatibilidade com versões anteriore
 
 
 📌 Instruções finais
-- Não implemente nenhum código.
-- Analise cuidadosamente o problema e os requisitose solicite informações adicionais se necessário.
-- Analise sempre o código existente e não assuma nada sem verificar antes.
-- Apresente um plano detalhado para a refatoração. O plano deve incluir:
-  - Uma descrição da arquitetura proposta e como ela se alinha com a arquitetura hexagonal.
-  - As interfaces que precisarão ser criadas (com seus métodos e assinaturas).
-  - A estrutura de diretórios e arquivos sugerida.
-  - A ordem das etapas de refatoração para garantir uma transição suave e sem quebras.
-- Certifique-se de que o plano esteja completo e não inclua mocks ou soluções temporárias.
-- Apenas apresente o plano, sem gerar o código.
+- Gere o código completo para as interfaces e funções propostas no nosso plano.
+- Sempre opte pela simplicidade e eficiencia no código.
+- O código deve ser a solução final e não deve conter mocks, TODOs ou implementações temporárias.
+- Implemente apenas as partes acordadas no plano.

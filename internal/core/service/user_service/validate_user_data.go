@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"net/http"
 	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -21,20 +22,25 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	}
 
 	if exist {
-		err = utils.ErrInternalServer
+		// Usuário existente (email/telefone/CPF)
+		err = utils.ConflictError("Usuário já existe com e-mail, telefone ou CPF informado")
 		return
 	}
 
 	//verify the password
-	err = validatePassword(user.GetPassword())
-	if err != nil {
-		return
+	if err = validatePassword(user.GetPassword()); err != nil {
+		// Padroniza como erro de validação (campo: password)
+		return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
+			"field":   "password",
+			"message": "Senha não atende aos requisitos mínimos",
+		})
 	}
 
 	if role == permissionmodel.RoleSlugAgency {
 
 		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID()) // Validation via global service integration planned
 		if err1 != nil {
+			// Propaga erro do adaptador (serviço externo ou dado inválido)
 			err = err1
 			return
 		}
@@ -44,6 +50,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		//validate the userCPF
 		cpf, err1 := us.cpf.GetCpf(ctx, user.GetNationalID(), user.GetBornAt())
 		if err1 != nil {
+			// Propaga erro do adaptador (serviço externo ou dado inválido)
 			err = err1
 			return
 		}
@@ -59,8 +66,11 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 
 	//validate the address number
 	if user.GetNumber() == "" {
-		err = utils.ErrInternalServer
-		return
+		// Número do endereço é obrigatório
+		return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
+			"field":   "number",
+			"message": "Número do endereço é obrigatório",
+		})
 	}
 
 	user.SetStreet(cep.GetStreet())

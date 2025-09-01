@@ -1,10 +1,10 @@
 🛠️ Problema
-Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de SignIn que inicia no handler signin e verifique se:
+Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de CreateOwner que inicia no handler auth/create_owner e verifique se:
 - a lógica está correta;
 - existem otimizações possíveis;
 - existem melhorias possíveis;
 - a documentação das funções está adequada e preparada para swager doc;
-- a documentação interna das funções , em portugues, descreve bem para facilitar a manutenção
+- a documentação interna das funções, em portugues, descreve bem para facilitar a manutenção
 
 
 ✅ Requisitos OBRIGATÓRIOS a serem respeitados
@@ -45,4 +45,4 @@ Compatibilidade: Não é necessária retrocompatibilidade com versões anteriore
   - A estrutura de diretórios e arquivos sugerida.
   - A ordem das etapas de refatoração para garantir uma transição suave e sem quebras.
 - Certifique-se de que o plano esteja completo e não inclua mocks ou soluções temporárias.
-- Apenas apresente o plano, sem gerar o código.
+- Apenas apresente o plano bem detalhado e faseado se for muito grande.
