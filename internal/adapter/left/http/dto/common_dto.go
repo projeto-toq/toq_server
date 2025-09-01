@@ -34,7 +34,7 @@ type PaginationResponse struct {
 type ErrorResponse struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
+	Details interface{} `json:"details,omitempty" swaggertype:"object"`
 }
 
 // SuccessResponse creates a success API response

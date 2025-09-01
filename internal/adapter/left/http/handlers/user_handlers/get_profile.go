@@ -4,11 +4,15 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
+
+// Ensure Swag can resolve dto.ErrorResponse referenced in annotations without affecting runtime
+type _ = dto.ErrorResponse
 
 // GetProfile handles getting user profile
 //

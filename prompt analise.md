@@ -1,5 +1,9 @@
 🛠️ Problema
-Baseado no plano de refatoração que você apresentou divida-o em fases estanques, que podem ser implementas separadamente, no caso de necessidade de interrupção do processo
+O processo de ciclo de vidas das transações sql são geridos por global_services/transactions, com start Transactions, commit e rollback.
+todas as transações sql begin, commit e rollback retornam erros. entretanto, imaginando o fluxo:
+begin -> erro na transação -> rolback -> retorna ao chamaador. sem problemas.
+entratanto, qual a melhro forma de tratar
+begin -> erro -> rollback -> erro no rollback. retorna ao chamador o erro ou tem outra atividade a ser executada
 
 ✅ Requisitos OBRIGATÓRIOS a serem respeitados
 1. Padrões de Arquitetura e Código

@@ -4,9 +4,15 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-) // SignOut handles user sign out
+)
+
+// Reference to ensure Swag finds dto.ErrorResponse from annotations
+type _ = dto.ErrorResponse
+
+// SignOut handles user sign out
 // @Summary		Sign out user
 // @Description	Sign out the current user and invalidate their session tokens
 // @Tags			User
