@@ -78,9 +78,9 @@ func (ps *permissionServiceImpl) GetExpiredTempBlockedUsers(ctx context.Context)
 	}
 	defer func() {
 		if err != nil {
-			ps.globalService.RollbackTransaction(ctx, tx)
+			err = ps.globalService.RollbackTransaction(ctx, tx)
 		} else {
-			ps.globalService.CommitTransaction(ctx, tx)
+			err = ps.globalService.CommitTransaction(ctx, tx)
 		}
 	}()
 

@@ -56,10 +56,12 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 	}
 
 	// Usar permission service diretamente para atribuir role
-	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, agency.GetID(), role.GetID(), nil)
+	userRole, err := us.permissionService.AssignRoleToUserWithTx(ctx, tx, agency.GetID(), role.GetID(), nil)
 	if err != nil {
 		return
 	}
+
+	agency.SetActiveRole(userRole)
 
 	err = us.CreateUserValidations(ctx, tx, agency)
 	if err != nil {

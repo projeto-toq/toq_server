@@ -11,11 +11,11 @@ import (
 )
 
 // AssignRoleToUser atribui um role a um usuário (sem transação - uso direto)
-func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time) error {
+func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time) (permissionmodel.UserRoleInterface, error) {
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return utils.ErrInternalServer
+		return nil, utils.ErrInternalServer
 	}
 	defer func() {
 		if rollbackErr := p.globalService.RollbackTransaction(ctx, tx); rollbackErr != nil {
@@ -23,28 +23,28 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 		}
 	}()
 
-	err = p.AssignRoleToUserWithTx(ctx, tx, userID, roleID, expiresAt)
+	userRole, err := p.AssignRoleToUserWithTx(ctx, tx, userID, roleID, expiresAt)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Commit the transaction
 	err = p.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		return utils.ErrInternalServer
+		return nil, utils.ErrInternalServer
 	}
 
-	return nil
+	return userRole, nil
 }
 
 // AssignRoleToUserWithTx atribui um role a um usuário (com transação - uso em fluxos)
-func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time) error {
+func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time) (permissionmodel.UserRoleInterface, error) {
 	if userID <= 0 {
-		return utils.ErrBadRequest
+		return nil, utils.ErrBadRequest
 	}
 
 	if roleID <= 0 {
-		return utils.ErrBadRequest
+		return nil, utils.ErrBadRequest
 	}
 
 	slog.Debug("Assigning role to user", "userID", userID, "roleID", roleID, "expiresAt", expiresAt)
@@ -52,16 +52,16 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	// Verificar se o role existe
 	role, err := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
 	if err != nil {
-		return utils.ErrInternalServer
+		return nil, utils.ErrInternalServer
 	}
 	if role == nil {
-		return utils.ErrNotFound
+		return nil, utils.ErrNotFound
 	}
 
 	// Verificar se o usuário já tem este role
 	existingUserRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, tx, userID, roleID)
 	if err == nil && existingUserRole != nil {
-		return utils.ErrConflict
+		return nil, utils.ErrConflict
 	}
 
 	// Criar o novo UserRole
@@ -69,17 +69,18 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	userRole.SetUserID(userID)
 	userRole.SetRoleID(roleID)
 	userRole.SetIsActive(true)
+	userRole.SetStatus(permissionmodel.StatusPendingBoth)
 
 	if expiresAt != nil {
 		userRole.SetExpiresAt(expiresAt)
 	}
 
 	// Salvar no banco
-	err = p.permissionRepository.CreateUserRole(ctx, tx, userRole)
+	userRole, err = p.permissionRepository.CreateUserRole(ctx, tx, userRole)
 	if err != nil {
-		return utils.ErrInternalServer
+		return nil, utils.ErrInternalServer
 	}
 
 	slog.Info("Role assigned to user successfully", "userID", userID, "roleID", roleID, "roleName", role.GetName())
-	return nil
+	return userRole, nil
 }

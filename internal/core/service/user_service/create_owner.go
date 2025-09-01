@@ -55,11 +55,12 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return
 	}
 
-	// Usar permission service diretamente para atribuir role
-	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, owner.GetID(), role.GetID(), nil)
+	userRole, err := us.permissionService.AssignRoleToUserWithTx(ctx, tx, owner.GetID(), role.GetID(), nil)
 	if err != nil {
 		return
 	}
+
+	owner.SetActiveRole(userRole)
 
 	err = us.CreateUserValidations(ctx, tx, owner)
 	if err != nil {

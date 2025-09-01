@@ -22,14 +22,14 @@ func (p *permissionServiceImpl) GetUserPermissions(ctx context.Context, userID i
 
 	permissions, err := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
 	if err != nil {
-		p.globalService.RollbackTransaction(ctx, tx)
+		err = p.globalService.RollbackTransaction(ctx, tx)
 		return nil, utils.ErrInternalServer
 	}
 
 	// Commit the transaction
 	err = p.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		p.globalService.RollbackTransaction(ctx, tx)
+		err = p.globalService.RollbackTransaction(ctx, tx)
 		return nil, utils.ErrInternalServer
 	}
 

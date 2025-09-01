@@ -9,10 +9,10 @@ import (
 )
 
 // CreateUserRole cria uma nova associação user-role no banco de dados
-func (pa *PermissionAdapter) CreateUserRole(ctx context.Context, tx *sql.Tx, userRole permissionmodel.UserRoleInterface) error {
+func (pa *PermissionAdapter) CreateUserRole(ctx context.Context, tx *sql.Tx, userRole permissionmodel.UserRoleInterface) (permissionmodel.UserRoleInterface, error) {
 	entity := permissionconverters.UserRoleDomainToEntity(userRole)
 	if entity == nil {
-		return nil
+		return nil, nil
 	}
 
 	query := `
@@ -28,9 +28,10 @@ func (pa *PermissionAdapter) CreateUserRole(ctx context.Context, tx *sql.Tx, use
 		entity.ExpiresAt,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	userRole.SetID(id)
-	return nil
+
+	return userRole, nil
 }

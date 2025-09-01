@@ -56,10 +56,12 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 	}
 
 	// Usar permission service diretamente para atribuir role
-	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, realtor.GetID(), role.GetID(), nil)
+	userRole, err := us.permissionService.AssignRoleToUserWithTx(ctx, tx, realtor.GetID(), role.GetID(), nil)
 	if err != nil {
 		return
 	}
+
+	realtor.SetActiveRole(userRole)
 
 	err = us.CreateUserValidations(ctx, tx, realtor)
 	if err != nil {

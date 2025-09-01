@@ -64,7 +64,7 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	// Create user role using permission service (not active by default)
-	err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil)
+	_, err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil)
 	if err != nil {
 		return
 	}

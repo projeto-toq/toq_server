@@ -95,6 +95,7 @@ const (
 	StatusActive        UserRoleStatus = iota // normal user status
 	StatusBlocked                             // blocked by admin
 	StatusTempBlocked                         // temporarily blocked due to failed signin attempts
+	StatusPendingBoth                         // awaiting both email and phone confirmation
 	StatusPendingEmail                        // awaiting email confirmation
 	StatusPendingPhone                        // awaiting phone confirmation
 	StatusPendingImages                       // awaiting creci images to be uploaded
@@ -113,6 +114,7 @@ func (us UserRoleStatus) String() string {
 		"active",
 		"blocked",
 		"temp_blocked",
+		"pending_both",
 		"pending_email",
 		"pending_phone",
 		"pending_images",

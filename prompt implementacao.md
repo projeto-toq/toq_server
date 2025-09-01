@@ -1,24 +1,42 @@
  🛠️ Problema
 Baseado no plano de refatoração que você apresentou, agora implemente o código.
 
-✅ Requisitos obrigatórios para qualquer revisão, refatoração ou correção:
-- Adoção das melhores práticas de desenvolvimento em Go (Go Best Practices, Google Go Style Guide).
-- Implementação seguindo arquitetura hexagonal.
-- Injeção de dependência nos services via factory na inicialização.
-- Adapters inicializados uma única vez na inicialização, com seus respectivos ports injetados.
-- Interfaces separadas das implementações, cada uma em seu próprio arquivo.
-- Separação clara entre arquivos de domínio (domain) e interfaces.
-- Handlers devem chamar services injetados, que por sua vez chamam repositórios injetados.
-- Implementação efetiva (sem uso de mocks ou código temporário).
-- Manutenção da consistência no padrão de desenvolvimento entre funções.
-- Tratamento de erros sempre utilizando utils/http_errors.
-- Remoção completa de código legado após a refatoração.
-- Eventuais alterações no DB são feitas por MySQL Workbench, não crie/altere scripts para migração de dados/tabelas.
-- Erros devem ser logados no momento do erro e transformados em utils/http_errors e retornados para o chamador.
-- Chamadores intermediários apenas repassam o erro sem logging ou recriação do erro.
-- Todo erro deve ser verificado.
+✅ Requisitos OBRIGATÓRIOS a serem respeitados
+1. Padrões de Arquitetura e Código
+Código dever simples e eficiente.
+Arquitetura Hexagonal: A implementação deve seguir a arquitetura hexagonal.
+Fluxo de Dependências: O fluxo de chamadas deve ser Handlers → Services → Repositórios, todos com dependências injetadas.
+Boas Práticas: Adotar as melhores práticas de desenvolvimento em Go, incluindo o Go Best Practices e o Google Go Style Guide.
+Separação de Responsabilidades: Manter a separação clara entre arquivos de domínio, interfaces e suas respectivas implementações.
+
+2. Injeção de Dependência
+Padrão de Injeção: A injeção de dependência deve ser feita através de factories.
+Estrutura de Repositórios: Os repositórios devem estar em /internal/adapter/right/mysql/.
+Inicialização Única: Os adapters e services devem ser inicializados uma única vez na inicialização da aplicação.
+
+3. Tratamento e Propagação de Erros
+Padrão de Erros: Todos os erros devem ser tratados usando o pacote utils/http_errors.
+Propagação:
+Erros devem ser logados e transformados em utils/http_errors no ponto onde ocorrem.
+Chamadores intermediários devem apenas repassar o erro, sem logar ou recriar.
+Verificação: Toda função que pode retornar um erro deve ter sua resposta verificada.
+
+4. Processo de Desenvolvimento
+Sem Código Temporário: Implementações devem ser efetivas, sem a utilização de mocks ou código temporário.
+Remoção de Legado: O código legado deve ser completamente removido após a refatoração.
+Consistência: Manter a consistência no padrão de desenvolvimento entre todas as funções e arquivos.
+Banco de Dados: Alterações de DB devem ser feitas manualmente via MySQL Workbench. Não criar scripts de migração.
+Compatibilidade: Não é necessária retrocompatibilidade com versões anteriores.
+
 
 📌 Instruções finais
-- Gere o código completo para as interfaces e implementações propostas no nosso plano.
-- O código deve ser a solução final e não deve conter mocks, TODOs ou implementações temporárias.
-- Implemente apenas as partes acordadas no plano.
+- Não implemente nenhum código.
+- Analise cuidadosamente o problema e os requisitose solicite informações adicionais se necessário.
+- Analise sempre o código existente e não assuma nada sem verificar antes.
+- Apresente um plano detalhado para a refatoração. O plano deve incluir:
+  - Uma descrição da arquitetura proposta e como ela se alinha com a arquitetura hexagonal.
+  - As interfaces que precisarão ser criadas (com seus métodos e assinaturas).
+  - A estrutura de diretórios e arquivos sugerida.
+  - A ordem das etapas de refatoração para garantir uma transição suave e sem quebras.
+- Certifique-se de que o plano esteja completo e não inclua mocks ou soluções temporárias.
+- Apenas apresente o plano, sem gerar o código.
