@@ -1,23 +1,21 @@
 package userservices
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"regexp"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // Encrypt the user password
 func (us *userService) encryptPassword(password string) (hashPassword string) {
-
-	hash := md5.New()
-	defer hash.Reset()
-	hash.Write([]byte(password))
-
-	return hex.EncodeToString(hash.Sum(nil))
+	// Usa bcrypt com custo padrão; erros aqui são improváveis (custo inválido)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return ""
+	}
+	return string(hash)
 }
 
 func validatePassword(password string) (err error) {

@@ -22,7 +22,7 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 
 	userRoles, err := p.permissionRepository.GetActiveUserRolesByUserID(ctx, tx, userID)
 	if err != nil {
-		p.globalService.RollbackTransaction(ctx, tx)
+		err = p.globalService.RollbackTransaction(ctx, tx)
 		return nil, utils.ErrInternalServer
 	}
 

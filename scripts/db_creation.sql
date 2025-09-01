@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`users` (
   `neighborhood` VARCHAR(150) NOT NULL,
   `city` VARCHAR(150) NOT NULL,
   `state` VARCHAR(2) NOT NULL,
-  `password` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(100) NOT NULL,
   `opt_status` TINYINT UNSIGNED NOT NULL,
   `last_activity_at` TIMESTAMP(6) NOT NULL,
   `deleted` TINYINT UNSIGNED NOT NULL,

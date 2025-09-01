@@ -1,5 +1,11 @@
 🛠️ Problema
-O projeto centraliza a gestão de transações sql em global_services/transacton. onde existe um startTransactions, um commit e um rollback.
+Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de CreateOwner que inicia no handler auth/create_owner e verifique se:
+- a lógica está correta;
+- existem otimizações possíveis;
+- existem melhorias possíveis;
+- a documentação das funções está adequada e preparada para swager doc;
+- a documentação interna das funções, em portugues, descreve bem para facilitar a manutenção
+
 
 ✅ Requisitos OBRIGATÓRIOS a serem respeitados
 1. Padrões de Arquitetura e Código
@@ -39,5 +45,4 @@ Compatibilidade: Não é necessária retrocompatibilidade com versões anteriore
   - A estrutura de diretórios e arquivos sugerida.
   - A ordem das etapas de refatoração para garantir uma transição suave e sem quebras.
 - Certifique-se de que o plano esteja completo e não inclua mocks ou soluções temporárias.
-- Apenas apresente o plano, sem gerar o código.
-- Se o plano for muito grande, divida em etapas que possam ser implementadas separadamente.
+- Apenas apresente o plano bem detalhado e faseado se for muito grande.

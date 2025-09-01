@@ -11,6 +11,7 @@ import (
 	"errors"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // SignIn autentica um usuário e retorna tokens de acesso
@@ -47,11 +48,7 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 	return
 }
 
-// signIn executa o processo interno de autenticação com melhor tratamento de erros e logging
 func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
-	criptoPassword := us.encryptPassword(password)
-
-	// Busca o usuário pelo nationalID
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -104,9 +101,9 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		user.SetActiveRole(userRoles[0])
 	}
 
-	// Verifica senha
-	if user.GetPassword() != criptoPassword {
-		err = us.processWrongSignin(ctx, tx, user, nationalID, ipAddress, userAgent)
+	// Comparar a senha fornecida com o hash armazenado (bcrypt)
+	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {
+		err = checkWrongSignin(ctx, tx, us, user)
 		if err != nil {
 			return
 		}

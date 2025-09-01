@@ -31,14 +31,30 @@ func NewHTTPError(code int, message string, details ...interface{}) *HTTPError {
 	return httpErr
 }
 
-// SendHTTPError sends an HTTP error response using Gin
-func SendHTTPError(c *gin.Context, statusCode int, errorCode, message string) {
-	c.JSON(statusCode, gin.H{
-		"error": gin.H{
-			"code":    errorCode,
-			"message": message,
-		},
-	})
+// SendHTTPError sends an HTTP error response using a flat schema compatible with dto.ErrorResponse
+// NOTE: errorCode string is ignored for payload consistency; numeric statusCode is used as code
+func SendHTTPError(c *gin.Context, statusCode int, _ string, message string) {
+	payload := gin.H{
+		"code":    statusCode,
+		"message": message,
+	}
+	c.JSON(statusCode, payload)
+}
+
+// SendHTTPErrorObj sends an HTTPError using the flat schema (code/message/details)
+func SendHTTPErrorObj(c *gin.Context, httpErr *HTTPError) {
+	if httpErr == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "Internal server error"})
+		return
+	}
+	payload := gin.H{
+		"code":    httpErr.Code,
+		"message": httpErr.Message,
+	}
+	if httpErr.Details != nil {
+		payload["details"] = httpErr.Details
+	}
+	c.JSON(httpErr.Code, payload)
 }
 
 // Predefined HTTP errors
