@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
@@ -18,7 +18,7 @@ func (uh *UserHandler) RequestPhoneChange(c *gin.Context) {
 	// Get user information from context (set by middleware)
 	userInfos, exists := c.Get(string(globalmodel.TokenKey))
 	if !exists {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
@@ -27,20 +27,20 @@ func (uh *UserHandler) RequestPhoneChange(c *gin.Context) {
 	// Parse request body
 	var request dto.RequestPhoneChangeRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Validate and clean phone number
 	newPhone := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(request.NewPhoneNumber, " ", ""), "-", ""), "(", ""), ")", ""), ".", "")
 	if err := validators.ValidateE164(newPhone); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_PHONE", "Invalid phone number format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_PHONE", "Invalid phone number format")
 		return
 	}
 
 	// Call service to request phone change
 	if err := uh.userService.RequestPhoneChange(ctx, userInfo.ID, newPhone); err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "REQUEST_PHONE_CHANGE_FAILED", "Failed to request phone change")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

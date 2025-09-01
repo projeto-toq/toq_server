@@ -3,6 +3,7 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
@@ -23,11 +24,11 @@ func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermo
 	entities, err := ua.Read(ctx, tx, query)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetUsers: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("get users read: %w", err)
 	}
 
 	if len(entities) == 0 {
-		return nil, utils.ErrInternalServer
+		return nil, sql.ErrNoRows
 	}
 
 	for _, entity := range entities {

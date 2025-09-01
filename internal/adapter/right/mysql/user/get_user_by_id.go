@@ -3,11 +3,11 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -23,16 +23,18 @@ func (ua *UserAdapter) GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (u
 	entities, err := ua.Read(ctx, tx, query, id)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetUserByID: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		// Propagate low-level error for service to translate
+		return nil, err
 	}
 
 	if len(entities) == 0 {
-		return nil, utils.ErrInternalServer
+		// Standard convention for not found at repository layer
+		return nil, sql.ErrNoRows
 	}
 
 	if len(entities) > 1 {
 		slog.Error("mysqluseradapter/GetUserByID: multiple users found with the same ID", "ID", id)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("multiple users found with the same ID: %d", id)
 	}
 
 	user, err = userconverters.UserEntityToDomain(entities[0])

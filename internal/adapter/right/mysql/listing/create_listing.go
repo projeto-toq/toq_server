@@ -3,13 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error) {
@@ -29,7 +28,7 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("Error preparing statement on msqllistingadapter/CreateListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("prepare create listing: %w", err)
 		return
 	}
 
@@ -49,14 +48,14 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 		listing.TenantPhone(), listing.Accompanying(), listing.Deleted())
 	if err != nil {
 		slog.Error("Error executing statement on msqllistingadapter/CreateListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("exec create listing: %w", err)
 		return
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
 		slog.Error("Error getting last insert id on msqllistingadapter/CreateListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("last insert id for create listing: %w", err)
 		return
 	}
 

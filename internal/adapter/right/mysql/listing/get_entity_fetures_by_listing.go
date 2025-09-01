@@ -3,12 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sql.Tx, listingID int64) (features []listingentity.EntityFeature, err error) {
@@ -23,7 +23,7 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error("Error preparing statement on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("prepare get features: %w", err)
 		return
 	}
 	defer stmt.Close()
@@ -31,7 +31,7 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 	rows, err := stmt.QueryContext(ctx, listingID)
 	if err != nil && err != sql.ErrNoRows {
 		slog.Error("Error executing query on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("query features by listing: %w", err)
 		return
 	}
 	defer rows.Close()
@@ -46,7 +46,7 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 		)
 		if err != nil {
 			slog.Error("Error scanning row on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-			err = utils.ErrInternalServer
+			err = fmt.Errorf("scan feature row: %w", err)
 			return
 		}
 
@@ -55,7 +55,7 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 
 	if err = rows.Err(); err != nil {
 		slog.Error("Error iterating over rows on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("rows iteration for features: %w", err)
 		return
 	}
 

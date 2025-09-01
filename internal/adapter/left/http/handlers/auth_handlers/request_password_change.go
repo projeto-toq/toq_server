@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // RequestPasswordChange handles password change request (public endpoint)
@@ -25,7 +26,7 @@ import (
 func (ah *AuthHandler) RequestPasswordChange(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -33,14 +34,14 @@ func (ah *AuthHandler) RequestPasswordChange(c *gin.Context) {
 	// Parse request
 	var request dto.RequestPasswordChangeRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Call service
 	err = ah.userService.RequestPasswordChange(ctx, request.NationalID)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "PASSWORD_CHANGE_REQUEST_FAILED", "Failed to request password change")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "PASSWORD_CHANGE_REQUEST_FAILED", "Failed to request password change")
 		return
 	}
 

@@ -3,11 +3,10 @@ package sessionmysqladapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) MarkSessionRotated(ctx context.Context, tx *sql.Tx, id int64) error {
@@ -22,7 +21,7 @@ func (sa *SessionAdapter) MarkSessionRotated(ctx context.Context, tx *sql.Tx, id
 	_, err = sa.Update(ctx, tx, query, id)
 	if err != nil {
 		slog.Error("sessionmysqladapter/MarkSessionRotated: error executing Update", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("mark session rotated: %w", err)
 	}
 
 	return nil

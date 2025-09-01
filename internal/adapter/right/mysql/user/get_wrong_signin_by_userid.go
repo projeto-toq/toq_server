@@ -3,13 +3,13 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, id int64) (wrongSignin usermodel.WrongSigninInterface, err error) {
@@ -24,16 +24,16 @@ func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, i
 	entities, err := ua.Read(ctx, tx, query, id)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetWrongSigninByUserID: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, err
 	}
 
 	if len(entities) == 0 {
-		return nil, utils.ErrInternalServer
+		return nil, sql.ErrNoRows
 	}
 
 	if len(entities) > 1 {
 		slog.Error("mysqluseradapter/GetWrongSigninByUserID: multiple roles found with the same role", "role", id)
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("multiple wrong_signin rows found")
 	}
 
 	wrongSignin, err = userconverters.WrongSignInEntityToDomain(entities[0])

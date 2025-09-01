@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -17,7 +18,7 @@ func (uh *UserHandler) GoHome(c *gin.Context) {
 	// Get user information from context (set by middleware)
 	userInfos, exists := c.Get(string(globalmodel.TokenKey))
 	if !exists {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
@@ -26,7 +27,7 @@ func (uh *UserHandler) GoHome(c *gin.Context) {
 	// Call service to get home data
 	user, err := uh.userService.Home(ctx, userInfo.ID)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "GO_HOME_FAILED", "Failed to get home data")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

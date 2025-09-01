@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -28,7 +29,7 @@ import (
 func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusInternalServerError, "Failed to generate tracer"))
+		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusInternalServerError, "Failed to generate tracer"))
 		return
 	}
 	defer spanEnd()
@@ -36,26 +37,26 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	// Parse request
 	var request dto.CreateOwnerRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid request format"))
+		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid request format"))
 		return
 	}
 
 	// Create user model from DTO
 	user, err := ah.createUserFromDTO(request.Owner, permissionmodel.RoleSlugOwner)
 	if err != nil {
-		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid user data"))
+		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusBadRequest, "Invalid user data"))
 		return
 	}
 
 	// Call service
 	tokens, err := ah.userService.CreateOwner(ctx, user)
 	if err != nil {
-		if httpErr, ok := err.(*utils.HTTPError); ok {
-			utils.SendHTTPErrorObj(c, httpErr)
+		if derr, ok := err.(utils.DomainError); ok {
+			httperrors.SendHTTPErrorObj(c, derr)
 			return
 		}
 		// Fallback: conflito genérico
-		utils.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusConflict, "Failed to create owner"))
+		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusConflict, "Failed to create owner"))
 		return
 	}
 

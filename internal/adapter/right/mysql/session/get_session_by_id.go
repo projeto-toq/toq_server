@@ -3,13 +3,13 @@ package sessionmysqladapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) GetSessionByID(ctx context.Context, tx *sql.Tx, id int64) (session sessionmodel.SessionInterface, err error) {
@@ -24,16 +24,16 @@ func (sa *SessionAdapter) GetSessionByID(ctx context.Context, tx *sql.Tx, id int
 	entities, err := sa.Read(ctx, tx, query, id)
 	if err != nil {
 		slog.Error("sessionmysqladapter/GetSessionByID: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("get session by id: %w", err)
 	}
 
 	if len(entities) == 0 {
-		return nil, utils.ErrInternalServer
+		return nil, sql.ErrNoRows
 	}
 
 	if len(entities) > 1 {
 		slog.Error("sessionmysqladapter/GetSessionByID: multiple sessions found with the same ID", "ID", id)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("multiple sessions found for id %d", id)
 	}
 
 	session, err = sessionconverters.SessionEntityToDomain(entities[0])

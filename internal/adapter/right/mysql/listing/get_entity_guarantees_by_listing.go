@@ -3,12 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *sql.Tx, listingID int64) (guarantees []listingentity.EntityGuarantee, err error) {
@@ -23,7 +23,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error("Error preparing statement in GetEntityGuaranteesByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("prepare get guarantees: %w", err)
 		return
 	}
 	defer stmt.Close()
@@ -31,7 +31,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 	rows, err := stmt.QueryContext(ctx, listingID)
 	if err != nil && err != sql.ErrNoRows {
 		slog.Error("Error executing query in GetEntityGuaranteesByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("query guarantees by listing: %w", err)
 		return
 	}
 	defer rows.Close()
@@ -46,7 +46,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 		)
 		if err != nil {
 			slog.Error("Error scanning row in GetEntityGuaranteesByListing", "error", err)
-			err = utils.ErrInternalServer
+			err = fmt.Errorf("scan guarantee row: %w", err)
 			return
 		}
 
@@ -55,7 +55,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 
 	if err = rows.Err(); err != nil {
 		slog.Error("Error iterating over rows in GetEntityGuaranteesByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("rows iteration for guarantees: %w", err)
 		return
 	}
 

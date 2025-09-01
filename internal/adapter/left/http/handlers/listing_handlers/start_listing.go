@@ -5,8 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // StartListing handles creating a new listing
@@ -27,7 +28,7 @@ import (
 func (lh *ListingHandler) StartListing(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -35,14 +36,14 @@ func (lh *ListingHandler) StartListing(c *gin.Context) {
 	// Get user info from context (set by auth middleware)
 	_, exists := c.Get(string(globalmodel.TokenKey))
 	if !exists {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
 	// Parse request body using DTO
 	var request dto.StartListingRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
@@ -54,7 +55,7 @@ func (lh *ListingHandler) StartListing(c *gin.Context) {
 		globalmodel.PropertyType(request.PropertyType),
 	)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "START_LISTING_FAILED", "Failed to start listing")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

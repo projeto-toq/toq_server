@@ -2,9 +2,10 @@ package userservices
 
 import (
 	"context"
+	"database/sql"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetProfile retrieves a user's profile by their ID.
@@ -24,7 +25,11 @@ func (us *userService) GetProfile(ctx context.Context, userID int64) (user userm
 	user, err = us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		// Translate repository errors into DomainError for adapter serialization
+		if err == sql.ErrNoRows {
+			return nil, utils.NotFoundError("User")
+		}
+		return nil, utils.InternalError("Failed to get user by ID")
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)

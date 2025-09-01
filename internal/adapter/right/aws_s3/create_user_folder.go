@@ -2,17 +2,17 @@ package s3adapter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err error) {
 	if s.adminClient == nil {
-		err = utils.ErrInternalServer
+		err = errors.New("s3 admin client is nil")
 		return
 	}
 
@@ -34,7 +34,7 @@ func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err err
 
 		if err != nil {
 			slog.Error("failed to create placeholder in S3", "userID", UserID, "path", placeholderPath, "error", err)
-			return utils.ErrInternalServer
+			return err
 		}
 
 		slog.Debug("placeholder created in S3", "userID", UserID, "path", placeholderPath)

@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetOptions handles getting available options for listings
@@ -27,7 +28,7 @@ import (
 func (lh *ListingHandler) GetOptions(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -37,14 +38,14 @@ func (lh *ListingHandler) GetOptions(c *gin.Context) {
 	number := c.Query("number")
 
 	if zipCode == "" || number == "" {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "zipCode and number are required")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "zipCode and number are required")
 		return
 	}
 
 	// Call service to get options
 	types, err := lh.listingService.GetOptions(ctx, zipCode, number)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "GET_OPTIONS_FAILED", "Failed to get options")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

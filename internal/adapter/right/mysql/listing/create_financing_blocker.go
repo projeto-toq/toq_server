@@ -3,13 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) CreateFinancingBlocker(ctx context.Context, tx *sql.Tx, blocker listingmodel.FinancingBlockerInterface) (err error) {
@@ -24,7 +23,7 @@ func (la *ListingAdapter) CreateFinancingBlocker(ctx context.Context, tx *sql.Tx
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateFinancingBlocker: error preparing statement", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("prepare create financing blocker: %w", err)
 		return
 	}
 	defer stmt.Close()
@@ -32,14 +31,14 @@ func (la *ListingAdapter) CreateFinancingBlocker(ctx context.Context, tx *sql.Tx
 	result, err := stmt.ExecContext(ctx, blocker.ListingID(), blocker.Blocker())
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateFinancingBlocker: error executing statement", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("exec create financing blocker: %w", err)
 		return
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
 		slog.Error("mysqllistingadapter/CreateFinancingBlocker: error getting last insert ID", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("last insert id for financing blocker: %w", err)
 		return
 	}
 

@@ -26,7 +26,12 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 	}
 
 	return gin.HandlerFunc(func(c *gin.Context) {
-		path := c.Request.URL.Path
+		// Prefer the named route pattern when available for cardinality stability
+		route := c.FullPath()
+		if route == "" {
+			route = c.Request.URL.Path
+		}
+		path := route
 		userAgent := c.Request.UserAgent()
 
 		// Skip tracing AND metrics for telemetry/monitoring requests

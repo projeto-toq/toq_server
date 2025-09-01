@@ -3,13 +3,13 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error) {
@@ -52,7 +52,7 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/CreateUser: error executing Create", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("create user: %w", err)
 	}
 
 	user.SetID(id)

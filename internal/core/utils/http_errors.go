@@ -3,79 +3,72 @@ package utils
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
-// HTTPError represents a structured HTTP error response
-type HTTPError struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Details interface{} `json:"details,omitempty"`
+// DomainError defines a core-agnostic error interface used across services and repositories
+// It intentionally has no dependency on HTTP handlers or web frameworks.
+type DomainError interface {
+	error
+	Code() int
+	Message() string
+	Details() any
 }
+
+// HTTPError is a concrete implementation of DomainError used by the core
+// It represents a structured error with code/message/details.
+type HTTPError struct {
+	statusCode int    `json:"-"`
+	msg        string `json:"-"`
+	// details keeps optional error context (field, validation info, etc.)
+	details any `json:"-"`
+}
+
+// Ensure *HTTPError implements DomainError
+var _ DomainError = (*HTTPError)(nil)
 
 // Error implements the error interface
-func (e *HTTPError) Error() string {
-	return fmt.Sprintf("HTTP %d: %s", e.Code, e.Message)
-}
+func (e *HTTPError) Error() string { return fmt.Sprintf("HTTP %d: %s", e.statusCode, e.msg) }
 
-// NewHTTPError creates a new HTTP error
-func NewHTTPError(code int, message string, details ...interface{}) *HTTPError {
-	httpErr := &HTTPError{
-		Code:    code,
-		Message: message,
-	}
+// Code returns the numeric error code (commonly an HTTP status code)
+func (e *HTTPError) Code() int { return e.statusCode }
+
+// Message returns the human-readable message
+func (e *HTTPError) Message() string { return e.msg }
+
+// Details returns optional error context
+func (e *HTTPError) Details() any { return e.details }
+
+// NewHTTPError creates a new structured error instance
+func NewHTTPError(code int, message string, details ...any) *HTTPError {
+	httpErr := &HTTPError{statusCode: code, msg: message}
 	if len(details) > 0 {
-		httpErr.Details = details[0]
+		httpErr.details = details[0]
 	}
 	return httpErr
 }
 
-// SendHTTPError sends an HTTP error response using a flat schema compatible with dto.ErrorResponse
-// NOTE: errorCode string is ignored for payload consistency; numeric statusCode is used as code
-func SendHTTPError(c *gin.Context, statusCode int, _ string, message string) {
-	payload := gin.H{
-		"code":    statusCode,
-		"message": message,
-	}
-	c.JSON(statusCode, payload)
-}
-
-// SendHTTPErrorObj sends an HTTPError using the flat schema (code/message/details)
-func SendHTTPErrorObj(c *gin.Context, httpErr *HTTPError) {
-	if httpErr == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "Internal server error"})
-		return
-	}
-	payload := gin.H{
-		"code":    httpErr.Code,
-		"message": httpErr.Message,
-	}
-	if httpErr.Details != nil {
-		payload["details"] = httpErr.Details
-	}
-	c.JSON(httpErr.Code, payload)
-}
-
-// Predefined HTTP errors
+// Predefined common errors (without coupling to handlers)
 var (
-	ErrBadRequest          = &HTTPError{Code: http.StatusBadRequest, Message: "Bad Request"}
-	ErrUnauthorized        = &HTTPError{Code: http.StatusUnauthorized, Message: "Unauthorized"}
-	ErrForbidden           = &HTTPError{Code: http.StatusForbidden, Message: "Forbidden"}
-	ErrNotFound            = &HTTPError{Code: http.StatusNotFound, Message: "Not Found"}
-	ErrMethodNotAllowed    = &HTTPError{Code: http.StatusMethodNotAllowed, Message: "Method Not Allowed"}
-	ErrConflict            = &HTTPError{Code: http.StatusConflict, Message: "Conflict"}
-	ErrUnprocessableEntity = &HTTPError{Code: http.StatusUnprocessableEntity, Message: "Unprocessable Entity"}
-	ErrTooManyRequests     = &HTTPError{Code: http.StatusTooManyRequests, Message: "Too Many Requests"}
-	ErrInternalServer      = &HTTPError{Code: http.StatusInternalServerError, Message: "Internal Server Error"}
-	ErrBadGateway          = &HTTPError{Code: http.StatusBadGateway, Message: "Bad Gateway"}
-	ErrServiceUnavailable  = &HTTPError{Code: http.StatusServiceUnavailable, Message: "Service Unavailable"}
-	ErrGatewayTimeout      = &HTTPError{Code: http.StatusGatewayTimeout, Message: "Gateway Timeout"}
+	ErrBadRequest          = &HTTPError{statusCode: http.StatusBadRequest, msg: "Bad Request"}
+	ErrUnauthorized        = &HTTPError{statusCode: http.StatusUnauthorized, msg: "Unauthorized"}
+	ErrForbidden           = &HTTPError{statusCode: http.StatusForbidden, msg: "Forbidden"}
+	ErrNotFound            = &HTTPError{statusCode: http.StatusNotFound, msg: "Not Found"}
+	ErrMethodNotAllowed    = &HTTPError{statusCode: http.StatusMethodNotAllowed, msg: "Method Not Allowed"}
+	ErrConflict            = &HTTPError{statusCode: http.StatusConflict, msg: "Conflict"}
+	ErrUnprocessableEntity = &HTTPError{statusCode: http.StatusUnprocessableEntity, msg: "Unprocessable Entity"}
+	ErrTooManyRequests     = &HTTPError{statusCode: http.StatusTooManyRequests, msg: "Too Many Requests"}
+	ErrInternalServer      = &HTTPError{statusCode: http.StatusInternalServerError, msg: "Internal Server Error"}
+	ErrBadGateway          = &HTTPError{statusCode: http.StatusBadGateway, msg: "Bad Gateway"}
+	ErrServiceUnavailable  = &HTTPError{statusCode: http.StatusServiceUnavailable, msg: "Service Unavailable"}
+	ErrGatewayTimeout      = &HTTPError{statusCode: http.StatusGatewayTimeout, msg: "Gateway Timeout"}
 )
 
 // ValidationError creates a structured validation error
 func ValidationError(field, message string) *HTTPError {
-	return NewHTTPError(http.StatusBadRequest, "Validation failed", map[string]string{
+	if message == "" {
+		message = "Validation failed"
+	}
+	return NewHTTPError(http.StatusBadRequest, message, map[string]string{
 		"field":   field,
 		"message": message,
 	})

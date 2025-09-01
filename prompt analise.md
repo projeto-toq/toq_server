@@ -1,5 +1,5 @@
 🛠️ Problema
-O projeto centraliza a gestão de transações sql em global_services/transacton. onde existe um startTransactions, um commit e um rollback.
+Baseado no plano de refatoração que você apresentou divida-o em fases estanques, que podem ser implementas separadamente, no caso de necessidade de interrupção do processo
 
 ✅ Requisitos OBRIGATÓRIOS a serem respeitados
 1. Padrões de Arquitetura e Código

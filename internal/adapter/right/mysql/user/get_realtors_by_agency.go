@@ -3,13 +3,12 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agencyID int64) (users []usermodel.UserInterface, err error) {
@@ -25,18 +24,18 @@ func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agen
 	entities, err := ua.Read(ctx, tx, query, agencyID)
 	if err != nil {
 		slog.Error("mysqluseradapter/GetRealtorsByAgency: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("get realtors by agency read: %w", err)
 	}
 
 	if len(entities) == 0 {
-		return nil, utils.ErrInternalServer
+		return nil, sql.ErrNoRows
 	}
 
 	for _, entity := range entities {
 		id, ok := entity[0].(int64)
 		if !ok {
 			slog.Error("mysqluseradapter/GetRealtorsByAgency: error converting ID to int64", "value", entity[0])
-			return nil, utils.ErrInternalServer
+			return nil, fmt.Errorf("get realtors by agency: invalid id type %T", entity[0])
 		}
 		user, err1 := ua.GetUserByID(ctx, tx, id)
 		if err1 != nil {

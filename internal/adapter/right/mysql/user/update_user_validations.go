@@ -3,15 +3,16 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
-"errors"
+
+	"errors"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error) {
@@ -58,7 +59,7 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateUserValidations: error executing Update", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("update user validations: %w", err)
 	}
 
 	validation.SetUserID(id)

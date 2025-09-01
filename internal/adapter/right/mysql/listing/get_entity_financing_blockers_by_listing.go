@@ -3,12 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Context, tx *sql.Tx, listingID int64) (blockers []listingentity.EntityFinancingBlocker, err error) {
@@ -23,7 +23,7 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		slog.Error("Error preparing statement on mysqllistingadapter/GetEntityFinancingBlockerByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("prepare get financing blockers: %w", err)
 		return
 	}
 	defer stmt.Close()
@@ -31,7 +31,7 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 	rows, err := stmt.QueryContext(ctx, listingID)
 	if err != nil && err != sql.ErrNoRows {
 		slog.Error("Error executing query on mysqllistingadapter/GetEntityFinancingBlockerByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("query financing blockers by listing: %w", err)
 		return
 	}
 	defer rows.Close()
@@ -45,7 +45,7 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 		)
 		if err != nil {
 			slog.Error("Error scanning row on mysqllistingadapter/GetEntityFinancingBlockerByListing", "error", err)
-			err = utils.ErrInternalServer
+			err = fmt.Errorf("scan financing blocker row: %w", err)
 			return
 		}
 
@@ -54,7 +54,7 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 
 	if err = rows.Err(); err != nil {
 		slog.Error("Error iterating over rows on mysqllistingadapter/GetEntityFinancingBlockerByListing", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("rows iteration for financing blockers: %w", err)
 		return
 	}
 

@@ -13,7 +13,11 @@ import (
 func MetricsMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
 		start := time.Now()
-		path := c.Request.URL.Path
+		// Prefer the named route pattern when available for stable label cardinality
+		path := c.FullPath()
+		if path == "" {
+			path = c.Request.URL.Path
+		}
 		method := c.Request.Method
 
 		// Incrementar requests em progresso de forma thread-safe

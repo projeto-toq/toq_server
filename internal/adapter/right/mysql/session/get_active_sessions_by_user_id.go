@@ -3,13 +3,13 @@ package sessionmysqladapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) GetActiveSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) (sessions []sessionmodel.SessionInterface, err error) {
@@ -26,7 +26,7 @@ func (sa *SessionAdapter) GetActiveSessionsByUserID(ctx context.Context, tx *sql
 	entities, err := sa.Read(ctx, tx, query, userID)
 	if err != nil {
 		slog.Error("sessionmysqladapter/GetActiveSessionsByUserID: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("get active sessions by user id: %w", err)
 	}
 
 	sessions = make([]sessionmodel.SessionInterface, 0, len(entities))

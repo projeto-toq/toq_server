@@ -3,13 +3,13 @@ package mysqlcomplexadapter
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"log/slog"
 
 	complexrepoconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex/converters"
 	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ca *ComplexAdapter) GetVerticalComplex(ctx context.Context, tx *sql.Tx, zipCode string, number string) (complex complexmodel.ComplexInterface, err error) {
@@ -18,21 +18,20 @@ func (ca *ComplexAdapter) GetVerticalComplex(ctx context.Context, tx *sql.Tx, zi
 		return
 	}
 	defer spanEnd()
-
 	query := `SELECT * FROM complex WHERE zip_code = ? AND number = ?;`
 
 	entity, err := ca.Read(ctx, tx, query, zipCode)
 	if err != nil {
 		slog.Error("mysqlcomplexadapter/GetVerticalComplex: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("get vertical complex read: %w", err)
 	}
 
 	if len(entity) == 0 {
-		return nil, utils.ErrInternalServer
+		return nil, sql.ErrNoRows
 	}
 
 	if len(entity) > 1 {
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("multiple vertical complex rows found")
 	}
 
 	complex, err = complexrepoconverters.ComplexEntityToDomain(entity[0])

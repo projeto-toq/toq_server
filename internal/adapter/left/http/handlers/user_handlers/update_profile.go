@@ -6,16 +6,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // UpdateProfile handles updating user profile
 func (uh *UserHandler) UpdateProfile(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -23,7 +24,7 @@ func (uh *UserHandler) UpdateProfile(c *gin.Context) {
 	// Get user info from context (set by auth middleware)
 	infos, exists := c.Get(string(globalmodel.TokenKey))
 	if !exists {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
@@ -32,14 +33,14 @@ func (uh *UserHandler) UpdateProfile(c *gin.Context) {
 	// Parse request body using DTO
 	var request dto.UpdateProfileRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Get current user data first
 	currentUser, err := uh.userService.GetProfile(ctx, userInfos.ID)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "GET_PROFILE_FAILED", "Failed to get current profile")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
@@ -50,7 +51,7 @@ func (uh *UserHandler) UpdateProfile(c *gin.Context) {
 	if request.User.BornAt != "" {
 		bornAt, err := time.Parse("2006-01-02", request.User.BornAt)
 		if err != nil {
-			utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_DATE", "Invalid born_at date format")
+			httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_DATE", "Invalid born_at date format")
 			return
 		}
 		currentUser.SetBornAt(bornAt)
@@ -79,7 +80,7 @@ func (uh *UserHandler) UpdateProfile(c *gin.Context) {
 
 	// Call service to update profile
 	if err := uh.userService.UpdateProfile(ctx, currentUser); err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "UPDATE_PROFILE_FAILED", "Failed to update profile")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

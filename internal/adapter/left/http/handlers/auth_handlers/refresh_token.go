@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // RefreshToken handles token refresh (public endpoint)
@@ -24,7 +25,7 @@ import (
 func (ah *AuthHandler) RefreshToken(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -32,14 +33,14 @@ func (ah *AuthHandler) RefreshToken(c *gin.Context) {
 	// Parse request
 	var request dto.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Call service
 	tokens, err := ah.userService.RefreshTokens(ctx, request.RefreshToken)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token")
 		return
 	}
 

@@ -3,12 +3,12 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) CreateAgencyInvite(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, phoneNumber string) (err error) {
@@ -23,7 +23,7 @@ func (ua *UserAdapter) CreateAgencyInvite(ctx context.Context, tx *sql.Tx, agenc
 	id, err := ua.Create(ctx, tx, sql, agency.GetID(), phoneNumber)
 	if err != nil {
 		slog.Error("mysqluseradapter/CreateAgencyInvite: error executing Create", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("create agency invite: %w", err)
 	}
 
 	agency.SetID(id)

@@ -1,5 +1,5 @@
  🛠️ Problema
-Baseado no plano de refatoração que você apresentou e guardou, agora implemente o código considerando que a tabela users já foi ajustada para o campo password VARCHAR(100)
+Baseado no plano de refatoração que você apresentou, implemente a fase 8
 
 ✅ Requisitos OBRIGATÓRIOS a serem respeitados
 1. Padrões de Arquitetura e Código

@@ -36,7 +36,11 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 
 	return gin.HandlerFunc(func(c *gin.Context) {
 		start := time.Now()
-		path := c.Request.URL.Path
+		// Prefer named route when available for stability
+		path := c.FullPath()
+		if path == "" {
+			path = c.Request.URL.Path
+		}
 		method := c.Request.Method
 		userAgent := c.Request.UserAgent()
 

@@ -1,16 +1,15 @@
 package middlewares
 
 import (
-	"net/http"
+	"log/slog"
 	"strconv"
 
-	"log/slog"
-
 	"github.com/gin-gonic/gin"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // PermissionMiddleware verifica permissões específicas usando o sistema de permissões avançado
@@ -25,14 +24,14 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 		// Obter informações do usuário do contexto (definido pelo auth middleware)
 		userInfoInterface, exists := c.Get("userInfo")
 		if !exists {
-			utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User info not found")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("User info not found"))
 			c.Abort()
 			return
 		}
 
 		userInfo, ok := userInfoInterface.(usermodel.UserInfos)
 		if !ok {
-			utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Invalid user info format")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid user info format"))
 			c.Abort()
 			return
 		}
@@ -45,14 +44,14 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 		hasPermission, err := permissionService.HasHTTPPermission(c.Request.Context(), userID, method, path)
 		if err != nil {
 			slog.Error("Error checking permission", "userID", userID, "method", method, "path", path, "error", err)
-			utils.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Permission check failed")
+			httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Permission check failed"))
 			c.Abort()
 			return
 		}
 
 		if !hasPermission {
 			slog.Warn("Permission denied", "userID", userID, "method", method, "path", path)
-			utils.SendHTTPError(c, http.StatusForbidden, "FORBIDDEN", "Insufficient permissions")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthorizationError("Insufficient permissions"))
 			c.Abort()
 			return
 		}
@@ -68,14 +67,14 @@ func RequirePermission(permissionService permissionservice.PermissionServiceInte
 		// Obter informações do usuário
 		userInfoInterface, exists := c.Get("userInfo")
 		if !exists {
-			utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User info not found")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("User info not found"))
 			c.Abort()
 			return
 		}
 
 		userInfo, ok := userInfoInterface.(usermodel.UserInfos)
 		if !ok {
-			utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Invalid user info format")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid user info format"))
 			c.Abort()
 			return
 		}
@@ -88,7 +87,7 @@ func RequirePermission(permissionService permissionservice.PermissionServiceInte
 		if err != nil {
 			slog.Error("Error checking specific permission",
 				"userID", userInfo.ID, "resource", resource, "action", action, "error", err)
-			utils.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Permission check failed")
+			httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Permission check failed"))
 			c.Abort()
 			return
 		}
@@ -96,7 +95,7 @@ func RequirePermission(permissionService permissionservice.PermissionServiceInte
 		if !hasPermission {
 			slog.Warn("Specific permission denied",
 				"userID", userInfo.ID, "resource", resource, "action", action)
-			utils.SendHTTPError(c, http.StatusForbidden, "FORBIDDEN", "Insufficient permissions for this action")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthorizationError("Insufficient permissions for this action"))
 			c.Abort()
 			return
 		}
@@ -134,31 +133,10 @@ func buildPermissionContext(c *gin.Context, userInfo usermodel.UserInfos) *permi
 
 // isPermissionCheckRequired verifica se o endpoint precisa de verificação de permissão
 func isPermissionCheckRequired(method, path string) bool {
-	// Endpoints públicos que não precisam de verificação de permissão
-	publicEndpoints := map[string][]string{
-		"POST": {
-			"/auth/signin",
-			"/auth/signup",
-			"/auth/refresh",
-			"/auth/forgot-password",
-			"/auth/reset-password",
-		},
-		"GET": {
-			"/health",
-			"/metrics",
-			"/version",
-		},
-	}
-
-	if methods, exists := publicEndpoints[method]; exists {
-		for _, endpoint := range methods {
-			if path == endpoint {
-				return false
-			}
-		}
-	}
-
-	return true
+	// Use a single source of truth for public endpoints
+	// Method param kept for possible future expansion (e.g., method-specific rules)
+	_ = method
+	return !coreutils.IsPublicEndpoint(path)
 }
 
 // Helper functions for specific permission checks
@@ -188,14 +166,14 @@ func RequireOwnershipOrAdmin(permissionService permissionservice.PermissionServi
 	return gin.HandlerFunc(func(c *gin.Context) {
 		userInfoInterface, exists := c.Get("userInfo")
 		if !exists {
-			utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User info not found")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("User info not found"))
 			c.Abort()
 			return
 		}
 
 		userInfo, ok := userInfoInterface.(usermodel.UserInfos)
 		if !ok {
-			utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "Invalid user info format")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid user info format"))
 			c.Abort()
 			return
 		}
@@ -212,14 +190,14 @@ func RequireOwnershipOrAdmin(permissionService permissionservice.PermissionServi
 		// Verificar ownership baseado no ID do recurso
 		resourceIDStr := c.Param("id")
 		if resourceIDStr == "" {
-			utils.SendHTTPError(c, http.StatusBadRequest, "BAD_REQUEST", "Resource ID required")
+			httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("id", "Resource ID required"))
 			c.Abort()
 			return
 		}
 
 		resourceID, err := strconv.ParseInt(resourceIDStr, 10, 64)
 		if err != nil {
-			utils.SendHTTPError(c, http.StatusBadRequest, "BAD_REQUEST", "Invalid resource ID")
+			httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("id", "Invalid resource ID"))
 			c.Abort()
 			return
 		}
@@ -231,7 +209,7 @@ func RequireOwnershipOrAdmin(permissionService permissionservice.PermissionServi
 		if err != nil {
 			slog.Error("Error checking ownership permission",
 				"userID", userInfo.ID, "resourceType", resourceType, "resourceID", resourceID, "error", err)
-			utils.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Permission check failed")
+			httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Permission check failed"))
 			c.Abort()
 			return
 		}
@@ -239,7 +217,7 @@ func RequireOwnershipOrAdmin(permissionService permissionservice.PermissionServi
 		if !hasOwnershipPermission {
 			slog.Warn("Ownership permission denied",
 				"userID", userInfo.ID, "resourceType", resourceType, "resourceID", resourceID)
-			utils.SendHTTPError(c, http.StatusForbidden, "FORBIDDEN", "Access denied: insufficient permissions")
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthorizationError("Access denied: insufficient permissions"))
 			c.Abort()
 			return
 		}

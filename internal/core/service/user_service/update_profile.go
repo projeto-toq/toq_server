@@ -6,20 +6,20 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Start transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to start transaction")
 	}
 
 	err = us.updateProfile(ctx, tx, user)
@@ -31,7 +31,7 @@ func (us *userService) UpdateProfile(ctx context.Context, user usermodel.UserInt
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	return
@@ -45,7 +45,10 @@ func (us *userService) updateProfile(
 	//recover the user before update it
 	current, err := us.repo.GetUserByID(ctx, tx, user.GetID())
 	if err != nil {
-		return
+		if err == sql.ErrNoRows {
+			return utils.NotFoundError("User")
+		}
+		return utils.InternalError("Failed to get user by ID")
 	}
 
 	//update the current with the new data
@@ -61,12 +64,12 @@ func (us *userService) updateProfile(
 
 	err = us.repo.UpdateUserByID(ctx, tx, current)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to update user")
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário atualizou o perfil")
 	if err != nil {
-		return
+		return utils.InternalError("Failed to create audit entry")
 	}
 
 	return

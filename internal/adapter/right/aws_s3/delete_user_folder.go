@@ -2,6 +2,7 @@ package s3adapter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -9,14 +10,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) DeleteUserFolder(ctx context.Context, userID int64) error {
 	if s.adminClient == nil {
-		return utils.ErrInternalServer
+		return errors.New("s3 admin client is nil")
 	}
 
 	prefix := fmt.Sprintf("%d/", userID)
@@ -56,7 +54,7 @@ func (s *S3Adapter) listAllObjectsWithPrefix(ctx context.Context, prefix string,
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			slog.Error("failed to list objects in S3", "userID", userID, "error", err)
-			return nil, utils.ErrInternalServer
+			return nil, err
 		}
 
 		for _, obj := range output.Contents {
@@ -124,7 +122,7 @@ func (s *S3Adapter) deleteObjectsInBatches(ctx context.Context, objects []string
 	for err := range errChan {
 		if err != nil {
 			slog.Error("parallel deletion failed", "userID", userID, "error", err)
-			return utils.ErrInternalServer
+			return err
 		}
 	}
 

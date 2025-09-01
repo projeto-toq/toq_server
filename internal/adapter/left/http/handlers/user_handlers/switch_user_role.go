@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) SwitchUserRole(c *gin.Context) {
@@ -17,7 +17,7 @@ func (uh *UserHandler) SwitchUserRole(c *gin.Context) {
 	// Get user information from context (set by middleware)
 	userInfos, exists := c.Get(string(globalmodel.TokenKey))
 	if !exists {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
@@ -26,14 +26,14 @@ func (uh *UserHandler) SwitchUserRole(c *gin.Context) {
 	// Parse request body
 	var request dto.SwitchUserRoleRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Call service to switch user role
 	tokens, err := uh.userService.SwitchUserRole(ctx, userInfo.ID, permissionmodel.RoleSlug(request.RoleSlug))
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "SWITCH_USER_ROLE_FAILED", "Failed to switch user role")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

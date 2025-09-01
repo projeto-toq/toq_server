@@ -3,13 +3,12 @@ package mysqlcomplexadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	complexrepoconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex/converters"
 	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ca *ComplexAdapter) GetHorizontalComplex(ctx context.Context, tx *sql.Tx, zipCode string) (complex complexmodel.ComplexInterface, err error) {
@@ -27,17 +26,17 @@ func (ca *ComplexAdapter) GetHorizontalComplex(ctx context.Context, tx *sql.Tx, 
 	entities, err := ca.Read(ctx, tx, query, zipCode)
 	if err != nil {
 		slog.Error("mysqlcomplexadapter/GetHorizontalComplex: error executing Read", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("get horizontal complex read: %w", err)
 	}
 
 	if len(entities) == 0 {
-		return nil, utils.ErrInternalServer
+		return nil, sql.ErrNoRows
 	}
 
 	for _, entity := range entities {
 		complex, err = complexrepoconverters.ComplexEntityToDomain(entity)
 		if err != nil {
-			return nil, utils.ErrInternalServer
+			return nil, fmt.Errorf("convert complex entity: %w", err)
 		}
 	}
 

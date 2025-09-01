@@ -3,11 +3,10 @@ package mysqlglobaladapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err error) {
@@ -19,7 +18,7 @@ func (ga *GlobalAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err 
 	tx, err = ga.db.DB.BeginTx(ctx, nil)
 	if err != nil {
 		slog.Error("Error starting transaction", "error", err)
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("begin tx: %w", err)
 	}
 	return tx, nil
 }
@@ -33,7 +32,7 @@ func (ga *GlobalAdapter) RollbackTransaction(ctx context.Context, tx *sql.Tx) (e
 	err = tx.Rollback()
 	if err != nil {
 		slog.Error("Error rolling back transaction", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("rollback tx: %w", err)
 	}
 	return nil
 }
@@ -47,7 +46,7 @@ func (ga *GlobalAdapter) CommitTransaction(ctx context.Context, tx *sql.Tx) (err
 	err = tx.Commit()
 	if err != nil {
 		slog.Error("Error committing transaction", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("commit tx: %w", err)
 	}
 	return nil
 }

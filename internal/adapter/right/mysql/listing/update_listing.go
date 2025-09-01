@@ -3,13 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error) {
@@ -29,7 +28,7 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
 		slog.Error("mysqllistingadapter/UpdateListing: error preparing statement", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("prepare update listing: %w", err)
 		return
 	}
 
@@ -50,7 +49,7 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 		listing.ID())
 	if err != nil {
 		slog.Error("mysqllistingadapter/UpdateListing: error executing statement", "error", err)
-		err = utils.ErrInternalServer
+		err = fmt.Errorf("exec update listing: %w", err)
 		return
 	}
 

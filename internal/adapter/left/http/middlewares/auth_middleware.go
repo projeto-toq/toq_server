@@ -3,15 +3,15 @@ package middlewares
 import (
 	"context"
 	"log/slog"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -30,7 +30,7 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 		// Extract Authorization header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, utils.AuthenticationError("Authorization header required"))
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Authorization header required"))
 			c.Abort()
 			return
 		}
@@ -38,7 +38,7 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 		// Verify Bearer token format
 		tokenParts := strings.Split(authHeader, "Bearer ")
 		if len(tokenParts) < 2 || tokenParts[1] == "" {
-			c.JSON(http.StatusUnauthorized, utils.AuthenticationError("Invalid authorization token format"))
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid authorization token format"))
 			c.Abort()
 			return
 		}
@@ -47,7 +47,7 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 		userInfo, err := validateAccessToken(token)
 		if err != nil {
 			slog.Warn("Invalid access token", "error", err, "ip", c.ClientIP())
-			c.JSON(http.StatusUnauthorized, utils.AuthenticationError("Invalid access token"))
+			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid access token"))
 			c.Abort()
 			return
 		}

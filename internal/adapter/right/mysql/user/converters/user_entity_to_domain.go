@@ -1,13 +1,11 @@
 package userconverters
 
 import (
+	"errors"
 	"log/slog"
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) {
@@ -16,14 +14,14 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 	id, ok := entity[0].(int64)
 	if !ok {
 		slog.Error("Error converting ID to int64", "ID", entity[0])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid user ID type")
 	}
 	user.SetID(id)
 
 	full_name, ok := entity[1].([]byte)
 	if !ok {
 		slog.Error("Error converting full_name to []byte", "full_name", entity[1])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid full_name type")
 	}
 	user.SetFullName(string(full_name))
 
@@ -31,7 +29,7 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 		nick_name, ok := entity[2].([]byte)
 		if !ok {
 			slog.Error("Error converting nick_name to string", "nick_name", entity[2])
-			return nil, utils.ErrInternalServer
+			return nil, errors.New("invalid nick_name type")
 		}
 		user.SetNickName(string(nick_name))
 	}
@@ -39,7 +37,7 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 	national_id, ok := entity[3].([]byte)
 	if !ok {
 		slog.Error("Error converting national_id to string", "national_id", entity[3])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid national_id type")
 	}
 	user.SetNationalID(string(national_id))
 
@@ -47,7 +45,7 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 		creci_number, ok := entity[4].([]byte)
 		if !ok {
 			slog.Error("Error converting creci_number to string", "creci_number", entity[4])
-			return nil, utils.ErrInternalServer
+			return nil, errors.New("invalid creci_number type")
 		}
 		user.SetCreciNumber(string(creci_number))
 	}
@@ -56,7 +54,7 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 		creci_state, ok := entity[5].([]byte)
 		if !ok {
 			slog.Error("Error converting creci_state to string", "creci_state", entity[5])
-			return nil, utils.ErrInternalServer
+			return nil, errors.New("invalid creci_state type")
 		}
 		user.SetCreciState(string(creci_state))
 	}
@@ -65,7 +63,7 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 		creci_validity, ok := entity[6].(time.Time)
 		if !ok {
 			slog.Error("Error converting creci_validity to time.Time", "creci_validity", entity[6])
-			return nil, utils.ErrInternalServer
+			return nil, errors.New("invalid creci_validity type")
 		}
 		user.SetCreciValidity(creci_validity)
 	}
@@ -73,42 +71,42 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 	born_at, ok := entity[7].(time.Time)
 	if !ok {
 		slog.Error("Error converting born_at to time.Time", "born_at", entity[7])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid born_at type")
 	}
 	user.SetBornAt(born_at)
 
 	phone_number, ok := entity[8].([]byte)
 	if !ok {
 		slog.Error("Error converting phone_number to string", "phone_number", entity[8])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid phone_number type")
 	}
 	user.SetPhoneNumber(string(phone_number))
 
 	email, ok := entity[9].([]byte)
 	if !ok {
 		slog.Error("Error converting email to string", "email", entity[9])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid email type")
 	}
 	user.SetEmail(string(email))
 
 	zip_code, ok := entity[10].([]byte)
 	if !ok {
 		slog.Error("Error converting zip_code to string", "zip_code", entity[10])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid zip_code type")
 	}
 	user.SetZipCode(string(zip_code))
 
 	street, ok := entity[11].([]byte)
 	if !ok {
 		slog.Error("Error converting street to string", "street", entity[11])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid street type")
 	}
 	user.SetStreet(string(street))
 
 	number, ok := entity[12].([]byte)
 	if !ok {
 		slog.Error("Error converting number to string", "number", entity[12])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid number type")
 	}
 	user.SetNumber(string(number))
 
@@ -116,7 +114,7 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 		complement, ok := entity[13].([]byte)
 		if !ok {
 			slog.Error("Error converting complement to string", "complement", entity[13])
-			return nil, utils.ErrInternalServer
+			return nil, errors.New("invalid complement type")
 		}
 		user.SetComplement(string(complement))
 	}
@@ -124,28 +122,28 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 	neighborhood, ok := entity[14].([]byte)
 	if !ok {
 		slog.Error("Error converting neighborhood to string", "neighborhood", entity[14])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid neighborhood type")
 	}
 	user.SetNeighborhood(string(neighborhood))
 
 	city, ok := entity[15].([]byte)
 	if !ok {
 		slog.Error("Error converting city to string", "city", entity[15])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid city type")
 	}
 	user.SetCity(string(city))
 
 	state, ok := entity[16].([]byte)
 	if !ok {
 		slog.Error("Error converting state to string", "state", entity[16])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid state type")
 	}
 	user.SetState(string(state))
 
 	password, ok := entity[17].([]byte)
 	if !ok {
 		slog.Error("Error converting password to string", "password", entity[17])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid password type")
 	}
 	user.SetPassword(string(password))
 
@@ -153,21 +151,21 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 	opt_status, ok := entity[18].(int64)
 	if !ok {
 		slog.Error("Error converting opt_status to bool", "opt_status", entity[18])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid opt_status type")
 	}
 	user.SetOptStatus(opt_status == 1)
 
 	last_activity_at, ok := entity[19].(time.Time)
 	if !ok {
 		slog.Error("Error converting last_activity_at to time.Time", "last_activity_at", entity[19])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid last_activity_at type")
 	}
 	user.SetLastActivityAt(last_activity_at)
 
 	deleted, ok := entity[20].(int64)
 	if !ok {
 		slog.Error("Error converting deleted to bool", "deleted", entity[20])
-		return nil, utils.ErrInternalServer
+		return nil, errors.New("invalid deleted type")
 	}
 	user.SetDeleted(deleted == 1)
 
@@ -175,7 +173,7 @@ func UserEntityToDomain(entity []any) (user usermodel.UserInterface, err error) 
 		last_sigin_attempt_at, ok := entity[21].(time.Time)
 		if !ok {
 			slog.Error("Error converting last_sigin_attempt_at to time.Time", "last_sigin_attempt_at", entity[21])
-			return nil, utils.ErrInternalServer
+			return nil, errors.New("invalid last_signin_attempt type")
 		}
 		user.SetLastSignInAttempt(last_sigin_attempt_at)
 	}

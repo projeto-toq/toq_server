@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // ConfirmPasswordChange handles password change confirmation (public endpoint)
@@ -26,7 +27,7 @@ import (
 func (ah *AuthHandler) ConfirmPasswordChange(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -34,14 +35,14 @@ func (ah *AuthHandler) ConfirmPasswordChange(c *gin.Context) {
 	// Parse request
 	var request dto.ConfirmPasswordChangeRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Call service
 	err = ah.userService.ConfirmPasswordChange(ctx, request.NationalID, request.Code, request.NewPassword)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "PASSWORD_CHANGE_CONFIRMATION_FAILED", "Failed to confirm password change")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "PASSWORD_CHANGE_CONFIRMATION_FAILED", "Failed to confirm password change")
 		return
 	}
 

@@ -2,18 +2,16 @@ package s3adapter
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (objects []string, err error) {
 	if s.readerClient == nil {
-		err = utils.ErrInternalServer
+		err = errors.New("s3 reader client is nil")
 		return
 	}
 
@@ -29,7 +27,7 @@ func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (o
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
 			slog.Error("failed to iterate over bucket objects in S3", "error", err)
-			return nil, utils.ErrInternalServer
+			return nil, err
 		}
 
 		for _, obj := range output.Contents {

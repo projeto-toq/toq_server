@@ -170,8 +170,8 @@ func SetSpanError(ctx context.Context, err error) {
 	// Extract HTTP status code from HTTPError if possible
 	if httpErr, ok := err.(*HTTPError); ok {
 		span.SetAttributes(
-			attribute.Int("error.code", httpErr.Code),
-			attribute.String("error.message", httpErr.Message),
+			attribute.Int("error.code", httpErr.Code()),
+			attribute.String("error.message", httpErr.Message()),
 		)
 	} else {
 		span.SetAttributes(attribute.String("error.message", err.Error()))

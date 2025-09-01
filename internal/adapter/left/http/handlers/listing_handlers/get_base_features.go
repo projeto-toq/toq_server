@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetBaseFeatures handles getting available base features for listings
@@ -24,7 +25,7 @@ import (
 func (lh *ListingHandler) GetBaseFeatures(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -32,7 +33,7 @@ func (lh *ListingHandler) GetBaseFeatures(c *gin.Context) {
 	// Call service to get base features
 	features, err := lh.listingService.GetBaseFeatures(ctx)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "GET_BASE_FEATURES_FAILED", "Failed to get base features")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

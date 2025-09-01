@@ -3,13 +3,12 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error) {
@@ -35,8 +34,7 @@ func (ua *UserAdapter) UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongS
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateWrongSignIn: error executing Update", "error", err)
-		err = utils.ErrInternalServer
-		return
+		return fmt.Errorf("update wrong_signin: %w", err)
 	}
 
 	return

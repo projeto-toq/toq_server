@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 ) // SignOut handles user sign out
 // @Summary		Sign out user
@@ -24,7 +25,7 @@ import (
 func (uh *UserHandler) SignOut(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -32,7 +33,7 @@ func (uh *UserHandler) SignOut(c *gin.Context) {
 	// Get user info from context using Context Utils (set by auth middleware)
 	userInfos, err := utils.GetUserInfoFromGinContext(c)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
@@ -43,13 +44,13 @@ func (uh *UserHandler) SignOut(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Call service
 	if err := uh.userService.SignOut(ctx, userInfos.ID, request.DeviceToken, request.RefreshToken); err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "SIGNOUT_FAILED", "Failed to sign out")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

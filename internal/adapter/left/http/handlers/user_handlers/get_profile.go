@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -25,7 +26,7 @@ import (
 func (uh *UserHandler) GetProfile(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -33,7 +34,7 @@ func (uh *UserHandler) GetProfile(c *gin.Context) {
 	// Get user info from context (set by auth middleware)
 	infos, exists := c.Get(string(globalmodel.TokenKey))
 	if !exists {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
@@ -42,7 +43,8 @@ func (uh *UserHandler) GetProfile(c *gin.Context) {
 	// Call service
 	user, err := uh.userService.GetProfile(ctx, userInfos.ID)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "GET_PROFILE_FAILED", "Failed to get profile")
+		// Standardized DomainError passthrough
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

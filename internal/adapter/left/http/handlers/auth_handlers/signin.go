@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -27,7 +28,7 @@ import (
 func (ah *AuthHandler) SignIn(c *gin.Context) {
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -38,33 +39,30 @@ func (ah *AuthHandler) SignIn(c *gin.Context) {
 	// Parse request
 	var request dto.SignInRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Call service with enhanced context
 	tokens, err := ah.userService.SignInWithContext(ctx, request.NationalID, request.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)
 	if err != nil {
-		// Verifica se é um HTTPError customizado
-		if httpErr, ok := err.(*utils.HTTPError); ok {
-			// Mapeia códigos de erro específicos para códigos e mensagens apropriados
-			switch httpErr.Code {
+		if derr, ok := err.(utils.DomainError); ok {
+			switch derr.Code() {
 			case http.StatusUnauthorized:
-				utils.SendHTTPError(c, http.StatusUnauthorized, "INVALID_CREDENTIALS", "Invalid credentials")
-			case http.StatusLocked: // 423 - User blocked
-				utils.SendHTTPError(c, http.StatusLocked, "ACCOUNT_BLOCKED", "Account temporarily blocked due to security measures")
-			case http.StatusForbidden: // No active roles
-				utils.SendHTTPError(c, http.StatusForbidden, "NO_ACTIVE_ROLES", "No active user roles")
-			case http.StatusTooManyRequests: // Rate limiting
-				utils.SendHTTPError(c, http.StatusTooManyRequests, "TOO_MANY_ATTEMPTS", "Too many failed attempts")
+				httperrors.SendHTTPError(c, http.StatusUnauthorized, "INVALID_CREDENTIALS", "Invalid credentials")
+			case http.StatusLocked:
+				httperrors.SendHTTPError(c, http.StatusLocked, "ACCOUNT_BLOCKED", "Account temporarily blocked due to security measures")
+			case http.StatusForbidden:
+				httperrors.SendHTTPError(c, http.StatusForbidden, "NO_ACTIVE_ROLES", "No active user roles")
+			case http.StatusTooManyRequests:
+				httperrors.SendHTTPError(c, http.StatusTooManyRequests, "TOO_MANY_ATTEMPTS", "Too many failed attempts")
 			case http.StatusInternalServerError:
-				utils.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+				httperrors.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 			default:
-				utils.SendHTTPError(c, http.StatusUnauthorized, "AUTHENTICATION_FAILED", "Authentication failed")
+				httperrors.SendHTTPError(c, http.StatusUnauthorized, "AUTHENTICATION_FAILED", "Authentication failed")
 			}
 		} else {
-			// Fallback para erros não customizados
-			utils.SendHTTPError(c, http.StatusUnauthorized, "INVALID_CREDENTIALS", "Invalid credentials")
+			httperrors.SendHTTPError(c, http.StatusUnauthorized, "INVALID_CREDENTIALS", "Invalid credentials")
 		}
 		return
 	}

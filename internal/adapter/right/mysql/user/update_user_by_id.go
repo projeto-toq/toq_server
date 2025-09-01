@@ -3,6 +3,7 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
@@ -50,7 +51,7 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateUserByID: error executing Update", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("update user by id: %w", err)
 	}
 
 	// Note: User role updates are now handled by permission service

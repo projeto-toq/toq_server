@@ -3,12 +3,12 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) CreateAgencyRelationship(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, realtor usermodel.UserInterface) (id int64, err error) {
@@ -23,7 +23,7 @@ func (ua *UserAdapter) CreateAgencyRelationship(ctx context.Context, tx *sql.Tx,
 	id, err = ua.Create(ctx, tx, sql, agency.GetID(), realtor.GetID())
 	if err != nil {
 		slog.Error("mysqluseradapter/CreateAgencyRelationship: error executing Create", "error", err)
-		return 0, utils.ErrInternalServer
+		return 0, fmt.Errorf("create agency relationship: %w", err)
 	}
 
 	return id, nil

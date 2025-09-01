@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 )
 
@@ -28,8 +29,6 @@ func (h *MetricsHandler) GetMetrics(c *gin.Context) {
 	if httpHandler, ok := handler.(http.Handler); ok {
 		httpHandler.ServeHTTP(c.Writer, c.Request)
 	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "invalid metrics handler",
-		})
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_ERROR", "Invalid metrics handler")
 	}
 }

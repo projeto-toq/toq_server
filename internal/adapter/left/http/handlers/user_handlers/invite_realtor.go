@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 )
 
 func (uh *UserHandler) InviteRealtor(c *gin.Context) {
@@ -14,13 +14,13 @@ func (uh *UserHandler) InviteRealtor(c *gin.Context) {
 	// Parse request body
 	var request dto.InviteRealtorRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Call service to invite realtor
 	if err := uh.userService.InviteRealtor(ctx, request.PhoneNumber); err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "INVITE_REALTOR_FAILED", "Failed to invite realtor")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

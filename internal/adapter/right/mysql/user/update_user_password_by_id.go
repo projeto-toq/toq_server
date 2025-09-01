@@ -3,12 +3,12 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error) {
@@ -26,7 +26,7 @@ func (ua *UserAdapter) UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, u
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateUserPasswordByID: error executing Update", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("update user password: %w", err)
 	}
 
 	return

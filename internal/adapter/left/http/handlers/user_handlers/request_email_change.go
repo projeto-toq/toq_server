@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
@@ -18,7 +18,7 @@ func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
 	// Get user information from context (set by middleware)
 	userInfos, exists := c.Get(string(globalmodel.TokenKey))
 	if !exists {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
@@ -27,20 +27,20 @@ func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
 	// Parse request body
 	var request dto.RequestEmailChangeRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Validate and clean email
 	email := strings.TrimSpace(request.NewEmail)
 	if err := validators.ValidateEmail(email); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_EMAIL", "Invalid email format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_EMAIL", "Invalid email format")
 		return
 	}
 
 	// Call service to request email change
 	if err := uh.userService.RequestEmailChange(ctx, userInfo.ID, email); err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "REQUEST_EMAIL_CHANGE_FAILED", "Failed to request email change")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

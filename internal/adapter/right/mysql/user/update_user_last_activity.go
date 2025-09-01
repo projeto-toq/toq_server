@@ -3,12 +3,11 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"time"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, id int64) (err error) {
@@ -26,7 +25,7 @@ func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, i
 	)
 	if err != nil {
 		slog.Error("mysqluseradapter/UpdateUserLastActivity: error executing Update", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("update user last_activity: %w", err)
 	}
 
 	return

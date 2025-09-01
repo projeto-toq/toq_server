@@ -103,7 +103,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 
 	// Comparar a senha fornecida com o hash armazenado (bcrypt)
 	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {
-		err = checkWrongSignin(ctx, tx, us, user)
+		err = us.processWrongSignin(ctx, tx, user, nationalID, ipAddress, userAgent)
 		if err != nil {
 			return
 		}

@@ -3,12 +3,11 @@ package sessionmysqladapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"time"
 
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) UpdateSessionRotation(ctx context.Context, tx *sql.Tx, id int64, rotationCounter int, lastRefreshAt time.Time) error {
@@ -23,7 +22,7 @@ func (sa *SessionAdapter) UpdateSessionRotation(ctx context.Context, tx *sql.Tx,
 	_, err = sa.Update(ctx, tx, query, rotationCounter, lastRefreshAt, id)
 	if err != nil {
 		slog.Error("sessionmysqladapter/UpdateSessionRotation: error executing Update", "error", err)
-		return utils.ErrInternalServer
+		return fmt.Errorf("update session rotation: %w", err)
 	}
 
 	return nil

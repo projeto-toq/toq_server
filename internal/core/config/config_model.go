@@ -504,11 +504,8 @@ func (c *config) createHTTPHandlers() error {
 		return fmt.Errorf("required services not initialized")
 	}
 
-	// Create factory instance
-	adapterFactory := &factory.ConcreteAdapterFactory{}
-
-	// Create handlers using factory
-	c.httpHandlers = adapterFactory.CreateHTTPHandlers(
+	// Create handlers using the pre-initialized factory instance
+	c.httpHandlers = c.adapterFactory.CreateHTTPHandlers(
 		c.userService,
 		c.globalService,
 		c.listingService,

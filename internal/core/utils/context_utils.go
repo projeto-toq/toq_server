@@ -183,20 +183,6 @@ func IsPublicEndpoint(path string) bool {
 	return false
 }
 
-// GetUserRoleFromContext extrai o role do usuário do contexto
-// DEPRECATED: Esta função agora requer um service para buscar o UserRole.
-// Use GetUserRoleWithService para nova implementação.
-func GetUserRoleFromContext(ctx context.Context) (permissionmodel.RoleSlug, error) {
-	_, err := GetUserInfoFromContext(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to get user info: %w", err)
-	}
-
-	// Para compatibilidade temporária, retornar um valor padrão
-	// TODO: Esta função deve ser removida após migração completa
-	return permissionmodel.RoleSlugOwner, fmt.Errorf("GetUserRoleFromContext is deprecated, use permission service to get role")
-}
-
 // GetUserRoleSlugFromUserRole extrai o RoleSlug de um UserRoleInterface
 func GetUserRoleSlugFromUserRole(userRole permissionmodel.UserRoleInterface) permissionmodel.RoleSlug {
 	if userRole == nil || userRole.GetRole() == nil {
@@ -208,19 +194,4 @@ func GetUserRoleSlugFromUserRole(userRole permissionmodel.UserRoleInterface) per
 // IsProfileActiveFromStatus verifica se o status indica perfil ativo
 func IsProfileActiveFromStatus(status permissionmodel.UserRoleStatus) bool {
 	return status == permissionmodel.StatusActive
-}
-
-// HasRoleInContext verifica se o usuário tem um role específico
-func HasRoleInContext(ctx context.Context, requiredRole permissionmodel.RoleSlug) bool {
-	userRole, err := GetUserRoleFromContext(ctx)
-	if err != nil {
-		return false
-	}
-
-	return userRole == requiredRole
-}
-
-// IsAdminInContext verifica se o usuário é admin
-func IsAdminInContext(ctx context.Context) bool {
-	return HasRoleInContext(ctx, permissionmodel.RoleSlugRoot)
 }

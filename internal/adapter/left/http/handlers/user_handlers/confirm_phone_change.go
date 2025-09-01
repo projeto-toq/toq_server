@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
@@ -27,7 +28,7 @@ func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
 	// Generate tracer for observability
 	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return
 	}
 	defer spanEnd()
@@ -35,20 +36,20 @@ func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
 	// Get user information from context using Context Utils (set by auth middleware)
 	userInfo, err := utils.GetUserInfoFromGinContext(c)
 	if err != nil {
-		utils.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
 
 	// Parse request body using DTO
 	var request dto.ConfirmPhoneChangeRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
 	// Validate verification code format
 	if err := validators.ValidateCode(request.Code); err != nil {
-		utils.SendHTTPError(c, http.StatusBadRequest, "INVALID_CODE", "Invalid code format")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_CODE", "Invalid code format")
 		return
 	}
 
@@ -58,8 +59,7 @@ func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
 	// Call service to confirm phone change
 	tokens, err := uh.userService.ConfirmPhoneChange(enrichedCtx, userInfo.ID, request.Code)
 	if err != nil {
-		// Error is already logged by service layer, just transform to HTTP error
-		utils.SendHTTPError(c, http.StatusInternalServerError, "CONFIRM_PHONE_CHANGE_FAILED", "Failed to confirm phone change")
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

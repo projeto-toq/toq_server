@@ -2,9 +2,8 @@ package userservices
 
 import (
 	"context"
-	"fmt"
 
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error) {
@@ -15,13 +14,13 @@ func (us *userService) BatchUpdateLastActivity(ctx context.Context, userIDs []in
 	defer spanEnd()
 
 	if len(userIDs) != len(timestamps) {
-		return fmt.Errorf("userIDs and timestamps length mismatch")
+		return utils.ValidationError("timestamps", "userIDs and timestamps length mismatch")
 	}
 
 	// Call repository batch update method
 	err = us.repo.BatchUpdateUserLastActivity(ctx, userIDs, timestamps)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to batch update last activity")
 	}
 
 	return

@@ -6,7 +6,6 @@ import (
 
 	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
@@ -53,9 +52,6 @@ type GlobalServiceInterface interface {
 
 	// Novo sistema de notificação unificado
 	GetUnifiedNotificationService() UnifiedNotificationService
-
-	// DEPRECATED: SendNotification será removido em favor do sistema unificado
-	SendNotification(ctx context.Context, user usermodel.UserInterface, notificationType globalmodel.NotificationType, code ...string) (err error)
 
 	GetCEP(ctx context.Context, cep string) (address cepmodel.CEPInterface, err error)
 
