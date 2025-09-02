@@ -73,3 +73,10 @@ id;role_id;permission_id;granted;conditions
 72;6;26;1;NULL
 73;6;28;1;NULL
 74;6;29;1;NULL
+75;1;33;1;NULL
+76;2;33;1;NULL
+77;3;33;1;NULL
+78;4;33;1;NULL
+79;5;33;1;NULL
+80;6;33;1;NULL
+81;7;33;1;NULL

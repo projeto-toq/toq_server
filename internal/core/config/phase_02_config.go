@@ -29,6 +29,9 @@ func (b *Bootstrap) Phase02_LoadConfiguration() error {
 		return NewBootstrapError("Phase02", "validation", "Configuration validation failed", err)
 	}
 
+	// 3. Aplicar configurações de segurança (JWT secret e TTLs)
+	b.applySecurityConfig()
+
 	b.logger.Info("✅ Configuração carregada e validada com sucesso",
 		"version", globalmodel.AppVersion)
 
@@ -68,6 +71,7 @@ func (b *Bootstrap) validateConfiguration() error {
 		{"database_config", b.validateDatabaseConfig},
 		{"http_config", b.validateHTTPConfig},
 		{"telemetry_config", b.validateTelemetryConfig},
+		{"security_config", b.validateSecurityConfig},
 	}
 
 	var validationErrors []error
@@ -87,6 +91,48 @@ func (b *Bootstrap) validateConfiguration() error {
 
 	b.logger.Debug("✅ Validação de configuração concluída")
 	return nil
+}
+
+// validateSecurityConfig valida itens de segurança (JWT e TTLs)
+func (b *Bootstrap) validateSecurityConfig() error {
+	// Garantir que o ambiente foi carregado
+	if b.env == nil {
+		return fmt.Errorf("environment not loaded")
+	}
+
+	// Validar JWT secret
+	if strings.TrimSpace(b.env.JWT.Secret) == "" {
+		return fmt.Errorf("jwt.secret is required and must not be empty")
+	}
+
+	// Validar TTLs
+	if b.env.AUTH.AccessTTLMinutes <= 0 {
+		return fmt.Errorf("auth.access_ttl_minutes must be > 0")
+	}
+	if b.env.AUTH.RefreshTTLDays <= 0 {
+		return fmt.Errorf("auth.refresh_ttl_days must be > 0")
+	}
+	if b.env.AUTH.MaxSessionRotations <= 0 {
+		return fmt.Errorf("auth.max_session_rotations must be > 0")
+	}
+
+	return nil
+}
+
+// applySecurityConfig aplica secret e TTLs no runtime global
+func (b *Bootstrap) applySecurityConfig() {
+	if b.env == nil {
+		b.logger.Warn("Environment not loaded; skipping security config apply")
+		return
+	}
+
+	// Aplicar JWT secret e TTLs no global model
+	globalmodel.SetJWTSecret(b.env.JWT.Secret)
+	globalmodel.SetAccessTTL(b.env.AUTH.AccessTTLMinutes)
+	globalmodel.SetRefreshTTL(b.env.AUTH.RefreshTTLDays)
+	globalmodel.SetMaxSessionRotations(b.env.AUTH.MaxSessionRotations)
+
+	b.logger.Info("🔐 JWT and token TTL configuration applied")
 }
 
 // validateDatabaseConfig valida configuração do banco de dados

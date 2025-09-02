@@ -31,3 +31,4 @@ id;name;resource;action;description;conditions;is_active
 30;Favorite Add;favorite;add;Adicionar aos favoritos;NULL;1
 31;Favorite Remove;favorite;remove;Remover dos favoritos;{"owner_only": true};1
 32;Analytics View;analytics;view;Visualizar analytics;NULL;1
+33;HTTP SignOut;http;POST:/api/v1/user/signout;Permite encerrar a sessão;NULL;1

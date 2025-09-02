@@ -2,10 +2,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ---
 🛠️ Problema
-O usuário está recebendo permission denied ao fazer login, o que não tem sentido.
-{"time":"2025-09-02T13:08:05.731778183Z","level":"WARN","msg":"Permission denied","userID":4,"method":"POST","path":"/api/v1/user/signout"}
-{"time":"2025-09-02T13:08:05.731914834Z","level":"WARN","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares.StructuredLoggingMiddleware.func1","file":"/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/structured_logging_middleware.go","line":126},"msg":"HTTP Error","request_id":"ec9e4982-aa06-4c89-9399-586b317a272a","method":"POST","path":"/api/v1/user/signout","status":403,"duration":3357187,"size":49,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0","user_id":4,"user_role_id":4,"role_status":"pending_both"}
-verifique as permissões carregadas nos CSVs de /data e infrome o que é necessário para incluir a permissão de signout a todos os usuários
+verifique se a criação de jwt tokens access_token e refresh_token estão utilizando jwt: secret: do env.yaml
 
 ---
 **REGRAS OBRIGATÓRIAS DE DESENVOLVIMENTO EM GO**
