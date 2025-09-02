@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /api/v2
 definitions:
   dto.BaseFeature:
     properties:
@@ -46,6 +46,8 @@ definitions:
     properties:
       agency:
         $ref: '#/definitions/dto.UserCreateRequest'
+      deviceToken:
+        type: string
     required:
     - agency
     type: object
@@ -56,6 +58,8 @@ definitions:
     type: object
   dto.CreateOwnerRequest:
     properties:
+      deviceToken:
+        type: string
       owner:
         $ref: '#/definitions/dto.UserCreateRequest'
     required:
@@ -68,6 +72,8 @@ definitions:
     type: object
   dto.CreateRealtorRequest:
     properties:
+      deviceToken:
+        type: string
       realtor:
         $ref: '#/definitions/dto.UserCreateRequest'
     required:
@@ -310,7 +316,7 @@ paths:
       - application/json
       description: Create a new agency account with user information
       parameters:
-      - description: Agency creation data
+      - description: Agency creation data (include optional deviceToken for push notifications)
         in: body
         name: request
         required: true
@@ -348,7 +354,7 @@ paths:
       - application/json
       description: Create a new owner account with user information
       parameters:
-      - description: Owner creation data
+      - description: Owner creation data (include optional deviceToken for push notifications)
         in: body
         name: request
         required: true
@@ -466,7 +472,8 @@ paths:
       - application/json
       description: Create a new realtor account with user and CRECI information
       parameters:
-      - description: Realtor creation data
+      - description: Realtor creation data (include optional deviceToken for push
+          notifications)
         in: body
         name: request
         required: true

@@ -488,7 +488,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 
 	// 2. Registrar todas as rotas (auth, user, listing) via routes package com dependências injetadas
 	// Isso aplicará os middlewares globais primeiro
-	routes.SetupRoutes(c.ginRouter, &c.httpHandlers, c.activityTracker, c.permissionService, c.metricsAdapter)
+	routes.SetupRoutes(c.ginRouter, &c.httpHandlers, c.activityTracker, c.permissionService, c.metricsAdapter, NewStaticAPIVersionProvider())
 
 	// 3. Configurar rotas básicas de health check APÓS middlewares globais serem aplicados
 	c.setupBasicRoutes()
@@ -548,8 +548,8 @@ func (c *config) setupBasicRoutes() {
 		}
 	}
 
-	// API v1 group
-	v1 := c.ginRouter.Group("/api/v1")
+	// API base group (v2)
+	v1 := c.ginRouter.Group(NewStaticAPIVersionProvider().BasePath())
 	{
 		v1.GET("/ping", func(ctx *gin.Context) {
 			ctx.JSON(200, gin.H{"message": "pong"})

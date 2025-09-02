@@ -22,7 +22,7 @@ Este documento descreve como o permissionamento funciona no projeto, como mapear
 1. O serviço resolve o role ativo do usuário (apenas `user_roles.is_active = 1` e não expirado).
 2. Para endpoints HTTP, o mapeamento é:
    - `resource = "http"`
-   - `action = "<METHOD>:<PATH>"` (ex.: `POST:/api/v1/user/signout`).
+  - `action = "<METHOD>:<PATH>"` (ex.: `POST:/api/v2/user/signout`).
 3. O serviço consulta as permissões efetivas do usuário via `role_permissions` + `permissions` (somente `granted = 1` e `permissions.is_active = 1`).
 4. Se existir uma permissão com `resource=http` e `action` exatamente igual ao endpoint, o acesso é permitido (condições podem restringir; ver abaixo).
 5. `conditions` (JSON) em `permissions` ou `role_permissions` podem aplicar regras (ex.: `{ "owner_only": true }`), avaliadas contra o contexto do usuário.
@@ -41,7 +41,7 @@ Observação importante: o caminho deve casar exatamente (método e path) com o 
 1) Inserir na tabela `permissions`:
 - `name`: nome amigável (ex.: "HTTP SignOut").
 - `resource`: para HTTP, sempre `http`.
-- `action`: exatamente `METHOD:/path` (ex.: `POST:/api/v1/user/signout`).
+- `action`: exatamente `METHOD:/path` (ex.: `POST:/api/v2/user/signout`).
 - `description`: descrição (opcional).
 - `conditions`: JSON válido ou `NULL` (opcional).
 - `is_active`: `1` para ativa.
@@ -55,7 +55,7 @@ Exemplo SQL (ilustrativo):
 
 - Criar a permissão:
   - `INSERT INTO permissions (name, resource, action, description, conditions, is_active)
-     VALUES ('HTTP SignOut', 'http', 'POST:/api/v1/user/signout', 'Permite encerrar a sessão', NULL, 1);`
+     VALUES ('HTTP SignOut', 'http', 'POST:/api/v2/user/signout', 'Permite encerrar a sessão', NULL, 1);`
 - Conceder a todos os roles (IDs 1..7, exemplo):
   - `INSERT INTO role_permissions (role_id, permission_id, granted, conditions)
      VALUES (1, <perm_id>, 1, NULL), (2, <perm_id>, 1, NULL), ... ;`
@@ -86,7 +86,7 @@ Exemplos SQL:
 Exemplo (adicionar signout para todos os usuários via CSV):
 
 - Em `data/base_permissions.csv` (próximo `id` livre, ex.: `33`):
-  - `33;HTTP SignOut;http;POST:/api/v1/user/signout;Permite encerrar a sessão;NULL;1`
+  - `33;HTTP SignOut;http;POST:/api/v2/user/signout;Permite encerrar a sessão;NULL;1`
 - Em `data/base_role_permissions.csv` (continuando a sequência de `id`):
   - `75;1;33;1;NULL`
   - `76;2;33;1;NULL`

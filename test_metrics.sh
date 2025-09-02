@@ -6,7 +6,7 @@ echo "Fazendo requisições simples para gerar métricas..."
 # Fazer algumas requisições sequenciais
 curl -s http://localhost:8080/healthz > /dev/null
 curl -s http://localhost:8080/readyz > /dev/null
-curl -s http://localhost:8080/api/v1/ping > /dev/null
+curl -s http://localhost:8080/api/v2/ping > /dev/null
 
 echo "Verificando métricas de requests totais:"
 curl -s http://localhost:8080/metrics | grep -A 3 "http_requests_total.*healthz"

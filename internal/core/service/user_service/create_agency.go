@@ -10,7 +10,8 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+// CreateAgency cria a conta de imobiliária e autentica via SignIn padrão
+func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -22,7 +23,7 @@ func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserIn
 		return
 	}
 
-	tokens, err = us.createAgency(ctx, tx, agency)
+	created, err := us.createAgency(ctx, tx, agency)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -34,10 +35,13 @@ func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserIn
 		return
 	}
 
-	return
+	// Autentica após commit
+	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, ipAddress, userAgent)
+	return tokens, err
 }
 
-func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+// createAgency cria o usuário imobiliária e retorna o usuário criado
+func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface) (created usermodel.UserInterface, err error) {
 
 	// Usar permission service com constante tipada
 	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, permissionmodel.RoleSlugAgency)
@@ -52,7 +56,7 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 
 	err = us.repo.CreateUser(ctx, tx, agency)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Usar permission service diretamente para atribuir role
@@ -73,15 +77,9 @@ func (us *userService) createAgency(ctx context.Context, tx *sql.Tx, agency user
 		return
 	}
 
-	tokens, err = us.CreateTokens(ctx, tx, agency, false)
-	if err != nil {
-		return
-	}
-
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Criado novo usuário com papel de Imobiliária", agency.GetID())
 	if err != nil {
-		return
+		return nil, err
 	}
-
-	return
+	return agency, nil
 }

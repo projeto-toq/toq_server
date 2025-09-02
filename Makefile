@@ -1,25 +1,12 @@
 GOPATH_BIN := $(shell go env GOPATH)/bin
-PROTO_SRC_DIR := internal/adapter/left/grpc
-PROTO_OUT_DIR := $(PROTO_SRC_DIR)/pb
-PROTOS := $(wildcard $(PROTO_SRC_DIR)/*.proto)
+APP_MAIN := cmd/toq_server.go
+BIN_DIR := bin
+BINARY := $(BIN_DIR)/toq_server
+COMPOSE := docker compose -f docker-compose.yml
 
-.PHONY: all proto tidy build run test clean
+.PHONY: all tidy build build-bin run run-race test fmt vet lint clean swagger docker-build infra-up infra-down infra-logs infra-restart
 
 all: build
-
-proto: $(GOPATH_BIN)/protoc-gen-go $(GOPATH_BIN)/protoc-gen-go-grpc
-	@echo "Generating protobuf files into $(PROTO_OUT_DIR)"
-	@mkdir -p $(PROTO_OUT_DIR)
-	@PATH="$(GOPATH_BIN):$$PATH" protoc -I=$(PROTO_SRC_DIR) \
-		--go_out=paths=source_relative:$(PROTO_OUT_DIR) \
-		--go-grpc_out=paths=source_relative:$(PROTO_OUT_DIR) \
-		$(PROTOS)
-
-$(GOPATH_BIN)/protoc-gen-go:
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-
-$(GOPATH_BIN)/protoc-gen-go-grpc:
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 tidy:
 	go mod tidy
@@ -28,15 +15,52 @@ build:
 	go build ./...
 
 build-bin:
-	@echo "Building toq_server binary to ./bin directory"
-	@mkdir -p bin
-	go build -o bin/toq_server ./cmd/toq_server.go
+	@echo "Building toq_server binary to ./$(BIN_DIR) directory"
+	@mkdir -p $(BIN_DIR)
+	go build -o $(BINARY) ./$(APP_MAIN)
 
 run:
-	go run ./cmd/toq_server.go
+	go run ./$(APP_MAIN)
+
+run-race:
+	go run -race ./$(APP_MAIN)
 
 test:
 	go test ./...
 
+fmt:
+	go fmt ./...
+
+vet:
+	go vet ./...
+
+lint: fmt vet
+
 clean:
-	rm -f $(PROTO_OUT_DIR)/*_pb.go
+	rm -rf $(BIN_DIR)
+
+# Swagger documentation generation
+SWAG := $(GOPATH_BIN)/swag
+
+$(SWAG):
+	go install github.com/swaggo/swag/cmd/swag@v1.16.6
+
+swagger: $(SWAG)
+	@echo "Generating Swagger docs to ./docs"
+	@PATH="$(GOPATH_BIN):$$PATH" swag init -g $(APP_MAIN) -o docs --parseInternal
+
+# Docker / infrastructure helpers
+docker-build:
+	docker build -t toq-server:local .
+
+infra-up:
+	$(COMPOSE) up -d mysql redis prometheus grafana otel-collector jaeger swagger-ui
+
+infra-down:
+	$(COMPOSE) down
+
+infra-logs:
+	$(COMPOSE) logs -f
+
+infra-restart:
+	$(COMPOSE) restart

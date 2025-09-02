@@ -71,7 +71,7 @@ Request → 1. RequestID → 2. Recovery → 3. StructuredLogging → 4. CORS �
 
 ### Rotas Públicas (Apenas middlewares globais)
 ```
-/api/v1/auth/*
+/api/v2/auth/*
 /healthz
 /readyz
 /swagger/*
@@ -79,14 +79,14 @@ Request → 1. RequestID → 2. Recovery → 3. StructuredLogging → 4. CORS �
 
 ### Rotas Protegidas (Middlewares globais + Auth + Permission)
 ```
-/api/v1/user/*       → AuthMiddleware + PermissionMiddleware
-/api/v1/agency/*     → AuthMiddleware + PermissionMiddleware
-/api/v1/realtor/*    → AuthMiddleware + PermissionMiddleware
-/api/v1/listings/*   → AuthMiddleware + PermissionMiddleware
-/api/v1/visits/*     → AuthMiddleware + PermissionMiddleware
-/api/v1/offers/*     → AuthMiddleware + PermissionMiddleware
-/api/v1/realtors/*   → AuthMiddleware + PermissionMiddleware
-/api/v1/owners/*     → AuthMiddleware + PermissionMiddleware
+/api/v2/user/*       → AuthMiddleware + PermissionMiddleware
+/api/v2/agency/*     → AuthMiddleware + PermissionMiddleware
+/api/v2/realtor/*    → AuthMiddleware + PermissionMiddleware
+/api/v2/listings/*   → AuthMiddleware + PermissionMiddleware
+/api/v2/visits/*     → AuthMiddleware + PermissionMiddleware
+/api/v2/offers/*     → AuthMiddleware + PermissionMiddleware
+/api/v2/realtors/*   → AuthMiddleware + PermissionMiddleware
+/api/v2/owners/*     → AuthMiddleware + PermissionMiddleware
 ```
 
 ## 🔧 Injeção de Dependências
@@ -120,7 +120,7 @@ user.Use(middlewares.PermissionMiddleware(permissionService))
   "msg": "HTTP Request",
   "request_id": "uuid-here",
   "method": "POST",
-  "path": "/api/v1/user/profile",
+  "path": "/api/v2/user/profile",
   "status": 200,
   "duration": "15ms",
   "size": 1024,

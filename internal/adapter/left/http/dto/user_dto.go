@@ -4,7 +4,8 @@ package dto
 
 // CreateOwnerRequest represents owner creation request
 type CreateOwnerRequest struct {
-	Owner UserCreateRequest `json:"owner" binding:"required"`
+	Owner       UserCreateRequest `json:"owner" binding:"required"`
+	DeviceToken string            `json:"deviceToken,omitempty"`
 }
 
 // CreateOwnerResponse represents owner creation response
@@ -14,7 +15,8 @@ type CreateOwnerResponse struct {
 
 // CreateRealtorRequest represents realtor creation request
 type CreateRealtorRequest struct {
-	Realtor UserCreateRequest `json:"realtor" binding:"required"`
+	Realtor     UserCreateRequest `json:"realtor" binding:"required"`
+	DeviceToken string            `json:"deviceToken,omitempty"`
 }
 
 // CreateRealtorResponse represents realtor creation response
@@ -24,7 +26,8 @@ type CreateRealtorResponse struct {
 
 // CreateAgencyRequest represents agency creation request
 type CreateAgencyRequest struct {
-	Agency UserCreateRequest `json:"agency" binding:"required"`
+	Agency      UserCreateRequest `json:"agency" binding:"required"`
+	DeviceToken string            `json:"deviceToken,omitempty"`
 }
 
 // CreateAgencyResponse represents agency creation response

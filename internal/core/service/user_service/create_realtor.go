@@ -10,7 +10,8 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+// CreateRealtor cria a conta de corretor e autentica via SignIn padrão
+func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -22,7 +23,7 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 		return
 	}
 
-	tokens, err = us.createRealtor(ctx, tx, realtor)
+	created, err := us.createRealtor(ctx, tx, realtor)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -34,10 +35,13 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 		return
 	}
 
-	return
+	// Autentica após commit
+	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, ipAddress, userAgent)
+	return tokens, err
 }
 
-func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+// createRealtor cria o usuário corretor e retorna o usuário criado
+func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor usermodel.UserInterface) (created usermodel.UserInterface, err error) {
 
 	// Usar permission service diretamente para buscar role
 	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, permissionmodel.RoleSlugRealtor)
@@ -52,7 +56,7 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 
 	err = us.repo.CreateUser(ctx, tx, realtor)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// Usar permission service diretamente para atribuir role
@@ -73,15 +77,9 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	tokens, err = us.CreateTokens(ctx, tx, realtor, false)
-	if err != nil {
-		return
-	}
-
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Criado novo usuário com papel de Corretor", realtor.GetID())
 	if err != nil {
-		return
+		return nil, err
 	}
-
-	return
+	return realtor, nil
 }

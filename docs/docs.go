@@ -39,7 +39,7 @@ const docTemplate = `{
                 "summary": "Create agency account",
                 "parameters": [
                     {
-                        "description": "Agency creation data",
+                        "description": "Agency creation data (include optional deviceToken for push notifications)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -97,7 +97,7 @@ const docTemplate = `{
                 "summary": "Create owner account",
                 "parameters": [
                     {
-                        "description": "Owner creation data",
+                        "description": "Owner creation data (include optional deviceToken for push notifications)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -277,7 +277,7 @@ const docTemplate = `{
                 "summary": "Create realtor account",
                 "parameters": [
                     {
-                        "description": "Realtor creation data",
+                        "description": "Realtor creation data (include optional deviceToken for push notifications)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -982,6 +982,9 @@ const docTemplate = `{
             "properties": {
                 "agency": {
                     "$ref": "#/definitions/dto.UserCreateRequest"
+                },
+                "deviceToken": {
+                    "type": "string"
                 }
             }
         },
@@ -999,6 +1002,9 @@ const docTemplate = `{
                 "owner"
             ],
             "properties": {
+                "deviceToken": {
+                    "type": "string"
+                },
                 "owner": {
                     "$ref": "#/definitions/dto.UserCreateRequest"
                 }
@@ -1018,6 +1024,9 @@ const docTemplate = `{
                 "realtor"
             ],
             "properties": {
+                "deviceToken": {
+                    "type": "string"
+                },
                 "realtor": {
                     "$ref": "#/definitions/dto.UserCreateRequest"
                 }
@@ -1363,7 +1372,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "/api/v2",
 	Schemes:          []string{},
 	Title:            "TOQ Server API",
 	Description:      "TOQ Server - Real Estate HTTP API Server with hexagonal architecture",

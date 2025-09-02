@@ -1,5 +1,5 @@
 # toq_server
-TOQ Server is an HTTP API server for the TOQ App, built with Go, Gin, and a hexagonal architecture. It exposes REST endpoints under `/api/v1`, with centralized error handling, tracing, metrics, and clean DI via factories.
+TOQ Server is an HTTP API server for the TOQ App, built with Go, Gin, and a hexagonal architecture. It exposes REST endpoints under `/api/v2`, with centralized error handling, tracing, metrics, and clean DI via factories.
 
 ## Error schema (standardized)
 All error responses follow a flat, consistent schema returned by the centralized HTTP serializer:

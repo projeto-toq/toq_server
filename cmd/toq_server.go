@@ -30,7 +30,7 @@
 //	@license.url	https://github.com/giulio-alfieri/toq_server/blob/main/LICENSE
 
 //	@host		localhost:8080
-//	@BasePath	/api/v1
+//	@BasePath	/api/v2
 
 //	@securityDefinitions.apikey	BearerAuth
 //	@in							header

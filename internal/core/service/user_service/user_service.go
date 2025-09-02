@@ -63,9 +63,10 @@ type UserServiceInterface interface {
 	ConfirmEmailChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error)
 	ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error)
 	ConfirmPhoneChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error)
-	CreateAgency(ctx context.Context, agency usermodel.UserInterface) (tokens usermodel.Tokens, err error)
-	CreateOwner(ctx context.Context, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error)
-	CreateRealtor(ctx context.Context, realtor usermodel.UserInterface) (tokens usermodel.Tokens, err error)
+	// Fluxos de criação de conta que retornam tokens via SignIn padrão
+	CreateAgency(ctx context.Context, agency usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
+	CreateOwner(ctx context.Context, owner usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
+	CreateRealtor(ctx context.Context, realtor usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
 	CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error)
 	DeleteAccount(ctx context.Context, userID int64) (tokens usermodel.Tokens, err error)
 	DeleteAgencyOfRealtor(ctx context.Context, realtorID int64) (err error)

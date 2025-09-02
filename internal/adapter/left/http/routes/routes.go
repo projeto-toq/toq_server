@@ -8,6 +8,7 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
+	httpport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http"
 	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	swaggerFiles "github.com/swaggo/files"
@@ -21,6 +22,7 @@ func SetupRoutes(
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
 	metricsAdapter *factory.MetricsAdapter,
+	versionProvider httpport.APIVersionProvider,
 ) {
 	// Configurar middlewares globais na ordem correta
 	setupGlobalMiddlewares(router, metricsAdapter)
@@ -33,8 +35,12 @@ func SetupRoutes(
 	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
 	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
 
-	// API v1 routes
-	v1 := router.Group("/api/v1")
+	// API base routes (v2)
+	base := "/api/v2"
+	if versionProvider != nil {
+		base = versionProvider.BasePath()
+	}
+	v1 := router.Group(base)
 
 	// Register user routes with dependencies
 	RegisterUserRoutes(v1, authHandler, userHandler, activityTracker, permissionService)

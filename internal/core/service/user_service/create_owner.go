@@ -10,7 +10,8 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+// CreateOwner cria a conta e autentica o usuário via fluxo padrão de SignIn
+func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -22,7 +23,8 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 		return
 	}
 
-	tokens, err = us.createOwner(ctx, tx, owner)
+	// Executa criação e audit em transação; retorna usuário criado
+	created, err := us.createOwner(ctx, tx, owner)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -34,10 +36,13 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 		return
 	}
 
-	return
+	// Após commit, autentica usando SignIn padrão com nationalID normalizado
+	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, ipAddress, userAgent)
+	return tokens, err
 }
 
-func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+// createOwner executa a criação transacional do usuário Owner e retorna o usuário criado
+func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermodel.UserInterface) (created usermodel.UserInterface, err error) {
 
 	// Usar permission service diretamente para buscar role
 	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, permissionmodel.RoleSlugOwner)
@@ -52,7 +57,7 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 
 	err = us.repo.CreateUser(ctx, tx, owner)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	userRole, err := us.permissionService.AssignRoleToUserWithTx(ctx, tx, owner.GetID(), role.GetID(), nil)
@@ -72,15 +77,10 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return
 	}
 
-	tokens, err = us.CreateTokens(ctx, tx, owner, false)
-	if err != nil {
-		return
-	}
-
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Criado novo usuário com papel de Proprietário", owner.GetID())
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return owner, nil
 }
