@@ -40,13 +40,17 @@ func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 		return
 	}
 
-	// Create user model from DTO
-	user, err := ah.createUserFromDTO(request.Realtor, permissionmodel.RoleSlugRealtor)
+	// Validate and parse date fields with precise attribution
+	bornAt, creciValidity, derr := httputils.ValidateUserDates(request.Realtor, "realtor")
+	if derr != nil {
+		httperrors.SendHTTPErrorObj(c, derr)
+		return
+	}
+
+	// Create user model from DTO (using parsed dates)
+	user, err := ah.createUserFromDTO(request.Realtor, permissionmodel.RoleSlugRealtor, bornAt, creciValidity)
 	if err != nil {
-		// Parsing de datas (bornAt/creciValidity)
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]any{
-			"errors": []map[string]string{{"field": "realtor.bornAt", "message": "invalid date, expected YYYY-MM-DD"}},
-		}))
+		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
 		return
 	}
 

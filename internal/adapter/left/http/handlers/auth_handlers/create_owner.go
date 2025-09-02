@@ -42,14 +42,17 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 		return
 	}
 
-	// Create user model from DTO
-	user, err := ah.createUserFromDTO(request.Owner, permissionmodel.RoleSlugOwner)
+	// Validate and parse date fields with precise attribution
+	bornAt, creciValidity, derr := httputils.ValidateUserDates(request.Owner, "owner")
+	if derr != nil {
+		httperrors.SendHTTPErrorObj(c, derr)
+		return
+	}
+
+	// Create user model from DTO (using parsed dates)
+	user, err := ah.createUserFromDTO(request.Owner, permissionmodel.RoleSlugOwner, bornAt, creciValidity)
 	if err != nil {
-		// If parsing failed (e.g., date), return 422 with field-level detail
-		// Wrap generic errors as validation failure for client clarity
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]any{
-			"errors": []map[string]string{{"field": "owner.bornAt", "message": "invalid date, expected YYYY-MM-DD"}},
-		}))
+		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
 		return
 	}
 
@@ -78,22 +81,8 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 }
 
 // createUserFromDTO converts DTO to User model
-func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role permissionmodel.RoleSlug) (usermodel.UserInterface, error) {
+func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role permissionmodel.RoleSlug, bornAt time.Time, creciValidity *time.Time) (usermodel.UserInterface, error) {
 	user := usermodel.NewUser()
-
-	// Parse dates
-	bornAt, err := time.Parse("2006-01-02", dtoUser.BornAt)
-	if err != nil {
-		return nil, err
-	}
-
-	var creciValidity time.Time
-	if dtoUser.CreciValidity != "" {
-		creciValidity, err = time.Parse("2006-01-02", dtoUser.CreciValidity)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	// Set user data
 	user.SetFullName(dtoUser.FullName)
@@ -101,8 +90,8 @@ func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role per
 	user.SetNationalID(dtoUser.NationalID)
 	user.SetCreciNumber(dtoUser.CreciNumber)
 	user.SetCreciState(dtoUser.CreciState)
-	if !creciValidity.IsZero() {
-		user.SetCreciValidity(creciValidity)
+	if creciValidity != nil && !creciValidity.IsZero() {
+		user.SetCreciValidity(*creciValidity)
 	}
 	user.SetBornAt(bornAt)
 	user.SetPhoneNumber(dtoUser.PhoneNumber)

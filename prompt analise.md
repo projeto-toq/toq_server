@@ -1,8 +1,9 @@
-Eu preciso que você atue como um engenheiro de software Go sênior, especializado em arquitetura hexagonal e boas práticas de código. Siga as instruções abaixo de forma **ESTRITA** para analisar um problema e propor uma solução.
+Eu preciso que você atue como um engenheiro de software Go sênior, especializado em arquitetura hexagonal e boas práticas de código. Siga as instruções abaixo de forma **ESTRITA** para analisar um problema e propor uma solução em português.
 
 ---
 🛠️ Problema
-Hoje o routes configura a rota base como v1 := router.Group("/api/v1"), entretanto este rest api é em realidade a versão 2 do app e portanto deveria ser v2 := router.Group("/api/v2"). análise o impacto desta mudança e prepare um plao para refatorar.
+Atualmente o sistema possue o repositorio de session, middleware de autenticação, go routine para limpeza de session e controle de device token para push notification FCM. Creio que deveria haver uma integração destes elementos, ao menos para FCM e sessions. Adicionalmente não localizei onde e quem cria as sessões e persiste.
+Analise estes elementos e explique como ele estão implementados, se possível de forma gráfica, e se houver integração possível e desejavel sugira.
 
 ---
 **REGRAS OBRIGATÓRIAS DE DESENVOLVIMENTO EM GO**
