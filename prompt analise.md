@@ -2,7 +2,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ---
 🛠️ Problema
-Antes de implementar a correção. creio que temos um problema maior. Na criação do permission adapter, não foi respeitado o padrão do projeto onde as ações CRUD , necessariamente deve passar por basic_create/read/update/delete. Veja GetRealtorsByAgency como exemplo. Análise se estou correto e se a abordagem padrão do projeto é mais robusta e resolveria o problema.
+Toda a permission_adapter está utilizando pa.Read e potencialmente pode replicar o problema que acabou de ser corrigido. Analise todos as funções do permission_adapter.go para identificaar se tem o problema potencial e apresente um plano para corrigir e trazer para o padrão do projeto.
 
 ---
 **REGRAS OBRIGATÓRIAS DE DESENVOLVIMENTO EM GO**

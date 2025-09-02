@@ -3,7 +3,7 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"log/slog"
 
 	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
@@ -19,31 +19,34 @@ func (pa *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx contex
 		LIMIT 1
 	`
 
-	results, err := pa.Read(ctx, tx, query, roleID, permissionID)
+	var (
+		id              int64
+		roleIDOut       int64
+		permissionIDOut int64
+		grantedInt      int64
+		conditions      sql.NullString
+	)
+
+	err := tx.QueryRowContext(ctx, query, roleID, permissionID).Scan(
+		&id, &roleIDOut, &permissionIDOut, &grantedInt, &conditions,
+	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		slog.Error("mysqlpermissionadapter/GetRolePermissionByRoleIDAndPermissionID: error scanning row", "error", err)
 		return nil, err
 	}
 
-	if len(results) == 0 {
-		return nil, nil // Não encontrado
-	}
-
-	row := results[0]
-	if len(row) != 5 {
-		return nil, fmt.Errorf("unexpected number of columns: expected 5, got %d", len(row))
-	}
-
 	entity := &permissionentities.RolePermissionEntity{
-		ID:           row[0].(int64),
-		RoleID:       row[1].(int64),
-		PermissionID: row[2].(int64),
-		Granted:      row[3].(int64) == 1,
+		ID:           id,
+		RoleID:       roleIDOut,
+		PermissionID: permissionIDOut,
+		Granted:      grantedInt == 1,
 	}
-
-	// Handle conditions (pode ser NULL)
-	if row[4] != nil {
-		conditionsStr := string(row[4].([]byte))
-		entity.Conditions = &conditionsStr
+	if conditions.Valid {
+		v := conditions.String
+		entity.Conditions = &v
 	}
 
 	return permissionconverters.RolePermissionEntityToDomain(entity), nil

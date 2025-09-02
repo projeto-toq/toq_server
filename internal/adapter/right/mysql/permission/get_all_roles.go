@@ -33,9 +33,13 @@ func (pa *PermissionAdapter) GetAllRoles(ctx context.Context, tx *sql.Tx) ([]per
 			ID:           row[0].(int64),
 			Name:         string(row[1].([]byte)),
 			Slug:         string(row[2].([]byte)),
-			Description:  string(row[3].([]byte)),
 			IsSystemRole: row[4].(int64) == 1,
 			IsActive:     row[5].(int64) == 1,
+		}
+
+		// description (pode ser NULL)
+		if row[3] != nil {
+			entity.Description = string(row[3].([]byte))
 		}
 
 		role := permissionconverters.RoleEntityToDomain(entity)

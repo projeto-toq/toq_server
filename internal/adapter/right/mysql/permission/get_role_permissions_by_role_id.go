@@ -37,7 +37,7 @@ func (pa *PermissionAdapter) GetRolePermissionsByRoleID(ctx context.Context, tx 
 			Granted:      row[3].(int64) == 1,
 		}
 
-		// Handle conditions (pode ser NULL)
+		// conditions (pode ser NULL)
 		if row[4] != nil {
 			conditionsStr := string(row[4].([]byte))
 			entity.Conditions = &conditionsStr

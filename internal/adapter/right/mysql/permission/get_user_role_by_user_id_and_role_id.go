@@ -3,8 +3,7 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"time"
+	"log/slog"
 
 	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
@@ -20,33 +19,36 @@ func (pa *PermissionAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, t
 		LIMIT 1
 	`
 
-	results, err := pa.Read(ctx, tx, query, userID, roleID)
+	var (
+		id          int64
+		uid         int64
+		roleIDOut   int64
+		isActiveInt int64
+		status      int64
+		expiresAt   sql.NullTime
+	)
+
+	err := tx.QueryRowContext(ctx, query, userID, roleID).Scan(
+		&id, &uid, &roleIDOut, &isActiveInt, &status, &expiresAt,
+	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		slog.Error("mysqlpermissionadapter/GetUserRoleByUserIDAndRoleID: error scanning row", "error", err)
 		return nil, err
 	}
 
-	if len(results) == 0 {
-		return nil, nil // Não encontrado
-	}
-
-	row := results[0]
-	if len(row) != 6 {
-		return nil, fmt.Errorf("unexpected number of columns: expected 6, got %d", len(row))
-	}
-
 	entity := &permissionentities.UserRoleEntity{
-		ID:       row[0].(int64),
-		UserID:   row[1].(int64),
-		RoleID:   row[2].(int64),
-		IsActive: row[3].(int64) == 1,
-		Status:   row[4].(int64),
+		ID:       id,
+		UserID:   uid,
+		RoleID:   roleIDOut,
+		IsActive: isActiveInt == 1,
+		Status:   status,
 	}
-
-	// Handle expires_at (pode ser NULL)
-	if row[5] != nil {
-		if expiresAt, ok := row[5].(time.Time); ok {
-			entity.ExpiresAt = &expiresAt
-		}
+	if expiresAt.Valid {
+		t := expiresAt.Time
+		entity.ExpiresAt = &t
 	}
 
 	return permissionconverters.UserRoleEntityToDomain(entity), nil

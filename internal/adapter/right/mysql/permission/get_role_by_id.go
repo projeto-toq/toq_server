@@ -3,7 +3,7 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"log/slog"
 
 	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
@@ -18,27 +18,33 @@ func (pa *PermissionAdapter) GetRoleByID(ctx context.Context, tx *sql.Tx, roleID
 		WHERE id = ?
 	`
 
-	results, err := pa.Read(ctx, tx, query, roleID)
+	var (
+		id          int64
+		name        string
+		slug        string
+		description string
+		isSystemInt int64
+		isActiveInt int64
+	)
+
+	err := tx.QueryRowContext(ctx, query, roleID).Scan(
+		&id, &name, &slug, &description, &isSystemInt, &isActiveInt,
+	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		slog.Error("mysqlpermissionadapter/GetRoleByID: error scanning row", "error", err)
 		return nil, err
 	}
 
-	if len(results) == 0 {
-		return nil, nil // Não encontrado
-	}
-
-	row := results[0]
-	if len(row) != 6 {
-		return nil, fmt.Errorf("unexpected number of columns: expected 6, got %d", len(row))
-	}
-
 	entity := &permissionentities.RoleEntity{
-		ID:           row[0].(int64),
-		Name:         string(row[1].([]byte)),
-		Slug:         string(row[2].([]byte)),
-		Description:  string(row[3].([]byte)),
-		IsSystemRole: row[4].(int64) == 1,
-		IsActive:     row[5].(int64) == 1,
+		ID:           id,
+		Name:         name,
+		Slug:         slug,
+		Description:  description,
+		IsSystemRole: isSystemInt == 1,
+		IsActive:     isActiveInt == 1,
 	}
 
 	return permissionconverters.RoleEntityToDomain(entity), nil

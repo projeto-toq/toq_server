@@ -37,16 +37,19 @@ func (pa *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx,
 		}
 
 		entity := &permissionentities.PermissionEntity{
-			ID:          row[0].(int64),
-			Name:        string(row[1].([]byte)),
-			Slug:        string(row[2].([]byte)),
-			Resource:    string(row[3].([]byte)),
-			Action:      string(row[4].([]byte)),
-			Description: string(row[5].([]byte)),
-			IsActive:    row[7].(int64) == 1,
+			ID:       row[0].(int64),
+			Name:     string(row[1].([]byte)),
+			Slug:     string(row[2].([]byte)),
+			Resource: string(row[3].([]byte)),
+			Action:   string(row[4].([]byte)),
+			IsActive: row[7].(int64) == 1,
 		}
 
-		// Handle conditions (pode ser NULL)
+		// description (pode ser NULL)
+		if row[5] != nil {
+			entity.Description = string(row[5].([]byte))
+		}
+		// conditions (pode ser NULL)
 		if row[6] != nil {
 			conditionsStr := string(row[6].([]byte))
 			entity.Conditions = &conditionsStr

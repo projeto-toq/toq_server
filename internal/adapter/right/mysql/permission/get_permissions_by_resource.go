@@ -31,13 +31,17 @@ func (pa *PermissionAdapter) GetPermissionsByResource(ctx context.Context, tx *s
 		}
 
 		entity := &permissionentities.PermissionEntity{
-			ID:          row[0].(int64),
-			Name:        string(row[1].([]byte)),
-			Slug:        string(row[2].([]byte)),
-			Resource:    string(row[3].([]byte)),
-			Action:      string(row[4].([]byte)),
-			Description: string(row[5].([]byte)),
-			IsActive:    row[7].(int64) == 1,
+			ID:       row[0].(int64),
+			Name:     string(row[1].([]byte)),
+			Slug:     string(row[2].([]byte)),
+			Resource: string(row[3].([]byte)),
+			Action:   string(row[4].([]byte)),
+			IsActive: row[7].(int64) == 1,
+		}
+
+		// description (pode ser NULL)
+		if row[5] != nil {
+			entity.Description = string(row[5].([]byte))
 		}
 
 		// Handle conditions (pode ser NULL)
