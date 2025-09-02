@@ -16,13 +16,12 @@ func (pa *PermissionAdapter) CreatePermission(ctx context.Context, tx *sql.Tx, p
 	}
 
 	query := `
-		INSERT INTO permissions (name, slug, resource, action, description, conditions, is_active)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO permissions (name, resource, action, description, conditions, is_active)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
 	id, err := pa.Create(ctx, tx, query,
 		entity.Name,
-		entity.Slug,
 		entity.Resource,
 		entity.Action,
 		entity.Description,

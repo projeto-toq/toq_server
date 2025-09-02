@@ -13,7 +13,7 @@ import (
 // GetGrantedPermissionsByRoleID busca todas as permissões concedidas a um role
 func (pa *PermissionAdapter) GetGrantedPermissionsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) ([]permissionmodel.PermissionInterface, error) {
 	query := `
-		SELECT p.id, p.name, p.slug, p.resource, p.action, p.description, p.conditions, p.is_active
+		SELECT p.id, p.name, CONCAT(p.resource, ':', p.action) AS slug, p.resource, p.action, p.description, p.conditions, p.is_active
 		FROM permissions p
 		INNER JOIN role_permissions rp ON p.id = rp.permission_id
 		WHERE rp.role_id = ? 

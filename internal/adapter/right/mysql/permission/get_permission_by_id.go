@@ -13,7 +13,7 @@ import (
 // GetPermissionByID busca uma permissão pelo ID
 func (pa *PermissionAdapter) GetPermissionByID(ctx context.Context, tx *sql.Tx, permissionID int64) (permissionmodel.PermissionInterface, error) {
 	query := `
-		SELECT id, name, slug, resource, action, description, conditions, is_active
+		SELECT id, name, CONCAT(resource, ':', action) AS slug, resource, action, description, conditions, is_active
 		FROM permissions 
 		WHERE id = ?
 	`

@@ -13,7 +13,7 @@ import (
 // GetPermissionByName busca uma permissão pelo nome
 func (pa *PermissionAdapter) GetPermissionByName(ctx context.Context, tx *sql.Tx, name string) (permissionmodel.PermissionInterface, error) {
 	query := `
-		SELECT id, name, slug, resource, action, description, conditions, is_active
+		SELECT id, name, CONCAT(resource, ':', action) AS slug, resource, action, description, conditions, is_active
 		FROM permissions 
 		WHERE name = ?
 	`

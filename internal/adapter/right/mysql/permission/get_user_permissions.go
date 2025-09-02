@@ -14,7 +14,7 @@ import (
 func (pa *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error) {
 	query := `
 		SELECT DISTINCT 
-			p.id, p.name, p.slug, p.resource, p.action, p.description, p.conditions, p.is_active
+			p.id, p.name, CONCAT(p.resource, ':', p.action) AS slug, p.resource, p.action, p.description, p.conditions, p.is_active
 		FROM permissions p
 		INNER JOIN role_permissions rp ON p.id = rp.permission_id AND rp.granted = 1
 		INNER JOIN roles r ON rp.role_id = r.id AND r.is_active = 1

@@ -1,79 +1,79 @@
-Starting: /home/toq_admin/go/bin/dlv dap --listen=127.0.0.1:34527 --log-dest=3 from /codigos/go_code/toq_server/cmd
-DAP server listening at: 127.0.0.1:34527
+Starting: /home/toq_admin/go/bin/dlv dap --listen=127.0.0.1:43169 --log-dest=3 from /codigos/go_code/toq_server/cmd
+DAP server listening at: 127.0.0.1:43169
 Type 'dlv help' for list of commands.
-{"time":"2025-09-02T11:20:15.356512519Z","level":"INFO","msg":"🚀 Iniciando TOQ Server Bootstrap","version":"2.0.0","component":"bootstrap","log_level":"info","log_format":"json","log_output":"stdout"}
-{"time":"2025-09-02T11:20:15.35664068Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase01_InitializeContext","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.356739482Z","level":"INFO","msg":"🎯 FASE 1: Inicialização de Contexto e Sinais"}
-{"time":"2025-09-02T11:20:15.35733231Z","level":"INFO","msg":"✅ Contexto e sinais inicializados com sucesso"}
-{"time":"2025-09-02T11:20:15.35736535Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase01_InitializeContext","component":"bootstrap","duration":"724.49µs"}
-{"time":"2025-09-02T11:20:15.35738708Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase02_LoadConfiguration","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.357417331Z","level":"INFO","msg":"🎯 FASE 2: Carregamento e Validação de Configuração"}
-{"time":"2025-09-02T11:20:15.357505232Z","level":"INFO","msg":"🔍 Iniciando servidor pprof na porta 6060"}
-{"time":"2025-09-02T11:20:15.357539402Z","level":"INFO","msg":"✅ Servidor pprof iniciado em localhost:6060"}
-{"time":"2025-09-02T11:20:15.359222325Z","level":"INFO","msg":"Configuration loaded successfully from YAML","path":"configs/env.yaml"}
-{"time":"2025-09-02T11:20:15.359323156Z","level":"INFO","msg":"✅ Configuração carregada e validada com sucesso","version":"2.0.0"}
-{"time":"2025-09-02T11:20:15.359392907Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase02_LoadConfiguration","component":"bootstrap","duration":"2.003637ms"}
-{"time":"2025-09-02T11:20:15.359415677Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase03_InitializeInfrastructure","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.359513928Z","level":"INFO","msg":"🎯 FASE 3: Inicialização da Infraestrutura Core"}
-{"time":"2025-09-02T11:20:15.362180114Z","level":"INFO","msg":"Database connection initialized","uri":"toq_user:toq_password@tcp(localhost:3306)/toq_db?parseTime=true&loc=UTC&timeout=30s&readTimeout=30s&writeTimeout=30s"}
-{"time":"2025-09-02T11:20:15.362523608Z","level":"INFO","msg":"✅ Conexão com banco de dados estabelecida"}
-{"time":"2025-09-02T11:20:15.364466304Z","level":"INFO","msg":"Redis cache connected successfully","url":"redis://localhost:6379/0"}
-{"time":"2025-09-02T11:20:15.364534685Z","level":"INFO","msg":"✅ Sistema de cache Redis inicializado com sucesso"}
-{"time":"2025-09-02T11:20:15.364819968Z","level":"INFO","msg":"OpenTelemetry tracing initialized","endpoint":"localhost:4318"}
-{"time":"2025-09-02T11:20:15.365124172Z","level":"INFO","msg":"OpenTelemetry metrics initialized","endpoint":"localhost:4318"}
-{"time":"2025-09-02T11:20:15.365169603Z","level":"INFO","msg":"OpenTelemetry initialized successfully","tracing_enabled":true,"metrics_enabled":true,"endpoint":"localhost:4318"}
-{"time":"2025-09-02T11:20:15.365187803Z","level":"INFO","msg":"OpenTelemetry initialized successfully"}
-{"time":"2025-09-02T11:20:15.365199143Z","level":"INFO","msg":"✅ OpenTelemetry inicializado (tracing + metrics)"}
-{"time":"2025-09-02T11:20:15.365210944Z","level":"INFO","msg":"Creating metrics adapter"}
-{"time":"2025-09-02T11:20:15.365364696Z","level":"INFO","msg":"✅ Adapter de métricas Prometheus inicializado"}
-{"time":"2025-09-02T11:20:15.365385946Z","level":"INFO","msg":"✅ Infraestrutura core inicializada com sucesso"}
-{"time":"2025-09-02T11:20:15.365406476Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase03_InitializeInfrastructure","component":"bootstrap","duration":"5.988479ms"}
-{"time":"2025-09-02T11:20:15.365427776Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase04_InjectDependencies","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.365467357Z","level":"INFO","msg":"🎯 FASE 4: Injeção de Dependências via Factory Pattern"}
-{"time":"2025-09-02T11:20:15.365497567Z","level":"INFO","msg":"Starting dependency injection using Factory Pattern"}
-{"time":"2025-09-02T11:20:15.365511288Z","level":"INFO","msg":"Creating storage adapters"}
-{"time":"2025-09-02T11:20:15.367422813Z","level":"INFO","msg":"Redis cache connected successfully","url":"redis://localhost:6379/0"}
-{"time":"2025-09-02T11:20:15.367498794Z","level":"INFO","msg":"Successfully created all storage adapters"}
-{"time":"2025-09-02T11:20:15.367515504Z","level":"INFO","msg":"✅ ActivityTracker criado com sucesso com Redis client"}
-{"time":"2025-09-02T11:20:15.367525684Z","level":"INFO","msg":"Creating repository adapters"}
-{"time":"2025-09-02T11:20:15.367581615Z","level":"INFO","msg":"Successfully created all repository adapters"}
-{"time":"2025-09-02T11:20:15.367594985Z","level":"INFO","msg":"Assigning repository adapters"}
-{"time":"2025-09-02T11:20:15.367606075Z","level":"INFO","msg":"Repository adapters assigned successfully"}
-{"time":"2025-09-02T11:20:15.367615745Z","level":"INFO","msg":"Creating validation adapters"}
-{"time":"2025-09-02T11:20:15.367627996Z","level":"INFO","msg":"Successfully created all validation adapters"}
-{"time":"2025-09-02T11:20:15.367638816Z","level":"INFO","msg":"Creating external service adapters"}
-{"time":"2025-09-02T11:20:15.367647506Z","level":"INFO","msg":"Creating external service adapters"}
-{"time":"2025-09-02T11:20:15.369067305Z","level":"INFO","msg":"Creating S3 adapter","region":"us-east-1","bucket":"toq-app-media"}
-{"time":"2025-09-02T11:20:15.369616662Z","level":"INFO","msg":"S3 adapter created successfully","bucket":"toq-app-media","region":"us-east-1"}
-{"time":"2025-09-02T11:20:15.369644802Z","level":"INFO","msg":"Successfully created all external service adapters"}
-{"time":"2025-09-02T11:20:15.369684143Z","level":"INFO","msg":"Initializing all services"}
-{"time":"2025-09-02T11:20:15.369703273Z","level":"INFO","msg":"All services initialized successfully"}
-{"time":"2025-09-02T11:20:15.369716473Z","level":"INFO","msg":"✅ TempBlockCleanerWorker initialized"}
-{"time":"2025-09-02T11:20:15.369725963Z","level":"INFO","msg":"Dependency injection completed successfully using Factory Pattern"}
-{"time":"2025-09-02T11:20:15.369736363Z","level":"INFO","msg":"✅ Injeção de dependências concluída via Factory Pattern"}
-{"time":"2025-09-02T11:20:15.369805444Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase04_InjectDependencies","component":"bootstrap","duration":"4.374698ms"}
-{"time":"2025-09-02T11:20:15.369864955Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase05_InitializeServices","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.369913816Z","level":"INFO","msg":"🎯 FASE 5: Inicialização de Serviços"}
-{"time":"2025-09-02T11:20:15.369942136Z","level":"INFO","msg":"✅ Serviço inicializado","service":"GlobalService"}
-{"time":"2025-09-02T11:20:15.369955566Z","level":"INFO","msg":"✅ Serviço inicializado","service":"PermissionService"}
-{"time":"2025-09-02T11:20:15.369967926Z","level":"INFO","msg":"✅ Serviço inicializado","service":"UserService"}
-{"time":"2025-09-02T11:20:15.369978887Z","level":"INFO","msg":"✅ Serviço inicializado","service":"ComplexService"}
-{"time":"2025-09-02T11:20:15.369990067Z","level":"INFO","msg":"✅ Serviço inicializado","service":"ListingService"}
-{"time":"2025-09-02T11:20:15.370014337Z","level":"INFO","msg":"✅ Todos os serviços inicializados com sucesso"}
-{"time":"2025-09-02T11:20:15.370041007Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase05_InitializeServices","component":"bootstrap","duration":"208.032µs"}
-{"time":"2025-09-02T11:20:15.370058648Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase06_ConfigureHandlers","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.370085898Z","level":"INFO","msg":"🎯 FASE 6: Configuração de Handlers e Rotas"}
+{"time":"2025-09-02T12:11:11.515495214Z","level":"INFO","msg":"🚀 Iniciando TOQ Server Bootstrap","version":"2.0.0","component":"bootstrap","log_level":"info","log_format":"json","log_output":"stdout"}
+{"time":"2025-09-02T12:11:11.515632403Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase01_InitializeContext","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.515694052Z","level":"INFO","msg":"🎯 FASE 1: Inicialização de Contexto e Sinais"}
+{"time":"2025-09-02T12:11:11.516277547Z","level":"INFO","msg":"✅ Contexto e sinais inicializados com sucesso"}
+{"time":"2025-09-02T12:11:11.516312526Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase01_InitializeContext","component":"bootstrap","duration":"687.834µs"}
+{"time":"2025-09-02T12:11:11.516334196Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase02_LoadConfiguration","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.516365916Z","level":"INFO","msg":"🎯 FASE 2: Carregamento e Validação de Configuração"}
+{"time":"2025-09-02T12:11:11.516774952Z","level":"INFO","msg":"🔍 Iniciando servidor pprof na porta 6060"}
+{"time":"2025-09-02T12:11:11.516915881Z","level":"INFO","msg":"✅ Servidor pprof iniciado em localhost:6060"}
+{"time":"2025-09-02T12:11:11.518378228Z","level":"INFO","msg":"Configuration loaded successfully from YAML","path":"configs/env.yaml"}
+{"time":"2025-09-02T12:11:11.518479057Z","level":"INFO","msg":"✅ Configuração carregada e validada com sucesso","version":"2.0.0"}
+{"time":"2025-09-02T12:11:11.518529526Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase02_LoadConfiguration","component":"bootstrap","duration":"2.19293ms"}
+{"time":"2025-09-02T12:11:11.518556146Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase03_InitializeInfrastructure","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.518590816Z","level":"INFO","msg":"🎯 FASE 3: Inicialização da Infraestrutura Core"}
+{"time":"2025-09-02T12:11:11.521299721Z","level":"INFO","msg":"Database connection initialized","uri":"toq_user:toq_password@tcp(localhost:3306)/toq_db?parseTime=true&loc=UTC&timeout=30s&readTimeout=30s&writeTimeout=30s"}
+{"time":"2025-09-02T12:11:11.521348371Z","level":"INFO","msg":"✅ Conexão com banco de dados estabelecida"}
+{"time":"2025-09-02T12:11:11.523398512Z","level":"INFO","msg":"Redis cache connected successfully","url":"redis://localhost:6379/0"}
+{"time":"2025-09-02T12:11:11.523451242Z","level":"INFO","msg":"✅ Sistema de cache Redis inicializado com sucesso"}
+{"time":"2025-09-02T12:11:11.523935737Z","level":"INFO","msg":"OpenTelemetry tracing initialized","endpoint":"localhost:4318"}
+{"time":"2025-09-02T12:11:11.524297734Z","level":"INFO","msg":"OpenTelemetry metrics initialized","endpoint":"localhost:4318"}
+{"time":"2025-09-02T12:11:11.524330024Z","level":"INFO","msg":"OpenTelemetry initialized successfully","tracing_enabled":true,"metrics_enabled":true,"endpoint":"localhost:4318"}
+{"time":"2025-09-02T12:11:11.524348043Z","level":"INFO","msg":"OpenTelemetry initialized successfully"}
+{"time":"2025-09-02T12:11:11.524360193Z","level":"INFO","msg":"✅ OpenTelemetry inicializado (tracing + metrics)"}
+{"time":"2025-09-02T12:11:11.524372043Z","level":"INFO","msg":"Creating metrics adapter"}
+{"time":"2025-09-02T12:11:11.524535142Z","level":"INFO","msg":"✅ Adapter de métricas Prometheus inicializado"}
+{"time":"2025-09-02T12:11:11.524556302Z","level":"INFO","msg":"✅ Infraestrutura core inicializada com sucesso"}
+{"time":"2025-09-02T12:11:11.524577961Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase03_InitializeInfrastructure","component":"bootstrap","duration":"6.020195ms"}
+{"time":"2025-09-02T12:11:11.524599701Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase04_InjectDependencies","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.524630781Z","level":"INFO","msg":"🎯 FASE 4: Injeção de Dependências via Factory Pattern"}
+{"time":"2025-09-02T12:11:11.524658831Z","level":"INFO","msg":"Starting dependency injection using Factory Pattern"}
+{"time":"2025-09-02T12:11:11.52471125Z","level":"INFO","msg":"Creating storage adapters"}
+{"time":"2025-09-02T12:11:11.530769836Z","level":"INFO","msg":"Redis cache connected successfully","url":"redis://localhost:6379/0"}
+{"time":"2025-09-02T12:11:11.530874685Z","level":"INFO","msg":"Successfully created all storage adapters"}
+{"time":"2025-09-02T12:11:11.530891595Z","level":"INFO","msg":"✅ ActivityTracker criado com sucesso com Redis client"}
+{"time":"2025-09-02T12:11:11.530903204Z","level":"INFO","msg":"Creating repository adapters"}
+{"time":"2025-09-02T12:11:11.531087953Z","level":"INFO","msg":"Successfully created all repository adapters"}
+{"time":"2025-09-02T12:11:11.531247771Z","level":"INFO","msg":"Assigning repository adapters"}
+{"time":"2025-09-02T12:11:11.531260051Z","level":"INFO","msg":"Repository adapters assigned successfully"}
+{"time":"2025-09-02T12:11:11.531270151Z","level":"INFO","msg":"Creating validation adapters"}
+{"time":"2025-09-02T12:11:11.531285331Z","level":"INFO","msg":"Successfully created all validation adapters"}
+{"time":"2025-09-02T12:11:11.531466279Z","level":"INFO","msg":"Creating external service adapters"}
+{"time":"2025-09-02T12:11:11.531478739Z","level":"INFO","msg":"Creating external service adapters"}
+{"time":"2025-09-02T12:11:11.534927888Z","level":"INFO","msg":"Creating S3 adapter","region":"us-east-1","bucket":"toq-app-media"}
+{"time":"2025-09-02T12:11:11.535992378Z","level":"INFO","msg":"S3 adapter created successfully","bucket":"toq-app-media","region":"us-east-1"}
+{"time":"2025-09-02T12:11:11.536302735Z","level":"INFO","msg":"Successfully created all external service adapters"}
+{"time":"2025-09-02T12:11:11.536480884Z","level":"INFO","msg":"Initializing all services"}
+{"time":"2025-09-02T12:11:11.537026879Z","level":"INFO","msg":"All services initialized successfully"}
+{"time":"2025-09-02T12:11:11.537216717Z","level":"INFO","msg":"✅ TempBlockCleanerWorker initialized"}
+{"time":"2025-09-02T12:11:11.537742332Z","level":"INFO","msg":"Dependency injection completed successfully using Factory Pattern"}
+{"time":"2025-09-02T12:11:11.537767272Z","level":"INFO","msg":"✅ Injeção de dependências concluída via Factory Pattern"}
+{"time":"2025-09-02T12:11:11.537814522Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase04_InjectDependencies","component":"bootstrap","duration":"13.207711ms"}
+{"time":"2025-09-02T12:11:11.537850511Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase05_InitializeServices","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.5380162Z","level":"INFO","msg":"🎯 FASE 5: Inicialização de Serviços"}
+{"time":"2025-09-02T12:11:11.538132129Z","level":"INFO","msg":"✅ Serviço inicializado","service":"GlobalService"}
+{"time":"2025-09-02T12:11:11.538148939Z","level":"INFO","msg":"✅ Serviço inicializado","service":"PermissionService"}
+{"time":"2025-09-02T12:11:11.538162038Z","level":"INFO","msg":"✅ Serviço inicializado","service":"UserService"}
+{"time":"2025-09-02T12:11:11.538175288Z","level":"INFO","msg":"✅ Serviço inicializado","service":"ComplexService"}
+{"time":"2025-09-02T12:11:11.538188658Z","level":"INFO","msg":"✅ Serviço inicializado","service":"ListingService"}
+{"time":"2025-09-02T12:11:11.538200068Z","level":"INFO","msg":"✅ Todos os serviços inicializados com sucesso"}
+{"time":"2025-09-02T12:11:11.538221788Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase05_InitializeServices","component":"bootstrap","duration":"367.677µs"}
+{"time":"2025-09-02T12:11:11.538240248Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase06_ConfigureHandlers","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.538266838Z","level":"INFO","msg":"🎯 FASE 6: Configuração de Handlers e Rotas"}
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
  - using env:	export GIN_MODE=release
  - using code:	gin.SetMode(gin.ReleaseMode)
 
-{"time":"2025-09-02T11:20:15.370129539Z","level":"INFO","msg":"HTTP server initialized","port":":8080","read_timeout":"30s","write_timeout":"30s"}
-{"time":"2025-09-02T11:20:15.37020114Z","level":"INFO","msg":"HTTP server initialization completed"}
-{"time":"2025-09-02T11:20:15.37021376Z","level":"INFO","msg":"✅ Servidor HTTP configurado com TLS e middleware"}
-{"time":"2025-09-02T11:20:15.3702236Z","level":"INFO","msg":"✅ Handlers HTTP preparados para criação"}
-{"time":"2025-09-02T11:20:15.37023431Z","level":"INFO","msg":"Creating HTTP handlers"}
-{"time":"2025-09-02T11:20:15.37024605Z","level":"INFO","msg":"Successfully created all HTTP handlers"}
-{"time":"2025-09-02T11:20:15.37025618Z","level":"INFO","msg":"✅ HTTP handlers created successfully via factory"}
+{"time":"2025-09-02T12:11:11.538316917Z","level":"INFO","msg":"HTTP server initialized","port":":8080","read_timeout":"30s","write_timeout":"30s"}
+{"time":"2025-09-02T12:11:11.538337797Z","level":"INFO","msg":"HTTP server initialization completed"}
+{"time":"2025-09-02T12:11:11.538354717Z","level":"INFO","msg":"✅ Servidor HTTP configurado com TLS e middleware"}
+{"time":"2025-09-02T12:11:11.538364967Z","level":"INFO","msg":"✅ Handlers HTTP preparados para criação"}
+{"time":"2025-09-02T12:11:11.538375847Z","level":"INFO","msg":"Creating HTTP handlers"}
+{"time":"2025-09-02T12:11:11.538391546Z","level":"INFO","msg":"Successfully created all HTTP handlers"}
+{"time":"2025-09-02T12:11:11.538406906Z","level":"INFO","msg":"✅ HTTP handlers created successfully via factory"}
 [GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (6 handlers)
 [GIN-debug] POST   /api/v1/auth/owner        --> github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers.(*AuthHandler).CreateOwner-fm (6 handlers)
 [GIN-debug] POST   /api/v1/auth/realtor      --> github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers.(*AuthHandler).CreateRealtor-fm (6 handlers)
@@ -150,36 +150,39 @@ Type 'dlv help' for list of commands.
 [GIN-debug] GET    /readyz                   --> github.com/giulio-alfieri/toq_server/internal/core/config.(*config).setupBasicRoutes.func3 (7 handlers)
 [GIN-debug] GET    /metrics                  --> go:interface { GetMetrics(*github.com/gin-gonic/gin.Context) }.GetMetrics-fm (6 handlers)
 [GIN-debug] GET    /api/v1/ping              --> github.com/giulio-alfieri/toq_server/internal/core/config.(*config).setupBasicRoutes.func4 (6 handlers)
-{"time":"2025-09-02T11:20:15.37175944Z","level":"INFO","msg":"HTTP handlers and routes configured successfully"}
-{"time":"2025-09-02T11:20:15.37177958Z","level":"INFO","msg":"✅ Rotas e middlewares configurados"}
-{"time":"2025-09-02T11:20:15.371789431Z","level":"INFO","msg":"✅ Health checks configurados"}
-{"time":"2025-09-02T11:20:15.371798561Z","level":"INFO","msg":"✅ Handlers e rotas configurados com sucesso"}
-{"time":"2025-09-02T11:20:15.371836741Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase06_ConfigureHandlers","component":"bootstrap","duration":"1.773733ms"}
-{"time":"2025-09-02T11:20:15.371859901Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase07_StartBackgroundWorkers","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.371893752Z","level":"INFO","msg":"🎯 FASE 7: Inicialização de Background Workers"}
-{"time":"2025-09-02T11:20:15.371920952Z","level":"INFO","msg":"Activity tracker batch worker started"}
-{"time":"2025-09-02T11:20:15.371931312Z","level":"INFO","msg":"Temp block cleaner worker started"}
-{"time":"2025-09-02T11:20:15.371940753Z","level":"INFO","msg":"✅ Background workers inicializados"}
-{"time":"2025-09-02T11:20:15.371950633Z","level":"INFO","msg":"Activity tracker connected to user service"}
-{"time":"2025-09-02T11:20:15.371959153Z","level":"INFO","msg":"✅ Activity tracker conectado ao user service"}
-{"time":"2025-09-02T11:20:15.372199446Z","level":"INFO","msg":"TempBlockCleanerWorker started"}
-{"time":"2025-09-02T11:20:15.372749953Z","level":"INFO","msg":"Activity batch worker started","interval":30000000000}
-{"time":"2025-09-02T11:20:15.372807264Z","level":"INFO","msg":"Database connection verified successfully"}
-{"time":"2025-09-02T11:20:15.372820784Z","level":"INFO","msg":"✅ Schema do banco de dados verificado"}
-{"time":"2025-09-02T11:20:15.372831174Z","level":"INFO","msg":"✅ Background workers inicializados com sucesso"}
-{"time":"2025-09-02T11:20:15.372850455Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase07_StartBackgroundWorkers","component":"bootstrap","duration":"988.803µs"}
-{"time":"2025-09-02T11:20:15.372870595Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase08_StartServer","component":"bootstrap","timestamp":"2025-09-02T11:20:15Z"}
-{"time":"2025-09-02T11:20:15.372896355Z","level":"INFO","msg":"🎯 FASE 8: Inicialização Final e Runtime"}
-{"time":"2025-09-02T11:20:15.372918165Z","level":"INFO","msg":"✅ Servidor marcado como ready para receber tráfego"}
-{"time":"2025-09-02T11:20:15.372937466Z","level":"INFO","msg":"🚀 Iniciando servidor HTTP na porta configurada"}
-{"time":"2025-09-02T11:20:15.47309041Z","level":"INFO","msg":"✅ Servidor HTTP iniciado com sucesso"}
-{"time":"2025-09-02T11:20:15.473161681Z","level":"INFO","msg":"✅ Monitoramento de saúde em runtime iniciado"}
-{"time":"2025-09-02T11:20:15.473176791Z","level":"INFO","msg":"🌟 TOQ Server pronto para servir","uptime":116546381}
-{"time":"2025-09-02T11:20:15.473205972Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase08_StartServer","component":"bootstrap","duration":"100.332667ms"}
-{"time":"2025-09-02T11:20:15.473234082Z","level":"INFO","msg":"🎉 TOQ Server inicializado com sucesso","component":"bootstrap","total_time":"116.603832ms"}
-{"time":"2025-09-02T11:20:40.026411154Z","level":"ERROR","msg":"mysqlpermissionadapter/ReadRow: error getting column count","error":"driver: bad connection"}
-{"time":"2025-09-02T11:20:40.026750819Z","level":"ERROR","msg":"Failed to get user role for temp block check","userID":3,"error":"driver: bad connection"}
-{"time":"2025-09-02T11:20:40.026774519Z","level":"ERROR","msg":"Failed to check if user is temporarily blocked","userID":3,"error":"HTTP 500: Failed to check user status"}
-{"time":"2025-09-02T11:20:40.027017342Z","level":"ERROR","msg":"Error rolling back transaction","error":"invalid connection"}
-{"time":"2025-09-02T11:20:40.027083263Z","level":"ERROR","msg":"Error rolling back transaction","error":"rollback tx: invalid connection"}
-{"time":"2025-09-02T11:20:40.027325606Z","level":"ERROR","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares.StructuredLoggingMiddleware.func1","file":"/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/structured_logging_middleware.go","line":126},"msg":"HTTP Error","request_id":"674b439b-e4f3-4e84-9739-ef72554aee54","method":"POST","path":"/api/v1/auth/signin","status":500,"duration":4628222,"size":46,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0"}
+{"time":"2025-09-02T12:11:11.540121051Z","level":"INFO","msg":"HTTP handlers and routes configured successfully"}
+{"time":"2025-09-02T12:11:11.540142481Z","level":"INFO","msg":"✅ Rotas e middlewares configurados"}
+{"time":"2025-09-02T12:11:11.54015389Z","level":"INFO","msg":"✅ Health checks configurados"}
+{"time":"2025-09-02T12:11:11.54016367Z","level":"INFO","msg":"✅ Handlers e rotas configurados com sucesso"}
+{"time":"2025-09-02T12:11:11.54019646Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase06_ConfigureHandlers","component":"bootstrap","duration":"1.953542ms"}
+{"time":"2025-09-02T12:11:11.54022319Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase07_StartBackgroundWorkers","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.540257969Z","level":"INFO","msg":"🎯 FASE 7: Inicialização de Background Workers"}
+{"time":"2025-09-02T12:11:11.540287989Z","level":"INFO","msg":"Activity tracker batch worker started"}
+{"time":"2025-09-02T12:11:11.540299679Z","level":"INFO","msg":"Temp block cleaner worker started"}
+{"time":"2025-09-02T12:11:11.540310489Z","level":"INFO","msg":"✅ Background workers inicializados"}
+{"time":"2025-09-02T12:11:11.540320829Z","level":"INFO","msg":"Activity tracker connected to user service"}
+{"time":"2025-09-02T12:11:11.540330239Z","level":"INFO","msg":"✅ Activity tracker conectado ao user service"}
+{"time":"2025-09-02T12:11:11.540421508Z","level":"INFO","msg":"TempBlockCleanerWorker started"}
+{"time":"2025-09-02T12:11:11.540937983Z","level":"INFO","msg":"Activity batch worker started","interval":30000000000}
+{"time":"2025-09-02T12:11:11.541113582Z","level":"INFO","msg":"Database connection verified successfully"}
+{"time":"2025-09-02T12:11:11.541131792Z","level":"INFO","msg":"✅ Schema do banco de dados verificado"}
+{"time":"2025-09-02T12:11:11.541142481Z","level":"INFO","msg":"✅ Background workers inicializados com sucesso"}
+{"time":"2025-09-02T12:11:11.541214121Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase07_StartBackgroundWorkers","component":"bootstrap","duration":"985.781µs"}
+{"time":"2025-09-02T12:11:11.54124558Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase08_StartServer","component":"bootstrap","timestamp":"2025-09-02T12:11:11Z"}
+{"time":"2025-09-02T12:11:11.541414709Z","level":"INFO","msg":"🎯 FASE 8: Inicialização Final e Runtime"}
+{"time":"2025-09-02T12:11:11.541437259Z","level":"INFO","msg":"✅ Servidor marcado como ready para receber tráfego"}
+{"time":"2025-09-02T12:11:11.541818285Z","level":"INFO","msg":"🚀 Iniciando servidor HTTP na porta configurada"}
+{"time":"2025-09-02T12:11:11.642816229Z","level":"INFO","msg":"✅ Servidor HTTP iniciado com sucesso"}
+{"time":"2025-09-02T12:11:11.642899778Z","level":"INFO","msg":"✅ Monitoramento de saúde em runtime iniciado"}
+{"time":"2025-09-02T12:11:11.642918178Z","level":"INFO","msg":"🌟 TOQ Server pronto para servir","uptime":127303785}
+{"time":"2025-09-02T12:11:11.642946557Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase08_StartServer","component":"bootstrap","duration":"101.703876ms"}
+{"time":"2025-09-02T12:11:11.642974877Z","level":"INFO","msg":"🎉 TOQ Server inicializado com sucesso","component":"bootstrap","total_time":"127.360884ms"}
+{"time":"2025-09-02T12:11:17.482819477Z","level":"INFO","msg":"Security event logged","eventType":"signin_success","result":"success","timestamp":"2025-09-02T12:11:17.482793378Z","userID":3,"nationalID":"04679654805","ipAddress":"179.110.194.42","userAgent":"PostmanRuntime/7.45.0"}
+{"time":"2025-09-02T12:11:17.482913917Z","level":"INFO","msg":"User signed in successfully","userID":3}
+{"time":"2025-09-02T12:11:17.491279812Z","level":"INFO","msg":"HTTP Request","request_id":"8f2d3373-147e-4d0a-bb23-341e52b0843c","method":"POST","path":"/api/v1/auth/signin","status":200,"duration":155965866,"size":599,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0"}
+{"time":"2025-09-02T12:11:27.887776344Z","level":"INFO","msg":"Security event logged","eventType":"signin_success","result":"success","timestamp":"2025-09-02T12:11:27.887760174Z","userID":4,"nationalID":"05377401808","ipAddress":"179.110.194.42","userAgent":"PostmanRuntime/7.45.0"}
+{"time":"2025-09-02T12:11:27.887855683Z","level":"INFO","msg":"User signed in successfully","userID":4}
+{"time":"2025-09-02T12:11:27.89635195Z","level":"INFO","msg":"HTTP Request","request_id":"0a660bde-3c72-45d5-8b9d-3f656f8f8c0f","method":"POST","path":"/api/v1/auth/signin","status":200,"duration":157769319,"size":599,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0"}
+{"time":"2025-09-02T12:12:10.545310181Z","level":"ERROR","msg":"mysqlpermissionadapter/Read: error preparing statement","error":"Error 1054 (42S22): Unknown column 'p.slug' in 'field list'"}
+{"time":"2025-09-02T12:12:10.546002126Z","level":"ERROR","msg":"Error checking permission","userID":4,"method":"POST","path":"/api/v1/user/signout","error":"HTTP 500: Internal Server Error"}
+{"time":"2025-09-02T12:12:10.546314253Z","level":"ERROR","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares.StructuredLoggingMiddleware.func1","file":"/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/structured_logging_middleware.go","line":126},"msg":"HTTP Error","request_id":"e445b262-6e8e-43ea-90a7-f11ffda49d48","method":"POST","path":"/api/v1/user/signout","status":500,"duration":14006608,"size":48,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0","user_id":4,"user_role_id":4,"role_status":"pending_both"}

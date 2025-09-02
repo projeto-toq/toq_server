@@ -17,13 +17,12 @@ func (pa *PermissionAdapter) UpdatePermission(ctx context.Context, tx *sql.Tx, p
 
 	query := `
 		UPDATE permissions 
-		SET name = ?, slug = ?, resource = ?, action = ?, description = ?, conditions = ?, is_active = ?
+		SET name = ?, resource = ?, action = ?, description = ?, conditions = ?, is_active = ?
 		WHERE id = ?
 	`
 
 	_, err := pa.Update(ctx, tx, query,
 		entity.Name,
-		entity.Slug,
 		entity.Resource,
 		entity.Action,
 		entity.Description,

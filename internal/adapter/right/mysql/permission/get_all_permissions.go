@@ -13,7 +13,7 @@ import (
 // GetAllPermissions busca todas as permissões
 func (pa *PermissionAdapter) GetAllPermissions(ctx context.Context, tx *sql.Tx) ([]permissionmodel.PermissionInterface, error) {
 	query := `
-		SELECT id, name, slug, resource, action, description, conditions, is_active
+		SELECT id, name, CONCAT(resource, ':', action) AS slug, resource, action, description, conditions, is_active
 		FROM permissions 
 		ORDER BY resource, action
 	`
