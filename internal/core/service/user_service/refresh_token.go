@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/giulio-alfieri/toq_server/internal/core/events"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/prometheus/client_golang/prometheus"
@@ -19,10 +20,11 @@ var (
 	metricRefreshSuccess = prometheus.NewCounter(prometheus.CounterOpts{Name: "auth_refresh_success_total", Help: "Total successful refresh operations"})
 	metricRefreshReuse   = prometheus.NewCounter(prometheus.CounterOpts{Name: "auth_refresh_reuse_detected_total", Help: "Total detected refresh token reuse incidents"})
 	metricRefreshExpired = prometheus.NewCounter(prometheus.CounterOpts{Name: "auth_refresh_absolute_expired_total", Help: "Total refresh attempts blocked due to absolute expiry"})
+	metricSessionRotated = prometheus.NewCounter(prometheus.CounterOpts{Name: "auth_session_rotated_total", Help: "Total number of session rotations"})
 )
 
 func init() {
-	prometheus.MustRegister(metricRefreshSuccess, metricRefreshReuse, metricRefreshExpired)
+	prometheus.MustRegister(metricRefreshSuccess, metricRefreshReuse, metricRefreshExpired, metricSessionRotated)
 }
 
 func (us *userService) RefreshTokens(ctx context.Context, refresh string) (tokens usermodel.Tokens, err error) {
@@ -72,6 +74,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Optional: detect reuse (rotated_at set means token already used)
 	if session.GetRotatedAt() != nil {
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
+		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshReuse.Inc()
 		slog.Warn("auth.refresh.reuse_detected", "user_id", session.GetUserID(), "session_id", session.GetID())
 		return tokens, utils.ErrInternalServer
@@ -91,6 +94,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Enforce absolute expiry if set
 	if !session.GetAbsoluteExpiresAt().IsZero() && time.Now().UTC().After(session.GetAbsoluteExpiresAt()) {
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
+		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshExpired.Inc()
 		slog.Info("auth.refresh.absolute_expired", "user_id", session.GetUserID(), "session_id", session.GetID())
 		return tokens, utils.ErrInternalServer
@@ -103,6 +107,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Enforce max rotations
 	if session.GetRotationCounter() >= globalmodel.GetMaxSessionRotations() {
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
+		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		slog.Warn("auth.refresh.rotation_limit_exceeded", "user_id", session.GetUserID(), "session_id", session.GetID(), "rotation_counter", session.GetRotationCounter())
 		return tokens, utils.ErrInternalServer
 	}
@@ -117,6 +122,10 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if err = us.sessionRepo.UpdateSessionRotation(ctx, tx, session.GetID(), session.GetRotationCounter(), time.Now().UTC()); err != nil {
 		slog.Warn("auth.refresh.update_rotation_failed", "session_id", session.GetID(), "err", err)
 	} else {
+		// Publish SessionRotated for previous session
+		sid := session.GetID()
+		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionRotated, UserID: session.GetUserID(), SessionID: &sid, DeviceID: session.GetDeviceID()})
+		metricSessionRotated.Inc()
 		slog.Info("auth.refresh.ok", "user_id", session.GetUserID(), "prev_session_id", session.GetID())
 	}
 	metricRefreshSuccess.Inc()

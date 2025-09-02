@@ -21,6 +21,7 @@ type _ = dto.ErrorResponse
 // @Param			request	body		object					true	"Sign out data"
 // @Param			request.device_token	body		string	false	"Device token to invalidate"
 // @Param			request.refresh_token	body		string	false	"Refresh token to invalidate"
+// @Param			X-Device-Id	header		string	false	"Device ID for targeted signout when device_token isn't provided"
 // @Success		200		{object}	map[string]string	"Sign out confirmation message"
 // @Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
 // @Failure		401		{object}	dto.ErrorResponse	"Unauthorized"

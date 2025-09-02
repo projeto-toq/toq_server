@@ -17,4 +17,6 @@ type SessionRepoPortInterface interface {
 	RevokeSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) error
 	GetActiveSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) (sessions []sessionmodel.SessionInterface, err error)
 	UpdateSessionRotation(ctx context.Context, tx *sql.Tx, id int64, rotationCounter int, lastRefreshAt time.Time) error
+	// DeleteExpiredSessions removes revoked+expired or absolutely expired sessions, returns affected count
+	DeleteExpiredSessions(ctx context.Context, tx *sql.Tx, limit int) (int64, error)
 }

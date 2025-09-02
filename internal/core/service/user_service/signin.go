@@ -10,6 +10,7 @@ import (
 
 	"errors"
 
+	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,6 +27,17 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		return
 	}
 	defer spanEnd()
+
+	// Debug: valores recebidos
+	if did, _ := ctx.Value(globalmodel.DeviceIDKey).(string); true {
+		slog.Debug("auth.signin_with_context.debug",
+			"national_id", nationalID,
+			"has_device_token", deviceToken != "",
+			"ip", ipAddress,
+			"user_agent", userAgent,
+			"ctx_device_id", did,
+		)
+	}
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
@@ -128,10 +140,18 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		slog.Warn("Failed to clear temporary block after successful login", "userID", userID, "error", err)
 	}
 
-	// Adiciona device token se fornecido
+	// Adiciona device token se fornecido (preferindo associação por deviceID quando disponível)
 	if deviceToken != "" {
-		if errAdd := us.repo.AddDeviceToken(ctx, tx, userID, deviceToken, nil); errAdd != nil {
-			slog.Warn("signIn: failed to add device token", "userID", userID, "err", errAdd)
+		if did, ok := ctx.Value(globalmodel.DeviceIDKey).(string); ok && did != "" {
+			slog.Debug("auth.signin.device_token.add_for_device", "device_id", did, "user_id", userID)
+			if errAdd := us.repo.AddTokenForDevice(ctx, tx, userID, did, deviceToken, nil); errAdd != nil {
+				slog.Warn("signIn: failed to add device token for device", "userID", userID, "deviceID", did, "err", errAdd)
+			}
+		} else {
+			slog.Debug("auth.signin.device_token.add_user_only", "user_id", userID)
+			if errAdd := us.repo.AddDeviceToken(ctx, tx, userID, deviceToken, nil); errAdd != nil {
+				slog.Warn("signIn: failed to add device token", "userID", userID, "err", errAdd)
+			}
 		}
 	}
 

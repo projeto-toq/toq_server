@@ -155,6 +155,11 @@ func (c *config) InitGlobalService() {
 		c.cache.SetGlobalService(c.globalService)
 		slog.Debug("GlobalService injected into Redis cache")
 	}
+
+	// Start session events subscriber
+	if c.globalService != nil {
+		_ = c.globalService.StartSessionEventSubscriber() // ignore unsubscribe for now (lifecycle handles full shutdown)
+	}
 }
 
 func (c *config) InitUserHandler() {

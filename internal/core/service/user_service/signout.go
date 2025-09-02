@@ -7,9 +7,30 @@ import (
 	"encoding/hex"
 	"log/slog"
 
+	"github.com/giulio-alfieri/toq_server/internal/core/events"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/prometheus/client_golang/prometheus"
 )
+
+var (
+	metricSignoutTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "auth_signout_total",
+		Help: "Total signout requests by mode",
+	}, []string{"mode"})
+	metricSignoutSessionsRevoked = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "auth_signout_sessions_revoked_total",
+		Help: "Total sessions revoked during signout by mode",
+	}, []string{"mode"})
+	metricSignoutDeviceTokensRemoved = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "auth_signout_device_tokens_removed_total",
+		Help: "Device tokens removed during signout by mode/method/result",
+	}, []string{"mode", "method", "result"})
+)
+
+func init() {
+	prometheus.MustRegister(metricSignoutTotal, metricSignoutSessionsRevoked, metricSignoutDeviceTokensRemoved)
+}
 
 func (us *userService) SignOut(ctx context.Context, userID int64, deviceToken, refreshToken string) (err error) {
 
@@ -41,6 +62,11 @@ func (us *userService) SignOut(ctx context.Context, userID int64, deviceToken, r
 func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, deviceToken, refreshToken string) (err error) {
 	// Determine single-session vs global logout
 	single := refreshToken != "" || deviceToken != ""
+	mode := "global"
+	if single {
+		mode = "single"
+	}
+	metricSignoutTotal.WithLabelValues(mode).Inc()
 
 	if single {
 		// Revoke only the session matching the refresh token (if provided & valid)
@@ -53,12 +79,30 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 				if revokeErr := us.sessionRepo.RevokeSession(ctx, tx, session.GetID()); revokeErr != nil {
 					slog.Warn("auth.signout.single.revoke_failed", "user_id", userID, "session_id", session.GetID(), "err", revokeErr)
 				}
+				// Publish SessionsRevoked (single)
+				us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID, DeviceID: session.GetDeviceID()})
+				// Count revoked session (best-effort; consider success when no revoke error)
+				metricSignoutSessionsRevoked.WithLabelValues(mode).Inc()
 			}
 		}
-		// Remove only this device token via repository
+		// Remove device tokens
 		if deviceToken != "" {
+			// Prefer explicit token removal if provided
 			if errTok := us.repo.RemoveDeviceToken(ctx, tx, userID, deviceToken); errTok != nil {
 				slog.Warn("auth.signout.single.device_token_delete_failed", "user_id", userID, "err", errTok)
+				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "token", "error").Inc()
+			} else {
+				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "token", "success").Inc()
+			}
+		} else {
+			// If deviceID is available in context, prune tokens for this device
+			if did, ok := ctx.Value(globalmodel.DeviceIDKey).(string); ok && did != "" {
+				if errTok := us.repo.RemoveTokensByDeviceID(ctx, tx, userID, did); errTok != nil {
+					slog.Warn("auth.signout.single.device_tokens_by_device_delete_failed", "user_id", userID, "device_id", did, "err", errTok)
+					metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "error").Inc()
+				} else {
+					metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "success").Inc()
+				}
 			}
 		}
 		// Audit
@@ -68,11 +112,18 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		if us.sessionRepo != nil {
 			if revokeAllErr := us.sessionRepo.RevokeSessionsByUserID(ctx, tx, userID); revokeAllErr != nil {
 				slog.Warn("auth.signout.global.revoke_failed", "user_id", userID, "err", revokeAllErr)
+			} else {
+				metricSignoutSessionsRevoked.WithLabelValues(mode).Inc()
 			}
+			// Publish SessionsRevoked (global)
+			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID})
 		}
 		// Remove all device tokens via repository
 		if errAll := us.repo.RemoveAllDeviceTokens(ctx, tx, userID); errAll != nil {
 			slog.Warn("auth.signout.global.device_tokens_delete_failed", "user_id", userID, "err", errAll)
+			metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "all", "error").Inc()
+		} else {
+			metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "all", "success").Inc()
 		}
 		_ = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Logout (global)")
 	}

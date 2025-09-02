@@ -2,9 +2,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ---
 🛠️ Problema
-estou recebendo o erro abaixo ao chamar 
-{"time":"2025-09-02T18:52:29.371271809Z","level":"WARN","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares.StructuredLoggingMiddleware.func1","file":"/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/structured_logging_middleware.go","line":126},"msg":"HTTP Error","request_id":"7acfc0c8-cf03-440b-86f5-7d378fcd5dd3","method":"POST","path":"/api/v2/auth/owner","status":400,"duration":1057966,"size":47,"client_ip":"179.110.194.42","user_agent":"PostmanRuntime/7.45.0"}
-
+verifique no log.md o rastreio do debug do contexto sendo passado entre as funções e veja porque device_id está null. device ID deveria ser enviado pelo postman/dispositivo? que identificador é esse?
 ---
 **REGRAS OBRIGATÓRIAS DE DESENVOLVIMENTO EM GO**
 1.  **Arquitetura e Fluxo de Código**
@@ -27,10 +25,11 @@ estou recebendo o erro abaixo ao chamar
 ---
 **INSTRUÇÕES FINAIS**
 * **Ação:** Não implemente nenhum código.
-* **Análise:** Analise cuidadosamente o problema, o log.md e os requisitos. Se necessário, solicite informações adicionais. Analise sempre o código existente.
-* **Plano:** Apresente um plano detalhado para a refatoração. O plano deve incluir:
+* **Análise:** Analise cuidadosamente o problema, os requisitos. Se necessário, solicite informações adicionais. Analise sempre o código existente.
+* **Plano:** Apresente um plano detalhado para a correção da causa raiz. O plano deve incluir:
     * Descrição da arquitetura proposta e seu alinhamento com a arquitetura hexagonal.
     * Interfaces a serem criadas (com métodos e assinaturas).
     * Estrutura de diretórios e arquivos sugerida.
     * Ordem das etapas de refatoração para garantir uma transição suave.
 * **Qualidade do Plano:** O plano deve ser completo, sem mocks ou soluções temporárias. Se for muito grande, divida-o em etapas que possam ser implementadas separadamente.
+* **Acompanhamento:** Sempre informe etapas executadas e etapas a serem executadas para acompanhar o andamento.

@@ -30,6 +30,7 @@ import (
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
+	sessionservice "github.com/giulio-alfieri/toq_server/internal/core/service/session_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"gopkg.in/yaml.v3"
@@ -46,6 +47,7 @@ type config struct {
 	cache                  cache.CacheInterface
 	activityTracker        *goroutines.ActivityTracker
 	tempBlockCleaner       *goroutines.TempBlockCleanerWorker
+	sessionService         sessionservice.Service
 	wg                     *sync.WaitGroup
 	readiness              bool
 	globalService          globalservice.GlobalServiceInterface
@@ -246,6 +248,20 @@ func (c *config) InitializeGoRoutines() {
 		slog.Info("Temp block cleaner worker started")
 	} else {
 		slog.Warn("Temp block cleaner not available for goroutine initialization")
+	}
+
+	// Start session cleaner using service (if session repo and global service are set)
+	if c.repositoryAdapters != nil && c.repositoryAdapters.Session != nil && c.globalService != nil {
+		c.sessionService = sessionservice.New(c.repositoryAdapters.Session, c.globalService)
+		intervalSecs := c.env.AUTH.SessionCleanerIntervalSeconds
+		if intervalSecs <= 0 {
+			intervalSecs = 60
+		}
+		c.wg.Add(1)
+		go goroutines.SessionCleaner(c.sessionService, c.wg, c.context, time.Duration(intervalSecs)*time.Second)
+		slog.Info("Session cleaner worker started", "interval_seconds", intervalSecs)
+	} else {
+		slog.Warn("Session cleaner prerequisites not met; skipping start")
 	}
 }
 

@@ -3,10 +3,13 @@ package authhandlers
 import (
 	"net/http"
 
+	"log/slog"
+
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
+	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -56,6 +59,17 @@ func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 
 	// Extract request context for security logging and session metadata
 	reqContext := utils.ExtractRequestContext(c)
+
+	// Debug: rastrear valores de contexto antes de chamar o serviço
+	headerDeviceID := c.GetHeader("X-Device-Id")
+	ctxDeviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
+	slog.Debug("auth.create_realtor.debug",
+		"device_token", request.DeviceToken,
+		"ip", reqContext.IPAddress,
+		"user_agent", reqContext.UserAgent,
+		"header_device_id", headerDeviceID,
+		"ctx_device_id", ctxDeviceID,
+	)
 
 	// Call service: cria a conta e autentica via SignIn padrão
 	tokens, err := ah.userService.CreateRealtor(ctx, user, request.Realtor.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)

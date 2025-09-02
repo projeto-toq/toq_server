@@ -2,8 +2,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ---
 🛠️ Problema
-Atualmente o sistema possue o repositorio de session, middleware de autenticação, go routine para limpeza de session e controle de device token para push notification FCM. Creio que deveria haver uma integração destes elementos, ao menos para FCM e sessions. Adicionalmente não localizei onde e quem cria as sessões e persiste.
-Analise estes elementos e explique como ele estão implementados, se possível de forma gráfica, e se houver integração possível e desejavel sugira.
+N última refatoração, voce criou métricas de session. Analise /grafana e crie um plano para adicionar paineis com estas métricas no dashboard do Grafana.
 
 ---
 **REGRAS OBRIGATÓRIAS DE DESENVOLVIMENTO EM GO**
@@ -34,3 +33,4 @@ Analise estes elementos e explique como ele estão implementados, se possível d
     * Estrutura de diretórios e arquivos sugerida.
     * Ordem das etapas de refatoração para garantir uma transição suave.
 * **Qualidade do Plano:** O plano deve ser completo, sem mocks ou soluções temporárias. Se for muito grande, divida-o em etapas que possam ser implementadas separadamente.
+* **Acompanhamento:** Sempre informe etapas executadas e etapas a serem executadas para acompanhar o andamento.

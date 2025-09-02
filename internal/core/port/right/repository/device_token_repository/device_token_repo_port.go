@@ -10,4 +10,9 @@ type DeviceTokenRepoPortInterface interface {
 	RemoveAllByUserID(userID int64) error
 	ListTokensByOptedInUsers() ([]string, error)
 	ListTokensByUserIDIfOptedIn(userID int64) ([]string, error)
+
+	// Per-device operations (compatible defaults when device_id is not present in schema)
+	AddTokenForDevice(userID int64, deviceID, token string, platform *string) (usermodel.DeviceTokenInterface, error)
+	RemoveTokensByDeviceID(userID int64, deviceID string) error
+	ListTokensByDeviceID(userID int64, deviceID string) ([]string, error)
 }

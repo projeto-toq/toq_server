@@ -858,6 +858,10 @@ paths:
         name: request.refresh_token
         schema:
           type: string
+      - description: Device ID for targeted signout when device_token isn't provided
+        in: header
+        name: X-Device-Id
+        type: string
       produces:
       - application/json
       responses:

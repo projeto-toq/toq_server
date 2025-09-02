@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/giulio-alfieri/toq_server/internal/core/events"
 	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
@@ -23,6 +24,7 @@ type globalService struct {
 	sms                  smsport.SMSPortInterface
 	googleCludStorage    storageport.CloudStoragePortInterface
 	deviceTokenRepo      devicetokenrepository.DeviceTokenRepoPortInterface
+	eventBus             events.Bus
 }
 
 func NewGlobalService(
@@ -42,6 +44,7 @@ func NewGlobalService(
 		sms:                  sms,
 		googleCludStorage:    googleCloudStorage,
 		deviceTokenRepo:      deviceTokenRepo,
+		eventBus:             events.NewInMemoryBus(),
 	}
 }
 
@@ -53,10 +56,19 @@ type GlobalServiceInterface interface {
 	// Novo sistema de notificação unificado
 	GetUnifiedNotificationService() UnifiedNotificationService
 
+	// Event bus accessor (for publishing session events)
+	GetEventBus() events.Bus
 	GetCEP(ctx context.Context, cep string) (address cepmodel.CEPInterface, err error)
+	// StartSessionEventSubscriber starts the subscriber and returns an unsubscribe function
+	StartSessionEventSubscriber() func()
 
 	StartTransaction(ctx context.Context) (tx *sql.Tx, err error)
 	RollbackTransaction(ctx context.Context, tx *sql.Tx) (err error)
 	CommitTransaction(ctx context.Context, tx *sql.Tx) (err error)
 	GetUserIDFromContext(ctx context.Context) (int64, error)
+}
+
+// GetEventBus returns the in-memory event bus instance
+func (gs *globalService) GetEventBus() events.Bus {
+	return gs.eventBus
 }

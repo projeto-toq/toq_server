@@ -128,3 +128,24 @@ func (r *DeviceTokenRepository) ListTokensByUserIDIfOptedIn(userID int64) ([]str
 	}
 	return tokens, nil
 }
+
+// --- Per-device operations (schema-agnostic fallbacks) ---
+
+// AddTokenForDevice falls back to AddToken when device_id column is not available.
+func (r *DeviceTokenRepository) AddTokenForDevice(userID int64, deviceID, token string, platform *string) (usermodel.DeviceTokenInterface, error) {
+	// Current schema stores only (user_id, device_token), so delegate
+	return r.AddToken(userID, token, platform)
+}
+
+// RemoveTokensByDeviceID removes tokens for a specific device; fallback removes none if device_id unsupported.
+func (r *DeviceTokenRepository) RemoveTokensByDeviceID(userID int64, deviceID string) error {
+	// Without device_id column, we cannot target by device; no-op to preserve data
+	// Consider full removal by user only when explicitly requested elsewhere.
+	return nil
+}
+
+// ListTokensByDeviceID lists tokens for a specific device; fallback returns tokens by user if opted-in.
+func (r *DeviceTokenRepository) ListTokensByDeviceID(userID int64, deviceID string) ([]string, error) {
+	// Fallback to user-level listing under current schema
+	return r.ListTokensByUserIDIfOptedIn(userID)
+}

@@ -869,6 +869,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Device ID for targeted signout when device_token isn't provided",
+                        "name": "X-Device-Id",
+                        "in": "header"
                     }
                 ],
                 "responses": {

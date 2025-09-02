@@ -8,14 +8,14 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/giulio-alfieri/toq_server/internal/core/events"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/google/uuid"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error) {
@@ -80,9 +80,15 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 		if ip, ok := ctx.Value(globalmodel.ClientIPKey).(string); ok {
 			s.SetIP(ip)
 		}
+		// Set device ID if present
+		if did, ok := ctx.Value(globalmodel.DeviceIDKey).(string); ok {
+			s.SetDeviceID(did)
+		}
 		// DeviceID placeholder: can be provided via metadata in future
 		if err := us.sessionRepo.CreateSession(ctx, tx, s); err != nil {
 			slog.Warn("failed to persist session", "err", err)
+		} else {
+			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionCreated, UserID: s.GetUserID(), SessionID: ptrInt64(s.GetID()), DeviceID: s.GetDeviceID()})
 		}
 	}
 
@@ -91,3 +97,6 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 
 	return
 }
+
+// ptrInt64 returns a pointer to an int64 value
+func ptrInt64(v int64) *int64 { return &v }

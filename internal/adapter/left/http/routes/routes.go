@@ -72,6 +72,9 @@ func setupGlobalMiddlewares(router *gin.Engine, metricsAdapter *factory.MetricsA
 	}
 	router.Use(middlewares.TelemetryMiddleware(metricsPort))
 
+	// 6. DeviceContextMiddleware - injeta DeviceID no contexto
+	router.Use(middlewares.DeviceContextMiddleware())
+
 	// Nota: AuthMiddleware e PermissionMiddleware são aplicados apenas em rotas específicas
 }
 

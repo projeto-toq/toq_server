@@ -36,4 +36,8 @@ type UserRepoPortInterface interface {
 	AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string, platform *string) error
 	RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error
 	RemoveAllDeviceTokens(ctx context.Context, tx *sql.Tx, userID int64) error
+
+	// Per-device operations (backward-compatible when schema lacks device_id)
+	AddTokenForDevice(ctx context.Context, tx *sql.Tx, userID int64, deviceID, token string, platform *string) error
+	RemoveTokensByDeviceID(ctx context.Context, tx *sql.Tx, userID int64, deviceID string) error
 }

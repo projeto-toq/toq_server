@@ -512,6 +512,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`device_tokens` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `device_token` VARCHAR(255) NOT NULL,
+  `device_id` VARCHAR(100) NULL,
   `platform` VARCHAR(45) NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_device_tokens_user_idx` (`user_id` ASC) VISIBLE,
