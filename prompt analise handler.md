@@ -16,12 +16,12 @@ Boas Práticas: Adotar as melhores práticas de desenvolvimento em Go, incluindo
 Separação de Responsabilidades: Manter a separação clara entre arquivos de domínio, interfaces e suas respectivas implementações.
 
 2. Injeção de Dependência
-Padrão de Injeção: A injeção de dependência deve ser feita através de factories.
+Padrão de Injeção: A injeção de dependência deve ser feita através de factories. veja /config/* e /factory/*
 Estrutura de Repositórios: Os repositórios devem estar em /internal/adapter/right/mysql/.
 Inicialização Única: Os adapters e services devem ser inicializados uma única vez na inicialização da aplicação.
 
 3. Tratamento e Propagação de Erros
-Padrão de Erros: Todos os erros devem ser tratados usando o pacote utils/http_errors.
+Padrão de Erros: Todos os erros devem ser tratados usando o pacote http/http_errors para adapter errors e utils/http_errors para DomainError
 Propagação:
 Erros devem ser logados e transformados em utils/http_errors no ponto onde ocorrem.
 Chamadores intermediários devem apenas repassar o erro, sem logar ou recriar.

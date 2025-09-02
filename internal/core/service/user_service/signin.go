@@ -66,7 +66,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	userID := user.GetID()
 
 	// Verificação única de bloqueio temporário ANTES de qualquer validação
-	isBlocked, err := us.permissionService.IsUserTempBlocked(ctx, userID)
+	isBlocked, err := us.permissionService.IsUserTempBlockedWithTx(ctx, tx, userID)
 	if err != nil {
 		slog.Error("Failed to check if user is temporarily blocked", "userID", userID, "error", err)
 		err = utils.InternalError("Failed to validate user status")
@@ -208,7 +208,7 @@ func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user 
 
 // clearTemporaryBlockOnSuccess remove bloqueio temporário após login bem-sucedido
 func (us *userService) clearTemporaryBlockOnSuccess(ctx context.Context, tx *sql.Tx, userID int64) error {
-	isBlocked, err := us.permissionService.IsUserTempBlocked(ctx, userID)
+	isBlocked, err := us.permissionService.IsUserTempBlockedWithTx(ctx, tx, userID)
 	if err != nil {
 		return err
 	}

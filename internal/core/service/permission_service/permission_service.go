@@ -72,6 +72,9 @@ type PermissionServiceInterface interface {
 	// User blocking operations
 	BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, reason string) error
 	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
+	// IsUserTempBlocked checks block status without requiring caller to manage tx
 	IsUserTempBlocked(ctx context.Context, userID int64) (bool, error)
+	// IsUserTempBlockedWithTx allows callers with an existing transaction to reuse it
+	IsUserTempBlockedWithTx(ctx context.Context, tx *sql.Tx, userID int64) (bool, error)
 	GetExpiredTempBlockedUsers(ctx context.Context) ([]permissionmodel.UserRoleInterface, error)
 }
