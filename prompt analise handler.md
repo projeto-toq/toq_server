@@ -31,7 +31,7 @@ Após várias refatorações estou fazendo uma verificação de qualidade. Assim
 ---
 **INSTRUÇÕES FINAIS**
 * **Ação:** Não implemente nenhum código.
-* **Análise:** Analise cuidadosamente o problema (`log.md`) e os requisitos. Se necessário, solicite informações adicionais. Analise sempre o código existente.
+* **Análise:** Analise cuidadosamente o problema e os requisitos. Se necessário, solicite informações adicionais. Analise sempre o código existente.
 * **Plano:** Apresente um plano detalhado para a refatoração. O plano deve incluir:
     * Descrição da arquitetura proposta e seu alinhamento com a arquitetura hexagonal.
     * Interfaces a serem criadas (com métodos e assinaturas).

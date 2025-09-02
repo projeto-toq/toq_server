@@ -2,7 +2,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ---
 🛠️ Problema
-verifique se a criação de jwt tokens access_token e refresh_token estão utilizando jwt: secret: do env.yaml
+durante o auto cadastramento de usuários Owner/realtor/Agency a regra de negócio é que ao final o usuário esteja logado na aplicação. Para fazer isso ao final da create_* é feita a criaçãode tokens e retornada ao usuário.
 
 ---
 **REGRAS OBRIGATÓRIAS DE DESENVOLVIMENTO EM GO**

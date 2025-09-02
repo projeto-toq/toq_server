@@ -81,25 +81,21 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		return
 	}
 
-	// Busca os roles ativos via Permission Service
-	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, userID)
+	// Busca a role ativa via Permission Service (há apenas uma ativa por vez)
+	activeRole, err := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if err != nil {
-		slog.Error("Failed to get user roles", "userID", userID, "error", err)
+		slog.Error("Failed to get active user role", "userID", userID, "error", err)
 		err = utils.InternalError("Failed to validate user permissions")
 		return
 	}
-
-	if len(userRoles) == 0 {
-		// Log da tentativa sem roles ativos
+	if activeRole == nil {
+		// Log da tentativa sem role ativa
 		us.securityLogger.LogNoActiveRoles(ctx, userID, nationalID, ipAddress, userAgent)
-		slog.Warn("User has no active roles", "userID", userID)
+		slog.Warn("User has no active role", "userID", userID)
 		err = utils.AuthorizationError("No active user roles")
 		return
 	}
-
-	if len(userRoles) > 0 {
-		user.SetActiveRole(userRoles[0])
-	}
+	user.SetActiveRole(activeRole)
 
 	// Comparar a senha fornecida com o hash armazenado (bcrypt)
 	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {

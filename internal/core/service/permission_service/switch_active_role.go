@@ -92,6 +92,20 @@ func (p *permissionServiceImpl) GetActiveUserRole(ctx context.Context, userID in
 	return userRole, nil
 }
 
+// GetActiveUserRoleWithTx retorna a role ativa do usuário utilizando a transação fornecida
+func (p *permissionServiceImpl) GetActiveUserRoleWithTx(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error) {
+	if userID <= 0 {
+		return nil, utils.ErrBadRequest
+	}
+
+	userRole, err := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
+	if err != nil {
+		// Repositório já loga erros técnicos; aqui padronizamos o erro de domínio
+		return nil, utils.ErrInternalServer
+	}
+	return userRole, nil
+}
+
 // DeactivateAllUserRoles desativa todos os roles de um usuário
 func (p *permissionServiceImpl) DeactivateAllUserRoles(ctx context.Context, userID int64) error {
 	if userID <= 0 {

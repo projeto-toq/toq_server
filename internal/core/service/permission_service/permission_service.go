@@ -67,6 +67,8 @@ type PermissionServiceInterface interface {
 	RemoveRoleFromUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
 	GetUserPermissionsWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
 	GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
+	// Nova assinatura: retorna a role ativa usando a transação do chamador
+	GetActiveUserRoleWithTx(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error)
 	SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error
 
 	// User blocking operations
