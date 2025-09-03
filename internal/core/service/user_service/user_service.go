@@ -68,7 +68,7 @@ type UserServiceInterface interface {
 	CreateOwner(ctx context.Context, owner usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
 	CreateRealtor(ctx context.Context, realtor usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
 	CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error)
-	DeleteAccount(ctx context.Context, userID int64) (tokens usermodel.Tokens, err error)
+	DeleteAccount(ctx context.Context) (tokens usermodel.Tokens, err error)
 	DeleteAgencyOfRealtor(ctx context.Context, realtorID int64) (err error)
 	DeleteRealtorOfAgency(ctx context.Context, agencyID int64, realtorID int64) (err error)
 	GetAgencyOfRealtor(ctx context.Context, realtorID int64) (agency usermodel.UserInterface, err error)

@@ -120,7 +120,7 @@ func RegisterUserRoutes(
 		// Profile management
 		user.GET("/profile", userHandler.GetProfile)                                                         // GetProfile
 		user.PUT("/profile", userHandler.UpdateProfile)                                                      // UpdateProfile
-		user.DELETE("/account", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // DeleteAccount
+		user.DELETE("/account", userHandler.DeleteAccount)                                                   // DeleteAccount
 		user.GET("/onboarding", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetOnboardingStatus
 		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // GetUserRoles
 		user.GET("/home", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // GoHome

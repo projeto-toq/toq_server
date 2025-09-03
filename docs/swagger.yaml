@@ -105,6 +105,13 @@ definitions:
       tokens:
         $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse:
+    properties:
+      message:
+        type: string
+      tokens:
+        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse'
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse:
     properties:
       code:
@@ -1061,6 +1068,36 @@ paths:
       summary: Verify CRECI documents presence
       tags:
       - Realtor
+  /user/account:
+    delete:
+      consumes:
+      - application/json
+      description: Permanently delete the current user's account. Revokes all sessions,
+        removes device tokens, masks PII, and detaches roles.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete account
+      tags:
+      - User
   /user/email/change/confirm:
     post:
       consumes:

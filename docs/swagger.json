@@ -850,6 +850,52 @@
                 }
             }
         },
+        "/user/account": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Permanently delete the current user's account. Revokes all sessions, removes device tokens, masks PII, and detaches roles.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Delete account",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/email/change/confirm": {
             "post": {
                 "description": "Confirm email change by providing the received validation code",
@@ -1690,6 +1736,17 @@
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateRealtorResponse": {
             "type": "object",
             "properties": {
+                "tokens": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
                 "tokens": {
                     "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse"
                 }

@@ -3,22 +3,62 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
+	"github.com/giulio-alfieri/toq_server/internal/core/events"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) DeleteAccount(ctx context.Context, userID int64) (tokens usermodel.Tokens, err error) {
+// DeleteAccount deletes the current authenticated user's account.
+// It revokes all sessions and removes all device tokens, masks PII, and removes roles.
+// Idempotent: if already deleted, returns success and expired tokens.
+func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
 	}
 	defer spanEnd()
 
+	// Resolve userID from context
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return tokens, utils.ErrUnauthorized
+	}
+
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
+		return
+	}
+
+	// Load user first to support idempotency and side-effects in a single txn
+	user, err := us.repo.GetUserByID(ctx, tx, userID)
+	if err != nil {
+		us.globalService.RollbackTransaction(ctx, tx)
+		return
+	}
+
+	// Idempotency: if already deleted, just revoke any remaining sessions and return expired tokens
+	if user.IsDeleted() {
+		if us.sessionRepo != nil {
+			_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, userID)
+			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID})
+		}
+		// Best-effort: remove device tokens
+		if err2 := us.repo.RemoveAllDeviceTokens(ctx, tx, userID); err2 != nil {
+			slog.Warn("deleteAccount.RemoveAllDeviceTokens idempotent path failed", "error", err2)
+		}
+		// Return expired tokens
+		tokens, err = us.CreateTokens(ctx, tx, user, true)
+		if err != nil {
+			us.globalService.RollbackTransaction(ctx, tx)
+			return
+		}
+		if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
+			us.globalService.RollbackTransaction(ctx, tx)
+		}
 		return
 	}
 
@@ -38,7 +78,6 @@ func (us *userService) DeleteAccount(ctx context.Context, userID int64) (tokens 
 }
 
 func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int64) (tokens usermodel.Tokens, err error) {
-
 	user, err := us.repo.GetUserByID(ctx, tx, userId)
 	if err != nil {
 		return
@@ -66,10 +105,18 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int
 		}
 	}
 
-	//generate a new expired token to avoid user keep logged in
-	tokens, err = us.CreateTokens(ctx, tx, user, true)
-	if err != nil {
-		return
+	// Revoke all active sessions for the user (security first)
+	if us.sessionRepo != nil {
+		if err2 := us.sessionRepo.RevokeSessionsByUserID(ctx, tx, user.GetID()); err2 != nil {
+			slog.Warn("deleteAccount.RevokeSessionsByUserID failed", "error", err2)
+		} else {
+			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: user.GetID()})
+		}
+	}
+
+	// Remove all device tokens
+	if err2 := us.repo.RemoveAllDeviceTokens(ctx, tx, user.GetID()); err2 != nil {
+		slog.Warn("deleteAccount.RemoveAllDeviceTokens failed", "error", err2)
 	}
 
 	us.setDeletedData(user)
@@ -115,6 +162,12 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Apagados os papéis do usuário, pois a conta foi apagada")
+	if err != nil {
+		return
+	}
+
+	// Generate expired tokens to ensure client logout on all devices
+	tokens, err = us.CreateTokens(ctx, tx, user, true)
 	if err != nil {
 		return
 	}

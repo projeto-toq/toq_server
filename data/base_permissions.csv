@@ -45,3 +45,4 @@ id;name;resource;action;description;conditions;is_active
 44;HTTP GetCreciUploadURL;http;POST:/api/v2/realtor/creci/upload-url;Permite obter URL de upload dos documentos CRECI;NULL;1
 45;HTTP VerifyCreciDocuments;http;POST:/api/v2/realtor/creci/verify;Permite verificar documentos CRECI e enviar para validação manual;NULL;1
 46;HTTP UpdateOptStatus;http;PUT:/api/v2/user/opt-status;Permite atualizar o status de opt-in de notificações;NULL;1
+47;HTTP DeleteAccount;http;DELETE:/api/v2/user/account;Permite deletar a própria conta;NULL;1
