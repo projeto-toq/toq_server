@@ -49,21 +49,13 @@ func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
 		return
 	}
 
-	// Call service to confirm phone change
-	tokens, err := uh.userService.ConfirmPhoneChange(ctx, userInfo.ID, request.Code)
+	// Call service to confirm phone change (no tokens returned)
+	err := uh.userService.ConfirmPhoneChange(ctx, userInfo.ID, request.Code)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	// Prepare successful response with new tokens
-	response := dto.ConfirmPhoneChangeResponse{
-		Tokens: dto.TokensResponse{
-			AccessToken:  tokens.AccessToken,
-			RefreshToken: tokens.RefreshToken,
-		},
-	}
-
 	// Return success response
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, dto.ConfirmPhoneChangeResponse{Message: "Phone changed successfully"})
 }

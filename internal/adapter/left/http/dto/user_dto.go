@@ -255,7 +255,7 @@ type ConfirmEmailChangeRequest struct {
 }
 
 type ConfirmEmailChangeResponse struct {
-	Tokens TokensResponse `json:"tokens"`
+	Message string `json:"message"`
 }
 
 type ResendEmailChangeCodeResponse struct {
@@ -276,7 +276,7 @@ type ConfirmPhoneChangeRequest struct {
 }
 
 type ConfirmPhoneChangeResponse struct {
-	Tokens TokensResponse `json:"tokens"`
+	Message string `json:"message"`
 }
 
 type ResendPhoneChangeCodeResponse struct {

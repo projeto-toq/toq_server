@@ -177,20 +177,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
-                    "401": {
-                        "description": "Invalid verification code",
+                    "409": {
+                        "description": "Password change not pending",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
-                    "404": {
-                        "description": "User not found",
+                    "410": {
+                        "description": "Verification code expired",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "422": {
-                        "description": "Password validation failed",
+                        "description": "Invalid verification code or password validation failed",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -237,12 +237,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid request format",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -754,7 +748,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Tokens returned if applicable",
+                        "description": "Confirmation message",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeResponse"
                         }
@@ -1206,8 +1200,8 @@ const docTemplate = `{
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeResponse": {
             "type": "object",
             "properties": {
-                "tokens": {
-                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse"
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -1253,8 +1247,8 @@ const docTemplate = `{
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmPhoneChangeResponse": {
             "type": "object",
             "properties": {
-                "tokens": {
-                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.TokensResponse"
+                "message": {
+                    "type": "string"
                 }
             }
         },

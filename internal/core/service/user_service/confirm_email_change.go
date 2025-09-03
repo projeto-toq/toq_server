@@ -7,11 +7,11 @@ import (
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error) {
+// ConfirmEmailChange confirms a pending email change without creating or returning tokens.
+func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, code string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -27,7 +27,7 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, cod
 		return
 	}
 
-	tokens, err = us.confirmEmailChange(ctx, tx, userID, code)
+	err = us.confirmEmailChange(ctx, tx, userID, code)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
@@ -65,7 +65,7 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, cod
 	return
 }
 
-func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userID int64, code string) (tokens usermodel.Tokens, err error) {
+func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userID int64, code string) (err error) {
 
 	now := time.Now()
 
@@ -107,9 +107,9 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 
 	// Verificar se o novo e-mail já está sendo utilizado por outro usuário
 	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, userValidation.GetNewEmail(), userID); verr != nil {
-		return tokens, verr
+		return verr
 	} else if exist {
-		return tokens, utils.ErrEmailAlreadyInUse
+		return utils.ErrEmailAlreadyInUse
 	}
 
 	user.SetEmail(userValidation.GetNewEmail())
@@ -123,18 +123,6 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
 		return
-	}
-
-	mustCreateTokens, err := us.UpdateUserValidationByUserRole(ctx, tx, &user, userValidation)
-	if err != nil {
-		return
-	}
-
-	if mustCreateTokens {
-		tokens, err = us.CreateTokens(ctx, tx, user, false)
-		if err != nil {
-			return
-		}
 	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)

@@ -1,5 +1,5 @@
 
-Eu preciso que você atue como um engenheiro de software Go sênior, especializado em arquitetura hexagonal e boas práticas de código. Siga as instruções abaixo de forma **ESTRITA** para implementar o plano proposto.
+Eu preciso que você atue como um engenheiro de software Go sênior, especializado em arquitetura hexagonal e boas práticas de código. Siga as instruções abaixo de forma **ESTRITA** para implementar o plano proposto interagindo em português.
 
 ## INSTRUÇÕES PARA GERAÇÃO E IMPLEMENTAÇÃO DE CÓDIGO
 

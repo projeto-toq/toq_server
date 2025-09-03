@@ -5,7 +5,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Devido a mudança da froma de acompanhamento do status do usuário não é mais necessário que a troca de telefone (confirm_phone_change) nem a troca de e-mail (confirm_email_change) retornem tokens. assim analise crie um plano para refatorar
+**Problema:** Quando o usuário valida a troca de email e/ou telefone, são eliminados os valores da coluna de new_*_code, *_code e *_code_exp da tabela temp_user_validations. Entretanto quando só existe apenas 1 item de verificação para limpar o regsitro permanece com todos os campos NULL. crie um plano para refatorar permitindo que se nenhum item existir para verificação o registro deve ser limpo. Uma outra opção é rotina assincrona, reaproveitando alguma já existente no código, que limpe os registros/colunas expirados. Apresente pros e contras.
 
 ---
 

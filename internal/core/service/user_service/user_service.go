@@ -60,9 +60,9 @@ func NewUserService(
 type UserServiceInterface interface {
 	AcceptInvitation(ctx context.Context, userID int64) (err error)
 	AddAlternativeRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug, creciInfo ...string) (err error)
-	ConfirmEmailChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error)
+	ConfirmEmailChange(ctx context.Context, userID int64, code string) (err error)
 	ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error)
-	ConfirmPhoneChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error)
+	ConfirmPhoneChange(ctx context.Context, userID int64, code string) (err error)
 	// Fluxos de criação de conta que retornam tokens via SignIn padrão
 	CreateAgency(ctx context.Context, agency usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
 	CreateOwner(ctx context.Context, owner usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)

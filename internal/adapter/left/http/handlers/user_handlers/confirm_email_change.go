@@ -19,7 +19,7 @@ import (
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body      dto.ConfirmEmailChangeRequest  true  "Confirmation code"
-//	@Success      200      {object}  dto.ConfirmEmailChangeResponse         "Tokens returned if applicable"
+//	@Success      200      {object}  dto.ConfirmEmailChangeResponse         "Confirmation message"
 //	@Failure      400      {object}  dto.ErrorResponse                      "Invalid request format or code"
 //	@Failure      401      {object}  dto.ErrorResponse                      "Unauthorized"
 //	@Failure      409      {object}  dto.ErrorResponse                      "Email change not pending or already in use"
@@ -52,20 +52,12 @@ func (uh *UserHandler) ConfirmEmailChange(c *gin.Context) {
 		return
 	}
 
-	// Call service to confirm email change
-	tokens, err := uh.userService.ConfirmEmailChange(ctx, userInfo.ID, request.Code)
+	// Call service to confirm email change (no tokens returned)
+	err := uh.userService.ConfirmEmailChange(ctx, userInfo.ID, request.Code)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	// Prepare response
-	response := dto.ConfirmEmailChangeResponse{
-		Tokens: dto.TokensResponse{
-			AccessToken:  tokens.AccessToken,
-			RefreshToken: tokens.RefreshToken,
-		},
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, dto.ConfirmEmailChangeResponse{Message: "Email changed successfully"})
 }

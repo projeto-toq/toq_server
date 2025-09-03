@@ -7,12 +7,12 @@ import (
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) ConfirmPhoneChange(ctx context.Context, userID int64, code string) (tokens usermodel.Tokens, err error) {
+// ConfirmPhoneChange confirms a pending phone change without creating or returning tokens.
+func (us *userService) ConfirmPhoneChange(ctx context.Context, userID int64, code string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -28,7 +28,7 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, userID int64, cod
 		return
 	}
 
-	tokens, err = us.confirmPhoneChange(ctx, tx, userID, code)
+	err = us.confirmPhoneChange(ctx, tx, userID, code)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
@@ -63,7 +63,7 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, userID int64, cod
 	return
 }
 
-func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userID int64, code string) (tokens usermodel.Tokens, err error) {
+func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userID int64, code string) (err error) {
 	now := time.Now().UTC()
 
 	//read the user validation
@@ -98,9 +98,9 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 
 	// Uniqueness check before setting
 	if exist, verr := us.repo.ExistsPhoneForAnotherUser(ctx, tx, userValidation.GetNewPhone(), userID); verr != nil {
-		return tokens, verr
+		return verr
 	} else if exist {
-		return tokens, utils.ErrPhoneAlreadyInUse
+		return utils.ErrPhoneAlreadyInUse
 	}
 	user.SetPhoneNumber(userValidation.GetNewPhone())
 
@@ -114,17 +114,10 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 		return
 	}
 
-	//update the user Status and create tokens if needed
-	mustCreateTokens, err := us.UpdateUserValidationByUserRole(ctx, tx, &user, userValidation)
+	// Update user status if needed, but do not create tokens in this flow
+	_, err = us.UpdateUserValidationByUserRole(ctx, tx, &user, userValidation)
 	if err != nil {
 		return
-	}
-
-	if mustCreateTokens {
-		tokens, err = us.CreateTokens(ctx, tx, user, false)
-		if err != nil {
-			return
-		}
 	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
