@@ -366,6 +366,16 @@ definitions:
       refreshToken:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateOptStatusRequest:
+    properties:
+      optIn:
+        type: boolean
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateOptStatusResponse:
+    properties:
+      message:
+        type: string
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateProfileRequest:
     properties:
       user:
@@ -1159,6 +1169,46 @@ paths:
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       summary: Resend email change code
+      tags:
+      - User
+  /user/opt-status:
+    put:
+      consumes:
+      - application/json
+      description: Update user's consent to receive notifications (opt-in/opt-out)
+      parameters:
+      - description: Opt-in request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateOptStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateOptStatusResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update opt-in status
       tags:
       - User
   /user/phone/confirm:

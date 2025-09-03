@@ -5,13 +5,12 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de opção para envo de mensagens (internal/adapter/left/http/handlers/user_handlers/update_opt_status.go)
+**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de deleção de conta pelo príprio usuário (internal/adapter/left/http/handlers/user_handlers/delete_account.go)
 
 Verifique se:
 - a lógica está correta;
 - existem otimizações possíveis;
 - a documentação está adequada.
-
 
 ---
 

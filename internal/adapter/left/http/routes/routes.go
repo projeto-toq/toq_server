@@ -124,7 +124,7 @@ func RegisterUserRoutes(
 		user.GET("/onboarding", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetOnboardingStatus
 		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // GetUserRoles
 		user.GET("/home", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // GoHome
-		user.PUT("/opt-status", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // UpdateOptStatus
+		user.PUT("/opt-status", userHandler.UpdateOptStatus)                                                 // UpdateOptStatus
 
 		// SignOut (authenticated endpoint)
 		user.POST("/signout", userHandler.SignOut) // SignOut

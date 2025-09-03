@@ -8,6 +8,21 @@ import (
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 )
 
+// UpdateOptStatus updates the user's messaging opt-in status
+//
+//	@Summary      Update opt-in status
+//	@Description  Update user's consent to receive notifications (opt-in/opt-out)
+//	@Tags         User
+//	@Accept       json
+//	@Produce      json
+//	@Param        request  body      dto.UpdateOptStatusRequest  true  "Opt-in request"
+//	@Success      200      {object}  dto.UpdateOptStatusResponse
+//	@Failure      400      {object}  dto.ErrorResponse  "Invalid request"
+//	@Failure      401      {object}  dto.ErrorResponse  "Unauthorized"
+//	@Failure      403      {object}  dto.ErrorResponse  "Forbidden"
+//	@Failure      500      {object}  dto.ErrorResponse  "Internal server error"
+//	@Router       /user/opt-status [put]
+//	@Security     BearerAuth
 func (uh *UserHandler) UpdateOptStatus(c *gin.Context) {
 	ctx := c.Request.Context()
 
