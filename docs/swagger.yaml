@@ -323,6 +323,42 @@ definitions:
       refreshToken:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateProfileRequest:
+    properties:
+      user:
+        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateUserRequest'
+    required:
+    - user
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateProfileResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateUserRequest:
+    properties:
+      bornAt:
+        description: 'format: 2006-01-02'
+        type: string
+      city:
+        type: string
+      complement:
+        type: string
+      neighborhood:
+        type: string
+      nickName:
+        maxLength: 50
+        minLength: 2
+        type: string
+      number:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      zipCode:
+        type: string
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserCreateRequest:
     properties:
       bornAt:
@@ -1130,6 +1166,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Get user profile
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update profile fields like nickname, born_at, and address. Email/phone/password
+        have dedicated flows.
+      parameters:
+      - description: Update profile payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateProfileResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user profile (non-sensitive fields)
       tags:
       - User
   /user/signout:

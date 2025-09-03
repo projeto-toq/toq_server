@@ -3,13 +3,32 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"net/http"
+	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error) {
+// UpdateProfileInput represents allowed fields for profile updates.
+// Only these fields can be changed by this flow; sensitive fields use dedicated endpoints.
+type UpdateProfileInput struct {
+	UserID       int64
+	NickName     *string
+	BornAt       *string // expected format: YYYY-MM-DD
+	ZipCode      *string
+	Street       *string
+	Number       *string
+	Complement   *string
+	Neighborhood *string
+	City         *string
+	State        *string // 2-letter state
+}
+
+// UpdateProfile updates user profile non-sensitive data.
+// It loads the current user, applies provided fields, validates minimal constraints,
+// persists changes, and audits the action.
+func (us *userService) UpdateProfile(ctx context.Context, in UpdateProfileInput) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return utils.InternalError("Failed to generate tracer")
@@ -22,7 +41,7 @@ func (us *userService) UpdateProfile(ctx context.Context, user usermodel.UserInt
 		return utils.InternalError("Failed to start transaction")
 	}
 
-	err = us.updateProfile(ctx, tx, user)
+	err = us.updateProfile(ctx, tx, in)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
 		return
@@ -40,10 +59,10 @@ func (us *userService) UpdateProfile(ctx context.Context, user usermodel.UserInt
 func (us *userService) updateProfile(
 	ctx context.Context,
 	tx *sql.Tx,
-	user usermodel.UserInterface,
+	in UpdateProfileInput,
 ) (err error) {
-	//recover the user before update it
-	current, err := us.repo.GetUserByID(ctx, tx, user.GetID())
+	// Carrega o usuário antes de aplicar alterações
+	current, err := us.repo.GetUserByID(ctx, tx, in.UserID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return utils.NotFoundError("User")
@@ -51,16 +70,49 @@ func (us *userService) updateProfile(
 		return utils.InternalError("Failed to get user by ID")
 	}
 
-	//update the current with the new data
-	current.SetNickName(user.GetNickName())
-	current.SetBornAt(user.GetBornAt())
-	current.SetZipCode(user.GetZipCode())
-	current.SetStreet(user.GetStreet())
-	current.SetNumber(user.GetNumber())
-	current.SetComplement(user.GetComplement())
-	current.SetNeighborhood(user.GetNeighborhood())
-	current.SetCity(user.GetCity())
-	current.SetState(user.GetState())
+	// Aplica somente os campos permitidos se fornecidos
+	if in.NickName != nil {
+		current.SetNickName(*in.NickName)
+	}
+	if in.BornAt != nil {
+		// valida formato de data YYYY-MM-DD
+		bornAt, perr := time.Parse("2006-01-02", *in.BornAt)
+		if perr != nil {
+			// 422 com details por padrão de validação
+			return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
+				"field":   "born_at",
+				"message": "Invalid date format, expected YYYY-MM-DD",
+			})
+		}
+		current.SetBornAt(bornAt)
+	}
+	if in.ZipCode != nil {
+		current.SetZipCode(*in.ZipCode)
+	}
+	if in.Street != nil {
+		current.SetStreet(*in.Street)
+	}
+	if in.Number != nil {
+		current.SetNumber(*in.Number)
+	}
+	if in.Complement != nil {
+		current.SetComplement(*in.Complement)
+	}
+	if in.Neighborhood != nil {
+		current.SetNeighborhood(*in.Neighborhood)
+	}
+	if in.City != nil {
+		current.SetCity(*in.City)
+	}
+	if in.State != nil {
+		if len(*in.State) != 2 {
+			return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
+				"field":   "state",
+				"message": "State must be 2 letters",
+			})
+		}
+		current.SetState(*in.State)
+	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, current)
 	if err != nil {

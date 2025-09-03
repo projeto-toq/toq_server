@@ -92,7 +92,9 @@ type UserServiceInterface interface {
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	BlockUserTemporarily(ctx context.Context, userID int64) (err error)
 	UnblockUserTemporarily(ctx context.Context, userID int64) (err error)
-	UpdateProfile(ctx context.Context, user usermodel.UserInterface) (err error)
+	// UpdateProfile updates allowed user profile fields using a typed input contract.
+	// It must not change email, phone or password; those have dedicated flows.
+	UpdateProfile(ctx context.Context, in UpdateProfileInput) (err error)
 	UpdateOptStatus(ctx context.Context, optIn bool) (err error)
 	GetPhotoUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error)
 	GeneratePhotoDownloadURL(ctx context.Context, userID int64, photoType string) (signedURL string, err error)
