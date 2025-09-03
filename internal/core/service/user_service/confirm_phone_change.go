@@ -65,6 +65,11 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err
 	if mp := us.globalService.GetMetrics(); mp != nil {
 		mp.IncrementPhoneChangeConfirm("success")
 	}
+	// Após confirmar telefone com sucesso, aplicar a transição de status adequada
+	if _, _, terr := us.ApplyUserStatusTransitionAfterPhoneConfirmed(ctx); terr != nil {
+		// Não falha o fluxo principal; apenas registra
+		_ = terr
+	}
 	return
 }
 

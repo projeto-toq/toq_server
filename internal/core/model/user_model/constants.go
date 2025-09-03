@@ -39,4 +39,8 @@ const (
 	ActionFinishedInviteAccepted
 	ActionFinishedInviteRejected
 	ActionFinishedInviteCreated
+	// Profile verification aggregated actions (derived in services)
+	ActionProfileEmailVerifiedPhonePending
+	ActionProfilePhoneVerifiedEmailPending
+	ActionProfileVerificationCompleted
 )

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 )
 
@@ -31,6 +32,8 @@ type UserRepoPortInterface interface {
 	UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error)
 	UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error)
 	UpdateUserRoleStatusByUserID(ctx context.Context, userID int64, status int) (err error)
+	// UpdateUserRoleStatus applies a status to the active user role for the given role slug within a transaction.
+	UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, userID int64, role permissionmodel.RoleSlug, status permissionmodel.UserRoleStatus) error
 	ResetUserWrongSigninAttempts(ctx context.Context, userID int64) (err error)
 	VerifyUserDuplicity(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
 	// ExistsEmailForAnotherUser checks if an email is already used by a different user (deleted=0)

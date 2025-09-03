@@ -46,43 +46,43 @@ func (us *userService) updateUserStatus(
 		case permissionmodel.RoleSlugOwner:
 			nextStatus = permissionmodel.StatusActive
 			nextStatusReason = "User active"
-		case permissionmodel.RoleSlugRealtor:
-			nextStatus = permissionmodel.StatusPendingImages
-			nextStatusReason = "Awaiting creci images to verify"
+		// case permissionmodel.RoleSlugRealtor:
+		// 	nextStatus = permissionmodel.StatusPendingImages
+		// 	nextStatusReason = "Awaiting creci images to verify"
 		case permissionmodel.RoleSlugAgency:
 			nextStatus = permissionmodel.StatusPendingManual
 			nextStatusReason = "Awaiting administrator approval"
 		}
-	case usermodel.ActionFinishedCreciImagesUploaded:
-		nextStatus = permissionmodel.StatusPendingOCR
-		nextStatusReason = "Awaiting OCR verification"
-	case usermodel.ActionFinishedCreciNumberDoesntMatch:
-		nextStatus = permissionmodel.StatusRejectByOCR
-		nextStatusReason = "Creci number doesn't match"
-		notification = globalmodel.NotificationInvalidCreciNumber
-	case usermodel.ActionFinishedCreciStateDoesntMatch:
-		nextStatus = permissionmodel.StatusRejectByOCR
-		nextStatusReason = "Creci state doesn't match"
-		notification = globalmodel.NotificationInvalidCreciState
-	case usermodel.ActionFinishedCreciStateUnsupported:
-		nextStatus = permissionmodel.StatusRejectByOCR
-		nextStatusReason = "Creci state unsupported"
-		notification = globalmodel.NotificationCreciStateUnsupported
-	case usermodel.ActionFinishedBadCreciImages:
-		nextStatus = permissionmodel.StatusRejectByOCR
-		nextStatusReason = "Bad creci images"
-		notification = globalmodel.NotificationBadCreciImages
-	case usermodel.ActionFinishedBadSelfieImage:
-		nextStatus = permissionmodel.StatusRejectByFace
-		nextStatusReason = "Bad Selfie image"
-		notification = globalmodel.NotificationBadSelfieImage
-	case usermodel.ActionFinishedSelfieDoesntMatch:
-		nextStatus = permissionmodel.StatusRejectByFace
-		nextStatusReason = "Selfie doesn't match"
-		notification = globalmodel.NotificationBadSelfieImage
-	case usermodel.ActionFinishedCreciVerified:
-		nextStatus = permissionmodel.StatusPendingFace
-		nextStatusReason = "Awaiting face verification"
+	// case usermodel.ActionFinishedCreciImagesUploaded:
+	// 	nextStatus = permissionmodel.StatusPendingOCR
+	// 	nextStatusReason = "Awaiting OCR verification"
+	// case usermodel.ActionFinishedCreciNumberDoesntMatch:
+	// 	nextStatus = permissionmodel.StatusRejectByOCR
+	// 	nextStatusReason = "Creci number doesn't match"
+	// 	notification = globalmodel.NotificationInvalidCreciNumber
+	// case usermodel.ActionFinishedCreciStateDoesntMatch:
+	// 	nextStatus = permissionmodel.StatusRejectByOCR
+	// 	nextStatusReason = "Creci state doesn't match"
+	// 	notification = globalmodel.NotificationInvalidCreciState
+	// case usermodel.ActionFinishedCreciStateUnsupported:
+	// 	nextStatus = permissionmodel.StatusRejectByOCR
+	// 	nextStatusReason = "Creci state unsupported"
+	// 	notification = globalmodel.NotificationCreciStateUnsupported
+	// case usermodel.ActionFinishedBadCreciImages:
+	// 	nextStatus = permissionmodel.StatusRejectByOCR
+	// 	nextStatusReason = "Bad creci images"
+	// 	notification = globalmodel.NotificationBadCreciImages
+	// case usermodel.ActionFinishedBadSelfieImage:
+	// 	nextStatus = permissionmodel.StatusRejectByFace
+	// 	nextStatusReason = "Bad Selfie image"
+	// 	notification = globalmodel.NotificationBadSelfieImage
+	// case usermodel.ActionFinishedSelfieDoesntMatch:
+	// 	nextStatus = permissionmodel.StatusRejectByFace
+	// 	nextStatusReason = "Selfie doesn't match"
+	// 	notification = globalmodel.NotificationBadSelfieImage
+	// case usermodel.ActionFinishedCreciVerified:
+	// 	nextStatus = permissionmodel.StatusPendingFace
+	// 	nextStatusReason = "Awaiting face verification"
 	case usermodel.ActionFinishedCreciFaceVerified:
 		iUser := usermodel.NewUser()
 		if len(user) > 0 {

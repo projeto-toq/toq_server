@@ -69,6 +69,12 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 	if mp := us.globalService.GetMetrics(); mp != nil {
 		mp.IncrementEmailChangeConfirm("success")
 	}
+
+	// Após confirmar e-mail com sucesso, aplicar a transição de status adequada
+	if _, _, terr := us.ApplyUserStatusTransitionAfterEmailConfirmed(ctx); terr != nil {
+		// Não falha o fluxo principal; apenas registra
+		_ = terr
+	}
 	return
 }
 

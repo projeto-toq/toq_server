@@ -5,15 +5,9 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Houve uma confusão durante a criação das rotas para caarga de documentos e validação para realtor e agency.
-verifique as rotas e apresente um plano para garantir que:
-rotas para realtor:
-- getUploadCreciURL - para obter as rotas de carga da selfie/frent/back
-- verifycreciDocumetns - para solicitar a validação dos documentos carregados
-rotas para agency: **como não existem ainda e para simplificar o trabalho a criação deste item deixe em etapa separada**
-- getUploadCnpjUrl - para obter as rotas de carga da cnpj (cartão cnpj), e contract (contrato social)
-- verifycnpjDocumetns - para solicitar a validação dos documentos carregados
----
+**Problema:** Após receber e processar com exito a troca de e-mail é necessário verificar se ainda está pendente a troca de telefone. se sim, mudar o status para StatusPendingPhone. caso contrário mudar para StatusActive se for owner ou StatusPendingCreci se for realtor, ou StatusPendingCnpj se for agency.
+Da mesma forma após processar com exito a troca de telefone é necessário verificar se ainda está pendente a troca de e-mail. se sim, mudar o status para StatusPendingEmail. caso contrário mudar para StatusActive se for owner ou StatusPendingCreci se for realtor, ou StatusPendingCnpj se for agency.
+Apresente um plano de refatoração, para implemntar isso.
 
 ### REGRAS OBRIGATÓRIAS DE ANÁLISE E PLANEJAMENTO
 

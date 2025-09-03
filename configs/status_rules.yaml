@@ -1,0 +1,54 @@
+- role: owner
+  from: 4   # StatusPendingEmail
+  action: 17 # ActionProfilePhoneVerifiedEmailPending
+  to: 4
+  notification: 0
+  priority: 10
+- role: owner
+  from: 5   # StatusPendingPhone
+  action: 16 # ActionProfileEmailVerifiedPhonePending
+  to: 5
+  notification: 0
+  priority: 10
+- role: owner
+  from: 0   # any starting point to completed -> Active
+  action: 18 # ActionProfileVerificationCompleted
+  to: 0   # StatusActive
+  notification: 0
+  priority: 5
+- role: realtor
+  from: 4
+  action: 17
+  to: 4
+  notification: 0
+  priority: 10
+- role: realtor
+  from: 5
+  action: 16
+  to: 5
+  notification: 0
+  priority: 10
+- role: realtor
+  from: 0
+  action: 18
+  to: 6   # StatusPendingCreci
+  notification: 0
+  priority: 5
+- role: agency
+  from: 4
+  action: 17
+  to: 4
+  notification: 0
+  priority: 10
+- role: agency
+  from: 5
+  action: 16
+  to: 5
+  notification: 0
+  priority: 10
+- role: agency
+  from: 0
+  action: 18
+  to: 7   # StatusPendingCnpj
+  notification: 0
+  priority: 5
