@@ -100,4 +100,6 @@ type UserServiceInterface interface {
 	GetProfileThumbnails(ctx context.Context, userID int64) (thumbnails usermodel.ProfileThumbnails, err error)
 	CreateUserFolder(ctx context.Context, userID int64) (err error)
 	DeleteUserFolder(ctx context.Context, userID int64) (err error)
+	// GetCreciUploadURL generates a signed upload URL for realtor CRECI documents
+	GetCreciUploadURL(ctx context.Context, documentType, contentType string) (signedURL string, err error)
 }

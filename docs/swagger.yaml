@@ -130,6 +130,23 @@ definitions:
           $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature'
         type: array
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLRequest:
+    properties:
+      contentType:
+        description: 'Ex: "image/jpeg"'
+        type: string
+      documentType:
+        description: '"selfie.jpg", "front.jpg", "back.jpg"'
+        type: string
+    required:
+    - contentType
+    - documentType
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLResponse:
+    properties:
+      signedUrl:
+        type: string
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetOptionsResponse:
     properties:
       propertyTypes:
@@ -947,6 +964,50 @@ paths:
       summary: Get listing options
       tags:
       - Listings
+  /realtor/creci/upload-url:
+    post:
+      consumes:
+      - application/json
+      description: Generate a pre-signed URL to upload a CRECI document (selfie/front/back)
+      parameters:
+      - description: Upload request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Validation error (document type or content type)
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get pre-signed upload URL for CRECI documents
+      tags:
+      - Realtor
   /user/email/change/confirm:
     post:
       consumes:

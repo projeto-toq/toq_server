@@ -5,7 +5,12 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** As rotas de troca de e-mail, telefone e senha, assim como get/update profile e get/upload fotos/thumbnails de perfil devem ser acessadas por todos os usuário. isto está previsto nos CSV´s carregados para popular o permissionamento? se não estiver, prepare um plano para atualizar os CSVs
+**Problema:**  A rota GetDocumentsUploadURL está mockada e precisamos fazer a implemntação real. apresente um plano considernado:
+- no S3 no bucket toq-app-media, no folder do usuário, além da foto de perfil e dos tunmbnails em /thumbnails, deverá ser armazenado 3 arquivos: 
+	CreciDocumentSelfie = "selfie.jpg" ==> selfie do corretor que está se cadastrando
+	CreciDocumentFront  = "front.jpg" ==> frente do documento creci
+	CreciDocumentBack   = "back.jpg" ==> verso do documetno creci
+- através desta url serão carregados estes documetnos    
 
 ---
 

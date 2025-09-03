@@ -42,3 +42,4 @@ id;name;resource;action;description;conditions;is_active
 41;HTTP RequestPhoneChange;http;POST:/api/v2/user/phone/request;Permite solicitar troca de telefone;NULL;1
 42;HTTP ConfirmPhoneChange;http;POST:/api/v2/user/phone/confirm;Permite confirmar troca de telefone;NULL;1
 43;HTTP ResendPhoneChangeCode;http;POST:/api/v2/user/phone/resend;Permite reenviar código de troca de telefone;NULL;1
+44;HTTP GetCreciUploadURL;http;POST:/api/v2/realtor/creci/upload-url;Permite obter URL de upload dos documentos CRECI;NULL;1

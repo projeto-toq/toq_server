@@ -722,6 +722,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/realtor/creci/upload-url": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate a pre-signed URL to upload a CRECI document (selfie/front/back)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Realtor"
+                ],
+                "summary": "Get pre-signed upload URL for CRECI documents",
+                "parameters": [
+                    {
+                        "description": "Upload request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error (document type or content type)",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/email/change/confirm": {
             "post": {
                 "description": "Confirm email change by providing the received validation code",
@@ -1540,6 +1609,31 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature"
                     }
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLRequest": {
+            "type": "object",
+            "required": [
+                "contentType",
+                "documentType"
+            ],
+            "properties": {
+                "contentType": {
+                    "description": "Ex: \"image/jpeg\"",
+                    "type": "string"
+                },
+                "documentType": {
+                    "description": "\"selfie.jpg\", \"front.jpg\", \"back.jpg\"",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLResponse": {
+            "type": "object",
+            "properties": {
+                "signedUrl": {
+                    "type": "string"
                 }
             }
         },

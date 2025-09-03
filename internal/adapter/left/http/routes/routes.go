@@ -167,7 +167,7 @@ func RegisterUserRoutes(
 	realtor.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		realtor.POST("/creci/verify", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // VerifyCreciImages
-		realtor.POST("/creci/upload-url", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetCreciUploadURL
+		realtor.POST("/creci/upload-url", userHandler.GetDocumentsUploadURL)                                            // GetCreciUploadURL
 		realtor.POST("/invitation/accept", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // AcceptInvitation
 		realtor.POST("/invitation/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RejectInvitation
 		realtor.GET("/agency", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })             // GetAgencyOfRealtor
