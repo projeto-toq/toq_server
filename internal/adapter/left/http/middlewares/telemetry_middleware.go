@@ -13,10 +13,10 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-// TelemetryMiddleware adds OpenTelemetry tracing to HTTP requests
-// Follows OpenTelemetry HTTP semantic conventions for span naming and attributes
-// Integrates with metrics collection and provides request correlation
-// Filters out telemetry and monitoring requests to reduce trace noise
+// TelemetryMiddleware adds OpenTelemetry tracing to HTTP requests.
+// It follows OpenTelemetry HTTP semantic conventions for span naming and attributes,
+// integrates with metrics collection and provides request correlation.
+// Telemetry/monitoring endpoints are filtered out to reduce trace noise.
 func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.HandlerFunc {
 	// Paths that should not generate traces (telemetry/health/monitoring)
 	skipTracingPaths := map[string]bool{
@@ -81,7 +81,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 			span.SetAttributes(attribute.String("http.query_string", query))
 		}
 
-		// Update request context with tracing context
+		// Atualiza o contexto da requisição com o contexto de tracing criado acima
 		c.Request = c.Request.WithContext(ctx)
 
 		// Ensure span is ended properly

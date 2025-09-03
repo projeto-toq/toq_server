@@ -14,15 +14,13 @@ type _ = dto.ErrorResponse
 
 // SignOut handles user sign out
 // @Summary		Sign out user
-// @Description	Sign out the current user and invalidate their session tokens
+// @Description	Sign out the current user. If refreshToken or deviceToken is provided, revokes a single session/device; otherwise, global signout. When targeting a device without deviceToken, send X-Device-Id.
 // @Tags			User
 // @Accept			json
 // @Produce		json
-// @Param			request	body		object					true	"Sign out data"
-// @Param			request.device_token	body		string	false	"Device token to invalidate"
-// @Param			request.refresh_token	body		string	false	"Refresh token to invalidate"
-// @Param			X-Device-Id	header		string	false	"Device ID for targeted signout when device_token isn't provided"
-// @Success		200		{object}	map[string]string	"Sign out confirmation message"
+// @Param			X-Device-Id	header		string	false	"Device ID (UUIDv4) for targeted signout when deviceToken isn't provided"
+// @Param			request	body		dto.SignOutRequest	true	"Sign out request"
+// @Success		200		{object}	dto.SignOutResponse	"Sign out confirmation message"
 // @Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
 // @Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
 // @Failure		403		{object}	dto.ErrorResponse	"Forbidden"
@@ -30,12 +28,8 @@ type _ = dto.ErrorResponse
 // @Router			/user/signout [post]
 // @Security		BearerAuth
 func (uh *UserHandler) SignOut(c *gin.Context) {
-	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
-		return
-	}
-	defer spanEnd()
+	// Tracing já provido por TelemetryMiddleware.
+	ctx := c.Request.Context()
 
 	// Get user info from context using Context Utils (set by auth middleware)
 	userInfos, err := utils.GetUserInfoFromGinContext(c)
@@ -44,12 +38,8 @@ func (uh *UserHandler) SignOut(c *gin.Context) {
 		return
 	}
 
-	// Parse request body
-	var request struct {
-		DeviceToken  string `json:"device_token"`
-		RefreshToken string `json:"refresh_token"`
-	}
-
+	// Parse request body com DTO consolidado
+	var request dto.SignOutRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
@@ -62,7 +52,5 @@ func (uh *UserHandler) SignOut(c *gin.Context) {
 	}
 
 	// Success response
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Successfully signed out",
-	})
+	c.JSON(http.StatusOK, dto.SignOutResponse{Message: "Successfully signed out"})
 }
