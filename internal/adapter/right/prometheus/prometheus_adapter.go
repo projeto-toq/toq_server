@@ -38,6 +38,10 @@ type PrometheusAdapter struct {
 	phoneChangeConfirmTotal *prometheus.CounterVec
 	phoneChangeResendTotal  *prometheus.CounterVec
 
+	// Password change metrics
+	passwordChangeRequestTotal *prometheus.CounterVec
+	passwordChangeConfirmTotal *prometheus.CounterVec
+
 	// System Metrics
 	systemUptime prometheus.Gauge
 	errorsTotal  *prometheus.CounterVec
@@ -167,6 +171,22 @@ func (p *PrometheusAdapter) initializeMetrics() {
 		[]string{"result"},
 	)
 
+	// Password change metrics
+	p.passwordChangeRequestTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "password_change_request_total",
+			Help: "Total number of password change requests by result",
+		},
+		[]string{"result"},
+	)
+	p.passwordChangeConfirmTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "password_change_confirm_total",
+			Help: "Total number of password change confirmations by result",
+		},
+		[]string{"result"},
+	)
+
 	// System Metrics
 	p.systemUptime = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -200,6 +220,8 @@ func (p *PrometheusAdapter) registerMetrics() {
 		p.phoneChangeRequestTotal,
 		p.phoneChangeConfirmTotal,
 		p.phoneChangeResendTotal,
+		p.passwordChangeRequestTotal,
+		p.passwordChangeConfirmTotal,
 		p.systemUptime,
 		p.errorsTotal,
 	)
@@ -275,6 +297,15 @@ func (p *PrometheusAdapter) IncrementPhoneChangeConfirm(result string) {
 
 func (p *PrometheusAdapter) IncrementPhoneChangeResend(result string) {
 	p.phoneChangeResendTotal.WithLabelValues(result).Inc()
+}
+
+// Password change flow metrics implementation
+func (p *PrometheusAdapter) IncrementPasswordChangeRequest(result string) {
+	p.passwordChangeRequestTotal.WithLabelValues(result).Inc()
+}
+
+func (p *PrometheusAdapter) IncrementPasswordChangeConfirm(result string) {
+	p.passwordChangeConfirmTotal.WithLabelValues(result).Inc()
 }
 
 // System Metrics Implementation

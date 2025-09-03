@@ -91,6 +91,16 @@ var (
 	ErrSamePhoneAsCurrent = NewHTTPError(http.StatusConflict, "New phone is the same as current")
 )
 
+// Password change domain-specific errors
+var (
+	// Returned when there is no pending password change for the user
+	ErrPasswordChangeNotPending = NewHTTPError(http.StatusConflict, "Password change not pending")
+	// Returned when the provided password change code does not match the stored one
+	ErrPasswordChangeCodeInvalid = NewHTTPError(http.StatusUnprocessableEntity, "Invalid password change code")
+	// Returned when the provided password change code is expired
+	ErrPasswordChangeCodeExpired = NewHTTPError(http.StatusGone, "Password change code expired")
+)
+
 // ValidationError creates a structured validation error
 func ValidationError(field, message string) *HTTPError {
 	if message == "" {

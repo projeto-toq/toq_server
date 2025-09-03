@@ -7,10 +7,10 @@ import (
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
-"errors"
+
+	"errors"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error) {
@@ -23,21 +23,42 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 	// Start transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			mp.IncrementPasswordChangeConfirm("start_tx_error")
+		}
 		return
 	}
 
 	err = us.confirmPasswordChange(ctx, tx, nationalID, password, code)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			switch err {
+			case utils.ErrPasswordChangeNotPending:
+				mp.IncrementPasswordChangeConfirm("not_pending")
+			case utils.ErrPasswordChangeCodeInvalid:
+				mp.IncrementPasswordChangeConfirm("invalid")
+			case utils.ErrPasswordChangeCodeExpired:
+				mp.IncrementPasswordChangeConfirm("expired")
+			default:
+				mp.IncrementPasswordChangeConfirm("domain_error")
+			}
+		}
 		return
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			mp.IncrementPasswordChangeConfirm("commit_error")
+		}
 		return
 	}
 
+	if mp := us.globalService.GetMetrics(); mp != nil {
+		mp.IncrementPasswordChangeConfirm("success")
+	}
 	return
 }
 
@@ -57,19 +78,19 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 
 	//check if the user is awaiting password reset
 	if userValidation.GetPasswordCode() == "" {
-		err = utils.ErrInternalServer
+		err = utils.ErrPasswordChangeNotPending
 		return
 	}
 
 	//check if the code is correct
 	if !strings.EqualFold(userValidation.GetPasswordCode(), code) {
-		err = utils.ErrInternalServer
+		err = utils.ErrPasswordChangeCodeInvalid
 		return
 	}
 
 	//check if the validation is in time
 	if userValidation.GetPasswordCodeExp().Before(now) {
-		err = utils.ErrInternalServer
+		err = utils.ErrPasswordChangeCodeExpired
 		return
 	}
 

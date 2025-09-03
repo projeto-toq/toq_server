@@ -19,9 +19,9 @@ import (
 //	@Param			request	body		dto.ConfirmPasswordChangeRequest	true	"Password change confirmation data"
 //	@Success		200		{object}	dto.ConfirmPasswordChangeResponse
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-//	@Failure		401		{object}	dto.ErrorResponse	"Invalid verification code"
-//	@Failure		404		{object}	dto.ErrorResponse	"User not found"
-//	@Failure		422		{object}	dto.ErrorResponse	"Password validation failed"
+//	@Failure		409		{object}	dto.ErrorResponse	"Password change not pending"
+//	@Failure		422		{object}	dto.ErrorResponse	"Invalid verification code or password validation failed"
+//	@Failure		410		{object}	dto.ErrorResponse	"Verification code expired"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/auth/password/confirm [post]
 func (ah *AuthHandler) ConfirmPasswordChange(c *gin.Context) {
@@ -39,10 +39,9 @@ func (ah *AuthHandler) ConfirmPasswordChange(c *gin.Context) {
 		return
 	}
 
-	// Call service
-	err = ah.userService.ConfirmPasswordChange(ctx, request.NationalID, request.Code, request.NewPassword)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "PASSWORD_CHANGE_CONFIRMATION_FAILED", "Failed to confirm password change")
+	// Call service with structured error propagation
+	if err = ah.userService.ConfirmPasswordChange(ctx, request.NationalID, request.NewPassword, request.Code); err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

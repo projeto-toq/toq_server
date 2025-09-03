@@ -5,7 +5,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de solicitação  de troca de telefone que se inicia no handler user_handler/request_phone_change e verifique se:
+**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de solicitação  de troca de senha que se inicia no handler auth_handler/request_password_change, e verifique se:
 - a lógica está correta;
 - existem otimizações possíveis;
 - a documentação está adequada.

@@ -369,6 +369,135 @@
             ],
             "title": "Phone Change Totals (range)",
             "type": "timeseries"
+        },
+        {
+            "type": "row",
+            "title": "Auth - Password Change",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 34
+            },
+            "id": 300
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 35
+            },
+            "id": 301,
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum by (result) (rate(password_change_request_total[$__rate_interval]))",
+                    "legendFormat": "request {{result}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Password Change Requests (rate by result)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 35
+            },
+            "id": 302,
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum by (result) (rate(password_change_confirm_total[$__rate_interval]))",
+                    "legendFormat": "confirm {{result}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Password Change Confirmations (rate by result)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 43
+            },
+            "id": 303,
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "expr": "sum(increase(password_change_request_total[$__range]))",
+                    "legendFormat": "requests total",
+                    "refId": "A"
+                },
+                {
+                    "expr": "sum(increase(password_change_confirm_total[$__range]))",
+                    "legendFormat": "confirms total",
+                    "refId": "B"
+                }
+            ],
+            "title": "Password Change Totals (range)",
+            "type": "timeseries"
         }
     ],
     "schemaVersion": 39,
@@ -377,7 +506,8 @@
         "toq",
         "auth",
         "email-change",
-        "phone-change"
+        "phone-change",
+        "password-change"
     ],
     "templating": {
         "list": []
@@ -389,6 +519,6 @@
     "timepicker": {},
     "timezone": "",
     "title": "TOQ - Auth Dashboard",
-    "version": 2,
+    "version": 3,
     "weekStart": ""
 }

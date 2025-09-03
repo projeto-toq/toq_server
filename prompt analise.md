@@ -5,7 +5,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Na última refatoração, você criou métricas de sessão. Analise o diretório `/grafana` e crie um plano para adicionar painéis com estas métricas no dashboard do Grafana.
+**Problema:** Devido a mudança da froma de acompanhamento do status do usuário não é mais necessário que a troca de telefone (confirm_phone_change) nem a troca de e-mail (confirm_email_change) retornem tokens. assim analise crie um plano para refatorar
 
 ---
 

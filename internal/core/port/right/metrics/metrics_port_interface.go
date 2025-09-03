@@ -31,6 +31,10 @@ type MetricsPortInterface interface {
 	IncrementPhoneChangeConfirm(result string)
 	IncrementPhoneChangeResend(result string)
 
+	// Password change flow metrics
+	IncrementPasswordChangeRequest(result string)
+	IncrementPasswordChangeConfirm(result string)
+
 	// System Metrics
 	SetSystemUptime(duration time.Duration)
 	IncrementErrors(component, errorType string)

@@ -19,7 +19,6 @@ import (
 //	@Param			request	body		dto.RequestPasswordChangeRequest	true	"Password change request data"
 //	@Success		200		{object}	dto.RequestPasswordChangeResponse
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-//	@Failure		404		{object}	dto.ErrorResponse	"User not found"
 //	@Failure		429		{object}	dto.ErrorResponse	"Too many requests"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/auth/password/request [post]
@@ -38,15 +37,12 @@ func (ah *AuthHandler) RequestPasswordChange(c *gin.Context) {
 		return
 	}
 
-	// Call service
-	err = ah.userService.RequestPasswordChange(ctx, request.NationalID)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "PASSWORD_CHANGE_REQUEST_FAILED", "Failed to request password change")
+	// Call service (privacy-preserving: always return 200 on not found)
+	if err = ah.userService.RequestPasswordChange(ctx, request.NationalID); err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	// Success response
-	c.JSON(http.StatusOK, dto.RequestPasswordChangeResponse{
-		Message: "Password change code sent successfully",
-	})
+	// Success response (generic message to avoid user enumeration)
+	c.JSON(http.StatusOK, dto.RequestPasswordChangeResponse{Message: "If the account exists, a code has been sent"})
 }
