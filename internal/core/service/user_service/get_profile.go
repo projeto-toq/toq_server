@@ -17,7 +17,8 @@ func (us *userService) GetProfile(ctx context.Context, userID int64) (user userm
 	}
 	defer spanEnd()
 
-	tx, err := us.globalService.StartTransaction(ctx)
+	// Iniciar uma transação somente leitura para otimizar o fluxo de leitura
+	tx, err := us.globalService.StartReadOnlyTransaction(ctx)
 	if err != nil {
 		return
 	}

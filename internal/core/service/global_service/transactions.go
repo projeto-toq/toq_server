@@ -24,6 +24,24 @@ func (gs *globalService) StartTransaction(ctx context.Context) (tx *sql.Tx, err 
 	return
 }
 
+// StartReadOnlyTransaction starts a read-only DB transaction via the global repository.
+// Use this for pure read flows to minimize locking and overhead.
+func (gs *globalService) StartReadOnlyTransaction(ctx context.Context) (tx *sql.Tx, err error) {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return
+	}
+	defer spanEnd()
+
+	tx, err = gs.globalRepo.StartReadOnlyTransaction(ctx)
+	if err != nil {
+		slog.Error("Error starting read-only transaction", "error", err)
+		return nil, utils.ErrInternalServer
+	}
+
+	return
+}
+
 func (gs *globalService) RollbackTransaction(ctx context.Context, tx *sql.Tx) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

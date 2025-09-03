@@ -3,7 +3,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ## INSTRUÇÕES PARA GERAÇÃO E IMPLEMENTAÇÃO DE CÓDIGO
 
-* **Ação:** Gere e implemente **exclusivamente** o código Go para as interfaces e funções acordadas no plano de refatoração.
+* **Ação:** Gere e implemente o código Go para as interfaces e funções acordadas no plano de refatoração.
 * **Qualidade:** O código deve ser a solução **final e completa**. Não inclua mocks, `TODOs` ou qualquer tipo de implementação temporária.
 * **Escopo:** Implemente **somente** as partes que foram definidas no plano. Não adicione funcionalidades extras ou códigos que não sejam estritamente necessários para a solução.
 * **Simplicidade:** Mantenha o código simples e eficiente, conforme as regras de boas práticas do projeto.

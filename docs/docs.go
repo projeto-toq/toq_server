@@ -1073,8 +1073,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Profile data with user information",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileResponse"
                         }
                     },
                     "401": {
@@ -1085,6 +1084,12 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -1169,6 +1174,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ActiveRoleDTO": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RoleDTO"
+                }
+            }
+        },
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature": {
             "type": "object",
             "properties": {
@@ -1535,6 +1554,29 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RoleDTO": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_system_role": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.SignInRequest": {
             "type": "object",
             "required": [
@@ -1701,6 +1743,55 @@ const docTemplate = `{
                 },
                 "zipCode": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileData": {
+            "type": "object",
+            "properties": {
+                "active_role": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ActiveRoleDTO"
+                },
+                "born_at": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "national_id": {
+                    "type": "string"
+                },
+                "nick_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "zip_code": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileData"
                 }
             }
         }
