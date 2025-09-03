@@ -77,6 +77,20 @@ var (
 	ErrSameEmailAsCurrent = NewHTTPError(http.StatusConflict, "New email is the same as current")
 )
 
+// Phone change domain-specific errors
+var (
+	// Returned when there is no pending phone change for the user
+	ErrPhoneChangeNotPending = NewHTTPError(http.StatusConflict, "Phone change not pending")
+	// Returned when the provided phone change code does not match the stored one
+	ErrPhoneChangeCodeInvalid = NewHTTPError(http.StatusUnprocessableEntity, "Invalid phone change code")
+	// Returned when the provided phone change code is expired
+	ErrPhoneChangeCodeExpired = NewHTTPError(http.StatusGone, "Phone change code expired")
+	// Returned when attempting to set a phone that is already used by another account
+	ErrPhoneAlreadyInUse = NewHTTPError(http.StatusConflict, "Phone already in use")
+	// Returned when the new phone is the same as the current phone
+	ErrSamePhoneAsCurrent = NewHTTPError(http.StatusConflict, "New phone is the same as current")
+)
+
 // ValidationError creates a structured validation error
 func ValidationError(field, message string) *HTTPError {
 	if message == "" {

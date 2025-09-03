@@ -134,14 +134,14 @@ func RegisterUserRoutes(
 		user.GET("/profile/thumbnails", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetProfileThumbnails
 
 		// Email change workflow
-		user.POST("/email/request", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RequestEmailChange
-		user.POST("/email/confirm", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ConfirmEmailChange
-		user.POST("/email/resend", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // ResendEmailChangeCode
+		user.POST("/email/request", userHandler.RequestEmailChange)
+		user.POST("/email/confirm", userHandler.ConfirmEmailChange)
+		user.POST("/email/resend", userHandler.ResendEmailChangeCode)
 
 		// Phone change workflow
-		user.POST("/phone/request", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RequestPhoneChange
-		user.POST("/phone/confirm", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ConfirmPhoneChange
-		user.POST("/phone/resend", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // ResendPhoneChangeCode
+		user.POST("/phone/request", userHandler.RequestPhoneChange)
+		user.POST("/phone/confirm", userHandler.ConfirmPhoneChange)
+		user.POST("/phone/resend", userHandler.ResendPhoneChangeCode)
 
 		// Role management (Owner and Realtor only)
 		user.POST("/role/alternative", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // AddAlternativeUserRole

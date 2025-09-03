@@ -2,16 +2,29 @@ package userhandlers
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
+// RequestPhoneChange
+//
+//	@Summary      Request phone number change
+//	@Description  Start a phone change by sending a code to the new phone number
+//	@Tags         User
+//	@Accept       json
+//	@Produce      json
+//	@Param        request  body      dto.RequestPhoneChangeRequest  true  "New phone number (E.164)"
+//	@Success      200      {object}  dto.RequestPhoneChangeResponse         "Phone change request sent"
+//	@Failure      400      {object}  dto.ErrorResponse                      "Invalid request format or phone"
+//	@Failure      401      {object}  dto.ErrorResponse                      "Unauthorized"
+//	@Failure      409      {object}  dto.ErrorResponse                      "Phone already in use or same as current"
+//	@Failure      500      {object}  dto.ErrorResponse                      "Internal server error"
+//	@Router       /user/phone/request [post]
+//	@Security     BearerAuth
 func (uh *UserHandler) RequestPhoneChange(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -31,23 +44,13 @@ func (uh *UserHandler) RequestPhoneChange(c *gin.Context) {
 		return
 	}
 
-	// Validate and clean phone number
-	newPhone := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(request.NewPhoneNumber, " ", ""), "-", ""), "(", ""), ")", ""), ".", "")
-	if err := validators.ValidateE164(newPhone); err != nil {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_PHONE", "Invalid phone number format")
-		return
-	}
-
-	// Call service to request phone change
-	if err := uh.userService.RequestPhoneChange(ctx, userInfo.ID, newPhone); err != nil {
+	// Delegate normalization/validation to the service layer
+	if err := uh.userService.RequestPhoneChange(ctx, userInfo.ID, request.NewPhoneNumber); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
 	// Prepare response
-	response := dto.RequestPhoneChangeResponse{
-		Message: "Phone change request sent successfully",
-	}
-
+	response := dto.RequestPhoneChangeResponse{Message: "Phone change request sent successfully"}
 	c.JSON(http.StatusOK, response)
 }

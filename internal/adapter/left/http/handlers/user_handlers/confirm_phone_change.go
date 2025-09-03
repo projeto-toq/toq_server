@@ -6,7 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
@@ -25,20 +26,15 @@ import (
 //	@Router			/user/phone/confirm [post]
 //	@Security		BearerAuth
 func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
-	// Generate tracer for observability
-	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
-		return
-	}
-	defer spanEnd()
+	ctx := c.Request.Context()
 
-	// Get user information from context using Context Utils (set by auth middleware)
-	userInfo, err := utils.GetUserInfoFromGinContext(c)
-	if err != nil {
+	// Get user information from context (set by middleware)
+	userInfos, exists := c.Get(string(globalmodel.TokenKey))
+	if !exists {
 		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
 		return
 	}
+	userInfo := userInfos.(usermodel.UserInfos)
 
 	// Parse request body using DTO
 	var request dto.ConfirmPhoneChangeRequest
@@ -53,11 +49,8 @@ func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
 		return
 	}
 
-	// Enrich context with request information for service layer
-	enrichedCtx := utils.EnrichContextWithRequestInfo(ctx, c)
-
 	// Call service to confirm phone change
-	tokens, err := uh.userService.ConfirmPhoneChange(enrichedCtx, userInfo.ID, request.Code)
+	tokens, err := uh.userService.ConfirmPhoneChange(ctx, userInfo.ID, request.Code)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

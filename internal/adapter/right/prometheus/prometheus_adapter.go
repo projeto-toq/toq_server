@@ -33,6 +33,11 @@ type PrometheusAdapter struct {
 	emailChangeConfirmTotal *prometheus.CounterVec
 	emailChangeResendTotal  *prometheus.CounterVec
 
+	// Phone change metrics
+	phoneChangeRequestTotal *prometheus.CounterVec
+	phoneChangeConfirmTotal *prometheus.CounterVec
+	phoneChangeResendTotal  *prometheus.CounterVec
+
 	// System Metrics
 	systemUptime prometheus.Gauge
 	errorsTotal  *prometheus.CounterVec
@@ -139,6 +144,29 @@ func (p *PrometheusAdapter) initializeMetrics() {
 		[]string{"result"},
 	)
 
+	// Phone change metrics
+	p.phoneChangeRequestTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "phone_change_request_total",
+			Help: "Total number of phone change requests by result",
+		},
+		[]string{"result"},
+	)
+	p.phoneChangeConfirmTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "phone_change_confirm_total",
+			Help: "Total number of phone change confirmations by result",
+		},
+		[]string{"result"},
+	)
+	p.phoneChangeResendTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "phone_change_resend_total",
+			Help: "Total number of phone change resends by result",
+		},
+		[]string{"result"},
+	)
+
 	// System Metrics
 	p.systemUptime = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -169,6 +197,9 @@ func (p *PrometheusAdapter) registerMetrics() {
 		p.emailChangeRequestTotal,
 		p.emailChangeConfirmTotal,
 		p.emailChangeResendTotal,
+		p.phoneChangeRequestTotal,
+		p.phoneChangeConfirmTotal,
+		p.phoneChangeResendTotal,
 		p.systemUptime,
 		p.errorsTotal,
 	)
@@ -231,6 +262,19 @@ func (p *PrometheusAdapter) IncrementEmailChangeConfirm(result string) {
 
 func (p *PrometheusAdapter) IncrementEmailChangeResend(result string) {
 	p.emailChangeResendTotal.WithLabelValues(result).Inc()
+}
+
+// Phone change flow metrics implementation
+func (p *PrometheusAdapter) IncrementPhoneChangeRequest(result string) {
+	p.phoneChangeRequestTotal.WithLabelValues(result).Inc()
+}
+
+func (p *PrometheusAdapter) IncrementPhoneChangeConfirm(result string) {
+	p.phoneChangeConfirmTotal.WithLabelValues(result).Inc()
+}
+
+func (p *PrometheusAdapter) IncrementPhoneChangeResend(result string) {
+	p.phoneChangeResendTotal.WithLabelValues(result).Inc()
 }
 
 // System Metrics Implementation

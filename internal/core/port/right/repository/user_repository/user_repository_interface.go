@@ -35,6 +35,8 @@ type UserRepoPortInterface interface {
 	VerifyUserDuplicity(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
 	// ExistsEmailForAnotherUser checks if an email is already used by a different user (deleted=0)
 	ExistsEmailForAnotherUser(ctx context.Context, tx *sql.Tx, email string, excludeUserID int64) (bool, error)
+	// ExistsPhoneForAnotherUser checks if a phone number is already used by a different user (deleted=0)
+	ExistsPhoneForAnotherUser(ctx context.Context, tx *sql.Tx, phone string, excludeUserID int64) (bool, error)
 	AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string, platform *string) error
 	RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error
 	RemoveAllDeviceTokens(ctx context.Context, tx *sql.Tx, userID int64) error

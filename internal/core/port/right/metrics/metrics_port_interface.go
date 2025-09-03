@@ -26,6 +26,11 @@ type MetricsPortInterface interface {
 	IncrementEmailChangeConfirm(result string)
 	IncrementEmailChangeResend(result string)
 
+	// Phone change flow metrics
+	IncrementPhoneChangeRequest(result string)
+	IncrementPhoneChangeConfirm(result string)
+	IncrementPhoneChangeResend(result string)
+
 	// System Metrics
 	SetSystemUptime(duration time.Duration)
 	IncrementErrors(component, errorType string)

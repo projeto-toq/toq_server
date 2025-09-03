@@ -213,7 +213,24 @@ definitions:
       message:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPhoneChangeRequest:
+    properties:
+      newPhoneNumber:
+        type: string
+    required:
+    - newPhoneNumber
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPhoneChangeResponse:
+    properties:
+      message:
+        type: string
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ResendEmailChangeCodeResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ResendPhoneChangeCodeResponse:
     properties:
       message:
         type: string
@@ -961,6 +978,73 @@ paths:
       security:
       - BearerAuth: []
       summary: Confirm phone number change
+      tags:
+      - User
+  /user/phone/request:
+    post:
+      consumes:
+      - application/json
+      description: Start a phone change by sending a code to the new phone number
+      parameters:
+      - description: New phone number (E.164)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPhoneChangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Phone change request sent
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPhoneChangeResponse'
+        "400":
+          description: Invalid request format or phone
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Phone already in use or same as current
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Request phone number change
+      tags:
+      - User
+  /user/phone/resend:
+    post:
+      description: Resend a new validation code to the pending new phone number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Confirmation message
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ResendPhoneChangeCodeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Phone change not pending
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Resend phone change code
       tags:
       - User
   /user/profile:

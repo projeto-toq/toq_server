@@ -50,6 +50,19 @@ func ValidateE164(phoneNumber string) error {
 	return nil
 }
 
+// NormalizeToE164 parses and formats a phone number into E.164. Returns normalized value or
+// a validation error if it's not a valid number.
+func NormalizeToE164(phoneNumber string) (string, error) {
+	num, err := phonenumbers.Parse(phoneNumber, "")
+	if err != nil {
+		return "", utils.ValidationError("phone_number", "invalid phone number format")
+	}
+	if !phonenumbers.IsValidNumber(num) {
+		return "", utils.ValidationError("phone_number", "invalid phone number")
+	}
+	return phonenumbers.Format(num, phonenumbers.E164), nil
+}
+
 func ValidateEmail(email string) error {
 	// validate if the email is in a valid format
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
