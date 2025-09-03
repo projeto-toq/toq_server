@@ -25,7 +25,7 @@ import (
 //	@Failure      401      {object}  dto.ErrorResponse                      "Unauthorized"
 //	@Failure      409      {object}  dto.ErrorResponse                      "Same as current email (dev-only check disabled)"
 //	@Failure      500      {object}  dto.ErrorResponse                      "Internal server error"
-//	@Router       /user/email/change/request [post]
+//	@Router       /user/email/request [post]
 func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
 	ctx := c.Request.Context()
 

@@ -20,7 +20,7 @@ import (
 //	@Failure      401  {object}  dto.ErrorResponse                 "Unauthorized"
 //	@Failure      409  {object}  dto.ErrorResponse                 "Email change not pending"
 //	@Failure      500  {object}  dto.ErrorResponse                 "Internal server error"
-//	@Router       /user/email/change/resend [post]
+//	@Router       /user/email/resend [post]
 func (uh *UserHandler) ResendEmailChangeCode(c *gin.Context) {
 	ctx := c.Request.Context()
 

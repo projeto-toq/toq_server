@@ -1,6 +1,14 @@
 # toq_server
 TOQ Server is an HTTP API server for the TOQ App, built with Go, Gin, and a hexagonal architecture. It exposes REST endpoints under `/api/v2`, with centralized error handling, tracing, metrics, and clean DI via factories.
 
+## API path conventions
+- Base path: `/api/v2`
+- Email change: `/user/email/{request|confirm|resend}`
+- Phone change: `/user/phone/{request|confirm|resend}`
+- Password change: `/auth/password/{request|confirm}`
+
+Note: paths intentionally do not include a `/change` segment. Keep Swagger annotations and clients aligned to these routes to avoid 404s.
+
 ## Error schema (standardized)
 All error responses follow a flat, consistent schema returned by the centralized HTTP serializer:
 

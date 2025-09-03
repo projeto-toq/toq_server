@@ -26,7 +26,7 @@ import (
 //	@Failure      410      {object}  dto.ErrorResponse                      "Code expired"
 //	@Failure      422      {object}  dto.ErrorResponse                      "Invalid code"
 //	@Failure      500      {object}  dto.ErrorResponse                      "Internal server error"
-//	@Router       /user/email/change/confirm [post]
+//	@Router       /user/email/confirm [post]
 func (uh *UserHandler) ConfirmEmailChange(c *gin.Context) {
 	ctx := c.Request.Context()
 

@@ -1098,7 +1098,7 @@ paths:
       summary: Delete account
       tags:
       - User
-  /user/email/change/confirm:
+  /user/email/confirm:
     post:
       consumes:
       - application/json
@@ -1144,7 +1144,7 @@ paths:
       summary: Confirm email change
       tags:
       - User
-  /user/email/change/request:
+  /user/email/request:
     post:
       consumes:
       - application/json
@@ -1183,7 +1183,7 @@ paths:
       summary: Request email change
       tags:
       - User
-  /user/email/change/resend:
+  /user/email/resend:
     post:
       description: Resend a new validation code to the pending new email address
       produces:

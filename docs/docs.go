@@ -902,7 +902,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/email/change/confirm": {
+        "/user/email/confirm": {
             "post": {
                 "description": "Confirm email change by providing the received validation code",
                 "consumes": [
@@ -972,7 +972,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/email/change/request": {
+        "/user/email/request": {
             "post": {
                 "description": "Start email change by sending a validation code to the new email address",
                 "consumes": [
@@ -1030,7 +1030,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/email/change/resend": {
+        "/user/email/resend": {
             "post": {
                 "description": "Resend a new validation code to the pending new email address",
                 "produces": [
