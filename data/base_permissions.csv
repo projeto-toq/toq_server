@@ -32,3 +32,13 @@ id;name;resource;action;description;conditions;is_active
 31;Favorite Remove;favorite;remove;Remover dos favoritos;{"owner_only": true};1
 32;Analytics View;analytics;view;Visualizar analytics;NULL;1
 33;HTTP SignOut;http;POST:/api/v2/user/signout;Permite encerrar a sessão;NULL;1
+34;HTTP GetProfile;http;GET:/api/v2/user/profile;Permite consultar o próprio perfil;NULL;1
+35;HTTP UpdateProfile;http;PUT:/api/v2/user/profile;Permite atualizar o próprio perfil;NULL;1
+36;HTTP GetPhotoUploadURL;http;POST:/api/v2/user/photo/upload-url;Permite obter URL de upload da foto de perfil;NULL;1
+37;HTTP GetProfileThumbnails;http;GET:/api/v2/user/profile/thumbnails;Permite obter URLs de thumbnails do perfil;NULL;1
+38;HTTP RequestEmailChange;http;POST:/api/v2/user/email/request;Permite solicitar troca de e-mail;NULL;1
+39;HTTP ConfirmEmailChange;http;POST:/api/v2/user/email/confirm;Permite confirmar troca de e-mail;NULL;1
+40;HTTP ResendEmailChangeCode;http;POST:/api/v2/user/email/resend;Permite reenviar código de troca de e-mail;NULL;1
+41;HTTP RequestPhoneChange;http;POST:/api/v2/user/phone/request;Permite solicitar troca de telefone;NULL;1
+42;HTTP ConfirmPhoneChange;http;POST:/api/v2/user/phone/confirm;Permite confirmar troca de telefone;NULL;1
+43;HTTP ResendPhoneChangeCode;http;POST:/api/v2/user/phone/resend;Permite reenviar código de troca de telefone;NULL;1
