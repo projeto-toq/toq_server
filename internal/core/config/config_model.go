@@ -32,6 +32,7 @@ import (
 	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	sessionservice "github.com/giulio-alfieri/toq_server/internal/core/service/session_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	validationservice "github.com/giulio-alfieri/toq_server/internal/core/service/validation_service"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"gopkg.in/yaml.v3"
 )
@@ -262,6 +263,23 @@ func (c *config) InitializeGoRoutines() {
 		slog.Info("Session cleaner worker started", "interval_seconds", intervalSecs)
 	} else {
 		slog.Warn("Session cleaner prerequisites not met; skipping start")
+	}
+
+	// Start validation cleaner if user repository and global service are set
+	if c.repositoryAdapters != nil && c.repositoryAdapters.User != nil && c.globalService != nil {
+		validationSvc := validationservice.New(c.repositoryAdapters.User, c.globalService)
+		intervalSecs := c.env.AUTH.ValidationCleanerIntervalSeconds
+		if intervalSecs <= 0 {
+			intervalSecs = 300 // default 5 minutes
+		}
+		c.wg.Add(1)
+		go func() {
+			defer c.wg.Done()
+			goroutines.ValidationCleaner(validationSvc, time.Duration(intervalSecs)*time.Second, c.context)
+		}()
+		slog.Info("Validation cleaner worker started", "interval_seconds", intervalSecs)
+	} else {
+		slog.Warn("Validation cleaner prerequisites not met; skipping start")
 	}
 }
 

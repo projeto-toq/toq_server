@@ -10,8 +10,6 @@ import (
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
-	"errors"
-
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -22,12 +20,10 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 	}
 	defer spanEnd()
 
-	// Verify if the row should be blank at the end of the function and delete the row if it is
+	// If all validation codes are empty, cleanup the row instead of upserting blanks
 	if validation.GetEmailCode() == "" && validation.GetPhoneCode() == "" && validation.GetPasswordCode() == "" {
 		_, err = ua.DeleteValidation(ctx, tx, validation.GetUserID())
-		if err != nil && errors.Is(err, sql.ErrNoRows) {
-			return
-		}
+		return err
 	}
 
 	sql := `INSERT INTO temp_user_validations (

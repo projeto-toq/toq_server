@@ -3,7 +3,6 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -25,9 +24,6 @@ func (ua *UserAdapter) DeleteValidation(ctx context.Context, tx *sql.Tx, id int6
 		return 0, fmt.Errorf("delete validation: %w", err)
 	}
 
-	if deleted == 0 {
-		return 0, errors.New("no temp_user_validations rows deleted")
-	}
-
-	return
+	// Idempotent: if no rows were deleted, that's fine (nothing to clean up)
+	return deleted, nil
 }

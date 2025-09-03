@@ -44,4 +44,8 @@ type UserRepoPortInterface interface {
 	// Per-device operations (backward-compatible when schema lacks device_id)
 	AddTokenForDevice(ctx context.Context, tx *sql.Tx, userID int64, deviceID, token string, platform *string) error
 	RemoveTokensByDeviceID(ctx context.Context, tx *sql.Tx, userID int64, deviceID string) error
+
+	// DeleteExpiredValidations removes temp_user_validations rows where all codes are empty or expired
+	// Returns number of rows deleted
+	DeleteExpiredValidations(ctx context.Context, tx *sql.Tx, limit int) (int64, error)
 }
