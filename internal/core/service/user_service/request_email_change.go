@@ -13,7 +13,9 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) RequestEmailChange(ctx context.Context, userID int64, newEmail string) (err error) {
+// RequestEmailChange starts the email change flow by generating a validation code
+// and persisting the new email as pending. The user ID is read from context (SSOT).
+func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) (err error) {
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -23,6 +25,12 @@ func (us *userService) RequestEmailChange(ctx context.Context, userID int64, new
 
 	// normalizar email
 	newEmail = strings.TrimSpace(strings.ToLower(newEmail))
+
+	// Obter o ID do usuário do contexto
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.ErrInternalServer
+	}
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {

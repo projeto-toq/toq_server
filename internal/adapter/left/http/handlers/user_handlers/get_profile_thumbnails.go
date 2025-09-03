@@ -6,8 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetProfileThumbnails returns signed URLs for all profile photo sizes
@@ -23,19 +22,11 @@ import (
 //	@Router       /user/profile/thumbnails [get]
 //	@Security     BearerAuth
 func (uh *UserHandler) GetProfileThumbnails(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Get user information from context (set by middleware)
-	userInfos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
-		return
-	}
-
-	userInfo := userInfos.(usermodel.UserInfos)
+	// Enrich context with request info and user
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Call service to get profile thumbnails
-	thumbnails, err := uh.userService.GetProfileThumbnails(ctx, userInfo.ID)
+	thumbnails, err := uh.userService.GetProfileThumbnails(ctx)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // Reference to ensure Swag finds dto.ErrorResponse from annotations
@@ -29,14 +29,7 @@ type _ = dto.ErrorResponse
 // @Security		BearerAuth
 func (uh *UserHandler) SignOut(c *gin.Context) {
 	// Tracing já provido por TelemetryMiddleware.
-	ctx := c.Request.Context()
-
-	// Get user info from context using Context Utils (set by auth middleware)
-	userInfos, err := utils.GetUserInfoFromGinContext(c)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
-		return
-	}
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request body com DTO consolidado
 	var request dto.SignOutRequest
@@ -46,7 +39,7 @@ func (uh *UserHandler) SignOut(c *gin.Context) {
 	}
 
 	// Call service
-	if err := uh.userService.SignOut(ctx, userInfos.ID, request.DeviceToken, request.RefreshToken); err != nil {
+	if err := uh.userService.SignOut(ctx, request.DeviceToken, request.RefreshToken); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

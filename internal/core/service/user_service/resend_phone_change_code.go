@@ -14,7 +14,12 @@ import (
 
 // ResendPhoneChangeCode regenerates the phone change code and extends its expiration.
 // It requires a pending phone change; after commit, sends the new code via SMS to the new phone number.
-func (us *userService) ResendPhoneChangeCode(ctx context.Context, userID int64) (err error) {
+func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
+	// Obter o ID do usuário do contexto (SSOT)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.ErrInternalServer
+	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return

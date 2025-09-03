@@ -10,7 +10,12 @@ import (
 
 // GetProfile retrieves a user's profile by their ID.
 // It generates a signed URL for the user's photo if it exists.
-func (us *userService) GetProfile(ctx context.Context, userID int64) (user usermodel.UserInterface, err error) {
+func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInterface, err error) {
+	// Obter o ID do usuário do contexto (SSOT)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return nil, utils.ErrInternalServer
+	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return

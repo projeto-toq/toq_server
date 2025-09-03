@@ -5,10 +5,15 @@ import (
 
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) GetProfileThumbnails(ctx context.Context, userID int64) (thumbnails usermodel.ProfileThumbnails, err error) {
+func (us *userService) GetProfileThumbnails(ctx context.Context) (thumbnails usermodel.ProfileThumbnails, err error) {
+	// Obter o ID do usuário do contexto (SSOT)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return thumbnails, utils.ErrInternalServer
+	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return

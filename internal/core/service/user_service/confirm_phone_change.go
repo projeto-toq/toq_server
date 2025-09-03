@@ -12,7 +12,12 @@ import (
 )
 
 // ConfirmPhoneChange confirms a pending phone change without creating or returning tokens.
-func (us *userService) ConfirmPhoneChange(ctx context.Context, userID int64, code string) (err error) {
+func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err error) {
+	// Obter o ID do usuário do contexto (SSOT)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.ErrInternalServer
+	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return

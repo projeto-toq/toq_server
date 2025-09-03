@@ -15,7 +15,12 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
-func (us *userService) RequestPhoneChange(ctx context.Context, userID int64, newPhone string) (err error) {
+func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) (err error) {
+	// Obter o ID do usuário do contexto (SSOT)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.ErrInternalServer
+	}
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

@@ -6,8 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
@@ -26,15 +25,8 @@ import (
 //	@Router			/user/phone/confirm [post]
 //	@Security		BearerAuth
 func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Get user information from context (set by middleware)
-	userInfos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
-		return
-	}
-	userInfo := userInfos.(usermodel.UserInfos)
+	// Enrich context with request info and user
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request body using DTO
 	var request dto.ConfirmPhoneChangeRequest
@@ -50,7 +42,7 @@ func (uh *UserHandler) ConfirmPhoneChange(c *gin.Context) {
 	}
 
 	// Call service to confirm phone change (no tokens returned)
-	err := uh.userService.ConfirmPhoneChange(ctx, userInfo.ID, request.Code)
+	err := uh.userService.ConfirmPhoneChange(ctx, request.Code)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

@@ -14,12 +14,19 @@ import (
 
 // ResendEmailChangeCode regenerates the email change code and extends its expiration.
 // It requires a pending email change; after commit, sends the new code to the new email address.
-func (us *userService) ResendEmailChangeCode(ctx context.Context, userID int64) (err error) {
+// The user ID is extracted from context (SSOT).
+func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
 	}
 	defer spanEnd()
+
+	// Obter o ID do usuário a partir do contexto (fonte única de verdade)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.ErrInternalServer
+	}
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {

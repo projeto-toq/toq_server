@@ -6,23 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Get user information from context (set by middleware)
-	userInfos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
-		return
-	}
-
-	userInfo := userInfos.(usermodel.UserInfos)
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request body
 	var request dto.AddAlternativeUserRoleRequest
@@ -32,7 +21,7 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 	}
 
 	// Get user to determine current role - precisamos buscar o usuário para obter o role
-	user, err := uh.userService.GetProfile(ctx, userInfo.ID)
+	user, err := uh.userService.GetProfile(ctx)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
@@ -40,7 +29,7 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 
 	// Determine alternative role based on current active role
 	var alternativeRole permissionmodel.RoleSlug
-	currentRole := utils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
+	currentRole := coreutils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
 	if currentRole == permissionmodel.RoleSlugOwner {
 		alternativeRole = permissionmodel.RoleSlugRealtor
 	} else {
@@ -48,6 +37,9 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 	}
 
 	// Call service to add alternative role
+	// Ainda passamos o userID explicitamente aqui pois o caso de uso adiciona role a um usuário específico (o próprio)
+	// Poderíamos migrar para SSOT também, mas mantemos assinatura existente por ora.
+	userInfo, _ := coreutils.GetUserInfoFromContext(ctx)
 	if err := uh.userService.AddAlternativeRole(ctx, userInfo.ID, alternativeRole, request.CreciNumber, request.CreciState, request.CreciValidity); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

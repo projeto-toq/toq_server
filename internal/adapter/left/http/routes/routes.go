@@ -69,6 +69,11 @@ func setupGlobalMiddlewares(router *gin.Engine, metricsAdapter *factory.MetricsA
 	var metricsPort metricsport.MetricsPortInterface
 	if metricsAdapter != nil {
 		metricsPort = metricsAdapter.Prometheus
+		// Store metrics adapter reference in Gin context for other middlewares
+		router.Use(func(c *gin.Context) {
+			c.Set("metricsAdapter", metricsPort)
+			c.Next()
+		})
 	}
 	router.Use(middlewares.TelemetryMiddleware(metricsPort))
 

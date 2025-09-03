@@ -6,8 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // RequestPhoneChange
@@ -26,16 +25,8 @@ import (
 //	@Router       /user/phone/request [post]
 //	@Security     BearerAuth
 func (uh *UserHandler) RequestPhoneChange(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Get user information from context (set by middleware)
-	userInfos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
-		return
-	}
-
-	userInfo := userInfos.(usermodel.UserInfos)
+	// Enrich context (request id, user, ip, UA)
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request body
 	var request dto.RequestPhoneChangeRequest
@@ -44,8 +35,8 @@ func (uh *UserHandler) RequestPhoneChange(c *gin.Context) {
 		return
 	}
 
-	// Delegate normalization/validation to the service layer
-	if err := uh.userService.RequestPhoneChange(ctx, userInfo.ID, request.NewPhoneNumber); err != nil {
+	// Delegate normalization/validation to the service layer (SSOT reads userID from ctx)
+	if err := uh.userService.RequestPhoneChange(ctx, request.NewPhoneNumber); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

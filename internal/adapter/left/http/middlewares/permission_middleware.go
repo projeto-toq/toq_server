@@ -25,6 +25,9 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 		userInfoInterface, exists := c.Get("userInfo")
 		if !exists {
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("User info not found"))
+			if mp := getMetricsAdapterFromGin(c); mp != nil {
+				mp.IncrementErrors("permission", "missing_user_info")
+			}
 			c.Abort()
 			return
 		}
@@ -32,6 +35,9 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 		userInfo, ok := userInfoInterface.(usermodel.UserInfos)
 		if !ok {
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid user info format"))
+			if mp := getMetricsAdapterFromGin(c); mp != nil {
+				mp.IncrementErrors("permission", "invalid_user_info")
+			}
 			c.Abort()
 			return
 		}
@@ -45,6 +51,9 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 		if err != nil {
 			slog.Error("Error checking permission", "userID", userID, "method", method, "path", path, "error", err)
 			httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Permission check failed"))
+			if mp := getMetricsAdapterFromGin(c); mp != nil {
+				mp.IncrementErrors("permission", "check_failed")
+			}
 			c.Abort()
 			return
 		}
@@ -52,6 +61,9 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 		if !hasPermission {
 			slog.Warn("Permission denied", "userID", userID, "method", method, "path", path)
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthorizationError("Insufficient permissions"))
+			if mp := getMetricsAdapterFromGin(c); mp != nil {
+				mp.IncrementErrors("permission", "forbidden")
+			}
 			c.Abort()
 			return
 		}

@@ -32,7 +32,12 @@ func init() {
 	prometheus.MustRegister(metricSignoutTotal, metricSignoutSessionsRevoked, metricSignoutDeviceTokensRemoved)
 }
 
-func (us *userService) SignOut(ctx context.Context, userID int64, deviceToken, refreshToken string) (err error) {
+func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken string) (err error) {
+	// Obter o ID do usuário do contexto (SSOT)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.ErrInternalServer
+	}
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

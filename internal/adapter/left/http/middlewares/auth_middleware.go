@@ -11,6 +11,7 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/golang-jwt/jwt"
 )
@@ -31,6 +32,9 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Authorization header required"))
+			if mp := getMetricsAdapterFromGin(c); mp != nil {
+				mp.IncrementErrors("auth", "missing_authorization")
+			}
 			c.Abort()
 			return
 		}
@@ -39,6 +43,9 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 		tokenParts := strings.Split(authHeader, "Bearer ")
 		if len(tokenParts) < 2 || tokenParts[1] == "" {
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid authorization token format"))
+			if mp := getMetricsAdapterFromGin(c); mp != nil {
+				mp.IncrementErrors("auth", "invalid_format")
+			}
 			c.Abort()
 			return
 		}
@@ -48,6 +55,9 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 		if err != nil {
 			slog.Warn("Invalid access token", "error", err, "ip", c.ClientIP())
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid access token"))
+			if mp := getMetricsAdapterFromGin(c); mp != nil {
+				mp.IncrementErrors("auth", "invalid_token")
+			}
 			c.Abort()
 			return
 		}
@@ -62,6 +72,16 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 
 		c.Next()
 	})
+}
+
+// Helper to get metrics adapter from Gin context (set by routes setup)
+func getMetricsAdapterFromGin(c *gin.Context) metricsport.MetricsPortInterface {
+	if val, ok := c.Get("metricsAdapter"); ok {
+		if mp, ok := val.(metricsport.MetricsPortInterface); ok {
+			return mp
+		}
+	}
+	return nil
 }
 
 // setRootUserContext sets the root user context for public endpoints

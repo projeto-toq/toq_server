@@ -7,8 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
@@ -27,16 +26,8 @@ import (
 //	@Failure      500      {object}  dto.ErrorResponse                      "Internal server error"
 //	@Router       /user/email/request [post]
 func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Get user information from context (set by middleware)
-	userInfos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
-		return
-	}
-
-	userInfo := userInfos.(usermodel.UserInfos)
+	// Enriquecer o contexto com informações da requisição e usuário
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request body
 	var request dto.RequestEmailChangeRequest
@@ -53,7 +44,7 @@ func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
 	}
 
 	// Call service to request email change
-	if err := uh.userService.RequestEmailChange(ctx, userInfo.ID, email); err != nil {
+	if err := uh.userService.RequestEmailChange(ctx, email); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

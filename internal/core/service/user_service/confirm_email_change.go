@@ -11,12 +11,19 @@ import (
 )
 
 // ConfirmEmailChange confirms a pending email change without creating or returning tokens.
-func (us *userService) ConfirmEmailChange(ctx context.Context, userID int64, code string) (err error) {
+// The user ID is extracted from context (SSOT).
+func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
 	}
 	defer spanEnd()
+
+	// Obter o ID do usuário a partir do contexto
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.ErrInternalServer
+	}
 
 	// Start transaction
 	tx, err := us.globalService.StartTransaction(ctx)

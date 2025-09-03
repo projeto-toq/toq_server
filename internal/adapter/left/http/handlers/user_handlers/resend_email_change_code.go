@@ -6,8 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // ResendEmailChangeCode
@@ -22,19 +21,11 @@ import (
 //	@Failure      500  {object}  dto.ErrorResponse                 "Internal server error"
 //	@Router       /user/email/resend [post]
 func (uh *UserHandler) ResendEmailChangeCode(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Get user information from context (set by middleware)
-	userInfos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
-		return
-	}
-
-	userInfo := userInfos.(usermodel.UserInfos)
+	// Enriquecer o contexto com informações da requisição e usuário
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Call service to resend email change code
-	if err := uh.userService.ResendEmailChangeCode(ctx, userInfo.ID); err != nil {
+	if err := uh.userService.ResendEmailChangeCode(ctx); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
