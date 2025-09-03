@@ -1008,6 +1008,49 @@ paths:
       summary: Get pre-signed upload URL for CRECI documents
       tags:
       - Realtor
+  /realtor/creci/verify:
+    post:
+      consumes:
+      - application/json
+      description: Check if selfie.jpg, front.jpg and back.jpg exist in the user's
+        S3 folder; if all exist, set status to PendingManual
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: verification accepted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Missing required documents
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Verify CRECI documents presence
+      tags:
+      - Realtor
   /user/email/change/confirm:
     post:
       consumes:

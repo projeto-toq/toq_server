@@ -37,8 +37,8 @@ type UserHandlerPort interface {
 	DeleteRealtorByID(c *gin.Context)
 
 	// Realtor handlers
-	// VerifyCreciImages(c *gin.Context)
-	// GetCreciUploadURL(c *gin.Context)
+	VerifyCreciDocuments(c *gin.Context)
+	GetCreciUploadURL(c *gin.Context)
 	AcceptInvitation(c *gin.Context)
 	RejectInvitation(c *gin.Context)
 	GetAgencyOfRealtor(c *gin.Context)

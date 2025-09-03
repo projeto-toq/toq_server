@@ -791,6 +791,71 @@ const docTemplate = `{
                 }
             }
         },
+        "/realtor/creci/verify": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Check if selfie.jpg, front.jpg and back.jpg exist in the user's S3 folder; if all exist, set status to PendingManual",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Realtor"
+                ],
+                "summary": "Verify CRECI documents presence",
+                "responses": {
+                    "200": {
+                        "description": "verification accepted",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Missing required documents",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/email/change/confirm": {
             "post": {
                 "description": "Confirm email change by providing the received validation code",

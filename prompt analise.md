@@ -5,13 +5,14 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:**  A rota GetDocumentsUploadURL está mockada e precisamos fazer a implemntação real. apresente um plano considernado:
-- no S3 no bucket toq-app-media, no folder do usuário, além da foto de perfil e dos tunmbnails em /thumbnails, deverá ser armazenado 3 arquivos: 
-	CreciDocumentSelfie = "selfie.jpg" ==> selfie do corretor que está se cadastrando
-	CreciDocumentFront  = "front.jpg" ==> frente do documento creci
-	CreciDocumentBack   = "back.jpg" ==> verso do documetno creci
-- através desta url serão carregados estes documetnos    
-
+**Problema:** Houve uma confusão durante a criação das rotas para caarga de documentos e validação para realtor e agency.
+verifique as rotas e apresente um plano para garantir que:
+rotas para realtor:
+- getUploadCreciURL - para obter as rotas de carga da selfie/frent/back
+- verifycreciDocumetns - para solicitar a validação dos documentos carregados
+rotas para agency: **como não existem ainda e para simplificar o trabalho a criação deste item deixe em etapa separada**
+- getUploadCnpjUrl - para obter as rotas de carga da cnpj (cartão cnpj), e contract (contrato social)
+- verifycnpjDocumetns - para solicitar a validação dos documentos carregados
 ---
 
 ### REGRAS OBRIGATÓRIAS DE ANÁLISE E PLANEJAMENTO

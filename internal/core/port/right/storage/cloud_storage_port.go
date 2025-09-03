@@ -16,6 +16,8 @@ type CloudStoragePortInterface interface {
 	// Object Operations
 	ListBucketObjects(ctx context.Context, bucketName string) ([]string, error)
 	DeleteBucketObject(ctx context.Context, bucketName, objectName string) error
+	// Object existence check
+	ObjectExists(ctx context.Context, bucketName, objectName string) (bool, error)
 
 	// Generic Signed URLs
 	GenerateUploadURL(bucketName, objectName, contentType string) (string, error)

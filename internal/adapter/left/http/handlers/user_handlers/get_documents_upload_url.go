@@ -8,7 +8,7 @@ import (
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 )
 
-// GetDocumentsUploadURL generates a pre-signed URL to upload CRECI documents (realtor-only)
+// GetCreciUploadURL generates a pre-signed URL to upload CRECI documents (realtor-only)
 //
 //	@Summary      Get pre-signed upload URL for CRECI documents
 //	@Description  Generate a pre-signed URL to upload a CRECI document (selfie/front/back)
@@ -24,7 +24,7 @@ import (
 //	@Failure      500      {object}  dto.ErrorResponse  "Internal server error"
 //	@Router       /realtor/creci/upload-url [post]
 //	@Security     BearerAuth
-func (uh *UserHandler) GetDocumentsUploadURL(c *gin.Context) {
+func (uh *UserHandler) GetCreciUploadURL(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	// Parse request body
