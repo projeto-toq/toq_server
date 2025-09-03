@@ -28,6 +28,11 @@ type PrometheusAdapter struct {
 	databaseQueriesTotal *prometheus.CounterVec
 	cacheOperationsTotal *prometheus.CounterVec
 
+	// Email change metrics
+	emailChangeRequestTotal *prometheus.CounterVec
+	emailChangeConfirmTotal *prometheus.CounterVec
+	emailChangeResendTotal  *prometheus.CounterVec
+
 	// System Metrics
 	systemUptime prometheus.Gauge
 	errorsTotal  *prometheus.CounterVec
@@ -111,6 +116,29 @@ func (p *PrometheusAdapter) initializeMetrics() {
 		[]string{"operation", "result"},
 	)
 
+	// Email change metrics
+	p.emailChangeRequestTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "email_change_request_total",
+			Help: "Total number of email change requests by result",
+		},
+		[]string{"result"},
+	)
+	p.emailChangeConfirmTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "email_change_confirm_total",
+			Help: "Total number of email change confirmations by result",
+		},
+		[]string{"result"},
+	)
+	p.emailChangeResendTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "email_change_resend_total",
+			Help: "Total number of email change resends by result",
+		},
+		[]string{"result"},
+	)
+
 	// System Metrics
 	p.systemUptime = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -138,6 +166,9 @@ func (p *PrometheusAdapter) registerMetrics() {
 		p.activeSessions,
 		p.databaseQueriesTotal,
 		p.cacheOperationsTotal,
+		p.emailChangeRequestTotal,
+		p.emailChangeConfirmTotal,
+		p.emailChangeResendTotal,
 		p.systemUptime,
 		p.errorsTotal,
 	)
@@ -187,6 +218,19 @@ func (p *PrometheusAdapter) IncrementDatabaseQueries(operation, table string) {
 
 func (p *PrometheusAdapter) IncrementCacheOperations(operation, result string) {
 	p.cacheOperationsTotal.WithLabelValues(operation, result).Inc()
+}
+
+// Email change flow metrics implementation
+func (p *PrometheusAdapter) IncrementEmailChangeRequest(result string) {
+	p.emailChangeRequestTotal.WithLabelValues(result).Inc()
+}
+
+func (p *PrometheusAdapter) IncrementEmailChangeConfirm(result string) {
+	p.emailChangeConfirmTotal.WithLabelValues(result).Inc()
+}
+
+func (p *PrometheusAdapter) IncrementEmailChangeResend(result string) {
+	p.emailChangeResendTotal.WithLabelValues(result).Inc()
 }
 
 // System Metrics Implementation

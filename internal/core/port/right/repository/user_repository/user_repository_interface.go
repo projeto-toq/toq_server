@@ -33,6 +33,8 @@ type UserRepoPortInterface interface {
 	UpdateUserRoleStatusByUserID(ctx context.Context, userID int64, status int) (err error)
 	ResetUserWrongSigninAttempts(ctx context.Context, userID int64) (err error)
 	VerifyUserDuplicity(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
+	// ExistsEmailForAnotherUser checks if an email is already used by a different user (deleted=0)
+	ExistsEmailForAnotherUser(ctx context.Context, tx *sql.Tx, email string, excludeUserID int64) (bool, error)
 	AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string, platform *string) error
 	RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error
 	RemoveAllDeviceTokens(ctx context.Context, tx *sql.Tx, userID int64) error

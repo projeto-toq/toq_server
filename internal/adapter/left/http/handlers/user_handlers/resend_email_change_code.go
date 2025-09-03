@@ -10,6 +10,17 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 )
 
+// ResendEmailChangeCode
+//
+//	@Summary      Resend email change code
+//	@Description  Resend a new validation code to the pending new email address
+//	@Tags         User
+//	@Produce      json
+//	@Success      200  {object}  dto.ResendEmailChangeCodeResponse  "Confirmation message"
+//	@Failure      401  {object}  dto.ErrorResponse                 "Unauthorized"
+//	@Failure      409  {object}  dto.ErrorResponse                 "Email change not pending"
+//	@Failure      500  {object}  dto.ErrorResponse                 "Internal server error"
+//	@Router       /user/email/change/resend [post]
 func (uh *UserHandler) ResendEmailChangeCode(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -23,16 +34,12 @@ func (uh *UserHandler) ResendEmailChangeCode(c *gin.Context) {
 	userInfo := userInfos.(usermodel.UserInfos)
 
 	// Call service to resend email change code
-	code, err := uh.userService.ResendEmailChangeCode(ctx, userInfo.ID)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "RESEND_EMAIL_CHANGE_CODE_FAILED", "Failed to resend email change code")
+	if err := uh.userService.ResendEmailChangeCode(ctx, userInfo.ID); err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	// Prepare response
-	response := dto.ResendEmailChangeCodeResponse{
-		Code: code,
-	}
-
+	// Prepare response (nunca retornar o código no corpo)
+	response := dto.ResendEmailChangeCodeResponse{Message: "Code resent to the new email"}
 	c.JSON(http.StatusOK, response)
 }

@@ -259,7 +259,7 @@ type ConfirmEmailChangeResponse struct {
 }
 
 type ResendEmailChangeCodeResponse struct {
-	Code string `json:"code"`
+	Message string `json:"message"`
 }
 
 // Phone change requests

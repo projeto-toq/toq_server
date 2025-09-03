@@ -33,33 +33,33 @@ func ValidateFactoryConfig(config AdapterFactoryConfig) error {
 func validateEnvironment(env *globalmodel.Environment) error {
 	// Validate CEP configuration
 	if env.CEP.Token == "" {
-		return fmt.Errorf("CEP token is required")
+		return fmt.Errorf("cep token is required")
 	}
 
 	// Validate Email configuration
 	if env.EMAIL.SMTPServer == "" {
-		return fmt.Errorf("SMTP server is required")
+		return fmt.Errorf("smtp server is required")
 	}
 	if env.EMAIL.SMTPUser == "" {
-		return fmt.Errorf("SMTP user is required")
+		return fmt.Errorf("smtp user is required")
 	}
 
 	// Validate SMS configuration
 	if env.SMS.AccountSid == "" {
-		return fmt.Errorf("SMS Account SID is required")
+		return fmt.Errorf("sms account sid is required")
 	}
 	if env.SMS.AuthToken == "" {
-		return fmt.Errorf("SMS Auth Token is required")
+		return fmt.Errorf("sms auth token is required")
 	}
 
 	// Validate FCM configuration
 	if env.FCM.CredentialsFile == "" {
-		return fmt.Errorf("FCM credentials file is required")
+		return fmt.Errorf("fcm credentials file is required")
 	}
 
 	// Validate Redis configuration
 	if env.REDIS.URL == "" {
-		return fmt.Errorf("Redis URL is required")
+		return fmt.Errorf("redis url is required")
 	}
 
 	return nil

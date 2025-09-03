@@ -6,6 +6,7 @@ import (
 
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
+	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
@@ -106,6 +107,12 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 func (c *config) InitGlobalService() {
 	slog.Debug("Initializing Global Service")
 
+	// Optional metrics dependency
+	var metrics metricsport.MetricsPortInterface
+	if c.metricsAdapter != nil {
+		metrics = c.metricsAdapter.Prometheus
+	}
+
 	// Debug: verificar se os adapters estão nil
 	if c.repositoryAdapters == nil {
 		slog.Error("repositoryAdapters is nil")
@@ -148,6 +155,7 @@ func (c *config) InitGlobalService() {
 		c.sms,
 		c.cloudStorage,
 		c.repositoryAdapters.DeviceToken,
+		metrics,
 	)
 
 	// Injetar GlobalService no cache Redis para resolver dependência circular
@@ -214,7 +222,7 @@ func (c *config) createActivityTracker() error {
 	// Obter Redis client do cache
 	redisClient := c.cache.GetRedisClient()
 	if redisClient == nil {
-		return fmt.Errorf("Redis client não disponível no cache")
+		return fmt.Errorf("redis client não disponível no cache")
 	}
 
 	// Criar ActivityTracker sem userService (será definido na Phase 07)

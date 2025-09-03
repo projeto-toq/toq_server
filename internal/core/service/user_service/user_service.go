@@ -83,7 +83,7 @@ type UserServiceInterface interface {
 	RequestEmailChange(ctx context.Context, userID int64, newEmail string) (err error)
 	RequestPasswordChange(ctx context.Context, nationalID string) (err error)
 	RequestPhoneChange(ctx context.Context, userID int64, newPhone string) (err error)
-	ResendEmailChangeCode(ctx context.Context, userID int64) (code string, err error)
+	ResendEmailChangeCode(ctx context.Context, userID int64) (err error)
 	ResendPhoneChangeCode(ctx context.Context, userID int64) (code string, err error)
 	SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error)
 	SignInWithContext(ctx context.Context, nationalID string, password string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)

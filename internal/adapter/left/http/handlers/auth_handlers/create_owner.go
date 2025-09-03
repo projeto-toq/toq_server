@@ -31,12 +31,8 @@ import (
 //	@Failure		422		{object}	dto.ErrorResponse	"Validation failed"
 //	@Router			/auth/owner [post]
 func (ah *AuthHandler) CreateOwner(c *gin.Context) {
-	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusInternalServerError, "Failed to generate tracer"))
-		return
-	}
-	defer spanEnd()
+	// Observação: tracing de request já é provido por TelemetryMiddleware; evitamos spans duplicados aqui.
+	ctx := c.Request.Context()
 
 	// Parse request
 	var request dto.CreateOwnerRequest

@@ -21,6 +21,11 @@ type MetricsPortInterface interface {
 	IncrementDatabaseQueries(operation, table string)
 	IncrementCacheOperations(operation, result string)
 
+	// Email change flow metrics
+	IncrementEmailChangeRequest(result string)
+	IncrementEmailChangeConfirm(result string)
+	IncrementEmailChangeResend(result string)
+
 	// System Metrics
 	SetSystemUptime(duration time.Duration)
 	IncrementErrors(component, errorType string)

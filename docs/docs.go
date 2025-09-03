@@ -374,7 +374,7 @@ const docTemplate = `{
         },
         "/auth/signin": {
             "post": {
-                "description": "Authenticate user with national ID and password",
+                "description": "Authenticate user with national ID and password. When sending a deviceToken, provide X-Device-Id (UUIDv4) for per-device associations.",
                 "consumes": [
                     "application/json"
                 ],
@@ -386,6 +386,12 @@ const docTemplate = `{
                 ],
                 "summary": "User sign in",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device ID (UUIDv4). Required when request contains deviceToken.",
+                        "name": "X-Device-Id",
+                        "in": "header"
+                    },
                     {
                         "description": "Sign in credentials",
                         "name": "request",
@@ -404,7 +410,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request format",
+                        "description": "Invalid request format or missing/invalid device ID when deviceToken provided",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -722,6 +728,172 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/email/change/confirm": {
+            "post": {
+                "description": "Confirm email change by providing the received validation code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Confirm email change",
+                "parameters": [
+                    {
+                        "description": "Confirmation code",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ConfirmEmailChangeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tokens returned if applicable",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ConfirmEmailChangeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format or code",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Email change not pending or already in use",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "410": {
+                        "description": "Code expired",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid code",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/email/change/request": {
+            "post": {
+                "description": "Start email change by sending a validation code to the new email address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Request email change",
+                "parameters": [
+                    {
+                        "description": "New email",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RequestEmailChangeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email change request sent",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RequestEmailChangeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format or email",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Same as current email (dev-only check disabled)",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/email/change/resend": {
+            "post": {
+                "description": "Resend a new validation code to the pending new email address",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Resend email change code",
+                "responses": {
+                    "200": {
+                        "description": "Confirmation message",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ResendEmailChangeCodeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Email change not pending",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/phone/confirm": {
             "post": {
                 "security": [
@@ -833,7 +1005,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Sign out the current user and invalidate their session tokens",
+                "description": "Sign out the current user. If refreshToken or deviceToken is provided, revokes a single session/device; otherwise, global signout. When targeting a device without deviceToken, send X-Device-Id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -846,45 +1018,26 @@ const docTemplate = `{
                 "summary": "Sign out user",
                 "parameters": [
                     {
-                        "description": "Sign out data",
+                        "type": "string",
+                        "description": "Device ID (UUIDv4) for targeted signout when deviceToken isn't provided",
+                        "name": "X-Device-Id",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Sign out request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/dto.SignOutRequest"
                         }
-                    },
-                    {
-                        "description": "Device token to invalidate",
-                        "name": "request.device_token",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Refresh token to invalidate",
-                        "name": "request.refresh_token",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Device ID for targeted signout when device_token isn't provided",
-                        "name": "X-Device-Id",
-                        "in": "header"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Sign out confirmation message",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/dto.SignOutResponse"
                         }
                     },
                     "400": {
@@ -930,6 +1083,25 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.ConfirmEmailChangeRequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ConfirmEmailChangeResponse": {
+            "type": "object",
+            "properties": {
+                "tokens": {
+                    "$ref": "#/definitions/dto.TokensResponse"
                 }
             }
         },
@@ -1190,6 +1362,25 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RequestEmailChangeRequest": {
+            "type": "object",
+            "required": [
+                "newEmail"
+            ],
+            "properties": {
+                "newEmail": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RequestEmailChangeResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.RequestPasswordChangeRequest": {
             "type": "object",
             "required": [
@@ -1202,6 +1393,14 @@ const docTemplate = `{
             }
         },
         "dto.RequestPasswordChangeResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ResendEmailChangeCodeResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -1235,6 +1434,25 @@ const docTemplate = `{
             "properties": {
                 "tokens": {
                     "$ref": "#/definitions/dto.TokensResponse"
+                }
+            }
+        },
+        "dto.SignOutRequest": {
+            "type": "object",
+            "properties": {
+                "deviceToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SignOutResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
                 }
             }
         },

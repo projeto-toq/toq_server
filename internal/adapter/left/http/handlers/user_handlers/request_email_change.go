@@ -12,6 +12,20 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
+// RequestEmailChange
+//
+//	@Summary      Request email change
+//	@Description  Start email change by sending a validation code to the new email address
+//	@Tags         User
+//	@Accept       json
+//	@Produce      json
+//	@Param        request  body      dto.RequestEmailChangeRequest  true  "New email"
+//	@Success      200      {object}  dto.RequestEmailChangeResponse         "Email change request sent"
+//	@Failure      400      {object}  dto.ErrorResponse                      "Invalid request format or email"
+//	@Failure      401      {object}  dto.ErrorResponse                      "Unauthorized"
+//	@Failure      409      {object}  dto.ErrorResponse                      "Same as current email (dev-only check disabled)"
+//	@Failure      500      {object}  dto.ErrorResponse                      "Internal server error"
+//	@Router       /user/email/change/request [post]
 func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
 	ctx := c.Request.Context()
 

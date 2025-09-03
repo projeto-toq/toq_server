@@ -63,6 +63,20 @@ var (
 	ErrGatewayTimeout      = &HTTPError{statusCode: http.StatusGatewayTimeout, msg: "Gateway Timeout"}
 )
 
+// Email change domain-specific errors
+var (
+	// Returned when there is no pending email change for the user
+	ErrEmailChangeNotPending = NewHTTPError(http.StatusConflict, "Email change not pending")
+	// Returned when the provided email change code does not match the stored one
+	ErrEmailChangeCodeInvalid = NewHTTPError(http.StatusUnprocessableEntity, "Invalid email change code")
+	// Returned when the provided email change code is expired
+	ErrEmailChangeCodeExpired = NewHTTPError(http.StatusGone, "Email change code expired")
+	// Returned when attempting to set an email that is already used by another account
+	ErrEmailAlreadyInUse = NewHTTPError(http.StatusConflict, "Email already in use")
+	// Returned when the new email is the same as the current email
+	ErrSameEmailAsCurrent = NewHTTPError(http.StatusConflict, "New email is the same as current")
+)
+
 // ValidationError creates a structured validation error
 func ValidationError(field, message string) *HTTPError {
 	if message == "" {

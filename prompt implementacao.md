@@ -1,6 +1,13 @@
 
 Eu preciso que você atue como um engenheiro de software Go sênior, especializado em arquitetura hexagonal e boas práticas de código. Siga as instruções abaixo de forma **ESTRITA** para implementar o plano proposto.
 
+## INSTRUÇÕES PARA GERAÇÃO E IMPLEMENTAÇÃO DE CÓDIGO
+
+* **Ação:** Gere e implemente **exclusivamente** o código Go para as interfaces e funções acordadas no plano de refatoração.
+* **Qualidade:** O código deve ser a solução **final e completa**. Não inclua mocks, `TODOs` ou qualquer tipo de implementação temporária.
+* **Escopo:** Implemente **somente** as partes que foram definidas no plano. Não adicione funcionalidades extras ou códigos que não sejam estritamente necessários para a solução.
+* **Simplicidade:** Mantenha o código simples e eficiente, conforme as regras de boas práticas do projeto.
+* **Acompanhamento:** Sempre informe etapas executadas e etapas a serem executadas para acompanhar o andamento.
 **Contexto de Desenvolvimento:** Estamos em um ambiente de desenvolvimento. Não é necessário gerar scripts de migração de banco de dados, manter retrocompatibilidade (`backward compatibility`) ou lidar com migração de dados. As alterações no banco de dados devem ser feitas manualmente.
 
 ---
@@ -34,10 +41,3 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ---
 
-## INSTRUÇÕES FINAIS PARA GERAÇÃO E IMPLEMENTAÇÃO DE CÓDIGO
-
-* **Ação:** Gere e implemente **exclusivamente** o código Go para as interfaces e funções acordadas no plano de refatoração.
-* **Qualidade:** O código deve ser a solução **final e completa**. Não inclua mocks, `TODOs` ou qualquer tipo de implementação temporária.
-* **Escopo:** Implemente **somente** as partes que foram definidas no plano. Não adicione funcionalidades extras ou códigos que não sejam estritamente necessários para a solução.
-* **Simplicidade:** Mantenha o código simples e eficiente, conforme as regras de boas práticas do projeto.
-* **Acompanhamento:** Sempre informe etapas executadas e etapas a serem executadas para acompanhar o andamento.

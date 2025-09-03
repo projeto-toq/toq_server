@@ -11,6 +11,22 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
+// ConfirmEmailChange
+//
+//	@Summary      Confirm email change
+//	@Description  Confirm email change by providing the received validation code
+//	@Tags         User
+//	@Accept       json
+//	@Produce      json
+//	@Param        request  body      dto.ConfirmEmailChangeRequest  true  "Confirmation code"
+//	@Success      200      {object}  dto.ConfirmEmailChangeResponse         "Tokens returned if applicable"
+//	@Failure      400      {object}  dto.ErrorResponse                      "Invalid request format or code"
+//	@Failure      401      {object}  dto.ErrorResponse                      "Unauthorized"
+//	@Failure      409      {object}  dto.ErrorResponse                      "Email change not pending or already in use"
+//	@Failure      410      {object}  dto.ErrorResponse                      "Code expired"
+//	@Failure      422      {object}  dto.ErrorResponse                      "Invalid code"
+//	@Failure      500      {object}  dto.ErrorResponse                      "Internal server error"
+//	@Router       /user/email/change/confirm [post]
 func (uh *UserHandler) ConfirmEmailChange(c *gin.Context) {
 	ctx := c.Request.Context()
 

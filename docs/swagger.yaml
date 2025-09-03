@@ -11,6 +11,18 @@ definitions:
       name:
         type: string
     type: object
+  dto.ConfirmEmailChangeRequest:
+    properties:
+      code:
+        type: string
+    required:
+    - code
+    type: object
+  dto.ConfirmEmailChangeResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/dto.TokensResponse'
+    type: object
   dto.ConfirmPasswordChangeRequest:
     properties:
       code:
@@ -177,6 +189,18 @@ definitions:
       tokens:
         $ref: '#/definitions/dto.TokensResponse'
     type: object
+  dto.RequestEmailChangeRequest:
+    properties:
+      newEmail:
+        type: string
+    required:
+    - newEmail
+    type: object
+  dto.RequestEmailChangeResponse:
+    properties:
+      message:
+        type: string
+    type: object
   dto.RequestPasswordChangeRequest:
     properties:
       nationalID:
@@ -185,6 +209,11 @@ definitions:
     - nationalID
     type: object
   dto.RequestPasswordChangeResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.ResendEmailChangeCodeResponse:
     properties:
       message:
         type: string
@@ -208,6 +237,18 @@ definitions:
     properties:
       tokens:
         $ref: '#/definitions/dto.TokensResponse'
+    type: object
+  dto.SignOutRequest:
+    properties:
+      deviceToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  dto.SignOutResponse:
+    properties:
+      message:
+        type: string
     type: object
   dto.StartListingRequest:
     properties:
@@ -543,8 +584,13 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate user with national ID and password
+      description: Authenticate user with national ID and password. When sending a
+        deviceToken, provide X-Device-Id (UUIDv4) for per-device associations.
       parameters:
+      - description: Device ID (UUIDv4). Required when request contains deviceToken.
+        in: header
+        name: X-Device-Id
+        type: string
       - description: Sign in credentials
         in: body
         name: request
@@ -559,7 +605,8 @@ paths:
           schema:
             $ref: '#/definitions/dto.SignInResponse'
         "400":
-          description: Invalid request format
+          description: Invalid request format or missing/invalid device ID when deviceToken
+            provided
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
         "401":
@@ -769,6 +816,116 @@ paths:
       summary: Get listing options
       tags:
       - Listings
+  /user/email/change/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm email change by providing the received validation code
+      parameters:
+      - description: Confirmation code
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ConfirmEmailChangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tokens returned if applicable
+          schema:
+            $ref: '#/definitions/dto.ConfirmEmailChangeResponse'
+        "400":
+          description: Invalid request format or code
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Email change not pending or already in use
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "410":
+          description: Code expired
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "422":
+          description: Invalid code
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Confirm email change
+      tags:
+      - User
+  /user/email/change/request:
+    post:
+      consumes:
+      - application/json
+      description: Start email change by sending a validation code to the new email
+        address
+      parameters:
+      - description: New email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestEmailChangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email change request sent
+          schema:
+            $ref: '#/definitions/dto.RequestEmailChangeResponse'
+        "400":
+          description: Invalid request format or email
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Same as current email (dev-only check disabled)
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Request email change
+      tags:
+      - User
+  /user/email/change/resend:
+    post:
+      description: Resend a new validation code to the pending new email address
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Confirmation message
+          schema:
+            $ref: '#/definitions/dto.ResendEmailChangeCodeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Email change not pending
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Resend email change code
+      tags:
+      - User
   /user/phone/confirm:
     post:
       consumes:
@@ -840,37 +997,28 @@ paths:
     post:
       consumes:
       - application/json
-      description: Sign out the current user and invalidate their session tokens
+      description: Sign out the current user. If refreshToken or deviceToken is provided,
+        revokes a single session/device; otherwise, global signout. When targeting
+        a device without deviceToken, send X-Device-Id.
       parameters:
-      - description: Sign out data
+      - description: Device ID (UUIDv4) for targeted signout when deviceToken isn't
+          provided
+        in: header
+        name: X-Device-Id
+        type: string
+      - description: Sign out request
         in: body
         name: request
         required: true
         schema:
-          type: object
-      - description: Device token to invalidate
-        in: body
-        name: request.device_token
-        schema:
-          type: string
-      - description: Refresh token to invalidate
-        in: body
-        name: request.refresh_token
-        schema:
-          type: string
-      - description: Device ID for targeted signout when device_token isn't provided
-        in: header
-        name: X-Device-Id
-        type: string
+          $ref: '#/definitions/dto.SignOutRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Sign out confirmation message
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.SignOutResponse'
         "400":
           description: Invalid request format
           schema:

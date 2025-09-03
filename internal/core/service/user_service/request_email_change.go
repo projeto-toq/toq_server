@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"log/slog"
+	"strings"
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -20,14 +21,24 @@ func (us *userService) RequestEmailChange(ctx context.Context, userID int64, new
 	}
 	defer spanEnd()
 
+	// normalizar email
+	newEmail = strings.TrimSpace(strings.ToLower(newEmail))
+
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
+		// métricas
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			mp.IncrementEmailChangeRequest("start_tx_error")
+		}
 		return
 	}
 
 	user, validation, err := us.requestEmailChange(ctx, tx, userID, newEmail)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			mp.IncrementEmailChangeRequest("domain_error")
+		}
 		return
 	}
 
@@ -35,6 +46,9 @@ func (us *userService) RequestEmailChange(ctx context.Context, userID int64, new
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		us.globalService.RollbackTransaction(ctx, tx)
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			mp.IncrementEmailChangeRequest("commit_error")
+		}
 		return
 	}
 
@@ -46,8 +60,9 @@ func (us *userService) RequestEmailChange(ctx context.Context, userID int64, new
 
 	// Criar requisição de email com código de validação
 	emailRequest := globalservice.NotificationRequest{
-		Type:    globalservice.NotificationTypeEmail,
-		To:      user.GetEmail(),
+		Type: globalservice.NotificationTypeEmail,
+		// enviar para o novo e-mail informado pelo usuário (fluxo de validação do novo email)
+		To:      validation.GetNewEmail(),
 		Subject: "TOQ - Confirmação de Alteração de Email",
 		Body:    "Seu código de validação para alteração de email é: " + validation.GetEmailCode(),
 	}
@@ -56,6 +71,13 @@ func (us *userService) RequestEmailChange(ctx context.Context, userID int64, new
 	if notifyErr != nil {
 		// Log error but don't affect the main operation since transaction is already committed
 		slog.Error("Failed to send email notification", "userID", user.GetID(), "error", notifyErr)
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			mp.IncrementEmailChangeRequest("notify_error")
+		}
+	} else {
+		if mp := us.globalService.GetMetrics(); mp != nil {
+			mp.IncrementEmailChangeRequest("success")
+		}
 	}
 
 	return
@@ -68,7 +90,12 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 		return
 	}
 
-	//set the user validation as pending for email
+	// TODO(remove-before-prod): bloquear se o novo email for igual ao atual
+	// if strings.EqualFold(user.GetEmail(), email) {
+	//     return nil, nil, utils.ErrSameEmailAsCurrent
+	// }
+
+	//set the user validation as pending for email (Option A: sempre sobrescrever com novo código/expiração)
 	validation, err = us.repo.GetUserValidations(ctx, tx, user.GetID())
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {

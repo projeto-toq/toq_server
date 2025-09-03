@@ -26,12 +26,8 @@ import (
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/auth/agency [post]
 func (ah *AuthHandler) CreateAgency(c *gin.Context) {
-	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusInternalServerError, "Failed to generate tracer"))
-		return
-	}
-	defer spanEnd()
+	// Observação: tracing de request já é provido por TelemetryMiddleware; evitamos spans duplicados aqui.
+	ctx := c.Request.Context()
 
 	// Parse request
 	var request dto.CreateAgencyRequest

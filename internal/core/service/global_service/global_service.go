@@ -10,6 +10,7 @@ import (
 	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
+	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	devicetokenrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/device_token_repository"
 	globalrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/global_repository"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
@@ -25,6 +26,7 @@ type globalService struct {
 	googleCludStorage    storageport.CloudStoragePortInterface
 	deviceTokenRepo      devicetokenrepository.DeviceTokenRepoPortInterface
 	eventBus             events.Bus
+	metrics              metricsport.MetricsPortInterface
 }
 
 func NewGlobalService(
@@ -35,6 +37,8 @@ func NewGlobalService(
 	sms smsport.SMSPortInterface,
 	googleCloudStorage storageport.CloudStoragePortInterface,
 	deviceTokenRepo devicetokenrepository.DeviceTokenRepoPortInterface,
+	// optional metrics (can be nil in tests or minimal setups)
+	metrics metricsport.MetricsPortInterface,
 ) GlobalServiceInterface {
 	return &globalService{
 		globalRepo:           globalRepo,
@@ -45,6 +49,7 @@ func NewGlobalService(
 		googleCludStorage:    googleCloudStorage,
 		deviceTokenRepo:      deviceTokenRepo,
 		eventBus:             events.NewInMemoryBus(),
+		metrics:              metrics,
 	}
 }
 
@@ -62,6 +67,9 @@ type GlobalServiceInterface interface {
 	// StartSessionEventSubscriber starts the subscriber and returns an unsubscribe function
 	StartSessionEventSubscriber() func()
 
+	// Optional metrics accessor
+	GetMetrics() metricsport.MetricsPortInterface
+
 	StartTransaction(ctx context.Context) (tx *sql.Tx, err error)
 	RollbackTransaction(ctx context.Context, tx *sql.Tx) (err error)
 	CommitTransaction(ctx context.Context, tx *sql.Tx) (err error)
@@ -71,4 +79,9 @@ type GlobalServiceInterface interface {
 // GetEventBus returns the in-memory event bus instance
 func (gs *globalService) GetEventBus() events.Bus {
 	return gs.eventBus
+}
+
+// GetMetrics returns the metrics port if configured (may be nil)
+func (gs *globalService) GetMetrics() metricsport.MetricsPortInterface {
+	return gs.metrics
 }

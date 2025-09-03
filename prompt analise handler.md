@@ -5,11 +5,10 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de solicitação  de troca de e-mail que se inicia no handler user_handler/request_email_change e verifique se:
+**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de solicitação  de troca de telefone que se inicia no handler user_handler/request_phone_change e verifique se:
 - a lógica está correta;
 - existem otimizações possíveis;
-- a documentação das funções está adequada e preparada para swager doc;
-- a documentação interna das funções, em portugues, descreve bem para facilitar a manutenção
+- a documentação está adequada.
 
 ---
 
