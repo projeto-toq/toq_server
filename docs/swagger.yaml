@@ -141,6 +141,32 @@ definitions:
           $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StatusOption'
         type: array
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLRequest:
+    properties:
+      contentType:
+        type: string
+      objectName:
+        type: string
+    required:
+    - contentType
+    - objectName
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLResponse:
+    properties:
+      signedUrl:
+        type: string
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileThumbnailsResponse:
+    properties:
+      largeUrl:
+        type: string
+      mediumUrl:
+        type: string
+      originalUrl:
+        type: string
+      smallUrl:
+        type: string
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ListingResponse:
     properties:
       complexId:
@@ -1135,6 +1161,46 @@ paths:
       summary: Resend phone change code
       tags:
       - User
+  /user/photo/upload-url:
+    post:
+      consumes:
+      - application/json
+      description: Generate a pre-signed URL to upload a profile photo to storage
+      parameters:
+      - description: Upload request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Validation error (photo type or content type)
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get pre-signed upload URL for profile photo
+      tags:
+      - User
   /user/profile:
     get:
       consumes:
@@ -1206,6 +1272,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Update user profile (non-sensitive fields)
+      tags:
+      - User
+  /user/profile/thumbnails:
+    get:
+      description: Returns signed URLs for original, small, medium, and large profile
+        photos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileThumbnailsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get profile photo thumbnails
       tags:
       - User
   /user/signout:

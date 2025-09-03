@@ -6,9 +6,13 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 ### 🛠️ Análise e Solução
 
 **Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de carga, recuperação e atualização da foto de perfil do usuário.
-Logica de negócio. as fotos são armazenadas na AWS S3 toq-app-media/{user_id}
+Logica de negócio. as fotos são armazenadas na AWS S3 toq-app-media/{user_id} e os clientes requisitam URL assinadas para upload e download.
+serviços: 
+internal/core/service/user_service/generate_photo_download_url.go
+internal/core/service/user_service/get_photo_upload_url.go
+internal/core/service/user_service/get_profile_thumbnails.go
 
-e verifique se:
+localize os handlers adequados se houver e verifique se:
 - a lógica está correta;
 - existem otimizações possíveis;
 - a documentação está adequada.

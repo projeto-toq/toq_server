@@ -8,6 +8,21 @@ import (
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 )
 
+// GetPhotoUploadURL generates a pre-signed URL to upload a profile photo
+//
+//	@Summary      Get pre-signed upload URL for profile photo
+//	@Description  Generate a pre-signed URL to upload a profile photo to storage
+//	@Tags         User
+//	@Accept       json
+//	@Produce      json
+//	@Param        request  body      dto.GetPhotoUploadURLRequest  true  "Upload request"
+//	@Success      200      {object}  dto.GetPhotoUploadURLResponse
+//	@Failure      400      {object}  dto.ErrorResponse  "Invalid request"
+//	@Failure      401      {object}  dto.ErrorResponse  "Unauthorized"
+//	@Failure      422      {object}  dto.ErrorResponse  "Validation error (photo type or content type)"
+//	@Failure      500      {object}  dto.ErrorResponse  "Internal server error"
+//	@Router       /user/photo/upload-url [post]
+//	@Security     BearerAuth
 func (uh *UserHandler) GetPhotoUploadURL(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -18,7 +33,7 @@ func (uh *UserHandler) GetPhotoUploadURL(c *gin.Context) {
 		return
 	}
 
-	// Validate required fields
+	// Validate required fields (camada HTTP)
 	if request.ObjectName == "" || request.ContentType == "" {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_FIELDS", "object_name and content_type are required")
 		return

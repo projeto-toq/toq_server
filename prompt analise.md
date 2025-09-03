@@ -5,7 +5,7 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Quando o usuário valida a troca de email e/ou telefone, são eliminados os valores da coluna de new_*_code, *_code e *_code_exp da tabela temp_user_validations. Entretanto quando só existe apenas 1 item de verificação para limpar o regsitro permanece com todos os campos NULL. crie um plano para refatorar permitindo que se nenhum item existir para verificação o registro deve ser limpo. Uma outra opção é rotina assincrona, reaproveitando alguma já existente no código, que limpe os registros/colunas expirados. Apresente pros e contras.
+**Problema:** As rotas de troca de e-mail, telefone e senha, assim como get/update profile e get/upload fotos/thumbnails de perfil devem ser acessadas por todos os usuário. isto está previsto nos CSV´s carregados para popular o permissionamento? se não estiver, prepare um plano para atualizar os CSVs
 
 ---
 

@@ -97,7 +97,6 @@ type UserServiceInterface interface {
 	UpdateProfile(ctx context.Context, in UpdateProfileInput) (err error)
 	UpdateOptStatus(ctx context.Context, optIn bool) (err error)
 	GetPhotoUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error)
-	GeneratePhotoDownloadURL(ctx context.Context, userID int64, photoType string) (signedURL string, err error)
 	GetProfileThumbnails(ctx context.Context, userID int64) (thumbnails usermodel.ProfileThumbnails, err error)
 	CreateUserFolder(ctx context.Context, userID int64) (err error)
 	DeleteUserFolder(ctx context.Context, userID int64) (err error)

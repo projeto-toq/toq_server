@@ -118,8 +118,8 @@ func RegisterUserRoutes(
 	user.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		// Profile management
-		user.GET("/profile", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // GetProfile
-		user.PUT("/profile", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // UpdateProfile
+		user.GET("/profile", userHandler.GetProfile)                                                         // GetProfile
+		user.PUT("/profile", userHandler.UpdateProfile)                                                      // UpdateProfile
 		user.DELETE("/account", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // DeleteAccount
 		user.GET("/onboarding", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetOnboardingStatus
 		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // GetUserRoles
@@ -130,8 +130,8 @@ func RegisterUserRoutes(
 		user.POST("/signout", userHandler.SignOut) // SignOut
 
 		// Photo management
-		user.POST("/photo/upload-url", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetPhotoUploadURL
-		user.GET("/profile/thumbnails", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetProfileThumbnails
+		user.POST("/photo/upload-url", userHandler.GetPhotoUploadURL)     // GetPhotoUploadURL
+		user.GET("/profile/thumbnails", userHandler.GetProfileThumbnails) // GetProfileThumbnails
 
 		// Email change workflow
 		user.POST("/email/request", userHandler.RequestEmailChange)
