@@ -58,7 +58,8 @@ func (us *userService) RefreshTokens(ctx context.Context, refresh string) (token
 func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh string) (tokens usermodel.Tokens, err error) {
 	userID, err := validateRefreshToken(refresh)
 	if err != nil {
-		return
+		// Erro 401 de token inválido
+		return tokens, err
 	}
 
 	// Hash incoming refresh to locate session
@@ -66,9 +67,9 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	hash := hex.EncodeToString(sum[:])
 	session, sessErr := us.sessionRepo.GetActiveSessionByRefreshHash(ctx, tx, hash)
 	if sessErr != nil {
-		// If session not found treat as invalid refresh
+		// Sessão não encontrada para o refresh apresentado
 		slog.Warn("auth.refresh.invalid_session", "error", sessErr, "refresh_hash_prefix", hash[:8])
-		return tokens, utils.ErrInternalServer
+		return tokens, utils.ErrRefreshSessionNotFound
 	}
 
 	// Optional: detect reuse (rotated_at set means token already used)
@@ -77,7 +78,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshReuse.Inc()
 		slog.Warn("auth.refresh.reuse_detected", "user_id", session.GetUserID(), "session_id", session.GetID())
-		return tokens, utils.ErrInternalServer
+		return tokens, utils.ErrRefreshTokenReuseDetected
 	}
 
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
@@ -88,7 +89,15 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Validar se usuário ainda tem role ativa
 	if user.GetActiveRole() == nil {
 		slog.Warn("User has no active role during refresh", "user_id", userID)
-		return tokens, utils.ErrInternalServer
+		return tokens, utils.ErrInvalidRefreshToken
+	}
+
+	// Segurança adicional: o userID do JWT deve bater com a sessão carregada
+	if session.GetUserID() != userID {
+		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
+		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
+		slog.Warn("auth.refresh.user_mismatch", "jwt_user_id", userID, "session_user_id", session.GetUserID(), "session_id", session.GetID())
+		return tokens, utils.ErrInvalidRefreshToken
 	}
 
 	// Enforce absolute expiry if set
@@ -97,7 +106,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshExpired.Inc()
 		slog.Info("auth.refresh.absolute_expired", "user_id", session.GetUserID(), "session_id", session.GetID())
-		return tokens, utils.ErrInternalServer
+		return tokens, utils.ErrRefreshTokenExpired
 	}
 
 	// Pass chain info through context so CreateTokens can continue absolute expiry and increment rotation counter
@@ -109,10 +118,12 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		slog.Warn("auth.refresh.rotation_limit_exceeded", "user_id", session.GetUserID(), "session_id", session.GetID(), "rotation_counter", session.GetRotationCounter())
-		return tokens, utils.ErrInternalServer
+		return tokens, utils.ErrRefreshRotationLimitExceeded
 	}
 
 	// Issue new tokens (new session persisted with incremented rotation counter)
+	// Enrich trace context com atributos úteis
+	// Comentário em português: atributos no contexto ajudam a rastrear a cadeia de rotação
 	tokens, err = us.CreateTokens(ctx, tx, user, false)
 	if err != nil {
 		return

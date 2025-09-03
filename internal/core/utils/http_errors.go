@@ -63,6 +63,20 @@ var (
 	ErrGatewayTimeout      = &HTTPError{statusCode: http.StatusGatewayTimeout, msg: "Gateway Timeout"}
 )
 
+// Authentication/Refresh token specific errors (401 Unauthorized)
+var (
+	// Returned when a refresh token is invalid (malformed, bad signature, bad claims, or user mismatch)
+	ErrInvalidRefreshToken = NewHTTPError(http.StatusUnauthorized, "Invalid refresh token")
+	// Returned when refresh token reuse is detected (old token being used after rotation)
+	ErrRefreshTokenReuseDetected = NewHTTPError(http.StatusUnauthorized, "Refresh token reuse detected")
+	// Returned when the refresh token chain reached absolute expiry
+	ErrRefreshTokenExpired = NewHTTPError(http.StatusUnauthorized, "Refresh token expired")
+	// Returned when the refresh token rotation limit was exceeded
+	ErrRefreshRotationLimitExceeded = NewHTTPError(http.StatusUnauthorized, "Refresh token rotation limit exceeded")
+	// Returned when a session cannot be found for the provided refresh token
+	ErrRefreshSessionNotFound = NewHTTPError(http.StatusUnauthorized, "Session not found for refresh token")
+)
+
 // Email change domain-specific errors
 var (
 	// Returned when there is no pending email change for the user

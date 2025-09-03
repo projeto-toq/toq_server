@@ -5,11 +5,14 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ### 🛠️ Análise e Solução
 
-**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de solicitação  de perfil user_handler/update_profile, e verifique se:
+**Problema:** Após várias refatorações estou fazendo uma verificação de qualidade. Assim, analise o fluxo de carga, recuperação e atualização da foto de perfil do usuário.
+Logica de negócio. as fotos são armazenadas na AWS S3 toq-app-media/{user_id}
+
+e verifique se:
 - a lógica está correta;
 - existem otimizações possíveis;
 - a documentação está adequada.
-**Atenção** os campos do perfil de usuário, senha, telefone e email tem processo próprio de atualização e não podem ser atualizados por update_profile
+
 
 ---
 

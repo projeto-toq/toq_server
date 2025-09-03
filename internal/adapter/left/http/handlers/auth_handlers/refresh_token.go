@@ -40,7 +40,8 @@ func (ah *AuthHandler) RefreshToken(c *gin.Context) {
 	// Call service
 	tokens, err := ah.userService.RefreshTokens(ctx, request.RefreshToken)
 	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token")
+		// Delega a serialização do DomainError ao helper padrão
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
