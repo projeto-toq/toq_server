@@ -14,6 +14,7 @@ func CORSMiddleware() gin.HandlerFunc {
 			"http://localhost:3000", // Development
 			"http://localhost:5173", // Vite dev server
 			"http://gca.dev.br:8081",
+			"http://host.docker.internal:8080",
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",

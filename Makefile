@@ -47,7 +47,7 @@ $(SWAG):
 
 swagger: $(SWAG)
 	@echo "Generating Swagger docs to ./docs"
-	@PATH="$(GOPATH_BIN):$$PATH" swag init -g $(APP_MAIN) -o docs --parseInternal
+	@PATH="$(GOPATH_BIN):$$PATH" swag init -g $(APP_MAIN) -d . -o ./docs --parseDependency --parseInternal
 
 # Docker / infrastructure helpers
 docker-build:
