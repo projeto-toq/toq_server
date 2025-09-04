@@ -56,16 +56,13 @@ func setupGlobalMiddlewares(router *gin.Engine, metricsAdapter *factory.MetricsA
 	// 1. RequestIDMiddleware - Gera ID único para cada request
 	router.Use(middlewares.RequestIDMiddleware())
 
-	// 2. Recovery - Captura panics
-	router.Use(gin.Recovery())
-
-	// 3. StructuredLoggingMiddleware - Log estruturado JSON com separação stdout/stderr
+	// 2. StructuredLoggingMiddleware - Log estruturado JSON com separação stdout/stderr
 	router.Use(middlewares.StructuredLoggingMiddleware())
 
-	// 4. CORSMiddleware - Configuração CORS
+	// 3. CORSMiddleware - Configuração CORS
 	router.Use(middlewares.CORSMiddleware())
 
-	// 5. TelemetryMiddleware - Tracing OpenTelemetry + Métricas
+	// 4. TelemetryMiddleware - Tracing OpenTelemetry + Métricas
 	var metricsPort metricsport.MetricsPortInterface
 	if metricsAdapter != nil {
 		metricsPort = metricsAdapter.Prometheus
@@ -76,6 +73,9 @@ func setupGlobalMiddlewares(router *gin.Engine, metricsAdapter *factory.MetricsA
 		})
 	}
 	router.Use(middlewares.TelemetryMiddleware(metricsPort))
+
+	// 5. ErrorRecoveryMiddleware - Captura panics (após Telemetry para marcar spans)
+	router.Use(middlewares.ErrorRecoveryMiddleware())
 
 	// 6. DeviceContextMiddleware - injeta DeviceID no contexto
 	router.Use(middlewares.DeviceContextMiddleware())

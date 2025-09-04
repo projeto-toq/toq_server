@@ -24,7 +24,7 @@ func (pa *PermissionAdapter) BlockUserTemporarily(ctx context.Context, tx *sql.T
 		return err
 	}
 
-	slog.Info("User blocked temporarily in database", "userID", userID, "blockedUntil", blockedUntil, "reason", reason)
+	slog.Debug("User blocked temporarily in database", "userID", userID, "blockedUntil", blockedUntil, "reason", reason)
 	return nil
 }
 
@@ -47,7 +47,7 @@ func (pa *PermissionAdapter) UnblockUser(ctx context.Context, tx *sql.Tx, userID
 		return err
 	}
 
-	slog.Info("User unblocked in database", "userID", userID)
+	slog.Debug("User unblocked in database", "userID", userID)
 	return nil
 }
 

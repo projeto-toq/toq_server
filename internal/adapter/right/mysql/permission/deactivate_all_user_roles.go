@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // DeactivateAllUserRoles desativa todos os roles de um usuário
@@ -41,6 +41,6 @@ func (pa *PermissionAdapter) DeactivateAllUserRoles(ctx context.Context, tx *sql
 		return err
 	}
 
-	slog.Info("Deactivated user roles", "userID", userID, "rowsAffected", rowsAffected)
+	slog.Debug("Deactivated user roles", "userID", userID, "rowsAffected", rowsAffected)
 	return nil
 }

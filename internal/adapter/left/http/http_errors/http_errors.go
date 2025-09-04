@@ -13,15 +13,9 @@ func SendHTTPError(c *gin.Context, statusCode int, _ string, message string) {
 	if c == nil {
 		return
 	}
-	// Criar erro com source
+	// Criar erro com source e delegar para o caminho único (Obj)
 	derr := coreutils.NewHTTPErrorWithSource(statusCode, message)
-	// Anexar erro ao contexto para ser logado pelo middleware estruturado
-	c.Error(derr) //nolint: errcheck
-	payload := gin.H{"code": derr.Code(), "message": derr.Message()}
-	if d := derr.Details(); d != nil {
-		payload["details"] = d
-	}
-	c.JSON(derr.Code(), payload)
+	SendHTTPErrorObj(c, derr)
 }
 
 // SendHTTPErrorObj serializes a DomainError to HTTP. Accepts any DomainError implementation.
@@ -37,7 +31,9 @@ func SendHTTPErrorObj(c *gin.Context, err error) {
 	if derr, ok := err.(coreutils.DomainError); ok {
 		// Envolver em erro com source para logging de origem
 		wrapped := coreutils.WrapDomainErrorWithSource(derr)
+		// Anexar erro e marcar span
 		c.Error(wrapped) //nolint: errcheck
+		coreutils.SetSpanError(c.Request.Context(), wrapped)
 		payload := gin.H{"code": wrapped.Code(), "message": wrapped.Message()}
 		if d := wrapped.Details(); d != nil {
 			payload["details"] = d
@@ -46,7 +42,8 @@ func SendHTTPErrorObj(c *gin.Context, err error) {
 		return
 	}
 	derr := coreutils.InternalError("")
-	// Anexar erro ao contexto para logging
+	// Anexar erro ao contexto, marcar span e responder
 	c.Error(derr) //nolint: errcheck
+	coreutils.SetSpanError(c.Request.Context(), derr)
 	c.JSON(derr.Code(), gin.H{"code": derr.Code(), "message": derr.Message()})
 }

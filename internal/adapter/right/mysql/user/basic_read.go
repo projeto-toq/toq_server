@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) Read(ctx context.Context, tx *sql.Tx, query string, args ...any) (entity [][]any, err error) {
@@ -32,7 +32,7 @@ func (ua *UserAdapter) Read(ctx context.Context, tx *sql.Tx, query string, args 
 	cols, err := rows.Columns()
 	if err != nil {
 		slog.Error("Error getting columns on mysqluseradapter/Read", "error", err)
-		return
+		return nil, err
 	}
 
 	entity = make([][]any, 0)
@@ -46,14 +46,14 @@ func (ua *UserAdapter) Read(ctx context.Context, tx *sql.Tx, query string, args 
 		err = rows.Scan(entityElementPtrs...)
 		if err != nil {
 			slog.Error("Error scanning row on mysqluseradapter/Read", "error", err)
-			return
+			return nil, err
 		}
 		entity = append(entity, entityElements)
 	}
 
 	if err = rows.Err(); err != nil {
 		slog.Error("Error iterating over rows on mysqluseradapter/Read", "error", err)
-		return
+		return nil, err
 	}
 
 	return entity, nil

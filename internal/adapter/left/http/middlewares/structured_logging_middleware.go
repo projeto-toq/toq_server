@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -98,8 +99,40 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 			)
 		}
 
-		// Add error information if present
-		if len(c.Errors) > 0 {
+		// Determine appropriate logger and log level based on HTTP status
+		var logger *slog.Logger
+		var logLevel slog.Level
+		var message string
+		includeErrorDetails := false
+
+		switch {
+		case status >= 500:
+			logger = slog.New(stderrHandler)
+			logLevel = slog.LevelError
+			message = "HTTP Error"
+			includeErrorDetails = true // 5xx: incluir stack/callsite e lista de erros
+		case status == http.StatusTooManyRequests || status == http.StatusLocked:
+			// 429/423: condições excepcionais tratadas como WARN, sem stack
+			logger = slog.New(stderrHandler)
+			logLevel = slog.LevelWarn
+			message = "HTTP Response"
+		case status >= 400:
+			// 4xx esperados: INFO em stdout, sem detalhes de erro/stack
+			logger = slog.New(stdoutHandler)
+			logLevel = slog.LevelInfo
+			message = "HTTP Response"
+		case status >= 300:
+			logger = slog.New(stdoutHandler)
+			logLevel = slog.LevelInfo
+			message = "HTTP Request"
+		default:
+			logger = slog.New(stdoutHandler)
+			logLevel = slog.LevelInfo
+			message = "HTTP Request"
+		}
+
+		// Add error information only for 5xx responses to avoid noise in expected 4xx
+		if includeErrorDetails && len(c.Errors) > 0 {
 			errorMessages := make([]string, len(c.Errors))
 			for i, ginErr := range c.Errors {
 				errorMessages[i] = ginErr.Error()
@@ -133,30 +166,6 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 				}
 			}
 			fields = append(fields, slog.Any("errors", errorMessages))
-		}
-
-		// Determine appropriate logger and log level based on HTTP status
-		var logger *slog.Logger
-		var logLevel slog.Level
-		var message string
-
-		switch {
-		case status >= 500:
-			logger = slog.New(stderrHandler)
-			logLevel = slog.LevelError
-			message = "HTTP Error"
-		case status >= 400:
-			logger = slog.New(stderrHandler)
-			logLevel = slog.LevelWarn
-			message = "HTTP Error"
-		case status >= 300:
-			logger = slog.New(stdoutHandler)
-			logLevel = slog.LevelInfo
-			message = "HTTP Request"
-		default:
-			logger = slog.New(stdoutHandler)
-			logLevel = slog.LevelInfo
-			message = "HTTP Request"
 		}
 
 		// Log with appropriate handler (stdout/stderr separation)

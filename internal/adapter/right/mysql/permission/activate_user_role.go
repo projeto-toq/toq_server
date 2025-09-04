@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // ActivateUserRole ativa um role específico do usuário
@@ -45,6 +45,6 @@ func (pa *PermissionAdapter) ActivateUserRole(ctx context.Context, tx *sql.Tx, u
 		slog.Warn("No user role found to activate", "userID", userID, "roleID", roleID)
 	}
 
-	slog.Info("Activated user role", "userID", userID, "roleID", roleID, "rowsAffected", rowsAffected)
+	slog.Debug("Activated user role", "userID", userID, "roleID", roleID, "rowsAffected", rowsAffected)
 	return nil
 }

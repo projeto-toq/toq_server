@@ -84,9 +84,16 @@ func SetErrorStackDepth(depth int) { //nolint: revive
 
 // NewHTTPErrorWithSource creates a new structured error instance capturing origin information.
 func NewHTTPErrorWithSource(code int, message string, details ...any) *HTTPError { //nolint: revive
+	// Padrão: captura o caller imediato (skip=1)
+	return newHTTPErrorWithSourceSkip(code, message, 1, details...)
+}
+
+// newHTTPErrorWithSourceSkip cria erro estruturado capturando a origem com controle de profundidade.
+// skip segue a convenção de runtime.Caller: 0 = esta função, 1 = quem chamou esta função, 2 = quem chamou o chamador, etc.
+func newHTTPErrorWithSourceSkip(code int, message string, skip int, details ...any) *HTTPError { //nolint: revive
 	he := NewHTTPError(code, message, details...)
-	// Captura do local de criação (caller imediato)
-	if pc, file, line, ok := runtime.Caller(1); ok {
+	// Captura do local de criação baseado no skip informado
+	if pc, file, line, ok := runtime.Caller(skip); ok {
 		fn := runtime.FuncForPC(pc)
 		if fn != nil {
 			he.function = fn.Name()
@@ -98,7 +105,7 @@ func NewHTTPErrorWithSource(code int, message string, details ...any) *HTTPError
 	if errorStackDepth > 0 {
 		// pular este frame e o de runtime.Caller
 		frames := make([]uintptr, errorStackDepth)
-		n := runtime.Callers(2, frames)
+		n := runtime.Callers(skip+1, frames)
 		he.stack = make([]string, 0, n)
 		for i := 0; i < n; i++ {
 			if f := runtime.FuncForPC(frames[i]); f != nil {
@@ -283,11 +290,11 @@ func BadRequest(message string) *HTTPError { //nolint: revive
 // Útil nos adapters para preservar code/message/details e adicionar origem para logs.
 func WrapDomainErrorWithSource(derr DomainError) *HTTPError { //nolint: revive
 	if derr == nil {
-		return NewHTTPErrorWithSource(http.StatusInternalServerError, "Internal server error")
+		return newHTTPErrorWithSourceSkip(http.StatusInternalServerError, "Internal server error", 2)
 	}
 	// Copia detalhes se houver
 	if d := derr.Details(); d != nil {
-		return NewHTTPErrorWithSource(derr.Code(), derr.Message(), d)
+		return newHTTPErrorWithSourceSkip(derr.Code(), derr.Message(), 2, d)
 	}
-	return NewHTTPErrorWithSource(derr.Code(), derr.Message())
+	return newHTTPErrorWithSourceSkip(derr.Code(), derr.Message(), 2)
 }
