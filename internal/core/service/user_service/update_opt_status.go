@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -12,28 +13,35 @@ import (
 func (us *userService) UpdateOptStatus(ctx context.Context, opt bool) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil {
-		return
+		return utils.AuthenticationError("")
 	}
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("user.update_opt_status.tx_start_error", "err", err)
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.update_opt_status.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	if err = us.updateOptStatus(ctx, tx, userID, opt); err != nil {
-		_ = us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-		_ = us.globalService.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("user.update_opt_status.tx_commit_error", "err", err)
+		return utils.InternalError("Failed to commit transaction")
 	}
 	return
 }

@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 
+	"log/slog"
+
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number string) (propertyTypes globalmodel.PropertyType, err error) {
@@ -15,21 +17,27 @@ func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number
 	}
 	defer spanEnd()
 
-	tx, err := cs.gsi.StartTransaction(ctx)
-	if err != nil {
-		return
+	tx, txErr := cs.gsi.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("complex.get_options.tx_start_error", "err", txErr)
+		return propertyTypes, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := cs.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("complex.get_options.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	propertyTypes, err = cs.getOptions(ctx, tx, zipCode, number)
 	if err != nil {
-		cs.gsi.RollbackTransaction(ctx, tx)
 		return
 	}
 
-	err = cs.gsi.CommitTransaction(ctx, tx)
-	if err != nil {
-		cs.gsi.RollbackTransaction(ctx, tx)
-		return
+	if cmErr := cs.gsi.CommitTransaction(ctx, tx); cmErr != nil {
+		slog.Error("complex.get_options.tx_commit_error", "err", cmErr)
+		return propertyTypes, utils.InternalError("Failed to commit transaction")
 	}
 
 	return

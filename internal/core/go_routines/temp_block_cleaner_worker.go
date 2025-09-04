@@ -99,9 +99,9 @@ func (w *TempBlockCleanerWorker) unblockUser(ctx context.Context, userID int64) 
 	}
 	defer func() {
 		if err != nil {
-			w.globalService.RollbackTransaction(ctx, tx)
-		} else {
-			w.globalService.CommitTransaction(ctx, tx)
+			if rbErr := w.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("Failed to rollback tx when unblocking user", "userID", userID, "error", rbErr)
+			}
 		}
 	}()
 
@@ -109,6 +109,11 @@ func (w *TempBlockCleanerWorker) unblockUser(ctx context.Context, userID int64) 
 	if err != nil {
 		slog.Error("Failed to unblock user in permission service", "userID", userID, "error", err)
 		return err
+	}
+
+	if cmErr := w.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		slog.Error("Failed to commit tx when unblocking user", "userID", userID, "error", cmErr)
+		return cmErr
 	}
 
 	return nil

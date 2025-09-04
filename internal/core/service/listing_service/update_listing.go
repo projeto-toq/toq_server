@@ -3,38 +3,44 @@ package listingservices
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	
-	
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
-"errors"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) UpdateListing(ctx context.Context, listing listingmodel.ListingInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	tx, err := ls.gsi.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("listing.update.tx_start_error", "err", err)
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("listing.update.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = ls.updateListing(ctx, tx, listing)
 	if err != nil {
-		ls.gsi.RollbackTransaction(ctx, tx)
 		return
 	}
 
 	err = ls.gsi.CommitTransaction(ctx, tx)
 	if err != nil {
-		ls.gsi.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("listing.update.tx_commit_error", "err", err)
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	return

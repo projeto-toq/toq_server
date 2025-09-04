@@ -12,12 +12,13 @@ import (
 // ResendEmailChangeCode
 //
 //	@Summary      Resend email change code
-//	@Description  Resend a new validation code to the pending new email address
+//	@Description  Resend the existing (still valid) validation code to the pending new email address. If there is no pending change, returns 409. If the code is expired, returns 410.
 //	@Tags         User
 //	@Produce      json
 //	@Success      200  {object}  dto.ResendEmailChangeCodeResponse  "Confirmation message"
 //	@Failure      401  {object}  dto.ErrorResponse                 "Unauthorized"
-//	@Failure      409  {object}  dto.ErrorResponse                 "Email change not pending"
+//	@Failure      409  {object}  dto.ErrorResponse                 "Email change not pending or email already in use"
+//	@Failure      410  {object}  dto.ErrorResponse                 "Code expired"
 //	@Failure      500  {object}  dto.ErrorResponse                 "Internal server error"
 //	@Router       /user/email/resend [post]
 func (uh *UserHandler) ResendEmailChangeCode(c *gin.Context) {

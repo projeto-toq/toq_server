@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -14,25 +15,32 @@ import (
 func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.UserInterface, plainPassword string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return tokens, utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("user.create_realtor.tx_start_error", "err", err)
+		return tokens, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.create_realtor.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	created, err := us.createRealtor(ctx, tx, realtor)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		return tokens, err
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("user.create_realtor.tx_commit_error", "err", err)
+		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
 	// Autentica após commit

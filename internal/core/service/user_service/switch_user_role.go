@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -14,32 +15,38 @@ import (
 func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return tokens, utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return tokens, utils.ErrInternalServer
+		return tokens, utils.AuthenticationError("")
 	}
 
 	// Start transaction
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
-		return
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.switch_role.tx_start_error", "err", txErr)
+		return tokens, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.switch_role.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	tokens, err = us.switchUserRole(ctx, tx, userID, roleSlug)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("user.switch_role.tx_commit_error", "err", commitErr)
+		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
 	return
@@ -53,8 +60,8 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	}
 
 	if len(userRoles) == 1 {
-		err = utils.ErrInternalServer
-		return
+		// Only one role available; switching is not applicable
+		return tokens, utils.ConflictError("User has only one role; cannot switch")
 	}
 
 	// Verificar se o role solicitado existe para o usuário
@@ -72,8 +79,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	}
 
 	if !roleExists {
-		err = utils.NewHTTPError(400, fmt.Sprintf("Role '%s' not found for user", roleSlug))
-		return
+		return tokens, utils.NotFoundError(fmt.Sprintf("role '%s' for user", roleSlug))
 	}
 
 	// Usar permission service diretamente para buscar role

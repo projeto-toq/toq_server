@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"time"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -18,32 +17,44 @@ import (
 func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Obter o ID do usuário a partir do contexto (fonte única de verdade)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return utils.ErrInternalServer
+		return utils.AuthenticationError("")
 	}
 
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("email_change.resend.tx_start_error", "err", txErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementEmailChangeResend("start_tx_error")
 		}
-		return
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("email_change.resend.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
-	var userEmail, newCode string
-	userEmail, newCode, err = us.resendEmailChangeCode(ctx, tx, userID)
+	var userEmail, code string
+	userEmail, code, err = us.resendEmailChangeCode(ctx, tx, userID)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
-			if errors.Is(err, utils.ErrEmailChangeNotPending) {
+			switch err {
+			case utils.ErrEmailChangeNotPending:
 				mp.IncrementEmailChangeResend("not_pending")
-			} else {
+			case utils.ErrEmailChangeCodeExpired:
+				mp.IncrementEmailChangeResend("expired")
+			case utils.ErrEmailAlreadyInUse:
+				mp.IncrementEmailChangeResend("already_in_use")
+			default:
 				mp.IncrementEmailChangeResend("domain_error")
 			}
 		}
@@ -51,11 +62,11 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+		slog.Error("email_change.resend.tx_commit_error", "err", err)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementEmailChangeResend("commit_error")
 		}
-		return
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	// Após o commit, enviar a notificação por e-mail com o novo código
@@ -63,11 +74,11 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	emailRequest := globalservice.NotificationRequest{
 		Type:    globalservice.NotificationTypeEmail,
 		To:      userEmail,
-		Subject: "TOQ - Novo código de alteração de email",
-		Body:    "Seu novo código de validação para alteração de email é: " + newCode,
+		Subject: "TOQ - Código de alteração de email",
+		Body:    "Seu código de validação para alteração de email é: " + code,
 	}
 	if notifyErr := notificationService.SendNotification(ctx, emailRequest); notifyErr != nil {
-		slog.Error("Failed to send email notification (resend email change)", "userID", userID, "error", notifyErr)
+		slog.Error("email_change.resend.notification_error", "userID", userID, "err", notifyErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementEmailChangeResend("notify_error")
 		}
@@ -97,14 +108,22 @@ func (us *userService) resendEmailChangeCode(ctx context.Context, tx *sql.Tx, us
 		return "", "", utils.ErrEmailChangeNotPending
 	}
 
-	// Gerar novo código e estender a expiração
-	code = us.random6Digits()
-	validation.SetEmailCode(code)
-	validation.SetEmailCodeExp(time.Now().UTC().Add(usermodel.ValidationCodeExpiration))
-
-	if err = us.repo.UpdateUserValidations(ctx, tx, validation); err != nil {
-		return "", "", err
+	// Deve haver um código válido ainda dentro do prazo
+	code = validation.GetEmailCode()
+	if code == "" {
+		return "", "", utils.ErrEmailChangeNotPending
+	}
+	if validation.GetEmailCodeExp().Before(time.Now().UTC()) {
+		return "", "", utils.ErrEmailChangeCodeExpired
 	}
 
+	// Verificar unicidade global (outros usuários não podem ter este email)
+	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, destEmail, userID); verr != nil {
+		return "", "", verr
+	} else if exist {
+		return "", "", utils.ErrEmailAlreadyInUse
+	}
+
+	// Não regenerar o código nem estender a expiração; apenas reenviar o existente
 	return destEmail, code, nil
 }

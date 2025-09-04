@@ -18,9 +18,11 @@ const (
 	TableUsers         TableName = "users"
 	TableAgencyInvites TableName = "agency_invites"
 	TableRealtorAgency TableName = "realtor_agency"
-	TableBaseRoles     TableName = "base_roles"
-	TableUserRoles     TableName = "user_roles"
-	TableListings      TableName = "listings"
+	// TableBaseRoles mantido por compatibilidade de código legado. Schema atual usa 'roles'.
+	TableBaseRoles TableName = "base_roles"
+	TableRoles     TableName = "roles"
+	TableUserRoles TableName = "user_roles"
+	TableListings  TableName = "listings"
 )
 
 func (t TableName) String() string {

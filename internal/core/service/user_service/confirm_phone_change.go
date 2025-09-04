@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -13,29 +14,38 @@ import (
 
 // ConfirmPhoneChange confirms a pending phone change without creating or returning tokens.
 func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err error) {
-	// Obter o ID do usuário do contexto (SSOT)
-	userID, err := us.globalService.GetUserIDFromContext(ctx)
-	if err != nil || userID == 0 {
-		return utils.ErrInternalServer
-	}
+	// Padronizar: gerar tracer antes e só então obter userID do contexto (como no fluxo de e-mail)
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
+	// Obter o ID do usuário do contexto (SSOT)
+	userID, err := us.globalService.GetUserIDFromContext(ctx)
+	if err != nil || userID == 0 {
+		return utils.AuthenticationError("")
+	}
+
 	// Start transaction
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.confirm_phone_change.tx_start_error", "err", txErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPhoneChangeConfirm("start_tx_error")
 		}
-		return
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.confirm_phone_change.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.confirmPhoneChange(ctx, tx, userID, code)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			switch err {
 			case utils.ErrPhoneChangeNotPending:
@@ -53,22 +63,23 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+	// Após confirmar telefone com sucesso, aplicar transição simples de status (na mesma transação)
+	if _, changed, terr := us.applyStatusTransitionAfterContactChange(ctx, tx, false /*emailJustConfirmed*/); terr != nil {
+		return terr
+	} else {
+		_ = changed
+	}
+
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("user.confirm_phone_change.tx_commit_error", "err", commitErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPhoneChangeConfirm("commit_error")
 		}
-		return
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	if mp := us.globalService.GetMetrics(); mp != nil {
 		mp.IncrementPhoneChangeConfirm("success")
-	}
-	// Após confirmar telefone com sucesso, aplicar a transição de status adequada
-	if _, _, terr := us.ApplyUserStatusTransitionAfterPhoneConfirmed(ctx); terr != nil {
-		// Não falha o fluxo principal; apenas registra
-		_ = terr
 	}
 	return
 }
@@ -82,8 +93,8 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 		return
 	}
 
-	//check if the user is awaiting phone validation
-	if userValidation.GetPhoneCode() == "" {
+	// Deve haver um código pendente e um novo telefone definido (espelha o fluxo de e-mail)
+	if userValidation.GetPhoneCode() == "" || userValidation.GetNewPhone() == "" {
 		err = utils.ErrPhoneChangeNotPending
 		return
 	}
@@ -124,11 +135,8 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 		return
 	}
 
-	// Update user status if needed, but do not create tokens in this flow
-	_, err = us.UpdateUserValidationByUserRole(ctx, tx, &user, userValidation)
-	if err != nil {
-		return
-	}
+	// Status transition is handled centrally by applyStatusTransitionAfterContactChange in the public method.
+	// Não realizar transições de status aqui para evitar duplicidade e inconsistências.
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {

@@ -25,18 +25,25 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	// Resolve userID from context
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return tokens, utils.ErrUnauthorized
+		return tokens, utils.AuthenticationError("")
 	}
 
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
-		return
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.delete_account.tx_start_error", "err", txErr)
+		return tokens, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.delete_account.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	// Load user first to support idempotency and side-effects in a single txn
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
@@ -53,25 +60,23 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 		// Return expired tokens
 		tokens, err = us.CreateTokens(ctx, tx, user, true)
 		if err != nil {
-			us.globalService.RollbackTransaction(ctx, tx)
 			return
 		}
 		if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-			us.globalService.RollbackTransaction(ctx, tx)
+			slog.Error("user.delete_account.tx_commit_error", "err", err)
+			// best-effort: return success even if commit logging shows failure in edge case
 		}
 		return
 	}
 
 	tokens, err = us.deleteAccount(ctx, tx, userID)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
+		slog.Error("user.delete_account.tx_commit_error", "err", err)
+		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
 	return

@@ -9,36 +9,45 @@ import (
 )
 
 func validateRefreshToken(refresh string) (userID int64, err error) {
-
-	//tenta validar o token
-	token, err2 := jwt.Parse(refresh, func(token *jwt.Token) (interface{}, error) {
-		_, ok := token.Method.(*jwt.SigningMethodHMAC)
-		if !ok {
-			slog.Warn("unexpected signing method", "method", token.Header["alg"])
-			return nil, utils.ErrInvalidRefreshToken
+	// Validação do token com verificação explícita de método de assinatura e tipagem
+	token, parseErr := jwt.Parse(refresh, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			slog.Warn("jwt.unexpected_signing_method", "alg", token.Header["alg"])
+			return nil, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 		}
 		secret := globalmodel.GetJWTSecret()
 		return []byte(secret), nil
 	})
 
-	if err2 != nil {
-		return 0, utils.ErrInvalidRefreshToken
+	if parseErr != nil {
+		if ve, ok := parseErr.(*jwt.ValidationError); ok {
+			if (ve.Errors & jwt.ValidationErrorExpired) != 0 {
+				return 0, utils.WrapDomainErrorWithSource(utils.ErrRefreshTokenExpired)
+			}
+		}
+		return 0, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 
-	//tenta recuperar os claims
+	// Recupera claims e valida
 	payload, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return 0, utils.ErrInvalidRefreshToken
+		return 0, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
+	}
+
+	// Verifica tipagem do token
+	if typ, ok := payload["typ"].(string); !ok || typ != "refresh" {
+		slog.Warn("jwt.invalid_type_for_refresh", "typ", payload["typ"]) // log de segurança
+		return 0, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 
 	infosraw, ok := payload[string(globalmodel.TokenKey)].(map[string]interface{})
 	if !ok {
-		return 0, utils.ErrInvalidRefreshToken
+		return 0, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 
 	idFloat, ok := infosraw["ID"].(float64)
 	if !ok {
-		return 0, utils.ErrInvalidRefreshToken
+		return 0, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 	userID = int64(idFloat)
 

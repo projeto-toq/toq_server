@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"time"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -18,30 +17,41 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return utils.ErrInternalServer
+		return utils.AuthenticationError("")
 	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.resend_phone_change_code.tx_start_error", "err", txErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPhoneChangeResend("start_tx_error")
 		}
-		return
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.resend_phone_change_code.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
-	var destPhone, newCode string
-	destPhone, newCode, err = us.resendPhoneChangeCode(ctx, tx, userID)
+	var destPhone, code string
+	destPhone, code, err = us.resendPhoneChangeCode(ctx, tx, userID)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			switch err {
 			case utils.ErrPhoneChangeNotPending:
 				mp.IncrementPhoneChangeResend("not_pending")
+			case utils.ErrPhoneChangeCodeExpired:
+				mp.IncrementPhoneChangeResend("expired")
+			case utils.ErrPhoneAlreadyInUse:
+				mp.IncrementPhoneChangeResend("already_in_use")
 			default:
 				mp.IncrementPhoneChangeResend("domain_error")
 			}
@@ -50,11 +60,11 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+		slog.Error("user.resend_phone_change_code.tx_commit_error", "err", err)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPhoneChangeResend("commit_error")
 		}
-		return
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	// After commit, send SMS with the new code
@@ -62,10 +72,10 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	smsRequest := globalservice.NotificationRequest{
 		Type: globalservice.NotificationTypeSMS,
 		To:   destPhone,
-		Body: "TOQ - Seu novo código de validação: " + newCode,
+		Body: "TOQ - Seu código de validação: " + code,
 	}
 	if notifyErr := notificationService.SendNotification(ctx, smsRequest); notifyErr != nil {
-		slog.Error("Failed to send SMS notification (resend phone change)", "userID", userID, "error", notifyErr)
+		slog.Error("user.resend_phone_change_code.notification_error", "userID", userID, "err", notifyErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPhoneChangeResend("notify_error")
 		}
@@ -92,14 +102,20 @@ func (us *userService) resendPhoneChangeCode(ctx context.Context, tx *sql.Tx, us
 	if destPhone == "" {
 		return "", "", utils.ErrPhoneChangeNotPending
 	}
-
-	// Generate new code and extend expiration
-	code = us.random6Digits()
-	validation.SetPhoneCode(code)
-	validation.SetPhoneCodeExp(time.Now().UTC().Add(usermodel.ValidationCodeExpiration))
-
-	if err = us.repo.UpdateUserValidations(ctx, tx, validation); err != nil {
-		return "", "", err
+	// Deve haver um código válido ainda dentro do prazo
+	code = validation.GetPhoneCode()
+	if code == "" {
+		return "", "", utils.ErrPhoneChangeNotPending
 	}
+	if validation.GetPhoneCodeExp().Before(time.Now().UTC()) {
+		return "", "", utils.ErrPhoneChangeCodeExpired
+	}
+	// Verificar unicidade global (outros usuários não podem ter este telefone)
+	if exist, verr := us.repo.ExistsPhoneForAnotherUser(ctx, tx, destPhone, userID); verr != nil {
+		return "", "", verr
+	} else if exist {
+		return "", "", utils.ErrPhoneAlreadyInUse
+	}
+	// Não regenerar o código nem estender a expiração; apenas reenviar o existente
 	return destPhone, code, nil
 }

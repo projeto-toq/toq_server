@@ -3,7 +3,20 @@ package utils
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
+	"runtime"
 )
+
+// DomainErrorWithSource extends DomainError to expose error origin and stack.
+// It allows adapters (e.g., HTTP middlewares) to log the real call site.
+// Exported docs in English; internal comments in Portuguese quando necessário.
+type DomainErrorWithSource interface {
+	DomainError
+	// Location returns function name, file path, and line number of the error origin.
+	Location() (function string, file string, line int)
+	// Stack returns a short stack trace captured at creation time (best-effort, may be empty).
+	Stack() []string
+}
 
 // DomainError defines a core-agnostic error interface used across services and repositories
 // It intentionally has no dependency on HTTP handlers or web frameworks.
@@ -21,10 +34,19 @@ type HTTPError struct {
 	msg        string `json:"-"`
 	// details keeps optional error context (field, validation info, etc.)
 	details any `json:"-"`
+	// source info – não serializamos para resposta HTTP, apenas para logs
+	function string   `json:"-"`
+	file     string   `json:"-"`
+	line     int      `json:"-"`
+	stack    []string `json:"-"`
+	cause    error    `json:"-"`
 }
 
 // Ensure *HTTPError implements DomainError
 var _ DomainError = (*HTTPError)(nil)
+
+// Ensure *HTTPError implements DomainErrorWithSource
+var _ DomainErrorWithSource = (*HTTPError)(nil)
 
 // Error implements the error interface
 func (e *HTTPError) Error() string { return fmt.Sprintf("HTTP %d: %s", e.statusCode, e.msg) }
@@ -47,8 +69,60 @@ func NewHTTPError(code int, message string, details ...any) *HTTPError {
 	return httpErr
 }
 
+// errorStackDepth controls how many frames of stack are captured. Default 1.
+var errorStackDepth = 1
+
+// SetErrorStackDepth sets the number of stack frames to capture for DomainErrorWithSource.
+// Values <= 0 disable stack capture (only Location will be set).
+func SetErrorStackDepth(depth int) { //nolint: revive
+	if depth <= 0 {
+		errorStackDepth = 0
+		return
+	}
+	errorStackDepth = depth
+}
+
+// NewHTTPErrorWithSource creates a new structured error instance capturing origin information.
+func NewHTTPErrorWithSource(code int, message string, details ...any) *HTTPError { //nolint: revive
+	he := NewHTTPError(code, message, details...)
+	// Captura do local de criação (caller imediato)
+	if pc, file, line, ok := runtime.Caller(1); ok {
+		fn := runtime.FuncForPC(pc)
+		if fn != nil {
+			he.function = fn.Name()
+		}
+		he.file = file
+		he.line = line
+	}
+	// Captura de uma stack curta (melhor esforço)
+	if errorStackDepth > 0 {
+		// pular este frame e o de runtime.Caller
+		frames := make([]uintptr, errorStackDepth)
+		n := runtime.Callers(2, frames)
+		he.stack = make([]string, 0, n)
+		for i := 0; i < n; i++ {
+			if f := runtime.FuncForPC(frames[i]); f != nil {
+				file, line := f.FileLine(frames[i])
+				he.stack = append(he.stack, fmt.Sprintf("%s (%s:%d)", f.Name(), filepath.Base(file), line))
+			}
+		}
+	}
+	return he
+}
+
+// Location returns the function, file and line where the error was created.
+func (e *HTTPError) Location() (function string, file string, line int) { //nolint: revive
+	return e.function, e.file, e.line
+}
+
+// Stack returns a short captured stack trace, if available.
+func (e *HTTPError) Stack() []string { //nolint: revive
+	return e.stack
+}
+
 // Predefined common errors (without coupling to handlers)
 var (
+	// Deprecated: prefer constructors that capture source.
 	ErrBadRequest          = &HTTPError{statusCode: http.StatusBadRequest, msg: "Bad Request"}
 	ErrUnauthorized        = &HTTPError{statusCode: http.StatusUnauthorized, msg: "Unauthorized"}
 	ErrForbidden           = &HTTPError{statusCode: http.StatusForbidden, msg: "Forbidden"}
@@ -91,6 +165,12 @@ var (
 	ErrSameEmailAsCurrent = NewHTTPError(http.StatusConflict, "New email is the same as current")
 )
 
+// User/Role integrity errors
+var (
+	// Returned when a flow that requires an active role finds none
+	ErrUserActiveRoleMissing = NewHTTPError(http.StatusConflict, "Active role missing for user")
+)
+
 // Phone change domain-specific errors
 var (
 	// Returned when there is no pending phone change for the user
@@ -120,7 +200,7 @@ func ValidationError(field, message string) *HTTPError {
 	if message == "" {
 		message = "Validation failed"
 	}
-	return NewHTTPError(http.StatusBadRequest, message, map[string]string{
+	return NewHTTPErrorWithSource(http.StatusBadRequest, message, map[string]string{
 		"field":   field,
 		"message": message,
 	})
@@ -131,7 +211,7 @@ func AuthenticationError(message string) *HTTPError {
 	if message == "" {
 		message = "Authentication required"
 	}
-	return NewHTTPError(http.StatusUnauthorized, message)
+	return NewHTTPErrorWithSource(http.StatusUnauthorized, message)
 }
 
 // AuthorizationError creates an authorization error
@@ -139,7 +219,7 @@ func AuthorizationError(message string) *HTTPError {
 	if message == "" {
 		message = "Insufficient permissions"
 	}
-	return NewHTTPError(http.StatusForbidden, message)
+	return NewHTTPErrorWithSource(http.StatusForbidden, message)
 }
 
 // InternalError creates an internal server error
@@ -147,7 +227,7 @@ func InternalError(message string) *HTTPError {
 	if message == "" {
 		message = "Internal server error"
 	}
-	return NewHTTPError(http.StatusInternalServerError, message)
+	return NewHTTPErrorWithSource(http.StatusInternalServerError, message)
 }
 
 // NotFoundError creates a not found error
@@ -156,7 +236,7 @@ func NotFoundError(resource string) *HTTPError {
 	if resource != "" {
 		message = fmt.Sprintf("%s not found", resource)
 	}
-	return NewHTTPError(http.StatusNotFound, message)
+	return NewHTTPErrorWithSource(http.StatusNotFound, message)
 }
 
 // ConflictError creates a conflict error
@@ -164,7 +244,7 @@ func ConflictError(message string) *HTTPError {
 	if message == "" {
 		message = "Resource conflict"
 	}
-	return NewHTTPError(http.StatusConflict, message)
+	return NewHTTPErrorWithSource(http.StatusConflict, message)
 }
 
 // UserBlockedError creates a user blocked error (423 Locked)
@@ -172,7 +252,7 @@ func UserBlockedError(message string) *HTTPError {
 	if message == "" {
 		message = "Account temporarily blocked due to security measures"
 	}
-	return NewHTTPError(http.StatusLocked, message)
+	return NewHTTPErrorWithSource(http.StatusLocked, message)
 }
 
 // TooManyAttemptsError creates a rate limiting error
@@ -180,7 +260,7 @@ func TooManyAttemptsError(message string) *HTTPError {
 	if message == "" {
 		message = "Too many failed attempts"
 	}
-	return NewHTTPError(http.StatusTooManyRequests, message)
+	return NewHTTPErrorWithSource(http.StatusTooManyRequests, message)
 }
 
 // InvalidRequestFormatError creates a request format error
@@ -188,5 +268,26 @@ func InvalidRequestFormatError(message string) *HTTPError {
 	if message == "" {
 		message = "Invalid request format"
 	}
-	return NewHTTPError(http.StatusBadRequest, message)
+	return NewHTTPErrorWithSource(http.StatusBadRequest, message)
+}
+
+// BadRequest creates a generic bad request error with source information.
+func BadRequest(message string) *HTTPError { //nolint: revive
+	if message == "" {
+		message = "Bad Request"
+	}
+	return NewHTTPErrorWithSource(http.StatusBadRequest, message)
+}
+
+// WrapDomainErrorWithSource converts any DomainError to a new error instance that captures source.
+// Útil nos adapters para preservar code/message/details e adicionar origem para logs.
+func WrapDomainErrorWithSource(derr DomainError) *HTTPError { //nolint: revive
+	if derr == nil {
+		return NewHTTPErrorWithSource(http.StatusInternalServerError, "Internal server error")
+	}
+	// Copia detalhes se houver
+	if d := derr.Details(); d != nil {
+		return NewHTTPErrorWithSource(derr.Code(), derr.Message(), d)
+	}
+	return NewHTTPErrorWithSource(derr.Code(), derr.Message())
 }

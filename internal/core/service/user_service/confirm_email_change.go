@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -15,28 +16,35 @@ import (
 func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Obter o ID do usuário a partir do contexto
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return utils.ErrInternalServer
+		return utils.AuthenticationError("")
 	}
 
 	// Start transaction
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.confirm_email_change.tx_start_error", "err", txErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementEmailChangeConfirm("start_tx_error")
 		}
-		return
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.confirm_email_change.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.confirmEmailChange(ctx, tx, userID, code)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			// map domain errors to results
 			switch err {
@@ -55,13 +63,19 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+	// Após confirmar e-mail com sucesso, aplicar transição simples de status (na mesma transação)
+	if _, changed, terr := us.applyStatusTransitionAfterContactChange(ctx, tx, true /*emailJustConfirmed*/); terr != nil {
+		return terr
+	} else {
+		_ = changed // mudança pode ser no-op
+	}
+
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("user.confirm_email_change.tx_commit_error", "err", commitErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementEmailChangeConfirm("commit_error")
 		}
-		return
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	// Push notifications no longer dispatched automatically here.
@@ -70,11 +84,6 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 		mp.IncrementEmailChangeConfirm("success")
 	}
 
-	// Após confirmar e-mail com sucesso, aplicar a transição de status adequada
-	if _, _, terr := us.ApplyUserStatusTransitionAfterEmailConfirmed(ctx); terr != nil {
-		// Não falha o fluxo principal; apenas registra
-		_ = terr
-	}
 	return
 }
 

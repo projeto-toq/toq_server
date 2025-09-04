@@ -31,20 +31,25 @@ type PermissionSerializable struct {
 
 // HasPermission verifica se o usuário tem uma permissão específica
 func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64, resource, action string, permContext *permissionmodel.PermissionContext) (bool, error) {
+	// Tracing da operação
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return false, utils.ErrBadRequest
+		return false, utils.BadRequest("invalid user id")
 	}
 
 	if resource == "" || action == "" {
-		return false, utils.ErrBadRequest
+		return false, utils.BadRequest("invalid resource or action")
 	}
 
-	slog.Debug("Checking permission", "userID", userID, "resource", resource, "action", action)
+	slog.Debug("permission.check.start", "user_id", userID, "resource", resource, "action", action)
 
 	// Tentar buscar permissões do cache primeiro
 	userPermissions, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
-		return false, utils.ErrInternalServer
+		slog.Error("permission.check.permissions_load_failed", "user_id", userID, "error", err)
+		return false, utils.InternalError("")
 	}
 
 	// Verificar cada permissão
@@ -60,18 +65,18 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 				}
 
 				if evaluator.Evaluate(permission.GetConditions(), permContext) {
-					slog.Debug("Permission granted with conditions", "permission_id", permission.GetID())
+					slog.Info("permission.check.allowed", "user_id", userID, "resource", resource, "action", action, "permission_id", permission.GetID())
 					return true, nil
 				}
 			} else {
 				// Sem condições - permitir
-				slog.Debug("Permission granted without conditions", "permission_id", permission.GetID())
+				slog.Info("permission.check.allowed", "user_id", userID, "resource", resource, "action", action, "permission_id", permission.GetID())
 				return true, nil
 			}
 		}
 	}
 
-	slog.Debug("Permission denied", "userID", userID, "resource", resource, "action", action)
+	slog.Warn("permission.check.denied", "user_id", userID, "resource", resource, "action", action)
 	return false, nil
 }
 
@@ -92,7 +97,7 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 	// Cache miss ou erro - buscar do banco
 	permissions, err := p.getUserPermissionsFromDB(ctx, userID)
 	if err != nil {
-		return nil, utils.ErrInternalServer
+		return nil, fmt.Errorf("db load error: %w", err)
 	}
 
 	// Armazenar no cache para próximas consultas
@@ -220,21 +225,32 @@ func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, us
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return nil, utils.ErrInternalServer
+		slog.Error("permission.check.tx_start_failed", "user_id", userID, "error", err)
+		return nil, utils.InternalError("")
 	}
+	// Rollback on error
+	var retErr error
+	defer func() {
+		if retErr != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("permission.check.tx_rollback_failed", "user_id", userID, "error", rbErr)
+			}
+		}
+	}()
 
 	// Usar o método do repositório para buscar todas as permissões do usuário
-	permissions, err := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
-	if err != nil {
-		p.globalService.RollbackTransaction(ctx, tx)
-		return nil, utils.ErrInternalServer
+	permissions, qerr := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
+	if qerr != nil {
+		slog.Error("permission.check.db_failed", "user_id", userID, "error", qerr)
+		retErr = utils.InternalError("")
+		return nil, retErr
 	}
 
 	// Commit the transaction
-	err = p.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		p.globalService.RollbackTransaction(ctx, tx)
-		return nil, utils.ErrInternalServer
+	if cmErr := p.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		slog.Error("permission.check.tx_commit_failed", "user_id", userID, "error", cmErr)
+		retErr = utils.InternalError("")
+		return nil, retErr
 	}
 
 	return permissions, nil
@@ -243,15 +259,16 @@ func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, us
 // ClearUserPermissionsCache remove as permissões do usuário do cache
 func (p *permissionServiceImpl) ClearUserPermissionsCache(ctx context.Context, userID int64) error {
 	if userID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid user id")
 	}
 
 	err := p.cache.DeleteUserPermissions(ctx, userID)
 	if err != nil {
-		slog.Error("Failed to clear user permissions cache", "userID", userID, "error", err)
-		return fmt.Errorf("failed to clear permissions cache: %w", err)
+		slog.Warn("permission.cache.clear_failed", "user_id", userID, "error", err)
+		// Retornar erro de infraestrutura de forma padronizada
+		return utils.InternalError("")
 	}
 
-	slog.Debug("User permissions cache cleared", "userID", userID)
+	slog.Info("permission.cache.invalidated", "user_id", userID)
 	return nil
 }

@@ -2,7 +2,6 @@ package userservices
 
 import (
 	"context"
-	"net/http"
 
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
 
@@ -22,17 +21,14 @@ func (us *userService) GetPhotoUploadURL(ctx context.Context, objectName, conten
 	}
 
 	if us.cloudStorageService == nil {
-		return "", utils.ErrInternalServer
+		return "", utils.InternalError("Storage service not configured")
 	}
 
 	// Validar se é um tipo de foto válido usando constantes do domínio
 	validPhotoTypes := storagemodel.ValidPhotoTypes()
 	if !validPhotoTypes[objectName] {
 		// 422 para tipo de foto inválido com detalhes do campo
-		return "", utils.NewHTTPError(http.StatusUnprocessableEntity, "Invalid photo type", map[string]string{
-			"field":   "objectName",
-			"message": "Unsupported photo type",
-		})
+		return "", utils.ValidationError("objectName", "Unsupported photo type")
 	}
 
 	// Validar content-type permitido (apenas imagens JPEG/PNG)
@@ -41,10 +37,7 @@ func (us *userService) GetPhotoUploadURL(ctx context.Context, objectName, conten
 		"image/png":  true,
 	}
 	if !allowedContentTypes[contentType] {
-		return "", utils.NewHTTPError(http.StatusUnprocessableEntity, "Invalid content type", map[string]string{
-			"field":   "contentType",
-			"message": "Only image/jpeg or image/png are allowed",
-		})
+		return "", utils.ValidationError("contentType", "Only image/jpeg or image/png are allowed")
 	}
 
 	signedURL, err = us.cloudStorageService.GeneratePhotoUploadURL(userID, storagemodel.PhotoType(objectName), contentType)

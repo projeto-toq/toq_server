@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"net/http"
 	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -30,10 +29,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	//verify the password
 	if err = validatePassword(user.GetPassword()); err != nil {
 		// Padroniza como erro de validação (campo: password)
-		return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
-			"field":   "password",
-			"message": "Senha não atende aos requisitos mínimos",
-		})
+		return utils.ValidationError("password", "Senha não atende aos requisitos mínimos")
 	}
 
 	if role == permissionmodel.RoleSlugAgency {
@@ -61,16 +57,13 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	//validate the user zipcode
 	cep, err := us.globalService.GetCEP(ctx, user.GetZipCode())
 	if err != nil {
-		return
+		return utils.InternalError("Failed to validate zipcode")
 	}
 
 	//validate the address number
 	if user.GetNumber() == "" {
 		// Número do endereço é obrigatório
-		return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
-			"field":   "number",
-			"message": "Número do endereço é obrigatório",
-		})
+		return utils.ValidationError("number", "Número do endereço é obrigatório")
 	}
 
 	user.SetStreet(cep.GetStreet())

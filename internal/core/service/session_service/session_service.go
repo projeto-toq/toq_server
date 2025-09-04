@@ -37,17 +37,24 @@ func New(repo sessionrepoport.SessionRepoPortInterface, gs globalservice.GlobalS
 func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, error) {
 	tx, err := s.globalService.StartTransaction(ctx)
 	if err != nil {
+		slog.Error("session.cleaner.tx_start_error", "err", err)
 		return 0, err
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("session.cleaner.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 	// Run deletion inside the transaction boundary
 	n, err := s.repo.DeleteExpiredSessions(ctx, tx, limit)
 	if err != nil {
-		s.globalService.RollbackTransaction(ctx, tx)
 		return 0, err
 	}
-	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
-		s.globalService.RollbackTransaction(ctx, tx)
-		return 0, err
+	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		slog.Error("session.cleaner.tx_commit_error", "err", cmErr)
+		return 0, cmErr
 	}
 	if n > 0 {
 		slog.Info("session_service.cleaner.deleted", "count", n)

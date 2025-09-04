@@ -11,13 +11,14 @@ import (
 
 // BlockUserTemporarily blocks a user temporarily by updating their user_role status and blocked_until
 func (pa *PermissionAdapter) BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time, reason string) error {
+	// O schema de user_roles não contém status_reason nem updated_at; manter apenas campos válidos.
 	query := `
 		UPDATE user_roles 
-		SET status = ?, blocked_until = ?, status_reason = ?, updated_at = NOW()
+		SET status = ?, blocked_until = ?
 		WHERE user_id = ? AND is_active = 1
 	`
 
-	_, err := tx.ExecContext(ctx, query, permissionmodel.StatusTempBlocked, blockedUntil, reason, userID)
+	_, err := tx.ExecContext(ctx, query, permissionmodel.StatusTempBlocked, blockedUntil, userID)
 	if err != nil {
 		slog.Error("Failed to block user temporarily", "userID", userID, "error", err)
 		return err
@@ -29,15 +30,15 @@ func (pa *PermissionAdapter) BlockUserTemporarily(ctx context.Context, tx *sql.T
 
 // UnblockUser unblocks a user by setting their status back to active and clearing blocked_until
 func (pa *PermissionAdapter) UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error {
+	// Remover colunas inexistentes no schema (status_reason, updated_at).
 	query := `
 		UPDATE user_roles 
-		SET status = ?, blocked_until = NULL, status_reason = ?, updated_at = NOW()
+		SET status = ?, blocked_until = NULL
 		WHERE user_id = ? AND status = ? AND is_active = 1
 	`
 
 	_, err := tx.ExecContext(ctx, query,
 		permissionmodel.StatusActive,
-		"Unblocked after temporary block expired",
 		userID,
 		permissionmodel.StatusTempBlocked,
 	)

@@ -4,34 +4,42 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) DeleteRealtorOfAgency(ctx context.Context, agencyID int64, realtorID int64) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("user.delete_realtor_of_agency.tx_start_error", "err", err)
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.delete_realtor_of_agency.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.deleteRealtorOfAgency(ctx, tx, agencyID, realtorID)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		return err
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("user.delete_realtor_of_agency.tx_commit_error", "err", err)
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	return

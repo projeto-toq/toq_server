@@ -12,7 +12,7 @@ func (us *userService) GetProfileThumbnails(ctx context.Context) (thumbnails use
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return thumbnails, utils.ErrInternalServer
+		return thumbnails, utils.InternalError("Failed to get user from context")
 	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

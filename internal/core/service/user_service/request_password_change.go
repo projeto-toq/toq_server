@@ -18,30 +18,36 @@ import (
 func (us *userService) RequestPasswordChange(ctx context.Context, nationalID string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Start transaction
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("auth.request_password_change.tx_start_error", "err", txErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPasswordChangeRequest("start_tx_error")
 		}
-		return
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("auth.request_password_change.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	user, validation, err := us.requestPasswordChange(ctx, tx, nationalID)
 	if err != nil {
 		// Privacy-preserving path: do not reveal user existence
 		if errors.Is(err, sql.ErrNoRows) {
-			us.globalService.RollbackTransaction(ctx, tx)
 			if mp := us.globalService.GetMetrics(); mp != nil {
 				mp.IncrementPasswordChangeRequest("user_not_found")
 			}
 			return nil
 		}
-		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPasswordChangeRequest("domain_error")
 		}
@@ -49,13 +55,12 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	}
 
 	// Commit before notify
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("auth.request_password_change.tx_commit_error", "err", commitErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPasswordChangeRequest("commit_error")
 		}
-		return
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	// Send notification after commit

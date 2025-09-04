@@ -13,6 +13,9 @@ import (
 
 // BlockUserTemporarily blocks a user temporarily by changing their status to StatusTempBlocked
 func (ps *permissionServiceImpl) BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, reason string) error {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	blockedUntil := time.Now().UTC().Add(usermodel.TempBlockDuration)
 
 	err := ps.permissionRepository.BlockUserTemporarily(ctx, tx, userID, blockedUntil, reason)
@@ -32,6 +35,9 @@ func (ps *permissionServiceImpl) BlockUserTemporarily(ctx context.Context, tx *s
 
 // UnblockUser unblocks a user by changing their status back to StatusActive
 func (ps *permissionServiceImpl) UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	err := ps.permissionRepository.UnblockUser(ctx, tx, userID)
 	if err != nil {
 		slog.Error("Failed to unblock user", "userID", userID, "error", err)
@@ -49,20 +55,29 @@ func (ps *permissionServiceImpl) UnblockUser(ctx context.Context, tx *sql.Tx, us
 
 // IsUserTempBlocked checks if a user is temporarily blocked
 func (ps *permissionServiceImpl) IsUserTempBlocked(ctx context.Context, userID int64) (bool, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	// Start a transaction for read operations when caller doesn't manage one
 	tx, err := ps.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("Failed to start transaction for temp block check", "userID", userID, "error", err)
 		return false, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := ps.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("Failed to rollback tx for temp block check", "userID", userID, "error", rbErr)
+			}
+		}
+	}()
 
 	blocked, ierr := ps.IsUserTempBlockedWithTx(ctx, tx, userID)
 	if ierr != nil {
-		_ = ps.globalService.RollbackTransaction(ctx, tx)
 		return false, ierr
 	}
 	if err = ps.globalService.CommitTransaction(ctx, tx); err != nil {
-		_ = ps.globalService.RollbackTransaction(ctx, tx)
+		slog.Error("Failed to commit tx for temp block check", "userID", userID, "error", err)
 		return false, utils.InternalError("Failed to commit transaction")
 	}
 	return blocked, nil
@@ -70,6 +85,9 @@ func (ps *permissionServiceImpl) IsUserTempBlocked(ctx context.Context, userID i
 
 // IsUserTempBlockedWithTx checks if a user is temporarily blocked using the provided transaction
 func (ps *permissionServiceImpl) IsUserTempBlockedWithTx(ctx context.Context, tx *sql.Tx, userID int64) (bool, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	userRole, err := ps.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -96,6 +114,9 @@ func (ps *permissionServiceImpl) IsUserTempBlockedWithTx(ctx context.Context, tx
 
 // GetExpiredTempBlockedUsers returns all users whose temporary block has expired
 func (ps *permissionServiceImpl) GetExpiredTempBlockedUsers(ctx context.Context) ([]permissionmodel.UserRoleInterface, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	tx, err := ps.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("Failed to start transaction for getting expired temp blocked users", "error", err)
@@ -103,9 +124,13 @@ func (ps *permissionServiceImpl) GetExpiredTempBlockedUsers(ctx context.Context)
 	}
 	defer func() {
 		if err != nil {
-			err = ps.globalService.RollbackTransaction(ctx, tx)
+			if rbErr := ps.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("Failed to rollback tx after error when getting expired temp blocked users", "error", rbErr)
+			}
 		} else {
-			err = ps.globalService.CommitTransaction(ctx, tx)
+			if cmErr := ps.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+				slog.Error("Failed to commit tx when getting expired temp blocked users", "error", cmErr)
+			}
 		}
 	}()
 

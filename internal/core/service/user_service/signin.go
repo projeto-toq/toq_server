@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
+	"strings"
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -28,6 +29,13 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 	}
 	defer spanEnd()
 
+	// Basic input validation
+	if strings.TrimSpace(nationalID) == "" || strings.TrimSpace(password) == "" {
+		slog.Warn("auth.signin.bad_request", "has_national_id", strings.TrimSpace(nationalID) != "", "has_password", strings.TrimSpace(password) != "")
+		err = utils.BadRequest("nationalID and password are required")
+		return
+	}
+
 	// Debug: valores recebidos
 	if did, _ := ctx.Value(globalmodel.DeviceIDKey).(string); true {
 		slog.Debug("auth.signin_with_context.debug",
@@ -39,21 +47,28 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		)
 	}
 
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
-		return
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("auth.signin.tx_start_error", "err", txErr)
+		return tokens, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("auth.signin.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	tokens, err = us.signIn(ctx, tx, nationalID, password, deviceToken, ipAddress, userAgent)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
 	// Commit the transaction
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("auth.signin.tx_commit_error", "err", commitErr)
+		err = utils.InternalError("Failed to commit transaction")
 		return
 	}
 

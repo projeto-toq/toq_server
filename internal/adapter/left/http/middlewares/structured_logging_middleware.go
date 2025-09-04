@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 // StructuredLoggingMiddleware provides structured JSON logging with stdout/stderr separation
@@ -75,6 +76,14 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 			slog.String("user_agent", userAgent),
 		}
 
+		// Add trace correlation if available (OpenTelemetry)
+		if sc := oteltrace.SpanFromContext(c.Request.Context()).SpanContext(); sc.IsValid() {
+			fields = append(fields,
+				slog.String("trace_id", sc.TraceID().String()),
+				slog.String("span_id", sc.SpanID().String()),
+			)
+		}
+
 		// Add query parameters if present
 		if rawQuery := c.Request.URL.RawQuery; rawQuery != "" {
 			fields = append(fields, slog.String("query", rawQuery))
@@ -92,8 +101,36 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 		// Add error information if present
 		if len(c.Errors) > 0 {
 			errorMessages := make([]string, len(c.Errors))
-			for i, err := range c.Errors {
-				errorMessages[i] = err.Error()
+			for i, ginErr := range c.Errors {
+				errorMessages[i] = ginErr.Error()
+				// Se o erro implementar DomainErrorWithSource, registramos a origem do primeiro
+				if i == 0 {
+					if derr, ok := ginErr.Err.(utils.DomainErrorWithSource); ok {
+						fn, file, line := derr.Location()
+						if fn != "" {
+							fields = append(fields, slog.String("function", fn))
+						}
+						if file != "" {
+							fields = append(fields, slog.String("file", file))
+						}
+						if line > 0 {
+							fields = append(fields, slog.Int("line", line))
+						}
+						if stack := derr.Stack(); len(stack) > 0 {
+							fields = append(fields, slog.Any("stack", stack))
+						}
+						// Enriquecer com código/mensagem se também implementar DomainError
+						if d, ok := ginErr.Err.(interface {
+							Code() int
+							Message() string
+						}); ok {
+							fields = append(fields,
+								slog.Int("error_code", d.Code()),
+								slog.String("error_message", d.Message()),
+							)
+						}
+					}
+				}
 			}
 			fields = append(fields, slog.Any("errors", errorMessages))
 		}

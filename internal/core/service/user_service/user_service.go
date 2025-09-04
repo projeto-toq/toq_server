@@ -6,7 +6,6 @@ import (
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	policyport "github.com/giulio-alfieri/toq_server/internal/core/port/policy"
 	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
 
@@ -30,7 +29,6 @@ type userService struct {
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
 	securityLogger      SecurityEventLoggerInterface                  // NOVO - Logger de eventos de segurança
-	statusPolicy        policyport.UserStatusPolicy                   // NOVO - Política de status do usuário
 }
 
 func NewUserService(
@@ -56,13 +54,7 @@ func NewUserService(
 		cloudStorageService: cloudStorage,
 		permissionService:   permissionService,        // NOVO
 		securityLogger:      NewSecurityEventLogger(), // NOVO - Inicializa o logger
-		statusPolicy:        nil,                      // será injetado via setter em bootstrap
 	}
-}
-
-// SetStatusPolicy injects the user status policy dependency after construction to avoid cycles.
-func (us *userService) SetStatusPolicy(p policyport.UserStatusPolicy) {
-	us.statusPolicy = p
 }
 
 type UserServiceInterface interface {
@@ -112,6 +104,4 @@ type UserServiceInterface interface {
 	GetCreciUploadURL(ctx context.Context, documentType, contentType string) (signedURL string, err error)
 	// VerifyCreciDocuments checks S3 for required CRECI images and sets status to PendingManual
 	VerifyCreciDocuments(ctx context.Context) (err error)
-	// SetStatusPolicy injects the status policy dependency; called during bootstrap.
-	SetStatusPolicy(p policyport.UserStatusPolicy)
 }

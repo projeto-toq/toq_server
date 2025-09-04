@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -10,26 +11,33 @@ import (
 func (us *userService) GetOnboardingStatus(ctx context.Context, userID int64) (UserRoleStatus string, reason string, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return "", "", utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Start transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("user.get_onboarding_status.tx_start_error", "err", err)
+		return "", "", utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.get_onboarding_status.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	UserRoleStatus, reason, err = us.getOnboardingStatus(ctx, tx, userID)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("user.get_onboarding_status.tx_commit_error", "err", err)
+		return "", "", utils.InternalError("Failed to commit transaction")
 	}
 
 	return

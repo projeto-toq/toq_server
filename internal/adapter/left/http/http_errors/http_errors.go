@@ -13,7 +13,10 @@ func SendHTTPError(c *gin.Context, statusCode int, _ string, message string) {
 	if c == nil {
 		return
 	}
-	derr := coreutils.NewHTTPError(statusCode, message)
+	// Criar erro com source
+	derr := coreutils.NewHTTPErrorWithSource(statusCode, message)
+	// Anexar erro ao contexto para ser logado pelo middleware estruturado
+	c.Error(derr) //nolint: errcheck
 	payload := gin.H{"code": derr.Code(), "message": derr.Message()}
 	if d := derr.Details(); d != nil {
 		payload["details"] = d
@@ -32,13 +35,18 @@ func SendHTTPErrorObj(c *gin.Context, err error) {
 	}
 	// If it's a DomainError, pass through; otherwise wrap as InternalError
 	if derr, ok := err.(coreutils.DomainError); ok {
-		payload := gin.H{"code": derr.Code(), "message": derr.Message()}
-		if d := derr.Details(); d != nil {
+		// Envolver em erro com source para logging de origem
+		wrapped := coreutils.WrapDomainErrorWithSource(derr)
+		c.Error(wrapped) //nolint: errcheck
+		payload := gin.H{"code": wrapped.Code(), "message": wrapped.Message()}
+		if d := wrapped.Details(); d != nil {
 			payload["details"] = d
 		}
-		c.JSON(derr.Code(), payload)
+		c.JSON(wrapped.Code(), payload)
 		return
 	}
 	derr := coreutils.InternalError("")
+	// Anexar erro ao contexto para logging
+	c.Error(derr) //nolint: errcheck
 	c.JSON(derr.Code(), gin.H{"code": derr.Code(), "message": derr.Message()})
 }

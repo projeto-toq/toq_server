@@ -3,7 +3,8 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ## INSTRUÇÕES PARA GERAÇÃO E IMPLEMENTAÇÃO DE CÓDIGO
 
-* **Ação:** Gere e implemente o código Go para as interfaces e funções acordadas no plano de refatoração.
+* **Ação:** Gere e implemente o código Go para as interfaces e funções acordadas no plano de refatoração apresentado em para as atapas 1 - 4.
+* **Remoção de arquivos:** Apenas apague o conteúdo dos srquivos a serem removidos e infrome a lista deles. A remoção será feita manualmente evitando problemas de cache.
 * **Qualidade:** O código deve ser a solução **final e completa**. Não inclua mocks, `TODOs` ou qualquer tipo de implementação temporária.
 * **Escopo:** Implemente **somente** as partes que foram definidas no plano. Não adicione funcionalidades extras ou códigos que não sejam estritamente necessários para a solução.
 * **Simplicidade:** Mantenha o código simples e eficiente, conforme as regras de boas práticas do projeto.
@@ -12,32 +13,40 @@ Eu preciso que você atue como um engenheiro de software Go sênior, especializa
 
 ---
 
-## REGRAS OBRIGATÓRIAS DE DESENVOLVIMENTO EM GO
+### REGRAS OBRIGATÓRIAS DE ANÁLISE E PLANEJAMENTO
 
-### 1. Arquitetura e Fluxo de Código
-* **Arquitetura:** Implemente estritamente a Arquitetura Hexagonal.
-* **Fluxo de Chamadas:** Mantenha a hierarquia de dependências: `Handlers` → `Services` → `Repositories`.
-* **Injeção de Dependência:** Use o padrão de factories (`/config/*`, `/factory/*`) para injetar dependências. Inicialize `adapters` e `services` **uma única vez** no início da aplicação.
-* **Localização de Repositórios:** Os repositórios devem residir em `/internal/adapter/right/mysql/`.
-* **Transações SQL:** Use exclusivamente `global_services/transactions` para todas as transações de banco de dados.
+1.  **Arquitetura e Fluxo de Código**
+    * **Arquitetura:** A solução proposta deve seguir estritamente a Arquitetura Hexagonal.
+    * **Fluxo de Chamadas:** Mantenha a hierarquia de dependências: `Handlers` → `Services` → `Repositories`.
+    * **Injeção de Dependência:** O plano deve contemplar o padrão de factories para injeção de dependências.
+    * **Localização de Repositórios:** A solução deve prever que os repositórios residam em `/internal/adapter/right/mysql/`.
+    * **Transações SQL:** Todas as transações de banco de dados devem utilizar `global_services/transactions`.
 
-### 2. Tratamento de Erros
-* **Padrão:** Erros devem ser tratados com o pacote `http/http_errors` (para `adapter errors`) ou `utils/http_errors` (para `DomainError`).
-* **Propagação:** Logue e transforme o erro **apenas no ponto de origem**. Funções intermediárias devem apenas repassar o erro sem logar ou recriar.
-* **Verificação:** Sempre verifique o retorno de erro de qualquer função.
+2.  **Tratamento de Erros e Observabilidade**
+    * **Tracing:** A solução deve iniciar o tracing para cada operação com `utils.GenerateTracer(ctx)`.
+    * **Logging:**
+        * **Logs de Domínio e Segurança:** Utilize o pacote `slog`.
+            * `slog.Info`: Para eventos de domínio esperados (ex: status do usuário mudou de pendente para ativo).
+            * `slog.Warn`: Para condições anômalas, como indícios de fraude/reuso ou falhas não fatais.
+            * `slog.Error`: Exclusivamente para falhas internas de infraestrutura, como problemas de transação com o banco de dados.
+        * **Logs em Repositórios:** Evite logs excessivos. Em caso de falha crítica de infraestrutura (ex: erro de conexão com DB), use `slog.Error` com contexto mínimo (ex: `user_id` ou `key_query`).
+    * **Tratamento de Erros:**
+        * **Repositórios (Adapters):** Retorne erros "puros" (`error`) ou erros de domínio. **Nunca** use pacotes HTTP (`http` ou `http_errors`) nesta camada.
+        * **Serviços (Core):** Propague erros de domínio utilizando `utils.WrapDomainErrorWithSource(derr)` para preservar a origem (função/arquivo/linha). Se for um erro novo, use `utils.NewHTTPErrorWithSource(...)` para criá-lo. Não serializar respostas HTTP diretamente aqui.
+        * **Handlers (HTTP):**
+            * Use `http_errors.SendHTTPErrorObj(c, err)` para converter qualquer erro propagado em uma resposta JSON com o formato `{code, message, details}`. Este helper também anexará o erro no contexto (`c.Error`) para que o middleware de log possa capturar a origem e os detalhes.
+            * Evite construir payloads de erro manualmente.
 
-### 3. Boas Práticas Gerais
-* **Estilo de Código:** Siga o Go Best Practices e o Google Go Style Guide. Mantenha o código simples, eficiente e consistente.
-* **Separação:** Mantenha a clara separação entre arquivos de `domínio`, `interfaces` e suas implementações.
-* **Processo:** Não use mocks ou código temporário. O código legado deve ser completamente removido.
+3.  **Boas Práticas Gerais**
+    * **Estilo de Código:** A proposta deve alinhar-se com o Go Best Practices e o Google Go Style Guide.
+    * **Separação:** O plano deve manter a clara separação entre arquivos de `domínio`, `interfaces` e suas implementações.
+    * **Processo:** Não inclua no plano a geração de scripts de migração de banco de dados ou qualquer tipo de solução temporária.
 
 ---
 
-## REGRAS DE DOCUMENTAÇÃO E COMENTÁRIOS
-
-* **Documentação de Funções:** Documente todas as funções e métodos exportados usando o padrão do Go. A documentação deve ser clara, concisa e **escrita em inglês**.
-* **Comentários Internos:** Use comentários internos **em português** para explicar trechos de código complexos ou lógicas específicas que não são imediatamente óbvias.
-* **Documentação da API:** Onde aplicável, inclua documentação para a API usando o **padrão Swagger** nos `handlers`.
+### REGRAS DE DOCUMENTAÇÃO E COMENTÁRIOS
+* A documentação da solução deve ser clara e concisa.
+* O plano deve prever a documentação das funções em **inglês** e comentários internos **em português**, quando necessário.
+* Se aplicável, a solução deve incluir documentação para a API no padrão **Swagger**, feitas no código e não no swagger.yaml/json diretamente.
 
 ---
-

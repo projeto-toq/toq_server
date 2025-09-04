@@ -14,27 +14,34 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return nil, utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Start a database transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("user.get_crecis_to_validate_by_status.tx_start_error", "err", err)
+		return nil, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.get_crecis_to_validate_by_status.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	realtors, err = us.getCrecisToValidateByStatus(ctx, tx, UserRoleStatus)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		return nil, err
 	}
 
 	// Commit the transaction
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("user.get_crecis_to_validate_by_status.tx_commit_error", "err", err)
+		return nil, utils.InternalError("Failed to commit transaction")
 	}
 	return
 }

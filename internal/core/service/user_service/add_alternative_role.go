@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -12,25 +13,32 @@ import (
 func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug, creciInfo ...string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("user.add_alternative_role.tx_start_error", "err", err)
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.add_alternative_role.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.addAlternativeRole(ctx, tx, userID, roleSlug, creciInfo...)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("user.add_alternative_role.tx_commit_error", "err", err)
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	return
@@ -47,14 +55,12 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	// Check if user has active role
 	activeRole := user.GetActiveRole()
 	if activeRole == nil {
-		err = utils.ErrInternalServer
-		return
+		return utils.InternalError("Active role missing")
 	}
 
 	// Validate creci info for realtor role
 	if roleSlug == permissionmodel.RoleSlugRealtor && len(creciInfo) != 3 {
-		err = utils.ErrInternalServer
-		return
+		return utils.ValidationError("creciInfo", "Realtor role requires CRECI info")
 	}
 
 	// Get role from permission service

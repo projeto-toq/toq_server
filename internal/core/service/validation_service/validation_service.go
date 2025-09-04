@@ -6,6 +6,7 @@ import (
 
 	userrepo "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/user_repository"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -35,21 +36,38 @@ func New(repo userrepo.UserRepoPortInterface, gs globalservice.GlobalServiceInte
 
 // CleanExpiredValidations deletes expired validation rows within a transaction boundary
 func (s *service) CleanExpiredValidations(ctx context.Context, limit int) (int64, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
+	// Defensive default if caller passes invalid limit
+	if limit <= 0 {
+		slog.Warn("validation.cleaner.invalid_limit", "limit", limit)
+		limit = 500
+	}
+
 	tx, err := s.globalService.StartTransaction(ctx)
 	if err != nil {
-		return 0, err
+		slog.Error("validation.cleaner.tx_start_failed", "error", err)
+		return 0, utils.InternalError("")
 	}
+
 	n, err := s.repo.DeleteExpiredValidations(ctx, tx, limit)
 	if err != nil {
-		s.globalService.RollbackTransaction(ctx, tx)
-		return 0, err
+		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+			slog.Error("validation.cleaner.tx_rollback_failed", "error", rbErr)
+		}
+		slog.Error("validation.cleaner.db_failed", "error", err)
+		return 0, utils.InternalError("")
 	}
-	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
-		s.globalService.RollbackTransaction(ctx, tx)
-		return 0, err
+	if err = s.globalService.CommitTransaction(ctx, tx); err != nil {
+		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+			slog.Error("validation.cleaner.tx_rollback_failed", "error", rbErr)
+		}
+		slog.Error("validation.cleaner.tx_commit_failed", "error", err)
+		return 0, utils.InternalError("")
 	}
 	if n > 0 {
-		slog.Info("validation_service.cleaner.deleted", "count", n)
+		slog.Info("validation.cleaner.deleted", "count", n)
 		metricValidationCleanerDeleted.Add(float64(n))
 	}
 	return n, nil

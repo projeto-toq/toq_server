@@ -2,7 +2,6 @@ package userservices
 
 import (
 	"context"
-	"net/http"
 
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -39,17 +38,14 @@ func (us *userService) GetCreciUploadURL(ctx context.Context, documentType, cont
 	}
 
 	if us.cloudStorageService == nil {
-		return "", utils.ErrInternalServer
+		return "", utils.InternalError("Storage service not configured")
 	}
 
 	// Validate documentType against domain constants
 	validDocTypes := storagemodel.ValidDocumentTypes()
 	if !validDocTypes[documentType] {
 		metricCreciUploadURLInvalid.WithLabelValues("invalid_type").Inc()
-		return "", utils.NewHTTPError(http.StatusUnprocessableEntity, "Invalid document type", map[string]string{
-			"field":   "documentType",
-			"message": "Unsupported document type",
-		})
+		return "", utils.ValidationError("documentType", "Unsupported document type")
 	}
 
 	// Validate content type (only images)
@@ -59,10 +55,7 @@ func (us *userService) GetCreciUploadURL(ctx context.Context, documentType, cont
 	}
 	if !allowedContentTypes[contentType] {
 		metricCreciUploadURLInvalid.WithLabelValues("invalid_content_type").Inc()
-		return "", utils.NewHTTPError(http.StatusUnprocessableEntity, "Invalid content type", map[string]string{
-			"field":   "contentType",
-			"message": "Only image/jpeg or image/png are allowed",
-		})
+		return "", utils.ValidationError("contentType", "Only image/jpeg or image/png are allowed")
 	}
 
 	// Generate signed URL using storage service

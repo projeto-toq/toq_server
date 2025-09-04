@@ -12,12 +12,15 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
+// CreateAccessToken generates a signed JWT access token. An active role is
+// mandatory for access tokens. If the user has no active role, a domain error
+// is returned and no token is issued.
 func (us *userService) CreateAccessToken(secret string, user usermodel.UserInterface, expires int64) (accessToken string, err error) {
-	// Validar se usuário tem role ativa
+	// Exigência: access token requer role ativa
 	activeRole := user.GetActiveRole()
 	if activeRole == nil {
-		slog.Error("User has no active role", "user_id", user.GetID())
-		return "", utils.ErrInternalServer
+		slog.Warn("cannot issue access token without active role", "user_id", user.GetID())
+		return "", utils.ErrUserActiveRoleMissing
 	}
 
 	infos := usermodel.UserInfos{
@@ -33,6 +36,7 @@ func (us *userService) CreateAccessToken(secret string, user usermodel.UserInter
 		"iat":                        now,
 		"iss":                        "toq-server",
 		"jti":                        uuid.New().String(),
+		"typ":                        "access", // tipo explícito para validação
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -40,7 +44,7 @@ func (us *userService) CreateAccessToken(secret string, user usermodel.UserInter
 	accessToken, err = token.SignedString([]byte(secret))
 	if err != nil {
 		slog.Error("Error trying to generate JWT access token", "err", err)
-		return "", utils.ErrInternalServer
+		return "", utils.InternalError("Failed to sign access token")
 	}
 
 	return

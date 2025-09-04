@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -20,21 +21,27 @@ func (us *userService) InviteRealtor(ctx context.Context, phoneNumber string) (e
 	}
 	defer spanEnd()
 
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
-		return
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.invite_realtor.tx_start_error", "err", txErr)
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.invite_realtor.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.inviteRealtor(ctx, tx, phoneNumber)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		slog.Error("user.invite_realtor.tx_commit_error", "err", cmErr)
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	return
@@ -149,7 +156,7 @@ func (us *userService) isAlreadyLinked(ctx context.Context, tx *sql.Tx, realtorI
 		}
 		return nil
 	}
-	return utils.ErrInternalServer
+	return utils.ConflictError("Realtor already linked to an agency")
 }
 
 func (us *userService) isInvited(ctx context.Context, tx *sql.Tx, phoneNumber string) (invite usermodel.InviteInterface, isInvited bool, err error) {

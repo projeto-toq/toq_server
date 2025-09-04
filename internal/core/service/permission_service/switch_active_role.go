@@ -11,82 +11,99 @@ import (
 
 // SwitchActiveRole desativa todos os roles do usuário e ativa apenas o especificado
 func (p *permissionServiceImpl) SwitchActiveRole(ctx context.Context, userID, newRoleID int64) error {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid user id")
 	}
 
 	if newRoleID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid role id")
 	}
 
-	slog.Debug("Switching active role", "userID", userID, "newRoleID", newRoleID)
+	slog.Debug("permission.role.switch.request", "user_id", userID, "new_role_id", newRoleID)
 
 	// 1. Desativar todos os roles do usuário
-	err := p.DeactivateAllUserRoles(ctx, userID)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err := p.DeactivateAllUserRoles(ctx, userID); err != nil {
+		slog.Error("permission.role.switch.deactivate_failed", "user_id", userID, "error", err)
+		return err
 	}
 
 	// 2. Ativar o novo role
-	err = p.ActivateUserRole(ctx, userID, newRoleID)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err := p.ActivateUserRole(ctx, userID, newRoleID); err != nil {
+		slog.Error("permission.role.switch.activate_failed", "user_id", userID, "new_role_id", newRoleID, "error", err)
+		return err
 	}
 
-	slog.Info("Active role switched successfully", "userID", userID, "newRoleID", newRoleID)
+	slog.Info("permission.role.switched", "user_id", userID, "new_role_id", newRoleID)
 	return nil
 }
 
 // SwitchActiveRoleWithTx desativa todos os roles do usuário e ativa apenas o especificado (com transação - uso em fluxos)
 func (p *permissionServiceImpl) SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid user id")
 	}
 
 	if newRoleID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid role id")
 	}
 
-	slog.Debug("Switching active role with tx", "userID", userID, "newRoleID", newRoleID)
+	slog.Debug("permission.role.switch.tx.request", "user_id", userID, "new_role_id", newRoleID)
 
 	// 1. Desativar todos os roles do usuário
-	err := p.permissionRepository.DeactivateAllUserRoles(ctx, tx, userID)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err := p.permissionRepository.DeactivateAllUserRoles(ctx, tx, userID); err != nil {
+		slog.Error("permission.role.switch.tx.deactivate_failed", "user_id", userID, "error", err)
+		return utils.InternalError("")
 	}
 
 	// 2. Ativar o novo role
-	err = p.permissionRepository.ActivateUserRole(ctx, tx, userID, newRoleID)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err := p.permissionRepository.ActivateUserRole(ctx, tx, userID, newRoleID); err != nil {
+		slog.Error("permission.role.switch.tx.activate_failed", "user_id", userID, "new_role_id", newRoleID, "error", err)
+		return utils.InternalError("")
 	}
 
-	slog.Info("Active role switched successfully with tx", "userID", userID, "newRoleID", newRoleID)
+	slog.Info("permission.role.switched.tx", "user_id", userID, "new_role_id", newRoleID)
 	return nil
 }
 
 // GetActiveUserRole retorna o role ativo do usuário
 func (p *permissionServiceImpl) GetActiveUserRole(ctx context.Context, userID int64) (permissionmodel.UserRoleInterface, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return nil, utils.ErrBadRequest
+		return nil, utils.BadRequest("invalid user id")
 	}
 
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return nil, utils.ErrInternalServer
+		slog.Error("permission.user_role.active.tx_start_failed", "user_id", userID, "error", err)
+		return nil, utils.InternalError("")
 	}
-	defer p.globalService.RollbackTransaction(ctx, tx)
+	defer func() {
+		if err != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("permission.user_role.active.tx_rollback_failed", "user_id", userID, "error", rbErr)
+			}
+		}
+	}()
 
 	userRole, err := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
 	if err != nil {
-		return nil, utils.ErrInternalServer
+		slog.Error("permission.user_role.active.db_failed", "user_id", userID, "error", err)
+		return nil, utils.InternalError("")
 	}
 
 	// Commit the transaction
-	err = p.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		return nil, utils.ErrInternalServer
+	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
+		slog.Error("permission.user_role.active.tx_commit_failed", "user_id", userID, "error", err)
+		return nil, utils.InternalError("")
 	}
 
 	return userRole, nil
@@ -94,70 +111,93 @@ func (p *permissionServiceImpl) GetActiveUserRole(ctx context.Context, userID in
 
 // GetActiveUserRoleWithTx retorna a role ativa do usuário utilizando a transação fornecida
 func (p *permissionServiceImpl) GetActiveUserRoleWithTx(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return nil, utils.ErrBadRequest
+		return nil, utils.BadRequest("invalid user id")
 	}
 
 	userRole, err := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
 	if err != nil {
 		// Repositório já loga erros técnicos; aqui padronizamos o erro de domínio
-		return nil, utils.ErrInternalServer
+		return nil, utils.InternalError("")
 	}
 	return userRole, nil
 }
 
 // DeactivateAllUserRoles desativa todos os roles de um usuário
 func (p *permissionServiceImpl) DeactivateAllUserRoles(ctx context.Context, userID int64) error {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid user id")
 	}
 
-	slog.Debug("Deactivating all user roles", "userID", userID)
+	slog.Debug("permission.user_roles.deactivate.request", "user_id", userID)
 
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return utils.ErrInternalServer
+		slog.Error("permission.user_roles.deactivate.tx_start_failed", "user_id", userID, "error", err)
+		return utils.InternalError("")
 	}
-	defer p.globalService.RollbackTransaction(ctx, tx)
+	defer func() {
+		if err != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("permission.user_roles.deactivate.tx_rollback_failed", "user_id", userID, "error", rbErr)
+			}
+		}
+	}()
 
-	err = p.permissionRepository.DeactivateAllUserRoles(ctx, tx, userID)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err = p.permissionRepository.DeactivateAllUserRoles(ctx, tx, userID); err != nil {
+		slog.Error("permission.user_roles.deactivate.db_failed", "user_id", userID, "error", err)
+		return utils.InternalError("")
 	}
 
 	// Commit the transaction
-	err = p.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
+		slog.Error("permission.user_roles.deactivate.tx_commit_failed", "user_id", userID, "error", err)
+		return utils.InternalError("")
 	}
 
-	slog.Info("All user roles deactivated successfully", "userID", userID)
+	slog.Info("permission.user_roles.deactivated", "user_id", userID)
 	return nil
 }
 
 // GetRoleBySlug busca um role pelo slug (sem transação - uso direto)
 func (p *permissionServiceImpl) GetRoleBySlug(ctx context.Context, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if slug == "" {
-		return nil, utils.ErrBadRequest
+		return nil, utils.BadRequest("invalid role slug")
 	}
 
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return nil, utils.ErrInternalServer
+		slog.Error("permission.role.get_by_slug.tx_start_failed", "slug", slug, "error", err)
+		return nil, utils.InternalError("")
 	}
-	defer p.globalService.RollbackTransaction(ctx, tx)
+	defer func() {
+		if err != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("permission.role.get_by_slug.tx_rollback_failed", "slug", slug, "error", rbErr)
+			}
+		}
+	}()
 
-	role, err := p.GetRoleBySlugWithTx(ctx, tx, slug)
-	if err != nil {
-		return nil, err
+	role, derr := p.GetRoleBySlugWithTx(ctx, tx, slug)
+	if derr != nil {
+		return nil, derr
 	}
 
 	// Commit the transaction
-	err = p.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		return nil, utils.ErrInternalServer
+	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
+		slog.Error("permission.role.get_by_slug.tx_commit_failed", "slug", slug, "error", err)
+		return nil, utils.InternalError("")
 	}
 
 	return role, nil
@@ -165,9 +205,13 @@ func (p *permissionServiceImpl) GetRoleBySlug(ctx context.Context, slug permissi
 
 // GetRoleBySlugWithTx busca um role pelo slug (com transação - uso em fluxos)
 func (p *permissionServiceImpl) GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error) {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	role, err := p.permissionRepository.GetRoleBySlug(ctx, tx, slug.String())
 	if err != nil {
-		return nil, err
+		slog.Error("permission.role.get_by_slug.db_failed", "slug", slug, "error", err)
+		return nil, utils.InternalError("")
 	}
 
 	return role, nil
@@ -175,30 +219,40 @@ func (p *permissionServiceImpl) GetRoleBySlugWithTx(ctx context.Context, tx *sql
 
 // ActivateUserRole ativa um role específico do usuário (helper method)
 func (p *permissionServiceImpl) ActivateUserRole(ctx context.Context, userID, roleID int64) error {
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid user id")
 	}
 
 	if roleID <= 0 {
-		return utils.ErrBadRequest
+		return utils.BadRequest("invalid role id")
 	}
 
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		return utils.ErrInternalServer
+		slog.Error("permission.user_role.activate.tx_start_failed", "user_id", userID, "role_id", roleID, "error", err)
+		return utils.InternalError("")
 	}
-	defer p.globalService.RollbackTransaction(ctx, tx)
+	defer func() {
+		if err != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("permission.user_role.activate.tx_rollback_failed", "user_id", userID, "role_id", roleID, "error", rbErr)
+			}
+		}
+	}()
 
-	err = p.permissionRepository.ActivateUserRole(ctx, tx, userID, roleID)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err = p.permissionRepository.ActivateUserRole(ctx, tx, userID, roleID); err != nil {
+		slog.Error("permission.user_role.activate.db_failed", "user_id", userID, "role_id", roleID, "error", err)
+		return utils.InternalError("")
 	}
 
 	// Commit the transaction
-	err = p.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		return utils.ErrInternalServer
+	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
+		slog.Error("permission.user_role.activate.tx_commit_failed", "user_id", userID, "role_id", roleID, "error", err)
+		return utils.InternalError("")
 	}
 
 	return nil

@@ -10,36 +10,46 @@ import (
 )
 
 // HasHTTPPermission verifica se o usuário tem permissão para um endpoint HTTP específico
-func (p *permissionServiceImpl) HasHTTPPermission(ctx context.Context, userID int64, method, path string) (bool, error) {
+func (p *permissionServiceImpl) HasHTTPPermission(ctx context.Context, userID int64, method, path string) (allowed bool, err error) {
+	// Tracing da operação
+	ctx, end, _ := utils.GenerateTracer(ctx)
+	defer end()
+
 	if userID <= 0 {
-		return false, utils.ErrBadRequest
+		return false, utils.BadRequest("invalid user id")
 	}
 
 	if method == "" || path == "" {
-		return false, utils.ErrBadRequest
+		return false, utils.BadRequest("invalid http method or path")
 	}
 
-	slog.Debug("Checking HTTP permission", "userID", userID, "method", method, "path", path)
+	slog.Debug("permission.http.check.start", "user_id", userID, "method", method, "path", path)
 
 	// Buscar informações do usuário para obter UserRoleID e RoleStatus usando transação
 	tx, txErr := p.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("Failed to start transaction for HasHTTPPermission", "userID", userID, "error", txErr)
-		return false, utils.ErrInternalServer
+		slog.Error("permission.http.tx_start_failed", "user_id", userID, "error", txErr)
+		return false, utils.InternalError("")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("permission.http.tx_rollback_failed", "user_id", userID, "error", rbErr)
+			}
+		}
+	}()
 
 	userRole, err := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
 	if err != nil {
-		slog.Error("Failed to get user active role", "userID", userID, "error", err)
-		_ = p.globalService.RollbackTransaction(ctx, tx)
-		return false, err
+		slog.Error("permission.http.get_active_role_failed", "user_id", userID, "error", err)
+		return false, utils.InternalError("")
 	}
 
 	if userRole == nil {
-		slog.Warn("User has no active role", "userID", userID)
+		slog.Warn("permission.http.no_active_role", "user_id", userID)
 		if cerr := p.globalService.CommitTransaction(ctx, tx); cerr != nil {
-			_ = p.globalService.RollbackTransaction(ctx, tx)
-			return false, utils.ErrInternalServer
+			slog.Error("permission.http.tx_commit_failed", "user_id", userID, "error", cerr)
+			return false, utils.InternalError("")
 		}
 		return false, nil
 	}
@@ -55,8 +65,8 @@ func (p *permissionServiceImpl) HasHTTPPermission(ctx context.Context, userID in
 
 	// Usar o método HasPermission para verificar (fora da consulta de role)
 	if cerr := p.globalService.CommitTransaction(ctx, tx); cerr != nil {
-		_ = p.globalService.RollbackTransaction(ctx, tx)
-		return false, utils.ErrInternalServer
+		slog.Error("permission.http.tx_commit_failed", "user_id", userID, "error", cerr)
+		return false, utils.InternalError("")
 	}
 	return p.HasPermission(ctx, userID, resource, action, permContext)
 }

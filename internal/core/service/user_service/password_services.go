@@ -20,7 +20,7 @@ func (us *userService) encryptPassword(password string) (hashPassword string) {
 
 func validatePassword(password string) (err error) {
 	if len(password) < 8 {
-		return utils.ErrInternalServer
+		return utils.ValidationError("password", "Password must be at least 8 characters")
 	}
 
 	var hasUpper, hasLower, hasNumber, hasSpecial bool
@@ -38,7 +38,7 @@ func validatePassword(password string) (err error) {
 	}
 
 	if !(hasUpper && hasLower && hasNumber && hasSpecial) {
-		return utils.ErrInternalServer
+		return utils.ValidationError("password", "Password must include upper, lower, number, and special char")
 	}
 	return
 }

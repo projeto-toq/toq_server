@@ -35,20 +35,27 @@ func (us *userService) RefreshTokens(ctx context.Context, refresh string) (token
 	defer spanEnd()
 
 	// Start transaction
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
-		return
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("auth.refresh.tx_start_error", "err", txErr)
+		return tokens, utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("auth.refresh.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	tokens, err = us.refreshToken(ctx, tx, refresh)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("auth.refresh.tx_commit_error", "err", commitErr)
+		err = utils.InternalError("Failed to commit transaction")
 		return
 	}
 
@@ -69,7 +76,8 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if sessErr != nil {
 		// Sessão não encontrada para o refresh apresentado
 		slog.Warn("auth.refresh.invalid_session", "error", sessErr, "refresh_hash_prefix", hash[:8])
-		return tokens, utils.ErrRefreshSessionNotFound
+		// Captura origem ao criar o erro de domínio
+		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshSessionNotFound)
 	}
 
 	// Optional: detect reuse (rotated_at set means token already used)
@@ -78,18 +86,13 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshReuse.Inc()
 		slog.Warn("auth.refresh.reuse_detected", "user_id", session.GetUserID(), "session_id", session.GetID())
-		return tokens, utils.ErrRefreshTokenReuseDetected
+		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshTokenReuseDetected)
 	}
 
-	user, err := us.repo.GetUserByID(ctx, tx, userID)
+	// Carrega usuário e tenta obter role ativa (necessária para access token)
+	user, err := us.repo.GetUserByIDWithActiveRole(ctx, tx, userID)
 	if err != nil {
 		return
-	}
-
-	// Validar se usuário ainda tem role ativa
-	if user.GetActiveRole() == nil {
-		slog.Warn("User has no active role during refresh", "user_id", userID)
-		return tokens, utils.ErrInvalidRefreshToken
 	}
 
 	// Segurança adicional: o userID do JWT deve bater com a sessão carregada
@@ -97,7 +100,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		slog.Warn("auth.refresh.user_mismatch", "jwt_user_id", userID, "session_user_id", session.GetUserID(), "session_id", session.GetID())
-		return tokens, utils.ErrInvalidRefreshToken
+		return tokens, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 
 	// Enforce absolute expiry if set
@@ -106,7 +109,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshExpired.Inc()
 		slog.Info("auth.refresh.absolute_expired", "user_id", session.GetUserID(), "session_id", session.GetID())
-		return tokens, utils.ErrRefreshTokenExpired
+		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshTokenExpired)
 	}
 
 	// Pass chain info through context so CreateTokens can continue absolute expiry and increment rotation counter
@@ -118,7 +121,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		slog.Warn("auth.refresh.rotation_limit_exceeded", "user_id", session.GetUserID(), "session_id", session.GetID(), "rotation_counter", session.GetRotationCounter())
-		return tokens, utils.ErrRefreshRotationLimitExceeded
+		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshRotationLimitExceeded)
 	}
 
 	// Issue new tokens (new session persisted with incremented rotation counter)
@@ -126,10 +129,18 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Comentário em português: atributos no contexto ajudam a rastrear a cadeia de rotação
 	tokens, err = us.CreateTokens(ctx, tx, user, false)
 	if err != nil {
+		// Se falhar por ausência de role ativa nesta etapa, é um erro de domínio claro
+		// e não deve ser reportado como refresh inválido. O handler retornará o código adequado.
 		return
 	}
 
-	// Mark old session rotated
+	// Marca a sessão anterior como rotacionada (rotated_at), evitando reutilização do refresh token antigo
+	// Comentário em português: esta marcação permite detectar "reuse" com base em rotated_at != nil
+	if err = us.sessionRepo.MarkSessionRotated(ctx, tx, session.GetID()); err != nil {
+		slog.Warn("auth.refresh.mark_rotated_failed", "session_id", session.GetID(), "err", err)
+	}
+
+	// Atualiza metadados da sessão antiga (contador e last_refresh_at) para fins de auditoria
 	if err = us.sessionRepo.UpdateSessionRotation(ctx, tx, session.GetID(), session.GetRotationCounter(), time.Now().UTC()); err != nil {
 		slog.Warn("auth.refresh.update_rotation_failed", "session_id", session.GetID(), "err", err)
 	} else {
@@ -139,6 +150,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		metricSessionRotated.Inc()
 		slog.Info("auth.refresh.ok", "user_id", session.GetUserID(), "prev_session_id", session.GetID())
 	}
+	// Métricas: sucesso
 	metricRefreshSuccess.Inc()
 
 	return

@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	configadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/config"
 	"github.com/giulio-alfieri/toq_server/internal/core/factory"
 	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
-	policyport "github.com/giulio-alfieri/toq_server/internal/core/port/policy"
 	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
@@ -184,18 +182,6 @@ func (c *config) InitUserHandler() {
 		c.cloudStorage,
 		c.permissionService,
 	)
-	// Injetar política de status a partir de arquivo YAML configurado
-	var policy policyport.UserStatusPolicy
-	if c.env.AUTH.StatusRulesPath != "" {
-		src := &configadapter.FileRuleSource{Path: c.env.AUTH.StatusRulesPath}
-		policy = configadapter.NewUserStatusPolicyFromConfig(src)
-		_ = policy.Reload(c.context)
-	}
-	if setter, ok := c.userService.(interface {
-		SetStatusPolicy(policyport.UserStatusPolicy)
-	}); ok {
-		setter.SetStatusPolicy(policy)
-	}
 	// HTTP handler initialization is done during HTTP server setup
 }
 

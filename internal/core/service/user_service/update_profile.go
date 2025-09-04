@@ -3,7 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"net/http"
+	"log/slog"
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -36,20 +36,26 @@ func (us *userService) UpdateProfile(ctx context.Context, in UpdateProfileInput)
 	defer spanEnd()
 
 	// Start transaction
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.update_profile.tx_start_error", "err", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.update_profile.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.updateProfile(ctx, tx, in)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("user.update_profile.tx_commit_error", "err", commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -78,11 +84,8 @@ func (us *userService) updateProfile(
 		// valida formato de data YYYY-MM-DD
 		bornAt, perr := time.Parse("2006-01-02", *in.BornAt)
 		if perr != nil {
-			// 422 com details por padrão de validação
-			return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
-				"field":   "born_at",
-				"message": "Invalid date format, expected YYYY-MM-DD",
-			})
+			// Validation error with field details
+			return utils.ValidationError("born_at", "Invalid date format, expected YYYY-MM-DD")
 		}
 		current.SetBornAt(bornAt)
 	}
@@ -106,10 +109,7 @@ func (us *userService) updateProfile(
 	}
 	if in.State != nil {
 		if len(*in.State) != 2 {
-			return utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed", map[string]string{
-				"field":   "state",
-				"message": "State must be 2 letters",
-			})
+			return utils.ValidationError("state", "State must be 2 letters")
 		}
 		current.SetState(*in.State)
 	}

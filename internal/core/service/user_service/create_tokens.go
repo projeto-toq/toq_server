@@ -29,7 +29,7 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 
 	if tx == nil {
 		slog.Warn("Transaction is nil on generate tokens")
-		return tokens, utils.ErrInternalServer
+		return tokens, utils.InternalError("Transaction is nil")
 	}
 
 	secret := globalmodel.GetJWTSecret()

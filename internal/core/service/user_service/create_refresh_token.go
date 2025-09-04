@@ -18,7 +18,13 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 
 	secret := globalmodel.GetJWTSecret()
 
-	expires = us.GetTokenExpiration(expired)
+	// Refresh tokens must use refresh TTL (absolute window), not access TTL
+	if expired {
+		// Mantém comportamento de expiração forçada para cenários de teste
+		expires = time.Now().UTC().Add(time.Hour * -1).Unix()
+	} else {
+		expires = time.Now().UTC().Add(globalmodel.GetRefreshTTL()).Unix()
+	}
 
 	infos := usermodel.UserInfos{
 		ID:         userID,
@@ -34,6 +40,7 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 		"iat":                        now,
 		"iss":                        "toq-server",
 		"jti":                        jti,
+		"typ":                        "refresh", // tipo explícito para validação
 	}
 
 	// cria o refresh token
@@ -43,7 +50,7 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 	refreshToken, err := token.SignedString([]byte(secret))
 	if err != nil {
 		slog.Error("error trying to generate jwt refresh token", "error", err)
-		return utils.ErrInternalServer
+		return utils.InternalError("Failed to sign refresh token")
 	}
 
 	//salva na estrutura

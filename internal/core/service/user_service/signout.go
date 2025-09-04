@@ -36,7 +36,7 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken st
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return utils.ErrInternalServer
+		return utils.AuthenticationError("")
 	}
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -45,21 +45,28 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken st
 	}
 	defer spanEnd()
 
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
-		return
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("auth.signout.tx_start_error", "err", txErr)
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("auth.signout.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.signOut(ctx, tx, userID, deviceToken, refreshToken)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
 	// Commit the transaction
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return commitErr
+		slog.Error("auth.signout.tx_commit_error", "err", commitErr)
+		return utils.InternalError("Failed to commit transaction")
 	}
 	return
 }

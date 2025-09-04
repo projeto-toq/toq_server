@@ -33,6 +33,7 @@ import (
 	sessionservice "github.com/giulio-alfieri/toq_server/internal/core/service/session_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 	validationservice "github.com/giulio-alfieri/toq_server/internal/core/service/validation_service"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"gopkg.in/yaml.v3"
 )
@@ -394,6 +395,11 @@ func (c *config) InitializeLog() {
 
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
+
+	// Configurar profundidade da stack para erros com origem (opcional; default 1)
+	// Comentário: como não há campo explícito no Environment, usamos 1 por padrão.
+	// Se futuramente for adicionado em ENV.LOG.StackDepth, podemos ler aqui.
+	coreutils.SetErrorStackDepth(1)
 
 	slog.Info("Logging system initialized",
 		"level", level,

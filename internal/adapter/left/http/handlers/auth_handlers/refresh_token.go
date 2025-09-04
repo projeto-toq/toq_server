@@ -19,7 +19,7 @@ import (
 //	@Param			request	body		dto.RefreshTokenRequest	true	"Refresh token data"
 //	@Success		200		{object}	dto.RefreshTokenResponse
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
-//	@Failure		401		{object}	dto.ErrorResponse	"Invalid refresh token"
+//	@Failure		401		{object}	dto.ErrorResponse	"Invalid or expired refresh token"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/auth/refresh [post]
 func (ah *AuthHandler) RefreshToken(c *gin.Context) {

@@ -19,6 +19,8 @@ type UserRepoPortInterface interface {
 	GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (invite usermodel.InviteInterface, err error)
 	GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agencyID int64) (users []usermodel.UserInterface, err error)
 	GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error)
+	// GetUserByIDWithActiveRole returns the user populated with the active role (slug and status) within the same transaction
+	GetUserByIDWithActiveRole(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error)
 	GetUserByNationalID(ctx context.Context, tx *sql.Tx, nationalID string) (user usermodel.UserInterface, err error)
 	GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (user usermodel.UserInterface, err error)
 	GetUsers(ctx context.Context, tx *sql.Tx) (users []usermodel.UserInterface, err error)

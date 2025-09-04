@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -16,25 +17,32 @@ import (
 func (us *userService) RejectInvitation(ctx context.Context, realtorID int64) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		return
+		slog.Error("user.reject_invitation.tx_start_error", "err", err)
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.reject_invitation.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.rejectInvitation(ctx, tx, realtorID)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		return
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
-		return
+		slog.Error("user.reject_invitation.tx_commit_error", "err", err)
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	return
@@ -51,8 +59,9 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 	invite, err := us.repo.GetInviteByPhoneNumber(ctx, tx, realtor.GetPhoneNumber())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return utils.ErrInternalServer
+			return utils.NotFoundError("Invitation")
 		}
+		return utils.InternalError("Failed to get invitation")
 	}
 
 	//recover the agency inviting the realtor

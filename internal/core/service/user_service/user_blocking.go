@@ -13,7 +13,7 @@ import (
 func (u *userService) BlockUserTemporarily(ctx context.Context, userID int64) error {
 	ctx, end, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return utils.ErrInternalServer
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer end()
 
@@ -45,7 +45,7 @@ func (u *userService) BlockUserTemporarily(ctx context.Context, userID int64) er
 func (u *userService) UnblockUserTemporarily(ctx context.Context, userID int64) error {
 	ctx, end, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return utils.ErrInternalServer
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer end()
 

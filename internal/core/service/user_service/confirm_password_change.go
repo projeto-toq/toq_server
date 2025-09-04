@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -16,22 +17,29 @@ import (
 func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	// Start transaction
-	tx, err := us.globalService.StartTransaction(ctx)
-	if err != nil {
+	tx, txErr := us.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		slog.Error("user.confirm_password_change.tx_start_error", "err", txErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPasswordChangeConfirm("start_tx_error")
 		}
-		return
+		return utils.InternalError("Failed to start transaction")
 	}
+	defer func() {
+		if err != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("user.confirm_password_change.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	err = us.confirmPasswordChange(ctx, tx, nationalID, password, code)
 	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			switch err {
 			case utils.ErrPasswordChangeNotPending:
@@ -47,13 +55,12 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 		return
 	}
 
-	err = us.globalService.CommitTransaction(ctx, tx)
-	if err != nil {
-		us.globalService.RollbackTransaction(ctx, tx)
+	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		slog.Error("user.confirm_password_change.tx_commit_error", "err", commitErr)
 		if mp := us.globalService.GetMetrics(); mp != nil {
 			mp.IncrementPasswordChangeConfirm("commit_error")
 		}
-		return
+		return utils.InternalError("Failed to commit transaction")
 	}
 
 	if mp := us.globalService.GetMetrics(); mp != nil {
