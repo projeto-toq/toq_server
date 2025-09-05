@@ -78,7 +78,7 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 	return
 }
 
-func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
+func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string, _ string, _ string) (tokens usermodel.Tokens, err error) {
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -129,7 +129,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 
 	// Comparar a senha fornecida com o hash armazenado (bcrypt)
 	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {
-		err = us.processWrongSignin(ctx, tx, user, nationalID, ipAddress, userAgent)
+		err = us.processWrongSignin(ctx, tx, user)
 		if err != nil {
 			return
 		}
@@ -189,7 +189,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 }
 
 // processWrongSignin processa tentativas de signin incorretas com melhor logging
-func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, nationalID string, ipAddress string, userAgent string) error {
+func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) error {
 	userID := user.GetID()
 
 	wrongSignin, err := us.repo.GetWrongSigninByUserID(ctx, tx, userID)
