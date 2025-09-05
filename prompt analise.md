@@ -1,63 +1,116 @@
-### Resumo e Refatoração: Engenheiro de Software Go Sênior
+### Boilerplate — Prompt de Análise e (Opcional) Implementação — TOQ Server (Go)
 
-Este documento descreve as instruções para atuar como um engenheiro de software Go sênior, focando na análise de um problema e na proposição de uma solução detalhada, seguindo a arquitetura hexagonal e boas práticas de código, garantindo o alinhamento com os padrões de arquitetura, tratamento de erros, observabilidade e documentação. Toda a interação deve ser feita em português.
-
----
-**Problema:** No processo de verificação, renvio de tokens e confrimação de troca de e-mail e telefone, possuem envio de métricas durante o processo, além das métricas http feita pelo middleware. Elas devem ser removidas e o daschboard od grafana removido também.
-
-**Solicitação:** Analise o problema e proponha um plano detalhado para a implementação da solução.
-
-### **Instruções para a Proposição do Plano**
-
-- **Ação:** Apenas a análise e a geração do plano são solicitadas. **Nenhum código deve ser implementado**.
-- **Análise:** O problema e os requisitos devem ser analisados cuidadosamente. O código e arquivos de configuração existentes devem ser revisados para um plano preciso. Não faça suposições e confirme todos os detalhes necessários.
-- **Plano:** Um plano detalhado deve ser apresentado, incluindo a descrição da arquitetura proposta, as interfaces, a estrutura de diretórios e a ordem de execução das etapas.
-- **Qualidade do Plano:** O plano deve ser completo, sem o uso de _mocks_ ou soluções temporárias. Caso seja extenso, deve ser dividido em etapas implementáveis.
-- **Acompanhamento:** As etapas já planejadas e as próximas a serem analisadas devem ser sempre informadas para acompanhamento.
-- **Ambiente:** O plano deve considerar que estamos em ambiente de desvolvimento, portanto não deve haver back compatibility, migração de dados, preocupação com janela de manutenção ou _downtime_.
+Este boilerplate padroniza como abrir uma solicitação de análise/refatoração/implementação para o TOQ Server, evitando ambiguidades e garantindo aderência à arquitetura, erros, observabilidade e documentação do projeto. Toda a interação deve ser em português.
 
 ---
 
-### **Regras Obrigatórias de Análise e Planejamento**
+## 1) Objetivo do Pedido
+- Tipo: <Somente análise | Análise + implementação>
+- Título curto: <ex.: Corrigir 500 em confirmação de telefone sem pendências>
+- Resultado esperado (alto nível): <ex.: Retornar 409 em “not pending” e manter tracing/logs corretos>
 
-#### 1. Arquitetura e Fluxo de Código
-- **Arquitetura:** A solução deve seguir estritamente a **Arquitetura Hexagonal**.
-- **Fluxo de Chamadas:** As chamadas de função devem seguir a hierarquia `Handlers` → `Services` → `Repositories`.
-- **Injeção de Dependência:** O padrão de _factories_ deve ser usado para a injeção de dependências.
-- **Localização de Repositórios:** Os repositórios devem ser localizados em `/internal/adapter/right/mysql/` e deve fazer uso dos convertess para mapear entidades de banco de dados para entidades e vice versa.
-- **Transações SQL:** Todas as transações de banco de dados devem utilizar `global_services/transactions`.
+## 2) Contexto do Projeto
+- Módulo/área: <ex.: user_service, handlers de auth>
+- Problema/hipótese atual: <descrição sucinta do problema observado>
+- Impacto: <ex.: usuários impactados, erro de negócio, SLO>
+- Links úteis (logs/trace/dashboard): <opcional>
 
+## 3) Escopo
+- Incluir: <itens in-scope>
+- Excluir (fora de escopo): <itens out-of-scope>
 
-#### 2. Tratamento de Erros e Observabilidade
+## 4) Requisitos
+- Requisitos funcionais:
+  - <ex.: Sem pendência de validação deve retornar 409>
+- Requisitos não funcionais:
+  - Observabilidade alinhada (logs/traces/metrics existentes)
+  - Performance/concorrência (se aplicável)
+  - Sem back compatibility/downtime (ambiente de desenvolvimento)
 
-- **Tracing:**
-  - Iniciar _tracing_ com `utils.GenerateTracer(ctx)` em métodos públicos de **Services**, **Repositories** e em **Workers/Go routines**.
-  - Evitar _spans_ duplicados em **Handlers HTTP**, pois o `TelemetryMiddleware` já inicia o _tracing_.
-  - Chamar a função de finalização (`defer spanEnd()`) e usar `utils.SetSpanError` para marcar erros.
+## 5) Artefatos a atualizar (se aplicável)
+- Código (handlers/services/adapters)
+- Swagger (anotações no código)
+- Documentação (README/docs/*)
+- Observabilidade (métricas/dashboards) — apenas quando estritamente pertinente
 
-- **Logging:**
-  - Usar `slog` para _logs_ de domínio e segurança.
-    - `slog.Info`: Eventos esperados do domínio.
-    - `slog.Warn`: Condições anômalas ou falhas não fatais.
-    - `slog.Error`: Falhas internas de infraestrutura.
-  - Evitar _logs_ excessivos em **Repositórios (adapters)**.
-  - **Handlers** não devem gerar _logs_ de acesso, pois o `StructuredLoggingMiddleware` já faz isso.
+## 6) Arquitetura e Fluxo (Regras Obrigatórias)
+- Arquitetura Hexagonal; chamadas: `Handlers` → `Services` → `Repositories`.
+- Injeção de dependências via factories existentes.
+- Repositórios em `/internal/adapter/right/mysql/`, usando converters de entidades.
+- Transações SQL via `global_services/transactions`.
 
-- **Tratamento de Erros:**
-  - **Repositórios (Adapters):** Retornam erros "puros" (`error`).
-  - **Serviços (Core):** Propagam erros de domínio usando `utils.WrapDomainErrorWithSource(derr)` e criam novos erros com `utils.NewHTTPErrorWithSource(...)`.
-  - **Handlers (HTTP):** Usam `http_errors.SendHTTPErrorObj(c, err)` para converter erros em JSON.
+## 7) Erros e Observabilidade (Obrigatório)
+- Tracing:
+  - Use `utils.GenerateTracer(ctx)` em métodos públicos de Services/Repositories/Workers.
+  - Em Handlers HTTP, NÃO crie spans (feito pelo `TelemetryMiddleware`).
+  - Sempre `defer spanEnd()` e use `utils.SetSpanError(ctx, err)` em falhas de infraestrutura.
+- Logging (slog):
+  - `Info`: eventos esperados de domínio; `Warn`: anomalias/limites; `Error`: falhas de infraestrutura.
+  - Em Repositórios, evite verbosidade; sucesso no máximo `DEBUG` quando necessário.
+- Erros e HTTP:
+  - Repositórios retornam erros puros (ex.: `sql.ErrNoRows`).
+  - Services mapeiam para erros de domínio; infra = `slog.Error` + `SetSpanError`.
+  - Handlers usam `http_errors.SendHTTPErrorObj(c, err)` para serializar erros.
 
-#### 3. Boas Práticas Gerais
-- **Estilo de Código:** A proposta deve seguir as **Go Best Practices** e o **Google Go Style Guide**.
-- **Separação:** Manter a clara separação entre arquivos de **domínio**, **interfaces** e suas implementações.
-- **Processo:** O plano não deve incluir a geração de _scripts_ de migração ou soluções temporárias.
+Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_errors`.
+
+## 8) Dados e Transações
+- Tabelas/entidades afetadas: <listar>
+- Necessidade de transação: <sim/não; justificar>
+- Regras de concorrência e idempotência: <se aplicável>
+
+## 9) Interfaces/Contratos
+- Endpoints HTTP envolvidos: <listar caminhos e métodos>
+- Payloads de request/response: <resumo>
+- Erros de domínio esperados e mapeamento HTTP: <ex.: ErrX → 409>
+
+## 10) Critérios de Aceite
+- <ex.: Dado usuário sem pendência, confirmar telefone retorna 409 e não marca span como erro>
+- <ex.: Build passa; swagger atualizado; logs seguem convenções>
+
+## 11) Entregáveis Esperados do Agente
+- Análise detalhada com checklist dos requisitos e plano por etapas (com ordem de execução).
+- Se “Análise + implementação”: commits com mudanças mínimas necessárias; atualização de docs/Swagger.
+- Quality gates rápidos no final: Build, Lint/Typecheck, Tests, Smoke test; e mapeamento Requisito → Status.
+
+## 12) Restrições e Assunções
+- Ambiente: desenvolvimento (sem back compatibility, sem janela de manutenção, sem migração).
+- Sem uso de mocks nem soluções temporárias em entregas finais.
+
+## 13) Anexos e Referências
+- Arquivos relevantes: <listar caminhos>
+- Issues/PRs/Logs/Traces: <links>
 
 ---
 
-### **Regras de Documentação e Comentários**
+### Regras Operacionais do Pedido (a serem cumpridas pelo agente)
 
-- A documentação da solução deve ser clara e concisa.
-- A documentação das funções deve ser em **inglês**.
-- Os comentários internos devem ser em **português**.
-- A API deve ser documentada com **Swagger**, usando anotações diretamente no código.
+1) Antes de propor/alterar código:
+- Revisar arquivos relevantes (código e configs); evitar suposições sem checagem.
+- Produzir um checklist de requisitos explícitos e implícitos, mantendo-o visível.
+
+2) Durante a análise/implementação:
+- Seguir a arquitetura hexagonal, regras de erros/observabilidade e transações.
+- Manter adapters com erros “puros”; sem HTTP/semântica de domínio nessa camada.
+- Atualizar Swagger quando comportamento público mudar.
+
+3) Após mudanças:
+- Executar build e testes rápidos; relatar PASS/FAIL brevemente e corrigir até ficar verde.
+- Relatar “requirements coverage” (Requisito → Done/Deferred + motivo).
+
+---
+
+## Modelo de Preenchimento Rápido (copie e edite)
+
+- Tipo: Análise | Análise + implementação
+- Título: <...>
+- Contexto: <...>
+- Escopo: <...>
+- Requisitos: <...>
+- Endpoints afetados: <...>
+- Dados/Transações: <...>
+- Critérios de aceite: <...>
+- Artefatos a atualizar: <Código | Swagger | Docs | Observabilidade>
+- Anexos/Referências: <...>
+
+> Observação: comentários internos em português; docstrings de funções em inglês; Swagger por anotações no código.
