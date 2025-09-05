@@ -25,9 +25,6 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("user.confirm_password_change.tx_start_error", "err", txErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPasswordChangeConfirm("start_tx_error")
-		}
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
@@ -40,32 +37,14 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 
 	err = us.confirmPasswordChange(ctx, tx, nationalID, password, code)
 	if err != nil {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			switch err {
-			case utils.ErrPasswordChangeNotPending:
-				mp.IncrementPasswordChangeConfirm("not_pending")
-			case utils.ErrPasswordChangeCodeInvalid:
-				mp.IncrementPasswordChangeConfirm("invalid")
-			case utils.ErrPasswordChangeCodeExpired:
-				mp.IncrementPasswordChangeConfirm("expired")
-			default:
-				mp.IncrementPasswordChangeConfirm("domain_error")
-			}
-		}
 		return
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		slog.Error("user.confirm_password_change.tx_commit_error", "err", commitErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPasswordChangeConfirm("commit_error")
-		}
 		return utils.InternalError("Failed to commit transaction")
 	}
 
-	if mp := us.globalService.GetMetrics(); mp != nil {
-		mp.IncrementPasswordChangeConfirm("success")
-	}
 	return
 }
 
@@ -74,13 +53,27 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
-		return
+		// Não revelar existência do usuário: mapear ausência como fluxo não pendente
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.ErrPasswordChangeNotPending
+		}
+		// Outros erros são infra
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_password_change.stage_error", "stage", "get_user_by_national_id", "err", err)
+		return utils.InternalError("Failed to get user")
 	}
 
 	//read the user validation
 	userValidation, err := us.repo.GetUserValidations(ctx, tx, user.GetID())
 	if err != nil {
-		return
+		// Sem validação pendente → domínio
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.ErrPasswordChangeNotPending
+		}
+		// Infra
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_password_change.stage_error", "stage", "get_validations", "err", err)
+		return utils.InternalError("Failed to get user validations")
 	}
 
 	//check if the user is awaiting password reset
@@ -109,25 +102,36 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_password_change.stage_error", "stage", "update_validations", "err", err)
+		return utils.InternalError("Failed to update validations")
 	}
 
 	//delete the temp_wrong_signin
 	_, err = us.repo.DeleteWrongSignInByUserID(ctx, tx, user.GetID())
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return
+	if err != nil {
+		// Ignorar ausência de registros; tratar demais erros
+		if !errors.Is(err, sql.ErrNoRows) {
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.confirm_password_change.stage_error", "stage", "delete_wrong_signin", "err", err)
+			return utils.InternalError("Failed to cleanup wrong sign in attempts")
+		}
 	}
 
 	user.SetLastActivityAt(now)
 
 	err = us.repo.UpdateUserPasswordByID(ctx, tx, user)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_password_change.stage_error", "stage", "update_user_password", "err", err)
+		return utils.InternalError("Failed to update user password")
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Alterada a senha do usuário")
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_password_change.stage_error", "stage", "audit", "err", err)
+		return utils.InternalError("Failed to create audit")
 	}
 
 	return

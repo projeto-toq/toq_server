@@ -26,9 +26,6 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("auth.request_password_change.tx_start_error", "err", txErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPasswordChangeRequest("start_tx_error")
-		}
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
@@ -43,13 +40,7 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	if err != nil {
 		// Privacy-preserving path: do not reveal user existence
 		if errors.Is(err, sql.ErrNoRows) {
-			if mp := us.globalService.GetMetrics(); mp != nil {
-				mp.IncrementPasswordChangeRequest("user_not_found")
-			}
 			return nil
-		}
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPasswordChangeRequest("domain_error")
 		}
 		return
 	}
@@ -57,9 +48,6 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	// Commit before notify
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		slog.Error("auth.request_password_change.tx_commit_error", "err", commitErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPasswordChangeRequest("commit_error")
-		}
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -75,14 +63,7 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	if notifyErr := notificationService.SendNotification(ctx, emailRequest); notifyErr != nil {
 		// Do not impact main operation
 		slog.Error("Failed to send password reset notification", "userID", user.GetID(), "error", notifyErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPasswordChangeRequest("notify_error")
-		}
 		return nil
-	}
-
-	if mp := us.globalService.GetMetrics(); mp != nil {
-		mp.IncrementPasswordChangeRequest("success")
 	}
 	return nil
 }

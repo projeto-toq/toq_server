@@ -3,7 +3,7 @@
 Este documento descreve as instruções para atuar como um engenheiro de software Go sênior, focando na análise de um problema e na proposição de uma solução detalhada, seguindo a arquitetura hexagonal e boas práticas de código, garantindo o alinhamento com os padrões de arquitetura, tratamento de erros, observabilidade e documentação. Toda a interação deve ser feita em português.
 
 ---
-**Problema:** Considerando o processo atual de erro que está pouco produtivo e causando atrasaos fortes no processo de debugging, quero alterar para que service log efetivamente o erro, sem conversões para domain erro, e o handler apenas retorne o erro para o cliente, no formato http.
+**Problema:** No processo de verificação, renvio de tokens e confrimação de troca de e-mail e telefone, possuem envio de métricas durante o processo, além das métricas http feita pelo middleware. Elas devem ser removidas e o daschboard od grafana removido também.
 
 **Solicitação:** Analise o problema e proponha um plano detalhado para a implementação da solução.
 
@@ -14,6 +14,7 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 - **Plano:** Um plano detalhado deve ser apresentado, incluindo a descrição da arquitetura proposta, as interfaces, a estrutura de diretórios e a ordem de execução das etapas.
 - **Qualidade do Plano:** O plano deve ser completo, sem o uso de _mocks_ ou soluções temporárias. Caso seja extenso, deve ser dividido em etapas implementáveis.
 - **Acompanhamento:** As etapas já planejadas e as próximas a serem analisadas devem ser sempre informadas para acompanhamento.
+- **Ambiente:** O plano deve considerar que estamos em ambiente de desvolvimento, portanto não deve haver back compatibility, migração de dados, preocupação com janela de manutenção ou _downtime_.
 
 ---
 

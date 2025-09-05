@@ -37,9 +37,6 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("email_change.request.tx_start_error", "err", txErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeRequest("start_tx_error")
-		}
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
@@ -52,32 +49,17 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 
 	user, validation, err := us.requestEmailChange(ctx, tx, userID, newEmail)
 	if err != nil {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			// map some known domain errors for better observability
-			switch err {
-			case utils.ErrEmailAlreadyInUse:
-				mp.IncrementEmailChangeRequest("already_in_use")
-			default:
-				mp.IncrementEmailChangeRequest("domain_error")
-			}
-		}
 		return
 	}
 
 	// Commit the transaction BEFORE sending notification
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
 		slog.Error("email_change.request.tx_commit_error", "err", err)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeRequest("commit_error")
-		}
 		return utils.InternalError("Failed to commit transaction")
 	}
 
 	// Se não houve pendência criada (mesmo e-mail do atual), retornar sucesso sem notificar
 	if validation == nil || validation.GetEmailCode() == "" {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeRequest("success_noop")
-		}
 		return nil
 	}
 
@@ -93,11 +75,6 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 	notifyErr := notificationService.SendNotification(ctx, emailRequest)
 	if notifyErr != nil {
 		slog.Error("email_change.request.notification_error", "userID", user.GetID(), "err", notifyErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeRequest("notify_error")
-		}
-	} else if mp := us.globalService.GetMetrics(); mp != nil {
-		mp.IncrementEmailChangeRequest("success")
 	}
 
 	return

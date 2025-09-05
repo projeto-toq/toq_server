@@ -28,9 +28,6 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("user.resend_phone_change_code.tx_start_error", "err", txErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeResend("start_tx_error")
-		}
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
@@ -44,26 +41,11 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	var destPhone, code string
 	destPhone, code, err = us.resendPhoneChangeCode(ctx, tx, userID)
 	if err != nil {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			switch err {
-			case utils.ErrPhoneChangeNotPending:
-				mp.IncrementPhoneChangeResend("not_pending")
-			case utils.ErrPhoneChangeCodeExpired:
-				mp.IncrementPhoneChangeResend("expired")
-			case utils.ErrPhoneAlreadyInUse:
-				mp.IncrementPhoneChangeResend("already_in_use")
-			default:
-				mp.IncrementPhoneChangeResend("domain_error")
-			}
-		}
 		return
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
 		slog.Error("user.resend_phone_change_code.tx_commit_error", "err", err)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeResend("commit_error")
-		}
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -76,13 +58,6 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	}
 	if notifyErr := notificationService.SendNotification(ctx, smsRequest); notifyErr != nil {
 		slog.Error("user.resend_phone_change_code.notification_error", "userID", userID, "err", notifyErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeResend("notify_error")
-		}
-	} else {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeResend("success")
-		}
 	}
 	return
 }

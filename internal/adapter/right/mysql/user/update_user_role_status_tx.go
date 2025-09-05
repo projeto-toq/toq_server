@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // UpdateUserRoleStatus updates the active user role status for a specific role using a transaction.
@@ -37,7 +36,7 @@ func (ua *UserAdapter) UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, use
 		if rows, rerr := res.RowsAffected(); rerr == nil && rows == 0 {
 			// Nenhuma linha atualizada indica ausência de papel ativo com o slug informado
 			slog.Warn("mysqluseradapter/UpdateUserRoleStatus: no rows affected", "userID", userID, "role", role, "status", status)
-			return utils.ErrUserActiveRoleMissing
+			return sql.ErrNoRows
 		}
 	}
 	slog.Debug("Updated user role status (tx)", "userID", userID, "role", role, "status", status)

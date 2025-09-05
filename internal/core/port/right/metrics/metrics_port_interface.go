@@ -16,24 +16,10 @@ type MetricsPortInterface interface {
 	DecrementHTTPRequestsInFlight()
 	ObserveHTTPResponseSize(method, path string, size int64)
 
-	// Business Metrics
+	// Business/System Metrics (kept)
 	SetActiveSessions(count int64)
 	IncrementDatabaseQueries(operation, table string)
 	IncrementCacheOperations(operation, result string)
-
-	// Email change flow metrics
-	IncrementEmailChangeRequest(result string)
-	IncrementEmailChangeConfirm(result string)
-	IncrementEmailChangeResend(result string)
-
-	// Phone change flow metrics
-	IncrementPhoneChangeRequest(result string)
-	IncrementPhoneChangeConfirm(result string)
-	IncrementPhoneChangeResend(result string)
-
-	// Password change flow metrics
-	IncrementPasswordChangeRequest(result string)
-	IncrementPasswordChangeConfirm(result string)
 
 	// System Metrics
 	SetSystemUptime(duration time.Duration)

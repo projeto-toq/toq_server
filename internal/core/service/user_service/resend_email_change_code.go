@@ -30,9 +30,6 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("email_change.resend.tx_start_error", "err", txErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeResend("start_tx_error")
-		}
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
@@ -46,26 +43,11 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	var userEmail, code string
 	userEmail, code, err = us.resendEmailChangeCode(ctx, tx, userID)
 	if err != nil {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			switch err {
-			case utils.ErrEmailChangeNotPending:
-				mp.IncrementEmailChangeResend("not_pending")
-			case utils.ErrEmailChangeCodeExpired:
-				mp.IncrementEmailChangeResend("expired")
-			case utils.ErrEmailAlreadyInUse:
-				mp.IncrementEmailChangeResend("already_in_use")
-			default:
-				mp.IncrementEmailChangeResend("domain_error")
-			}
-		}
 		return
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
 		slog.Error("email_change.resend.tx_commit_error", "err", err)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeResend("commit_error")
-		}
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -79,13 +61,6 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	}
 	if notifyErr := notificationService.SendNotification(ctx, emailRequest); notifyErr != nil {
 		slog.Error("email_change.resend.notification_error", "userID", userID, "err", notifyErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeResend("notify_error")
-		}
-	} else {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeResend("success")
-		}
 	}
 
 	return

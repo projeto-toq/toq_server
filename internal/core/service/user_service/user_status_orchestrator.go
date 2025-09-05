@@ -3,10 +3,12 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"log/slog"
 
+	derrors "github.com/giulio-alfieri/toq_server/internal/core/derrors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // decideNextStatusAfterContactChange decides the next status after a successful email/phone change.
@@ -39,26 +41,37 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 	// Carregar usuário e papel ativo
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
-		return 0, false, utils.AuthenticationError("")
+		// domínio: auth
+		return 0, false, derrors.Auth("Authentication required")
 	}
 	// Resolver papel ativo via permission service (robusto e desacoplado de carregamento do usuário)
 	active, derr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if derr != nil {
+		// pode ser domínio (KindError) ou erro puro de infra – deixar o caller mapear/logar
 		return 0, false, derr
 	}
 	if active == nil || active.GetRole() == nil {
-		return 0, false, utils.ErrUserActiveRoleMissing
+		return 0, false, derrors.ErrUserActiveRoleMissing
 	}
 	roleSlug := permissionmodel.RoleSlug(active.GetRole().GetSlug())
 	from := active.GetStatus()
 
 	// Ler validações para checar pendências do outro fator
 	validations, err := us.repo.GetUserValidations(ctx, tx, userID)
+	var emailPending, phonePending bool
 	if err != nil {
-		return 0, false, err
+		// Ausência de validações após confirmação significa "sem pendências" e não é erro
+		if errors.Is(err, sql.ErrNoRows) {
+			emailPending, phonePending = false, false
+		} else {
+			// Outros erros são infraestrutura
+			slog.Error("user.status_transition.stage_error", "stage", "get_validations", "err", err)
+			return 0, false, err
+		}
+	} else {
+		emailPending = validations.GetEmailCode() != ""
+		phonePending = validations.GetPhoneCode() != ""
 	}
-	emailPending := validations.GetEmailCode() != ""
-	phonePending := validations.GetPhoneCode() != ""
 	// Ajustar o fator recém confirmado
 	if emailJustConfirmed {
 		emailPending = false
@@ -73,10 +86,16 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 
 	// Persistir alteração e auditar
 	if err := us.repo.UpdateUserRoleStatus(ctx, tx, userID, roleSlug, to); err != nil {
-		return 0, false, err
+		// Se não houve role ativo correspondente, mapear para erro de domínio e não logar como infra
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, false, derrors.ErrUserActiveRoleMissing
+		}
+		slog.Error("user.status_transition.stage_error", "stage", "update_role_status", "err", err)
+		return 0, false, err // infra
 	}
 	if err := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Atualização de status após alteração de contato"); err != nil {
-		return 0, false, err
+		slog.Error("user.status_transition.stage_error", "stage", "audit", "err", err)
+		return 0, false, err // infra
 	}
 
 	return to, true, nil

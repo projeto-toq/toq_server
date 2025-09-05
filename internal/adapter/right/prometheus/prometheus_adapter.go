@@ -23,24 +23,10 @@ type PrometheusAdapter struct {
 	httpRequestsInFlight prometheus.Gauge
 	httpResponseSize     *prometheus.HistogramVec
 
-	// Business Metrics
+	// Business Metrics (kept)
 	activeSessions       prometheus.Gauge
 	databaseQueriesTotal *prometheus.CounterVec
 	cacheOperationsTotal *prometheus.CounterVec
-
-	// Email change metrics
-	emailChangeRequestTotal *prometheus.CounterVec
-	emailChangeConfirmTotal *prometheus.CounterVec
-	emailChangeResendTotal  *prometheus.CounterVec
-
-	// Phone change metrics
-	phoneChangeRequestTotal *prometheus.CounterVec
-	phoneChangeConfirmTotal *prometheus.CounterVec
-	phoneChangeResendTotal  *prometheus.CounterVec
-
-	// Password change metrics
-	passwordChangeRequestTotal *prometheus.CounterVec
-	passwordChangeConfirmTotal *prometheus.CounterVec
 
 	// System Metrics
 	systemUptime prometheus.Gauge
@@ -125,67 +111,7 @@ func (p *PrometheusAdapter) initializeMetrics() {
 		[]string{"operation", "result"},
 	)
 
-	// Email change metrics
-	p.emailChangeRequestTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "email_change_request_total",
-			Help: "Total number of email change requests by result",
-		},
-		[]string{"result"},
-	)
-	p.emailChangeConfirmTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "email_change_confirm_total",
-			Help: "Total number of email change confirmations by result",
-		},
-		[]string{"result"},
-	)
-	p.emailChangeResendTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "email_change_resend_total",
-			Help: "Total number of email change resends by result",
-		},
-		[]string{"result"},
-	)
-
-	// Phone change metrics
-	p.phoneChangeRequestTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "phone_change_request_total",
-			Help: "Total number of phone change requests by result",
-		},
-		[]string{"result"},
-	)
-	p.phoneChangeConfirmTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "phone_change_confirm_total",
-			Help: "Total number of phone change confirmations by result",
-		},
-		[]string{"result"},
-	)
-	p.phoneChangeResendTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "phone_change_resend_total",
-			Help: "Total number of phone change resends by result",
-		},
-		[]string{"result"},
-	)
-
-	// Password change metrics
-	p.passwordChangeRequestTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "password_change_request_total",
-			Help: "Total number of password change requests by result",
-		},
-		[]string{"result"},
-	)
-	p.passwordChangeConfirmTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "password_change_confirm_total",
-			Help: "Total number of password change confirmations by result",
-		},
-		[]string{"result"},
-	)
+	// Removed business flow counters (email/phone/password) to avoid duplication with HTTP metrics
 
 	// System Metrics
 	p.systemUptime = prometheus.NewGauge(
@@ -214,14 +140,6 @@ func (p *PrometheusAdapter) registerMetrics() {
 		p.activeSessions,
 		p.databaseQueriesTotal,
 		p.cacheOperationsTotal,
-		p.emailChangeRequestTotal,
-		p.emailChangeConfirmTotal,
-		p.emailChangeResendTotal,
-		p.phoneChangeRequestTotal,
-		p.phoneChangeConfirmTotal,
-		p.phoneChangeResendTotal,
-		p.passwordChangeRequestTotal,
-		p.passwordChangeConfirmTotal,
 		p.systemUptime,
 		p.errorsTotal,
 	)
@@ -273,40 +191,7 @@ func (p *PrometheusAdapter) IncrementCacheOperations(operation, result string) {
 	p.cacheOperationsTotal.WithLabelValues(operation, result).Inc()
 }
 
-// Email change flow metrics implementation
-func (p *PrometheusAdapter) IncrementEmailChangeRequest(result string) {
-	p.emailChangeRequestTotal.WithLabelValues(result).Inc()
-}
-
-func (p *PrometheusAdapter) IncrementEmailChangeConfirm(result string) {
-	p.emailChangeConfirmTotal.WithLabelValues(result).Inc()
-}
-
-func (p *PrometheusAdapter) IncrementEmailChangeResend(result string) {
-	p.emailChangeResendTotal.WithLabelValues(result).Inc()
-}
-
-// Phone change flow metrics implementation
-func (p *PrometheusAdapter) IncrementPhoneChangeRequest(result string) {
-	p.phoneChangeRequestTotal.WithLabelValues(result).Inc()
-}
-
-func (p *PrometheusAdapter) IncrementPhoneChangeConfirm(result string) {
-	p.phoneChangeConfirmTotal.WithLabelValues(result).Inc()
-}
-
-func (p *PrometheusAdapter) IncrementPhoneChangeResend(result string) {
-	p.phoneChangeResendTotal.WithLabelValues(result).Inc()
-}
-
-// Password change flow metrics implementation
-func (p *PrometheusAdapter) IncrementPasswordChangeRequest(result string) {
-	p.passwordChangeRequestTotal.WithLabelValues(result).Inc()
-}
-
-func (p *PrometheusAdapter) IncrementPasswordChangeConfirm(result string) {
-	p.passwordChangeConfirmTotal.WithLabelValues(result).Inc()
-}
+// Removed flow metrics methods (email/phone/password)
 
 // System Metrics Implementation
 func (p *PrometheusAdapter) SetSystemUptime(duration time.Duration) {

@@ -41,9 +41,6 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("phone_change.request.tx_start_error", "err", txErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeRequest("start_tx_error")
-		}
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
@@ -56,31 +53,17 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 
 	user, validation, err := us.requestPhoneChange(ctx, tx, userID, newPhone)
 	if err != nil {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			switch err {
-			case utils.ErrPhoneAlreadyInUse:
-				mp.IncrementPhoneChangeRequest("already_in_use")
-			default:
-				mp.IncrementPhoneChangeRequest("domain_error")
-			}
-		}
 		return
 	}
 
 	// Commit the transaction BEFORE sending notification
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		slog.Error("phone_change.request.tx_commit_error", "err", commitErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeRequest("commit_error")
-		}
 		return utils.InternalError("Failed to commit transaction")
 	}
 
 	// Se não houve pendência criada (mesmo telefone do atual), retornar sucesso sem notificar
 	if validation == nil || validation.GetPhoneCode() == "" {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeRequest("success_noop")
-		}
 		return nil
 	}
 
@@ -96,11 +79,6 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 	if notifyErr != nil {
 		// Log sem afetar operação principal (commit já feito)
 		slog.Error("Failed to send SMS notification", "userID", user.GetID(), "error", notifyErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementPhoneChangeRequest("notify_error")
-		}
-	} else if mp := us.globalService.GetMetrics(); mp != nil {
-		mp.IncrementPhoneChangeRequest("success")
 	}
 
 	return

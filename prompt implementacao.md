@@ -6,7 +6,7 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 
 ### **Instruções para Implementação de Código**
 
-- **Ação:** O código Go deve ser gerado e implementado segundo o plano de refatoração apresentado.
+- **Ação:** O código Go deve ser gerado e implementado segundo o plano de refatoração apresentado para as etapas 1 - 3
 
 ---
 

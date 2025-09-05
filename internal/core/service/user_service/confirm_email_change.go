@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log/slog"
 	"strings"
 	"time"
@@ -30,9 +31,6 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("user.confirm_email_change.tx_start_error", "err", txErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeConfirm("start_tx_error")
-		}
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
@@ -45,21 +43,6 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 
 	err = us.confirmEmailChange(ctx, tx, userID, code)
 	if err != nil {
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			// map domain errors to results
-			switch err {
-			case utils.ErrEmailChangeNotPending:
-				mp.IncrementEmailChangeConfirm("not_pending")
-			case utils.ErrEmailChangeCodeInvalid:
-				mp.IncrementEmailChangeConfirm("invalid")
-			case utils.ErrEmailChangeCodeExpired:
-				mp.IncrementEmailChangeConfirm("expired")
-			case utils.ErrEmailAlreadyInUse:
-				mp.IncrementEmailChangeConfirm("already_in_use")
-			default:
-				mp.IncrementEmailChangeConfirm("domain_error")
-			}
-		}
 		return
 	}
 
@@ -72,17 +55,10 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		slog.Error("user.confirm_email_change.tx_commit_error", "err", commitErr)
-		if mp := us.globalService.GetMetrics(); mp != nil {
-			mp.IncrementEmailChangeConfirm("commit_error")
-		}
 		return utils.InternalError("Failed to commit transaction")
 	}
 
 	// Push notifications no longer dispatched automatically here.
-
-	if mp := us.globalService.GetMetrics(); mp != nil {
-		mp.IncrementEmailChangeConfirm("success")
-	}
 
 	return
 }
@@ -94,15 +70,15 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	//read the user validation
 	userValidation, err := us.repo.GetUserValidations(ctx, tx, userID)
 	if err != nil {
-		return
+		// Se não há validação, tratar como fluxo não pendente (domínio)
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.ErrEmailChangeNotPending
+		}
+		// Outros erros são infraestrutura
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_email_change.stage_error", "stage", "get_validations", "err", err)
+		return utils.InternalError("Failed to get user validations")
 	}
-
-	// //verify is the user is on profile validation where email and phone should be validated
-	// //in this case the phone must be validated first
-	// if userValidation.GetPhoneCode() != "" {
-	// 	err = utils.ErrInternalServer
-	// 	return
-	// }
 
 	// Deve haver um código pendente e um novo e-mail definido
 	if userValidation.GetEmailCode() == "" || userValidation.GetNewEmail() == "" {
@@ -130,7 +106,9 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 
 	// Verificar se o novo e-mail já está sendo utilizado por outro usuário
 	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, userValidation.GetNewEmail(), userID); verr != nil {
-		return verr
+		utils.SetSpanError(ctx, verr)
+		slog.Error("user.confirm_email_change.stage_error", "stage", "exists_email_for_another_user", "err", verr)
+		return utils.InternalError("Failed to check email uniqueness")
 	} else if exist {
 		return utils.ErrEmailAlreadyInUse
 	}
@@ -145,17 +123,23 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_email_change.stage_error", "stage", "update_validations", "err", err)
+		return utils.InternalError("Failed to update validations")
 	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_email_change.stage_error", "stage", "update_user", "err", err)
+		return utils.InternalError("Failed to update user")
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "email do usuário alterado")
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.confirm_email_change.stage_error", "stage", "audit", "err", err)
+		return utils.InternalError("Failed to create audit")
 	}
 	return
 }

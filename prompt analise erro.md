@@ -4,9 +4,13 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 
 ---
 
-**Problema:** O problema persiste mesmo após a correção anterior. em log.md temos os logs temporáros do erro.
-1) O usuário fazendo a validação do código de confirmação de telefone está recebendo o erro 500 (Internal Server Error).
-2) a entrada do log com o erro está verbosa e não informa nada, pois faz referencia a função de logging e não a função onde o erro efetivamente ocorreu.
+**Problema:** O usuário chamou a validação do código de confirmação de e-mail sem ter chamado a troca de e-mail e recebu o erro abaixo:
+
+{"
+"time":"2025-09-05T16:36:07.991145689Z","level":"ERROR","source":{"function":"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares.StructuredLoggingMiddleware.func1","file":"/codigos/go_code/toq_server/internal/adapter/left/http/middlewares/structured_logging_middleware.go","line":172},"msg":"HTTP Error","request_id":"cebf2c07-4656-4374-bd9c-667aa110375c","method":"POST","path":"/api/v2/user/email/confirm","status":500,"duration":12105429,"size":61,"client_ip":"177.9.64.219","user_agent":"PostmanRuntime/7.45.0","trace_id":"81a7091dcb6f5f420f7cab9a1af058b2","span_id":"3332b34245db11cf","user_id":2,"user_role_id":2,"role_status":"active","errors":["sql: no rows in result set"]}
+
+Na verdade deveria haver uma verificação se está pendente de troca de e-mail e retornar um erro 409 (conflito) ou 422 (unprocessable entity) ou 410 (gone) dependendo do caso, mas não um erro 500 (internal server error).
+
 
 **Solicitação:** Analise o problema, **leia o log.md**, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
 
@@ -17,6 +21,7 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 - **Plano:** Um plano detalhado deve ser apresentado, incluindo a descrição da arquitetura proposta, as interfaces, a estrutura de diretórios e a ordem de execução das etapas.
 - **Qualidade do Plano:** O plano deve ser completo, sem o uso de _mocks_ ou soluções temporárias. Caso seja extenso, deve ser dividido em etapas implementáveis.
 - **Acompanhamento:** As etapas já planejadas e as próximas a serem analisadas devem ser sempre informadas para acompanhamento.
+- **Ambiente:** O plano deve considerar que estamos em ambiente de desvolvimento, portanto não deve haver back compatibility, migração de dados, preocupação com janela de manutenção ou _downtime_.
 
 ---
 
