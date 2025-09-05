@@ -71,60 +71,7 @@ func (p *permissionServiceImpl) SwitchActiveRoleWithTx(ctx context.Context, tx *
 	return nil
 }
 
-// GetActiveUserRole retorna o role ativo do usuário
-func (p *permissionServiceImpl) GetActiveUserRole(ctx context.Context, userID int64) (permissionmodel.UserRoleInterface, error) {
-	ctx, end, _ := utils.GenerateTracer(ctx)
-	defer end()
-
-	if userID <= 0 {
-		return nil, utils.BadRequest("invalid user id")
-	}
-
-	// Start transaction
-	tx, err := p.globalService.StartTransaction(ctx)
-	if err != nil {
-		slog.Error("permission.user_role.active.tx_start_failed", "user_id", userID, "error", err)
-		return nil, utils.InternalError("")
-	}
-	defer func() {
-		if err != nil {
-			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("permission.user_role.active.tx_rollback_failed", "user_id", userID, "error", rbErr)
-			}
-		}
-	}()
-
-	userRole, err := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
-	if err != nil {
-		slog.Error("permission.user_role.active.db_failed", "user_id", userID, "error", err)
-		return nil, utils.InternalError("")
-	}
-
-	// Commit the transaction
-	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
-		slog.Error("permission.user_role.active.tx_commit_failed", "user_id", userID, "error", err)
-		return nil, utils.InternalError("")
-	}
-
-	return userRole, nil
-}
-
-// GetActiveUserRoleWithTx retorna a role ativa do usuário utilizando a transação fornecida
-func (p *permissionServiceImpl) GetActiveUserRoleWithTx(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error) {
-	ctx, end, _ := utils.GenerateTracer(ctx)
-	defer end()
-
-	if userID <= 0 {
-		return nil, utils.BadRequest("invalid user id")
-	}
-
-	userRole, err := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
-	if err != nil {
-		// Repositório já loga erros técnicos; aqui padronizamos o erro de domínio
-		return nil, utils.InternalError("")
-	}
-	return userRole, nil
-}
+// GetActiveUserRole methods moved to get_active_user_role.go
 
 // DeactivateAllUserRoles desativa todos os roles de um usuário
 func (p *permissionServiceImpl) DeactivateAllUserRoles(ctx context.Context, userID int64) error {

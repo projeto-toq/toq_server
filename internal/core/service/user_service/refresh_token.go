@@ -90,7 +90,8 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	}
 
 	// Carrega usuário e tenta obter role ativa (necessária para access token)
-	user, err := us.repo.GetUserByIDWithActiveRole(ctx, tx, userID)
+	// Carrega usuário com active role via Service (invariável: requer active role)
+	user, err := us.GetUserByIDWithTx(ctx, tx, userID)
 	if err != nil {
 		return
 	}

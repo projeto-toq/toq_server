@@ -104,4 +104,8 @@ type UserServiceInterface interface {
 	GetCreciUploadURL(ctx context.Context, documentType, contentType string) (signedURL string, err error)
 	// VerifyCreciDocuments checks S3 for required CRECI images and sets status to PendingManual
 	VerifyCreciDocuments(ctx context.Context) (err error)
+	// GetUserByID returns the user with the active role eagerly loaded (read-only tx)
+	GetUserByID(ctx context.Context, id int64) (usermodel.UserInterface, error)
+	// GetUserByIDWithTx returns the user with the active role using the provided transaction
+	GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int64) (usermodel.UserInterface, error)
 }

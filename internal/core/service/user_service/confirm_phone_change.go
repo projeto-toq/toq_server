@@ -112,7 +112,8 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	//read the user to update the phone number
-	user, err := us.repo.GetUserByID(ctx, tx, userID)
+	// Carrega usuário com active role via Service (invariável: requer active role)
+	user, err := us.GetUserByIDWithTx(ctx, tx, userID)
 	if err != nil {
 		return
 	}
