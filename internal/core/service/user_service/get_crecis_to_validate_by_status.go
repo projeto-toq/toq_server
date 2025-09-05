@@ -21,13 +21,15 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	// Start a database transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("user.get_crecis_to_validate_by_status.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_crecis_to_validate_by_status.tx_start_error", "error", err)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.get_crecis_to_validate_by_status.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.get_crecis_to_validate_by_status.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -40,7 +42,8 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	// Commit the transaction
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("user.get_crecis_to_validate_by_status.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_crecis_to_validate_by_status.tx_commit_error", "error", err)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 	return
@@ -51,7 +54,7 @@ func (us *userService) getCrecisToValidateByStatus(_ context.Context, _ *sql.Tx,
 	// TODO: Reimplementar busca por status após migração do sistema de status
 	// O método GetUsersByStatus precisa ser atualizado para o novo sistema de permissões
 	// Por enquanto, retornar lista vazia
-	slog.Warn("getCrecisToValidateByStatus temporarily disabled during migration", "status", UserRoleStatus)
+	slog.Warn("user.get_crecis_to_validate_by_status.temporarily_disabled", "status", UserRoleStatus)
 	return []usermodel.UserInterface{}, nil
 
 	/*

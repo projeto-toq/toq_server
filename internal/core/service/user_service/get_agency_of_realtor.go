@@ -19,26 +19,31 @@ func (us *userService) GetAgencyOfRealtor(ctx context.Context, realtorID int64) 
 	// Start a database transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("user.get_agency_of_realtor.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_agency_of_realtor.tx_start_error", "error", err)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.get_agency_of_realtor.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.get_agency_of_realtor.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
 
 	agency, err = us.repo.GetAgencyOfRealtor(ctx, tx, realtorID)
 	if err != nil {
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_agency_of_realtor.read_agency_error", "error", err, "realtor_id", realtorID)
+		return nil, utils.MapRepositoryError(err, "Agency not found for realtor")
 	}
 
 	// Commit the transaction
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("user.get_agency_of_realtor.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_agency_of_realtor.tx_commit_error", "error", err)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 	return

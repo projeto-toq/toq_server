@@ -22,12 +22,14 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("user.create_owner.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				slog.Error("user.create_owner.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		}
 	}()
@@ -41,6 +43,7 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		slog.Error("user.create_owner.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 

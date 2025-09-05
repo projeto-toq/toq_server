@@ -31,12 +31,14 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		slog.Error("user.confirm_email_change.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				slog.Error("user.confirm_email_change.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		}
 	}()
@@ -55,6 +57,7 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		slog.Error("user.confirm_email_change.tx_commit_error", "err", commitErr)
+		utils.SetSpanError(ctx, commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 

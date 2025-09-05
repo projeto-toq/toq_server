@@ -65,6 +65,7 @@ func (us *userService) GetCreciUploadURL(ctx context.Context, documentType, cont
 		if gsMetrics := us.globalService.GetMetrics(); gsMetrics != nil {
 			gsMetrics.IncrementErrors("user_service", "creci_upload_url_error")
 		}
+		utils.SetSpanError(ctx, err)
 		return "", err
 	}
 

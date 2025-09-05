@@ -28,13 +28,15 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.switch_role.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("user.switch_role.tx_start_error", "error", txErr)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.switch_role.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.switch_role.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -45,7 +47,8 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("user.switch_role.tx_commit_error", "err", commitErr)
+		utils.SetSpanError(ctx, commitErr)
+		slog.Error("user.switch_role.tx_commit_error", "error", commitErr)
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
@@ -56,6 +59,8 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	// Verificar se o usuário tem múltiplos roles usando permission service
 	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, userID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.switch_role.get_user_roles_error", "error", err, "user_id", userID)
 		return
 	}
 
@@ -85,24 +90,32 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	// Usar permission service diretamente para buscar role
 	role, roleErr := us.permissionService.GetRoleBySlugWithTx(ctx, tx, roleSlug)
 	if roleErr != nil {
+		utils.SetSpanError(ctx, roleErr)
+		slog.Error("user.switch_role.get_role_error", "error", roleErr, "role_slug", roleSlug)
 		err = roleErr
 		return
 	}
 
 	err = us.permissionService.SwitchActiveRoleWithTx(ctx, tx, userID, role.GetID())
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.switch_role.switch_active_role_error", "error", err, "user_id", userID, "role_id", role.GetID())
 		return
 	}
 
 	// Buscar usuário atualizado
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.switch_role.get_user_error", "error", err, "user_id", userID)
 		return
 	}
 
 	// Gerar novos tokens
 	tokens, err = us.CreateTokens(ctx, tx, user, false)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.switch_role.create_tokens_error", "error", err, "user_id", userID)
 		return
 	}
 

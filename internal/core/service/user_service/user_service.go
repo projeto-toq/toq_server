@@ -28,7 +28,6 @@ type userService struct {
 	// creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
-	securityLogger      SecurityEventLoggerInterface                  // NOVO - Logger de eventos de segurança
 }
 
 func NewUserService(
@@ -52,8 +51,7 @@ func NewUserService(
 		cnpj:           cnpj,
 		// creci:               creci, // Pode ser nil
 		cloudStorageService: cloudStorage,
-		permissionService:   permissionService,        // NOVO
-		securityLogger:      NewSecurityEventLogger(), // NOVO - Inicializa o logger
+		permissionService:   permissionService, // NOVO
 	}
 }
 

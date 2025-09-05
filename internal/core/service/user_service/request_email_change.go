@@ -36,13 +36,15 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("email_change.request.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("email_change.request.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("email_change.request.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("email_change.request.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -54,7 +56,8 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 
 	// Commit the transaction BEFORE sending notification
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-		slog.Error("email_change.request.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("email_change.request.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -74,7 +77,8 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 
 	notifyErr := notificationService.SendNotification(ctx, emailRequest)
 	if notifyErr != nil {
-		slog.Error("email_change.request.notification_error", "userID", user.GetID(), "err", notifyErr)
+		utils.SetSpanError(ctx, notifyErr)
+		slog.Error("email_change.request.notification_error", "user_id", user.GetID(), "error", notifyErr)
 	}
 
 	return
@@ -84,6 +88,8 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 
 	user, err = us.repo.GetUserByID(ctx, tx, id)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("email_change.request.read_user_error", "error", err, "user_id", id)
 		return
 	}
 
@@ -95,6 +101,8 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 
 	// Verificar unicidade global (outros usuários não podem ter este email)
 	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, email, user.GetID()); verr != nil {
+		utils.SetSpanError(ctx, verr)
+		slog.Error("email_change.request.exists_email_error", "error", verr, "user_id", user.GetID())
 		return nil, nil, verr
 	} else if exist {
 		return nil, nil, utils.ErrEmailAlreadyInUse
@@ -104,6 +112,8 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 	validation, err = us.repo.GetUserValidations(ctx, tx, user.GetID())
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
+			utils.SetSpanError(ctx, err)
+			slog.Error("email_change.request.read_validations_error", "error", err, "user_id", user.GetID())
 			return
 		}
 		validation = usermodel.NewValidation()
@@ -115,6 +125,8 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 
 	err = us.repo.UpdateUserValidations(ctx, tx, validation)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("email_change.request.update_validations_error", "error", err, "user_id", user.GetID())
 		return
 	}
 

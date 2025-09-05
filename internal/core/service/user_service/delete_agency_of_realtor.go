@@ -20,25 +20,30 @@ func (us *userService) DeleteAgencyOfRealtor(ctx context.Context, realtorID int6
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("user.delete_agency_of_realtor.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.tx_start_error", "error", err)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.delete_agency_of_realtor.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.delete_agency_of_realtor.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
 
 	err = us.deleteAgencyOfRealtor(ctx, tx, realtorID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.delete_relation_error", "error", err, "realtor_id", realtorID)
 		return
 	}
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("user.delete_agency_of_realtor.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -49,16 +54,22 @@ func (us *userService) deleteAgencyOfRealtor(ctx context.Context, tx *sql.Tx, re
 
 	agency, err := us.repo.GetAgencyOfRealtor(ctx, tx, realtorID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.get_agency_error", "error", err, "realtor_id", realtorID)
 		return
 	}
 
 	realtor, err := us.repo.GetUserByID(ctx, tx, realtorID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.get_realtor_error", "error", err, "realtor_id", realtorID)
 		return
 	}
 
 	_, err = us.repo.DeleteAgencyRealtorRelation(ctx, tx, agency.GetID(), realtor.GetID())
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.delete_relation_error", "error", err, "agency_id", agency.GetID(), "realtor_id", realtor.GetID())
 		return
 	}
 
@@ -73,12 +84,16 @@ func (us *userService) deleteAgencyOfRealtor(ctx context.Context, tx *sql.Tx, re
 
 	err = notificationService.SendNotification(ctx, emailRequest)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.send_notification_error", "error", err, "realtor_id", realtor.GetID(), "agency_id", agency.GetID())
 		return
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableRealtorAgency,
 		fmt.Sprintf("Apagado o relacionamento com a Imobiliária %s", agency.GetNickName()))
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_agency_of_realtor.audit_error", "error", err, "realtor_id", realtor.GetID(), "agency_id", agency.GetID())
 		return
 	}
 

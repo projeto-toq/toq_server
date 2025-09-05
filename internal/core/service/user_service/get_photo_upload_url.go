@@ -42,6 +42,7 @@ func (us *userService) GetPhotoUploadURL(ctx context.Context, objectName, conten
 
 	signedURL, err = us.cloudStorageService.GeneratePhotoUploadURL(userID, storagemodel.PhotoType(objectName), contentType)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
 		return "", err
 	}
 

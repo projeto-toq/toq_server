@@ -20,12 +20,14 @@ func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, rol
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("user.add_alternative_role.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				slog.Error("user.add_alternative_role.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		}
 	}()
@@ -38,6 +40,7 @@ func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, rol
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		slog.Error("user.add_alternative_role.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -49,13 +52,18 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	//verify if the user is on active status
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.add_alternative_role.repo_get_user_by_id_error", "user_id", userID, "err", err)
+		return utils.InternalError("Failed to get user")
 	}
 
 	// Check if user has active role
 	activeRole := user.GetActiveRole()
 	if activeRole == nil {
-		return utils.InternalError("Active role missing")
+		derr := utils.InternalError("Active role missing")
+		slog.Error("user.active_role.missing", "user_id", userID)
+		utils.SetSpanError(ctx, derr)
+		return derr
 	}
 
 	// Validate creci info for realtor role
@@ -66,26 +74,34 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	// Get role from permission service
 	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, roleSlug)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.add_alternative_role.permission_get_role_error", "user_id", userID, "role", string(roleSlug), "err", err)
+		return utils.InternalError("Failed to get role")
 	}
 
 	// Create user role using permission service (not active by default)
 	_, err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.add_alternative_role.permission_assign_role_error", "user_id", userID, "role_id", role.GetID(), "err", err)
+		return utils.InternalError("Failed to assign role to user")
 	}
 
 	// Handle realtor-specific setup
 	if roleSlug == permissionmodel.RoleSlugRealtor {
 		err = us.CreateUserFolder(ctx, user.GetID())
 		if err != nil {
-			return
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.add_alternative_role.create_user_folder_error", "user_id", user.GetID(), "err", err)
+			return utils.InternalError("Failed to create user folder")
 		}
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Criado papel alternativo")
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.add_alternative_role.audit_create_error", "table", string(globalmodel.TableUserRoles), "err", err)
+		return utils.InternalError("Failed to create audit record")
 	}
 
 	return

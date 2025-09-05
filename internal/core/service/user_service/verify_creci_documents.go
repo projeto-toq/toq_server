@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -55,7 +54,8 @@ func (us *userService) VerifyCreciDocuments(ctx context.Context) (err error) {
 			if gm := us.globalService.GetMetrics(); gm != nil {
 				gm.IncrementErrors("user_service", "creci_verify_error")
 			}
-			slog.ErrorContext(ctx, "failed to check document existence", "userID", userID, "doc", d, "error", e)
+			utils.SetSpanError(ctx, e)
+			slog.Error("user.verify_creci.object_exists_error", "user_id", userID, "doc", d, "error", e)
 			return utils.InternalError("Failed to check document existence")
 		}
 		if !exists {
@@ -75,24 +75,28 @@ func (us *userService) VerifyCreciDocuments(ctx context.Context) (err error) {
 	// Atualiza o status dentro de transação
 	tx, e := us.globalService.StartTransaction(ctx)
 	if e != nil {
-		slog.ErrorContext(ctx, "user.verify_creci.tx_start_error", "err", e)
+		utils.SetSpanError(ctx, e)
+		slog.Error("user.verify_creci.tx_start_error", "error", e)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				log.Printf("user.verify_creci.tx_rollback_error: %v", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.verify_creci.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
 
 	if e = us.repo.UpdateUserRoleStatusByUserID(ctx, userID, int(permissionmodel.StatusPendingManual)); e != nil {
-		slog.ErrorContext(ctx, "failed to set user status to PendingManual", "userID", userID, "error", e)
+		utils.SetSpanError(ctx, e)
+		slog.Error("user.verify_creci.update_status_error", "user_id", userID, "error", e)
 		err = utils.InternalError("Failed to set user status")
 		return
 	}
 	if e = us.globalService.CommitTransaction(ctx, tx); e != nil {
-		slog.ErrorContext(ctx, "failed to commit transaction for verify creci", "userID", userID, "error", e)
+		utils.SetSpanError(ctx, e)
+		slog.Error("user.verify_creci.tx_commit_error", "user_id", userID, "error", e)
 		err = utils.InternalError("Failed to commit transaction")
 		return
 	}

@@ -2,44 +2,54 @@ package userservices
 
 import (
 	"context"
+	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CleanOwnerPending(ctx context.Context, owner usermodel.UserInterface) (err error) {
+	ctx, spanEnd, terr := utils.GenerateTracer(ctx)
+	if terr != nil {
+		return utils.InternalError("Failed to generate tracer")
+	}
+	defer spanEnd()
 
 	offers, err := us.listingService.GetAllOffersByUser(ctx, owner.GetID())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.clean_owner_pending.get_offers_error", "owner_id", owner.GetID(), "err", err)
+		return utils.InternalError("Failed to get offers by user")
 	}
 	for _, offer := range offers {
-		err = us.listingService.RejectOffer(ctx, offer.ID())
-		if err != nil {
-			return
+		if err = us.listingService.RejectOffer(ctx, offer.ID()); err != nil {
+			return err
 		}
 	}
 
 	visits, err := us.listingService.GetAllVisitsByUser(ctx, owner.GetID())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.clean_owner_pending.get_visits_error", "owner_id", owner.GetID(), "err", err)
+		return utils.InternalError("Failed to get visits by user")
 	}
 	for _, visit := range visits {
-		err = us.listingService.RejectVisit(ctx, visit.ID())
-		if err != nil {
-			return
+		if err = us.listingService.RejectVisit(ctx, visit.ID()); err != nil {
+			return err
 		}
 	}
 
 	listings, err := us.listingService.GetAllListingsByUser(ctx, owner.GetID())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.clean_owner_pending.get_listings_error", "owner_id", owner.GetID(), "err", err)
+		return utils.InternalError("Failed to get listings by user")
 	}
 	for _, listing := range listings {
-		err = us.listingService.DeleteListing(ctx, listing.ID())
-		if err != nil {
-			return
+		if err = us.listingService.DeleteListing(ctx, listing.ID()); err != nil {
+			return err
 		}
 	}
 
-	return
+	return nil
 }

@@ -49,7 +49,7 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 	//assina o refresh token com a senha
 	refreshToken, err := token.SignedString([]byte(secret))
 	if err != nil {
-		slog.Error("error trying to generate jwt refresh token", "error", err)
+		slog.Error("user.create_refresh_token.sign_error", "err", err)
 		return utils.InternalError("Failed to sign refresh token")
 	}
 

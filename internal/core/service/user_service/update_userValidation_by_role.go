@@ -34,6 +34,8 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 		if derr, ok := aerr.(utils.DomainError); ok {
 			return false, utils.WrapDomainErrorWithSource(derr)
 		}
+		utils.SetSpanError(ctx, aerr)
+		slog.Error("user.validation.get_active_role_error", "error", aerr, "user_id", userID)
 		return false, utils.InternalError("Failed to get active user role")
 	}
 	if activeRole == nil || activeRole.GetRole() == nil {
@@ -51,6 +53,8 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 			if derr, ok := err.(utils.DomainError); ok {
 				return false, utils.WrapDomainErrorWithSource(derr)
 			}
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.validation.update_status_error", "stage", "email_verified", "error", err, "user_id", userID)
 			return false, utils.InternalError("Failed to update user status")
 		}
 		generateTokens = true
@@ -61,6 +65,8 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 			if derr, ok := err.(utils.DomainError); ok {
 				return false, utils.WrapDomainErrorWithSource(derr)
 			}
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.validation.update_status_error", "stage", "phone_verified", "error", err, "user_id", userID)
 			return false, utils.InternalError("Failed to update user status")
 		}
 		generateTokens = false

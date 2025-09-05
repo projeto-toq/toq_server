@@ -18,24 +18,29 @@ func (us *userService) GetUsers(ctx context.Context) (users []usermodel.UserInte
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.get_users.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("user.get_users.tx_start_error", "error", txErr)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.get_users.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.get_users.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
 
 	users, err = us.repo.GetUsers(ctx, tx)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_users.read_users_error", "error", err)
+		return nil, utils.MapRepositoryError(err, "Users not found")
 	}
 
 	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
-		slog.Error("user.get_users.tx_commit_error", "err", cmErr)
+		utils.SetSpanError(ctx, cmErr)
+		slog.Error("user.get_users.tx_commit_error", "error", cmErr)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 

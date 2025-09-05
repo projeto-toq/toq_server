@@ -9,6 +9,7 @@ import (
 	derrors "github.com/giulio-alfieri/toq_server/internal/core/derrors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // decideNextStatusAfterContactChange decides the next status after a successful email/phone change.
@@ -65,7 +66,8 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 			emailPending, phonePending = false, false
 		} else {
 			// Outros erros são infraestrutura
-			slog.Error("user.status_transition.stage_error", "stage", "get_validations", "err", err)
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.status_transition.stage_error", "stage", "get_validations", "error", err)
 			return 0, false, err
 		}
 	} else {
@@ -90,11 +92,13 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, false, derrors.ErrUserActiveRoleMissing
 		}
-		slog.Error("user.status_transition.stage_error", "stage", "update_role_status", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.status_transition.stage_error", "stage", "update_role_status", "error", err)
 		return 0, false, err // infra
 	}
 	if err := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Atualização de status após alteração de contato"); err != nil {
-		slog.Error("user.status_transition.stage_error", "stage", "audit", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.status_transition.stage_error", "stage", "audit", "error", err)
 		return 0, false, err // infra
 	}
 

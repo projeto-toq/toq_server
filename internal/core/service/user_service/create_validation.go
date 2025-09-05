@@ -22,8 +22,9 @@ func (us *userService) CreateUserValidations(ctx context.Context, tx *sql.Tx, us
 
 	err = us.repo.UpdateUserValidations(ctx, tx, validation)
 	if err != nil {
-		return
+		// Método interno: infra  propagar com mapeamento alto-ndvel feito pelo chamador
+		return err
 	}
 
-	return
+	return nil
 }

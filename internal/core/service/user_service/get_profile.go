@@ -26,28 +26,32 @@ func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInter
 	// Iniciar uma transação somente leitura para otimizar o fluxo de leitura
 	tx, txErr := us.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.get_profile.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("user.get_profile.tx_start_error", "error", txErr)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.get_profile.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.get_profile.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
 
 	user, err = us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
-		// Translate repository errors into DomainError for adapter serialization
 		if err == sql.ErrNoRows {
 			return nil, utils.NotFoundError("User")
 		}
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_profile.read_user_error", "error", err, "user_id", userID)
 		return nil, utils.InternalError("Failed to get user by ID")
 	}
 
 	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
-		slog.Error("user.get_profile.tx_commit_error", "err", cmErr)
+		utils.SetSpanError(ctx, cmErr)
+		slog.Error("user.get_profile.tx_commit_error", "error", cmErr)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 

@@ -19,16 +19,12 @@ import (
 )
 
 func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error) {
-	_, spanEnd, err := utils.GenerateTracer(ctx)
-	if err != nil {
-		return
-	}
-	defer spanEnd()
+	// Método interno: não iniciar novo tracer; reutilizar ctx
 
 	tokens = usermodel.Tokens{}
 
 	if tx == nil {
-		slog.Warn("Transaction is nil on generate tokens")
+		slog.Error("user.create_tokens.tx_nil")
 		return tokens, utils.InternalError("Transaction is nil")
 	}
 
@@ -38,7 +34,8 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 
 	accessToken, err := us.CreateAccessToken(secret, user, expires)
 	if err != nil {
-		return
+		// CreateAccessToken retorna DomainError em ausência de active role; apenas propague
+		return tokens, err
 	}
 	tokens.AccessToken = accessToken
 
@@ -86,7 +83,8 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 		}
 		// DeviceID placeholder: can be provided via metadata in future
 		if err := us.sessionRepo.CreateSession(ctx, tx, s); err != nil {
-			slog.Warn("failed to persist session", "err", err)
+			// Persistência de sessão é infra; logar WARN e seguir (não falha emissão de tokens)
+			slog.Warn("user.create_tokens.persist_session_failed", "err", err)
 		} else {
 			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionCreated, UserID: s.GetUserID(), SessionID: ptrInt64(s.GetID()), DeviceID: s.GetDeviceID()})
 		}

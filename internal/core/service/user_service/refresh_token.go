@@ -37,13 +37,15 @@ func (us *userService) RefreshTokens(ctx context.Context, refresh string) (token
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("auth.refresh.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("auth.refresh.tx_start_error", "error", txErr)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("auth.refresh.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("auth.refresh.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -54,7 +56,8 @@ func (us *userService) RefreshTokens(ctx context.Context, refresh string) (token
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("auth.refresh.tx_commit_error", "err", commitErr)
+		utils.SetSpanError(ctx, commitErr)
+		slog.Error("auth.refresh.tx_commit_error", "error", commitErr)
 		err = utils.InternalError("Failed to commit transaction")
 		return
 	}
@@ -138,12 +141,12 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Marca a sessão anterior como rotacionada (rotated_at), evitando reutilização do refresh token antigo
 	// Comentário em português: esta marcação permite detectar "reuse" com base em rotated_at != nil
 	if err = us.sessionRepo.MarkSessionRotated(ctx, tx, session.GetID()); err != nil {
-		slog.Warn("auth.refresh.mark_rotated_failed", "session_id", session.GetID(), "err", err)
+		slog.Warn("auth.refresh.mark_rotated_failed", "session_id", session.GetID(), "error", err)
 	}
 
 	// Atualiza metadados da sessão antiga (contador e last_refresh_at) para fins de auditoria
 	if err = us.sessionRepo.UpdateSessionRotation(ctx, tx, session.GetID(), session.GetRotationCounter(), time.Now().UTC()); err != nil {
-		slog.Warn("auth.refresh.update_rotation_failed", "session_id", session.GetID(), "err", err)
+		slog.Warn("auth.refresh.update_rotation_failed", "session_id", session.GetID(), "error", err)
 	} else {
 		// Publish SessionRotated for previous session
 		sid := session.GetID()

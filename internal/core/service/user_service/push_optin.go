@@ -21,13 +21,15 @@ func (us *userService) PushOptIn(ctx context.Context, userID int64) (err error) 
 	// Start transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("user.push_optin.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.push_optin.tx_start_error", "error", err)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.push_optin.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.push_optin.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -39,7 +41,8 @@ func (us *userService) PushOptIn(ctx context.Context, userID int64) (err error) 
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("user.push_optin.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.push_optin.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -49,16 +52,22 @@ func (us *userService) PushOptIn(ctx context.Context, userID int64) (err error) 
 func (us *userService) pushOptIn(ctx context.Context, tx *sql.Tx, userID int64) (err error) {
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.push_optin.read_user_error", "error", err, "user_id", userID)
 		return
 	}
 
 	user.SetOptStatus(true)
 
 	if err = us.repo.UpdateUserByID(ctx, tx, user); err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.push_optin.update_user_error", "error", err, "user_id", userID)
 		return
 	}
 
 	if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário aceitou receber notificações"); err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.push_optin.audit_error", "error", err, "user_id", userID)
 		return
 	}
 

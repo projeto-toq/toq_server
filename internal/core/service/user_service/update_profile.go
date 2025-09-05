@@ -38,13 +38,15 @@ func (us *userService) UpdateProfile(ctx context.Context, in UpdateProfileInput)
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.update_profile.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("user.update_profile.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.update_profile.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.update_profile.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -55,7 +57,8 @@ func (us *userService) UpdateProfile(ctx context.Context, in UpdateProfileInput)
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("user.update_profile.tx_commit_error", "err", commitErr)
+		utils.SetSpanError(ctx, commitErr)
+		slog.Error("user.update_profile.tx_commit_error", "error", commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -73,6 +76,8 @@ func (us *userService) updateProfile(
 		if err == sql.ErrNoRows {
 			return utils.NotFoundError("User")
 		}
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.update_profile.read_user_error", "error", err, "user_id", in.UserID)
 		return utils.InternalError("Failed to get user by ID")
 	}
 
@@ -116,11 +121,15 @@ func (us *userService) updateProfile(
 
 	err = us.repo.UpdateUserByID(ctx, tx, current)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.update_profile.update_user_error", "error", err, "user_id", in.UserID)
 		return utils.InternalError("Failed to update user")
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário atualizou o perfil")
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.update_profile.audit_error", "error", err, "user_id", in.UserID)
 		return utils.InternalError("Failed to create audit entry")
 	}
 

@@ -24,13 +24,15 @@ func (us *userService) UpdateOptStatus(ctx context.Context, opt bool) (err error
 
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("user.update_opt_status.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.update_opt_status.tx_start_error", "error", err)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.update_opt_status.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.update_opt_status.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -40,7 +42,8 @@ func (us *userService) UpdateOptStatus(ctx context.Context, opt bool) (err error
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-		slog.Error("user.update_opt_status.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.update_opt_status.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 	return
@@ -50,34 +53,45 @@ func (us *userService) updateOptStatus(ctx context.Context, tx *sql.Tx, userID i
 	// Busca usuário atual para aplicar idempotência
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.update_opt_status.read_user_error", "error", err, "user_id", userID)
 		return
 	}
 
 	// Se já está no estado desejado, não faz nada (idempotente)
 	if user.IsOptStatus() == opt {
+		slog.Info("user.update_opt_status.idempotent", "user_id", userID, "opt", opt)
 		return nil
 	}
 
 	// Transição para opt-out: remover tokens antes de persistir
 	if !opt {
 		if err = us.repo.RemoveAllDeviceTokens(ctx, tx, userID); err != nil {
+			slog.Warn("user.update_opt_status.device_tokens_delete_failed", "user_id", userID, "error", err)
 			return
 		}
+		slog.Info("user.update_opt_status.device_tokens_deleted", "user_id", userID)
 	}
 
 	// Atualiza status e persiste
 	user.SetOptStatus(opt)
 	if err = us.repo.UpdateUserByID(ctx, tx, user); err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.update_opt_status.update_user_error", "error", err, "user_id", userID)
 		return
 	}
 
 	// Auditoria conforme novo estado
 	if opt {
 		if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário aceitou receber notificações"); err != nil {
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.update_opt_status.audit_error", "error", err, "user_id", userID, "opt", opt)
 			return
 		}
 	} else {
 		if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário rejeitou receber notificações"); err != nil {
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.update_opt_status.audit_error", "error", err, "user_id", userID, "opt", opt)
 			return
 		}
 	}

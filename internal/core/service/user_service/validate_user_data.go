@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -17,6 +18,8 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	//verify if user already exists
 	exist, err := us.repo.VerifyUserDuplicity(ctx, tx, user)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.validate_user_data.duplicity_check_error", "error", err)
 		return
 	}
 
@@ -37,6 +40,8 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID()) // Validation via global service integration planned
 		if err1 != nil {
 			// Propaga erro do adaptador (serviço externo ou dado inválido)
+			utils.SetSpanError(ctx, err1)
+			slog.Error("user.validate_user_data.cnpj_error", "error", err1)
 			err = err1
 			return
 		}
@@ -47,6 +52,8 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		cpf, err1 := us.cpf.GetCpf(ctx, user.GetNationalID(), user.GetBornAt())
 		if err1 != nil {
 			// Propaga erro do adaptador (serviço externo ou dado inválido)
+			utils.SetSpanError(ctx, err1)
+			slog.Error("user.validate_user_data.cpf_error", "error", err1)
 			err = err1
 			return
 		}
@@ -57,6 +64,8 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	//validate the user zipcode
 	cep, err := us.globalService.GetCEP(ctx, user.GetZipCode())
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.validate_user_data.cep_error", "error", err)
 		return utils.InternalError("Failed to validate zipcode")
 	}
 

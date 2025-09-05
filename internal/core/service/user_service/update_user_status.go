@@ -8,7 +8,6 @@ import (
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) updateUserStatus(
@@ -22,11 +21,7 @@ func (us *userService) updateUserStatus(
 	notification globalmodel.NotificationType,
 	err error) {
 
-	_, spanEnd, err := utils.GenerateTracer(ctx)
-	if err != nil {
-		return
-	}
-	defer spanEnd()
+	// No tracer here: private helper should not create spans; caller's span will capture infra errors.
 
 	switch actonFinished {
 	case usermodel.ActionFinishedCreated: //after user is created

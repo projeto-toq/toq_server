@@ -2,23 +2,33 @@ package userservices
 
 import (
 	"context"
+	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (us *userService) CleanAgencyPending(ctx context.Context, agency usermodel.UserInterface) (err error) {
+	ctx, spanEnd, terr := utils.GenerateTracer(ctx)
+	if terr != nil {
+		return utils.InternalError("Failed to generate tracer")
+	}
+	defer spanEnd()
 
 	realtors, err := us.GetRealtorsByAgency(ctx, agency.GetID())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.clean_agency_pending.get_realtors_error", "agency_id", agency.GetID(), "err", err)
+		return utils.InternalError("Failed to get realtors by agency")
 	}
 
 	for _, realtor := range realtors {
 		err = us.DeleteRealtorOfAgency(ctx, agency.GetID(), realtor.GetID())
 		if err != nil {
-			return
+			// Erros aqui pertencem ao domínio/listing/permission; preferimos propagar sem marcar span como erro, a menos que seja infra em cascata
+			return err
 		}
 	}
 
-	return
+	return nil
 }

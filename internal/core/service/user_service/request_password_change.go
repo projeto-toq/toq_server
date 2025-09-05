@@ -25,13 +25,15 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("auth.request_password_change.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("auth.request_password_change.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("auth.request_password_change.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("auth.request_password_change.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -47,7 +49,8 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 
 	// Commit before notify
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("auth.request_password_change.tx_commit_error", "err", commitErr)
+		utils.SetSpanError(ctx, commitErr)
+		slog.Error("auth.request_password_change.tx_commit_error", "error", commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -62,7 +65,8 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 
 	if notifyErr := notificationService.SendNotification(ctx, emailRequest); notifyErr != nil {
 		// Do not impact main operation
-		slog.Error("Failed to send password reset notification", "userID", user.GetID(), "error", notifyErr)
+		utils.SetSpanError(ctx, notifyErr)
+		slog.Error("auth.request_password_change.notification_error", "user_id", user.GetID(), "error", notifyErr)
 		return nil
 	}
 	return nil

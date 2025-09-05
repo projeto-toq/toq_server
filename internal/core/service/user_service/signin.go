@@ -49,13 +49,15 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("auth.signin.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("auth.signin.tx_start_error", "error", txErr)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("auth.signin.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("auth.signin.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -67,7 +69,8 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 
 	// Commit the transaction
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("auth.signin.tx_commit_error", "err", commitErr)
+		utils.SetSpanError(ctx, commitErr)
+		slog.Error("auth.signin.tx_commit_error", "error", commitErr)
 		err = utils.InternalError("Failed to commit transaction")
 		return
 	}
@@ -80,12 +83,12 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			// Log da tentativa com nationalID inexistente (sem expor se existe ou não)
-			us.securityLogger.LogInvalidCredentials(ctx, nationalID, ipAddress, userAgent)
-			slog.Warn("Signin attempt with non-existent nationalID", "nationalID", nationalID)
+			slog.Debug("auth.signin.invalid_credentials", "security", true)
 			err = utils.AuthenticationError("Invalid credentials")
 			return
 		}
-		slog.Error("Failed to get user by national ID", "nationalID", nationalID, "error", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("auth.signin.get_user_by_nid_error", "national_id", nationalID, "error", err)
 		err = utils.InternalError("Failed to validate credentials")
 		return
 	}
@@ -95,15 +98,15 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	// Verificação única de bloqueio temporário ANTES de qualquer validação
 	isBlocked, err := us.permissionService.IsUserTempBlockedWithTx(ctx, tx, userID)
 	if err != nil {
-		slog.Error("Failed to check if user is temporarily blocked", "userID", userID, "error", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("auth.signin.check_temp_block_error", "user_id", userID, "error", err)
 		err = utils.InternalError("Failed to validate user status")
 		return
 	}
 
 	if isBlocked {
 		// Log do bloqueio
-		us.securityLogger.LogSigninAttempt(ctx, nationalID, &userID, false, &[]usermodel.SigninErrorType{usermodel.SigninErrorUserBlocked}[0], ipAddress, userAgent)
-		slog.Warn("Signin attempt from temporarily blocked user", "userID", userID, "nationalID", nationalID)
+		slog.Warn("auth.signin.user_blocked", "security", true, "user_id", userID)
 		err = utils.UserBlockedError("Account temporarily blocked due to too many failed attempts")
 		return
 	}
@@ -111,14 +114,14 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	// Busca a role ativa via Permission Service (há apenas uma ativa por vez)
 	activeRole, err := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if err != nil {
-		slog.Error("Failed to get active user role", "userID", userID, "error", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("auth.signin.get_active_role_error", "user_id", userID, "error", err)
 		err = utils.InternalError("Failed to validate user permissions")
 		return
 	}
 	if activeRole == nil {
 		// Log da tentativa sem role ativa
-		us.securityLogger.LogNoActiveRoles(ctx, userID, nationalID, ipAddress, userAgent)
-		slog.Warn("User has no active role", "userID", userID)
+		slog.Warn("auth.signin.no_active_role", "security", true, "user_id", userID)
 		err = utils.AuthorizationError("No active user roles")
 		return
 	}
@@ -132,8 +135,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		}
 
 		// Log da tentativa com credenciais inválidas
-		us.securityLogger.LogSigninAttempt(ctx, nationalID, &userID, false, &[]usermodel.SigninErrorType{usermodel.SigninErrorInvalidCredentials}[0], ipAddress, userAgent)
-		slog.Warn("Invalid password attempt", "userID", userID, "nationalID", nationalID)
+		slog.Debug("auth.signin.invalid_credentials", "security", true, "user_id", userID)
 		err = utils.AuthenticationError("Invalid credentials")
 		return
 	}
@@ -142,7 +144,8 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	_, err = us.repo.DeleteWrongSignInByUserID(ctx, tx, userID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
-			slog.Error("Failed to delete wrong signin record", "userID", userID, "error", err)
+			utils.SetSpanError(ctx, err)
+			slog.Error("auth.signin.delete_wrong_signin_error", "user_id", userID, "error", err)
 			err = utils.InternalError("Failed to clear signin attempts")
 			return
 		}
@@ -152,7 +155,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	err = us.clearTemporaryBlockOnSuccess(ctx, tx, userID)
 	if err != nil {
 		// Não falha o login por problema de desbloqueio, apenas loga
-		slog.Warn("Failed to clear temporary block after successful login", "userID", userID, "error", err)
+		slog.Warn("auth.signin.clear_temp_block_failed", "user_id", userID, "error", err)
 	}
 
 	// Adiciona device token se fornecido (preferindo associação por deviceID quando disponível)
@@ -160,12 +163,12 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		if did, ok := ctx.Value(globalmodel.DeviceIDKey).(string); ok && did != "" {
 			slog.Debug("auth.signin.device_token.add_for_device", "device_id", did, "user_id", userID)
 			if errAdd := us.repo.AddTokenForDevice(ctx, tx, userID, did, deviceToken, nil); errAdd != nil {
-				slog.Warn("signIn: failed to add device token for device", "userID", userID, "deviceID", did, "err", errAdd)
+				slog.Warn("auth.signin.device_token_add_for_device_failed", "user_id", userID, "device_id", did, "error", errAdd)
 			}
 		} else {
 			slog.Debug("auth.signin.device_token.add_user_only", "user_id", userID)
 			if errAdd := us.repo.AddDeviceToken(ctx, tx, userID, deviceToken, nil); errAdd != nil {
-				slog.Warn("signIn: failed to add device token", "userID", userID, "err", errAdd)
+				slog.Warn("auth.signin.device_token_add_failed", "user_id", userID, "error", errAdd)
 			}
 		}
 	}
@@ -177,8 +180,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	}
 
 	// Log do sucesso no signin
-	us.securityLogger.LogSigninAttempt(ctx, nationalID, &userID, true, nil, ipAddress, userAgent)
-	slog.Info("User signed in successfully", "userID", userID)
+	slog.Info("auth.signin.success", "security", true, "user_id", userID)
 
 	// Note: Last activity é rastreada automaticamente pelo AuthInterceptor → Redis → Batch worker
 	// Não é necessário chamar UpdateUserLastActivity diretamente
@@ -228,10 +230,7 @@ func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user 
 		}
 
 		// Log do bloqueio
-		us.securityLogger.LogUserBlocked(ctx, userID, "Too many failed signin attempts", ipAddress, userAgent)
-		slog.Warn("User temporarily blocked due to too many failed signin attempts",
-			"userID", userID,
-			"attempts", wrongSignin.GetFailedAttempts())
+		slog.Warn("auth.signin.user_blocked", "security", true, "user_id", userID, "attempts", wrongSignin.GetFailedAttempts())
 	}
 
 	return nil
@@ -251,8 +250,7 @@ func (us *userService) clearTemporaryBlockOnSuccess(ctx context.Context, tx *sql
 		}
 
 		// Log do desbloqueio
-		us.securityLogger.LogUserUnblocked(ctx, userID, "Successful login after temporary block")
-		slog.Info("User unblocked after successful login", "userID", userID)
+		slog.Info("auth.signin.user_unblocked", "security", true, "user_id", userID)
 	}
 
 	return nil

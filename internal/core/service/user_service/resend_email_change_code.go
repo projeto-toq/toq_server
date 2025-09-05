@@ -29,13 +29,15 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("email_change.resend.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("email_change.resend.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("email_change.resend.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("email_change.resend.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -47,7 +49,8 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-		slog.Error("email_change.resend.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("email_change.resend.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -60,7 +63,8 @@ func (us *userService) ResendEmailChangeCode(ctx context.Context) (err error) {
 		Body:    "Seu código de validação para alteração de email é: " + code,
 	}
 	if notifyErr := notificationService.SendNotification(ctx, emailRequest); notifyErr != nil {
-		slog.Error("email_change.resend.notification_error", "userID", userID, "err", notifyErr)
+		utils.SetSpanError(ctx, notifyErr)
+		slog.Error("email_change.resend.notification_error", "user_id", userID, "error", notifyErr)
 	}
 
 	return
@@ -74,6 +78,8 @@ func (us *userService) resendEmailChangeCode(ctx context.Context, tx *sql.Tx, us
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", "", utils.ErrEmailChangeNotPending
 		}
+		utils.SetSpanError(ctx, err)
+		slog.Error("email_change.resend.read_validations_error", "error", err, "user_id", userID)
 		return "", "", err
 	}
 
@@ -94,6 +100,8 @@ func (us *userService) resendEmailChangeCode(ctx context.Context, tx *sql.Tx, us
 
 	// Verificar unicidade global (outros usuários não podem ter este email)
 	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, destEmail, userID); verr != nil {
+		utils.SetSpanError(ctx, verr)
+		slog.Error("email_change.resend.exists_email_error", "error", verr, "user_id", userID)
 		return "", "", verr
 	} else if exist {
 		return "", "", utils.ErrEmailAlreadyInUse

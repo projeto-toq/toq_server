@@ -47,13 +47,15 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken st
 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("auth.signout.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("auth.signout.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("auth.signout.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("auth.signout.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -65,7 +67,8 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken st
 
 	// Commit the transaction
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("auth.signout.tx_commit_error", "err", commitErr)
+		utils.SetSpanError(ctx, commitErr)
+		slog.Error("auth.signout.tx_commit_error", "error", commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 	return
@@ -89,7 +92,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 			// Best-effort fetch active session
 			if session, sessErr := us.sessionRepo.GetActiveSessionByRefreshHash(ctx, tx, hash); sessErr == nil {
 				if revokeErr := us.sessionRepo.RevokeSession(ctx, tx, session.GetID()); revokeErr != nil {
-					slog.Warn("auth.signout.single.revoke_failed", "user_id", userID, "session_id", session.GetID(), "err", revokeErr)
+					slog.Warn("auth.signout.single.revoke_failed", "user_id", userID, "session_id", session.GetID(), "error", revokeErr)
 				}
 				// Publish SessionsRevoked (single)
 				us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID, DeviceID: session.GetDeviceID()})
@@ -101,7 +104,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		if deviceToken != "" {
 			// Prefer explicit token removal if provided
 			if errTok := us.repo.RemoveDeviceToken(ctx, tx, userID, deviceToken); errTok != nil {
-				slog.Warn("auth.signout.single.device_token_delete_failed", "user_id", userID, "err", errTok)
+				slog.Warn("auth.signout.single.device_token_delete_failed", "user_id", userID, "error", errTok)
 				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "token", "error").Inc()
 			} else {
 				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "token", "success").Inc()
@@ -110,7 +113,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 			// If deviceID is available in context, prune tokens for this device
 			if did, ok := ctx.Value(globalmodel.DeviceIDKey).(string); ok && did != "" {
 				if errTok := us.repo.RemoveTokensByDeviceID(ctx, tx, userID, did); errTok != nil {
-					slog.Warn("auth.signout.single.device_tokens_by_device_delete_failed", "user_id", userID, "device_id", did, "err", errTok)
+					slog.Warn("auth.signout.single.device_tokens_by_device_delete_failed", "user_id", userID, "device_id", did, "error", errTok)
 					metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "error").Inc()
 				} else {
 					metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "success").Inc()
@@ -123,7 +126,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		// Global: revoke all sessions
 		if us.sessionRepo != nil {
 			if revokeAllErr := us.sessionRepo.RevokeSessionsByUserID(ctx, tx, userID); revokeAllErr != nil {
-				slog.Warn("auth.signout.global.revoke_failed", "user_id", userID, "err", revokeAllErr)
+				slog.Warn("auth.signout.global.revoke_failed", "user_id", userID, "error", revokeAllErr)
 			} else {
 				metricSignoutSessionsRevoked.WithLabelValues(mode).Inc()
 			}
@@ -132,7 +135,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		}
 		// Remove all device tokens via repository
 		if errAll := us.repo.RemoveAllDeviceTokens(ctx, tx, userID); errAll != nil {
-			slog.Warn("auth.signout.global.device_tokens_delete_failed", "user_id", userID, "err", errAll)
+			slog.Warn("auth.signout.global.device_tokens_delete_failed", "user_id", userID, "error", errAll)
 			metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "all", "error").Inc()
 		} else {
 			metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "all", "success").Inc()

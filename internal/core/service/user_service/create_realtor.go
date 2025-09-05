@@ -22,12 +22,14 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("user.create_realtor.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				slog.Error("user.create_realtor.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		}
 	}()
@@ -40,6 +42,7 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		slog.Error("user.create_realtor.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 

@@ -18,13 +18,15 @@ func (us *userService) GetOnboardingStatus(ctx context.Context, userID int64) (U
 	// Start transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("user.get_onboarding_status.tx_start_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_onboarding_status.tx_start_error", "error", err)
 		return "", "", utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.get_onboarding_status.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.get_onboarding_status.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -36,7 +38,8 @@ func (us *userService) GetOnboardingStatus(ctx context.Context, userID int64) (U
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("user.get_onboarding_status.tx_commit_error", "err", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_onboarding_status.tx_commit_error", "error", err)
 		return "", "", utils.InternalError("Failed to commit transaction")
 	}
 
@@ -47,6 +50,8 @@ func (us *userService) getOnboardingStatus(ctx context.Context, tx *sql.Tx, user
 
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_onboarding_status.read_user_error", "error", err, "user_id", userID)
 		return
 	}
 

@@ -23,13 +23,15 @@ func (us *userService) InviteRealtor(ctx context.Context, phoneNumber string) (e
 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.invite_realtor.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		slog.Error("user.invite_realtor.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.invite_realtor.tx_rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("user.invite_realtor.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -40,7 +42,8 @@ func (us *userService) InviteRealtor(ctx context.Context, phoneNumber string) (e
 	}
 
 	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
-		slog.Error("user.invite_realtor.tx_commit_error", "err", cmErr)
+		utils.SetSpanError(ctx, cmErr)
+		slog.Error("user.invite_realtor.tx_commit_error", "error", cmErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -54,6 +57,8 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 	//recovery the agency inviting the realtor
 	agency, err := us.repo.GetUserByID(ctx, tx, infos.ID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.read_agency_error", "error", err, "agency_id", infos.ID)
 		return
 	}
 
@@ -61,12 +66,16 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 	//return error is is already linked
 	realtor, isOnPlataform, err := us.isOnPlataform(ctx, tx, phoneNumber)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.check_platform_error", "error", err, "phone", phoneNumber)
 		return
 	}
 
 	//verify if the realtor is already invited
 	invite, isInvited, err := us.isInvited(ctx, tx, phoneNumber)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.check_invited_error", "error", err, "phone", phoneNumber)
 		return
 	}
 
@@ -88,6 +97,8 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 
 		err = notificationService.SendNotification(ctx, pushRequest)
 		if err != nil {
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.invite_realtor.send_push_error", "error", err)
 			return err
 		}
 
@@ -122,6 +133,8 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 	//update the user status
 	err = us.repo.UpdateUserByID(ctx, tx, realtor)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.update_realtor_error", "error", err, "realtor_id", realtor.GetID())
 		return
 	}
 
@@ -135,6 +148,8 @@ func (us *userService) isOnPlataform(ctx context.Context, tx *sql.Tx, phoneNumbe
 		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.read_realtor_by_phone_error", "error", err, "phone", phoneNumber)
 	}
 	if realtor != nil {
 		//verify if the realtor is already linked to an agency
@@ -154,6 +169,8 @@ func (us *userService) isAlreadyLinked(ctx context.Context, tx *sql.Tx, realtorI
 		if errors.Is(err, sql.ErrNoRows) {
 			return
 		}
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.read_agency_of_realtor_error", "error", err, "realtor_id", realtorID)
 		return nil
 	}
 	return utils.ConflictError("Realtor already linked to an agency")
@@ -176,6 +193,8 @@ func (us *userService) updateInvite(ctx context.Context, tx *sql.Tx, invite user
 	invite.SetAgencyID(agency.GetID())
 	err = us.repo.UpdateAgencyInviteByID(ctx, tx, invite)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.update_invite_error", "error", err, "invite_id", invite.GetID())
 		return
 	}
 
@@ -193,6 +212,8 @@ func (us *userService) sendSMStoNewRealtor(ctx context.Context, phoneNumber stri
 
 	err = notificationService.SendNotification(ctx, smsRequest)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.send_sms_error", "error", err)
 		return
 	}
 	return
@@ -201,6 +222,8 @@ func (us *userService) sendSMStoNewRealtor(ctx context.Context, phoneNumber stri
 func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, phoneNumber string, realtor usermodel.UserInterface, push bool) (err error) {
 	err = us.repo.CreateAgencyInvite(ctx, tx, agency, phoneNumber)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.create_invite_error", "error", err)
 		return
 	}
 	// Converter RoleInterface para RoleSlug
@@ -225,6 +248,8 @@ func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx
 
 		err = notificationService.SendNotification(ctx, pushRequest)
 		if err != nil {
+			utils.SetSpanError(ctx, err)
+			slog.Error("user.invite_realtor.send_push_error", "error", err)
 			return err
 		}
 	} else {
@@ -237,6 +262,8 @@ func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableRealtorAgency,
 		fmt.Sprintf("Criado o convite de relacionamento com o Corretor %s", realtor.GetNickName()))
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.invite_realtor.audit_error", "error", err)
 		return
 	}
 

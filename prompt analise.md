@@ -4,12 +4,12 @@ Toda a interação deve ser em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Necessário implementar o novo sistema de logging e tracing nos serviços de user_service.
-- Resultado esperado (alto nível): Logs e traces implementados corretamente em user_service, seguindo as práticas recomendadas do projeto.
+- Título curto: Aplicar o plano de padronização de tracing/logging nos serviços do permission_service.
+- Resultado esperado (alto nível): Estrutura mais simples, menos verbosa, seguindo práticas recomendadas.
 
 ## 2) Contexto do Projeto
 - Módulo/área: user_services
-- Problema/hipótese atual: O método anterior mascarava erros, era verboso e não seguia as práticas recomendadas.
+- Problema/hipótese atual: O método atual complica o processo simples de logging, é verboso e não seguia as práticas recomendadas.
 - Impacto: Dificuldade em identificar problemas, aumento do tempo de resolução de incidentes.
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`
