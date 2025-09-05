@@ -25,18 +25,21 @@ func (p *permissionServiceImpl) GetUserPermissions(ctx context.Context, userID i
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("permission.user.permissions.tx_start_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 
 	permissions, err := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
 	if err != nil {
 		slog.Error("permission.user.permissions.db_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 
 	// Commit the transaction
 	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
 		slog.Error("permission.user.permissions.tx_commit_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 
@@ -53,6 +56,7 @@ func (p *permissionServiceImpl) GetUserPermissionsWithTx(ctx context.Context, tx
 	permissions, err := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
 	if err != nil {
 		slog.Error("permission.user.permissions.db_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 

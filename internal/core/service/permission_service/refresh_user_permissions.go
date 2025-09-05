@@ -27,6 +27,7 @@ func (p *permissionServiceImpl) RefreshUserPermissions(ctx context.Context, user
 	_, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
 		slog.Error("permission.permissions.refresh.db_or_cache_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 

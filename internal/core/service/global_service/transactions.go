@@ -11,14 +11,15 @@ import (
 func (gs *globalService) StartTransaction(ctx context.Context) (tx *sql.Tx, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return nil, utils.InternalError("")
 	}
 	defer spanEnd()
 
 	tx, err = gs.globalRepo.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("Error starting transaction", "error", err)
-		return nil, utils.ErrInternalServer
+		utils.SetSpanError(ctx, err)
+		slog.Error("global.tx_start_error", "err", err)
+		return nil, utils.InternalError("")
 	}
 
 	return
@@ -29,14 +30,15 @@ func (gs *globalService) StartTransaction(ctx context.Context) (tx *sql.Tx, err 
 func (gs *globalService) StartReadOnlyTransaction(ctx context.Context) (tx *sql.Tx, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return nil, utils.InternalError("")
 	}
 	defer spanEnd()
 
 	tx, err = gs.globalRepo.StartReadOnlyTransaction(ctx)
 	if err != nil {
-		slog.Error("Error starting read-only transaction", "error", err)
-		return nil, utils.ErrInternalServer
+		utils.SetSpanError(ctx, err)
+		slog.Error("global.tx_start_readonly_error", "err", err)
+		return nil, utils.InternalError("")
 	}
 
 	return
@@ -45,14 +47,15 @@ func (gs *globalService) StartReadOnlyTransaction(ctx context.Context) (tx *sql.
 func (gs *globalService) RollbackTransaction(ctx context.Context, tx *sql.Tx) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("")
 	}
 	defer spanEnd()
 
 	err = gs.globalRepo.RollbackTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("Error rolling back transaction", "error", err)
-		return utils.ErrInternalServer
+		utils.SetSpanError(ctx, err)
+		slog.Error("global.tx_rollback_error", "err", err)
+		return utils.InternalError("")
 	}
 
 	return
@@ -61,14 +64,15 @@ func (gs *globalService) RollbackTransaction(ctx context.Context, tx *sql.Tx) (e
 func (gs *globalService) CommitTransaction(ctx context.Context, tx *sql.Tx) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("")
 	}
 	defer spanEnd()
 
 	err = gs.globalRepo.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("Error committing transaction", "error", err)
-		return utils.ErrInternalServer
+		utils.SetSpanError(ctx, err)
+		slog.Error("global.tx_commit_error", "err", err)
+		return utils.InternalError("")
 	}
 
 	return

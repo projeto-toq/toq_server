@@ -18,18 +18,21 @@ func (ps *permissionServiceImpl) BlockUserTemporarily(ctx context.Context, tx *s
 
 	blockedUntil := time.Now().UTC().Add(usermodel.TempBlockDuration)
 
+	slog.Debug("permission.user.block.start", "user_id", userID, "reason", reason)
+
 	err := ps.permissionRepository.BlockUserTemporarily(ctx, tx, userID, blockedUntil, reason)
 	if err != nil {
-		slog.Error("Failed to block user temporarily", "userID", userID, "error", err)
-		return utils.InternalError("Failed to block user")
+		slog.Error("permission.user.block.db_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
+		return utils.InternalError("")
 	}
 
 	// Clear user permissions cache after status change
 	if errCache := ps.ClearUserPermissionsCache(ctx, userID); errCache != nil {
-		slog.Warn("Failed to clear user permissions cache after blocking", "userID", userID, "error", errCache)
+		slog.Warn("permission.user.block.cache_clear_failed", "user_id", userID, "error", errCache)
 	}
 
-	slog.Info("User blocked temporarily", "userID", userID, "blockedUntil", blockedUntil, "reason", reason)
+	slog.Info("permission.user.blocked", "user_id", userID, "blocked_until", blockedUntil, "reason", reason)
 	return nil
 }
 
@@ -38,18 +41,21 @@ func (ps *permissionServiceImpl) UnblockUser(ctx context.Context, tx *sql.Tx, us
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	slog.Debug("permission.user.unblock.start", "user_id", userID)
+
 	err := ps.permissionRepository.UnblockUser(ctx, tx, userID)
 	if err != nil {
-		slog.Error("Failed to unblock user", "userID", userID, "error", err)
-		return utils.InternalError("Failed to unblock user")
+		slog.Error("permission.user.unblock.db_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
+		return utils.InternalError("")
 	}
 
 	// Clear user permissions cache after status change
 	if errCache := ps.ClearUserPermissionsCache(ctx, userID); errCache != nil {
-		slog.Warn("Failed to clear user permissions cache after unblocking", "userID", userID, "error", errCache)
+		slog.Warn("permission.user.unblock.cache_clear_failed", "user_id", userID, "error", errCache)
 	}
 
-	slog.Info("User unblocked successfully", "userID", userID)
+	slog.Info("permission.user.unblocked", "user_id", userID)
 	return nil
 }
 
@@ -58,16 +64,20 @@ func (ps *permissionServiceImpl) IsUserTempBlocked(ctx context.Context, userID i
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	slog.Debug("permission.user.temp_block.check.start", "user_id", userID)
+
 	// Start a transaction for read operations when caller doesn't manage one
 	tx, err := ps.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("Failed to start transaction for temp block check", "userID", userID, "error", err)
-		return false, utils.InternalError("Failed to start transaction")
+		slog.Error("permission.user.temp_block.check.tx_start_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
+		return false, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ps.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("Failed to rollback tx for temp block check", "userID", userID, "error", rbErr)
+				slog.Error("permission.user.temp_block.check.tx_rollback_failed", "user_id", userID, "error", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		}
 	}()
@@ -77,8 +87,9 @@ func (ps *permissionServiceImpl) IsUserTempBlocked(ctx context.Context, userID i
 		return false, ierr
 	}
 	if err = ps.globalService.CommitTransaction(ctx, tx); err != nil {
-		slog.Error("Failed to commit tx for temp block check", "userID", userID, "error", err)
-		return false, utils.InternalError("Failed to commit transaction")
+		slog.Error("permission.user.temp_block.check.tx_commit_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
+		return false, utils.InternalError("")
 	}
 	return blocked, nil
 }
@@ -93,8 +104,9 @@ func (ps *permissionServiceImpl) IsUserTempBlockedWithTx(ctx context.Context, tx
 		if err == sql.ErrNoRows {
 			return false, nil
 		}
-		slog.Error("Failed to get user role for temp block check", "userID", userID, "error", err)
-		return false, utils.InternalError("Failed to check user status")
+		slog.Error("permission.user.temp_block.check.db_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
+		return false, utils.InternalError("")
 	}
 
 	if userRole == nil {
@@ -117,27 +129,33 @@ func (ps *permissionServiceImpl) GetExpiredTempBlockedUsers(ctx context.Context)
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	slog.Debug("permission.user.temp_block.get_expired.start")
+
 	tx, err := ps.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("Failed to start transaction for getting expired temp blocked users", "error", err)
-		return nil, utils.InternalError("Failed to start transaction")
+		slog.Error("permission.user.temp_block.get_expired.tx_start_failed", "error", err)
+		utils.SetSpanError(ctx, err)
+		return nil, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ps.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("Failed to rollback tx after error when getting expired temp blocked users", "error", rbErr)
+				slog.Error("permission.user.temp_block.get_expired.tx_rollback_failed", "error", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		} else {
 			if cmErr := ps.globalService.CommitTransaction(ctx, tx); cmErr != nil {
-				slog.Error("Failed to commit tx when getting expired temp blocked users", "error", cmErr)
+				slog.Error("permission.user.temp_block.get_expired.tx_commit_failed", "error", cmErr)
+				utils.SetSpanError(ctx, cmErr)
 			}
 		}
 	}()
 
 	users, err := ps.permissionRepository.GetExpiredTempBlockedUsers(ctx, tx)
 	if err != nil {
-		slog.Error("Failed to get expired temp blocked users", "error", err)
-		return nil, utils.InternalError("Failed to get expired blocked users")
+		slog.Error("permission.user.temp_block.get_expired.db_failed", "error", err)
+		utils.SetSpanError(ctx, err)
+		return nil, utils.InternalError("")
 	}
 
 	return users, nil

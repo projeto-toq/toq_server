@@ -2,6 +2,7 @@ package permissionservice
 
 import (
 	"context"
+	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -18,6 +19,8 @@ func (p *permissionServiceImpl) GetRolePermissions(ctx context.Context, roleID i
 
 	permissions, err := p.permissionRepository.GetGrantedPermissionsByRoleID(ctx, nil, roleID)
 	if err != nil {
+		slog.Error("permission.role.permissions.db_failed", "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 

@@ -19,12 +19,14 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("permission.role.assign.tx_start_failed", "user_id", userID, "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rollbackErr := p.globalService.RollbackTransaction(ctx, tx); rollbackErr != nil {
 				slog.Error("permission.role.assign.tx_rollback_failed", "user_id", userID, "role_id", roleID, "error", rollbackErr)
+				utils.SetSpanError(ctx, rollbackErr)
 			}
 		}
 	}()
@@ -38,6 +40,7 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 	err = p.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		slog.Error("permission.role.assign.tx_commit_failed", "user_id", userID, "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 
@@ -63,6 +66,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	role, err := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
 	if err != nil {
 		slog.Error("permission.role.assign.db_failed", "stage", "get_role", "user_id", userID, "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 	if role == nil {
@@ -71,7 +75,12 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 
 	// Verificar se o usuário já tem este role
 	existingUserRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, tx, userID, roleID)
-	if err == nil && existingUserRole != nil {
+	if err != nil {
+		slog.Error("permission.role.assign.db_failed", "stage", "get_user_role", "user_id", userID, "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
+		return nil, utils.InternalError("")
+	}
+	if existingUserRole != nil {
 		return nil, utils.ConflictError("role already assigned to user")
 	}
 
@@ -90,6 +99,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	userRole, err = p.permissionRepository.CreateUserRole(ctx, tx, userRole)
 	if err != nil {
 		slog.Error("permission.role.assign.db_failed", "stage", "create_user_role", "user_id", userID, "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 

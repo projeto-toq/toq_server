@@ -6,6 +6,7 @@ import (
 
 	sessionrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -35,14 +36,23 @@ func New(repo sessionrepoport.SessionRepoPortInterface, gs globalservice.GlobalS
 
 // CleanExpiredSessions deletes expired sessions within a transaction boundary
 func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, error) {
+	// tracing span for public entrypoint
+	_, spanEnd, terr := utils.GenerateTracer(ctx)
+	if terr != nil {
+		return 0, utils.InternalError("")
+	}
+	defer spanEnd()
+
 	tx, err := s.globalService.StartTransaction(ctx)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
 		slog.Error("session.cleaner.tx_start_error", "err", err)
-		return 0, err
+		return 0, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
 				slog.Error("session.cleaner.tx_rollback_error", "err", rbErr)
 			}
 		}
@@ -50,14 +60,16 @@ func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, e
 	// Run deletion inside the transaction boundary
 	n, err := s.repo.DeleteExpiredSessions(ctx, tx, limit)
 	if err != nil {
-		return 0, err
+		utils.SetSpanError(ctx, err)
+		return 0, utils.InternalError("")
 	}
 	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
 		slog.Error("session.cleaner.tx_commit_error", "err", cmErr)
-		return 0, cmErr
+		return 0, utils.InternalError("")
 	}
 	if n > 0 {
-		slog.Info("session_service.cleaner.deleted", "count", n)
+		slog.Info("session.cleaner.deleted", "count", n)
 		metricSessionCleanerDeleted.Add(float64(n))
 	}
 	return n, nil

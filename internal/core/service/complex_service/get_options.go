@@ -13,18 +13,20 @@ import (
 func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number string) (propertyTypes globalmodel.PropertyType, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return propertyTypes, err
+		return 0, utils.InternalError("")
 	}
 	defer spanEnd()
 
 	tx, txErr := cs.gsi.StartTransaction(ctx)
 	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
 		slog.Error("complex.get_options.tx_start_error", "err", txErr)
-		return propertyTypes, utils.InternalError("Failed to start transaction")
+		return 0, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := cs.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
 				slog.Error("complex.get_options.tx_rollback_error", "err", rbErr)
 			}
 		}
@@ -32,12 +34,13 @@ func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number
 
 	propertyTypes, err = cs.getOptions(ctx, tx, zipCode, number)
 	if err != nil {
-		return
+		return 0, err
 	}
 
 	if cmErr := cs.gsi.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
 		slog.Error("complex.get_options.tx_commit_error", "err", cmErr)
-		return propertyTypes, utils.InternalError("Failed to commit transaction")
+		return 0, utils.InternalError("")
 	}
 
 	return
@@ -50,7 +53,8 @@ func (cs *complexService) getOptions(ctx context.Context, tx *sql.Tx, zipCode st
 		if err == sql.ErrNoRows {
 			callhorizontal = true
 		} else {
-			return
+			utils.SetSpanError(ctx, err)
+			return 0, utils.InternalError("")
 		}
 	}
 	if callhorizontal {
@@ -59,7 +63,8 @@ func (cs *complexService) getOptions(ctx context.Context, tx *sql.Tx, zipCode st
 			if err == sql.ErrNoRows {
 				return propertyTypes, utils.ValidationError("area_not_covered", "Area not covered yet")
 			} else {
-				return
+				utils.SetSpanError(ctx, err)
+				return 0, utils.InternalError("")
 			}
 		}
 	}

@@ -49,6 +49,7 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 	userPermissions, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
 		slog.Error("permission.check.permissions_load_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return false, utils.InternalError("")
 	}
 
@@ -226,6 +227,7 @@ func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, us
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("permission.check.tx_start_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 	// Rollback on error
@@ -234,6 +236,7 @@ func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, us
 		if retErr != nil {
 			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				slog.Error("permission.check.tx_rollback_failed", "user_id", userID, "error", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		}
 	}()
@@ -242,6 +245,7 @@ func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, us
 	permissions, qerr := p.permissionRepository.GetUserPermissions(ctx, tx, userID)
 	if qerr != nil {
 		slog.Error("permission.check.db_failed", "user_id", userID, "error", qerr)
+		utils.SetSpanError(ctx, qerr)
 		retErr = utils.InternalError("")
 		return nil, retErr
 	}
@@ -249,6 +253,7 @@ func (p *permissionServiceImpl) getUserPermissionsFromDB(ctx context.Context, us
 	// Commit the transaction
 	if cmErr := p.globalService.CommitTransaction(ctx, tx); cmErr != nil {
 		slog.Error("permission.check.tx_commit_failed", "user_id", userID, "error", cmErr)
+		utils.SetSpanError(ctx, cmErr)
 		retErr = utils.InternalError("")
 		return nil, retErr
 	}
@@ -264,7 +269,8 @@ func (p *permissionServiceImpl) ClearUserPermissionsCache(ctx context.Context, u
 
 	err := p.cache.DeleteUserPermissions(ctx, userID)
 	if err != nil {
-		slog.Warn("permission.cache.clear_failed", "user_id", userID, "error", err)
+		slog.Error("permission.cache.clear_failed", "user_id", userID, "error", err)
+		utils.SetSpanError(ctx, err)
 		// Retornar erro de infraestrutura de forma padronizada
 		return utils.InternalError("")
 	}

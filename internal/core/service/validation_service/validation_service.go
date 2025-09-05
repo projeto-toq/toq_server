@@ -36,7 +36,11 @@ func New(repo userrepo.UserRepoPortInterface, gs globalservice.GlobalServiceInte
 
 // CleanExpiredValidations deletes expired validation rows within a transaction boundary
 func (s *service) CleanExpiredValidations(ctx context.Context, limit int) (int64, error) {
-	ctx, end, _ := utils.GenerateTracer(ctx)
+	// Create tracing span for public entrypoint
+	_, end, terr := utils.GenerateTracer(ctx)
+	if terr != nil {
+		return 0, utils.InternalError("")
+	}
 	defer end()
 
 	// Defensive default if caller passes invalid limit
@@ -47,23 +51,28 @@ func (s *service) CleanExpiredValidations(ctx context.Context, limit int) (int64
 
 	tx, err := s.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("validation.cleaner.tx_start_failed", "error", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("validation.cleaner.tx_start_error", "err", err)
 		return 0, utils.InternalError("")
 	}
+	defer func() {
+		if err != nil { // rollback only when a prior error occurred before commit
+			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
+				slog.Error("validation.cleaner.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
 
 	n, err := s.repo.DeleteExpiredValidations(ctx, tx, limit)
 	if err != nil {
-		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-			slog.Error("validation.cleaner.tx_rollback_failed", "error", rbErr)
-		}
-		slog.Error("validation.cleaner.db_failed", "error", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("validation.cleaner.delete_error", "err", err)
 		return 0, utils.InternalError("")
 	}
-	if err = s.globalService.CommitTransaction(ctx, tx); err != nil {
-		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-			slog.Error("validation.cleaner.tx_rollback_failed", "error", rbErr)
-		}
-		slog.Error("validation.cleaner.tx_commit_failed", "error", err)
+	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
+		slog.Error("validation.cleaner.tx_commit_error", "err", cmErr)
 		return 0, utils.InternalError("")
 	}
 	if n > 0 {

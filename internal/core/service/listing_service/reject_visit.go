@@ -3,13 +3,13 @@ package listingservices
 import (
 	"context"
 
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) RejectVisit(ctx context.Context, visitID int64) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("")
 	}
 	defer spanEnd()
 

@@ -8,25 +8,26 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) UpdateListing(ctx context.Context, listing listingmodel.ListingInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return utils.InternalError("Failed to generate tracer")
+		return utils.InternalError("")
 	}
 	defer spanEnd()
 
 	tx, err := ls.gsi.StartTransaction(ctx)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
 		slog.Error("listing.update.tx_start_error", "err", err)
-		return utils.InternalError("Failed to start transaction")
+		return utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
 				slog.Error("listing.update.tx_rollback_error", "err", rbErr)
 			}
 		}
@@ -39,8 +40,9 @@ func (ls *listingService) UpdateListing(ctx context.Context, listing listingmode
 
 	err = ls.gsi.CommitTransaction(ctx, tx)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
 		slog.Error("listing.update.tx_commit_error", "err", err)
-		return utils.InternalError("Failed to commit transaction")
+		return utils.InternalError("")
 	}
 
 	return
@@ -55,26 +57,27 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, listing
 		if errors.Is(err, sql.ErrNoRows) {
 			exist = false
 		} else {
-			return
+			utils.SetSpanError(ctx, err)
+			return utils.InternalError("")
 		}
 	}
 
 	if !exist {
-		err = utils.ErrInternalServer
-		return
+		return utils.NotFoundError("listing")
 	}
 
 	//check if the listing is in draft status
 	if existing.Status() != listingmodel.StatusDraft {
-		err = utils.ErrInternalServer
-		return
+		return utils.ConflictError("listing cannot be updated unless in draft status")
 	}
 
 	//check if the user is the owner of the listing
-	infos := ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos)
-	if existing.UserID() != infos.ID {
-		err = utils.ErrInternalServer
-		return
+	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
+	if uidErr != nil {
+		return uidErr
+	}
+	if existing.UserID() != userID {
+		return utils.AuthorizationError("not the listing owner")
 	}
 
 	//update only the allowed fields
@@ -110,12 +113,13 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, listing
 	//update the listing
 	err = ls.listingRepository.UpdateListing(ctx, tx, existing)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		return utils.InternalError("")
 	}
 
 	err = ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio atualizado")
 	if err != nil {
-		return
+		return err
 	}
 
 	return

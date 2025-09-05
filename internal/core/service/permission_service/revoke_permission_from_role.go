@@ -26,6 +26,7 @@ func (p *permissionServiceImpl) RevokePermissionFromRole(ctx context.Context, ro
 	rolePermission, err := p.permissionRepository.GetRolePermissionByRoleIDAndPermissionID(ctx, nil, roleID, permissionID)
 	if err != nil {
 		slog.Error("permission.role_permission.revoke.db_failed", "stage", "get_relation", "role_id", roleID, "permission_id", permissionID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 	if rolePermission == nil {
@@ -36,6 +37,7 @@ func (p *permissionServiceImpl) RevokePermissionFromRole(ctx context.Context, ro
 	err = p.permissionRepository.DeleteRolePermission(ctx, nil, rolePermission.GetID())
 	if err != nil {
 		slog.Error("permission.role_permission.revoke.db_failed", "stage", "delete_relation", "role_id", roleID, "permission_id", permissionID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 

@@ -26,12 +26,14 @@ func (p *permissionServiceImpl) GetActiveUserRole(ctx context.Context, userID in
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
 		slog.Error("permission.user_role.active.tx_start_failed", "user_id", userID, "error", err)
-		return nil, utils.WrapDomainErrorWithSource(utils.InternalError("Failed to start transaction"))
+		utils.SetSpanError(ctx, err)
+		return nil, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				slog.Error("permission.user_role.active.tx_rollback_failed", "user_id", userID, "error", rbErr)
+				utils.SetSpanError(ctx, rbErr)
 			}
 		}
 	}()
@@ -39,14 +41,16 @@ func (p *permissionServiceImpl) GetActiveUserRole(ctx context.Context, userID in
 	userRole, repoErr := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
 	if repoErr != nil {
 		slog.Error("permission.user_role.active.db_failed", "user_id", userID, "error", repoErr)
+		utils.SetSpanError(ctx, repoErr)
 		err = repoErr
-		return nil, utils.WrapDomainErrorWithSource(utils.InternalError("Failed to get active user role"))
+		return nil, utils.InternalError("")
 	}
 
 	// Commit the transaction
 	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
 		slog.Error("permission.user_role.active.tx_commit_failed", "user_id", userID, "error", err)
-		return nil, utils.WrapDomainErrorWithSource(utils.InternalError("Failed to commit transaction"))
+		utils.SetSpanError(ctx, err)
+		return nil, utils.InternalError("")
 	}
 
 	return userRole, nil
@@ -66,7 +70,8 @@ func (p *permissionServiceImpl) GetActiveUserRoleWithTx(ctx context.Context, tx 
 
 	userRole, repoErr := p.permissionRepository.GetActiveUserRoleByUserID(ctx, tx, userID)
 	if repoErr != nil {
-		return nil, utils.WrapDomainErrorWithSource(utils.InternalError("Failed to get active user role"))
+		utils.SetSpanError(ctx, repoErr)
+		return nil, utils.InternalError("")
 	}
 	return userRole, nil
 }

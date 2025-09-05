@@ -7,13 +7,13 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (gs *globalService) CreateAudit(ctx context.Context, tx *sql.Tx, table globalmodel.TableName, action string, executedBY ...int64) (err error) {
 	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return utils.InternalError("")
 	}
 	defer spanEnd()
 
@@ -21,12 +21,20 @@ func (gs *globalService) CreateAudit(ctx context.Context, tx *sql.Tx, table glob
 	if len(executedBY) > 0 {
 		audit.SetExecutedBy(executedBY[0])
 	} else {
-		audit.SetExecutedBy(ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos).ID)
+		if v := ctx.Value(globalmodel.TokenKey); v != nil {
+			if infos, ok := v.(usermodel.UserInfos); ok {
+				audit.SetExecutedBy(infos.ID)
+			}
+		}
 	}
 	audit.SetExecutedAt(time.Now().UTC())
 	audit.SetTableName(table)
 	audit.SetAction(action)
 
-	return gs.globalRepo.CreateAudit(ctx, tx, audit)
+	if err := gs.globalRepo.CreateAudit(ctx, tx, audit); err != nil {
+		utils.SetSpanError(ctx, err)
+		return utils.InternalError("")
+	}
+	return nil
 
 }

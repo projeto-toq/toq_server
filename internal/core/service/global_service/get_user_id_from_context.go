@@ -13,7 +13,7 @@ import (
 func (gs *globalService) GetUserIDFromContext(ctx context.Context) (int64, error) {
 	userInfos, ok := ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos)
 	if !ok || userInfos.ID == 0 {
-		return 0, utils.ErrInternalServer
+		return 0, utils.BadRequest("invalid user context")
 	}
 	return userInfos.ID, nil
 }

@@ -4,12 +4,13 @@ Toda a interação deve ser em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Aplicar o plano de padronização de tracing/logging nos serviços do permission_service.
-- Resultado esperado (alto nível): Estrutura mais simples, menos verbosa, seguindo práticas recomendadas.
+- Título curto: Aplicar o plano de padronização descrto no `docs/toq_server_go_guide.md` onde domains, interfaces e seus métodos estão em arquivos separados.
+
+- Resultado esperado (alto nível): Estrutura mais simples, seguindo práticas recomendadas.
 
 ## 2) Contexto do Projeto
-- Módulo/área: user_services
-- Problema/hipótese atual: O método atual complica o processo simples de logging, é verboso e não seguia as práticas recomendadas.
+- Módulo/área: session_service e validation_service
+- Problema/hipótese atual: existe um único arquivo com a interface e todos os métosdos implementados, o que dificulta a leitura e manutenção.
 - Impacto: Dificuldade em identificar problemas, aumento do tempo de resolução de incidentes.
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`

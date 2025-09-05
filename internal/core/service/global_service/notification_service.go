@@ -85,11 +85,11 @@ func (ns *unifiedNotificationService) SendNotification(ctx context.Context, requ
 		// Chamar o método interno síncrono
 		err := ns.sendNotificationSync(notifyCtx, request)
 		if err != nil {
-			slog.Error("Erro no envio assíncrono de notificação",
+			slog.Error("notification.async_send_error",
 				"type", request.Type,
 				"to", request.To,
 				"token", request.Token,
-				"error", err)
+				"err", err)
 		}
 	}()
 
@@ -109,21 +109,21 @@ func (ns *unifiedNotificationService) sendNotificationSync(ctx context.Context, 
 	// Gerar tracer para observabilidade
 	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		slog.Error("Falha ao gerar tracer para notificação", "error", err)
-		return fmt.Errorf("falha ao gerar tracer: %w", err)
+		slog.Error("notification.tracer_error", "err", err)
+		return utils.InternalError("")
 	}
 	defer spanEnd()
 
 	// Log da requisição de notificação
-	slog.Info("Processando requisição de notificação",
+	slog.Info("notification.processing",
 		"type", request.Type,
 		"to", request.To,
 		"subject", request.Subject)
 
 	// Validar a requisição antes de processar
 	if err := ns.validateRequest(request); err != nil {
-		slog.Error("Requisição de notificação inválida", "error", err)
-		return fmt.Errorf("requisição inválida: %w", err)
+		slog.Error("notification.request_invalid", "err", err)
+		return utils.BadRequest("invalid notification request")
 	}
 
 	// Direcionar para o método apropriado baseado no tipo
@@ -135,9 +135,8 @@ func (ns *unifiedNotificationService) sendNotificationSync(ctx context.Context, 
 	case NotificationTypeFCM:
 		return ns.sendFCM(ctx, request)
 	default:
-		err := fmt.Errorf("tipo de notificação não suportado: %s", request.Type)
-		slog.Error("Tipo de notificação inválido", "type", request.Type)
-		return err
+		slog.Error("notification.type_invalid", "type", request.Type)
+		return utils.BadRequest("unsupported notification type")
 	}
 }
 
@@ -185,7 +184,7 @@ func (ns *unifiedNotificationService) validateRequest(request NotificationReques
 // Converte a requisição para o formato esperado pelo adapter de email.
 func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request NotificationRequest) error {
 	_ = ctx //ignorar temporariament
-	slog.Debug("Enviando notificação por email", "to", request.To, "subject", request.Subject)
+	slog.Debug("notification.email_sending", "to", request.To, "subject", request.Subject)
 
 	// Construir a notificação no formato esperado pelo adapter
 	notification := globalmodel.Notification{
@@ -201,11 +200,12 @@ func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request Not
 	// Enviar através do adapter de email
 	err := ns.globalService.email.SendEmail(notification)
 	if err != nil {
-		slog.Error("Falha ao enviar email", "error", err, "to", request.To)
-		return fmt.Errorf("falha ao enviar email: %w", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("notification.email_send_error", "err", err, "to", request.To)
+		return utils.InternalError("")
 	}
 
-	slog.Info("Email enviado com sucesso", "to", request.To, "subject", request.Subject)
+	slog.Info("notification.email_sent", "to", request.To, "subject", request.Subject)
 	return nil
 }
 
@@ -213,7 +213,7 @@ func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request Not
 // Converte a requisição para o formato esperado pelo adapter de SMS.
 func (ns *unifiedNotificationService) sendSMS(ctx context.Context, request NotificationRequest) error {
 	_ = ctx //ignorar temporariamente
-	slog.Debug("Enviando notificação por SMS", "to", request.To)
+	slog.Debug("notification.sms_sending", "to", request.To)
 
 	// Construir a notificação no formato esperado pelo adapter
 	notification := globalmodel.Notification{
@@ -226,18 +226,19 @@ func (ns *unifiedNotificationService) sendSMS(ctx context.Context, request Notif
 	// Enviar através do adapter de SMS
 	err := ns.globalService.sms.SendSms(notification)
 	if err != nil {
-		slog.Error("Falha ao enviar SMS", "error", err, "to", request.To)
-		return fmt.Errorf("falha ao enviar SMS: %w", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("notification.sms_send_error", "err", err, "to", request.To)
+		return utils.InternalError("")
 	}
 
-	slog.Info("SMS enviado com sucesso", "to", request.To)
+	slog.Info("notification.sms_sent", "to", request.To)
 	return nil
 }
 
 // sendFCM processa notificação push usando o FCM adapter
 // Converte a requisição para o formato esperado pelo adapter FCM.
 func (ns *unifiedNotificationService) sendFCM(ctx context.Context, request NotificationRequest) error {
-	slog.Debug("Enviando notificação FCM", "token", request.Token, "title", request.Subject)
+	slog.Debug("notification.fcm_sending", "token", request.Token, "title", request.Subject)
 
 	// Construir a notificação no formato esperado pelo adapter
 	notification := globalmodel.Notification{
@@ -251,10 +252,11 @@ func (ns *unifiedNotificationService) sendFCM(ctx context.Context, request Notif
 	// Enviar através do adapter FCM
 	err := ns.globalService.firebaseCloudMessage.SendSingleMessage(ctx, notification)
 	if err != nil {
-		slog.Error("Falha ao enviar notificação FCM", "error", err, "token", request.Token)
-		return fmt.Errorf("falha ao enviar notificação FCM: %w", err)
+		utils.SetSpanError(ctx, err)
+		slog.Error("notification.fcm_send_error", "err", err, "token", request.Token)
+		return utils.InternalError("")
 	}
 
-	slog.Info("Notificação FCM enviada com sucesso", "token", request.Token, "title", request.Subject)
+	slog.Info("notification.fcm_sent", "token", request.Token, "title", request.Subject)
 	return nil
 }

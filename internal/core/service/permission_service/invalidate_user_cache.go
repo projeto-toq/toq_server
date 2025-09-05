@@ -32,6 +32,7 @@ func (p *permissionServiceImpl) InvalidateUserCache(ctx context.Context, userID 
 	}
 
 	// Em seguida, limpar chaves granulares de permissões (resource/action)
+	// Best-effort granular clean (sem retorno de erro)
 	p.cache.CleanByUser(ctx, userID)
 
 	slog.Info("permission.cache.invalidated", "user_id", userID)

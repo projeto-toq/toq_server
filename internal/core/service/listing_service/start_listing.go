@@ -9,25 +9,26 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) StartListing(ctx context.Context, zipCode string, number string, propertyType globalmodel.PropertyType) (listing listingmodel.ListingInterface, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return listing, utils.InternalError("")
 	}
 	defer spanEnd()
 
 	tx, txErr := ls.gsi.StartTransaction(ctx)
 	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
 		slog.Error("listing.start.tx_start_error", "err", txErr)
-		return listing, utils.InternalError("Failed to start transaction")
+		return listing, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
 				slog.Error("listing.start.tx_rollback_error", "err", rbErr)
 			}
 		}
@@ -39,8 +40,9 @@ func (ls *listingService) StartListing(ctx context.Context, zipCode string, numb
 	}
 
 	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
 		slog.Error("listing.start.tx_commit_error", "err", cmErr)
-		return listing, utils.InternalError("Failed to commit transaction")
+		return listing, utils.InternalError("")
 	}
 
 	return
@@ -55,7 +57,8 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, zipCode 
 		if errors.Is(err, sql.ErrNoRows) {
 			exist = false
 		} else {
-			return
+			utils.SetSpanError(ctx, err)
+			return nil, utils.InternalError("")
 		}
 	}
 
@@ -82,14 +85,18 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, zipCode 
 	//create a new code for the listing in the sequence
 	code, err := ls.listingRepository.GetListingCode(ctx, tx)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		return nil, utils.InternalError("")
 	}
 
 	//get the user doing the request
-	infos := ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos)
+	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
+	if uidErr != nil {
+		return nil, uidErr
+	}
 
 	listing = listingmodel.NewListing()
-	listing.SetUserID(infos.ID)
+	listing.SetUserID(userID)
 	listing.SetCode(code)
 	listing.SetVersion(1)
 	listing.SetStatus(listingmodel.StatusDraft)
@@ -112,7 +119,8 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, zipCode 
 	//create the listing
 	err = ls.listingRepository.CreateListing(ctx, tx, listing)
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		return nil, utils.InternalError("")
 	}
 
 	err = ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio criado")

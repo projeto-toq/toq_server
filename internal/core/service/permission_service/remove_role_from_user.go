@@ -28,6 +28,7 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 	userRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, nil, userID, roleID)
 	if err != nil {
 		slog.Error("permission.role.get_user_role_failed", "user_id", userID, "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 	if userRole == nil {
@@ -38,6 +39,7 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 	err = p.permissionRepository.DeleteUserRole(ctx, nil, userRole.GetID())
 	if err != nil {
 		slog.Error("permission.role.delete_user_role_failed", "user_id", userID, "role_id", roleID, "user_role_id", userRole.GetID(), "error", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 
@@ -61,6 +63,7 @@ func (p *permissionServiceImpl) RemoveRoleFromUserWithTx(ctx context.Context, tx
 	userRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, tx, userID, roleID)
 	if err != nil {
 		slog.Error("permission.role.get_user_role_failed", "user_id", userID, "role_id", roleID, "error", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 	if userRole == nil {
@@ -71,6 +74,7 @@ func (p *permissionServiceImpl) RemoveRoleFromUserWithTx(ctx context.Context, tx
 	err = p.permissionRepository.DeleteUserRole(ctx, tx, userRole.GetID())
 	if err != nil {
 		slog.Error("permission.role.delete_user_role_failed", "user_id", userID, "role_id", roleID, "user_role_id", userRole.GetID(), "error", err)
+		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 
