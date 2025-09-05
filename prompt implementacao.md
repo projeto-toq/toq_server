@@ -6,7 +6,7 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 
 ### **Instruções para Implementação de Código**
 
-- **Ação:** O código Go deve ser gerado e implementado segundo o plano de refatoração apresentado, cobrindo as etapas 1 a 4 e 6.
+- **Ação:** O código Go deve ser gerado e implementado segundo o plano de refatoração apresentado.
 
 ---
 
@@ -16,7 +16,7 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 - **Arquitetura:** A solução deve seguir estritamente a **Arquitetura Hexagonal**.
 - **Fluxo de Chamadas:** As chamadas de função devem seguir a hierarquia `Handlers` → `Services` → `Repositories`.
 - **Injeção de Dependência:** O padrão de _factories_ deve ser usado para a injeção de dependências.
-- **Localização de Repositórios:** Os repositórios devem ser localizados em `/internal/adapter/right/mysql/`.
+- **Localização de Repositórios:** Os repositórios devem ser localizados em `/internal/adapter/right/mysql/` e deve fazer uso dos convertess para mapear entidades de banco de dados para entidades e vice versa.
 - **Transações SQL:** Todas as transações de banco de dados devem utilizar `global_services/transactions`.
 
 #### 2. Boas Práticas Gerais

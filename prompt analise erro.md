@@ -1,16 +1,19 @@
 ### Resumo e Refatoração: Engenheiro de Software Go Sênior
 
-Este documento descreve as instruções para atuar como um engenheiro de software Go sênior, focando na análise de um problema e na proposição de uma solução detalhada, seguindo a arquitetura hexagonal e boas práticas de código. O objetivo é criar um plano para a implementação de uma nova função no `permission_service`, garantindo o alinhamento com os padrões de arquitetura, tratamento de erros, observabilidade e documentação. Toda a interação deve ser feita em português.
+Este documento descreve as instruções para atuar como um engenheiro de software Go sênior, focando na análise de um problema e na proposição de uma solução detalhada, seguindo a arquitetura hexagonal e boas práticas de código, garantindo o alinhamento com os padrões de arquitetura, tratamento de erros, observabilidade e documentação. Toda a interação deve ser feita em português.
 
 ---
-**Problema:** o usuário fazendo XXX está recebendo o erroXXX
 
-**Solicitação:** Analise o problema e proponha um plano detalhado para a implementação da solução. Minha sugestão é unificara a carga do role ativo na getuserbyid e eliminação da getuserbyidwithactiverole. apresente as vantagens/desvantagens em relação a outra opção caso voce sugira outra abordagem.
+**Problema:** O problema persiste mesmo após a correção anterior. em log.md temos os logs temporáros do erro.
+1) O usuário fazendo a validação do código de confirmação de telefone está recebendo o erro 500 (Internal Server Error).
+2) a entrada do log com o erro está verbosa e não informa nada, pois faz referencia a função de logging e não a função onde o erro efetivamente ocorreu.
+
+**Solicitação:** Analise o problema, **leia o log.md**, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
 
 ### **Instruções para a Proposição do Plano**
 
 - **Ação:** Apenas a análise e a geração do plano são solicitadas. **Nenhum código deve ser implementado**.
-- **Análise:** O problema e os requisitos devem ser analisados cuidadosamente. O código e arquivos de configuração existentes devem ser revisados para um plano preciso.
+- **Análise:** O problema e os requisitos devem ser analisados cuidadosamente. O código e arquivos de configuração existentes devem ser revisados para um plano preciso. Não faça suposições e confirme todos os detalhes necessários.
 - **Plano:** Um plano detalhado deve ser apresentado, incluindo a descrição da arquitetura proposta, as interfaces, a estrutura de diretórios e a ordem de execução das etapas.
 - **Qualidade do Plano:** O plano deve ser completo, sem o uso de _mocks_ ou soluções temporárias. Caso seja extenso, deve ser dividido em etapas implementáveis.
 - **Acompanhamento:** As etapas já planejadas e as próximas a serem analisadas devem ser sempre informadas para acompanhamento.
@@ -23,8 +26,9 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 - **Arquitetura:** A solução deve seguir estritamente a **Arquitetura Hexagonal**.
 - **Fluxo de Chamadas:** As chamadas de função devem seguir a hierarquia `Handlers` → `Services` → `Repositories`.
 - **Injeção de Dependência:** O padrão de _factories_ deve ser usado para a injeção de dependências.
-- **Localização de Repositórios:** Os repositórios devem ser localizados em `/internal/adapter/right/mysql/`.
+- **Localização de Repositórios:** Os repositórios devem ser localizados em `/internal/adapter/right/mysql/` e deve fazer uso dos convertess para mapear entidades de banco de dados para entidades e vice versa.
 - **Transações SQL:** Todas as transações de banco de dados devem utilizar `global_services/transactions`.
+
 
 #### 2. Tratamento de Erros e Observabilidade
 

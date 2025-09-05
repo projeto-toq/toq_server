@@ -3,7 +3,7 @@
 Este documento descreve as instruções para atuar como um engenheiro de software Go sênior, focando na análise de um problema e na proposição de uma solução detalhada, seguindo a arquitetura hexagonal e boas práticas de código, garantindo o alinhamento com os padrões de arquitetura, tratamento de erros, observabilidade e documentação. Toda a interação deve ser feita em português.
 
 ---
-**Problema:** Considerando que o user_role_domain em permission model, possue o role RoleInterface como um elemento da estrutura, a função do repositório GetActiveUserRoleByUserID que retorna permissionmodel.UserRoleInterface deveria trazer a role populada e está retornando nil.
+**Problema:** Considerando o processo atual de erro que está pouco produtivo e causando atrasaos fortes no processo de debugging, quero alterar para que service log efetivamente o erro, sem conversões para domain erro, e o handler apenas retorne o erro para o cliente, no formato http.
 
 **Solicitação:** Analise o problema e proponha um plano detalhado para a implementação da solução.
 

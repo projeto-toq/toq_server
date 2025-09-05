@@ -21,6 +21,9 @@ import (
 //	@Success		200		{object}	dto.ConfirmPhoneChangeResponse
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format or code"
 //	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure		409		{object}	dto.ErrorResponse	"Phone change not pending or phone already in use"
+//	@Failure		410		{object}	dto.ErrorResponse	"Phone change code expired"
+//	@Failure		422		{object}	dto.ErrorResponse	"Invalid phone change code"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/user/phone/confirm [post]
 //	@Security		BearerAuth

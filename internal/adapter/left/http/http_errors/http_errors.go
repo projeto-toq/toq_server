@@ -3,6 +3,9 @@ package http_errors
 import (
 	"net/http"
 
+	"log/slog"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -27,21 +30,36 @@ func SendHTTPErrorObj(c *gin.Context, err error) {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "Internal server error"})
 		return
 	}
-	// If it's a DomainError, pass through; otherwise wrap as InternalError
+	// If it's a DomainError, prefer preserving existing source if present.
 	if derr, ok := err.(coreutils.DomainError); ok {
-		// Envolver em erro com source para logging de origem
-		wrapped := coreutils.WrapDomainErrorWithSource(derr)
+		debug := os.Getenv("TOQ_DEBUG_ERROR_TRACE") == "true"
+		var out coreutils.DomainError
+		// Se já possui origem (DomainErrorWithSource), não re-empacotar
+		if _, hasSource := err.(coreutils.DomainErrorWithSource); hasSource {
+			out = derr
+			if debug {
+				slog.Debug("http_errors: domain_error_with_source", "status", derr.Code())
+			}
+		} else {
+			out = coreutils.WrapDomainErrorWithSource(derr)
+			if debug {
+				slog.Debug("http_errors: domain_error_wrapped", "status", out.Code())
+			}
+		}
 		// Anexar erro e marcar span
-		c.Error(wrapped) //nolint: errcheck
-		coreutils.SetSpanError(c.Request.Context(), wrapped)
-		payload := gin.H{"code": wrapped.Code(), "message": wrapped.Message()}
-		if d := wrapped.Details(); d != nil {
+		c.Error(out) //nolint: errcheck
+		coreutils.SetSpanError(c.Request.Context(), out)
+		payload := gin.H{"code": out.Code(), "message": out.Message()}
+		if d := out.Details(); d != nil {
 			payload["details"] = d
 		}
-		c.JSON(wrapped.Code(), payload)
+		c.JSON(out.Code(), payload)
 		return
 	}
 	derr := coreutils.InternalError("")
+	if os.Getenv("TOQ_DEBUG_ERROR_TRACE") == "true" {
+		slog.Debug("http_errors: generic_error_wrapped_internal", "status", derr.Code())
+	}
 	// Anexar erro ao contexto, marcar span e responder
 	c.Error(derr) //nolint: errcheck
 	coreutils.SetSpanError(c.Request.Context(), derr)

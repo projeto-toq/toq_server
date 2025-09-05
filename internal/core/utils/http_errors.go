@@ -39,7 +39,6 @@ type HTTPError struct {
 	file     string   `json:"-"`
 	line     int      `json:"-"`
 	stack    []string `json:"-"`
-	cause    error    `json:"-"`
 }
 
 // Ensure *HTTPError implements DomainError
@@ -84,8 +83,10 @@ func SetErrorStackDepth(depth int) { //nolint: revive
 
 // NewHTTPErrorWithSource creates a new structured error instance capturing origin information.
 func NewHTTPErrorWithSource(code int, message string, details ...any) *HTTPError { //nolint: revive
-	// Padrão: captura o caller imediato (skip=1)
-	return newHTTPErrorWithSourceSkip(code, message, 1, details...)
+	// Capturar o callsite do chamador externo (service), não deste utilitário
+	// skip segue convenção do runtime.Caller. Aqui usamos 2 para pular:
+	// 0: newHTTPErrorWithSourceSkip, 1: NewHTTPErrorWithSource, 2: callsite do service
+	return newHTTPErrorWithSourceSkip(code, message, 2, details...)
 }
 
 // newHTTPErrorWithSourceSkip cria erro estruturado capturando a origem com controle de profundidade.
