@@ -60,6 +60,3 @@ func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, e
 	slog.Info("clean_expired_sessions_success", "deleted", deleted)
 	return deleted, nil
 }
-
-// compile-time check
-var _ Service = (*service)(nil)
