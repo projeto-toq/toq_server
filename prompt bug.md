@@ -1,6 +1,4 @@
-### Boilerplate — Reporte de Bug — TOQ Server (Go)
-
-Use este template para abrir um bug claro, reproduzível e aderente às regras de arquitetura/observabilidade do projeto. Escreva em português.
+Toda a interação deve ser em português.
 
 ---
 
@@ -43,11 +41,8 @@ Use este template para abrir um bug claro, reproduzível e aderente às regras d
 - Ambiente de desenvolvimento: sem back compatibility, sem janela de manutenção, sem migrações.
 
 ## 9) Regras do Projeto (resumo obrigatório)
-- Arquitetura/Fluxo: Hexagonal; chamadas `Handlers → Services → Repositories`; DI via factories; Repos em `internal/adapter/right/mysql` com converters; transações via `global_services/transactions`.
-- Observabilidade/Erros:
-  - Tracing: `utils.GenerateTracer(ctx)` em métodos públicos (não em handlers HTTP); `defer spanEnd()`; `utils.SetSpanError(ctx, err)` em falhas de infraestrutura.
-  - Logging (slog): `Info` para domínio; `Warn` para limites/429/423; `Error` apenas infra (DB/cache/providers/tx).
-  - Erros/HTTP: Repos retornam erros puros (`sql.ErrNoRows` etc.); Services mapeiam domínio; Handlers usam `http_errors.SendHTTPErrorObj`.
+ - Siga o guia: `docs/toq_server_go_guide.md` (Seções 1–4 e 5–11).
+ - Pontos‑chave: `Handlers → Services → Repositories`; DI por factories; converters nos repositórios; transações via serviço padrão; spans só fora de handlers HTTP; `SetSpanError` em falhas de infra; handlers usam `http_errors.SendHTTPErrorObj`; adapters retornam erros puros; severidade de logs conforme guia.
 
 Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_errors`.
 

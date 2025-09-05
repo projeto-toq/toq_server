@@ -1,22 +1,21 @@
-### Boilerplate — Prompt de Análise e (Opcional) Implementação — TOQ Server (Go)
-
-Este boilerplate padroniza como abrir uma solicitação de análise/refatoração/implementação para o TOQ Server, evitando ambiguidades e garantindo aderência à arquitetura, erros, observabilidade e documentação do projeto. Toda a interação deve ser em português.
+Toda a interação deve ser em português.
 
 ---
 
 ## 1) Objetivo do Pedido
-- Tipo: <Somente análise | Análise + implementação>
-- Título curto: <ex.: Corrigir 500 em confirmação de telefone sem pendências>
-- Resultado esperado (alto nível): <ex.: Retornar 409 em “not pending” e manter tracing/logs corretos>
+- Tipo: Somente análise
+- Título curto: Necessário implementar o novo sistema de logging e tracing nos serviços de user_service.
+- Resultado esperado (alto nível): Logs e traces implementados corretamente em user_service, seguindo as práticas recomendadas do projeto.
 
 ## 2) Contexto do Projeto
-- Módulo/área: <ex.: user_service, handlers de auth>
-- Problema/hipótese atual: <descrição sucinta do problema observado>
-- Impacto: <ex.: usuários impactados, erro de negócio, SLO>
+- Módulo/área: user_services
+- Problema/hipótese atual: O método anterior mascarava erros, era verboso e não seguia as práticas recomendadas.
+- Impacto: Dificuldade em identificar problemas, aumento do tempo de resolução de incidentes.
 - Links úteis (logs/trace/dashboard): <opcional>
+- Documentação de referência: `docs/toq_server_go_guide.md`
 
 ## 3) Escopo
-- Incluir: <itens in-scope>
+- Incluir: Implementação de logging e tracing nos métodos do user_service.
 - Excluir (fora de escopo): <itens out-of-scope>
 
 ## 4) Requisitos
@@ -33,26 +32,13 @@ Este boilerplate padroniza como abrir uma solicitação de análise/refatoraçã
 - Documentação (README/docs/*)
 - Observabilidade (métricas/dashboards) — apenas quando estritamente pertinente
 
-## 6) Arquitetura e Fluxo (Regras Obrigatórias)
-- Arquitetura Hexagonal; chamadas: `Handlers` → `Services` → `Repositories`.
-- Injeção de dependências via factories existentes.
-- Repositórios em `/internal/adapter/right/mysql/`, usando converters de entidades.
-- Transações SQL via `global_services/transactions`.
+## 6) Arquitetura e Fluxo (resumo)
+- Siga o guia: `docs/toq_server_go_guide.md` (Seções 1–4 e 7–11).
+- Em alto nível: `Handlers` → `Services` → `Repositories`; DI por factories; converters nos repositórios; transações via serviço padrão.
 
-## 7) Erros e Observabilidade (Obrigatório)
-- Tracing:
-  - Use `utils.GenerateTracer(ctx)` em métodos públicos de Services/Repositories/Workers.
-  - Em Handlers HTTP, NÃO crie spans (feito pelo `TelemetryMiddleware`).
-  - Sempre `defer spanEnd()` e use `utils.SetSpanError(ctx, err)` em falhas de infraestrutura.
-- Logging (slog):
-  - `Info`: eventos esperados de domínio; `Warn`: anomalias/limites; `Error`: falhas de infraestrutura.
-  - Em Repositórios, evite verbosidade; sucesso no máximo `DEBUG` quando necessário.
-- Erros e HTTP:
-  - Repositórios retornam erros puros (ex.: `sql.ErrNoRows`).
-  - Services mapeiam para erros de domínio; infra = `slog.Error` + `SetSpanError`.
-  - Handlers usam `http_errors.SendHTTPErrorObj(c, err)` para serializar erros.
-
-Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_errors`.
+## 7) Erros e Observabilidade (resumo)
+- Siga o guia: `docs/toq_server_go_guide.md` (Seções 5, 6, 8, 9 e 10).
+- Pontos-chave: spans só fora de handlers HTTP; `SetSpanError` em falhas de infra; handlers usam `http_errors.SendHTTPErrorObj`; adapters retornam erros puros; logs com severidade correta.
 
 ## 8) Dados e Transações
 - Tabelas/entidades afetadas: <listar>
@@ -70,7 +56,6 @@ Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_er
 
 ## 11) Entregáveis Esperados do Agente
 - Análise detalhada com checklist dos requisitos e plano por etapas (com ordem de execução).
-- Se “Análise + implementação”: commits com mudanças mínimas necessárias; atualização de docs/Swagger.
 - Quality gates rápidos no final: Build, Lint/Typecheck, Tests, Smoke test; e mapeamento Requisito → Status.
 
 ## 12) Restrições e Assunções
@@ -78,7 +63,7 @@ Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_er
 - Sem uso de mocks nem soluções temporárias em entregas finais.
 
 ## 13) Anexos e Referências
-- Arquivos relevantes: <listar caminhos>
+- Arquivos relevantes: `docs/toq_server_go_guide.md`.
 - Issues/PRs/Logs/Traces: <links>
 
 ---
@@ -90,7 +75,7 @@ Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_er
 - Produzir um checklist de requisitos explícitos e implícitos, mantendo-o visível.
 
 2) Durante a análise/implementação:
-- Seguir a arquitetura hexagonal, regras de erros/observabilidade e transações.
+- Seguir o guia `docs/toq_server_go_guide.md` (arquitetura, erros/observabilidade, transações).
 - Manter adapters com erros “puros”; sem HTTP/semântica de domínio nessa camada.
 - Atualizar Swagger quando comportamento público mudar.
 
@@ -98,19 +83,8 @@ Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_er
 - Executar build e testes rápidos; relatar PASS/FAIL brevemente e corrigir até ficar verde.
 - Relatar “requirements coverage” (Requisito → Done/Deferred + motivo).
 
----
+4) Em casos de dúvidas: consultar o requerente.
 
-## Modelo de Preenchimento Rápido (copie e edite)
-
-- Tipo: Análise | Análise + implementação
-- Título: <...>
-- Contexto: <...>
-- Escopo: <...>
-- Requisitos: <...>
-- Endpoints afetados: <...>
-- Dados/Transações: <...>
-- Critérios de aceite: <...>
-- Artefatos a atualizar: <Código | Swagger | Docs | Observabilidade>
-- Anexos/Referências: <...>
+5) Caso a tarefa seja grande/demorada, dividir em fases menores e entregáveis curtos.
 
 > Observação: comentários internos em português; docstrings de funções em inglês; Swagger por anotações no código.

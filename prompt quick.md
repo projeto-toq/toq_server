@@ -1,6 +1,4 @@
-### Boilerplate — Tarefa Rápida (Small/Trivial) — TOQ Server (Go)
-
-Use este template para tarefas pequenas e bem delimitadas (ex.: ajustes de doc, mapeamento de erro, pequenos refactors sem mudança de contrato). Escreva em português.
+Toda a interação deve ser em português.
 
 ---
 
@@ -29,13 +27,10 @@ Use este template para tarefas pequenas e bem delimitadas (ex.: ajustes de doc, 
 - [ ] Docs/Swagger atualizados (se necessário)
 
 ## 6) Notas do Projeto (resumo útil)
-- Handlers → Services → Repositories; DI via factories.
-- Repositórios em `internal/adapter/right/mysql` com converters; transações via `global_services/transactions`.
-- Tracing: `utils.GenerateTracer(ctx)` em métodos públicos (não em handlers); `SetSpanError` em infra.
-- Logging (slog): `Info` domínio; `Warn` limites; `Error` somente infra.
-- Handlers usam `http_errors.SendHTTPErrorObj` para erros.
+ - Siga o guia: `docs/toq_server_go_guide.md` (visão geral, camadas e observabilidade).
+ - Pontos‑chave: `Handlers → Services → Repositories`; DI por factories; converters nos repositórios; transações via serviço padrão; spans só fora de handlers HTTP; `SetSpanError` em falhas de infra; handlers usam `http_errors.SendHTTPErrorObj`.
 
-Referências: `docs/toq_server_go_guide.md`.
+Referência: `docs/toq_server_go_guide.md`.
 
 ---
 
