@@ -9,14 +9,14 @@ Toda a interação deve ser em português.
 - Resultado esperado (alto nível): Estrutura mais simples, seguindo práticas recomendadas.
 
 ## 2) Contexto do Projeto
-- Módulo/área: session_service e validation_service
+- Módulo/área: session_service 
 - Problema/hipótese atual: existe um único arquivo com a interface e todos os métosdos implementados, o que dificulta a leitura e manutenção.
 - Impacto: Dificuldade em identificar problemas, aumento do tempo de resolução de incidentes.
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
 ## 3) Escopo
-- Incluir: Implementação de logging e tracing nos métodos do user_service.
+- Incluir: session_service 
 - Excluir (fora de escopo): <itens out-of-scope>
 
 ## 4) Requisitos

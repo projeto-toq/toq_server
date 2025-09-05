@@ -3,16 +3,16 @@ Toda a interação deve ser em português.
 ---
 
 ## 1) Identificação
-- Título curto (obrigatório): <ex.: 500 ao confirmar e-mail sem pendência>
-- Severidade: <Blocker | Critical | Major | Minor | Trivial>
+- Título curto (obrigatório): Temos alerta de unusedparams no SignIn
+- Severidade: Trivial <Blocker | Critical | Major | Minor | Trivial>
 - Ambiente: <dev | staging | prod> (padrão: dev)
 
 ## 2) Descrição e Impacto
-- Descrição sucinta do problema:
-- Impacto (SLO/usuários/processos):
+- Descrição sucinta do problema:temos 3 alertas de unusedparms no SignIn para NtionalID, ipAddress e userAgent
+- Impacto (SLO/usuários/processos): baixo
 
 ## 3) Reprodução
-- Pré-condições:
+- Pré-condições: execução do Lint
 - Passos para reproduzir (passo a passo):
 - Resultado atual (inclua payloads relevantes/respostas):
 - Resultado esperado:
