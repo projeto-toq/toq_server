@@ -29,7 +29,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9091:9090"
+      - "127.0.0.1:9091:9090" # bind apenas em loopback para uso via Nginx
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
@@ -44,11 +44,14 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000" # bind apenas em loopback
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=grafana.gca.dev.br
+      - GF_SERVER_ROOT_URL=https://grafana.gca.dev.br
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
     volumes:
       - /codigos/grafana:/var/lib/grafana
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
@@ -77,7 +80,7 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
-      - "16686:16686" # Jaeger UI
+      - "127.0.0.1:16686:16686" # Jaeger UI only loopback
       - "14268:14268" # Jaeger HTTP collector
       - "6831:6831/udp" # Jaeger agent
       - "14317:4317" # OTLP gRPC receiver (diferente porta externa)
@@ -91,10 +94,10 @@ services:
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
     ports:
-      - "8081:8080"
+      - "127.0.0.1:8081:8080" # loopback only
     environment:
-      - URL=http://gca.dev.br:8080/swagger/doc.json
-      - BASE_URL=/swagger
+      - URL=https://api.gca.dev.br/swagger/doc.json
+      - BASE_URL=/
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:

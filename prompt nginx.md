@@ -1,9 +1,3 @@
-A sua solicitação é excelente, pois busca adaptar um prompt detalhado e específico para um novo domínio: a configuração de infraestrutura com Nginx, em vez da refatoração de código Go.
-
-O prompt que você usa para o GitHub Copilot é muito bom porque define claramente o papel, o problema, as regras obrigatórias e o formato da saída. A chave para a sua nova solicitação é manter essa estrutura, mas substituindo as regras de código Go por regras de configuração de infraestrutura.
-
-Aqui está um prompt para instruir o GitHub Copilot a preparar um plano de implementação para Nginx como proxy reverso, seguindo a mesma filosofia do seu prompt original.
-
 ---
 ### Prompt para o GitHub Copilot (Nginx Proxy Reverso)
 
@@ -15,15 +9,15 @@ Eu preciso que você atue como um engenheiro de DevOps sênior, especializado em
 
 **Problema:** Preciso instalar e configurar um servidor Nginx como proxy reverso em um servidor Debian 13 (AWS EC2) para as seguintes aplicações, todas rodando em contêineres Docker, exceto o serviço Go:
 
-* **Swagger UI:** Porta verifique docker-composer.yml
-* **Grafana:** Porta verifique docker-composer.yml
-* **Jaeger:** Porta verifique docker-composer.yml
-* **Prometheus:** Porta verifique docker-composer.yml
+* **Swagger UI:** Porta verifique docker-composer.yml - atualmente responde em http://gca.dev.br:8080/swagger/index.html
+* **Grafana:** Porta verifique docker-composer.yml - atualmente responde em http://www.gca.dev.br:3000/?orgId=1&from=now-6h&to=now&timezone=browser
+* **Jaeger:** Porta verifique docker-composer.yml - atualmente responde em http://www.gca.dev.br:16686/search
+* **Prometheus:** Porta verifique docker-composer.yml - atualmente responde em http://www.gca.dev.br:9091/query
 * **Go REST API:** Porta :8080/api/v2 (servidor na mesma máquina, não em Docker)
 
 O servidor Nginx deve redirecionar o tráfego HTTP para HTTPS e usar certificados SSL do Let's Encrypt já instalados no servidor (`/etc/letsencrypt/`). 
 
-Se houver necessida de de alterar docker-compose.yaml informe as alerações.
+Se houver necessidade de alterar docker-compose.yaml informe as alterações.
 ---
 
 ### REGRAS OBRIGATÓRIAS DE ANÁLISE E PLANEJAMENTO
