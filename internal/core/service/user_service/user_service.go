@@ -70,7 +70,6 @@ type UserServiceInterface interface {
 	DeleteAgencyOfRealtor(ctx context.Context, realtorID int64) (err error)
 	DeleteRealtorOfAgency(ctx context.Context, agencyID int64, realtorID int64) (err error)
 	GetAgencyOfRealtor(ctx context.Context, realtorID int64) (agency usermodel.UserInterface, err error)
-	GetOnboardingStatus(ctx context.Context, userID int64) (UserRoleStatus string, reason string, err error)
 	GetProfile(ctx context.Context) (user usermodel.UserInterface, err error)
 	GetRealtorsByAgency(ctx context.Context, agencyID int64) (realtors []usermodel.UserInterface, err error)
 	GetUsers(ctx context.Context) (users []usermodel.UserInterface, err error)

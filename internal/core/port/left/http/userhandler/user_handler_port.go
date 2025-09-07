@@ -11,7 +11,6 @@ type UserHandlerPort interface {
 	GetProfile(c *gin.Context)
 	UpdateProfile(c *gin.Context)
 	DeleteAccount(c *gin.Context)
-	GetOnboardingStatus(c *gin.Context)
 	GetUserRoles(c *gin.Context)
 	GoHome(c *gin.Context)
 	UpdateOptStatus(c *gin.Context)

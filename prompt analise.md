@@ -4,19 +4,19 @@ Toda a interação deve ser em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Criar bloqueio a user com estado diferente de ativo
+- Título curto: remover completamente o caminho getonboardingstatus
 
-- Resultado esperado (alto nível): Obter maior segurança no sistema, evitando que usuários com estado diferente de ativo (ex.: suspenso, deletado) possam realizar operações que deveriam ser restritas a usuários ativos.
+- Resultado esperado (alto nível): Codigo higienizado devido a substituição do caminho get onboaring statis para GET /user/status.
 
 ## 2) Contexto do Projeto
-- Módulo/área: Middewares de autenticação e autorização
-- Problema/hipótese atual: O usuário com estado diferente de ativo deve ser proibido de acessar recursos fora do caminho auth ou user. Nestes caminhos estão todas as chamadas necessárias para tornar o usuário ativo novamente (ex.: reativação, suporte).
-- Impacto: Segurança fraca
+- Módulo/área: user_handler/user_services/user_repository
+- Problema/hipótese atual: Após a substituição do endpoint getonboardingstatus pelo getuserstatus, o código antigo ficou obsoleto e precisa ser removido para manter a base de código limpa e eficiente.
+- Impacto: Código poluído, potencial confusão para novos desenvolvedores, manutenção mais difícil.
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
 ## 3) Escopo
-- Incluir: fluxo de autentcação/autorização, middlewares, handlers
+- Incluir: user_handler/user_services/user_repository
 - Excluir (fora de escopo): <itens out-of-scope>
 
 ## 4) Requisitos
@@ -88,4 +88,6 @@ Toda a interação deve ser em português.
 
 5) Caso a tarefa seja grande/demorada, dividir em fases menores e entregáveis curtos.
 
-> Observação: comentários internos em português; docstrings de funções em inglês; Swagger por anotações no código.
+6) Caso haja remoção de arquivos limpe o conteúdo e informa a lista para remoção manual.
+
+7) Comentários internos em português; docstrings de funções em inglês; Swagger por anotações no código.

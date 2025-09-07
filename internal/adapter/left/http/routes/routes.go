@@ -123,14 +123,13 @@ func RegisterUserRoutes(
 	user.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		// Profile management
-		user.GET("/profile", userHandler.GetProfile)                                                         // GetProfile
-		user.PUT("/profile", userHandler.UpdateProfile)                                                      // UpdateProfile
-		user.DELETE("/account", userHandler.DeleteAccount)                                                   // DeleteAccount
-		user.GET("/onboarding", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetOnboardingStatus
-		user.GET("/status", userHandler.GetUserStatus)                                                       // GetUserStatus
-		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // GetUserRoles
-		user.GET("/home", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // GoHome
-		user.PUT("/opt-status", userHandler.UpdateOptStatus)                                                 // UpdateOptStatus
+		user.GET("/profile", userHandler.GetProfile)                                                    // GetProfile
+		user.PUT("/profile", userHandler.UpdateProfile)                                                 // UpdateProfile
+		user.DELETE("/account", userHandler.DeleteAccount)                                              // DeleteAccount
+		user.GET("/status", userHandler.GetUserStatus)                                                  // GetUserStatus
+		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetUserRoles
+		user.GET("/home", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GoHome
+		user.PUT("/opt-status", userHandler.UpdateOptStatus)                                            // UpdateOptStatus
 
 		// SignOut (authenticated endpoint)
 		user.POST("/signout", userHandler.SignOut) // SignOut

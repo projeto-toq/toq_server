@@ -196,12 +196,6 @@ type DeleteAccountResponse struct {
 	Message string         `json:"message"`
 }
 
-// GetOnboardingStatusResponse represents onboarding status response
-type GetOnboardingStatusResponse struct {
-	Status string `json:"status"`
-	Reason string `json:"reason,omitempty"`
-}
-
 // GetUserRolesResponse represents user roles response
 type GetUserRolesResponse struct {
 	Roles []UserRoleResponse `json:"roles"`
