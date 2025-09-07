@@ -39,3 +39,27 @@ type RoleDTO struct {
 	IsSystemRole bool   `json:"is_system_role"`
 	IsActive     bool   `json:"is_active"`
 }
+
+// UserStatusResponse represents the response for GET /user/status endpoint.
+// It returns only the current active role status of the authenticated user.
+type UserStatusResponse struct {
+	Data UserStatusData `json:"data"`
+}
+
+// UserStatusData holds the minimal status payload.
+type UserStatusData struct {
+	// Status código numérico do status da role ativa.
+	// Enum:
+	// 0 = active
+	// 1 = blocked
+	// 2 = temp_blocked
+	// 3 = pending_both
+	// 4 = pending_email
+	// 5 = pending_phone
+	// 6 = pending_creci
+	// 7 = pending_cnpj
+	// 8 = pending_manual
+	// 9 = deleted
+	// 10 = invite_pending
+	Status int `json:"status" example:"0"`
+}

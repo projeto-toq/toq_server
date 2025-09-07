@@ -55,12 +55,13 @@ Referências: `docs/toq_server_go_guide.md`, `internal/adapter/left/http/http_er
 
 ## Modelo de Preenchimento Rápido (copie e edite)
 
-- Título: <...>
-- Severidade: <...>
+Apresente um plano de correção da causa raiz do problema abixo. Toda a interação deve ser em português.
+- Título: GetUserStatus está responde status como string e deveria ser int
+- Severidade: Major
 - Ambiente: dev
-- Descrição: <...>
-- Reproduzir: <pré-condições / passos / atual vs esperado>
+- Descrição: o status da rola ativa está sendo retornada como string e deveria ser int
+- Reproduzir: chamar o caminho GET /user/status
 - Evidências: <logs/trace/screens>
 - Escopo: <endpoints / módulos / dados-tx>
 - Critérios de aceite: <...>
-- Referências: <links/arquivos>
+- Referências: `docs/toq_server_go_guide.md`

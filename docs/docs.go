@@ -352,7 +352,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Invalid refresh token",
+                        "description": "Invalid or expired refresh token",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -822,35 +822,25 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "422": {
                         "description": "Missing required documents",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     }
                 }
@@ -1032,7 +1022,7 @@ const docTemplate = `{
         },
         "/user/email/resend": {
             "post": {
-                "description": "Resend a new validation code to the pending new email address",
+                "description": "Resend the existing (still valid) validation code to the pending new email address. If there is no pending change, returns 409. If the code is expired, returns 410.",
                 "produces": [
                     "application/json"
                 ],
@@ -1054,7 +1044,13 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Email change not pending",
+                        "description": "Email change not pending or email already in use",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "410": {
+                        "description": "Code expired",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -1179,6 +1175,24 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
+                    "409": {
+                        "description": "Phone change not pending or phone already in use",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "410": {
+                        "description": "Phone change code expired",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid phone change code",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -1258,7 +1272,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Resend a new validation code to the pending new phone number",
+                "description": "Resend the existing (still valid) validation code to the pending new phone number. If there is no pending change, returns 409. If the code is expired, returns 410.",
                 "produces": [
                     "application/json"
                 ],
@@ -1280,7 +1294,13 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Phone change not pending",
+                        "description": "Phone change not pending or phone already in use",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "410": {
+                        "description": "Code expired",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -1575,6 +1595,52 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/status": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the status of the currently active user role. Absence of an active role is treated as internal inconsistency.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get active user role status",
+                "responses": {
+                    "200": {
+                        "description": "Active role status (status campo inteiro enum ver comentários DTO)",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -2348,6 +2414,24 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileData"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserStatusData": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "description": "Status código numérico do status da role ativa.\nEnum:\n0 = active\n1 = blocked\n2 = temp_blocked\n3 = pending_both\n4 = pending_email\n5 = pending_phone\n6 = pending_creci\n7 = pending_cnpj\n8 = pending_manual\n9 = deleted\n10 = invite_pending",
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserStatusResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserStatusData"
                 }
             }
         }

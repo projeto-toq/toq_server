@@ -106,4 +106,6 @@ type UserServiceInterface interface {
 	GetUserByID(ctx context.Context, id int64) (usermodel.UserInterface, error)
 	// GetUserByIDWithTx returns the user with the active role using the provided transaction
 	GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int64) (usermodel.UserInterface, error)
+	// GetActiveRoleStatus returns only the status of the active user role
+	GetActiveRoleStatus(ctx context.Context) (status permissionmodel.UserRoleStatus, err error)
 }

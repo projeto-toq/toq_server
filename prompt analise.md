@@ -4,19 +4,19 @@ Toda a interação deve ser em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Aplicar o plano de padronização descrto no `docs/toq_server_go_guide.md` onde domains, interfaces e seus métodos estão em arquivos separados.
+- Título curto: Criar bloqueio a user com estado diferente de ativo
 
-- Resultado esperado (alto nível): Estrutura mais simples, seguindo práticas recomendadas.
+- Resultado esperado (alto nível): Obter maior segurança no sistema, evitando que usuários com estado diferente de ativo (ex.: suspenso, deletado) possam realizar operações que deveriam ser restritas a usuários ativos.
 
 ## 2) Contexto do Projeto
-- Módulo/área: session_service 
-- Problema/hipótese atual: existe um único arquivo com a interface e todos os métosdos implementados, o que dificulta a leitura e manutenção.
-- Impacto: Dificuldade em identificar problemas, aumento do tempo de resolução de incidentes.
+- Módulo/área: Middewares de autenticação e autorização
+- Problema/hipótese atual: O usuário com estado diferente de ativo deve ser proibido de acessar recursos fora do caminho auth ou user. Nestes caminhos estão todas as chamadas necessárias para tornar o usuário ativo novamente (ex.: reativação, suporte).
+- Impacto: Segurança fraca
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
 ## 3) Escopo
-- Incluir: session_service 
+- Incluir: fluxo de autentcação/autorização, middlewares, handlers
 - Excluir (fora de escopo): <itens out-of-scope>
 
 ## 4) Requisitos
