@@ -9,7 +9,7 @@ import (
 )
 
 // alias to ensure swagger can link error response
-type __ = dto.ErrorResponse
+type _ = dto.ErrorResponse
 
 // GetUserStatus handles GET /user/status
 //
