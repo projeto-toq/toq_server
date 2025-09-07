@@ -94,7 +94,7 @@ services:
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
     ports:
-      - "127.0.0.1:8081:8080" # loopback only
+      - "127.0.0.1:8082:8080" # loopback only
     environment:
       - URL=https://api.gca.dev.br/swagger/doc.json
       - BASE_URL=/
