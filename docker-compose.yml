@@ -69,10 +69,10 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "4317:4317" # OTLP gRPC receiver (usado pela aplicação)
-      - "4318:4318" # OTLP HTTP receiver (expor para a host para uso por exporters HTTP)
-      - "8888:8888" # Prometheus metrics exposed by the collector
-      - "8889:8889" # Prometheus exporter metrics
+      - "127.0.0.1:4317:4317" # OTLP gRPC receiver somente loopback
+      - "127.0.0.1:4318:4318" # OTLP HTTP receiver somente loopback
+      - "127.0.0.1:8888:8888" # Métricas collector loopback
+      - "127.0.0.1:8889:8889" # Exporter metrics loopback
     networks:
       - toq-network
 
@@ -80,11 +80,11 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
-      - "127.0.0.1:16686:16686" # Jaeger UI only loopback
-      - "14268:14268" # Jaeger HTTP collector
-      - "6831:6831/udp" # Jaeger agent
-      - "14317:4317" # OTLP gRPC receiver (diferente porta externa)
-      - "14318:4318" # OTLP HTTP receiver (diferente porta externa)
+      - "127.0.0.1:16686:16686" # Jaeger UI somente loopback
+      - "127.0.0.1:14268:14268" # Collector HTTP interno
+      - "127.0.0.1:6831:6831/udp" # Agent UDP interno
+      - "127.0.0.1:14317:4317" # OTLP gRPC interno
+      - "127.0.0.1:14318:4318" # OTLP HTTP interno
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     networks:
