@@ -14,7 +14,7 @@ func (us *userService) encryptPassword(password string) (hashPassword string) {
 	// Usa bcrypt com custo padrão; erros aqui são improváveis (custo inválido)
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		slog.Error("encryptPassword: failed to generate bcrypt hash: %v", err)
+		slog.Error("encryptPassword: failed to generate bcrypt hash: %v", "err", err)
 		return ""
 	}
 	return string(hash)
