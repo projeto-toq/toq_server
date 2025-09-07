@@ -625,6 +625,150 @@ Depende Fase 1. Base para Fase 3/4.
 ---
 
 ## Fase 3 – Observabilidade e Melhorias
+### BREAKPOINT_FASE3_INICIO
+Plano de execução (cada comando isolado para facilitar conferência antes de rodar em produção). Objetivo imediato: habilitar visibilidade mínima (stub_status local), preparar bases para métricas e rotação de logs sem alterar formato principal ainda.
+
+#### 1. Criar site stub_status (somente loopback)
+Arquivo: /etc/nginx/sites-available/stub_status.conf
+```
+server {
+        listen 127.0.0.1:8089;
+        server_name 127.0.0.1;
+
+        access_log /var/log/nginx/root/access.log main_ext; # baixo volume, reutiliza
+        error_log  /var/log/nginx/root/error.log warn;
+
+        location = /nginx_status {
+                stub_status;
+                allow 127.0.0.1;
+                deny all;
+        }
+}
+```
+Symlink:
+```
+ln -s /etc/nginx/sites-available/stub_status.conf /etc/nginx/sites-enabled/
+```
+Teste sintaxe:
+```
+nginx -t
+```
+Reload:
+```
+systemctl reload nginx
+```
+Teste:
+```
+curl -s 127.0.0.1:8089/nginx_status
+```
+
+#### 2. (Opcional agora) Preparar log_format JSON (Apenas definido, NÃO ativar ainda)
+Arquivo: /etc/nginx/conf.d/log_format_json.conf
+```
+log_format json_combined escape=json '{"time":"$time_iso8601","remote_addr":"$remote_addr","method":"$request_method","uri":"$uri","query":"$query_string","status":$status,"bytes":$body_bytes_sent,"referer":"$http_referer","user_agent":"$http_user_agent","request_time":$request_time,"upstream_time":"$upstream_response_time","upstream_addr":"$upstream_addr","upstream_status":"$upstream_status","xff":"$http_x_forwarded_for","x_device_id":"$http_x_device_id"}';
+```
+Não alterar `access_log` atuais até medirmos impacto de storage. Futuro: duplicar logging para pipe/fluent-bit se necessário.
+
+#### 3. logrotate (garantir rotação segregada)
+Arquivo: /etc/logrotate.d/nginx-toq
+```
+/var/log/nginx/*/*.log {
+    daily
+    rotate 14
+    missingok
+    compress
+    delaycompress
+    notifempty
+    sharedscripts
+    postrotate
+        [ -s /run/nginx.pid ] && kill -USR1 $(cat /run/nginx.pid)
+    endscript
+}
+```
+Verificação manual:
+```
+logrotate -d /etc/logrotate.d/nginx-toq
+```
+
+#### 4. Nginx Prometheus Exporter (adiado – só preparar instruções)
+Decisão: adiar instalação até confirmar endpoint scrape do Prometheus interno. Instruções quando aprovar:
+```
+VERSION=1.3.0
+curl -L -o /usr/local/bin/nginx-prometheus-exporter \
+    https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v$VERSION/nginx-prometheus-exporter_${VERSION}_linux_amd64
+chmod +x /usr/local/bin/nginx-prometheus-exporter
+```
+Unit file /etc/systemd/system/nginx-prometheus-exporter.service:
+```
+[Unit]
+Description=Nginx Prometheus Exporter
+After=network.target nginx.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/nginx-prometheus-exporter -nginx.scrape-uri http://127.0.0.1:8089/nginx_status -web.listen-address 127.0.0.1:9113
+Restart=on-failure
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
+```
+Scrape Prometheus (adicionar futuramente em prometheus.yml):
+```
+- job_name: nginx_exporter
+    static_configs:
+        - targets: ["127.0.0.1:9113"]
+```
+
+#### 5. Pipeline de logs (pré-design)
+Proposta curta: manter plain text + logrotate; avaliar volume semanal. Se centralização escolhida (ex Loki), instalar Fluent Bit com tail inputs rotulados por subdiretório (service label derivada de caminho). Adiar execução.
+
+#### 6. Checklist de Validação Fase 3
+| Item | Ação | Status |
+|------|------|--------|
+| stub_status acessível local | curl 127.0.0.1:8089/nginx_status | Pendente |
+| Sem exposição externa nova | Verificar portas públicas (ss / netstat) | Pendente |
+| logrotate regra criada | cat /etc/logrotate.d/nginx-toq | Pendente |
+| Teste dry-run logrotate | logrotate -d | Pendente |
+| Exporter adiado documentado | Revisar decisão | Pendente |
+
+#### 7. Riscos Específicos Introduzidos
+| Risco | Impacto | Mitigação |
+|-------|---------|-----------|
+| Porta stub_status aberta acidentalmente em 0.0.0.0 | Exposição de métricas básicas | Fixar listen 127.0.0.1 e validar ss |
+| Crescimento logs antes de ajuste retenção | Consumo disco | logrotate diário + monitor espaço |
+| Exporter futuro aumenta endpoints internos | Superfície monitoração | Bind loopback + restrição SG |
+
+#### 8. Próximos Passos Antes de Marcar Conclusão
+1. Criar arquivo stub_status.conf.
+2. Symlink + nginx -t + reload.
+3. Validar curl stub_status.
+4. Criar logrotate file e dry-run.
+5. Atualizar esta documentação com resultados reais e marcar BREAKPOINT_FASE3_APLICADO.
+
+### Aguardando Execução
+Quando os passos acima forem executados no host, atualizar tabela de status e inserir marcador de conclusão.
+
+---
+### Execução Real da Fase 3 (Parcial)
+| Item | Resultado | Observação |
+|------|-----------|------------|
+| stub_status acessível local | OK (curl retornou métricas) | Porta 127.0.0.1:8089 restrita |
+| Sem exposição externa nova | OK | Apenas loopback criado |
+| Diretórios de log segregados | Criados | Proprietário ajustado www-data:adm |
+| logrotate regra criada | OK (/etc/logrotate.d/nginx-toq) | Dry-run sem erros críticos |
+| Dry-run logrotate | OK | Exibiu padrões, nenhuma rotação necessária agora |
+| Exporter prometheus | Adiado | Instruções documentadas |
+| Formato JSON | Apenas definido (não ativado) | Aguardando decisão futura |
+| CSP prematura removida | OK | Reintroduzir na Fase 4 (Report-Only) |
+| Zona rate limit auth preparada | OK (api_v2_auth_limit) | Endpoint /api/v2/auth com limit_req ativo |
+
+### BREAKPOINT_FASE3_APLICADO
+Fase 3 (escopo mínimo) aplicada: stub_status, estrutura de logs validada, logrotate configurado. Próximo: planejar início da Fase 4 (CSP report-only, rate limiting auth, proteção prometheus/jaeger). Aguardando confirmação para avançar.
+
+---
 ### Execução Real da Fase 2 (Implementado)
 Esta subseção documenta o que foi efetivamente aplicado no host durante a implementação prática da Fase 2.
 
@@ -832,6 +976,117 @@ deny all;
 ### Dependências
 Fase 2 e 3 (observabilidade para medir impacto).
 
+### Execução Parcial Real da Fase 4
+| Item | Status | Observações |
+|------|--------|-------------|
+| CSP Report-Only snippet | Aplicado a todos os vhosts públicos | Snippet: `snippets/csp-report-only.conf` |
+| Remoção CSP prematura anterior | Concluído | Mantido histórico em backup .backup |
+| Basic Auth prometheus | Ativado (arquivo esperado .htpasswd-prometheus) | Necessário garantir arquivo e permissões seguras |
+| Basic Auth jaeger | Ativado (arquivo .htpasswd-jaeger) | Substituiu retorno 403 bloqueando uso legítimo |
+| Rate limit auth (/api/v2/auth) | Ativo (api_v2_auth_limit) | Monitorar códigos 429 após tráfego real |
+| Segurança headers base | Mantidos (sem CSP enforce) | Próxima etapa: ajustar políticas se houver bloqueios no console |
+| Teste sintaxe nginx -t | OK | Warnings apenas (OCSP, server_name duplicado HTTP) |
+| Erro 500 Prometheus autenticado | Resolvido | Causa raiz: grupo incorreto (www-data) nos htpasswd, Nginx roda como usuário/grupo `nginx` |
+| Padronização ownership snippets | Aplicado | `root:nginx`, arquivos 640 |
+| Diretório conf.d.deny | Ajustado | Permissões 750, root:nginx |
+| Certificados TLS | Ajustado | `fullchain.pem` e `privkey.pem` root:nginx 640 (leitura apenas necessária) |
+| Centralização certificados | Concluído | Diretivas movidas para `snippets/ssl-params.conf`; removidas de `api.conf` e `internal-tools.conf` |
+| Validação SNI pós-centralização | OK | Todos subdomínios retornam mesmo subject CN=gca.dev.br |
+
+#### Próximos Passos Fase 4
+1. Criar arquivos .htpasswd (prometheus, jaeger) se ainda não existentes e validar 401 → 200 após auth.
+2. Gerar carga controlada em /api/v2/auth e ajustar rate (30r/s vs tráfego real).
+3. Capturar eventuais violações CSP (console navegador) e preparar lista de domínios extras (fonts/CDNs se necessário).
+4. Planejar transição para CSP enforce (post validação) – criar snippet separado csp-enforce.conf.
+5. Definir política de rotação de certificado (cron de verificação + alerta). 
+
+#### Itens Pendentes Para Conclusão Completa Fase 4
+- Implementar allowlist ou ajustar Basic Auth conforme política de acesso interno vs externo.
+- Adicionar COOP/CORP já presentes – avaliar Cross-Origin-Embedder-Policy se necessário (aplicações web complexas).
+- Confirmar necessidade de limitar métodos (limit_except) em endpoints sensíveis.
+- Documentar processo de atualização de secrets (.htpasswd) e rotação de senhas.
+
+### BREAKPOINT_FASE4_PARCIAL
+Aplicações iniciais de segurança (CSP Report-Only, Basic Auth prometheus/jaeger, rate limit auth endpoint) concluídas. Aguardando criação/validação dos arquivos .htpasswd e observações de CSP para avançar para enforce/ajustes finais.
+
+### BREAKPOINT_FASE4_CONCLUIDA
+Concluído endurecimento planejado desta fase (escopo aprovado):
+1. CSP em modo Report-Only aplicada em todos vhosts.
+2. Basic Auth operacional (swagger / prometheus / jaeger) com permissões adequadas (root:nginx, 640) e erro 500 resolvido (root cause: grupo incorreto).
+3. Rate limiting específico /api/v2/auth ativo (zona api_v2_auth_limit) + limite genérico req_limit_api.
+4. Centralização dos certificados no snippet ssl-params.conf com ownership root:nginx 640.
+5. Remoção de duplicações de ssl_certificate em server blocks.
+6. Padronização ownership de snippets e diretórios sensíveis.
+7. Registro de causa raiz e correções em documentação.
+
+Pendências (post-fase para melhoria contínua, mover para backlog):
+- CSP enforce (após validar eventuais violações reais em staging/prod).
+- Ajustar taxas definitivas de rate limit conforme métricas reais.
+- Rotacionar senhas temporárias Basic Auth (inserir em cofre de segredos) e implementar processo periódico.
+- Automatizar verificação de expiração do certificado (cron + alerta se <30 dias).
+- Possível migração para allowlist IP em Prometheus/Jaeger ao invés de Basic Auth (se acessos estritamente internos).
+
+---
+## Fase 5 – Go-Live / Fechamento (Status Atual)
+
+### Checklist Final (marcação)
+| Item | Status | Observação |
+|------|--------|-----------|
+| DNS apontando | Pendente | Validar registros A/AAAA externos |
+| SG somente 80/443 | Pendente | Confirmar regras EC2/Security Group |
+| Firewall local coerente | Pendente | nftables/ufw não documentado ainda |
+| Certificado válido (>60d) | OK | Expira em ~Nov 23 2025 |
+| Redireção HTTP→HTTPS | OK | Testes curl 301 aplicados |
+| Healthz API 200 | OK | /healthz via proxy |
+| Swagger protegido | OK | 401 → 200 após auth |
+| Grafana acessível | OK | Sem erros relatados |
+| Prometheus restrito | OK | 401 sem auth / 200 com | 
+| Jaeger restrito | OK | 401 sem auth / 200 com |
+| Rate limiting auth | OK | Zona aplicada (monitorar 429) |
+| CSP Report-Only | OK | Enforce aguardando validação |
+| Headers segurança | OK | HSTS / X-Frame-Options / XCTO / RP / PP |
+| Logs segregados + rotate | OK | logrotate diário 14 retenções |
+| stub_status local | OK | 127.0.0.1:8089/nginx_status |
+| Exporter Nginx | Pendente | Instruções prontas |
+| Centralização logs externa | Pendente | Definir stack (Fluent Bit/Loki) |
+| Backups DB / snapshot | Pendente | Procedimentos não implantados aqui |
+| Plano DR documentado | Parcial | Estrutura descrita, executar testes |
+| Senhas Basic Auth rotacionadas | Pendente | Usar valores definitivos + cofre |
+
+### Ações Recomendadas Imediatas Pré-Go-Live
+1. Rotacionar senhas temporárias (prom_user, trace_user, doc_user) → substituir por segredos fortes armazenados em cofre.
+2. Validar DNS público e certificado via SSL Labs (nota mínima A).
+3. Implementar cron de verificação de validade do certificado + alerta (ex: script simples + mail/Slack).
+4. Decidir sobre exporter Nginx (ativar para métricas ou postergar).
+5. Definir fluxo de backup diário (DB + /etc/nginx + /codigos/ssl-certs) com retenção explícita.
+6. Ensaiar rollback rápido (página manutenção) e anotar tempo decorrido.
+7. Reavaliar necessidade de manter Basic Auth em Prometheus/Jaeger vs restringir rede.
+
+### Scripts de Apoio (Automation Added)
+Local: `scripts/go_live/`
+- `cert_expiry_check.sh` → Verifica dias até expiração (usar em cron semanal)
+- `nginx_basic_auth_rotate.sh` → Rotaciona credenciais Basic Auth (gera senha, ajusta permissões, reload Nginx)
+- `rate_limit_stress_test.sh` → Gera carga para validar 429 e calibrar limites
+- `dns_ssl_validate.sh` → Validação rápida de DNS e certificado/SNI
+
+Sugestão de cron (exemplo):
+# Verificação semanal certificado (domingo 07:15)
+15 7 * * 0 /usr/local/bin/cert_expiry_check.sh api.gca.dev.br 30 >> /var/log/cert_expiry.log 2>&1
+
+Registrar saída crítica em canal de alerta (integrar com mailx ou webhook Slack futuramente).
+
+### Comandos de Verificação (opcional)
+Documentados fora da produção para execução manual (não incluídos automaticamente aqui):
+- openssl s_client -connect api.gca.dev.br:443 -servername api.gca.dev.br | grep -i 'issuer'
+- curl -I https://api.gca.dev.br/healthz
+- curl -I -u prom_user:*** https://prometheus.gca.dev.br/metrics
+
+### Encerramento
+Configuração consolidada e documentada. Itens pendentes claros para transição segura a produção. Prosseguir para aprovação final e execução de pendências antes de marcar GO definitivo.
+
+### BREAKPOINT_FASE5_PREP
+Pronto para validação executiva / segurança antes de GO-Live.
+
 ---
 
 ## Fase 5 – Go-Live / Checklist Final
@@ -926,3 +1181,72 @@ Conclusão Fases 0–4.
 Se desejar, posso gerar versão final “arquivo por arquivo” separada ou scripts de provisionamento (Ansible/Systemd) numa próxima interação.
 
 Fim.
+
+## Debug WWW Placeholder Issue (www.gca.dev.br)
+Context: Acesso a https://www.gca.dev.br retorna "placeholder root" em vez de conteúdo de /codigos/web_server.
+
+### Hipóteses Prováveis
+1. Server block ativo para www.gca.dev.br apontando para diretório temporário (ex: /var/www/html ou /var/www/placeholder).
+2. Ausência de server_name www.gca.dev.br no vhost correto (caiu em default_server genérico).
+3. Ordem/precedência: existe um server block com `listen 443 default_server` antes do desejado.
+4. Symlink do vhost real não presente em `/etc/nginx/sites-enabled/`.
+5. Permissões/ownership impedindo leitura => fallback para outro bloco padrão (menos provável pois entrega HTML diferente, não erro 403/404).
+
+### Passos de Diagnóstico (Sequência)
+1. Identificar bloco que respondeu:
+   grep -R "placeholder" /etc/nginx/sites-available /etc/nginx/snippets || true
+2. Listar server blocks relevantes:
+   nginx -T 2>/dev/null | awk '/server_name/ {print NR ":" $0}' | grep -E "gca.dev.br"
+3. Conferir se há default_server conflitando:
+   nginx -T 2>/dev/null | grep -n "default_server"
+4. Testar resolução forçando Host local (loopback):
+   curl -k -H 'Host: www.gca.dev.br' https://127.0.0.1/ -I
+5. Verificar root configurado nesse bloco:
+   nginx -T 2>/dev/null | sed -n 'START,ENDp'  (usar linha START/END encontrada no passo 2)
+6. Validar diretório esperado existe:
+   test -d /codigos/web_server && ls -1 /codigos/web_server | head
+7. Conferir permissões:
+   namei -l /codigos/web_server/index.html
+
+### Correção Recomendada
+Unificar root + aliases em único vhost TLS:
+```
+server {
+  listen 443 ssl http2;
+  server_name gca.dev.br www.gca.dev.br;
+  include snippets/ssl-params.conf;
+  include snippets/security-headers.conf;
+  include snippets/csp-report-only.conf; # (ou enforce quando migrar)
+  root /codigos/web_server;
+  index index.html index.htm;
+  access_log /var/log/nginx/root_access.log main_ext;
+  error_log  /var/log/nginx/root_error.log warn;
+  location / { try_files $uri $uri/ /index.html; }
+}
+server { listen 80; server_name gca.dev.br www.gca.dev.br; return 301 https://$host$request_uri; }
+```
+
+### Ações de Implementação
+1. Criar/editar arquivo: /etc/nginx/sites-available/root.conf (ou nome atual) com bloco acima.
+2. Remover qualquer bloco antigo que contenha apenas `www.gca.dev.br` apontando para placeholder.
+3. Garantir symlink: ln -s /etc/nginx/sites-available/root.conf /etc/nginx/sites-enabled/root.conf
+4. Permissões conteúdo:
+   chown -R root:nginx /codigos/web_server
+   find /codigos/web_server -type d -exec chmod 750 {} \;
+   find /codigos/web_server -type f -exec chmod 640 {} \;
+5. Testar: nginx -t
+6. Reload: systemctl reload nginx
+7. Validar:
+   curl -I https://gca.dev.br
+   curl -I https://www.gca.dev.br
+   curl -I -H 'Host: www.gca.dev.br' https://127.0.0.1 --insecure | grep -i '200\|301'
+
+### Rollback Simples
+Reverter symlink ao arquivo antigo e reload, se necessário.
+
+### Critério de Sucesso
+- www.gca.dev.br e gca.dev.br servem mesmo conteúdo (hash idêntico: usar sha256sum via curl -s ... | sha256sum).
+- Nenhum "placeholder" restante ao grep em configs.
+
+### Próxima Ação
+Executar sequência de diagnóstico; aplicar correção; registrar resultado na tabela de checklist Fase 5 (DNS + Root site OK).
