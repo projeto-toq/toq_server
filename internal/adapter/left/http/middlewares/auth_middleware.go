@@ -90,6 +90,7 @@ func setRootUserContext(c *gin.Context) {
 		ID:         0,
 		UserRoleID: 0,
 		RoleStatus: permissionmodel.StatusActive,
+		RoleSlug:   permissionmodel.RoleSlugRoot,
 	}
 
 	// Set context values for compatibility
@@ -159,10 +160,17 @@ func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
 		return usermodel.UserInfos{}, jwt.NewValidationError("invalid role status claim", jwt.ValidationErrorClaimsInvalid)
 	}
 
+	// RoleSlug é opcional para retrocompatibilidade
+	var roleSlug permissionmodel.RoleSlug
+	if rs, ok := userInfoMap["RoleSlug"].(string); ok {
+		roleSlug = permissionmodel.RoleSlug(rs)
+	}
+
 	return usermodel.UserInfos{
 		ID:         int64(userID),
 		UserRoleID: int64(userRoleID),
 		RoleStatus: permissionmodel.UserRoleStatus(roleStatus),
+		RoleSlug:   roleSlug,
 	}, nil
 }
 

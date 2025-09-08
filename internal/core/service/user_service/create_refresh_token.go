@@ -12,7 +12,7 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *usermodel.Tokens, jti string) (err error) {
+func (us *userService) CreateRefreshToken(expired bool, user usermodel.UserInterface, tokens *usermodel.Tokens, jti string) (err error) {
 
 	var expires int64
 
@@ -26,10 +26,16 @@ func (us *userService) CreateRefreshToken(expired bool, userID int64, tokens *us
 		expires = time.Now().UTC().Add(globalmodel.GetRefreshTTL()).Unix()
 	}
 
+	// Incluir RoleSlug se usuário tiver uma role ativa (mesmo que refresh não dependa dela, facilita auditoria em clientes)
+	var roleSlug permissionmodel.RoleSlug
+	if ar := user.GetActiveRole(); ar != nil && ar.GetRole() != nil {
+		roleSlug = permissionmodel.RoleSlug(ar.GetRole().GetSlug())
+	}
 	infos := usermodel.UserInfos{
-		ID:         userID,
-		UserRoleID: 0,                            // Refresh token não precisa de UserRoleID específico
-		RoleStatus: permissionmodel.StatusActive, // Status padrão para refresh token
+		ID:         user.GetID(),
+		UserRoleID: 0,                            // Refresh não exige role ID
+		RoleStatus: permissionmodel.StatusActive, // Mantém status genérico
+		RoleSlug:   roleSlug,
 	}
 
 	//cria os claims

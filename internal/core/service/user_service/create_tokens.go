@@ -40,7 +40,7 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 	tokens.AccessToken = accessToken
 
 	jti := uuid.New().String()
-	err = us.CreateRefreshToken(expired, user.GetID(), &tokens, jti)
+	err = us.CreateRefreshToken(expired, user, &tokens, jti)
 	if err != nil {
 		return
 	}

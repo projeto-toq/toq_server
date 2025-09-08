@@ -66,6 +66,28 @@ Orquestrado por `internal/core/config` (struct `Bootstrap`) com Lifecycle Manage
 Fases (ordem):
 - 01 Context: contexto base, sinais, usuário sistema, ajuste do diretório, pprof opcional.
 - 02 Config: carrega env + YAML; valida DB/HTTP/telemetry/security; aplica JWT/TTLs.
+
+### JWT Claims (Access / Refresh)
+
+Access token (claim `infos`):
+```
+{
+  "ID": <int>,
+  "UserRoleID": <int>,
+  "RoleStatus": <int>,
+  "RoleSlug": "<slug>" // novo campo aditivo (root|owner|realtor|agency), pode faltar em tokens antigos
+}
+```
+Refresh token (claim `infos`):
+```
+{
+  "ID": <int>,
+  "UserRoleID": 0,
+  "RoleStatus": <int>,
+  "RoleSlug": "<slug|opcional>"
+}
+```
+Backward-compatible: middleware trata ausência de `RoleSlug`.
 - 03 Infra: MySQL, Redis, OpenTelemetry (tracing/metrics), adapter de métricas.
 - 04 DI: Factory Pattern criando Storage, Repositories, Validation, External Services.
 - 05 Services: ordem crítica — Global → Permission → User → Complex → Listing.

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -27,6 +28,7 @@ func (us *userService) CreateAccessToken(secret string, user usermodel.UserInter
 		ID:         user.GetID(),
 		UserRoleID: activeRole.GetID(),
 		RoleStatus: activeRole.GetStatus(),
+		RoleSlug:   permissionmodel.RoleSlug(activeRole.GetRole().GetSlug()),
 	}
 
 	now := time.Now().UTC().Unix()

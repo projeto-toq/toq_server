@@ -3,8 +3,9 @@ Toda a interação deve ser em português.
 ---
 
 ## 1) Objetivo
-- Título curto: <ex.: Linkar guia de logs no README>
-- Resultado esperado: <ex.: README com seção “Developer docs” linkando guia>
+- Título curto: preparar plano para incluir roleslug no token jwt. não implemente sem autorização.
+- Descrição detalhada: Incluir o campo roleslug no token JWT para facilitar a identificação das permissões do usuário por clientes que consomem o token.
+- Resultado esperado: JWT com roleslug para facilitar clientes
 
 ## 2) Escopo
 - Incluir: <arquivos/trechos>
@@ -32,12 +33,3 @@ Toda a interação deve ser em português.
 
 Referência: `docs/toq_server_go_guide.md`.
 
----
-
-## Modelo Rápido (copie e edite)
-
-- Título: <...>
-- Escopo: <...>
-- Arquivos: <...>
-- Critérios de aceite: <...>
-- Notas/Observações: <...>
