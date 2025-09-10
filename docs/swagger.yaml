@@ -1010,7 +1010,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Generate a pre-signed URL to upload a CRECI document (selfie/front/back)
+      description: Create a pre-signed URL to upload a CRECI document (selfie/front/back)
       parameters:
       - description: Upload request
         in: body
@@ -1038,7 +1038,7 @@ paths:
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "422":
-          description: Validation error (document type or content type)
+          description: Validation error (documentType or contentType)
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
@@ -1047,7 +1047,7 @@ paths:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get pre-signed upload URL for CRECI documents
+      summary: Create pre-signed upload URL for CRECI documents
       tags:
       - Realtor
   /realtor/creci/verify:
@@ -1398,7 +1398,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Generate a pre-signed URL to upload a profile photo to storage
+      description: Create a pre-signed URL to upload a profile photo to storage
       parameters:
       - description: Upload request
         in: body
@@ -1431,7 +1431,7 @@ paths:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get pre-signed upload URL for profile photo
+      summary: Create pre-signed upload URL for profile photo
       tags:
       - User
   /user/profile:

@@ -31,12 +31,8 @@ func (us *userService) GetPhotoUploadURL(ctx context.Context, objectName, conten
 		return "", utils.ValidationError("objectName", "Unsupported photo type")
 	}
 
-	// Validar content-type permitido (apenas imagens JPEG/PNG)
-	allowedContentTypes := map[string]bool{
-		"image/jpeg": true,
-		"image/png":  true,
-	}
-	if !allowedContentTypes[contentType] {
+	// Validar content-type permitido via util compartilhado
+	if !utils.IsAllowedImageContentType(contentType) {
 		return "", utils.ValidationError("contentType", "Only image/jpeg or image/png are allowed")
 	}
 

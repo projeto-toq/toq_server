@@ -729,7 +729,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Generate a pre-signed URL to upload a CRECI document (selfie/front/back)",
+                "description": "Create a pre-signed URL to upload a CRECI document (selfie/front/back)",
                 "consumes": [
                     "application/json"
                 ],
@@ -739,7 +739,7 @@ const docTemplate = `{
                 "tags": [
                     "Realtor"
                 ],
-                "summary": "Get pre-signed upload URL for CRECI documents",
+                "summary": "Create pre-signed upload URL for CRECI documents",
                 "parameters": [
                     {
                         "description": "Upload request",
@@ -777,7 +777,7 @@ const docTemplate = `{
                         }
                     },
                     "422": {
-                        "description": "Validation error (document type or content type)",
+                        "description": "Validation error (documentType or contentType)",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -1321,7 +1321,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Generate a pre-signed URL to upload a profile photo to storage",
+                "description": "Create a pre-signed URL to upload a profile photo to storage",
                 "consumes": [
                     "application/json"
                 ],
@@ -1331,7 +1331,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Get pre-signed upload URL for profile photo",
+                "summary": "Create pre-signed upload URL for profile photo",
                 "parameters": [
                     {
                         "description": "Upload request",

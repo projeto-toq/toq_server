@@ -1,16 +1,16 @@
-Toda a interação deve ser em português.
+Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ---
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: remover completamente o caminho getonboardingstatus
+- Título curto: Verificar o fluxo de obtenção de URL assinada para CRECI
 
-- Resultado esperado (alto nível): Codigo higienizado devido a substituição do caminho get onboaring statis para GET /user/status.
+- Resultado esperado (alto nível): Codigo higienizado e funcional para GET /realtor/creci/upload-url
 
 ## 2) Contexto do Projeto
+- Requisição: Analise o código atual para o endpoint GET /realtor/creci/upload-url, identifique problemas de arquitetura, estilo de código, tratamento de erros e observabilidade, e proponha um plano detalhado para corrigir e alinhar o código com as boas práticas definidas no guia `docs/toq_server_go_guide.md`. A regra de negócio é que o endpoint deve retornar uma URL assinada para upload de selfie do corretor (selfie), foto da frente do creci (front) e verso do creci (back) segundo o valor enviado na requisição, utilizando o serviço de storage configurado (S3). O código atual pode conter trechos legados ou incorretos que precisam ser revisados e corrigidos.
 - Módulo/área: user_handler/user_services/user_repository
-- Problema/hipótese atual: Após a substituição do endpoint getonboardingstatus pelo getuserstatus, o código antigo ficou obsoleto e precisa ser removido para manter a base de código limpa e eficiente.
 - Impacto: Código poluído, potencial confusão para novos desenvolvedores, manutenção mais difícil.
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`

@@ -14,7 +14,7 @@ type UserHandlerPort interface {
 	GetUserRoles(c *gin.Context)
 	GoHome(c *gin.Context)
 	UpdateOptStatus(c *gin.Context)
-	GetPhotoUploadURL(c *gin.Context)
+	PostPhotoUploadURL(c *gin.Context)
 	GetProfileThumbnails(c *gin.Context)
 	GetUserStatus(c *gin.Context)
 
@@ -38,7 +38,7 @@ type UserHandlerPort interface {
 
 	// Realtor handlers
 	VerifyCreciDocuments(c *gin.Context)
-	GetCreciUploadURL(c *gin.Context)
+	PostCreciUploadURL(c *gin.Context)
 	AcceptInvitation(c *gin.Context)
 	RejectInvitation(c *gin.Context)
 	GetAgencyOfRealtor(c *gin.Context)
