@@ -44,6 +44,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -92,8 +93,24 @@ func (h *SplitLevelHandler) WithGroup(name string) slog.Handler {
 	}
 }
 
+// printUsage writes a friendly CLI help to the configured output.
+func printUsage() {
+	w := flag.CommandLine.Output()
+	fmt.Fprintf(w, "TOQ Server - Real Estate HTTP API Server\n\n")
+	fmt.Fprintf(w, "Usage:\n  toq_server [flags]\n\n")
+	fmt.Fprintf(w, "Flags:\n")
+	// List all registered flags with defaults
+	flag.PrintDefaults()
+	fmt.Fprintf(w, "\nExamples:\n")
+	fmt.Fprintf(w, "  toq_server --log-level=debug --log-format=text\n")
+	fmt.Fprintf(w, "  toq_server -h\n")
+}
+
 func parseFlags() *LogConfig {
 	config := &LogConfig{}
+
+	// Custom usage output
+	flag.Usage = printUsage
 
 	flag.StringVar(&config.Level, "log-level", "info",
 		"Log level (debug, info, warn, error)")
@@ -104,6 +121,15 @@ func parseFlags() *LogConfig {
 	flag.BoolVar(&config.AddSource, "log-add-source", false,
 		"Add source code location to logs")
 
+	// Accept GNU-style --help for convenience (in addition to the default -h)
+	for _, a := range os.Args[1:] {
+		if a == "--help" {
+			flag.Usage()
+			os.Exit(0)
+		}
+	}
+
+	// Parse flags (on invalid flag, flag exits with code 2 and calls Usage)
 	flag.Parse()
 	return config
 }

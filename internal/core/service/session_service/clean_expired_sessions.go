@@ -57,6 +57,6 @@ func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, e
 
 	// Metrics best-effort
 	metricSessionCleanerDeleted.Add(float64(deleted))
-	slog.Info("clean_expired_sessions_success", "deleted", deleted)
+	slog.Debug("clean_expired_sessions_success", "deleted", deleted)
 	return deleted, nil
 }

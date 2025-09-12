@@ -4,12 +4,15 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Verificar o fluxo de obtenção de URL assinada para CRECI
+- Título curto: Verificar o fluxo de validação de email e telefone
 
-- Resultado esperado (alto nível): Codigo higienizado e funcional para GET /realtor/creci/upload-url
+- Resultado esperado (alto nível): Incluir help na chamada cli
 
 ## 2) Contexto do Projeto
-- Requisição: Analise o código atual para o endpoint GET /realtor/creci/upload-url, identifique problemas de arquitetura, estilo de código, tratamento de erros e observabilidade, e proponha um plano detalhado para corrigir e alinhar o código com as boas práticas definidas no guia `docs/toq_server_go_guide.md`. A regra de negócio é que o endpoint deve retornar uma URL assinada para upload de selfie do corretor (selfie), foto da frente do creci (front) e verso do creci (back) segundo o valor enviado na requisição, utilizando o serviço de storage configurado (S3). O código atual pode conter trechos legados ou incorretos que precisam ser revisados e corrigidos.
+- Requisição: atualmente ao chamar o toq_server via linha de comando existem parametros que podem ser passados, porem não existe um help que mostre quais são esses parametros e o que cada um faz.
+Assim, o objetivo é incluir um help na chamada cli do toq_server --help ou -h -- que mostre os parametros aceitos e o que cada um faz. caso seja enviado algum parametro inválido, o help também deve ser exibido automaticamente.
+
+
 - Módulo/área: user_handler/user_services/user_repository
 - Impacto: Código poluído, potencial confusão para novos desenvolvedores, manutenção mais difícil.
 - Links úteis (logs/trace/dashboard): <opcional>
