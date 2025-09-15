@@ -33,10 +33,13 @@ func (uh *UserHandler) GoHome(c *gin.Context) {
 
 	// Prepare response with welcome message
 	currentRole := utils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
-	isActive := utils.IsProfileActiveFromStatus(userInfo.RoleStatus)
+	// TODO: Código temporário comentado - RoleStatus removido dos tokens
+	// isActive := utils.IsProfileActiveFromStatus(userInfo.RoleStatus)
 
 	response := dto.GoHomeResponse{
-		Message: fmt.Sprintf("Welcome %s. Seu Role é %s, e seu perfil está %v", user.GetNickName(), currentRole, isActive),
+		// TODO: Mensagem simplificada até refatoração completa do handler
+		Message: fmt.Sprintf("Welcome %s. Seu Role é %s", user.GetNickName(), currentRole),
+		// Message: fmt.Sprintf("Welcome %s. Seu Role é %s, e seu perfil está %v", user.GetNickName(), currentRole, isActive),
 	}
 
 	c.JSON(http.StatusOK, response)

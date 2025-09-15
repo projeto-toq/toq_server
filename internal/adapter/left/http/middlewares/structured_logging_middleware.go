@@ -95,7 +95,6 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 			fields = append(fields,
 				slog.Int64("user_id", userInfo.ID),
 				slog.Int64("user_role_id", userInfo.UserRoleID),
-				slog.String("role_status", userInfo.RoleStatus.String()),
 			)
 		}
 

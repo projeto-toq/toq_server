@@ -93,10 +93,10 @@ func (e *ConditionEvaluator) checkRoleCondition(roles interface{}, context *perm
 	// Com a nova estrutura, verificamos o UserRoleID e RoleStatus diretamente
 	// Esta função pode ser simplificada ou usar lookup de role baseado no UserRoleID
 
-	// Para agora, vamos fazer uma verificação básica se o usuário tem role ativo
-	if !context.IsActive() {
-		return false
-	}
+	// // Para agora, vamos fazer uma verificação básica se o usuário tem role ativo
+	// if !context.IsActive() {
+	// 	return false
+	// }
 
 	switch roleData := roles.(type) {
 	case string:

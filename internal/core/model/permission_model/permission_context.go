@@ -9,11 +9,11 @@ type PermissionContext struct {
 }
 
 // NewPermissionContext cria um novo contexto de permissão
-func NewPermissionContext(userID, userRoleID int64, roleStatus UserRoleStatus) *PermissionContext {
+func NewPermissionContext(userID, userRoleID int64) *PermissionContext {
 	return &PermissionContext{
 		UserID:     userID,
 		UserRoleID: userRoleID,
-		RoleStatus: roleStatus,
+		RoleStatus: StatusActive, // Mantém por compatibilidade, mas será ignorado
 		Metadata:   make(map[string]interface{}),
 	}
 }
@@ -32,12 +32,12 @@ func (pc *PermissionContext) WithMetadata(metadata map[string]interface{}) *Perm
 
 // HasRole verifica se o usuário possui um role específico
 func (pc *PermissionContext) HasRole(roleSlug RoleSlug) bool {
-	// Implementar lógica baseada no UserRoleID e RoleStatus
+	// Implementar lógica baseada no UserRoleID
 	// Esta função substituirá a verificação por strings
-	return pc.UserRoleID > 0 && pc.RoleStatus == StatusActive
+	return pc.UserRoleID > 0
 }
 
-// IsActive verifica se o role do usuário está ativo
-func (pc *PermissionContext) IsActive() bool {
-	return pc.RoleStatus == StatusActive
-}
+// // IsActive verifica se o role do usuário está ativo
+// func (pc *PermissionContext) IsActive() bool {
+// 	return pc.UserRoleID > 0
+// }

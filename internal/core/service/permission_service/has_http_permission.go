@@ -63,7 +63,7 @@ func (p *permissionServiceImpl) HasHTTPPermission(ctx context.Context, userID in
 	action := fmt.Sprintf("%s:%s", method, path)
 
 	// Criar contexto com as informações completas do usuário
-	permContext := permissionmodel.NewPermissionContext(userID, userRole.GetID(), userRole.GetStatus())
+	permContext := permissionmodel.NewPermissionContext(userID, userRole.GetID())
 	permContext.AddMetadata("http_method", method)
 	permContext.AddMetadata("http_path", path)
 

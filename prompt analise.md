@@ -4,16 +4,15 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Verificar o fluxo de validação de email e telefone
+- Título curto: Ajustar valores contindos no access token e refresh token
 
 - Resultado esperado (alto nível): Incluir help na chamada cli
 
 ## 2) Contexto do Projeto
-- Requisição: atualmente ao chamar o toq_server via linha de comando existem parametros que podem ser passados, porem não existe um help que mostre quais são esses parametros e o que cada um faz.
-Assim, o objetivo é incluir um help na chamada cli do toq_server --help ou -h -- que mostre os parametros aceitos e o que cada um faz. caso seja enviado algum parametro inválido, o help também deve ser exibido automaticamente.
+- Requisição: crie um plano para remover do access token e do refresh token, o campo RoleStatus. Consequentemente o código que era usado para capturar o RoleStatus para carregegar nos tokens deve ser removido também
 
 
-- Módulo/área: user_handler/user_services/user_repository
+- Módulo/área: user_handler/user_services/user_repository/user_model
 - Impacto: Código poluído, potencial confusão para novos desenvolvedores, manutenção mais difícil.
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`

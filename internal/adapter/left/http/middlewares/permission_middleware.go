@@ -120,7 +120,7 @@ func RequirePermission(permissionService permissionservice.PermissionServiceInte
 
 // buildPermissionContext constrói o contexto de permissão baseado na requisição
 func buildPermissionContext(c *gin.Context, userInfo usermodel.UserInfos) *permissionmodel.PermissionContext {
-	context := permissionmodel.NewPermissionContext(userInfo.ID, userInfo.UserRoleID, userInfo.RoleStatus)
+	context := permissionmodel.NewPermissionContext(userInfo.ID, userInfo.UserRoleID)
 
 	// Adicionar metadados da requisição
 	context.AddMetadata("request_ip", c.ClientIP()).

@@ -33,8 +33,7 @@ func (us *userService) CreateRefreshToken(expired bool, user usermodel.UserInter
 	}
 	infos := usermodel.UserInfos{
 		ID:         user.GetID(),
-		UserRoleID: 0,                            // Refresh não exige role ID
-		RoleStatus: permissionmodel.StatusActive, // Mantém status genérico
+		UserRoleID: 0, // Refresh não exige role ID
 		RoleSlug:   roleSlug,
 	}
 

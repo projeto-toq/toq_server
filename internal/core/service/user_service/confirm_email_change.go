@@ -117,7 +117,6 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	user.SetEmail(userValidation.GetNewEmail())
-	// Device token capture removed from email confirmation.
 
 	//update the user validation
 	userValidation.SetNewEmail("")

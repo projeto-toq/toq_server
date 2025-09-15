@@ -27,7 +27,6 @@ func (us *userService) CreateAccessToken(secret string, user usermodel.UserInter
 	infos := usermodel.UserInfos{
 		ID:         user.GetID(),
 		UserRoleID: activeRole.GetID(),
-		RoleStatus: activeRole.GetStatus(),
 		RoleSlug:   permissionmodel.RoleSlug(activeRole.GetRole().GetSlug()),
 	}
 
