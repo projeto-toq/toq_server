@@ -93,8 +93,8 @@ type UserServiceInterface interface {
 	// It must not change email, phone or password; those have dedicated flows.
 	UpdateProfile(ctx context.Context, in UpdateProfileInput) (err error)
 	UpdateOptStatus(ctx context.Context, optIn bool) (err error)
-	GetPhotoUploadURL(ctx context.Context, objectName, contentType string) (signedURL string, err error)
-	GetProfileThumbnails(ctx context.Context) (thumbnails usermodel.ProfileThumbnails, err error)
+	GetPhotoUploadURL(ctx context.Context, variant, contentType string) (signedURL string, err error)
+	GetPhotoDownloadURL(ctx context.Context, variant string) (signedURL string, err error)
 	CreateUserFolder(ctx context.Context, userID int64) (err error)
 	DeleteUserFolder(ctx context.Context, userID int64) (err error)
 	// GetCreciUploadURL generates a signed upload URL for realtor CRECI documents

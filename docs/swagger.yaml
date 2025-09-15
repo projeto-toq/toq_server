@@ -165,30 +165,41 @@ definitions:
           $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.StatusOption'
         type: array
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLRequest:
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLRequest:
     properties:
-      contentType:
-        type: string
-      objectName:
+      variant:
+        enum:
+        - original
+        - small
+        - medium
+        - large
         type: string
     required:
-    - contentType
-    - objectName
+    - variant
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLResponse:
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLResponse:
     properties:
       signedUrl:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileThumbnailsResponse:
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLRequest:
     properties:
-      largeUrl:
+      contentType:
         type: string
-      mediumUrl:
+      variant:
+        enum:
+        - original
+        - small
+        - medium
+        - large
         type: string
-      originalUrl:
-        type: string
-      smallUrl:
+    required:
+    - contentType
+    - variant
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLResponse:
+    properties:
+      signedUrl:
         type: string
     type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ListingResponse:
@@ -1394,6 +1405,47 @@ paths:
       summary: Resend phone change code
       tags:
       - User
+  /user/photo/download-url:
+    post:
+      consumes:
+      - application/json
+      description: Create a pre-signed URL to download a specific profile photo variant
+        from storage
+      parameters:
+      - description: Download request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Validation error (variant)
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create pre-signed download URL for profile photo
+      tags:
+      - User
   /user/photo/upload-url:
     post:
       consumes:
@@ -1505,34 +1557,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Update user profile (non-sensitive fields)
-      tags:
-      - User
-  /user/profile/thumbnails:
-    get:
-      description: Returns signed URLs for original, small, medium, and large profile
-        photos
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileThumbnailsResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get profile photo thumbnails
       tags:
       - User
   /user/signout:

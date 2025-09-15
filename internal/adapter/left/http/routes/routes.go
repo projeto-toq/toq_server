@@ -135,8 +135,8 @@ func RegisterUserRoutes(
 		user.POST("/signout", userHandler.SignOut) // SignOut
 
 		// Photo management
-		user.POST("/photo/upload-url", userHandler.PostPhotoUploadURL)    // PostPhotoUploadURL
-		user.GET("/profile/thumbnails", userHandler.GetProfileThumbnails) // GetProfileThumbnails
+		user.POST("/photo/upload-url", userHandler.PostPhotoUploadURL)     // PostPhotoUploadURL
+		user.POST("/photo/download-url", userHandler.PostPhotoDownloadURL) // PostPhotoDownloadURL
 
 		// Email change workflow
 		user.POST("/email/request", userHandler.RequestEmailChange)

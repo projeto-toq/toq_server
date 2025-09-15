@@ -4,13 +4,20 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Ajustar valores contindos no access token e refresh token
-
-- Resultado esperado (alto nível): Incluir help na chamada cli
+- Título curto: Padronizar as chamadas POST /api/v2/user/photo/upload-url e GET /api/v2/user/profile/thumbnails
 
 ## 2) Contexto do Projeto
-- Requisição: crie um plano para remover do access token e do refresh token, o campo RoleStatus. Consequentemente o código que era usado para capturar o RoleStatus para carregegar nos tokens deve ser removido também
-
+- Requisição: Analise o código atual e apresente quais um plano detalhado para:
+1) Alterar GET /api/v2/user/profile/thumbnails pra GET /api/v2/user/photo/download-url
+2) alterar os locais no bucket S3 de:
+{user_id}/photo.jpg   ==> {user_id}/photo/original.jpg
+{user_id}/thumbnails/small.jpg   ==> {user_id}/photo/small.jpg
+{user_id}/thumbnails/medium.jpg  ==> {user_id}/photo/medium.jpg
+{user_id}/thumbnails/large.jpg   ==> {user_id}/photo/large.jpg
+3) confira que a criação do bucket S3, durante a criação dos usuários, não terá conflito com a alteração.
+4) confira que a deleção do bucket S3, durante a deleção dos usuários, não terá conflito com a alteração.
+5) documente na doc swagger como deve ser chamados os endpoints e os possíveis valores passados.
+6) ajuste os nomes das funções e dos arquivos de service para ficarem de acordo com o novo padrão e os novos handlers.
 
 - Módulo/área: user_handler/user_services/user_repository/user_model
 - Impacto: Código poluído, potencial confusão para novos desenvolvedores, manutenção mais difícil.

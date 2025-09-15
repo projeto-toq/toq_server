@@ -15,7 +15,7 @@ type UserHandlerPort interface {
 	GoHome(c *gin.Context)
 	UpdateOptStatus(c *gin.Context)
 	PostPhotoUploadURL(c *gin.Context)
-	GetProfileThumbnails(c *gin.Context)
+	PostPhotoDownloadURL(c *gin.Context)
 	GetUserStatus(c *gin.Context)
 
 	// Email/Phone change handlers

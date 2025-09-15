@@ -1314,6 +1314,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/photo/download-url": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a pre-signed URL to download a specific profile photo variant from storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create pre-signed download URL for profile photo",
+                "parameters": [
+                    {
+                        "description": "Download request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error (variant)",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/photo/upload-url": {
             "post": {
                 "security": [
@@ -1477,49 +1540,6 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/profile/thumbnails": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns signed URLs for original, small, medium, and large profile photos",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get profile photo thumbnails",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileThumbnailsResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -1905,22 +1925,24 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLRequest": {
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLRequest": {
             "type": "object",
             "required": [
-                "contentType",
-                "objectName"
+                "variant"
             ],
             "properties": {
-                "contentType": {
-                    "type": "string"
-                },
-                "objectName": {
-                    "type": "string"
+                "variant": {
+                    "type": "string",
+                    "enum": [
+                        "original",
+                        "small",
+                        "medium",
+                        "large"
+                    ]
                 }
             }
         },
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLResponse": {
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLResponse": {
             "type": "object",
             "properties": {
                 "signedUrl": {
@@ -1928,19 +1950,31 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileThumbnailsResponse": {
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLRequest": {
+            "type": "object",
+            "required": [
+                "contentType",
+                "variant"
+            ],
+            "properties": {
+                "contentType": {
+                    "type": "string"
+                },
+                "variant": {
+                    "type": "string",
+                    "enum": [
+                        "original",
+                        "small",
+                        "medium",
+                        "large"
+                    ]
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetPhotoUploadURLResponse": {
             "type": "object",
             "properties": {
-                "largeUrl": {
-                    "type": "string"
-                },
-                "mediumUrl": {
-                    "type": "string"
-                },
-                "originalUrl": {
-                    "type": "string"
-                },
-                "smallUrl": {
+                "signedUrl": {
                     "type": "string"
                 }
             }

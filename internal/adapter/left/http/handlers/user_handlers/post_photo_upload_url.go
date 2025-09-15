@@ -32,12 +32,12 @@ func (uh *UserHandler) PostPhotoUploadURL(c *gin.Context) {
 		return
 	}
 
-	if request.ObjectName == "" || request.ContentType == "" {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_FIELDS", "object_name and content_type are required")
+	if request.Variant == "" || request.ContentType == "" {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_FIELDS", "variant and contentType are required")
 		return
 	}
 
-	signedURL, err := uh.userService.GetPhotoUploadURL(ctx, request.ObjectName, request.ContentType)
+	signedURL, err := uh.userService.GetPhotoUploadURL(ctx, request.Variant, request.ContentType)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

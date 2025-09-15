@@ -20,8 +20,8 @@ func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err err
 
 	// Lista de placeholders para criar toda a estrutura de pastas
 	placeholders := []string{
-		fmt.Sprintf("%d/.placeholder", UserID),            // Pasta raiz do usuário
-		fmt.Sprintf("%d/thumbnails/.placeholder", UserID), // Pasta thumbnails
+		fmt.Sprintf("%d/.placeholder", UserID),       // Pasta raiz do usuário
+		fmt.Sprintf("%d/photo/.placeholder", UserID), // Pasta de fotos padronizada
 	}
 
 	// Criar cada placeholder para garantir que as "pastas" existam

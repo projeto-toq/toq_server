@@ -4,11 +4,11 @@ import (
 	"context"
 
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
-
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
-func (us *userService) GetPhotoUploadURL(ctx context.Context, variant, contentType string) (signedURL string, err error) {
+// GetPhotoDownloadURL generates a signed URL for a single photo variant
+func (us *userService) GetPhotoDownloadURL(ctx context.Context, variant string) (signedURL string, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -17,14 +17,13 @@ func (us *userService) GetPhotoUploadURL(ctx context.Context, variant, contentTy
 
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil {
-		return
+		return "", err
 	}
 
 	if us.cloudStorageService == nil {
 		return "", utils.InternalError("Storage service not configured")
 	}
 
-	// Validar variant aceito e mapear para PhotoType
 	var photoType storagemodel.PhotoType
 	switch variant {
 	case "original":
@@ -39,16 +38,10 @@ func (us *userService) GetPhotoUploadURL(ctx context.Context, variant, contentTy
 		return "", utils.ValidationError("variant", "Unsupported photo variant")
 	}
 
-	// Validar content-type permitido via util compartilhado
-	if !utils.IsAllowedImageContentType(contentType) {
-		return "", utils.ValidationError("contentType", "Only image/jpeg or image/png are allowed")
-	}
-
-	signedURL, err = us.cloudStorageService.GeneratePhotoUploadURL(userID, photoType, contentType)
+	signedURL, err = us.cloudStorageService.GeneratePhotoDownloadURL(userID, photoType)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		return "", err
 	}
-
 	return signedURL, nil
 }

@@ -217,8 +217,9 @@ type UpdateOptStatusResponse struct {
 }
 
 // GetPhotoUploadURLRequest represents photo upload URL request
+// variant must be one of: original|small|medium|large
 type GetPhotoUploadURLRequest struct {
-	ObjectName  string `json:"objectName" binding:"required"`
+	Variant     string `json:"variant" binding:"required,oneof=original small medium large"`
 	ContentType string `json:"contentType" binding:"required"`
 }
 
@@ -227,12 +228,15 @@ type GetPhotoUploadURLResponse struct {
 	SignedURL string `json:"signedUrl"`
 }
 
-// GetProfileThumbnailsResponse represents profile thumbnails response
-type GetProfileThumbnailsResponse struct {
-	OriginalURL string `json:"originalUrl"`
-	SmallURL    string `json:"smallUrl"`
-	MediumURL   string `json:"mediumUrl"`
-	LargeURL    string `json:"largeUrl"`
+// GetPhotoDownloadURLRequest represents photo single download URL request
+// variant must be one of: original|small|medium|large
+type GetPhotoDownloadURLRequest struct {
+	Variant string `json:"variant" binding:"required,oneof=original small medium large"`
+}
+
+// GetPhotoDownloadURLResponse represents photo single download URL response
+type GetPhotoDownloadURLResponse struct {
+	SignedURL string `json:"signedUrl"`
 }
 
 // Email change requests
