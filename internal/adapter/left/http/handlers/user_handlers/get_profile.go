@@ -20,7 +20,7 @@ type _ = dto.ErrorResponse
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	dto.UserProfileResponse	"Profile data with user information"
+//	@Success		200	{object}	dto.GetProfileResponse	"Profile data with user information"
 //	@Failure		401	{object}	dto.ErrorResponse	"Unauthorized"
 //	@Failure		403	{object}	dto.ErrorResponse	"Forbidden"
 //	@Failure		404	{object}	dto.ErrorResponse	"User not found"
@@ -43,7 +43,7 @@ func (uh *UserHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	// Success response com DTO tipado e conversão segura
-	resp := converters.ToUserProfileResponse(user)
+	// Success response com DTO tipado e conversão segura (camelCase)
+	resp := converters.ToGetProfileResponse(user)
 	c.JSON(http.StatusOK, resp)
 }

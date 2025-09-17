@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"log/slog"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -53,7 +52,6 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 		token := tokenParts[1]
 		userInfo, err := validateAccessToken(token)
 		if err != nil {
-			slog.Warn("Invalid access token", "error", err, "ip", c.ClientIP())
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid access token"))
 			if mp := getMetricsAdapterFromGin(c); mp != nil {
 				mp.IncrementErrors("auth", "invalid_token")
@@ -154,7 +152,6 @@ func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
 		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user role ID claim", jwt.ValidationErrorClaimsInvalid)
 	}
 
-	// RoleSlug é opcional para retrocompatibilidade
 	var roleSlug permissionmodel.RoleSlug
 	if rs, ok := userInfoMap["RoleSlug"].(string); ok {
 		roleSlug = permissionmodel.RoleSlug(rs)
@@ -166,6 +163,9 @@ func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
 		RoleSlug:   roleSlug,
 	}, nil
 }
+
+// Nota: Não logamos detalhes de tokens inválidos aqui. Métricas e o middleware de logging de request
+// dão visibilidade adequada sem vazar metadados do JWT.
 
 // GetUserInfoFromContext extracts user info from Gin context
 func GetUserInfoFromContext(c *gin.Context) (usermodel.UserInfos, bool) {

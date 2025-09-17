@@ -4,62 +4,64 @@ import (
 	"time"
 
 	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 )
 
-// ToUserProfileResponse converts a domain user to a stable API response DTO.
-// Campos opcionais são preenchidos de forma segura para evitar panics (ex.: active role nulo).
-func ToUserProfileResponse(u usermodel.UserInterface) dto.UserProfileResponse {
-	data := dto.UserProfileData{
-		ID:          u.GetID(),
-		Email:       u.GetEmail(),
-		PhoneNumber: u.GetPhoneNumber(),
-		FullName:    u.GetFullName(),
-		NickName:    u.GetNickName(),
-		NationalID:  u.GetNationalID(),
-		ZipCode:     u.GetZipCode(),
-		Street:      u.GetStreet(),
-		City:        u.GetCity(),
-		State:       u.GetState(),
-	}
-
-	// born_at format YYYY-MM-DD (omit if zero)
-	if t := u.GetBornAt(); !t.IsZero() {
-		data.BornAt = t.Format("2006-01-02")
+// ToGetProfileResponse converts a domain user to the public GetProfileResponse DTO (camelCase).
+// Preenche campos opcionais de forma segura e formata datas em YYYY-MM-DD quando aplicável.
+func ToGetProfileResponse(u usermodel.UserInterface) dto.GetProfileResponse {
+	user := dto.UserResponse{
+		ID:           u.GetID(),
+		FullName:     u.GetFullName(),
+		NickName:     u.GetNickName(),
+		NationalID:   u.GetNationalID(),
+		CreciNumber:  u.GetCreciNumber(),
+		CreciState:   u.GetCreciState(),
+		BornAt:       parseDate(u.GetBornAt()),
+		PhoneNumber:  u.GetPhoneNumber(),
+		Email:        u.GetEmail(),
+		ZipCode:      u.GetZipCode(),
+		Street:       u.GetStreet(),
+		Number:       u.GetNumber(),
+		Complement:   u.GetComplement(),
+		Neighborhood: u.GetNeighborhood(),
+		City:         u.GetCity(),
+		State:        u.GetState(),
+		LastActivity: formatDateTime(u.GetLastActivityAt()),
 	}
 
 	// Active role (nil-safe)
 	if ar := u.GetActiveRole(); ar != nil {
-		data.ActiveRole = toActiveRoleDTO(ar)
-	}
-
-	return dto.UserProfileResponse{Data: data}
-}
-
-func toActiveRoleDTO(ar permissionmodel.UserRoleInterface) *dto.ActiveRoleDTO {
-	out := &dto.ActiveRoleDTO{
-		ID:     ar.GetID(),
-		Active: ar.GetIsActive(),
-	}
-	if r := ar.GetRole(); r != nil {
-		out.Role = &dto.RoleDTO{
-			ID:           r.GetID(),
-			Name:         r.GetName(),
-			Slug:         r.GetSlug(),
-			Description:  r.GetDescription(),
-			IsSystemRole: r.GetIsSystemRole(),
-			IsActive:     r.GetIsActive(),
+		// Preferir slug se disponível
+		roleSlug := ""
+		if r := ar.GetRole(); r != nil {
+			roleSlug = r.GetSlug()
+		}
+		user.ActiveRole = dto.UserRoleResponse{
+			ID:         ar.GetID(),
+			UserID:     ar.GetUserID(),
+			BaseRoleID: ar.GetRoleID(),
+			Role:       roleSlug,
+			Active:     ar.GetIsActive(),
+			Status:     ar.GetStatus().String(),
 		}
 	}
-	return out
+
+	return dto.GetProfileResponse{User: user}
 }
 
-// parseDate is kept here for potential future needs (not used now),
-// demonstrating how to manage time safely if inputs change in the future.
+// parseDate safely formats a date as YYYY-MM-DD or returns empty string if zero.
 func parseDate(t time.Time) string {
 	if t.IsZero() {
 		return ""
 	}
 	return t.Format("2006-01-02")
+}
+
+// formatDateTime returns RFC3339 timestamp or empty string if zero.
+func formatDateTime(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(time.RFC3339)
 }

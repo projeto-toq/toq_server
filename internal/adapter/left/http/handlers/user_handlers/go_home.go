@@ -7,8 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -16,13 +15,12 @@ func (uh *UserHandler) GoHome(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	// Get user information from context (set by middleware)
-	userInfos, exists := c.Get(string(globalmodel.TokenKey))
-	if !exists {
-		httperrors.SendHTTPError(c, http.StatusUnauthorized, "UNAUTHORIZED", "User not authenticated")
+	userInfo, ok := middlewares.GetUserInfoFromContext(c)
+	if !ok {
+		// Se chegar aqui, é erro de pipeline (middleware deveria ter setado)
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_CONTEXT_MISSING", "User context not found")
 		return
 	}
-
-	userInfo := userInfos.(usermodel.UserInfos)
 
 	// Call service to get home data
 	user, err := uh.userService.Home(ctx, userInfo.ID)

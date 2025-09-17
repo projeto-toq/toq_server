@@ -1,14 +1,5 @@
 basePath: /api/v2
 definitions:
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ActiveRoleDTO:
-    properties:
-      active:
-        type: boolean
-      id:
-        type: integer
-      role:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RoleDTO'
-    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature:
     properties:
       category:
@@ -202,6 +193,11 @@ definitions:
       signedUrl:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileResponse:
+    properties:
+      user:
+        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserResponse'
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ListingResponse:
     properties:
       complexId:
@@ -303,21 +299,6 @@ definitions:
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ResendPhoneChangeCodeResponse:
     properties:
       message:
-        type: string
-    type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RoleDTO:
-    properties:
-      description:
-        type: string
-      id:
-        type: integer
-      is_active:
-        type: boolean
-      is_system_role:
-        type: boolean
-      name:
-        type: string
-      slug:
         type: string
     type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.SignInRequest:
@@ -482,55 +463,67 @@ definitions:
     - phoneNumber
     - zipCode
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileData:
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserResponse:
     properties:
-      active_role:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ActiveRoleDTO'
-      born_at:
+      activeRole:
+        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserRoleResponse'
+      bornAt:
         type: string
       city:
         type: string
+      complement:
+        type: string
+      creciNumber:
+        type: string
+      creciState:
+        type: string
+      creciValidity:
+        type: string
       email:
         type: string
-      full_name:
+      fullName:
         type: string
       id:
         type: integer
-      national_id:
+      lastActivity:
         type: string
-      nick_name:
+      nationalID:
         type: string
-      phone_number:
+      neighborhood:
+        type: string
+      nickName:
+        type: string
+      number:
+        type: string
+      phoneNumber:
         type: string
       state:
         type: string
       street:
         type: string
-      zip_code:
+      zipCode:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileResponse:
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserRoleResponse:
     properties:
-      data:
-        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileData'
+      active:
+        type: boolean
+      baseRoleId:
+        type: integer
+      id:
+        type: integer
+      role:
+        type: string
+      status:
+        type: string
+      statusReason:
+        type: string
+      userId:
+        type: integer
     type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserStatusData:
     properties:
       status:
-        description: |-
-          Status código numérico do status da role ativa.
-          Enum:
-          0 = active
-          1 = blocked
-          2 = temp_blocked
-          3 = pending_both
-          4 = pending_email
-          5 = pending_phone
-          6 = pending_creci
-          7 = pending_cnpj
-          8 = pending_manual
-          9 = deleted
-          10 = invite_pending
         example: 0
         type: integer
     type: object
@@ -1497,7 +1490,7 @@ paths:
         "200":
           description: Profile data with user information
           schema:
-            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileResponse'
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileResponse'
         "401":
           description: Unauthorized
           schema:

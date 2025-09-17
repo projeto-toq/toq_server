@@ -381,3 +381,26 @@ type GetUserRoleStatusResponse struct {
 	RoleSlug string `json:"roleSlug"`
 	Status   string `json:"status"`
 }
+
+// Simple user status (active role status) for GET /user/status
+// Alinhado ao handler get_user_status.go
+type UserStatusResponse struct {
+	Data UserStatusData `json:"data"`
+}
+
+// UserStatusData holds the minimal status payload.
+// Enum:
+// 0 = active
+// 1 = blocked
+// 2 = temp_blocked
+// 3 = pending_both
+// 4 = pending_email
+// 5 = pending_phone
+// 6 = pending_creci
+// 7 = pending_cnpj
+// 8 = pending_manual
+// 9 = deleted
+// 10 = invite_pending
+type UserStatusData struct {
+	Status int `json:"status" example:"0"`
+}

@@ -1462,7 +1462,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Profile data with user information",
                         "schema": {
-                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileResponse"
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileResponse"
                         }
                     },
                     "401": {
@@ -1670,20 +1670,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ActiveRoleDTO": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "role": {
-                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RoleDTO"
-                }
-            }
-        },
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature": {
             "type": "object",
             "properties": {
@@ -1979,6 +1965,14 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.GetProfileResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserResponse"
+                }
+            }
+        },
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ListingResponse": {
             "type": "object",
             "properties": {
@@ -2136,29 +2130,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RoleDTO": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "is_system_role": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "slug": {
                     "type": "string"
                 }
             }
@@ -2402,34 +2373,55 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileData": {
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserResponse": {
             "type": "object",
             "properties": {
-                "active_role": {
-                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ActiveRoleDTO"
+                "activeRole": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserRoleResponse"
                 },
-                "born_at": {
+                "bornAt": {
                     "type": "string"
                 },
                 "city": {
                     "type": "string"
                 },
+                "complement": {
+                    "type": "string"
+                },
+                "creciNumber": {
+                    "type": "string"
+                },
+                "creciState": {
+                    "type": "string"
+                },
+                "creciValidity": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
-                "full_name": {
+                "fullName": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "national_id": {
+                "lastActivity": {
                     "type": "string"
                 },
-                "nick_name": {
+                "nationalID": {
                     "type": "string"
                 },
-                "phone_number": {
+                "neighborhood": {
+                    "type": "string"
+                },
+                "nickName": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "phoneNumber": {
                     "type": "string"
                 },
                 "state": {
@@ -2438,16 +2430,34 @@ const docTemplate = `{
                 "street": {
                     "type": "string"
                 },
-                "zip_code": {
+                "zipCode": {
                     "type": "string"
                 }
             }
         },
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileResponse": {
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserRoleResponse": {
             "type": "object",
             "properties": {
-                "data": {
-                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserProfileData"
+                "active": {
+                    "type": "boolean"
+                },
+                "baseRoleId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "statusReason": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
@@ -2455,7 +2465,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "status": {
-                    "description": "Status código numérico do status da role ativa.\nEnum:\n0 = active\n1 = blocked\n2 = temp_blocked\n3 = pending_both\n4 = pending_email\n5 = pending_phone\n6 = pending_creci\n7 = pending_cnpj\n8 = pending_manual\n9 = deleted\n10 = invite_pending",
                     "type": "integer",
                     "example": 0
                 }

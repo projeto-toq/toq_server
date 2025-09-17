@@ -101,6 +101,7 @@ const (
 	StatusPendingCreci                        // awaiting creci images to be uploaded
 	StatusPendingCnpj                         // awaiting cnpj images to be uploaded
 	StatusPendingManual                       // awaiting manual verification by admin
+	StatusRejected                            // admin reject the documentation
 	StatusDeleted                             // user request the deletion of the account
 	StatusInvitePending                       // realtor was invited and is pending acceptance
 )
@@ -117,6 +118,7 @@ func (us UserRoleStatus) String() string {
 		"pending_creci",
 		"pending_cnpj",
 		"pending_manual",
+		"rejected",
 		"deleted",
 		"invite_pending",
 	}
