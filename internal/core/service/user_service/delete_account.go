@@ -43,7 +43,7 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 		}
 	}()
 
-	// Load user first to support idempotency and side-effects in a single txn
+	// Load user (somente usuários não deletados são retornados pelo repo)
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -51,33 +51,23 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 		return
 	}
 
-	// Idempotency: if already deleted, just revoke any remaining sessions and return expired tokens
-	if user.IsDeleted() {
-		if us.sessionRepo != nil {
-			if err2 := us.sessionRepo.RevokeSessionsByUserID(ctx, tx, userID); err2 != nil {
-				slog.Warn("user.delete_account.revoke_sessions_warning", "error", err2, "user_id", userID)
-			} else {
-				us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID})
-			}
-		}
-		// Best-effort: remove device tokens
-		if err2 := us.repo.RemoveAllDeviceTokens(ctx, tx, userID); err2 != nil {
-			slog.Warn("user.delete_account.remove_device_tokens_warning", "error", err2, "user_id", userID)
-		}
-		// Return expired tokens
-		tokens, err = us.CreateTokens(ctx, tx, user, true)
-		if err != nil {
-			return
-		}
-		if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
-			utils.SetSpanError(ctx, err)
-			slog.Error("user.delete_account.tx_commit_error", "error", err)
-			// best-effort: return success even if commit logging shows failure in edge case
-		}
-		return
+	// Garantir role ativa carregada a partir do Permission Service
+	activeRole, arErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	if arErr != nil {
+		utils.SetSpanError(ctx, arErr)
+		slog.Error("user.delete_account.get_active_role_error", "error", arErr, "user_id", userID)
+		return tokens, utils.InternalError("")
 	}
+	if activeRole == nil || activeRole.GetRole() == nil {
+		// Inconsistência interna: por domínio, usuário deve ter role ativa
+		err = utils.InternalError("Active role missing unexpectedly")
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.delete_account.active_role_missing", "user_id", userID)
+		return tokens, err
+	}
+	user.SetActiveRole(activeRole)
 
-	tokens, err = us.deleteAccount(ctx, tx, userID)
+	tokens, err = us.deleteAccount(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		slog.Error("user.delete_account.delete_account_error", "error", err, "user_id", userID)
@@ -93,13 +83,13 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	return
 }
 
-func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, userId int64) (tokens usermodel.Tokens, err error) {
-	user, err := us.repo.GetUserByID(ctx, tx, userId)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.get_user_error", "error", err, "user_id", userId)
-		return
-	}
+func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+	// user, err := us.repo.GetUserByID(ctx, tx, userId)
+	// if err != nil {
+	// 	utils.SetSpanError(ctx, err)
+	// 	slog.Error("user.delete_account.get_user_error", "error", err, "user_id", userId)
+	// 	return
+	// }
 	//delete the account dependencies
 	activeRole := user.GetActiveRole()
 	if activeRole != nil && activeRole.GetRole() != nil {

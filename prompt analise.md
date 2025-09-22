@@ -4,18 +4,22 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Ajustar campos faltantes no get/update profile
+- Título curto: Apresentar funcionalidade de sessions
 
 ## 2) Contexto do Projeto
-- Requisição: Estão faltando no get/update profile os campos neigborhood, complement e number (address).
+- Requisição: Analise o processo atual de sessions e apresente:
+- como funciona?
+- para que serve, inclusive rotation;
+- funções de limpeza e expiração;
+- benefícios;
 
-- Módulo/área: middlewares/user_handler/user_services/user_repository/user_model
-- Impacto: erro na atualização e recuperação do perfil do usuário
+- Módulo/área: 
+- Impacto: 
 - Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
 ## 3) Escopo
-- Incluir: user_handler/user_services/user_repository
+- Incluir: 
 - Excluir (fora de escopo): <itens out-of-scope>
 
 ## 4) Requisitos

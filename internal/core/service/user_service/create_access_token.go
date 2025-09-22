@@ -20,8 +20,10 @@ func (us *userService) CreateAccessToken(secret string, user usermodel.UserInter
 	// Exigência: access token requer role ativa
 	activeRole := user.GetActiveRole()
 	if activeRole == nil {
-		slog.Warn("cannot issue access token without active role", "user_id", user.GetID())
-		return "", utils.ErrUserActiveRoleMissing
+		// Estado inválido de domínio: usuário deve ter sempre uma role ativa
+		// Promover a log para Error e retornar 500 para facilitar detecção
+		slog.Error("cannot issue access token without active role", "user_id", user.GetID())
+		return "", utils.InternalError("Active role missing unexpectedly")
 	}
 
 	infos := usermodel.UserInfos{
