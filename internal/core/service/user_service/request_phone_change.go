@@ -16,9 +16,10 @@ import (
 )
 
 // RequestPhoneChange starts the phone change flow by generating a validation code
-// and persisting the new phone as pending. If the new phone equals the current one,
-// the operation is a no-op (no pending created, no notification). The user ID is
-// read from context (SSOT). The phone is normalized to E.164.
+// and persisting the new phone as pending. If there is already a pending phone
+// change (valid or expired), this request regenerates a new code and expiration
+// and overwrites the pending entry. The user ID is read from context (SSOT).
+// The phone is normalized to E.164.
 func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) (err error) {
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
@@ -65,7 +66,7 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 		return utils.InternalError("Failed to commit transaction")
 	}
 
-	// Se não houve pendência criada (mesmo telefone do atual), retornar sucesso sem notificar
+	// Se por algum motivo não houver código gerado, apenas retornar sucesso sem notificar
 	if validation == nil || validation.GetPhoneCode() == "" {
 		return nil
 	}
@@ -97,10 +98,8 @@ func (us *userService) requestPhoneChange(ctx context.Context, tx *sql.Tx, id in
 		return
 	}
 
-	// No-op: se o novo telefone for igual ao atual, não criar pendência
-	if user.GetPhoneNumber() == phone {
-		return user, nil, nil
-	}
+	// Não tratar mais como no-op quando o novo telefone é igual ao atual;
+	// seguirá como troca comum (sempre (re)gerar código e expiração)
 
 	// If phone already in use by another user
 	if exist, verr := us.repo.ExistsPhoneForAnotherUser(ctx, tx, phone, user.GetID()); verr != nil {

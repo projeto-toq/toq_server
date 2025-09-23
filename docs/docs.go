@@ -964,7 +964,7 @@ const docTemplate = `{
         },
         "/user/email/request": {
             "post": {
-                "description": "Start email change by sending a validation code to the new email address",
+                "description": "Start email change by generating a validation code for the new email. If a pending change exists (valid or expired), a new code and expiration are generated and persisted, then a notification is sent.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1006,7 +1006,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Same as current email (dev-only check disabled)",
+                        "description": "Email already in use",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -1209,7 +1209,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Start a phone change by sending a code to the new phone number",
+                "description": "Start a phone change by generating a validation code for the new phone. If a pending change exists (valid or expired), a new code and expiration are generated and persisted, then a notification is sent.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1251,7 +1251,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Phone already in use or same as current",
+                        "description": "Phone already in use",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }

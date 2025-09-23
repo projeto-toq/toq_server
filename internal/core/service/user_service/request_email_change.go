@@ -14,9 +14,9 @@ import (
 )
 
 // RequestEmailChange starts the email change flow by generating a validation code
-// and persisting the new email as pending. If the new email equals the current one,
-// the operation is a no-op (no pending created, no notification). The user ID is
-// read from context (SSOT).
+// and persisting the new email as pending. If there is already a pending email
+// change (valid or expired), this request regenerates a new code and expiration
+// and overwrites the pending entry. The user ID is read from context (SSOT).
 func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) (err error) {
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -93,11 +93,8 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 		return
 	}
 
-	// No-op: se o novo email for igual ao atual, não criar pendência nem enviar código
-	if strings.EqualFold(user.GetEmail(), email) {
-		// Comentário: manter comportamento idempotente conforme regra de negócio
-		return user, nil, nil
-	}
+	// Não tratar mais como no-op quando o novo email é igual ao atual;
+	// seguirá como troca comum (sempre (re)gerar código e expiração)
 
 	// Verificar unicidade global (outros usuários não podem ter este email)
 	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, email, user.GetID()); verr != nil {

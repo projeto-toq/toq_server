@@ -13,10 +13,33 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+// context key and helpers to optionally skip tracing (no-op spans)
+type skipTracingKeyType struct{}
+
+var skipTracingKey = skipTracingKeyType{}
+
+// WithSkipTracing marks the context to skip creating/recording spans
+func WithSkipTracing(ctx context.Context) context.Context {
+	return context.WithValue(ctx, skipTracingKey, true)
+}
+
+// SkipTracingFromContext returns true if spans should be skipped for this context
+func SkipTracingFromContext(ctx context.Context) bool {
+	v := ctx.Value(skipTracingKey)
+	if b, ok := v.(bool); ok {
+		return b
+	}
+	return false
+}
+
 // GenerateTracer creates a new span for business operations with clear naming
 // This function is used for internal spans (services, repositories, etc.)
 // The span name should be provided explicitly for clarity (e.g., "UserService.GetUserByID")
 func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), err error) {
+	// If skipping tracing, return same context and a no-op end
+	if SkipTracingFromContext(ctx) {
+		return ctx, func() {}, nil
+	}
 	// Get caller information for debugging purposes only
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -99,6 +122,9 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 // GenerateBusinessTracer creates a span with explicit operation name for better clarity
 // Use this for well-defined business operations where you want to control the span name
 func GenerateBusinessTracer(ctx context.Context, operationName string) (context.Context, func(), error) {
+	if SkipTracingFromContext(ctx) {
+		return ctx, func() {}, nil
+	}
 	// Get caller information for debugging
 	pc, file, line, ok := runtime.Caller(1)
 	var fullFunctionName string

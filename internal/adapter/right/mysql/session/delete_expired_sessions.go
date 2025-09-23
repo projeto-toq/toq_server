@@ -22,9 +22,9 @@ func (sa *SessionAdapter) DeleteExpiredSessions(ctx context.Context, tx *sql.Tx,
 	}
 
 	res, err := execer.ExecContext(ctx, `DELETE FROM sessions 
-                WHERE ((expires_at < UTC_TIMESTAMP() AND revoked = 1) 
-                    OR (absolute_expires_at IS NOT NULL AND absolute_expires_at < UTC_TIMESTAMP())) 
-                LIMIT ?`, limit)
+					WHERE ((expires_at IS NOT NULL AND expires_at < UTC_TIMESTAMP()) 
+						OR (absolute_expires_at IS NOT NULL AND absolute_expires_at < UTC_TIMESTAMP())) 
+					LIMIT ?`, limit)
 	if err != nil {
 		slog.Error("sessionmysqladapter/DeleteExpiredSessions: delete failed", "error", err)
 		return 0, err

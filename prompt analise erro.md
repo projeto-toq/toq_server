@@ -4,18 +4,11 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 
 ---
 
-**Problema:** Durante a chamada para o endpoint `DELETE /api/v2/user/account`, o sistema retorna um erro 409 com a mensagem "Active role missing for user", mesmo quando o usuário possui uma função ativa, pois é impossível o usuário não ter um role ativo. O log relevante é o seguinte:
+**Problemas:**
+1) Durante o processo de troca de celular e/ou telefone, e o usuário possui um código de verificação ativo, o sistema não reenvia o código de verificação. O correto é que todas as vezes que é solicitada a troca de celular/telefone, o sistema deve reenviar o código de verificação, mesmo que já exista um código ativo. 
+2) As sessões expiradas não estão sendo limpas pela rotina de limpeza;
+3) As sessões de limpeza de sessões não devem gerar traces;
 
-
-{"time":"2025-09-22T07:40:04.285628577Z","level":"INFO","msg":"permission.check.allowed","user_id":2,"resource":"http","action":"GET:/api/v2/user/profile","permission_id":34}
-{"time":"2025-09-22T07:40:04.288763323Z","level":"INFO","msg":"HTTP Request","request_id":"61efff10-d7ee-4d6c-a716-53bf2ac83886","method":"GET","path":"/api/v2/user/profile","status":200,"duration":6350962,"size":481,"client_ip":"93.36.219.10","user_agent":"Dart/3.9 (dart:io)","trace_id":"3dbd6a6b22efe91d1336389280307215","span_id":"6c063c8a940241ea","user_id":2,"user_role_id":2}
-{"time":"2025-09-22T07:40:22.190753461Z","level":"INFO","msg":"permission.check.allowed","user_id":2,"resource":"http","action":"DELETE:/api/v2/user/account","permission_id":47}
-{"time":"2025-09-22T07:40:22.20879252Z","level":"INFO","msg":"starting efficient user folder deletion in S3","userID":2,"bucket":"toq-app-media","prefix":"2/"}
-{"time":"2025-09-22T07:40:22.389030856Z","level":"INFO","msg":"collected all objects for deletion","userID":2,"totalCount":6}
-{"time":"2025-09-22T07:40:22.507343774Z","level":"INFO","msg":"user folder completely deleted from S3","userID":2,"bucket":"toq-app-media"}
-{"time":"2025-09-22T07:40:22.509740594Z","level":"WARN","msg":"cannot issue access token without active role","user_id":2}
-{"time":"2025-09-22T07:40:22.509850932Z","level":"ERROR","msg":"user.delete_account.delete_account_error","error":"HTTP 409: Active role missing for user","user_id":2}
-{"time":"2025-09-22T07:40:22.519949833Z","level":"INFO","msg":"HTTP Response","request_id":"747bd88e-e016-4bf5-91e5-55bf1cc83090","method":"DELETE","path":"/api/v2/user/account","status":409,"duration":332388091,"size":68,"client_ip":"93.36.219.10","user_agent":"Dart/3.9 (dart:io)","trace_id":"01167dce55e510824992bbd4aadf4938","span_id":"410fbba027afcf0c","user_id":2,"user_role_id":2}
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 

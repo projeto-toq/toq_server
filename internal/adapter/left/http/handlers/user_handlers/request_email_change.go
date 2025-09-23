@@ -14,7 +14,7 @@ import (
 // RequestEmailChange
 //
 //	@Summary      Request email change
-//	@Description  Start email change by sending a validation code to the new email address
+//	@Description  Start email change by generating a validation code for the new email. If a pending change exists (valid or expired), a new code and expiration are generated and persisted, then a notification is sent.
 //	@Tags         User
 //	@Accept       json
 //	@Produce      json
@@ -22,7 +22,7 @@ import (
 //	@Success      200      {object}  dto.RequestEmailChangeResponse         "Email change request sent"
 //	@Failure      400      {object}  dto.ErrorResponse                      "Invalid request format or email"
 //	@Failure      401      {object}  dto.ErrorResponse                      "Unauthorized"
-//	@Failure      409      {object}  dto.ErrorResponse                      "Same as current email (dev-only check disabled)"
+//	@Failure      409      {object}  dto.ErrorResponse                      "Email already in use"
 //	@Failure      500      {object}  dto.ErrorResponse                      "Internal server error"
 //	@Router       /user/email/request [post]
 func (uh *UserHandler) RequestEmailChange(c *gin.Context) {
