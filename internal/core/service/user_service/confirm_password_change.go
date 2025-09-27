@@ -12,6 +12,7 @@ import (
 	"errors"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
 func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error) {
@@ -36,6 +37,9 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 			}
 		}
 	}()
+
+	// Normalize nationalID to digits-only before lookup
+	nationalID = validators.OnlyDigits(nationalID)
 
 	err = us.confirmPasswordChange(ctx, tx, nationalID, password, code)
 	if err != nil {

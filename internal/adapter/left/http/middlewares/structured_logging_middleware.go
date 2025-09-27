@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -25,16 +24,8 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 		"/readyz":  true,
 	}
 
-	// Create separate handlers for stdout (INFO/DEBUG) and stderr (WARN/ERROR)
-	stdoutHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelDebug,
-		AddSource: false,
-	})
-
-	stderrHandler := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level:     slog.LevelWarn,
-		AddSource: true,
-	})
+	// Usaremos exclusivamente o logger global (slog.Default()),
+	// que já está configurado com nível/formato/output e split handler quando stdout.
 
 	return gin.HandlerFunc(func(c *gin.Context) {
 		start := time.Now()
@@ -99,33 +90,27 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 		}
 
 		// Determine appropriate logger and log level based on HTTP status
-		var logger *slog.Logger
 		var logLevel slog.Level
 		var message string
 		includeErrorDetails := false
 
 		switch {
 		case status >= 500:
-			logger = slog.New(stderrHandler)
 			logLevel = slog.LevelError
 			message = "HTTP Error"
 			includeErrorDetails = true // 5xx: incluir stack/callsite e lista de erros
 		case status == http.StatusTooManyRequests || status == http.StatusLocked:
 			// 429/423: condições excepcionais tratadas como WARN, sem stack
-			logger = slog.New(stderrHandler)
 			logLevel = slog.LevelWarn
 			message = "HTTP Response"
 		case status >= 400:
 			// 4xx esperados: INFO em stdout, sem detalhes de erro/stack
-			logger = slog.New(stdoutHandler)
 			logLevel = slog.LevelInfo
 			message = "HTTP Response"
 		case status >= 300:
-			logger = slog.New(stdoutHandler)
 			logLevel = slog.LevelInfo
 			message = "HTTP Request"
 		default:
-			logger = slog.New(stdoutHandler)
 			logLevel = slog.LevelInfo
 			message = "HTTP Request"
 		}
@@ -167,8 +152,8 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 			fields = append(fields, slog.Any("errors", errorMessages))
 		}
 
-		// Log with appropriate handler (stdout/stderr separation)
-		logger.LogAttrs(context.Background(), logLevel, message, fields...)
+		// Log usando o logger global (respeita split/output configurado)
+		slog.Default().LogAttrs(context.Background(), logLevel, message, fields...)
 	})
 }
 
@@ -202,11 +187,6 @@ func ErrorLoggingMiddleware() gin.HandlerFunc {
 		"/healthz": true,
 		"/readyz":  true,
 	}
-
-	stderrHandler := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-		Level:     slog.LevelWarn,
-		AddSource: true,
-	})
 
 	return gin.HandlerFunc(func(c *gin.Context) {
 		start := time.Now()
@@ -253,8 +233,7 @@ func ErrorLoggingMiddleware() gin.HandlerFunc {
 				logLevel = slog.LevelError
 			}
 
-			logger := slog.New(stderrHandler)
-			logger.LogAttrs(context.Background(), logLevel, "HTTP Error", fields...)
+			slog.Default().LogAttrs(context.Background(), logLevel, "HTTP Error", fields...)
 		}
 	})
 }
@@ -279,12 +258,6 @@ func ConfigurableLoggingMiddleware(config LoggingConfig) gin.HandlerFunc {
 		return StructuredLoggingMiddleware()
 	}
 
-	// Default single handler
-	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     config.LogLevel,
-		AddSource: config.AddSource,
-	})
-
 	return gin.HandlerFunc(func(c *gin.Context) {
 		start := time.Now()
 
@@ -300,7 +273,6 @@ func ConfigurableLoggingMiddleware(config LoggingConfig) gin.HandlerFunc {
 			slog.String("client_ip", utils.GetClientIPFromGinContext(c)),
 		}
 
-		logger := slog.New(handler)
-		logger.LogAttrs(context.Background(), slog.LevelInfo, "HTTP Request", fields...)
+		slog.Default().LogAttrs(context.Background(), slog.LevelInfo, "HTTP Request", fields...)
 	})
 }

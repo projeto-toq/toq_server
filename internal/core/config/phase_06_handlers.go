@@ -1,5 +1,9 @@
 package config
 
+import (
+	"github.com/gin-gonic/gin"
+)
+
 // Phase06_ConfigureHandlers configura os handlers HTTP e rotas
 // Esta fase configura:
 // - Servidor HTTP com middleware
@@ -9,6 +13,31 @@ package config
 func (b *Bootstrap) Phase06_ConfigureHandlers() error {
 	b.logger.Info("🎯 FASE 6: Configuração de Handlers e Rotas")
 	b.logger.Debug("Configurando handlers HTTP e sistema de rotas")
+
+	// 0. Aplicar política de modo do Gin e suprimir impressão de rotas quando apropriado
+	if b.env != nil {
+		// Default para release se vazio
+		mode := b.env.HTTP.GinMode
+		if mode == "" {
+			mode = "release"
+		}
+
+		switch mode {
+		case "release":
+			// release mode evita prints de rotas
+			gin.SetMode(gin.ReleaseMode)
+			// garante que nenhuma impressão de rotas apareça
+			gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {}
+		case "debug":
+			gin.SetMode(gin.DebugMode)
+			// se desejar suprimir prints mesmo em debug, descomentar a linha abaixo
+			// gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {}
+		default:
+			// fallback seguro
+			gin.SetMode(gin.ReleaseMode)
+			gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {}
+		}
+	}
 
 	// 1. Inicializar servidor HTTP com middleware
 	if err := b.initializeHTTPServer(); err != nil {

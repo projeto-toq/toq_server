@@ -66,7 +66,7 @@ type UserCreateRequest struct {
 //	  "deviceToken": "fcm_token_optional"
 //	}
 type SignInRequest struct {
-	NationalID  string `json:"nationalID" binding:"required" example:"12345678901" description:"User's CPF or CNPJ"`
+	NationalID  string `json:"nationalID" binding:"required" example:"12345678901" description:"User's CPF or CNPJ (punctuation ignored; digits-only used)"`
 	Password    string `json:"password" binding:"required" example:"securePassword123" description:"User's password"`
 	DeviceToken string `json:"deviceToken" example:"fcm_device_token" description:"Optional FCM device token for push notifications"`
 }
@@ -108,7 +108,7 @@ type SignOutResponse struct {
 
 // RequestPasswordChangeRequest represents password change request
 type RequestPasswordChangeRequest struct {
-	NationalID string `json:"nationalID" binding:"required"`
+	NationalID string `json:"nationalID" binding:"required" description:"User's CPF or CNPJ (punctuation ignored; digits-only used)"`
 }
 
 // RequestPasswordChangeResponse represents password change request response
@@ -118,7 +118,7 @@ type RequestPasswordChangeResponse struct {
 
 // ConfirmPasswordChangeRequest represents password change confirmation
 type ConfirmPasswordChangeRequest struct {
-	NationalID  string `json:"nationalID" binding:"required"`
+	NationalID  string `json:"nationalID" binding:"required" description:"User's CPF or CNPJ (punctuation ignored; digits-only used)"`
 	NewPassword string `json:"newPassword" binding:"required,min=6"`
 	Code        string `json:"code" binding:"required"`
 }

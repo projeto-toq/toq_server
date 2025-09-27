@@ -13,6 +13,7 @@ import (
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,10 +37,14 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		return
 	}
 
+	// Normalize nationalID to digits-only (CPF/CNPJ) for consistent lookup
+	nationalID = validators.OnlyDigits(nationalID)
+
 	// Debug: valores recebidos
 	if did, _ := ctx.Value(globalmodel.DeviceIDKey).(string); true {
 		slog.Debug("auth.signin_with_context.debug",
-			"national_id", nationalID,
+			// Avoid logging PII values such as national_id
+			"has_national_id", nationalID != "",
 			"has_device_token", deviceToken != "",
 			"ip", ipAddress,
 			"user_agent", userAgent,

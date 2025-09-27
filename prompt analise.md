@@ -4,28 +4,22 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 1) Objetivo do Pedido
 - Tipo: Somente análise
-- Título curto: Apresentar funcionalidade de sessions
+- Título curto: Analise de limpeza do campo nationalID em criação de usuário e login
 
-## 2) Contexto do Projeto
-- Requisição: Analise o processo atual de sessions e apresente:
-- como funciona?
-- para que serve, inclusive rotation;
-- funções de limpeza e expiração;
-- benefícios;
+## 2) Requisição
+Crie um plano para implentação de:
+- cries novos status do usuário corretor:
+  - StatusRefusedImage: quando a imagem do creci for recusada na validação manual por estar ilegível ou inválida
+  - StatusRefusedDocument: quando o documento do creci for recusado na validação manual por estar ilegível ou inválido
+  - StatusRefusedData: quando os dados do creci forem recusados na validação manual por não baterem com o documento
+- chamada GET /admin/user/pending que busque a lista de usuários corretores com creci pendente de validação StatusPendingManual, trazendo os campos id, nickname, fullName, nationalID, creciNumber, creciValidity, creciState.
+- chamada POST /admin/user que receba no body o id do usuário a ser trazido com todos os campos.
+- chamada POST /admin/user/approve que receba no body o id do usuário e o novo status, fazendo a alteração do status do usuário corretor e mandando um pushnotification FCM para o usuário informando a aprovação ou recusa do creci.
 
-- Módulo/área: 
-- Impacto: 
-- Links úteis (logs/trace/dashboard): <opcional>
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
-## 3) Escopo
-- Incluir: 
-- Excluir (fora de escopo): <itens out-of-scope>
 
 ## 4) Requisitos
-- Requisitos funcionais:
-  - <ex.: Sem pendência de validação deve retornar 409>
-- Requisitos não funcionais:
   - Observabilidade alinhada (logs/traces/metrics existentes)
   - Performance/concorrência (se aplicável)
   - Sem back compatibility/downtime (ambiente de desenvolvimento)

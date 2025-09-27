@@ -33,7 +33,6 @@ import (
 	sessionservice "github.com/giulio-alfieri/toq_server/internal/core/service/session_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 	validationservice "github.com/giulio-alfieri/toq_server/internal/core/service/validation_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"gopkg.in/yaml.v3"
 )
@@ -72,7 +71,6 @@ type config struct {
 
 type ConfigInterface interface {
 	LoadEnv() error
-	InitializeLog()
 	InitializeDatabase()
 	InitializeActivityTracker() error
 	VerifyDatabase()
@@ -341,71 +339,6 @@ func (c *config) LoadEnv() error {
 }
 
 // InitializeLog inicializa o sistema de logging
-func (c *config) InitializeLog() {
-	// Configurar nível de log baseado no environment
-	level := slog.LevelInfo
-	if c.env.LOG.Level != "" {
-		switch c.env.LOG.Level {
-		case "debug":
-			level = slog.LevelDebug
-		case "info":
-			level = slog.LevelInfo
-		case "warn":
-			level = slog.LevelWarn
-		case "error":
-			level = slog.LevelError
-		}
-	}
-
-	// Configurar handler com nível e opções
-	opts := &slog.HandlerOptions{
-		Level:     level,
-		AddSource: c.env.LOG.AddSource,
-	}
-
-	var handler slog.Handler
-	if c.env.LOG.ToFile {
-		// Configurar log para arquivo
-		logFile := c.env.LOG.Filename
-		if logFile == "" {
-			logFile = "toq_server.log"
-		}
-		logPath := c.env.LOG.Path
-		if logPath == "" {
-			logPath = "logs"
-		}
-
-		// Criar diretório se não existir
-		if err := os.MkdirAll(logPath, 0755); err != nil {
-			slog.Error("Failed to create log directory", "path", logPath, "error", err)
-			return
-		}
-
-		file, err := os.OpenFile(logPath+"/"+logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			slog.Error("Failed to open log file", "file", logPath+"/"+logFile, "error", err)
-			return
-		}
-
-		handler = slog.NewTextHandler(file, opts)
-	} else {
-		// Log para stdout
-		handler = slog.NewTextHandler(os.Stdout, opts)
-	}
-
-	logger := slog.New(handler)
-	slog.SetDefault(logger)
-
-	// Configurar profundidade da stack para erros com origem (opcional; default 1)
-	// Comentário: como não há campo explícito no Environment, usamos 1 por padrão.
-	// Se futuramente for adicionado em ENV.LOG.StackDepth, podemos ler aqui.
-	coreutils.SetErrorStackDepth(1)
-
-	slog.Info("Logging system initialized",
-		"level", level,
-		"to_file", c.env.LOG.ToFile,
-		"add_source", c.env.LOG.AddSource)
-}
 
 // InitializeDatabase inicializa a conexão com o banco de dados
 func (c *config) InitializeDatabase() {

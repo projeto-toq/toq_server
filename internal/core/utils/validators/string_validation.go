@@ -25,6 +25,19 @@ func ValidateOnlyNumbers(str string) error {
 	return nil
 }
 
+// OnlyDigits returns a string containing only ASCII digits [0-9].
+// It preserves leading zeros and removes any non-digit characters.
+func OnlyDigits(s string) string {
+	// Fast path: if already matches only digits, return as-is
+	reFull := regexp.MustCompile(`^[0-9]+$`)
+	if reFull.MatchString(s) {
+		return s
+	}
+	// Remove everything that is not a digit
+	reStrip := regexp.MustCompile(`[^0-9]`)
+	return reStrip.ReplaceAllString(s, "")
+}
+
 // ValidateE164 validates if the given phone number is in E.164 format.
 // It parses the phone number and checks if it is valid and formatted correctly.
 //

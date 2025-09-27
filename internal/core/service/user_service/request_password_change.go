@@ -10,6 +10,7 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
 // RequestPasswordChange starts the password reset flow in a privacy-preserving way.
@@ -37,6 +38,9 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 			}
 		}
 	}()
+
+	// Normalize nationalID to digits-only for consistent lookup
+	nationalID = validators.OnlyDigits(nationalID)
 
 	user, validation, err := us.requestPasswordChange(ctx, tx, nationalID)
 	if err != nil {

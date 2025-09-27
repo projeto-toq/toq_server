@@ -7,6 +7,7 @@ type Environment struct {
 		ReadTimeout    string `yaml:"read_timeout"`
 		WriteTimeout   string `yaml:"write_timeout"`
 		MaxHeaderBytes int    `yaml:"max_header_bytes"`
+		GinMode        string `yaml:"gin_mode"`
 		TLS            struct {
 			Enabled  bool   `yaml:"enabled"`
 			CertPath string `yaml:"cert_path"`

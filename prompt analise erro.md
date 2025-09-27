@@ -5,10 +5,9 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-1) Durante o processo de troca de celular e/ou telefone, e o usuário possui um código de verificação ativo, o sistema não reenvia o código de verificação. O correto é que todas as vezes que é solicitada a troca de celular/telefone, o sistema deve reenviar o código de verificação, mesmo que já exista um código ativo. 
-2) As sessões expiradas não estão sendo limpas pela rotina de limpeza;
-3) As sessões de limpeza de sessões não devem gerar traces;
-
+1) ajuste o gin para que não apresente todas as rotas no startup
+2) ajuste para que use a variável global de nivel de log
+3) ajuste para que apresente o log segundo a variável global de output, NO console ou arquivo. O LOG DE ARQUIVO NÃO é o mesmo que o de console.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 

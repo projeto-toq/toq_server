@@ -1,0 +1,6 @@
+- criar tabela de razão para rejeição do creci;
+- criar gets para a tela admin para analisar os creci pendentes;
+- padronizar no swagger que phone é sempre padrão E.164;
+- batchupdatLastActivity não deve gerar traces
+- ao eliminar a conta, deve-se eliminar as sessões também
+- fazer a limpeza de dados digitados no cnpj/cpf deixando somente numeros

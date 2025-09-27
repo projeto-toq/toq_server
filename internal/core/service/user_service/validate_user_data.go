@@ -9,6 +9,7 @@ import (
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
 func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, role permissionmodel.RoleSlug) (err error) {
@@ -35,9 +36,14 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		return utils.ValidationError("password", "Senha não atende aos requisitos mínimos")
 	}
 
+	// Normalize input nationalID before external validation
+	if nid := user.GetNationalID(); nid != "" {
+		user.SetNationalID(validators.OnlyDigits(nid))
+	}
+
 	if role == permissionmodel.RoleSlugAgency {
 
-		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID()) // Validation via global service integration planned
+		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID()) // external validation
 		if err1 != nil {
 			// Propaga erro do adaptador (serviço externo ou dado inválido)
 			utils.SetSpanError(ctx, err1)
@@ -45,7 +51,8 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 			err = err1
 			return
 		}
-		user.SetNationalID(cnpj.GetNumeroDeCNPJ())
+		// Ensure digits-only from external provider
+		user.SetNationalID(validators.OnlyDigits(cnpj.GetNumeroDeCNPJ()))
 		user.SetFullName(cnpj.GetNomeDaPJ())
 	} else {
 		//validate the userCPF
@@ -57,7 +64,8 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 			err = err1
 			return
 		}
-		user.SetNationalID(cpf.GetNumeroDeCpf())
+		// Ensure digits-only from external provider
+		user.SetNationalID(validators.OnlyDigits(cpf.GetNumeroDeCpf()))
 		user.SetFullName(cpf.GetNomeDaPf())
 	}
 
