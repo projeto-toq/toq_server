@@ -1,0 +1,122 @@
+{"time":"2025-09-29T10:00:11.592246805Z","level":"INFO","msg":"🚀 Iniciando TOQ Server Bootstrap","version":"2.0.0","component":"bootstrap","log_level":"info","log_format":"json","log_output":"file"}
+{"time":"2025-09-29T10:00:11.592332218Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase01_InitializeContext","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.5923893Z","level":"INFO","msg":"🎯 FASE 1: Inicialização de Contexto e Sinais"}
+{"time":"2025-09-29T10:00:11.592531644Z","level":"INFO","msg":"✅ Contexto e sinais inicializados com sucesso"}
+{"time":"2025-09-29T10:00:11.592551885Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase01_InitializeContext","component":"bootstrap","duration":"220.237µs"}
+{"time":"2025-09-29T10:00:11.592565575Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase02_LoadConfiguration","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.592585486Z","level":"INFO","msg":"🎯 FASE 2: Carregamento e Validação de Configuração"}
+{"time":"2025-09-29T10:00:11.593405591Z","level":"INFO","msg":"Configuration loaded successfully from YAML","path":"configs/env.yaml"}
+{"time":"2025-09-29T10:00:11.593488374Z","level":"INFO","msg":"🔐 JWT and token TTL configuration applied"}
+{"time":"2025-09-29T10:00:11.593503754Z","level":"INFO","msg":"✅ Configuração carregada e validada com sucesso","version":"2.0.0"}
+{"time":"2025-09-29T10:00:11.593537695Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase02_LoadConfiguration","component":"bootstrap","duration":"970.66µs"}
+{"time":"2025-09-29T10:00:11.593552626Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase03_InitializeInfrastructure","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.593574637Z","level":"INFO","msg":"🎯 FASE 3: Inicialização da Infraestrutura Core"}
+{"time":"2025-09-29T10:00:11.595705213Z","level":"INFO","msg":"Database connection initialized","uri":"toq_user:toq_password@tcp(localhost:3306)/toq_db?parseTime=true&loc=UTC&timeout=30s&readTimeout=30s&writeTimeout=30s"}
+{"time":"2025-09-29T10:00:11.595791116Z","level":"INFO","msg":"✅ Conexão com banco de dados estabelecida"}
+{"time":"2025-09-29T10:00:11.597709045Z","level":"INFO","msg":"Redis cache connected successfully","url":"redis://localhost:6379/0"}
+{"time":"2025-09-29T10:00:11.597832679Z","level":"INFO","msg":"✅ Sistema de cache Redis inicializado com sucesso"}
+{"time":"2025-09-29T10:00:11.598474399Z","level":"INFO","msg":"OpenTelemetry tracing initialized","endpoint":"localhost:4318"}
+{"time":"2025-09-29T10:00:11.598702086Z","level":"INFO","msg":"OpenTelemetry metrics initialized","endpoint":"localhost:4318"}
+{"time":"2025-09-29T10:00:11.598739377Z","level":"INFO","msg":"OpenTelemetry initialized successfully","tracing_enabled":true,"metrics_enabled":true,"endpoint":"localhost:4318"}
+{"time":"2025-09-29T10:00:11.598753748Z","level":"INFO","msg":"OpenTelemetry initialized successfully"}
+{"time":"2025-09-29T10:00:11.598764338Z","level":"INFO","msg":"✅ OpenTelemetry inicializado (tracing + metrics)"}
+{"time":"2025-09-29T10:00:11.598783879Z","level":"INFO","msg":"Creating metrics adapter"}
+{"time":"2025-09-29T10:00:11.598878392Z","level":"INFO","msg":"✅ Adapter de métricas Prometheus inicializado"}
+{"time":"2025-09-29T10:00:11.598909433Z","level":"INFO","msg":"✅ Infraestrutura core inicializada com sucesso"}
+{"time":"2025-09-29T10:00:11.598928203Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase03_InitializeInfrastructure","component":"bootstrap","duration":"5.372517ms"}
+{"time":"2025-09-29T10:00:11.598944234Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase04_InjectDependencies","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.598966714Z","level":"INFO","msg":"🎯 FASE 4: Injeção de Dependências via Factory Pattern"}
+{"time":"2025-09-29T10:00:11.598989895Z","level":"INFO","msg":"Starting dependency injection using Factory Pattern"}
+{"time":"2025-09-29T10:00:11.599002005Z","level":"INFO","msg":"Creating storage adapters"}
+{"time":"2025-09-29T10:00:11.600503582Z","level":"INFO","msg":"Redis cache connected successfully","url":"redis://localhost:6379/0"}
+{"time":"2025-09-29T10:00:11.600642246Z","level":"INFO","msg":"Successfully created all storage adapters"}
+{"time":"2025-09-29T10:00:11.60075936Z","level":"INFO","msg":"✅ ActivityTracker criado com sucesso com Redis client"}
+{"time":"2025-09-29T10:00:11.600874634Z","level":"INFO","msg":"Creating repository adapters"}
+{"time":"2025-09-29T10:00:11.601026548Z","level":"INFO","msg":"Successfully created all repository adapters"}
+{"time":"2025-09-29T10:00:11.601184193Z","level":"INFO","msg":"Assigning repository adapters"}
+{"time":"2025-09-29T10:00:11.601289827Z","level":"INFO","msg":"Repository adapters assigned successfully"}
+{"time":"2025-09-29T10:00:11.60140085Z","level":"INFO","msg":"Creating validation adapters"}
+{"time":"2025-09-29T10:00:11.601507933Z","level":"INFO","msg":"Successfully created all validation adapters"}
+{"time":"2025-09-29T10:00:11.601609477Z","level":"INFO","msg":"Creating external service adapters"}
+{"time":"2025-09-29T10:00:11.60171036Z","level":"INFO","msg":"Creating external service adapters"}
+{"time":"2025-09-29T10:00:11.60236454Z","level":"INFO","msg":"Creating S3 adapter","region":"us-east-1","bucket":"toq-app-media"}
+{"time":"2025-09-29T10:00:11.602722461Z","level":"INFO","msg":"S3 adapter created successfully","bucket":"toq-app-media","region":"us-east-1"}
+{"time":"2025-09-29T10:00:11.602835365Z","level":"INFO","msg":"Successfully created all external service adapters"}
+{"time":"2025-09-29T10:00:11.602938738Z","level":"INFO","msg":"Initializing all services"}
+{"time":"2025-09-29T10:00:11.603046621Z","level":"INFO","msg":"All services initialized successfully"}
+{"time":"2025-09-29T10:00:11.603150785Z","level":"INFO","msg":"✅ TempBlockCleanerWorker initialized"}
+{"time":"2025-09-29T10:00:11.603252968Z","level":"INFO","msg":"Dependency injection completed successfully using Factory Pattern"}
+{"time":"2025-09-29T10:00:11.603354621Z","level":"INFO","msg":"✅ Injeção de dependências concluída via Factory Pattern"}
+{"time":"2025-09-29T10:00:11.603606129Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase04_InjectDependencies","component":"bootstrap","duration":"4.659235ms"}
+{"time":"2025-09-29T10:00:11.603738463Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase05_InitializeServices","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.603869397Z","level":"INFO","msg":"🎯 FASE 5: Inicialização de Serviços"}
+{"time":"2025-09-29T10:00:11.6039748Z","level":"INFO","msg":"✅ Serviço inicializado","service":"GlobalService"}
+{"time":"2025-09-29T10:00:11.604114885Z","level":"INFO","msg":"✅ Serviço inicializado","service":"PermissionService"}
+{"time":"2025-09-29T10:00:11.604217208Z","level":"INFO","msg":"✅ Serviço inicializado","service":"UserService"}
+{"time":"2025-09-29T10:00:11.604319901Z","level":"INFO","msg":"✅ Serviço inicializado","service":"ComplexService"}
+{"time":"2025-09-29T10:00:11.604422694Z","level":"INFO","msg":"✅ Serviço inicializado","service":"ListingService"}
+{"time":"2025-09-29T10:00:11.604523507Z","level":"INFO","msg":"✅ Todos os serviços inicializados com sucesso"}
+{"time":"2025-09-29T10:00:11.604635941Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase05_InitializeServices","component":"bootstrap","duration":"897.478µs"}
+{"time":"2025-09-29T10:00:11.604858728Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase06_ConfigureHandlers","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.605036513Z","level":"INFO","msg":"🎯 FASE 6: Configuração de Handlers e Rotas"}
+{"time":"2025-09-29T10:00:11.605161137Z","level":"INFO","msg":"HTTP server initialized","port":"127.0.0.1:8080","read_timeout":"30s","write_timeout":"30s"}
+{"time":"2025-09-29T10:00:11.605304762Z","level":"INFO","msg":"HTTP server initialization completed"}
+{"time":"2025-09-29T10:00:11.605398635Z","level":"INFO","msg":"✅ Servidor HTTP configurado com TLS e middleware"}
+{"time":"2025-09-29T10:00:11.605446126Z","level":"INFO","msg":"✅ Handlers HTTP preparados para criação"}
+{"time":"2025-09-29T10:00:11.605460937Z","level":"INFO","msg":"Creating HTTP handlers"}
+{"time":"2025-09-29T10:00:11.605472927Z","level":"INFO","msg":"Successfully created all HTTP handlers"}
+{"time":"2025-09-29T10:00:11.605482757Z","level":"INFO","msg":"✅ HTTP handlers created successfully via factory"}
+{"time":"2025-09-29T10:00:11.605773516Z","level":"INFO","msg":"HTTP handlers and routes configured successfully"}
+{"time":"2025-09-29T10:00:11.605807297Z","level":"INFO","msg":"✅ Rotas e middlewares configurados"}
+{"time":"2025-09-29T10:00:11.606116697Z","level":"INFO","msg":"✅ Health checks configurados"}
+{"time":"2025-09-29T10:00:11.60622609Z","level":"INFO","msg":"✅ Handlers e rotas configurados com sucesso"}
+{"time":"2025-09-29T10:00:11.606350404Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase06_ConfigureHandlers","component":"bootstrap","duration":"1.491706ms"}
+{"time":"2025-09-29T10:00:11.606456617Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase07_StartBackgroundWorkers","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.606589322Z","level":"INFO","msg":"🎯 FASE 7: Inicialização de Background Workers"}
+{"time":"2025-09-29T10:00:11.606708955Z","level":"INFO","msg":"Activity tracker batch worker started"}
+{"time":"2025-09-29T10:00:11.606811348Z","level":"INFO","msg":"Temp block cleaner worker started"}
+{"time":"2025-09-29T10:00:11.606764067Z","level":"INFO","msg":"Activity batch worker started","interval":30000000000}
+{"time":"2025-09-29T10:00:11.606887511Z","level":"INFO","msg":"Session cleaner worker started","interval_seconds":300}
+{"time":"2025-09-29T10:00:11.606917342Z","level":"INFO","msg":"session cleaner routine started"}
+{"time":"2025-09-29T10:00:11.606926872Z","level":"INFO","msg":"TempBlockCleanerWorker started"}
+{"time":"2025-09-29T10:00:11.607078787Z","level":"INFO","msg":"validation cleaner worker started","interval":300000000000}
+{"time":"2025-09-29T10:00:11.607066676Z","level":"INFO","msg":"Validation cleaner worker started","interval_seconds":300}
+{"time":"2025-09-29T10:00:11.607410157Z","level":"INFO","msg":"✅ Background workers inicializados"}
+{"time":"2025-09-29T10:00:11.607614573Z","level":"INFO","msg":"Activity tracker connected to user service"}
+{"time":"2025-09-29T10:00:11.607629344Z","level":"INFO","msg":"✅ Activity tracker conectado ao user service"}
+{"time":"2025-09-29T10:00:11.610823453Z","level":"INFO","msg":"Database connection verified successfully"}
+{"time":"2025-09-29T10:00:11.611285488Z","level":"INFO","msg":"✅ Schema do banco de dados verificado"}
+{"time":"2025-09-29T10:00:11.611305388Z","level":"INFO","msg":"✅ Background workers inicializados com sucesso"}
+{"time":"2025-09-29T10:00:11.611343189Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase07_StartBackgroundWorkers","component":"bootstrap","duration":"4.885212ms"}
+{"time":"2025-09-29T10:00:11.6113623Z","level":"INFO","msg":"▶️ Executando fase","phase":"Phase08_StartServer","component":"bootstrap","timestamp":"2025-09-29T10:00:11Z"}
+{"time":"2025-09-29T10:00:11.611391821Z","level":"INFO","msg":"🎯 FASE 8: Inicialização Final e Runtime"}
+{"time":"2025-09-29T10:00:11.611404601Z","level":"INFO","msg":"✅ Servidor marcado como ready para receber tráfego"}
+{"time":"2025-09-29T10:00:11.611422362Z","level":"INFO","msg":"🚀 Iniciando servidor HTTP na porta configurada"}
+{"time":"2025-09-29T10:00:11.711563787Z","level":"INFO","msg":"✅ Servidor HTTP iniciado com sucesso"}
+{"time":"2025-09-29T10:00:11.71165484Z","level":"INFO","msg":"✅ Monitoramento de saúde em runtime iniciado"}
+{"time":"2025-09-29T10:00:11.71167134Z","level":"INFO","msg":"🌟 TOQ Server pronto para servir","uptime":119344462}
+{"time":"2025-09-29T10:00:11.711709552Z","level":"INFO","msg":"✅ Fase concluída","phase":"Phase08_StartServer","component":"bootstrap","duration":"100.345551ms"}
+{"time":"2025-09-29T10:00:11.711750163Z","level":"INFO","msg":"🎉 TOQ Server inicializado com sucesso","component":"bootstrap","total_time":"119.423205ms"}
+{"time":"2025-09-29T10:01:06.1527137Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"GET:/api/v2/user/status","permission_id":48}
+{"time":"2025-09-29T10:01:06.155346062Z","level":"INFO","msg":"HTTP Request","request_id":"1bb8a2a2-3c88-43e0-8e08-ed4f4dde71dc","method":"GET","path":"/api/v2/user/status","status":200,"duration":6276235,"size":21,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"bf4ed53ecb92ce621b3c6a89e72bab41","span_id":"bd31caa02d0a4a3f","user_id":5,"user_role_id":5}
+{"time":"2025-09-29T10:01:07.736698173Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"GET:/api/v2/user/profile","permission_id":34}
+{"time":"2025-09-29T10:01:07.744496635Z","level":"INFO","msg":"HTTP Request","request_id":"75c07c01-f399-425f-86bc-316a3cc3898f","method":"GET","path":"/api/v2/user/profile","status":200,"duration":11076434,"size":451,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"cf67bbb4f60ca1a4b46830d8e47a1c2d","span_id":"bd6125f93dda6501","user_id":5,"user_role_id":5}
+{"time":"2025-09-29T10:01:17.899711656Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"POST:/api/v2/user/signout","permission_id":33}
+{"time":"2025-09-29T10:01:17.905613309Z","level":"INFO","msg":"session.subscriber.device_tokens_pruned","user_id":5,"device_id":"467d000e-002a-464b-954c-b7c5ef107791"}
+{"time":"2025-09-29T10:01:17.912024568Z","level":"INFO","msg":"HTTP Request","request_id":"f62d0880-ffd3-4263-bb3b-3c28083f7551","method":"POST","path":"/api/v2/user/signout","status":200,"duration":18142463,"size":37,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"b9835aa84caf2a3a614ad5a5c3bf24a3","span_id":"e7392a4e37e36373","user_id":5,"user_role_id":5}
+{"time":"2025-09-29T10:01:18.053882936Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"POST:/api/v2/user/photo/download-url","permission_id":37}
+{"time":"2025-09-29T10:01:18.055080993Z","level":"INFO","msg":"HTTP Request","request_id":"da8d46bf-a19c-4c42-a49c-f5c22c9f8a28","method":"POST","path":"/api/v2/user/photo/download-url","status":200,"duration":4830459,"size":428,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"d2552c8d1bdfb79acd618b7df902b4f5","span_id":"646a7daa4c1b9d9f","user_id":5,"user_role_id":5}
+{"time":"2025-09-29T10:01:18.431240434Z","level":"INFO","msg":"HTTP Response","request_id":"bda864ed-aed4-4965-83c2-c0876d01f163","method":"POST","path":"/api/v2/user/photo/download-url","status":401,"duration":129124,"size":69,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"2f011a3bd63aebe75bf104f85e79aac0","span_id":"fb48777dfea758fc"}
+{"time":"2025-09-29T10:01:18.563573917Z","level":"INFO","msg":"HTTP Response","request_id":"860d397c-94f7-486c-bdb8-11d5b5f74a03","method":"POST","path":"/api/v2/user/photo/download-url","status":401,"duration":115553,"size":69,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"ffc430a2b518f0ab16913ba0efbf1066","span_id":"9ce0a6930e5a1560"}
+{"time":"2025-09-29T10:01:18.694088205Z","level":"INFO","msg":"HTTP Response","request_id":"80fb251f-2b5d-42e3-aea6-c311dc92e40a","method":"POST","path":"/api/v2/user/photo/download-url","status":401,"duration":90442,"size":69,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"4f2c28f454fe8e631c6c595536c89d92","span_id":"52a7ddcd58213ec5"}
+{"time":"2025-09-29T10:01:18.822259578Z","level":"INFO","msg":"HTTP Response","request_id":"cc3b35bf-956a-48f1-81fb-324e1b1e0ad9","method":"POST","path":"/api/v2/user/photo/download-url","status":401,"duration":105684,"size":69,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"ed8626de30372deba25fb0a3eae9e3dd","span_id":"247ffa747a305bff"}
+{"time":"2025-09-29T10:02:35.16323371Z","level":"INFO","msg":"auth.signin.success","security":true,"user_id":5}
+{"time":"2025-09-29T10:02:35.173976502Z","level":"INFO","msg":"HTTP Request","request_id":"f28ddcea-2539-4f6d-b802-c361203a9e57","method":"POST","path":"/api/v2/auth/signin","status":200,"duration":127050406,"size":651,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"fd4ee446a2315f39cd0a6f885b970407","span_id":"cce196d7c2bf47c1"}
+{"time":"2025-09-29T10:02:35.335350298Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"GET:/api/v2/user/profile","permission_id":34}
+{"time":"2025-09-29T10:02:35.338771134Z","level":"INFO","msg":"HTTP Request","request_id":"381202c9-98be-43e0-8386-908021fb0fe2","method":"GET","path":"/api/v2/user/profile","status":200,"duration":6680717,"size":451,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"124df227a759d52696116c11b195dbed","span_id":"265670863f16a98e","user_id":5,"user_role_id":5}
+{"time":"2025-09-29T10:02:35.578466721Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"GET:/api/v2/user/status","permission_id":48}
+{"time":"2025-09-29T10:02:35.580696889Z","level":"INFO","msg":"HTTP Request","request_id":"8802e2df-87be-4f1a-8098-bc5d0969d4d3","method":"GET","path":"/api/v2/user/status","status":200,"duration":8867694,"size":21,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"ce8cb8996be56ded3211bccf7680c952","span_id":"fd2685fd9da5c4ec","user_id":5,"user_role_id":5}
+{"time":"2025-09-29T10:02:35.80179004Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"POST:/api/v2/user/photo/download-url","permission_id":37}
+{"time":"2025-09-29T10:02:35.802725519Z","level":"INFO","msg":"HTTP Request","request_id":"7de753a6-1ea9-442e-a29a-a88b82b10d42","method":"POST","path":"/api/v2/user/photo/download-url","status":200,"duration":4908482,"size":428,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"d5f0f55b55ca51e305d6aec82f3129b8","span_id":"9e17b2df875d15b2","user_id":5,"user_role_id":5}
+{"time":"2025-09-29T10:02:35.809883821Z","level":"INFO","msg":"permission.check.allowed","user_id":5,"resource":"http","action":"GET:/api/v2/user/status","permission_id":48}
+{"time":"2025-09-29T10:02:35.812757859Z","level":"INFO","msg":"HTTP Request","request_id":"9ff55b48-6ea0-4dde-808a-b3e890438316","method":"GET","path":"/api/v2/user/status","status":200,"duration":12524748,"size":21,"client_ip":"95.237.168.182","user_agent":"Dart/3.9 (dart:io)","trace_id":"befbf00ba963015b60e67f9ecd64adc5","span_id":"981a2cdbc1a58756","user_id":5,"user_role_id":5}

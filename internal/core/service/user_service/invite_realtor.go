@@ -12,6 +12,7 @@ import (
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
 
 func (us *userService) InviteRealtor(ctx context.Context, phoneNumber string) (err error) {
@@ -20,6 +21,14 @@ func (us *userService) InviteRealtor(ctx context.Context, phoneNumber string) (e
 		return
 	}
 	defer spanEnd()
+
+	if phoneNumber != "" {
+		normalizedPhone, normErr := validators.NormalizeToE164(phoneNumber)
+		if normErr != nil {
+			return normErr
+		}
+		phoneNumber = normalizedPhone
+	}
 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {

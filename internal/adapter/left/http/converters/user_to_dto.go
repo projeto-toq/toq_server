@@ -65,3 +65,11 @@ func formatDateTime(t time.Time) string {
 	}
 	return t.Format(time.RFC3339)
 }
+
+// FormatDate exports date formatting used by admin handlers
+func FormatDate(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format("2006-01-02")
+}

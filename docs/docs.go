@@ -24,6 +24,191 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/user": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get full user by ID",
+                "parameters": [
+                    {
+                        "description": "User ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/user/approve": {
+            "post": {
+                "description": "Status must be one of the allowed enum values. On success, sends FCM notification.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Approve or refuse realtor status manually",
+                "parameters": [
+                    {
+                        "description": "User ID and target status (int)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/user/pending": {
+            "get": {
+                "description": "Returns id, nickname, fullName, nationalID, creciNumber, creciValidity, creciState",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List realtors pending manual validation",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/auth/agency": {
             "post": {
                 "description": "Create a new agency account with user information",
@@ -1670,6 +1855,87 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "status"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse": {
+            "type": "object",
+            "properties": {
+                "realtors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor"
+                    }
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserResponse"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor": {
+            "type": "object",
+            "properties": {
+                "creciNumber": {
+                    "type": "string"
+                },
+                "creciState": {
+                    "type": "string"
+                },
+                "creciValidity": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "nationalID": {
+                    "type": "string"
+                },
+                "nickName": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature": {
             "type": "object",
             "properties": {
@@ -2106,7 +2372,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "newPhoneNumber": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+5511999999999"
                 }
             }
         },
@@ -2360,7 +2627,8 @@ const docTemplate = `{
                     "minLength": 6
                 },
                 "phoneNumber": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+5511999999999"
                 },
                 "state": {
                     "type": "string"
@@ -2500,7 +2768,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v2",
 	Schemes:          []string{},
 	Title:            "TOQ Server API",
-	Description:      "TOQ Server - Real Estate HTTP API Server with hexagonal architecture",
+	Description:      "TOQ Server - Real Estate HTTP API Server with hexagonal architecture. All phone numbers supplied to the API must be in E.164 format (e.g., +5511999999999).",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -7,6 +7,7 @@ import (
 
 	cacheport "github.com/giulio-alfieri/toq_server/internal/core/cache"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
 	permissionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/permission_repository"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
 )
@@ -15,17 +16,20 @@ type permissionServiceImpl struct {
 	permissionRepository permissionrepository.PermissionRepositoryInterface
 	cache                cacheport.CacheInterface
 	globalService        globalservice.GlobalServiceInterface
+	metrics              metricsport.MetricsPortInterface
 }
 
 func NewPermissionService(
 	pr permissionrepository.PermissionRepositoryInterface,
 	cache cacheport.CacheInterface,
 	gs globalservice.GlobalServiceInterface,
+	metrics metricsport.MetricsPortInterface,
 ) PermissionServiceInterface {
 	return &permissionServiceImpl{
 		permissionRepository: pr,
 		cache:                cache,
 		globalService:        gs,
+		metrics:              metrics,
 	}
 }
 

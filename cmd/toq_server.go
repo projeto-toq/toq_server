@@ -19,7 +19,7 @@
 
 //	@title			TOQ Server API
 //	@version		1.0
-//	@description	TOQ Server - Real Estate HTTP API Server with hexagonal architecture
+//	@description	TOQ Server - Real Estate HTTP API Server with hexagonal architecture. All phone numbers supplied to the API must be in E.164 format (e.g., +5511999999999).
 //	@termsOfService	http://swagger.io/terms/
 
 //	@contact.name	TOQ Development Team

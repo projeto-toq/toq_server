@@ -24,13 +24,15 @@ func (p *permissionServiceImpl) RefreshUserPermissions(ctx context.Context, user
 	}
 
 	// Buscar permissões atuais do banco e recriar cache
-	_, err := p.getUserPermissionsWithCache(ctx, userID)
+	_, _, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
 		slog.Error("permission.permissions.refresh.db_or_cache_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
+		p.observeCacheOperation("user_permissions_refresh", "error")
 		return utils.InternalError("")
 	}
 
 	slog.Info("permission.permissions.refreshed", "user_id", userID)
+	p.observeCacheOperation("user_permissions_refresh", "success")
 	return nil
 }

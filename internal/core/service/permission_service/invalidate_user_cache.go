@@ -21,6 +21,7 @@ func (p *permissionServiceImpl) InvalidateUserCache(ctx context.Context, userID 
 	// Se o cache não estiver configurado, apenas registrar e sair
 	if p.cache == nil {
 		slog.Debug("permission.cache.not_available", "user_id", userID)
+		p.observeCacheOperation("user_permissions_invalidate", "disabled")
 		return nil
 	}
 
@@ -28,6 +29,7 @@ func (p *permissionServiceImpl) InvalidateUserCache(ctx context.Context, userID 
 	if err := p.ClearUserPermissionsCache(ctx, userID); err != nil {
 		// ClearUserPermissionsCache já padroniza o erro; apenas logamos contexto
 		slog.Warn("permission.cache.clear_failed", "user_id", userID, "error", err)
+		p.observeCacheOperation("user_permissions_invalidate", "error")
 		return err
 	}
 
@@ -36,5 +38,18 @@ func (p *permissionServiceImpl) InvalidateUserCache(ctx context.Context, userID 
 	p.cache.CleanByUser(ctx, userID)
 
 	slog.Info("permission.cache.invalidated", "user_id", userID)
+	p.observeCacheOperation("user_permissions_invalidate", "success")
 	return nil
+}
+
+// invalidateUserCacheSafe tenta invalidar o cache e apenas registra aviso em caso de falha
+func (p *permissionServiceImpl) invalidateUserCacheSafe(ctx context.Context, userID int64, source string) {
+	if userID <= 0 {
+		return
+	}
+
+	if err := p.InvalidateUserCache(ctx, userID); err != nil {
+		utils.SetSpanError(ctx, err)
+		slog.Warn("permission.cache.invalidate_safe_failed", "user_id", userID, "source", source, "error", err)
+	}
 }

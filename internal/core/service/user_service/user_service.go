@@ -107,4 +107,9 @@ type UserServiceInterface interface {
 	GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int64) (usermodel.UserInterface, error)
 	// GetActiveRoleStatus returns only the status of the active user role
 	GetActiveRoleStatus(ctx context.Context) (status permissionmodel.UserRoleStatus, err error)
+	// GetCrecisToValidateByStatus returns realtors filtered by active role status
+	GetCrecisToValidateByStatus(ctx context.Context, status permissionmodel.UserRoleStatus) ([]usermodel.UserInterface, error)
+
+	// ApproveCreciManual updates realtor status from pending manual to approved/refused and sends notification
+	ApproveCreciManual(ctx context.Context, userID int64, status permissionmodel.UserRoleStatus) error
 }

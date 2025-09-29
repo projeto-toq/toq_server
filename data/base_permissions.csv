@@ -47,3 +47,6 @@ id;name;resource;action;description;conditions;is_active
 46;HTTP UpdateOptStatus;http;PUT:/api/v2/user/opt-status;Permite atualizar o status de opt-in de notificações;NULL;1
 47;HTTP DeleteAccount;http;DELETE:/api/v2/user/account;Permite deletar a própria conta;NULL;1
 48;HTTP GetUserStatus;http;GET:/api/v2/user/status;Permite consultar o status da role ativa do usuário autenticado;NULL;1
+49;HTTP GetUser;http;POST:/api/v2/admin/user;Permite Admin consultar detalhes de um usuário específico;NULL;1
+50;HTTP ApproveUser;http;POST:/api/v2/admin/user/approve;Permite Admin aprovar/reprovar corretor;NULL;1
+51;HTTP GetPending;http;GET:/api/v2/admin/user/pending;Permite Admin listar corretores pendentes de aprovação;NULL;1

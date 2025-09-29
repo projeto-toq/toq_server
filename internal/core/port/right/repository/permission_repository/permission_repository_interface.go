@@ -36,6 +36,7 @@ type PermissionRepositoryInterface interface {
 	DeleteUserRole(ctx context.Context, tx *sql.Tx, userRoleID int64) error
 	DeactivateAllUserRoles(ctx context.Context, tx *sql.Tx, userID int64) error
 	ActivateUserRole(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
+	GetActiveUserIDsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) ([]int64, error)
 
 	// RolePermission operations
 	CreateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) error

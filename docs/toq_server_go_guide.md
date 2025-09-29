@@ -224,6 +224,7 @@ Padrão de DTOs e Handlers:
 ### 7.5 Workers/Go routines
 
 - Inicie tracer com `utils.GenerateTracer(ctx)` e `defer spanEnd()`.
+- Para rotinas periódicas de manutenção que rodam sem interação do usuário, derive o contexto com `utils.WithSkipTracing(ctx)` antes de chamar o service para evitar spans duplicados.
 - Propague `ctx` pelas chamadas; marque spans em erros de infra.
 
 ## 8. Marcação de erro no span

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	adminhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
@@ -34,6 +35,7 @@ func SetupRoutes(
 	authHandler := handlers.AuthHandler.(*authhandlers.AuthHandler)
 	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
 	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
+	adminHandler := handlers.AdminHandler.(*adminhandlers.AdminHandler)
 
 	// API base routes (v2)
 	base := "/api/v2"
@@ -47,6 +49,9 @@ func SetupRoutes(
 
 	// Register listing routes with dependencies
 	RegisterListingRoutes(v1, listingHandler, activityTracker, permissionService)
+
+	// Register admin routes with dependencies
+	RegisterAdminRoutes(v1, adminHandler, activityTracker, permissionService)
 }
 
 // setupGlobalMiddlewares configura middlewares aplicados a todas as rotas
@@ -273,5 +278,30 @@ func RegisterListingRoutes(
 	owners.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		owners.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateOwner
+	}
+}
+
+// RegisterAdminRoutes registers admin-related routes with authentication and admin permission
+func RegisterAdminRoutes(
+	router *gin.RouterGroup,
+	adminHandler *adminhandlers.AdminHandler,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
+	admin := router.Group("/admin")
+	// Apply security middlewares: Auth and Admin permission check
+	admin.Use(middlewares.AuthMiddleware(activityTracker))
+	admin.Use(middlewares.PermissionMiddleware(permissionService))
+	admin.Use(middlewares.RequireAdminPermission(permissionService))
+
+	{
+		// GET /admin/user/pending
+		admin.GET("/user/pending", adminHandler.GetPendingRealtors)
+
+		// POST /admin/user
+		admin.POST("/user", adminHandler.PostAdminGetUser)
+
+		// POST /admin/user/approve
+		admin.POST("/user/approve", adminHandler.PostAdminApproveUser)
 	}
 }

@@ -44,7 +44,7 @@ type UserCreateRequest struct {
 	CreciState    string `json:"creciState,omitempty"`
 	CreciValidity string `json:"creciValidity,omitempty"`   // format: 2006-01-02
 	BornAt        string `json:"bornAt" binding:"required"` // format: 2006-01-02
-	PhoneNumber   string `json:"phoneNumber" binding:"required"`
+	PhoneNumber   string `json:"phoneNumber" binding:"required" example:"+5511999999999" description:"Phone number in E.164 format (e.g., +5511999999999)"`
 	Email         string `json:"email" binding:"required,email"`
 	ZipCode       string `json:"zipCode" binding:"required"`
 	Street        string `json:"street,omitempty"`
@@ -262,7 +262,7 @@ type ResendEmailChangeCodeResponse struct {
 
 // Phone change requests
 type RequestPhoneChangeRequest struct {
-	NewPhoneNumber string `json:"newPhoneNumber" binding:"required"`
+	NewPhoneNumber string `json:"newPhoneNumber" binding:"required" example:"+5511999999999" description:"New phone number in E.164 format (e.g., +5511999999999)"`
 }
 
 type RequestPhoneChangeResponse struct {
@@ -311,7 +311,7 @@ type GetDocumentsUploadURLResponse struct {
 }
 
 type InviteRealtorRequest struct {
-	PhoneNumber string `json:"phoneNumber" binding:"required"`
+	PhoneNumber string `json:"phoneNumber" binding:"required" example:"+5511999999999" description:"Realtor phone number in E.164 format (e.g., +5511999999999)"`
 }
 
 type InviteRealtorResponse struct {

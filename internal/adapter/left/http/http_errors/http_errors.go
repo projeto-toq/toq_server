@@ -39,6 +39,14 @@ func SendHTTPErrorObj(c *gin.Context, err error) {
 	c.JSON(status, gin.H{"code": status, "message": message, "details": details})
 }
 
+// ConvertBindError converts a gin binding error to a standardized HTTP error
+func ConvertBindError(err error) error {
+	if err == nil {
+		return coreutils.ValidationError("body", "Invalid request body")
+	}
+	return coreutils.ValidationError("body", err.Error())
+}
+
 // mapErrorToHTTP converte erros do core (derrors) e legados para HTTP sem reempacotar.
 func mapErrorToHTTP(err error) (status int, message string, details any) {
 	// Novo: KindError com Kind → status

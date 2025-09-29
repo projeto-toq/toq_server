@@ -98,6 +98,17 @@ Exemplo (adicionar signout para todos os usuários via CSV):
 
 Se o endpoint legado `/api/v1/auth/signout` também existir, crie outra permissão (ex.: `34`) com `action=POST:/api/v1/auth/signout` e repita as concessões.
 
+## Cache de permissões e invalidação
+
+- As permissões agregadas de cada usuário são materializadas no Redis (`toq_cache:user_permissions:<id>`) por até 15 minutos.
+- Operações de domínio que alteram roles/permissões agora invalidam automaticamente o cache afetado:
+  - `AssignRoleToUser`, `RemoveRoleFromUser`, `SwitchActiveRole`, `ActivateUserRole`, `DeactivateAllUserRoles`.
+  - `GrantPermissionToRole` e `RevokePermissionFromRole` invalidam todos os usuários que possuem o role impactado.
+- Em cenários de atualização direta via SQL (ex.: scripts de manutenção), invoque `permissionService.RefreshUserPermissions(ctx, userID)` após concluir as alterações.
+- O serviço `HasPermission` faz um "refresh-on-miss": se o cache existir mas não contiver a permissão requerida, ele força a recarga a partir do banco e reavalia o acesso.
+- Falhas na invalidação são registradas com `permission.cache.invalidate_safe_failed` e marcadas no trace para facilitar investigação.
+- Observabilidade: cada operação de cache (lookup, store, invalidate, refresh) emite contadores no Prometheus (`cache_operations_total`), diferenciando `operation` e `result` (`hit`, `miss`, `success`, `error`, `disabled`).
+
 ## Boas práticas e armadilhas
 
 - Case exato do `action` HTTP (método e path) com o roteamento real.

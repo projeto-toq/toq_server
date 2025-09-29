@@ -64,6 +64,7 @@ type HTTPHandlers struct {
 	ListingHandler interface{} // Listing handler interface
 	AuthHandler    interface{} // Auth handler interface
 	MetricsHandler interface{} // Handler para endpoint /metrics
+	AdminHandler   interface{} // Admin handler interface
 }
 
 // MetricsAdapter contém o adapter de métricas

@@ -5,9 +5,8 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-1) ajuste o gin para que não apresente todas as rotas no startup
-2) ajuste para que use a variável global de nivel de log
-3) ajuste para que apresente o log segundo a variável global de output, NO console ou arquivo. O LOG DE ARQUIVO NÃO é o mesmo que o de console.
+1) o CleanExpiredValidations está gerando traces e poluindo o tracing do sistema.
+toq_server: validation_service.(*service).CleanExpiredValidations 
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 

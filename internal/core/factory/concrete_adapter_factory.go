@@ -11,6 +11,7 @@ import (
 
 	// HTTP handlers
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers"
+	adminhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
@@ -239,6 +240,11 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		complexService,
 	)
 
+	// Create admin handler using the adapter
+	adminHandler := adminhandlers.NewAdminHandlerAdapter(
+		userService,
+	)
+
 	// Create metrics handler
 	metricsHandler := handlers.NewMetricsHandler(metricsAdapter.Prometheus)
 
@@ -249,5 +255,6 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		ListingHandler: listingHandler,
 		AuthHandler:    authHandler,
 		MetricsHandler: metricsHandler,
+		AdminHandler:   adminHandler,
 	}
 }

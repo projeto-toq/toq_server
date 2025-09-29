@@ -73,6 +73,14 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 		return utils.ConflictError("role already has permission")
 	}
 
+	// Identificar usuários impactados
+	affectedUserIDs, err := p.permissionRepository.GetActiveUserIDsByRoleID(ctx, tx, roleID)
+	if err != nil {
+		slog.Error("permission.permission.get_role_users_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
+		utils.SetSpanError(ctx, err)
+		return utils.InternalError("")
+	}
+
 	// Criar a nova RolePermission
 	rolePermission := permissionmodel.NewRolePermission()
 	rolePermission.SetRoleID(roleID)
@@ -95,5 +103,8 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 		return utils.InternalError("")
 	}
 	slog.Info("permission.permission.granted", "role_id", roleID, "permission_id", permissionID)
+	for _, uid := range affectedUserIDs {
+		p.invalidateUserCacheSafe(ctx, uid, "grant_permission_to_role")
+	}
 	return nil
 }

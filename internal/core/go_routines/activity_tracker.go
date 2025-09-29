@@ -8,6 +8,7 @@ import (
 	"time"
 
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -144,8 +145,9 @@ func (at *ActivityTracker) processBatch(ctx context.Context, keys []string) {
 		return
 	}
 
-	// Batch update MySQL
-	err = at.userService.BatchUpdateLastActivity(ctx, userIDs, timestamps)
+	// Batch update MySQL without generating additional spans
+	ctxNoTrace := utils.WithSkipTracing(ctx)
+	err = at.userService.BatchUpdateLastActivity(ctxNoTrace, userIDs, timestamps)
 	if err != nil {
 		slog.Error("Failed to batch update activities", "count", len(userIDs), "error", err)
 		return

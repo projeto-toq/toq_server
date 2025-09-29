@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -49,26 +50,16 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	return
 }
 
-func (us *userService) getCrecisToValidateByStatus(_ context.Context, _ *sql.Tx, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
-
-	// TODO: Reimplementar busca por status após migração do sistema de status
-	// O método GetUsersByStatus precisa ser atualizado para o novo sistema de permissões
-	// Por enquanto, retornar lista vazia
-	slog.Warn("user.get_crecis_to_validate_by_status.temporarily_disabled", "status", UserRoleStatus)
-	return []usermodel.UserInterface{}, nil
-
-	/*
-		// Código original comentado durante migração:
-		// Read the realtors user with given status from the database
-		realtors, err = us.repo.GetUsersByStatus(ctx, tx, UserRoleStatus, permissionmodel.RoleSlugRealtor)
-		if err != nil {
-			if !errors.Is(err, sql.ErrNoRows) {
-				slog.Error("Failed to read realtor users with status in GetCrecisToValidateByStatus", "error", err)
-				return
-			}
+func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
+	// Buscar corretores pelo novo método filtrando por role e status
+	realtors, err = us.repo.GetUsersByRoleAndStatus(ctx, tx, permissionmodel.RoleSlugRealtor, UserRoleStatus)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-
-		return
-	*/
+		utils.SetSpanError(ctx, err)
+		slog.Error("user.get_crecis_to_validate_by_status.read_error", "status", UserRoleStatus, "error", err)
+		return nil, utils.InternalError("Failed to list realtors by status")
+	}
+	return realtors, nil
 }

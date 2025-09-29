@@ -15,6 +15,8 @@ type SessionRepoPortInterface interface {
 	RevokeSession(ctx context.Context, tx *sql.Tx, id int64) error
 	MarkSessionRotated(ctx context.Context, tx *sql.Tx, id int64) error
 	RevokeSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) error
+	// DeleteSessionsByUserID permanently removes all sessions for a given user (any state)
+	DeleteSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) error
 	GetActiveSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) (sessions []sessionmodel.SessionInterface, err error)
 	UpdateSessionRotation(ctx context.Context, tx *sql.Tx, id int64, rotationCounter int, lastRefreshAt time.Time) error
 	// DeleteExpiredSessions removes revoked+expired or absolutely expired sessions, returns affected count

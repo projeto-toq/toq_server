@@ -16,6 +16,14 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 
 	now := time.Now().UTC()
 
+	if phone := user.GetPhoneNumber(); phone != "" {
+		normalizedPhone, normErr := validators.NormalizeToE164(phone)
+		if normErr != nil {
+			return normErr
+		}
+		user.SetPhoneNumber(normalizedPhone)
+	}
+
 	//verify if user already exists
 	exist, err := us.repo.VerifyUserDuplicity(ctx, tx, user)
 	if err != nil {

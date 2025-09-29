@@ -67,7 +67,8 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	}
 	user.SetActiveRole(activeRole)
 
-	tokens, err = us.deleteAccount(ctx, tx, user)
+	var publishSessionsEvent bool
+	tokens, publishSessionsEvent, err = us.deleteAccount(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		slog.Error("user.delete_account.delete_account_error", "error", err, "user_id", userID)
@@ -80,10 +81,14 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
+	if publishSessionsEvent {
+		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID})
+	}
+
 	return
 }
 
-func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (tokens usermodel.Tokens, err error) {
+func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (tokens usermodel.Tokens, publishSessionsEvent bool, err error) {
 	// user, err := us.repo.GetUserByID(ctx, tx, userId)
 	// if err != nil {
 	// 	utils.SetSpanError(ctx, err)
@@ -120,9 +125,13 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	if us.sessionRepo != nil {
 		if err2 := us.sessionRepo.RevokeSessionsByUserID(ctx, tx, user.GetID()); err2 != nil {
 			slog.Warn("user.delete_account.revoke_sessions_warning", "error", err2, "user_id", user.GetID())
-		} else {
-			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: user.GetID()})
 		}
+		if err2 := us.sessionRepo.DeleteSessionsByUserID(ctx, tx, user.GetID()); err2 != nil {
+			utils.SetSpanError(ctx, err2)
+			slog.Error("user.delete_account.delete_sessions_error", "error", err2, "user_id", user.GetID())
+			return tokens, publishSessionsEvent, utils.InternalError("Failed to delete user sessions")
+		}
+		publishSessionsEvent = true
 	}
 
 	// Remove all device tokens

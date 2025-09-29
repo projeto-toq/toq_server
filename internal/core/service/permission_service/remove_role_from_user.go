@@ -24,26 +24,31 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 
 	slog.Debug("permission.role.remove.start", "user_id", userID, "role_id", roleID)
 
-	// Buscar o UserRole existente
-	userRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, nil, userID, roleID)
+	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("permission.role.get_user_role_failed", "user_id", userID, "role_id", roleID, "error", err)
+		slog.Error("permission.role.remove.tx_start_failed", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
-	if userRole == nil {
-		return utils.NotFoundError("UserRole")
+	defer func() {
+		if err != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				slog.Error("permission.role.remove.tx_rollback_failed", "user_id", userID, "role_id", roleID, "error", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+			}
+		}
+	}()
+
+	if err = p.RemoveRoleFromUserWithTx(ctx, tx, userID, roleID); err != nil {
+		return err
 	}
 
-	// Remover o UserRole
-	err = p.permissionRepository.DeleteUserRole(ctx, nil, userRole.GetID())
-	if err != nil {
-		slog.Error("permission.role.delete_user_role_failed", "user_id", userID, "role_id", roleID, "user_role_id", userRole.GetID(), "error", err)
+	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
+		slog.Error("permission.role.remove.tx_commit_failed", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 
-	slog.Info("permission.role.removed", "user_id", userID, "role_id", roleID)
 	return nil
 }
 
@@ -79,5 +84,6 @@ func (p *permissionServiceImpl) RemoveRoleFromUserWithTx(ctx context.Context, tx
 	}
 
 	slog.Info("permission.role.removed", "user_id", userID, "role_id", roleID)
+	p.invalidateUserCacheSafe(ctx, userID, "remove_role_from_user")
 	return nil
 }

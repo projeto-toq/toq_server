@@ -1,5 +1,58 @@
 basePath: /api/v2
 definitions:
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+      status:
+        type: integer
+    required:
+    - id
+    - status
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse:
+    properties:
+      realtors:
+        items:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor'
+        type: array
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse:
+    properties:
+      user:
+        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserResponse'
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor:
+    properties:
+      creciNumber:
+        type: string
+      creciState:
+        type: string
+      creciValidity:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: integer
+      nationalID:
+        type: string
+      nickName:
+        type: string
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.BaseFeature:
     properties:
       category:
@@ -282,6 +335,7 @@ definitions:
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.RequestPhoneChangeRequest:
     properties:
       newPhoneNumber:
+        example: "+5511999999999"
         type: string
     required:
     - newPhoneNumber
@@ -447,6 +501,7 @@ definitions:
         minLength: 6
         type: string
       phoneNumber:
+        example: "+5511999999999"
         type: string
       state:
         type: string
@@ -541,7 +596,8 @@ info:
     email: support@toq.com
     name: TOQ Development Team
     url: https://github.com/giulio-alfieri/toq_server
-  description: TOQ Server - Real Estate HTTP API Server with hexagonal architecture
+  description: TOQ Server - Real Estate HTTP API Server with hexagonal architecture.
+    All phone numbers supplied to the API must be in E.164 format (e.g., +5511999999999).
   license:
     name: MIT
     url: https://github.com/giulio-alfieri/toq_server/blob/main/LICENSE
@@ -549,6 +605,134 @@ info:
   title: TOQ Server API
   version: "1.0"
 paths:
+  /admin/user:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get full user by ID
+      tags:
+      - Admin
+  /admin/user/approve:
+    post:
+      consumes:
+      - application/json
+      description: Status must be one of the allowed enum values. On success, sends
+        FCM notification.
+      parameters:
+      - description: User ID and target status (int)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Approve or refuse realtor status manually
+      tags:
+      - Admin
+  /admin/user/pending:
+    get:
+      description: Returns id, nickname, fullName, nationalID, creciNumber, creciValidity,
+        creciState
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List realtors pending manual validation
+      tags:
+      - Admin
   /auth/agency:
     post:
       consumes:

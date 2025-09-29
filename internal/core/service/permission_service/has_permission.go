@@ -46,7 +46,7 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 	slog.Debug("permission.check.start", "user_id", userID, "resource", resource, "action", action)
 
 	// Tentar buscar permissões do cache primeiro
-	userPermissions, err := p.getUserPermissionsWithCache(ctx, userID)
+	userPermissions, cacheHit, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
 		slog.Error("permission.check.permissions_load_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -55,10 +55,12 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 
 	// Verificar cada permissão
 	evaluator := NewConditionEvaluator()
+	evaluatePermissions := func(perms []permissionmodel.PermissionInterface) bool {
+		for _, permission := range perms {
+			if permission.GetResource() != resource || permission.GetAction() != action {
+				continue
+			}
 
-	for _, permission := range userPermissions {
-		if permission.GetResource() == resource && permission.GetAction() == action {
-			// Verificar condições se existirem
 			if permission.GetConditions() != nil {
 				if permContext == nil {
 					// Sem contexto mas com condições - negar
@@ -67,14 +69,44 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 
 				if evaluator.Evaluate(permission.GetConditions(), permContext) {
 					slog.Info("permission.check.allowed", "user_id", userID, "resource", resource, "action", action, "permission_id", permission.GetID())
-					return true, nil
+					return true
 				}
-			} else {
-				// Sem condições - permitir
-				slog.Info("permission.check.allowed", "user_id", userID, "resource", resource, "action", action, "permission_id", permission.GetID())
-				return true, nil
+				continue
 			}
+
+			// Permissão sem condições
+			slog.Info("permission.check.allowed", "user_id", userID, "resource", resource, "action", action, "permission_id", permission.GetID())
+			return true
 		}
+
+		return false
+	}
+
+	for attempt := 0; attempt < 2; attempt++ {
+		if evaluatePermissions(userPermissions) {
+			return true, nil
+		}
+
+		if attempt == 0 && cacheHit {
+			slog.Info("permission.cache.refresh_on_miss", "user_id", userID, "resource", resource, "action", action)
+			if err := p.RefreshUserPermissions(ctx, userID); err != nil {
+				slog.Error("permission.cache.refresh_on_miss_failed", "user_id", userID, "resource", resource, "action", action, "error", err)
+				utils.SetSpanError(ctx, err)
+				return false, utils.InternalError("")
+			}
+
+			userPermissions, cacheHit, err = p.getUserPermissionsWithCache(ctx, userID)
+			if err != nil {
+				slog.Error("permission.cache.refresh_reload_failed", "user_id", userID, "resource", resource, "action", action, "error", err)
+				utils.SetSpanError(ctx, err)
+				return false, utils.InternalError("")
+			}
+
+			slog.Info("permission.cache.refresh_on_miss_completed", "user_id", userID, "resource", resource, "action", action, "permissions", len(userPermissions))
+			continue
+		}
+
+		break
 	}
 
 	slog.Warn("permission.check.denied", "user_id", userID, "resource", resource, "action", action)
@@ -82,7 +114,7 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 }
 
 // getUserPermissionsWithCache busca permissões com cache Redis
-func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context, userID int64) ([]permissionmodel.PermissionInterface, error) {
+func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context, userID int64) ([]permissionmodel.PermissionInterface, bool, error) {
 	cacheKey := fmt.Sprintf("user_permissions:%d", userID)
 
 	// Tentar buscar do cache Redis primeiro
@@ -90,15 +122,19 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 		cached, err := p.getUserPermissionsFromCache(ctx, cacheKey)
 		if err == nil && cached != nil {
 			slog.Debug("Permissions loaded from cache", "userID", userID, "count", len(cached))
-			return cached, nil
+			p.observeCacheOperation("user_permissions_lookup", "hit")
+			return cached, true, nil
 		}
 		slog.Debug("Cache miss for user permissions", "userID", userID, "error", err)
+		p.observeCacheOperation("user_permissions_lookup", "miss")
+	} else {
+		p.observeCacheOperation("user_permissions_lookup", "disabled")
 	}
 
 	// Cache miss ou erro - buscar do banco
 	permissions, err := p.getUserPermissionsFromDB(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("db load error: %w", err)
+		return nil, false, fmt.Errorf("db load error: %w", err)
 	}
 
 	// Armazenar no cache para próximas consultas
@@ -106,12 +142,17 @@ func (p *permissionServiceImpl) getUserPermissionsWithCache(ctx context.Context,
 		err = p.setUserPermissionsInCache(ctx, cacheKey, permissions)
 		if err != nil {
 			slog.Warn("Failed to cache user permissions", "userID", userID, "error", err)
+			p.observeCacheOperation("user_permissions_store", "error")
 			// Não falha - apenas loga o erro do cache
+		} else {
+			p.observeCacheOperation("user_permissions_store", "success")
 		}
+	} else {
+		p.observeCacheOperation("user_permissions_store", "disabled")
 	}
 
 	slog.Debug("Permissions loaded from database", "userID", userID, "count", len(permissions))
-	return permissions, nil
+	return permissions, false, nil
 }
 
 // getUserPermissionsFromCache busca permissões do cache Redis
@@ -267,14 +308,22 @@ func (p *permissionServiceImpl) ClearUserPermissionsCache(ctx context.Context, u
 		return utils.BadRequest("invalid user id")
 	}
 
+	if p.cache == nil {
+		slog.Debug("permission.cache.clear.skip", "user_id", userID)
+		p.observeCacheOperation("user_permissions_clear", "disabled")
+		return nil
+	}
+
 	err := p.cache.DeleteUserPermissions(ctx, userID)
 	if err != nil {
 		slog.Error("permission.cache.clear_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
+		p.observeCacheOperation("user_permissions_clear", "error")
 		// Retornar erro de infraestrutura de forma padronizada
 		return utils.InternalError("")
 	}
 
 	slog.Info("permission.cache.invalidated", "user_id", userID)
+	p.observeCacheOperation("user_permissions_clear", "success")
 	return nil
 }

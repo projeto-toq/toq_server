@@ -72,6 +72,7 @@ func (p *permissionServiceImpl) SwitchActiveRoleWithTx(ctx context.Context, tx *
 	}
 
 	slog.Info("permission.role.switched.tx", "user_id", userID, "new_role_id", newRoleID)
+	p.invalidateUserCacheSafe(ctx, userID, "switch_active_role_with_tx")
 	return nil
 }
 
@@ -118,6 +119,7 @@ func (p *permissionServiceImpl) DeactivateAllUserRoles(ctx context.Context, user
 	}
 
 	slog.Info("permission.user_roles.deactivated", "user_id", userID)
+	p.invalidateUserCacheSafe(ctx, userID, "deactivate_all_user_roles")
 	return nil
 }
 
@@ -218,5 +220,6 @@ func (p *permissionServiceImpl) ActivateUserRole(ctx context.Context, userID, ro
 		return utils.InternalError("")
 	}
 
+	p.invalidateUserCacheSafe(ctx, userID, "activate_user_role")
 	return nil
 }

@@ -104,5 +104,6 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	}
 
 	slog.Info("permission.role.assigned", "user_id", userID, "role_id", roleID, "role_name", role.GetName())
+	p.invalidateUserCacheSafe(ctx, userID, "assign_role_to_user")
 	return userRole, nil
 }

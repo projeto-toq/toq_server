@@ -101,9 +101,13 @@ const (
 	StatusPendingCreci                        // awaiting creci images to be uploaded
 	StatusPendingCnpj                         // awaiting cnpj images to be uploaded
 	StatusPendingManual                       // awaiting manual verification by admin
-	StatusRejected                            // admin reject the documentation
-	StatusDeleted                             // user request the deletion of the account
-	StatusInvitePending                       // realtor was invited and is pending acceptance
+	StatusRejected                            // admin reject the documentation (legacy/general)
+	// New granular refusal statuses for manual review outcomes
+	StatusRefusedImage    // refused due to image issues (e.g., unreadable/invalid)
+	StatusRefusedDocument // refused due to document mismatch/invalidity
+	StatusRefusedData     // refused due to data inconsistency
+	StatusDeleted         // user request the deletion of the account
+	StatusInvitePending   // realtor was invited and is pending acceptance
 )
 
 // String implementa fmt.Stringer para UserRoleStatus
@@ -119,6 +123,9 @@ func (us UserRoleStatus) String() string {
 		"pending_cnpj",
 		"pending_manual",
 		"rejected",
+		"refused_image",
+		"refused_document",
+		"refused_data",
 		"deleted",
 		"invite_pending",
 	}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	validationservice "github.com/giulio-alfieri/toq_server/internal/core/service/validation_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // ValidationCleaner periodically deletes expired rows from temp_user_validations.
@@ -15,7 +16,7 @@ func ValidationCleaner(svc validationservice.Service, interval time.Duration, ct
 	defer ticker.Stop()
 
 	// Kick off an immediate cleanup on start
-	if _, err := svc.CleanExpiredValidations(ctx, 500); err != nil {
+	if _, err := svc.CleanExpiredValidations(utils.WithSkipTracing(ctx), 500); err != nil {
 		slog.Warn("validation cleaner immediate run failed", "err", err)
 	}
 
@@ -25,7 +26,8 @@ func ValidationCleaner(svc validationservice.Service, interval time.Duration, ct
 			slog.Info("validation cleaner worker stopped")
 			return
 		case <-ticker.C:
-			if _, err := svc.CleanExpiredValidations(ctx, 500); err != nil {
+			noTraceCtx := utils.WithSkipTracing(ctx)
+			if _, err := svc.CleanExpiredValidations(noTraceCtx, 500); err != nil {
 				slog.Warn("validation cleaner delete failed", "err", err)
 			}
 		}

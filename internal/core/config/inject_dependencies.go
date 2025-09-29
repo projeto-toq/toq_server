@@ -206,10 +206,15 @@ func (c *config) InitListingHandler() {
 
 func (c *config) InitPermissionHandler() {
 	slog.Debug("Initializing Permission Handler")
+	var metrics metricsport.MetricsPortInterface
+	if c.metricsAdapter != nil {
+		metrics = c.metricsAdapter.Prometheus
+	}
 	c.permissionService = permissionservices.NewPermissionService(
 		c.repositoryAdapters.Permission,
 		c.cache,
 		c.globalService,
+		metrics,
 	)
 }
 
