@@ -39,3 +39,21 @@ type AdminApproveUserRequest struct {
 type AdminApproveUserResponse struct {
 	Message string `json:"message"`
 }
+
+// AdminCreciDownloadURLRequest representa POST /admin/user/creci-download-url request
+type AdminCreciDownloadURLRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
+}
+
+// AdminCreciDocumentURLs agrupa as URLs de download dos documentos CRECI
+type AdminCreciDocumentURLs struct {
+	Selfie string `json:"selfie"`
+	Front  string `json:"front"`
+	Back   string `json:"back"`
+}
+
+// AdminCreciDownloadURLResponse representa a resposta com URLs assinadas e tempo de expiração
+type AdminCreciDownloadURLResponse struct {
+	URLs             AdminCreciDocumentURLs `json:"urls"`
+	ExpiresInMinutes int                    `json:"expiresInMinutes"`
+}

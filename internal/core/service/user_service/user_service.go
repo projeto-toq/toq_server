@@ -99,6 +99,8 @@ type UserServiceInterface interface {
 	DeleteUserFolder(ctx context.Context, userID int64) (err error)
 	// GetCreciUploadURL generates a signed upload URL for realtor CRECI documents
 	GetCreciUploadURL(ctx context.Context, documentType, contentType string) (signedURL string, err error)
+	// GetCreciDownloadURLs generates signed download URLs for CRECI documents of a target user
+	GetCreciDownloadURLs(ctx context.Context, userID int64) (CreciDocumentDownloadURLs, error)
 	// VerifyCreciDocuments checks S3 for required CRECI images and sets status to PendingManual
 	VerifyCreciDocuments(ctx context.Context) (err error)
 	// GetUserByID returns the user with the active role eagerly loaded (read-only tx)
@@ -112,4 +114,12 @@ type UserServiceInterface interface {
 
 	// ApproveCreciManual updates realtor status from pending manual to approved/refused and sends notification
 	ApproveCreciManual(ctx context.Context, userID int64, status permissionmodel.UserRoleStatus) error
+}
+
+// CreciDocumentDownloadURLs encapsula as URLs assinadas geradas pelo serviço para os documentos CRECI
+type CreciDocumentDownloadURLs struct {
+	Selfie           string
+	Front            string
+	Back             string
+	ExpiresInMinutes int
 }

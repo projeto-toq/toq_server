@@ -27,6 +27,7 @@ type CloudStoragePortInterface interface {
 	GeneratePhotoUploadURL(userID int64, photoType storagemodel.PhotoType, contentType string) (string, error)
 	GeneratePhotoDownloadURL(userID int64, photoType storagemodel.PhotoType) (string, error)
 	GenerateDocumentUploadURL(userID int64, docType storagemodel.DocumentType, contentType string) (string, error)
+	GenerateDocumentDownloadURL(userID int64, docType storagemodel.DocumentType) (string, error)
 
 	// Configuration methods
 	GetBucketConfig() storagemodel.BucketConfig

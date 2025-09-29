@@ -98,6 +98,13 @@ Exemplo (adicionar signout para todos os usuários via CSV):
 
 Se o endpoint legado `/api/v1/auth/signout` também existir, crie outra permissão (ex.: `34`) com `action=POST:/api/v1/auth/signout` e repita as concessões.
 
+### Permissão para download administrativo dos documentos CRECI
+
+- `resource = http`
+- `action = POST:/api/v2/admin/user/creci-download-url`
+- Concedida inicialmente ao role **Administrador** (`role_id = 1`) em `data/base_role_permissions.csv`.
+- Descrição: possibilita ao time admin gerar URLs assinadas para selfie/front/back do CRECI do usuário alvo.
+
 ## Cache de permissões e invalidação
 
 - As permissões agregadas de cada usuário são materializadas no Redis (`toq_cache:user_permissions:<id>`) por até 15 minutos.

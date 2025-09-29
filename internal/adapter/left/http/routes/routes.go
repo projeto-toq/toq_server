@@ -303,5 +303,8 @@ func RegisterAdminRoutes(
 
 		// POST /admin/user/approve
 		admin.POST("/user/approve", adminHandler.PostAdminApproveUser)
+
+		// POST /admin/user/creci-download-url
+		admin.POST("/user/creci-download-url", adminHandler.PostAdminCreciDownloadURL)
 	}
 }

@@ -102,7 +102,6 @@ const (
 	StatusPendingCnpj                         // awaiting cnpj images to be uploaded
 	StatusPendingManual                       // awaiting manual verification by admin
 	StatusRejected                            // admin reject the documentation (legacy/general)
-	// New granular refusal statuses for manual review outcomes
 	StatusRefusedImage    // refused due to image issues (e.g., unreadable/invalid)
 	StatusRefusedDocument // refused due to document mismatch/invalidity
 	StatusRefusedData     // refused due to data inconsistency

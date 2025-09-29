@@ -16,6 +16,30 @@ definitions:
       message:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminCreciDocumentURLs:
+    properties:
+      back:
+        type: string
+      front:
+        type: string
+      selfie:
+        type: string
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLResponse:
+    properties:
+      expiresInMinutes:
+        type: integer
+      urls:
+        $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminCreciDocumentURLs'
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse:
     properties:
       realtors:
@@ -697,6 +721,64 @@ paths:
             additionalProperties: true
             type: object
       summary: Approve or refuse realtor status manually
+      tags:
+      - Admin
+  /admin/user/creci-download-url:
+    post:
+      consumes:
+      - application/json
+      description: Returns signed URLs (selfie/front/back) for a realtor user, valid
+        for a limited time
+      parameters:
+      - description: User ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get signed download URLs for CRECI documents
       tags:
       - Admin
   /admin/user/pending:

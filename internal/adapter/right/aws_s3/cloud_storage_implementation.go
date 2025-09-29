@@ -32,6 +32,12 @@ func (s *S3Adapter) GenerateDocumentUploadURL(userID int64, docType storagemodel
 	return s.GenerateV4PutObjectSignedURL(s.bucketName, objectPath, contentType)
 }
 
+// GenerateDocumentDownloadURL gera uma URL para download de documento específico do usuário
+func (s *S3Adapter) GenerateDocumentDownloadURL(userID int64, docType storagemodel.DocumentType) (string, error) {
+	objectPath := fmt.Sprintf("%d/%s", userID, string(docType))
+	return s.GenerateV4GetObjectSignedURL(s.bucketName, objectPath)
+}
+
 // GenerateUploadURL é um wrapper para o método existing GenerateV4PutObjectSignedURL
 func (s *S3Adapter) GenerateUploadURL(bucketName, objectName, contentType string) (string, error) {
 	return s.GenerateV4PutObjectSignedURL(bucketName, objectName, contentType)
