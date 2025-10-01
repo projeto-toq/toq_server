@@ -12,6 +12,10 @@ type GlobalRepoPortInterface interface {
 
 	GetConfiguration(ctx context.Context, tx *sql.Tx) (configuration map[string]string, err error)
 
+	GetCSPPolicy(ctx context.Context, tx *sql.Tx) (policy globalmodel.ContentSecurityPolicy, err error)
+	CreateCSPPolicy(ctx context.Context, tx *sql.Tx, policy globalmodel.ContentSecurityPolicy) (globalmodel.ContentSecurityPolicy, error)
+	UpdateCSPPolicy(ctx context.Context, tx *sql.Tx, policy globalmodel.ContentSecurityPolicy) error
+
 	// Transaction related methods
 	// StartReadOnlyTransaction starts a database transaction with read-only semantics.
 	// It should be used for pure read flows to reduce locking and overhead.

@@ -5,16 +5,21 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O time do front-end flutter, relatou problemas de CSP (Content Security Policy) ao tentar carregar o toq_client web, que depende de scripts hospedados em uma CDN externa (https://cdn.jsdelivr.net). A política atual de CSP não permite a execução desses scripts, resultando em falhas na aplicação web.
+O time do front-end flutter, relatou problemas de CSP (Content Security Policy) ao tentar carregar o toq_client web conforme abaixo:
 
-Plano de correção (proposta)
-Mapear onde a CSP é definida
+Causa raiz confirmada
+O log do navegador mostra a violação: connect-src 'self' https://api.gca.dev.br https://fcm.googleapis.com https://firebaseinstallations.googleapis.com https://firebase.googleapis.com https://www.googleapis.com https://www.gstatic.com https://fonts.gstatic.com wss:; note a ausência de qualquer domínio S3.
+Já o arquivo versionado index.html (linhas 21-27) inclui https://toq-app-media.s3.us-east-1.amazonaws.com e os curingas https://*.s3.us-east-1.amazonaws.com em img-src, media-src e connect-src.
+Como a política efetivamente aplicada pelo navegador é diferente da meta tag entregue pelo build, existe uma política Content-Security-Policy enviada via cabeçalho HTTP pelo servidor de hospedagem (ou por configuração legada de reverse proxy/service worker) que não foi atualizada após a mudança no index.html. Esse cabeçalho tem precedência sobre a meta e bloqueia os fetches que o Flutter Web faz para renderizar Image.network, resultando nas fotos em branco.
+Portanto, a causa raiz é divergência entre a CSP declarada no deploy server-side e a CSP versionada no projeto, impedindo que URLs S3 recentemente adicionadas sejam reconhecidas.
 
-Revisar configuração do servidor/reverso (ex.: Nginx/CloudFront) responsável por servir toq_client web. Documentar o arquivo, bloco ou painel que injeta o header Content-Security-Policy.
-Ajustar a política de scripts
-
-Acrescentar explicitamente https://cdn.jsdelivr.net (ou o domínio CDN corporativo equivalente) à diretiva script-src, mantendo os demais valores existentes.
-Se a política usa nonce/hash dinâmicos, adicionar a exceção em conformidade com o padrão já adotado pelo time de segurança.
+Plano de correção proposto
+Atualizar a CSP do servidor para incluir os mesmos domínios do index.html
+Ajustar a configuração do web server (IIS, Nginx ou outro) que publica os artefatos copiados para app, adicionando a política completa com img-src, media-src e connect-src liberando https://toq-app-media.s3.us-east-1.amazonaws.com e os curingas https://*.s3.us-east-1.amazonaws.com.
+Se o cabeçalho for gerado automaticamente (ex.: módulo de segurança), alinhar a lista com a meta tag do projeto e documentar o local do ajuste.
+Sincronizar fonte única da verdade da CSP
+Definir processo para que toda alteração em index.html seja replicada imediatamente no cabeçalho do servidor (script de deploy, template de config, IaC).
+Opcional: mover a CSP para um arquivo compartilhado (ex.: web/csp.json) consumido pelo pipeline de build e pelo servidor, evitando divergências futuras.
 
 O NGINX que serve toq_client web está rodando neste servidor linux, portanto voce tem acesso a ele.
 

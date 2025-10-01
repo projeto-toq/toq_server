@@ -13,6 +13,7 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers"
 	adminhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
+	globalhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/global_handlers"
 	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
 
@@ -245,16 +246,22 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		userService,
 	)
 
-	// Create metrics handler
-	metricsHandler := handlers.NewMetricsHandler(metricsAdapter.Prometheus)
+	// Create metrics handler (optional)
+	var metricsHandler interface{}
+	if metricsAdapter != nil {
+		metricsHandler = handlers.NewMetricsHandler(metricsAdapter.Prometheus)
+	}
+
+	securityHandler := globalhandlers.NewCSPHandlerAdapter(globalService)
 
 	slog.Info("Successfully created all HTTP handlers")
 
 	return HTTPHandlers{
-		UserHandler:    userHandler,
-		ListingHandler: listingHandler,
-		AuthHandler:    authHandler,
-		MetricsHandler: metricsHandler,
-		AdminHandler:   adminHandler,
+		UserHandler:     userHandler,
+		ListingHandler:  listingHandler,
+		AuthHandler:     authHandler,
+		MetricsHandler:  metricsHandler,
+		AdminHandler:    adminHandler,
+		SecurityHandler: securityHandler,
 	}
 }

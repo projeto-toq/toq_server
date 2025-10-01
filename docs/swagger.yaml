@@ -88,6 +88,17 @@ definitions:
       name:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CSPPolicyResponse:
+    properties:
+      directives:
+        additionalProperties:
+          type: string
+        description: Directives contains the CSP directives in key/value format.
+        type: object
+      version:
+        description: Version is the optimistic-lock value of the stored policy.
+        type: integer
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest:
     properties:
       code:
@@ -443,6 +454,20 @@ definitions:
       refreshToken:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateCSPPolicyRequest:
+    properties:
+      directives:
+        additionalProperties:
+          type: string
+        description: Directives must include at least the default-src directive.
+        type: object
+      version:
+        description: Version is the optimistic-lock control. Use 0 to create a new
+          policy.
+        type: integer
+    required:
+    - directives
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateOptStatusRequest:
     properties:
       optIn:
@@ -629,6 +654,90 @@ info:
   title: TOQ Server API
   version: "1.0"
 paths:
+  /admin/security/csp:
+    get:
+      description: Returns the active CSP directives and version used by the platform
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CSPPolicyResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get the current Content Security Policy
+      tags:
+      - Security
+    put:
+      consumes:
+      - application/json
+      description: Replaces the active CSP directives using optimistic concurrency.
+        Pass version 0 to create a new policy.
+      parameters:
+      - description: Content Security Policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateCSPPolicyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CSPPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update the Content Security Policy
+      tags:
+      - Security
   /admin/user:
     post:
       consumes:

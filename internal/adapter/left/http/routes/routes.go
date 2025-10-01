@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	adminhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
+	globalhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/global_handlers"
 	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
@@ -36,6 +37,7 @@ func SetupRoutes(
 	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
 	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
 	adminHandler := handlers.AdminHandler.(*adminhandlers.AdminHandler)
+	securityHandler := handlers.SecurityHandler.(*globalhandlers.CSPHandler)
 
 	// API base routes (v2)
 	base := "/api/v2"
@@ -51,7 +53,7 @@ func SetupRoutes(
 	RegisterListingRoutes(v1, listingHandler, activityTracker, permissionService)
 
 	// Register admin routes with dependencies
-	RegisterAdminRoutes(v1, adminHandler, activityTracker, permissionService)
+	RegisterAdminRoutes(v1, adminHandler, securityHandler, activityTracker, permissionService)
 }
 
 // setupGlobalMiddlewares configura middlewares aplicados a todas as rotas
@@ -285,6 +287,7 @@ func RegisterListingRoutes(
 func RegisterAdminRoutes(
 	router *gin.RouterGroup,
 	adminHandler *adminhandlers.AdminHandler,
+	securityHandler *globalhandlers.CSPHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
 ) {
@@ -306,5 +309,11 @@ func RegisterAdminRoutes(
 
 		// POST /admin/user/creci-download-url
 		admin.POST("/user/creci-download-url", adminHandler.PostAdminCreciDownloadURL)
+	}
+
+	security := admin.Group("/security")
+	{
+		security.GET("/csp", securityHandler.GetCSPPolicy)
+		security.PUT("/csp", securityHandler.UpdateCSPPolicy)
 	}
 }

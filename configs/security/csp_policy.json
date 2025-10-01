@@ -1,0 +1,18 @@
+{
+    "version": 1,
+    "directives": {
+        "default-src": "'self'",
+        "base-uri": "'self'",
+        "manifest-src": "'self'",
+        "script-src": "'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net",
+        "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "img-src": "'self' data: blob: https://toq-app-media.s3.us-east-1.amazonaws.com https://*.s3.us-east-1.amazonaws.com",
+        "media-src": "'self' https://toq-app-media.s3.us-east-1.amazonaws.com https://*.s3.us-east-1.amazonaws.com",
+        "font-src": "'self' data: https://fonts.gstatic.com",
+        "connect-src": "'self' https://api.gca.dev.br https://fcm.googleapis.com https://firebaseinstallations.googleapis.com https://firebase.googleapis.com https://www.googleapis.com https://www.gstatic.com https://fonts.gstatic.com https://toq-app-media.s3.us-east-1.amazonaws.com https://*.s3.us-east-1.amazonaws.com wss:",
+        "worker-src": "'self' blob:",
+        "frame-ancestors": "'none'",
+        "form-action": "'self'",
+        "object-src": "'none'"
+    }
+}
