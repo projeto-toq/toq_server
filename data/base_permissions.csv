@@ -51,3 +51,5 @@ id;name;resource;action;description;conditions;is_active
 50;HTTP ApproveUser;http;POST:/api/v2/admin/user/approve;Permite Admin aprovar/reprovar corretor;NULL;1
 51;HTTP GetPending;http;GET:/api/v2/admin/user/pending;Permite Admin listar corretores pendentes de aprovação;NULL;1
 52;HTTP Admin GetCreciDownloadURL;http;POST:/api/v2/admin/user/creci-download-url;Permite Admin obter URLs de download dos documentos CRECI;NULL;1
+53;HTTP Admin Get CSP policies;http;GET:/api/v2/admin/security/csp;Permite Admin obter políticas de CSP;NULL;1
+54;HTTP Admin PUT CSP Policies;http;PUT:/api/v2/admin/security/csp;Permite Admin atualizar políticas de CSP;NULL;1

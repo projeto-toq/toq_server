@@ -5,7 +5,9 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após a incllusão do loki para passar logs ao grafana, agora a flag -log-level não está funcionando mais. O log sempre vem em nível debug, mesmo quando setamos info.
+Veja o log da aplicação em /logs/toq_server.log e nas últimas linhas verá o erro no repositório MySQL.
+- sugiro alterar a persistensia de CSP para uma tabela específicca e nÃo na tabela de configuratioin.
+- apresente os parametros da tabela nova a ser criada.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
 
