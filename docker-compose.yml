@@ -47,7 +47,7 @@ services:
       - "127.0.0.1:3000:3000" # bind apenas em loopback
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=Senh@123
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_DOMAIN=grafana.gca.dev.br
       - GF_SERVER_ROOT_URL=https://grafana.gca.dev.br
@@ -62,17 +62,37 @@ services:
     networks:
       - toq-network
 
+  # Loki (for log aggregation)
+  loki:
+    image: grafana/loki:latest
+    command:
+      - -config.file=/etc/loki/config/loki-config.yaml
+      - -config.expand-env=true
+    environment:
+      - LOKI_RETENTION_DAYS=${LOKI_RETENTION_DAYS:-7}
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config/loki-config.yaml:z
+      - /codigos/loki-data:/loki
+    networks:
+      - toq-network
+
   # OpenTelemetry Collector
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    environment:
+      - OTEL_RESOURCE_ENVIRONMENT=${OTEL_RESOURCE_ENVIRONMENT:-development}
     ports:
       - "127.0.0.1:4317:4317" # OTLP gRPC receiver somente loopback
       - "127.0.0.1:4318:4318" # OTLP HTTP receiver somente loopback
       - "127.0.0.1:8888:8888" # Métricas collector loopback
       - "127.0.0.1:8889:8889" # Exporter metrics loopback
+    depends_on:
+      - loki
     networks:
       - toq-network
 

@@ -5,9 +5,18 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-1) o CleanExpiredValidations está gerando traces e poluindo o tracing do sistema.
-toq_server: validation_service.(*service).CleanExpiredValidations 
+O time do front-end flutter, relatou problemas de CSP (Content Security Policy) ao tentar carregar o toq_client web, que depende de scripts hospedados em uma CDN externa (https://cdn.jsdelivr.net). A política atual de CSP não permite a execução desses scripts, resultando em falhas na aplicação web.
 
+Plano de correção (proposta)
+Mapear onde a CSP é definida
+
+Revisar configuração do servidor/reverso (ex.: Nginx/CloudFront) responsável por servir toq_client web. Documentar o arquivo, bloco ou painel que injeta o header Content-Security-Policy.
+Ajustar a política de scripts
+
+Acrescentar explicitamente https://cdn.jsdelivr.net (ou o domínio CDN corporativo equivalente) à diretiva script-src, mantendo os demais valores existentes.
+Se a política usa nonce/hash dinâmicos, adicionar a exceção em conformidade com o padrão já adotado pelo time de segurança.
+
+O NGINX que serve toq_client web está rodando neste servidor linux, portanto voce tem acesso a ele.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
 

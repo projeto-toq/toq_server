@@ -16,7 +16,7 @@ processors:
   resource:
     attributes:
       - key: environment
-        value: "production"
+        value: ${env:OTEL_RESOURCE_ENVIRONMENT}
         action: upsert
 
 exporters:
@@ -28,6 +28,11 @@ exporters:
       service: "toq_server"
   otlp:
     endpoint: toq_server-jaeger-1:4317
+    tls:
+      insecure: true
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    compression: gzip
     tls:
       insecure: true
 
@@ -50,4 +55,4 @@ service:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch, resource]
-      exporters: [debug]
+      exporters: [debug, otlphttp/loki]

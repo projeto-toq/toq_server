@@ -6,10 +6,12 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise
 
 ## 2) Requisição
+Atualmente, o arquivo de log, gerado pelo slog quando a opção é -log-output file é em ndjson. Isso gerá problemas para ferramentas de análise de logs que esperam um formato json "padrão".
 Crie um plano para implentação de:
-- é necessário um novo endpoint para permitir que o admin receba a URL assinada para download dos arquivos Creci - selfie/front/back;
-- o endpoint deve ser POST /admin/user/creci-download-url, passando no body o userID;
-- ajuste os arquivos de carga inicial de permissões (CSV) para incluir a permissão necessária para o endpoint;
+- implementar o loki e grafana para análise de logs
+- Loki, assim como o grafana já está, deve estar em containers docker
+- crier um dashboard no grafana para análise dos logs
+- Documentação de como usar o loki e grafana para análise dos logs
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

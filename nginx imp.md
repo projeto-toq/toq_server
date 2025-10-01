@@ -912,13 +912,15 @@ Aplicar mecanismos defensivos (CSP, rate limiting, restrição de serviços inte
 ### Snippets CSP
 csp-report-only.conf:
 ```
-add_header Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:; connect-src 'self' https://api.gca.dev.br wss:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self';" always;
+add_header Content-Security-Policy-Report-Only "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:; connect-src 'self' https://api.gca.dev.br wss:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self';" always;
 ```
 
 csp-enforce.conf (aplicar após validar):
 ```
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:; connect-src 'self' https://api.gca.dev.br wss:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self';" always;
+add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; manifest-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.gca.dev.br https://fcm.googleapis.com https://firebaseinstallations.googleapis.com https://firebase.googleapis.com https://www.googleapis.com https://www.gstatic.com https://fonts.gstatic.com wss:; worker-src 'self' blob:; frame-ancestors 'none'; form-action 'self'; object-src 'none';" always;
 ```
+
+Os dois snippets ativos vivem em `/etc/nginx/snippets/` no host (enforce/report-only) e são incluídos pelos blocos `server` do `sites-enabled/root.conf`.
 
 (Se Flutter gerar assets externos, ajustar connect-src/script-src conforme necessidade.)
 

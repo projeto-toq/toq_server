@@ -8,10 +8,14 @@ import (
 	"strings"
 	"time"
 
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	globallog "go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
+	sdklog "go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -24,6 +28,7 @@ import (
 type TelemetryManager struct {
 	traceProvider  *sdktrace.TracerProvider
 	metricProvider *sdkmetric.MeterProvider
+	logProvider    *sdklog.LoggerProvider
 	env            globalmodel.Environment
 }
 
@@ -57,6 +62,11 @@ func (tm *TelemetryManager) Initialize(ctx context.Context) (func(), error) {
 		return nil, fmt.Errorf("failed to initialize metrics: %w", err)
 	}
 
+	// Inicializar logs
+	if err := tm.initializeLogging(ctx, res); err != nil {
+		return nil, fmt.Errorf("failed to initialize logs: %w", err)
+	}
+
 	// Configurar propagators
 	tm.configurePropagators()
 
@@ -67,6 +77,55 @@ func (tm *TelemetryManager) Initialize(ctx context.Context) (func(), error) {
 
 	// Retornar função de shutdown
 	return tm.shutdown, nil
+}
+
+// initializeLogging configura a exportação de logs via OpenTelemetry
+func (tm *TelemetryManager) initializeLogging(ctx context.Context, res *resource.Resource) error {
+	if !tm.env.TELEMETRY.OTLP.Enabled {
+		slog.Info("OTLP logs disabled")
+		return nil
+	}
+
+	endpoint, err := normalizeOTLPEndpoint(tm.env.TELEMETRY.OTLP.Endpoint)
+	if err != nil {
+		return fmt.Errorf("invalid OTLP log endpoint: %w", err)
+	}
+
+	options := []otlploghttp.Option{
+		otlploghttp.WithEndpoint(endpoint),
+	}
+	if tm.env.TELEMETRY.OTLP.Insecure {
+		options = append(options, otlploghttp.WithInsecure())
+	}
+
+	exporter, err := otlploghttp.New(ctx, options...)
+	if err != nil {
+		return fmt.Errorf("failed to create OTLP log exporter: %w", err)
+	}
+
+	processor := sdklog.NewBatchProcessor(exporter)
+	logProvider := sdklog.NewLoggerProvider(
+		sdklog.WithResource(res),
+		sdklog.WithProcessor(processor),
+	)
+
+	globallog.SetLoggerProvider(logProvider)
+	tm.logProvider = logProvider
+
+	baseHandler := slog.Default().Handler()
+	otelHandler := otelslog.NewHandler("toq_server",
+		otelslog.WithLoggerProvider(logProvider),
+		otelslog.WithVersion(globalmodel.AppVersion),
+		otelslog.WithSource(true),
+	)
+
+	combinedHandler := newTeeHandler(baseHandler, otelHandler)
+	if combinedHandler == nil {
+		combinedHandler = otelHandler
+	}
+	slog.SetDefault(slog.New(combinedHandler))
+	slog.Info("OpenTelemetry logs initialized", "endpoint", tm.env.TELEMETRY.OTLP.Endpoint)
+	return nil
 }
 
 // createResource cria o resource comum para tracing e métricas
@@ -226,5 +285,81 @@ func (tm *TelemetryManager) shutdown() {
 		}
 	}
 
+	if tm.logProvider != nil {
+		if err := tm.logProvider.Shutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown log provider", "error", err)
+		} else {
+			slog.Info("OpenTelemetry log provider shutdown completed")
+		}
+	}
+
 	slog.Info("OpenTelemetry shutdown completed")
+}
+
+// newTeeHandler cria um handler que replica registros para todos os handlers fornecidos.
+func newTeeHandler(handlers ...slog.Handler) slog.Handler {
+	filtered := make([]slog.Handler, 0, len(handlers))
+	for _, h := range handlers {
+		if h != nil {
+			filtered = append(filtered, h)
+		}
+	}
+	switch len(filtered) {
+	case 0:
+		return nil
+	case 1:
+		return filtered[0]
+	default:
+		return &teeHandler{handlers: filtered}
+	}
+}
+
+type teeHandler struct {
+	handlers []slog.Handler
+}
+
+func (t *teeHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	for _, h := range t.handlers {
+		if h != nil && h.Enabled(ctx, level) {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *teeHandler) Handle(ctx context.Context, record slog.Record) error {
+	var firstErr error
+	for i, h := range t.handlers {
+		if h == nil {
+			continue
+		}
+		rec := record
+		if i < len(t.handlers)-1 {
+			rec = record.Clone()
+		}
+		if err := h.Handle(ctx, rec); err != nil && firstErr == nil {
+			firstErr = err
+		}
+	}
+	return firstErr
+}
+
+func (t *teeHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	newHandlers := make([]slog.Handler, len(t.handlers))
+	for i, h := range t.handlers {
+		if h != nil {
+			newHandlers[i] = h.WithAttrs(attrs)
+		}
+	}
+	return &teeHandler{handlers: newHandlers}
+}
+
+func (t *teeHandler) WithGroup(name string) slog.Handler {
+	newHandlers := make([]slog.Handler, len(t.handlers))
+	for i, h := range t.handlers {
+		if h != nil {
+			newHandlers[i] = h.WithGroup(name)
+		}
+	}
+	return &teeHandler{handlers: newHandlers}
 }

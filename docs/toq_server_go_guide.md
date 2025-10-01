@@ -339,3 +339,4 @@ if err != nil {
 - `internal/adapter/left/http/http_errors` — serialização de erros para HTTP.
 - `internal/core/utils` — tracing (`GenerateTracer`, `SetSpanError`).
 - `internal/core/derrors` — erros de domínio (Kind/sentinelas).
+- `docs/observability/logs.md` — guia de Loki/Grafana e correlação de logs.
