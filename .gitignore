@@ -7,10 +7,12 @@
 *.dll
 *.so
 *.dylib
-*.log
 
 # Binary directory
 /bin/
+
+# log directory
+/logs/
 
 # MySQL data is now stored outside the project
 # /codigos/mysql_data (external directory)
