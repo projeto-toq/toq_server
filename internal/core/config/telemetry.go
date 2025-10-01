@@ -328,13 +328,28 @@ func (t *teeHandler) Enabled(ctx context.Context, level slog.Level) bool {
 }
 
 func (t *teeHandler) Handle(ctx context.Context, record slog.Record) error {
+	activeCount := 0
+	for _, h := range t.handlers {
+		if h != nil && h.Enabled(ctx, record.Level) {
+			activeCount++
+		}
+	}
+
+	if activeCount == 0 {
+		return nil
+	}
+
 	var firstErr error
-	for i, h := range t.handlers {
-		if h == nil {
+	handled := 0
+	for _, h := range t.handlers {
+		if h == nil || !h.Enabled(ctx, record.Level) {
 			continue
 		}
+
+		handled++
 		rec := record
-		if i < len(t.handlers)-1 {
+		if handled < activeCount {
+			// Clonamos o registro quando múltiplos handlers ativos precisam recebê-lo.
 			rec = record.Clone()
 		}
 		if err := h.Handle(ctx, rec); err != nil && firstErr == nil {
