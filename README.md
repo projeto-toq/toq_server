@@ -12,6 +12,11 @@ Developer docs:
 
 Note: paths intentionally do not include a `/change` segment. Keep Swagger annotations and clients aligned to these routes to avoid 404s.
 
+## Content Security Policy (CSP)
+- A atualização das diretivas não acontece mais via endpoints administrativos. Use o arquivo `configs/security/csp_policy.json` como fonte da verdade.
+- O time de frontend deve gerar o JSON seguindo o modelo descrito em `docs/security/csp-policy-model.md` e submetê-lo para revisão do time de plataforma.
+- Após merge, o pipeline executa `scripts/render_csp_snippets.sh` para converter o JSON em snippets Nginx e aplicar a nova política.
+
 ## Error schema (standardized)
 All error responses follow a flat, consistent schema returned by the centralized HTTP serializer:
 

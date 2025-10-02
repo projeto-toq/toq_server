@@ -6,12 +6,12 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise
 
 ## 2) Requisição
-Atualmente, o arquivo de log, gerado pelo slog quando a opção é -log-output file é em ndjson. Isso gerá problemas para ferramentas de análise de logs que esperam um formato json "padrão".
-Crie um plano para implentação de:
-- implementar o loki e grafana para análise de logs
-- Loki, assim como o grafana já está, deve estar em containers docker
-- crier um dashboard no grafana para análise dos logs
-- Documentação de como usar o loki e grafana para análise dos logs
+O método de atualização das politicas CSP via endpoints get /admin/security/csp e PUT /admin/security/csp ficou muito complicado e dificil de implementar entre os times.
+Assim, remova todo o código relacionado a esses endpoints, incluindo handlers, services, adapters, migrations e testes.
+Além disso, atualize a documentação Swagger e o README conforme necessário.
+O novo processo deverá ser um arquivo JSON simples, cujo modelo você vai criar, a partir do qual faremos uma implementação futura. O time de frontend criará este arquivo JSON e o enviará para o backend.
+O arquivo JSON conterá as políticas CSP que serão aplicadas ao servidor.
+O modelo do arquivo JSON deve ser simples e fácil de entender, permitindo que o time de frontend crie e envie o arquivo sem dificuldades.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
@@ -75,7 +75,6 @@ Crie um plano para implentação de:
 - Atualizar Swagger quando comportamento público mudar.
 
 3) Após mudanças:
-- Executar build e testes rápidos; relatar PASS/FAIL brevemente e corrigir até ficar verde.
 - Relatar “requirements coverage” (Requisito → Done/Deferred + motivo).
 
 4) Em casos de dúvidas: consultar o requerente.

@@ -75,7 +75,7 @@ Access token (claim `infos`):
   "ID": <int>,
   "UserRoleID": <int>,
   "RoleStatus": <int>,
-  "RoleSlug": "<slug>" // novo campo aditivo (root|owner|realtor|agency), pode faltar em tokens antigos
+  "RoleSlug": "<slug>" (root|owner|realtor|agency),
 }
 ```
 Refresh token (claim `infos`):
@@ -84,7 +84,7 @@ Refresh token (claim `infos`):
   "ID": <int>,
   "UserRoleID": 0,
   "RoleStatus": <int>,
-  "RoleSlug": "<slug|opcional>"
+  "RoleSlug": "<slug>"
 }
 ```
 Backward-compatible: middleware trata ausência de `RoleSlug`.
@@ -219,7 +219,7 @@ Padrão de DTOs e Handlers:
 - DTOs (request/response) residem no lado HTTP (left adapter), desacoplados do domínio. Converta DTO ⇄ domínio na borda do handler/assembler.
 - Validação de DTO no handler (ou binder), sem regras de negócio; regras ficam no Service.
 - Erros: sempre `http_errors.SendHTTPErrorObj(c, err)`.
-- Swagger: documente via anotações no código do handler/DTO.
+- Swagger: documente via anotações no código do handler/DTO e não diretamente nos arquivos json/yaml.
 
 ### 7.5 Workers/Go routines
 
@@ -250,10 +250,8 @@ utils.SetSpanError(ctx, err)
 
 ## 10. Propagação de erros (detalhado)
 
-- Services (novo padrão recomendado):
+- Services:
   - Prefira erros de domínio com `internal/core/derrors` (Kinds/sentinelas). Para erros de infraestrutura, use `derrors.Infra(...)` e registre `slog.Error` + `utils.SetSpanError` no ponto de falha.
-- Camada legada (compatível):
-  - Criar erros de negócio com `utils.NewHTTPErrorWithSource(...)` ou envolver com `utils.WrapDomainErrorWithSource(...)` para capturar origem (função, arquivo, linha, short stack).
 - Repositories:
   - Logam falhas com `slog.Error` (contexto mínimo) e retornam erros puros (`error`, por ex. `sql.ErrNoRows`). Não usar pacotes HTTP.
 - Handlers:
@@ -263,18 +261,17 @@ utils.SetSpanError(ctx, err)
 
 - Ports (interfaces) ficam em `internal/core/port/...` e são separadas por contexto (left/right) e por módulo (authhandler, userhandler, repositories, etc.).
 - Interface em arquivo distinto dos domínios: não misture a definição de interface com os modelos de domínio; mantenha os modelos em `internal/core/model` e interfaces em `internal/core/port`.
-- Cada função exposta relevante pode ter seu próprio arquivo no Service para granularidade e histórico limpo (ex.: `confirm_email_change.go`, `confirm_phone_change.go`). Isso facilita teste, revisão e rastreabilidade.
+- Cada função exposta relevante deve ter seu próprio arquivo no Service para granularidade e histórico limpo (ex.: `confirm_email_change.go`, `confirm_phone_change.go`). Isso facilita teste, revisão e rastreabilidade.
 - Em adapters/handlers, prefira também quebrar por caso de uso quando crescer (ex.: `update_user_role_status_tx.go`).
 
 ## 12. Padrão para análise/refatoração
 
-- Siga os boilerplates: `prompt analise.md`, `prompt bug.md`, `prompt quick.md`.
 - Ao refatorar:
   - Não mude contratos públicos sem atualizar Swagger/Docs.
   - Preserve o isolamento das camadas: adapters sem semântica de domínio nem HTTP; services sem HTTP; handlers sem spans.
   - Padronize conversões em Converters; elimine conversões “inline” dentro de queries.
   - Tracing/logs conforme seções acima; evite duplicação de spans.
-  - Sempre rodar build/lint/tests rápidos e relatar PASS/FAIL.
+  - Sempre rodar build/lint
 
 Checklist rápido de refatoração:
 - [ ] Mantém arquitetura hexagonal e fluxo Handlers → Services → Repos.

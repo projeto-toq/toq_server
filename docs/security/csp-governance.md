@@ -5,9 +5,10 @@ Este documento define como administrar a Content Security Policy (CSP) do toq_cl
 ## Visão Geral
 
 1. **Solicitação de mudança** – o time solicitante preenche um ticket descrevendo novos domínios ou ajustes necessários e justifica o uso.
-2. **Atualização do serviço** – o time de plataforma aplica a mudança via endpoint administrativo `/api/v2/admin/security/csp`, fornecendo nova lista de diretivas (com versionamento otimista).
-3. **Pipeline de deploy** – o pipeline invoca `scripts/render_csp_snippets.sh` para converter `configs/security/csp_policy.json` (atualizado pelo serviço) em snippets Nginx e efetua o reload do servidor.
-4. **Validação** – executar smoke test web, verificar ausência de violações CSP nos logs e confirmar que `curl -I https://<host>/` retorna os cabeçalhos esperados.
+2. **Preparação do arquivo** – o time de frontend cria um arquivo JSON seguindo o modelo documentado e anexa à solicitação.
+3. **Aplicação da política** – o time de plataforma valida o conteúdo e publica o arquivo em `configs/security/csp_policy.json`, versionando via Git.
+4. **Pipeline de deploy** – o pipeline invoca `scripts/render_csp_snippets.sh` para converter o JSON em snippets Nginx e efetuar o reload do servidor.
+5. **Validação** – executar smoke test web, verificar ausência de violações CSP nos logs e confirmar que `curl -I https://<host>/` retorna os cabeçalhos esperados.
 
 ## Responsabilidades
 
@@ -20,13 +21,14 @@ Este documento define como administrar a Content Security Policy (CSP) do toq_cl
 | Etapa | Responsável | Ferramentas |
 |-------|-------------|-------------|
 | Revisão da solicitação | Plataforma + Segurança | Checklist de riscos |
-| Atualização da política | Plataforma | Endpoint `/api/v2/admin/security/csp` |
+| Preparação do JSON | Frontend | Editor + modelo `docs/security/csp-policy-model.md` |
+| Publicação da política | Plataforma | Git, revisão em par, `configs/security/csp_policy.json` |
 | Sincronização Nginx | CI/CD | `scripts/render_csp_snippets.sh`, `systemctl reload nginx` |
 | Validação | Plataforma + QA | DevTools, `curl`, dashboards de observabilidade |
 
 ## Rollback Rápido
 
-1. Executar uma atualização retornando à versão anterior via endpoint REST (usar valor do campo `version`).
+1. Reverter o commit que modificou `configs/security/csp_policy.json` (`git revert` ou restauração manual do arquivo anterior).
 2. Disparar novamente o pipeline para regenerar os snippets.
 3. Confirmar nos logs a redução de violações.
 

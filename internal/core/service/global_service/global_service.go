@@ -58,9 +58,6 @@ type GlobalServiceInterface interface {
 
 	GetConfiguration(ctx context.Context) (configuration map[string]string, err error)
 
-	GetCSPPolicy(ctx context.Context) (globalmodel.ContentSecurityPolicy, error)
-	UpdateCSPPolicy(ctx context.Context, expectedVersion int64, directives map[string]string) (globalmodel.ContentSecurityPolicy, error)
-
 	// Novo sistema de notificação unificado
 	GetUnifiedNotificationService() UnifiedNotificationService
 
