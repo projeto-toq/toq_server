@@ -2618,25 +2618,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateCSPPolicyRequest": {
-            "type": "object",
-            "required": [
-                "directives"
-            ],
-            "properties": {
-                "directives": {
-                    "description": "Directives must include at least the default-src directive.",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "version": {
-                    "description": "Version is the optimistic-lock control. Use 0 to create a new policy.",
-                    "type": "integer"
-                }
-            }
-        },
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateOptStatusRequest": {
             "type": "object",
             "properties": {

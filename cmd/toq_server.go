@@ -62,6 +62,21 @@ type LogConfig struct {
 	AddSource bool
 }
 
+func (c *LogConfig) slogLevel() slog.Level {
+	switch strings.ToLower(c.Level) {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
+}
+
 // Handler que separa stdout/stderr por nível
 type SplitLevelHandler struct {
 	stdoutHandler slog.Handler
@@ -136,19 +151,7 @@ func parseFlags() *LogConfig {
 
 func setupEarlyLogger(config *LogConfig) *slog.Logger {
 	// Parse level
-	var level slog.Level
-	switch strings.ToLower(config.Level) {
-	case "debug":
-		level = slog.LevelDebug
-	case "info":
-		level = slog.LevelInfo
-	case "warn":
-		level = slog.LevelWarn
-	case "error":
-		level = slog.LevelError
-	default:
-		level = slog.LevelInfo
-	}
+	level := config.slogLevel()
 
 	// Setup handler options
 	opts := &slog.HandlerOptions{
@@ -237,6 +240,12 @@ func setupEarlyLogger(config *LogConfig) *slog.Logger {
 func main() {
 	// 1. Parse CLI flags
 	logConfig := parseFlags()
+	globalmodel.SetLoggingRuntimeConfig(globalmodel.LoggingRuntimeConfig{
+		Level:     logConfig.slogLevel(),
+		Format:    logConfig.Format,
+		Output:    logConfig.Output,
+		AddSource: logConfig.AddSource,
+	})
 
 	// 2. Setup early logger with CLI overrides
 	logger := setupEarlyLogger(logConfig)

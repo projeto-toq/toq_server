@@ -88,17 +88,6 @@ definitions:
       name:
         type: string
     type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CSPPolicyResponse:
-    properties:
-      directives:
-        additionalProperties:
-          type: string
-        description: Directives contains the CSP directives in key/value format.
-        type: object
-      version:
-        description: Version is the optimistic-lock value of the stored policy.
-        type: integer
-    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest:
     properties:
       code:
@@ -453,20 +442,6 @@ definitions:
         type: string
       refreshToken:
         type: string
-    type: object
-  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateCSPPolicyRequest:
-    properties:
-      directives:
-        additionalProperties:
-          type: string
-        description: Directives must include at least the default-src directive.
-        type: object
-      version:
-        description: Version is the optimistic-lock control. Use 0 to create a new
-          policy.
-        type: integer
-    required:
-    - directives
     type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UpdateOptStatusRequest:
     properties:

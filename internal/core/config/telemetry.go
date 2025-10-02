@@ -113,11 +113,15 @@ func (tm *TelemetryManager) initializeLogging(ctx context.Context, res *resource
 	tm.logProvider = logProvider
 
 	baseHandler := slog.Default().Handler()
-	otelHandler := otelslog.NewHandler("toq_server",
+	var otelHandler slog.Handler = otelslog.NewHandler("toq_server",
 		otelslog.WithLoggerProvider(logProvider),
 		otelslog.WithVersion(globalmodel.AppVersion),
 		otelslog.WithSource(true),
 	)
+
+	if runtimeCfg, ok := globalmodel.GetLoggingRuntimeConfig(); ok {
+		otelHandler = newLevelFilterHandler(otelHandler, runtimeCfg.Level)
+	}
 
 	combinedHandler := newTeeHandler(baseHandler, otelHandler)
 	if combinedHandler == nil {
@@ -377,4 +381,44 @@ func (t *teeHandler) WithGroup(name string) slog.Handler {
 		}
 	}
 	return &teeHandler{handlers: newHandlers}
+}
+
+type levelFilterHandler struct {
+	minLevel slog.Level
+	next     slog.Handler
+}
+
+func newLevelFilterHandler(handler slog.Handler, minLevel slog.Level) slog.Handler {
+	return &levelFilterHandler{
+		minLevel: minLevel,
+		next:     handler,
+	}
+}
+
+func (l *levelFilterHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	if level < l.minLevel {
+		return false
+	}
+	return l.next.Enabled(ctx, level)
+}
+
+func (l *levelFilterHandler) Handle(ctx context.Context, record slog.Record) error {
+	if record.Level < l.minLevel {
+		return nil
+	}
+	return l.next.Handle(ctx, record)
+}
+
+func (l *levelFilterHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &levelFilterHandler{
+		minLevel: l.minLevel,
+		next:     l.next.WithAttrs(attrs),
+	}
+}
+
+func (l *levelFilterHandler) WithGroup(name string) slog.Handler {
+	return &levelFilterHandler{
+		minLevel: l.minLevel,
+		next:     l.next.WithGroup(name),
+	}
 }
