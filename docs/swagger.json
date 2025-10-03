@@ -15,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "api.gca.dev.br",
     "basePath": "/api/v2",
     "paths": {
         "/admin/user": {

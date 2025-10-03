@@ -28,10 +28,19 @@ func SetupRoutes(
 	// Configurar middlewares globais na ordem correta
 	setupGlobalMiddlewares(router, metricsAdapter)
 
-	// Swagger documentation routes
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Simple test route
+	router.GET("/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
 
-	// Convert handlers to typed handlers
+	// Serve swagger.json with CORS middleware applied
+	router.GET("/docs/swagger.json", func(c *gin.Context) {
+		c.Header("Content-Type", "application/json")
+		c.File("/codigos/go_code/toq_server/docs/swagger.json")
+	})
+
+	// Swagger documentation routes
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Convert handlers to typed handlers
 	authHandler := handlers.AuthHandler.(*authhandlers.AuthHandler)
 	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
 	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)

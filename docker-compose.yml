@@ -116,7 +116,7 @@ services:
     ports:
       - "127.0.0.1:8082:8080" # loopback only
     environment:
-      - URL=https://api.gca.dev.br/swagger/doc.json
+      - URL=https://api.gca.dev.br/docs/swagger.json
       - BASE_URL=/
     extra_hosts:
       - host.docker.internal:host-gateway

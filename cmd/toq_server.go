@@ -29,7 +29,7 @@
 //	@license.name	MIT
 //	@license.url	https://github.com/giulio-alfieri/toq_server/blob/main/LICENSE
 
-//	@host		localhost:8080
+//	@host		api.gca.dev.br
 //	@BasePath	/api/v2
 
 //	@securityDefinitions.apikey	BearerAuth

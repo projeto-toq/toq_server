@@ -1,15 +1,21 @@
 {
     "version": 1,
-    "description": "Baseline CSP for the TOQ web client",
+    "description": "Migração da CSP web do TOQ Client para fluxo governado via Nginx",
     "directives": {
         "default-src": "'self'",
-        "img-src": "'self' https://cdn.toq.dev",
-        "script-src": "'self' https://cdn.toq.dev",
+        "img-src": "'self' data: blob: https://*.s3.amazonaws.com https://*.s3.sa-east-1.amazonaws.com",
+        "media-src": "'self' data: blob: https://*.s3.amazonaws.com https://*.s3.sa-east-1.amazonaws.com",
+        "connect-src": "'self' https://api.gca.dev.br https://toq-platform-assets.s3.amazonaws.com https://*.s3.sa-east-1.amazonaws.com https://www.gstatic.com https://fonts.gstatic.com",
+        "script-src": "'self' 'wasm-unsafe-eval' https://www.gstatic.com",
+        "worker-src": "'self' blob:",
         "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "font-src": "'self' https://fonts.gstatic.com"
+        "font-src": "'self' https://fonts.gstatic.com data:",
+        "object-src": "'none'",
+        "base-uri": "'self'"
     },
     "notes": [
-        "Inclua apenas diretivas necessárias.",
-        "Use espaços para separar valores múltiplos em cada diretiva."
+        "Garantir que CanvasKit continue acessível via https://www.gstatic.com.",
+        "Permitir Google Fonts (DM Sans) via https://fonts.googleapis.com e https://fonts.gstatic.com.",
+        "Manter acesso aos buckets S3 utilizados para upload/download de assets."
     ]
 }
