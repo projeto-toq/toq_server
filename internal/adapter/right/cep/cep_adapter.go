@@ -9,20 +9,9 @@ import (
 )
 
 type CEPAdapter struct {
-	Client   *http.Client
-	Token    string
-	URLBase  string
-	Status   bool   `json:"status"`
-	Return   string `json:"return"`
-	Consumed int    `json:"consumed"`
-	Result   struct {
-		CEP         string `json:"cep"`
-		Logradouro  string `json:"logradouro"`
-		Complemento string `json:"complemento"`
-		Bairro      string `json:"bairro"`
-		Localidade  string `json:"localidade"`
-		UF          string `json:"uf"`
-	} `json:"result"`
+	Client  *http.Client
+	Token   string
+	URLBase string
 }
 
 func NewCEPAdapter(env *globalmodel.Environment) (*CEPAdapter, error) {

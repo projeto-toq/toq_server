@@ -23,7 +23,6 @@ import (
 	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
 	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
 	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
-	sessionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
 	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
 	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
 	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
@@ -64,7 +63,6 @@ type config struct {
 	sms                    smsport.SMSPortInterface
 	cloudStorage           storageport.CloudStoragePortInterface
 	firebaseCloudMessaging fcmport.FCMPortInterface
-	sessionRepo            sessionrepository.SessionRepoPortInterface
 	repositoryAdapters     *factory.RepositoryAdapters
 	adapterFactory         factory.AdapterFactory
 }

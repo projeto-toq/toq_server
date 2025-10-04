@@ -1,25 +1,32 @@
 package cnpjadapter
 
 import (
-	"errors"
 	"fmt"
+	"log/slog"
+	"strings"
 	"time"
 
 	cnpjmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cnpj_model"
+	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
 )
 
-func ConvertCNPJEntityToModel(entity CNPJAdapter) (cnpj cnpjmodel.CNPJInterface, err error) {
-	cnpj = cnpjmodel.NewCNPJ()
-	if !entity.Status || entity.Return != "OK" {
-		return nil, errors.New("cnpj validation returned NOK")
+func ConvertCNPJEntityToModel(result cnpjResult) (cnpjmodel.CNPJInterface, error) {
+	cnpj := cnpjmodel.NewCNPJ()
+
+	if strings.TrimSpace(result.NumeroDeCNPJ) == "" {
+		return nil, fmt.Errorf("%w: cnpj provider returned empty cnpj", cnpjport.ErrInfra)
 	}
-	cnpj.SetNumeroDeCNPJ(entity.Result.NumeroDeCNPJ)
-	cnpj.SetNomeDaPJ(entity.Result.NomeDaPJ)
-	cnpj.SetFantasia(entity.Result.Fantasia)
-	data, erro := time.Parse("02/01/2006", entity.Result.DataNascimento)
-	if erro != nil {
-		return nil, fmt.Errorf("cnpj conversion: invalid date in DataNascimento: %w", erro)
+
+	cnpj.SetNumeroDeCNPJ(result.NumeroDeCNPJ)
+	cnpj.SetNomeDaPJ(result.NomeDaPJ)
+	cnpj.SetFantasia(result.Fantasia)
+
+	openingDate, err := time.Parse(cnpjDateLayout, result.DataNascimento)
+	if err != nil {
+		slog.Error("cnpj.validation.parse_opening_date_error", "value", result.DataNascimento, "err", err)
+		return nil, fmt.Errorf("%w: failed to parse CNPJ opening date: %w", cnpjport.ErrInfra, err)
 	}
-	cnpj.SetDataNascimento(data)
-	return
+	cnpj.SetDataNascimento(openingDate)
+
+	return cnpj, nil
 }

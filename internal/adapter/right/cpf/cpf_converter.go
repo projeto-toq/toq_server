@@ -1,32 +1,35 @@
 package cpfadapter
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	cpfmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cpf_model"
+	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
 )
 
-func ConvertCPFEntityToModel(entity CPFAdapter) (cpf cpfmodel.CPFInterface, err error) {
+func ConvertCPFEntityToModel(result cpfResult) (cpfmodel.CPFInterface, error) {
+	cpf := cpfmodel.NewCPF()
+	cpf.SetNumeroDeCpf(result.NumeroDeCpf)
+	cpf.SetNomeDaPf(result.NomeDaPf)
 
-	cpf = cpfmodel.NewCPF()
-	if !entity.Status || entity.Return != "OK" {
-		return nil, errors.New("cpf validation returned NOK")
-	}
-	cpf.SetNumeroDeCpf(entity.Result.NumeroDeCpf)
-	cpf.SetNomeDaPf(entity.Result.NomeDaPf)
-	data, err := time.Parse("02/01/2006", entity.Result.DataNascimento)
+	birthDate, err := time.Parse(cpfDateLayout, result.DataNascimento)
 	if err != nil {
-		slog.Error("error converting user born_at to date on validating CPF")
-		return nil, fmt.Errorf("cpf conversion: invalid date in DataNascimento: %w", err)
+		slog.Error("cpf.validation.parse_birth_date_error", "value", result.DataNascimento, "err", err)
+		return nil, fmt.Errorf("%w: failed to parse CPF birth date: %w", cpfport.ErrInfra, err)
 	}
-	cpf.SetDataNascimento(data)
-	cpf.SetSituacaoCadastral(entity.Result.SituacaoCadastral)
-	cpf.SetDataInscricao(entity.Result.DataInscricao)
-	cpf.SetDigitoVerificador(entity.Result.DigitoVerificador)
-	cpf.SetComprovanteEmitido(entity.Result.ComprovanteEmitido)
-	cpf.SetComprovanteEmitidoData(entity.Result.ComprovanteEmitidoData)
-	return
+	cpf.SetDataNascimento(birthDate)
+	cpf.SetSituacaoCadastral(result.SituacaoCadastral)
+	cpf.SetDataInscricao(result.DataInscricao)
+	cpf.SetDigitoVerificador(result.DigitoVerificador)
+	cpf.SetComprovanteEmitido(result.ComprovanteEmitido)
+	cpf.SetComprovanteEmitidoData(result.ComprovanteEmitidoData)
+
+	if strings.TrimSpace(result.NumeroDeCpf) == "" {
+		return nil, fmt.Errorf("%w: cpf provider returned empty cpf", cpfport.ErrInfra)
+	}
+
+	return cpf, nil
 }

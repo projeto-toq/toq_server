@@ -6,12 +6,10 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise
 
 ## 2) Requisição
-O método de atualização das politicas CSP via endpoints get /admin/security/csp e PUT /admin/security/csp ficou muito complicado e dificil de implementar entre os times.
-Assim, remova todo o código relacionado a esses endpoints, incluindo handlers, services, adapters, migrations e testes.
-Além disso, atualize a documentação Swagger e o README conforme necessário.
-O novo processo deverá ser um arquivo JSON simples, cujo modelo você vai criar, a partir do qual faremos uma implementação futura. O time de frontend criará este arquivo JSON e o enviará para o backend.
-O arquivo JSON conterá as políticas CSP que serão aplicadas ao servidor.
-O modelo do arquivo JSON deve ser simples e fácil de entender, permitindo que o time de frontend crie e envie o arquivo sem dificuldades.
+Após refatoração efetuada nos adpaters cpf, cnpj e cep os padrões definidos no toq_server_go_guide.md não foram todos seguidos. 
+
+verificar as divergencias e criar um plano de correção pra aprovação antes de implementar.
+
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

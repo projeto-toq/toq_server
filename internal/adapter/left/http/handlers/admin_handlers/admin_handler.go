@@ -83,7 +83,7 @@ func (h *AdminHandler) PostAdminGetUser(c *gin.Context) {
 	}
 	// Reuse existing converter for public user DTO
 	profile := httpconv.ToGetProfileResponse(user)
-	c.JSON(http.StatusOK, dto.AdminGetUserResponse{User: profile.User})
+	c.JSON(http.StatusOK, dto.AdminGetUserResponse(profile))
 }
 
 // PostAdminApproveUser handles POST /admin/user/approve

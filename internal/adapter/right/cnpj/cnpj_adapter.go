@@ -9,18 +9,9 @@ import (
 )
 
 type CNPJAdapter struct {
-	Client   *http.Client
-	Token    string
-	URLBase  string
-	Status   bool   `json:"status"`
-	Return   string `json:"return"`
-	Consumed int    `json:"consumed"`
-	Result   struct {
-		NumeroDeCNPJ   string `json:"numero_de_inscricao"`
-		NomeDaPJ       string `json:"nome"`
-		Fantasia       string `json:"fantasia"`
-		DataNascimento string `json:"abertura"`
-	} `json:"result"`
+	Client  *http.Client
+	Token   string
+	URLBase string
 }
 
 func NewCNPJAdapter(env *globalmodel.Environment) (*CNPJAdapter, error) {
@@ -32,7 +23,7 @@ func NewCNPJAdapter(env *globalmodel.Environment) (*CNPJAdapter, error) {
 	}
 
 	client := &http.Client{
-		Timeout: 30 * time.Second, // Reduced from 600s for better UX
+		Timeout: 40 * time.Second,
 	}
 	return &CNPJAdapter{
 		Client:  client,

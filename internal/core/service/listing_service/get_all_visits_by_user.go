@@ -8,7 +8,7 @@ import (
 )
 
 func (ls *listingService) GetAllVisitsByUser(ctx context.Context, userID int64) (listings []listingmodel.VisitInterface, err error) {
-	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("")
 	}

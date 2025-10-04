@@ -17,4 +17,16 @@ var (
 	ErrSamePhoneAsCurrent     = errors.New("new phone is the same as current")
 
 	ErrUserActiveRoleMissing = errors.New("active role missing for user")
+
+	ErrCPFInvalid          = errors.New("cpf invalid")
+	ErrCPFBirthDateInvalid = errors.New("cpf birth date invalid")
+	ErrCPFNotFound         = errors.New("cpf not found")
+	ErrCPFStatusIrregular  = errors.New("cpf status irregular")
+	ErrCPFDataMismatch     = errors.New("cpf data mismatch")
+
+	ErrCNPJInvalid  = errors.New("cnpj invalid")
+	ErrCNPJNotFound = errors.New("cnpj not found")
+
+	ErrCEPInvalid  = errors.New("invalid CEP")
+	ErrCEPNotFound = errors.New("CEP not found")
 )

@@ -9,22 +9,9 @@ import (
 )
 
 type CPFAdapter struct {
-	Client   *http.Client
-	Token    string
-	URLBase  string
-	Status   bool   `json:"status"`
-	Return   string `json:"return"`
-	Consumed int    `json:"consumed"`
-	Result   struct {
-		NumeroDeCpf            string `json:"numero_de_cpf"`
-		NomeDaPf               string `json:"nome_da_pf"`
-		DataNascimento         string `json:"data_nascimento"`
-		SituacaoCadastral      string `json:"situacao_cadastral"`
-		DataInscricao          string `json:"data_inscricao"`
-		DigitoVerificador      string `json:"digito_verificador"`
-		ComprovanteEmitido     string `json:"comprovante_emitido"`
-		ComprovanteEmitidoData string `json:"comprovante_emitido_data"`
-	} `json:"result"`
+	Client  *http.Client
+	Token   string
+	URLBase string
 }
 
 func NewCPFAdapter(env *globalmodel.Environment) (*CPFAdapter, error) {
@@ -36,7 +23,7 @@ func NewCPFAdapter(env *globalmodel.Environment) (*CPFAdapter, error) {
 	}
 
 	client := &http.Client{
-		Timeout: 30 * time.Second, // Reduced from 600s for better UX
+		Timeout: 40 * time.Second,
 	}
 	return &CPFAdapter{
 		Client:  client,

@@ -7,7 +7,7 @@ import (
 )
 
 func (ls *listingService) RejectVisit(ctx context.Context, visitID int64) (err error) {
-	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return utils.InternalError("")
 	}

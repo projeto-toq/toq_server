@@ -8,7 +8,7 @@ import (
 )
 
 func (ls *listingService) GetAllOffersByUser(ctx context.Context, userID int64) (offers []listingmodel.OfferInterface, err error) {
-	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("")
 	}

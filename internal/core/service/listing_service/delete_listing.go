@@ -7,7 +7,7 @@ import (
 )
 
 func (ls *listingService) DeleteListing(ctx context.Context, listingID int64) (err error) {
-	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return utils.InternalError("")
 	}
