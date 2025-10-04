@@ -7,7 +7,6 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -44,7 +43,7 @@ func (ah *AuthHandler) CreateAgency(c *gin.Context) {
 	}
 
 	// Create user model from DTO (using parsed dates)
-	user, err := ah.createUserFromDTO(request.Agency, permissionmodel.RoleSlugAgency, bornAt, creciValidity)
+	user, err := ah.createUserFromDTO(request.Agency, bornAt, creciValidity)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
 		return

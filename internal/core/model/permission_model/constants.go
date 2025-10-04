@@ -92,21 +92,21 @@ func (pa PermissionAction) IsValid() bool {
 type UserRoleStatus int
 
 const (
-	StatusActive        UserRoleStatus = iota // normal user status
-	StatusBlocked                             // blocked by admin
-	StatusTempBlocked                         // temporarily blocked due to failed signin attempts
-	StatusPendingBoth                         // awaiting both email and phone confirmation
-	StatusPendingEmail                        // awaiting email confirmation
-	StatusPendingPhone                        // awaiting phone confirmation
-	StatusPendingCreci                        // awaiting creci images to be uploaded
-	StatusPendingCnpj                         // awaiting cnpj images to be uploaded
-	StatusPendingManual                       // awaiting manual verification by admin
-	StatusRejected                            // admin reject the documentation (legacy/general)
-	StatusRefusedImage    // refused due to image issues (e.g., unreadable/invalid)
-	StatusRefusedDocument // refused due to document mismatch/invalidity
-	StatusRefusedData     // refused due to data inconsistency
-	StatusDeleted         // user request the deletion of the account
-	StatusInvitePending   // realtor was invited and is pending acceptance
+	StatusActive          UserRoleStatus = iota // normal user status
+	StatusBlocked                               // blocked by admin
+	StatusTempBlocked                           // temporarily blocked due to failed signin attempts
+	StatusPendingBoth                           // awaiting both email and phone confirmation
+	StatusPendingEmail                          // awaiting email confirmation
+	StatusPendingPhone                          // awaiting phone confirmation
+	StatusPendingCreci                          // awaiting creci images to be uploaded
+	StatusPendingCnpj                           // awaiting cnpj images to be uploaded
+	StatusPendingManual                         // awaiting manual verification by admin
+	StatusRejected                              // admin reject the documentation (legacy/general)
+	StatusRefusedImage                          // refused due to image issues (e.g., unreadable/invalid)
+	StatusRefusedDocument                       // refused due to document mismatch/invalidity
+	StatusRefusedData                           // refused due to data inconsistency
+	StatusDeleted                               // user request the deletion of the account
+	StatusInvitePending                         // realtor was invited and is pending acceptance
 )
 
 // String implementa fmt.Stringer para UserRoleStatus

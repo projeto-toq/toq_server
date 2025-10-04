@@ -20,12 +20,19 @@ func (us *userService) encryptPassword(password string) (hashPassword string) {
 	return string(hash)
 }
 
-func validatePassword(password string) (err error) {
+func validatePassword(field, password string) (err error) {
 	if len(password) < 8 {
-		return utils.ValidationError("password", "Password must be at least 8 characters")
+		return utils.ValidationError(field, "Password must be at least 8 characters long.")
 	}
 
-	var hasUpper, hasLower, hasNumber, hasSpecial bool
+	var (
+		hasUpper   bool
+		hasLower   bool
+		hasNumber  bool
+		hasSpecial bool
+	)
+	specialChar := regexp.MustCompile(`[!@#~$%^&*()_+{}":;'?/>.<,]`)
+
 	for _, char := range password {
 		switch {
 		case 'a' <= char && char <= 'z':
@@ -34,13 +41,13 @@ func validatePassword(password string) (err error) {
 			hasUpper = true
 		case '0' <= char && char <= '9':
 			hasNumber = true
-		case regexp.MustCompile(`[!@#~$%^&*()_+{}":;'?/>.<,]`).MatchString(string(char)):
+		case specialChar.MatchString(string(char)):
 			hasSpecial = true
 		}
 	}
 
 	if !(hasUpper && hasLower && hasNumber && hasSpecial) {
-		return utils.ValidationError("password", "Password must include upper, lower, number, and special char")
+		return utils.ValidationError(field, "Password must include uppercase, lowercase, number, and special character.")
 	}
 	return
 }

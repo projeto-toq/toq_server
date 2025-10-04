@@ -3,13 +3,21 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 ---
 
 ## 1) Objetivo do Pedido
-- Tipo: Somente análise
+- Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Após refatoração efetuada nos adpaters cpf, cnpj e cep os padrões definidos no toq_server_go_guide.md não foram todos seguidos. 
+Durante a criação de novo usuário corretor ou proprietário, através dos /auth handlerscreate_owner e create_realtor, é necessário validar os dados segundo critérios abaixo e retornar mensagem específica ao usuário, complementando o erro 400 e 422 com message que permita o frontend orientar o usuário.
 
-verificar as divergencias e criar um plano de correção pra aprovação antes de implementar.
-
+- verificar se existem as seguintes validações:
+  - CPF/cnpj válido - validação feita pelo cpf/cnpj port;
+  - email válido (formato);
+  - telefone válido (formato)
+  - CEP válido - validação feita pelo cep port;
+  - nickname (mínimo 3 caracteres);
+  - data de nascimento (>= 18 anos);
+  - password (mínimo 8 caracteres, ao menos 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial);
+- faça uma lista das mensgens de erro que serão retornadas para cada validação para os erros 400/422 para serem passadas ao frontend;
+- É possível passar estas mensagens de erro na documentação swagger dos endpoints?
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

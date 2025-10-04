@@ -15,20 +15,36 @@ func ValidateUserDates(payload dto.UserCreateRequest, prefix string) (time.Time,
 	var details []map[string]string
 
 	// bornAt is required by binding; still validate format here for precise error message
-	bornAt, err := time.Parse("2006-01-02", payload.BornAt)
+	const layout = "2006-01-02"
+	bornAt, err := time.Parse(layout, payload.BornAt)
 	if err != nil {
 		details = append(details, map[string]string{
 			"field":   prefix + ".bornAt",
-			"message": "invalid date, expected YYYY-MM-DD",
+			"message": "Invalid date format. Expected YYYY-MM-DD.",
 		})
+	}
+
+	if err == nil {
+		now := time.Now().UTC()
+		age := now.Year() - bornAt.Year()
+		birthdayThisYear := time.Date(now.Year(), bornAt.Month(), bornAt.Day(), 0, 0, 0, 0, time.UTC)
+		if now.Before(birthdayThisYear) {
+			age--
+		}
+		if age < 18 {
+			details = append(details, map[string]string{
+				"field":   prefix + ".bornAt",
+				"message": "User must be at least 18 years old.",
+			})
+		}
 	}
 
 	var creciPtr *time.Time
 	if payload.CreciValidity != "" {
-		if t, err := time.Parse("2006-01-02", payload.CreciValidity); err != nil {
+		if t, err := time.Parse(layout, payload.CreciValidity); err != nil {
 			details = append(details, map[string]string{
 				"field":   prefix + ".creciValidity",
-				"message": "invalid date, expected YYYY-MM-DD",
+				"message": "Invalid date format. Expected YYYY-MM-DD.",
 			})
 		} else {
 			creciPtr = &t

@@ -129,6 +129,7 @@ Transações: use o provedor padronizado (global_services/transactions). Service
   - Repositórios retornam erros “puros” (ex.: `sql.ErrNoRows`, `fmt.Errorf`), sem pacotes HTTP.
   - Services mapeiam para erros de domínio (sentinelas/Kind) quando aplicável; erros de infra geram logs + span error.
   - Handlers SEMPRE usam `http_errors.SendHTTPErrorObj(c, err)`; não serialize manualmente.
+  - Mensagens enviadas aos clients (400/422) devem ser curtas em inglês simples; o frontend faz a localização para o usuário final.
 
 Observação: o projeto suporta erros de domínio via `derrors` (novo) e tipos `utils.HTTPError` (legado). Em ambos os casos, o handler converte corretamente para HTTP.
 

@@ -11,7 +11,6 @@ import (
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -25,10 +24,10 @@ import (
 //	@Produce		json
 //	@Param			request	body		dto.CreateOwnerRequest	true	"Owner creation data (include optional deviceToken for push notifications)"
 //	@Success		201		{object}	dto.CreateOwnerResponse
-//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
+//	@Failure		400		{object}	dto.ErrorResponse	"Validation error (invalid input data)"
 //	@Failure		409		{object}	dto.ErrorResponse	"User already exists"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-//	@Failure		422		{object}	dto.ErrorResponse	"Validation failed"
+//	@Failure		422		{object}	dto.ErrorResponse	"Validation failed (see details)"
 //	@Router			/auth/owner [post]
 func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	// Observação: tracing de request já é provido por TelemetryMiddleware; evitamos spans duplicados aqui.
@@ -49,7 +48,7 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	}
 
 	// Create user model from DTO (using parsed dates)
-	user, err := ah.createUserFromDTO(request.Owner, permissionmodel.RoleSlugOwner, bornAt, creciValidity)
+	user, err := ah.createUserFromDTO(request.Owner, bornAt, creciValidity)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
 		return
@@ -91,7 +90,7 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 }
 
 // createUserFromDTO converts DTO to User model
-func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, role permissionmodel.RoleSlug, bornAt time.Time, creciValidity *time.Time) (usermodel.UserInterface, error) {
+func (ah *AuthHandler) createUserFromDTO(dtoUser dto.UserCreateRequest, bornAt time.Time, creciValidity *time.Time) (usermodel.UserInterface, error) {
 	user := usermodel.NewUser()
 
 	// Set user data

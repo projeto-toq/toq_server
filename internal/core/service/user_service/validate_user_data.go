@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -18,13 +19,23 @@ import (
 func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, role permissionmodel.RoleSlug) (err error) {
 
 	now := time.Now().UTC()
+	prefix := dataPrefixForRole(role)
+	field := func(name string) string {
+		return composeField(prefix, name)
+	}
 
 	if phone := user.GetPhoneNumber(); phone != "" {
 		normalizedPhone, normErr := validators.NormalizeToE164(phone)
 		if normErr != nil {
-			return normErr
+			return utils.ValidationError(field("phoneNumber"), "Invalid phone number format.")
 		}
 		user.SetPhoneNumber(normalizedPhone)
+	}
+
+	if email := user.GetEmail(); email != "" {
+		if err := validators.ValidateEmail(email); err != nil {
+			return utils.ValidationError(field("email"), "Invalid email format.")
+		}
 	}
 
 	//verify if user already exists
@@ -37,14 +48,13 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 
 	if exist {
 		// Usuário existente (email/telefone/CPF)
-		err = utils.ConflictError("Usuário já existe com e-mail, telefone ou CPF informado")
+		err = utils.ConflictError("User already exists with provided email, phone or national ID.")
 		return
 	}
 
 	//verify the password
-	if err = validatePassword(user.GetPassword()); err != nil {
-		// Padroniza como erro de validação (campo: password)
-		return utils.ValidationError("password", "Senha não atende aos requisitos mínimos")
+	if err = validatePassword(field("password"), user.GetPassword()); err != nil {
+		return err
 	}
 
 	// Normalize input nationalID before external validation
@@ -56,7 +66,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 
 		cnpj, err1 := us.cnpj.GetCNPJ(ctx, user.GetNationalID())
 		if err1 != nil {
-			err = us.handleCNPJValidationError(ctx, err1)
+			err = us.handleCNPJValidationError(ctx, prefix, err1)
 			return
 		}
 		// Ensure digits-only from external provider
@@ -66,7 +76,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		//validate the userCPF
 		cpf, err1 := us.cpf.GetCpf(ctx, user.GetNationalID(), user.GetBornAt())
 		if err1 != nil {
-			err = us.handleCPFValidationError(ctx, err1)
+			err = us.handleCPFValidationError(ctx, prefix, err1)
 			return
 		}
 		// Ensure digits-only from external provider
@@ -82,8 +92,8 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 
 	//validate the address number
 	if user.GetNumber() == "" {
-		// Número do endereço é obrigatório
-		return utils.ValidationError("number", "Número do endereço é obrigatório")
+		// Address number is required
+		return utils.ValidationError(field("number"), "Address number is required.")
 	}
 
 	user.SetStreet(cep.GetStreet())
@@ -99,57 +109,83 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	return
 }
 
-func (us *userService) handleCPFValidationError(ctx context.Context, adapterErr error) error {
+func (us *userService) handleCPFValidationError(ctx context.Context, prefix string, adapterErr error) error {
+	field := func(name string) string {
+		return composeField(prefix, name)
+	}
 	switch {
 	case errors.Is(adapterErr, cpfport.ErrInvalidInput):
 		slog.Warn("user.validate_user_data.cpf_invalid", "err", adapterErr)
-		return utils.ValidationError("national_id", "CPF inválido")
+		return utils.ValidationError(field("nationalID"), "Invalid national ID.")
 	case errors.Is(adapterErr, cpfport.ErrBirthDateInvalid):
 		slog.Warn("user.validate_user_data.cpf_birth_date_invalid", "err", adapterErr)
-		return utils.ValidationError("born_at", "Data de nascimento inválida")
+		return utils.ValidationError(field("bornAt"), "Invalid birth date.")
 	case errors.Is(adapterErr, cpfport.ErrDataMismatch):
 		slog.Warn("user.validate_user_data.cpf_birth_date_mismatch", "err", adapterErr)
-		return utils.ValidationError("born_at", "Data de nascimento divergente do cadastro da Receita Federal")
+		return utils.ValidationError(field("bornAt"), "Birth date does not match government records.")
 	case errors.Is(adapterErr, cpfport.ErrStatusIrregular):
 		slog.Warn("user.validate_user_data.cpf_irregular", "err", adapterErr)
-		return utils.ValidationError("national_id", "CPF com situação irregular na Receita Federal")
+		return utils.ValidationError(field("nationalID"), "National ID has an irregular status.")
 	case errors.Is(adapterErr, cpfport.ErrNotFound):
 		slog.Warn("user.validate_user_data.cpf_not_found", "err", adapterErr)
-		return utils.ValidationError("national_id", "CPF não encontrado")
+		return utils.ValidationError(field("nationalID"), "National ID not found.")
 	case errors.Is(adapterErr, cpfport.ErrRateLimited):
 		slog.Warn("user.validate_user_data.cpf_rate_limited", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
-		return utils.TooManyAttemptsError("Limite de consultas ao serviço de CPF atingido")
+		return utils.TooManyAttemptsError("National ID lookup rate limit exceeded.")
 	case errors.Is(adapterErr, cpfport.ErrInfra):
 		slog.Error("user.validate_user_data.cpf_infra_error", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
-		return utils.InternalError("Falha ao validar CPF")
+		return utils.InternalError("Failed to validate national ID.")
 	}
 
 	slog.Error("user.validate_user_data.cpf_unhandled_error", "err", adapterErr)
 	utils.SetSpanError(ctx, adapterErr)
-	return utils.InternalError("Falha ao validar CPF")
+	return utils.InternalError("Failed to validate national ID.")
 }
 
-func (us *userService) handleCNPJValidationError(ctx context.Context, adapterErr error) error {
+func (us *userService) handleCNPJValidationError(ctx context.Context, prefix string, adapterErr error) error {
+	field := func(name string) string {
+		return composeField(prefix, name)
+	}
 	switch {
 	case errors.Is(adapterErr, cnpjport.ErrInvalid):
 		slog.Warn("user.validate_user_data.cnpj_invalid", "err", adapterErr)
-		return utils.ValidationError("national_id", "CNPJ inválido")
+		return utils.ValidationError(field("nationalID"), "Invalid company national ID.")
 	case errors.Is(adapterErr, cnpjport.ErrNotFound):
 		slog.Warn("user.validate_user_data.cnpj_not_found", "err", adapterErr)
-		return utils.ValidationError("national_id", "CNPJ não encontrado")
+		return utils.ValidationError(field("nationalID"), "Company national ID not found.")
 	case errors.Is(adapterErr, cnpjport.ErrRateLimited):
 		slog.Warn("user.validate_user_data.cnpj_rate_limited", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
-		return utils.TooManyAttemptsError("Limite de consultas ao serviço de CNPJ atingido")
+		return utils.TooManyAttemptsError("Company national ID lookup rate limit exceeded.")
 	case errors.Is(adapterErr, cnpjport.ErrInfra):
 		slog.Error("user.validate_user_data.cnpj_infra_error", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
-		return utils.InternalError("Falha ao validar CNPJ")
+		return utils.InternalError("Failed to validate company national ID.")
 	}
 
 	slog.Error("user.validate_user_data.cnpj_unhandled_error", "err", adapterErr)
 	utils.SetSpanError(ctx, adapterErr)
-	return utils.InternalError("Falha ao validar CNPJ")
+	return utils.InternalError("Failed to validate company national ID.")
+}
+
+func dataPrefixForRole(role permissionmodel.RoleSlug) string {
+	switch role {
+	case permissionmodel.RoleSlugOwner:
+		return "owner"
+	case permissionmodel.RoleSlugRealtor:
+		return "realtor"
+	case permissionmodel.RoleSlugAgency:
+		return "agency"
+	default:
+		return "user"
+	}
+}
+
+func composeField(prefix, name string) string {
+	if prefix == "" {
+		return name
+	}
+	return fmt.Sprintf("%s.%s", prefix, name)
 }
