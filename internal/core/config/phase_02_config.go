@@ -116,6 +116,34 @@ func (b *Bootstrap) validateSecurityConfig() error {
 		return fmt.Errorf("auth.max_session_rotations must be > 0")
 	}
 
+	// Validar configuração de HMAC compartilhado
+	hmacCfg := b.env.SECURITY.HMAC
+	if strings.TrimSpace(hmacCfg.Secret) == "" {
+		return fmt.Errorf("security.hmac.secret is required and must not be empty")
+	}
+	if strings.TrimSpace(hmacCfg.Algorithm) == "" {
+		return fmt.Errorf("security.hmac.algorithm is required")
+	}
+	supportedAlgorithms := map[string]struct{}{
+		"SHA256": {},
+	}
+	if _, ok := supportedAlgorithms[strings.ToUpper(hmacCfg.Algorithm)]; !ok {
+		return fmt.Errorf("security.hmac.algorithm '%s' is not supported", hmacCfg.Algorithm)
+	}
+	if strings.TrimSpace(hmacCfg.Encoding) == "" {
+		return fmt.Errorf("security.hmac.encoding is required")
+	}
+	supportedEncodings := map[string]struct{}{
+		"HEX":    {},
+		"BASE64": {},
+	}
+	if _, ok := supportedEncodings[strings.ToUpper(hmacCfg.Encoding)]; !ok {
+		return fmt.Errorf("security.hmac.encoding '%s' is not supported", hmacCfg.Encoding)
+	}
+	if hmacCfg.SkewSeconds <= 0 {
+		return fmt.Errorf("security.hmac.skew_seconds must be > 0")
+	}
+
 	return nil
 }
 

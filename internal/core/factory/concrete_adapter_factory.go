@@ -49,6 +49,7 @@ import (
 	listingservice "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	userservice "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
 )
 
 // ConcreteAdapterFactory implementa a interface AdapterFactory
@@ -217,6 +218,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	complexService complexservice.ComplexServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
 	metricsAdapter *MetricsAdapter,
+	hmacValidator *hmacauth.Validator,
 ) HTTPHandlers {
 	slog.Info("Creating HTTP handlers")
 
@@ -231,6 +233,8 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	// Create auth handler using the adapter
 	authHandler := authhandlers.NewAuthHandlerAdapter(
 		userService,
+		globalService,
+		hmacValidator,
 	)
 
 	// Create listing handler using the adapter

@@ -9,6 +9,40 @@ Developer docs:
 - Email change: `/user/email/{request|confirm|resend}`
 - Phone change: `/user/phone/{request|confirm|resend}`
 - Password change: `/auth/password/{request|confirm}`
+- Auth validation: `/auth/validate/{cpf|cnpj|cep}` (signed requests)
+
+## Auth validation with shared HMAC
+
+- Configuration lives under `security.hmac` in `configs/env.yaml`:
+
+  ```yaml
+  security:
+    hmac:
+      secret: "changeme-frontend-shared-secret" # shared with trusted clients only
+      algorithm: "SHA256"                       # currently only SHA256 is accepted
+      encoding: "hex"                           # hex or base64
+      skew_seconds: 300                          # max clock drift allowed (5 minutes)
+  ```
+
+- Every request to `/api/v2/auth/validate/{cpf|cnpj|cep}` must include:
+  - Body JSON with the domain fields (`nationalID` + optional `bornAt` or `postalCode`), `timestamp` (Unix seconds) and `hmac`.
+  - Canonical string for the signature: `METHOD|PATH|timestamp|payload`.
+    - `METHOD`: uppercase HTTP verb (e.g. `POST`).
+    - `PATH`: the exact route, including the `/api/v2` prefix.
+    - `timestamp`: same integer sent in the body.
+    - `payload`: JSON minified, **without the `hmac` field**, keys sorted alphabetically.
+  - Example canonical message for CPF validation:
+
+    ```text
+    POST|/api/v2/auth/validate/cpf|1712345678|{"bornAt":"1990-01-01","nationalID":"12345678901","timestamp":1712345678}
+    ```
+
+- Compute the digest with `HMAC(secret, canonical_message)` and encode using the configured `encoding` (`hex` default). Place the resulting value in the request body (`hmac`).
+- The server enforces the `timestamp` drift (`skew_seconds`) and returns HTTP 401 if the signature is missing, malformed, expired or mismatched.
+- Successful responses:
+  - CPF/CNPJ: `{ "valid": true }` only.
+  - CEP: `{ "valid": true, "postalCode": "...", "street": "...", ... }` with full address payload.
+- All errors keep the standardized error schema documented below (HTTP 4xx/5xx only, never 2xx in failure scenarios).
 
 Note: paths intentionally do not include a `/change` segment. Keep Swagger annotations and clients aligned to these routes to avoid 404s.
 

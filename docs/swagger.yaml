@@ -88,6 +88,30 @@ definitions:
       name:
         type: string
     type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CEPValidationResponse:
+    properties:
+      city:
+        example: São Paulo
+        type: string
+      complement:
+        example: Apto 101
+        type: string
+      neighborhood:
+        example: Bela Vista
+        type: string
+      postalCode:
+        example: "12345678"
+        type: string
+      state:
+        example: SP
+        type: string
+      street:
+        example: Av. Paulista
+        type: string
+      valid:
+        example: true
+        type: boolean
+    type: object
   github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest:
     properties:
       code:
@@ -517,12 +541,12 @@ definitions:
         type: string
       nickName:
         maxLength: 50
-        minLength: 2
+        minLength: 3
         type: string
       number:
         type: string
       password:
-        minLength: 6
+        minLength: 8
         type: string
       phoneNumber:
         example: "+5511999999999"
@@ -610,6 +634,65 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserStatusData'
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCEPRequest:
+    properties:
+      hmac:
+        example: a1b2c3
+        type: string
+      postalCode:
+        example: "12345678"
+        type: string
+      timestamp:
+        example: 1712345678
+        type: integer
+    required:
+    - hmac
+    - postalCode
+    - timestamp
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCNPJRequest:
+    properties:
+      hmac:
+        example: a1b2c3
+        type: string
+      nationalID:
+        example: "12345678000195"
+        type: string
+      timestamp:
+        example: 1712345678
+        type: integer
+    required:
+    - hmac
+    - nationalID
+    - timestamp
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCPFRequest:
+    description: Assinatura da requisição deve ser calculada com METHOD|PATH|timestamp|payload_compacto_sem_campo_hmac
+    properties:
+      bornAt:
+        example: "1990-01-01"
+        type: string
+      hmac:
+        example: a1b2c3
+        type: string
+      nationalID:
+        example: "12345678901"
+        type: string
+      timestamp:
+        example: 1712345678
+        type: integer
+    required:
+    - bornAt
+    - hmac
+    - nationalID
+    - timestamp
+    type: object
+  github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidationResultResponse:
+    properties:
+      valid:
+        example: true
+        type: boolean
     type: object
 externalDocs:
   description: OpenAPI
@@ -873,7 +956,7 @@ paths:
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateOwnerResponse'
         "400":
-          description: Invalid request format
+          description: Validation error (invalid input data)
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "409":
@@ -881,7 +964,7 @@ paths:
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "422":
-          description: Validation failed
+          description: Validation failed (see details)
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
@@ -988,7 +1071,7 @@ paths:
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CreateRealtorResponse'
         "400":
-          description: Invalid request format
+          description: Validation error (invalid input data)
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "409":
@@ -996,7 +1079,7 @@ paths:
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "422":
-          description: Validation failed
+          description: Validation failed (see details)
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
@@ -1090,6 +1173,135 @@ paths:
           schema:
             $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       summary: User sign in
+      tags:
+      - Authentication
+  /auth/validate/cep:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves CEP information using the configured provider. Requires
+        signed payload.
+      parameters:
+      - description: Signed CEP validation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCEPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CEPValidationResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Invalid signature or expired request
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Semantic validation error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "429":
+          description: Rate limited
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Validate CEP
+      tags:
+      - Authentication
+  /auth/validate/cnpj:
+    post:
+      consumes:
+      - application/json
+      description: Validates a CNPJ using Receita Federal integration. Requires signed
+        payload.
+      parameters:
+      - description: Signed CNPJ validation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCNPJRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidationResultResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Invalid signature or expired request
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Semantic validation error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "429":
+          description: Rate limited
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Validate CNPJ
+      tags:
+      - Authentication
+  /auth/validate/cpf:
+    post:
+      consumes:
+      - application/json
+      description: Validates a CPF using Receita Federal integration. Requires signed
+        payload.
+      parameters:
+      - description: Signed CPF validation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCPFRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidationResultResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Invalid signature or expired request
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Semantic validation error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "429":
+          description: Rate limited
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Validate CPF
       tags:
       - Authentication
   /listings:

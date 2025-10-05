@@ -52,6 +52,14 @@ type Environment struct {
 		ValidationCleanerIntervalSeconds int `yaml:"validation_cleaner_interval_seconds"`
 		// StatusRulesPath                  string `yaml:"status_rules_path"`
 	}
+	SECURITY struct {
+		HMAC struct {
+			Secret      string `yaml:"secret"`
+			Algorithm   string `yaml:"algorithm"`
+			Encoding    string `yaml:"encoding"`
+			SkewSeconds int    `yaml:"skew_seconds"`
+		} `yaml:"hmac"`
+	} `yaml:"security"`
 	GMAIL struct {
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
@@ -113,4 +121,20 @@ type Environment struct {
 	}
 	// Health endpoints are now integrated into the main HTTP server
 	// No separate health configuration needed
+}
+
+type HMACSecurityConfig struct {
+	Secret      string
+	Algorithm   string
+	Encoding    string
+	SkewSeconds int
+}
+
+func (e *Environment) GetHMACSecurityConfig() HMACSecurityConfig {
+	return HMACSecurityConfig{
+		Secret:      e.SECURITY.HMAC.Secret,
+		Algorithm:   e.SECURITY.HMAC.Algorithm,
+		Encoding:    e.SECURITY.HMAC.Encoding,
+		SkewSeconds: e.SECURITY.HMAC.SkewSeconds,
+	}
 }

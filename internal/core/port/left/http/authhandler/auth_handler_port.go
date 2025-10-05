@@ -12,4 +12,7 @@ type AuthHandlerPort interface {
 	RefreshToken(c *gin.Context)
 	RequestPasswordChange(c *gin.Context)
 	ConfirmPasswordChange(c *gin.Context)
+	ValidateCPF(c *gin.Context)
+	ValidateCNPJ(c *gin.Context)
+	ValidateCEP(c *gin.Context)
 }

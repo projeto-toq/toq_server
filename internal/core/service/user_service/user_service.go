@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -114,6 +115,9 @@ type UserServiceInterface interface {
 
 	// ApproveCreciManual updates realtor status from pending manual to approved/refused and sends notification
 	ApproveCreciManual(ctx context.Context, userID int64, status permissionmodel.UserRoleStatus) error
+
+	ValidateCPF(ctx context.Context, nationalID string, bornAt time.Time) error
+	ValidateCNPJ(ctx context.Context, nationalID string) error
 }
 
 // CreciDocumentDownloadURLs encapsula as URLs assinadas geradas pelo serviço para os documentos CRECI

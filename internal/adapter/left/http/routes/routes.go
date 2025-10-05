@@ -107,6 +107,11 @@ func RegisterUserRoutes(
 	// Authentication routes (public - without auth middleware)
 	auth := router.Group("/auth")
 	{
+		// Validation endpoints (public signed requests)
+		auth.POST("/validate/cpf", authHandler.ValidateCPF)
+		auth.POST("/validate/cnpj", authHandler.ValidateCNPJ)
+		auth.POST("/validate/cep", authHandler.ValidateCEP)
+
 		// CreateOwner
 		auth.POST("/owner", authHandler.CreateOwner) // CreateOwner
 

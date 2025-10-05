@@ -11,6 +11,7 @@ import (
 	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
 )
 
 // LifecycleManager define uma interface para registrar funções de cleanup.
@@ -45,6 +46,7 @@ type AdapterFactory interface {
 		complexService complexservices.ComplexServiceInterface,
 		permissionService permissionservices.PermissionServiceInterface,
 		metricsAdapter *MetricsAdapter,
+		hmacValidator *hmacauth.Validator,
 	) HTTPHandlers
 }
 

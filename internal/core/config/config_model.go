@@ -32,6 +32,7 @@ import (
 	sessionservice "github.com/giulio-alfieri/toq_server/internal/core/service/session_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 	validationservice "github.com/giulio-alfieri/toq_server/internal/core/service/validation_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"gopkg.in/yaml.v3"
 )
@@ -65,6 +66,7 @@ type config struct {
 	firebaseCloudMessaging fcmport.FCMPortInterface
 	repositoryAdapters     *factory.RepositoryAdapters
 	adapterFactory         factory.AdapterFactory
+	hmacValidator          *hmacauth.Validator
 }
 
 type ConfigInterface interface {
@@ -475,6 +477,14 @@ func (c *config) createHTTPHandlers() error {
 		return fmt.Errorf("required services not initialized")
 	}
 
+	if c.hmacValidator == nil {
+		validator, err := hmacauth.NewValidator(c.env.GetHMACSecurityConfig())
+		if err != nil {
+			return fmt.Errorf("failed to initialize HMAC validator: %w", err)
+		}
+		c.hmacValidator = validator
+	}
+
 	// Create handlers using the pre-initialized factory instance
 	c.httpHandlers = c.adapterFactory.CreateHTTPHandlers(
 		c.userService,
@@ -483,6 +493,7 @@ func (c *config) createHTTPHandlers() error {
 		c.complexService,
 		c.permissionService,
 		c.metricsAdapter,
+		c.hmacValidator,
 	)
 
 	slog.Info("✅ HTTP handlers created successfully via factory")

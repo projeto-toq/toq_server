@@ -376,7 +376,7 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid request format",
+                        "description": "Validation error (invalid input data)",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -388,7 +388,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validation failed",
+                        "description": "Validation failed (see details)",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -550,7 +550,7 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid request format",
+                        "description": "Validation error (invalid input data)",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -562,7 +562,7 @@
                         }
                     },
                     "422": {
-                        "description": "Validation failed",
+                        "description": "Validation failed (see details)",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -691,6 +691,198 @@
                     },
                     "429": {
                         "description": "Too many attempts",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/validate/cep": {
+            "post": {
+                "description": "Retrieves CEP information using the configured provider. Requires signed payload.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Validate CEP",
+                "parameters": [
+                    {
+                        "description": "Signed CEP validation payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCEPRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CEPValidationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid signature or expired request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Semantic validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/validate/cnpj": {
+            "post": {
+                "description": "Validates a CNPJ using Receita Federal integration. Requires signed payload.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Validate CNPJ",
+                "parameters": [
+                    {
+                        "description": "Signed CNPJ validation payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCNPJRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidationResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid signature or expired request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Semantic validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/validate/cpf": {
+            "post": {
+                "description": "Validates a CPF using Receita Federal integration. Requires signed payload.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Validate CPF",
+                "parameters": [
+                    {
+                        "description": "Signed CPF validation payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCPFRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidationResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid signature or expired request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Semantic validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Rate limited",
                         "schema": {
                             "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -2067,6 +2259,39 @@
                 }
             }
         },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.CEPValidationResponse": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "example": "São Paulo"
+                },
+                "complement": {
+                    "type": "string",
+                    "example": "Apto 101"
+                },
+                "neighborhood": {
+                    "type": "string",
+                    "example": "Bela Vista"
+                },
+                "postalCode": {
+                    "type": "string",
+                    "example": "12345678"
+                },
+                "state": {
+                    "type": "string",
+                    "example": "SP"
+                },
+                "street": {
+                    "type": "string",
+                    "example": "Av. Paulista"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest": {
             "type": "object",
             "required": [
@@ -2731,14 +2956,14 @@
                 "nickName": {
                     "type": "string",
                     "maxLength": 50,
-                    "minLength": 2
+                    "minLength": 3
                 },
                 "number": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 8
                 },
                 "phoneNumber": {
                     "type": "string",
@@ -2857,6 +3082,87 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.UserStatusData"
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCEPRequest": {
+            "type": "object",
+            "required": [
+                "hmac",
+                "postalCode",
+                "timestamp"
+            ],
+            "properties": {
+                "hmac": {
+                    "type": "string",
+                    "example": "a1b2c3"
+                },
+                "postalCode": {
+                    "type": "string",
+                    "example": "12345678"
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1712345678
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCNPJRequest": {
+            "type": "object",
+            "required": [
+                "hmac",
+                "nationalID",
+                "timestamp"
+            ],
+            "properties": {
+                "hmac": {
+                    "type": "string",
+                    "example": "a1b2c3"
+                },
+                "nationalID": {
+                    "type": "string",
+                    "example": "12345678000195"
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1712345678
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidateCPFRequest": {
+            "description": "Assinatura da requisição deve ser calculada com METHOD|PATH|timestamp|payload_compacto_sem_campo_hmac",
+            "type": "object",
+            "required": [
+                "bornAt",
+                "hmac",
+                "nationalID",
+                "timestamp"
+            ],
+            "properties": {
+                "bornAt": {
+                    "type": "string",
+                    "example": "1990-01-01"
+                },
+                "hmac": {
+                    "type": "string",
+                    "example": "a1b2c3"
+                },
+                "nationalID": {
+                    "type": "string",
+                    "example": "12345678901"
+                },
+                "timestamp": {
+                    "type": "integer",
+                    "example": 1712345678
+                }
+            }
+        },
+        "github_com_giulio-alfieri_toq_server_internal_adapter_left_http_dto.ValidationResultResponse": {
+            "type": "object",
+            "properties": {
+                "valid": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         }

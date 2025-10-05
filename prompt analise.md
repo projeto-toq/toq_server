@@ -6,18 +6,22 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Durante a criação de novo usuário corretor ou proprietário, através dos /auth handlerscreate_owner e create_realtor, é necessário validar os dados segundo critérios abaixo e retornar mensagem específica ao usuário, complementando o erro 400 e 422 com message que permita o frontend orientar o usuário.
+A) O front end necessita consutlar CPF/CNPJ/CEP, para isso é necessário criar endpoints que ofereçam esta funcionalidade consumindo os ports CPF, CNPJ e CEP já existentes no toq_server.
 
-- verificar se existem as seguintes validações:
-  - CPF/cnpj válido - validação feita pelo cpf/cnpj port;
-  - email válido (formato);
-  - telefone válido (formato)
-  - CEP válido - validação feita pelo cep port;
-  - nickname (mínimo 3 caracteres);
-  - data de nascimento (>= 18 anos);
-  - password (mínimo 8 caracteres, ao menos 1 letra maiúscula, 1 minúscula, 1 número e 1 caractere especial);
-- faça uma lista das mensgens de erro que serão retornadas para cada validação para os erros 400/422 para serem passadas ao frontend;
-- É possível passar estas mensagens de erro na documentação swagger dos endpoints?
+- Estes endpoints serão /auth/validate/cpf, /auth/validate/cnpj e /auth/validate/cep, todos com o método POST e recebendo no body os campos "nationalID" com o valor a ser consultado dentro do HMAC conforme descrito no item B.
+  - para cpf: { "nationalID": "12345678901", bornAt: "YYYY-MM-DD", timestamp: "unix-timestamp", hmac: "hmac-value" }
+  - para cnpj: { "nationalID": "12345678000195", timestamp: "unix-timestamp", hmac: "hmac-value" }
+  - para cep: { "postalCode": "12345678", timestamp: "unix-timestamp", hmac: "hmac-value" }
+
+- As respostas esperadas, são os dados retornados pelos port em caso de erro, retornar a mensagem de erro conforme a tabela /docs/400-422messages.md. Os endpoints /auth/owner e /auth/realtor já fazem uso destes ports, então a lógica de negócio já está implementada, assim com as respostas de erro.
+
+B) Para aumentar a segurança, estes endpoints só poderão ser consultados por usuários que enviem uma assinatura da requisição com segredo. os seguintes passos deverão ser seguidos:
+
+- Criar uma chave "pública" que será passado ao frontend (não é uma chave criptográfica segura, é apenas um segredo compartilhado). Defina o método de hash (ex: SHA256) e o formato do HMAC (ex: hex/base64).
+
+- Antes de enviar a requisição de validação, o frontend usa a chave secreta + um timestamp + os dados da requisição (ex: o CPF) para gerar um hash (HMAC). 
+
+- O backend usa a mesma chave secreta para recalcular o HMAC e o compara com o HMAC recebido. Também verifica se o timestamp não está muito antigo (para evitar replay attacks).
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
