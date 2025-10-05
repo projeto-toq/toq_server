@@ -6,22 +6,7 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-A) O front end necessita consutlar CPF/CNPJ/CEP, para isso é necessário criar endpoints que ofereçam esta funcionalidade consumindo os ports CPF, CNPJ e CEP já existentes no toq_server.
-
-- Estes endpoints serão /auth/validate/cpf, /auth/validate/cnpj e /auth/validate/cep, todos com o método POST e recebendo no body os campos "nationalID" com o valor a ser consultado dentro do HMAC conforme descrito no item B.
-  - para cpf: { "nationalID": "12345678901", bornAt: "YYYY-MM-DD", timestamp: "unix-timestamp", hmac: "hmac-value" }
-  - para cnpj: { "nationalID": "12345678000195", timestamp: "unix-timestamp", hmac: "hmac-value" }
-  - para cep: { "postalCode": "12345678", timestamp: "unix-timestamp", hmac: "hmac-value" }
-
-- As respostas esperadas, são os dados retornados pelos port em caso de erro, retornar a mensagem de erro conforme a tabela /docs/400-422messages.md. Os endpoints /auth/owner e /auth/realtor já fazem uso destes ports, então a lógica de negócio já está implementada, assim com as respostas de erro.
-
-B) Para aumentar a segurança, estes endpoints só poderão ser consultados por usuários que enviem uma assinatura da requisição com segredo. os seguintes passos deverão ser seguidos:
-
-- Criar uma chave "pública" que será passado ao frontend (não é uma chave criptográfica segura, é apenas um segredo compartilhado). Defina o método de hash (ex: SHA256) e o formato do HMAC (ex: hex/base64).
-
-- Antes de enviar a requisição de validação, o frontend usa a chave secreta + um timestamp + os dados da requisição (ex: o CPF) para gerar um hash (HMAC). 
-
-- O backend usa a mesma chave secreta para recalcular o HMAC e o compara com o HMAC recebido. Também verifica se o timestamp não está muito antigo (para evitar replay attacks).
+Os endpoint /auth/realtor e /auth/owner chamam o serviço create_owner e create_realtor que, ao validar o CEP, sobrepõe eventuais dados de endereço fornecidos pelo usuário pelo resposta a consulta do CEP. Entretanto com a criação do endpoit /auth/validate/cep o frontend pode validar o CEP e os dados fornecidos pelo usuário para numero, bairro e complemento sobrescrevão os dados fornecidos pela consulta ao CEP.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

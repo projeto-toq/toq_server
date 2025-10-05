@@ -16,7 +16,7 @@ import (
 // CreateRealtor handles realtor account creation (public endpoint)
 //
 //	@Summary		Create realtor account
-//	@Description	Create a new realtor account with user and CRECI information
+//	@Description	Create a new realtor account with user and CRECI information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json

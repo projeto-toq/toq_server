@@ -18,7 +18,7 @@ import (
 // CreateOwner handles owner account creation (public endpoint)
 //
 //	@Summary		Create owner account
-//	@Description	Create a new owner account with user information
+//	@Description	Create a new owner account with user information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json

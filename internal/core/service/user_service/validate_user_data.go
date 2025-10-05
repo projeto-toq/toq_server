@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -90,17 +91,32 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 		return err
 	}
 
+	userNumber := strings.TrimSpace(user.GetNumber())
 	//validate the address number
-	if user.GetNumber() == "" {
+	if userNumber == "" {
 		// Address number is required
 		return utils.ValidationError(field("number"), "Address number is required.")
 	}
+	userNeighborhood := strings.TrimSpace(user.GetNeighborhood())
+	userComplement := strings.TrimSpace(user.GetComplement())
 
 	user.SetStreet(cep.GetStreet())
-	// user.SetComplement(cep.GetComplement())
-	user.SetNeighborhood(cep.GetNeighborhood())
 	user.SetCity(cep.GetCity())
 	user.SetState(cep.GetState())
+
+	if userNeighborhood == "" {
+		user.SetNeighborhood(cep.GetNeighborhood())
+	} else {
+		user.SetNeighborhood(userNeighborhood)
+	}
+
+	if userComplement == "" {
+		user.SetComplement(cep.GetComplement())
+	} else {
+		user.SetComplement(userComplement)
+	}
+
+	user.SetNumber(userNumber)
 
 	user.SetPassword(us.encryptPassword(user.GetPassword()))
 	user.SetLastActivityAt(now)

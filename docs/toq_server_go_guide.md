@@ -179,6 +179,7 @@ func (s *someService) DoSomething(ctx context.Context, input Input) (Output, err
 Notas:
 - Em erros de domínio (regras de negócio), apenas retorne o erro; não logue como `Error`.
 - Em erros de infra, faça `slog.Error(...)` no ponto de falha e `utils.SetSpanError`.
+- Criação de usuários (owner/realtor): `ValidateUserData` sempre consulta o CEP e aplica `street/city/state` retornados pelo provider, porém mantém `number`, `neighborhood` e `complement` exatamente como enviados pelo cliente (desde que não vazios). O frontend deve usar `/auth/validate/cep` para pré-validar e, se necessário, ajustar esses três campos antes da criação.
 
 ### 7.2 Services (métodos privados)
 

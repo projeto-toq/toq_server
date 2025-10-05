@@ -353,7 +353,7 @@ const docTemplate = `{
         },
         "/auth/owner": {
             "post": {
-                "description": "Create a new owner account with user information",
+                "description": "Create a new owner account with user information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload.",
                 "consumes": [
                     "application/json"
                 ],
@@ -527,7 +527,7 @@ const docTemplate = `{
         },
         "/auth/realtor": {
             "post": {
-                "description": "Create a new realtor account with user and CRECI information",
+                "description": "Create a new realtor account with user and CRECI information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload.",
                 "consumes": [
                     "application/json"
                 ],
