@@ -5,8 +5,9 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após a inlcusão do loki o envio de logs para o loki/grafana está sendo sempre com level debug, independente da flag -log-level. 
-A geração do arquivo de logs está correta, mas o envio para o loki está com level debug.
+Os endpoints de consulta a cpf|cnpj|cep /auth/validate/cpf|cnpj|cep não estão efetivamente retornando os erros como descrito no docs/400-422messages.md.
+Veja o log.md que ao consultar um cpf inválido, o retorno é 500 e não 400 como esperado.
+Confirme que as rotinas estão efetivamente respondendo com os erros esperados.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
 

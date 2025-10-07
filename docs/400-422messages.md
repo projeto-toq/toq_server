@@ -16,7 +16,8 @@ As mensagens abaixo são retornadas pelos fluxos de criação de usuários (`POS
 | `Invalid phone number format.` | `NormalizeToE164` não conseguiu normalizar o telefone. | Campo `owner.phoneNumber` ou `realtor.phoneNumber`. Formato esperado: E.164. |
 | `Invalid email format.` | Validação adicional de e-mail falhou. | Campo `*.email`. |
 | `Address number is required.` | Número do endereço ausente. | Campo `*.number`. |
-| `Invalid national ID.` | CPF/CNPJ inválido (entrada inconsistente). | Campo `*.nationalID`. |
+| `Invalid national ID.` | CPF/CNPJ inválido (entrada inconsistente). | Campo `*.nationalID`. Origem comum (CPF): mensagens de provedor como `Parametro Invalido.` ou `Parâmetro inválido.` |
+|  |  | **Origem comum (CPF)**: mensagens do provedor como `Parametro Invalido.` ou `Parâmetro inválido.` |
 | `Invalid birth date.` | Data incompatível com Receita (CPF). | Campo `*.bornAt`. |
 | `Birth date does not match government records.` | Divergência entre data informada e Receita. | Campo `*.bornAt`. |
 | `National ID has an irregular status.` | CPF consta irregular na Receita. | Campo `*.nationalID`. |

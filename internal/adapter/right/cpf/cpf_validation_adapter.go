@@ -186,6 +186,8 @@ func mapProviderError(message string, statusCode int) error {
 	switch {
 	case strings.Contains(msg, "cpf inválido"), strings.Contains(msg, "cpf invalido"):
 		return wrap(cpfport.ErrInvalidInput)
+	case strings.Contains(msg, "parametro invalido"), strings.Contains(msg, "parametros invalidos"), strings.Contains(msg, "parâmetro inválido"), strings.Contains(msg, "parâmetros inválidos"):
+		return wrap(cpfport.ErrInvalidInput)
 	case strings.Contains(msg, "data nascimento inválida"), strings.Contains(msg, "data nascimento invalida"), strings.Contains(msg, "data de nascimento não informada"), strings.Contains(msg, "data de nascimento nao informada"):
 		return wrap(cpfport.ErrBirthDateInvalid)
 	case strings.Contains(msg, "sem dados"):

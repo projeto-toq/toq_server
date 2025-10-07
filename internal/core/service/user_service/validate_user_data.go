@@ -150,6 +150,9 @@ func (us *userService) handleCPFValidationError(ctx context.Context, prefix stri
 		utils.SetSpanError(ctx, adapterErr)
 		return utils.TooManyAttemptsError("National ID lookup rate limit exceeded.")
 	case errors.Is(adapterErr, cpfport.ErrInfra):
+		if mapped := mapCPFInfraErrorToDomain(adapterErr, field); mapped != nil {
+			return mapped
+		}
 		slog.Error("user.validate_user_data.cpf_infra_error", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
 		return utils.InternalError("Failed to validate national ID.")
@@ -158,6 +161,16 @@ func (us *userService) handleCPFValidationError(ctx context.Context, prefix stri
 	slog.Error("user.validate_user_data.cpf_unhandled_error", "err", adapterErr)
 	utils.SetSpanError(ctx, adapterErr)
 	return utils.InternalError("Failed to validate national ID.")
+}
+
+func mapCPFInfraErrorToDomain(err error, fieldFn func(string) string) error {
+	lower := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(lower, "parametro invalido"), strings.Contains(lower, "parâmetro inválido"), strings.Contains(lower, "parametros invalidos"), strings.Contains(lower, "parâmetros inválidos"):
+		slog.Warn("user.validate_user_data.cpf_infra_mapped_invalid", "err", err)
+		return utils.ValidationError(fieldFn("nationalID"), "Invalid national ID.")
+	}
+	return nil
 }
 
 func (us *userService) handleCNPJValidationError(ctx context.Context, prefix string, adapterErr error) error {
