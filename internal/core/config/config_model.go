@@ -32,6 +32,7 @@ import (
 	sessionservice "github.com/giulio-alfieri/toq_server/internal/core/service/session_service"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
 	validationservice "github.com/giulio-alfieri/toq_server/internal/core/service/validation_service"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"gopkg.in/yaml.v3"
@@ -229,25 +230,28 @@ func (c *config) InitializeActivityTracker() error {
 
 // InitializeGoRoutines inicializa as goroutines do sistema
 func (c *config) InitializeGoRoutines() {
+	baseCtx := coreutils.ContextWithLogger(c.context)
+	logger := coreutils.LoggerFromContext(baseCtx)
+
 	if c.activityTracker != nil && c.wg != nil {
 		// Iniciar worker do activity tracker
 		c.wg.Add(1)
-		go c.activityTracker.StartBatchWorker(c.wg, c.context)
-		slog.Info("Activity tracker batch worker started")
+		go c.activityTracker.StartBatchWorker(c.wg, coreutils.ContextWithLogger(baseCtx))
+		logger.Info("Activity tracker batch worker started")
 	} else {
-		slog.Warn("Activity tracker or wait group not available for goroutine initialization")
+		logger.Warn("Activity tracker or wait group not available for goroutine initialization")
 	}
 
 	if c.tempBlockCleaner != nil {
 		// Iniciar worker de limpeza de bloqueios temporários
 		c.wg.Add(1)
-		go func() {
+		go func(workerCtx context.Context) {
 			defer c.wg.Done()
-			c.tempBlockCleaner.Start(c.context)
-		}()
-		slog.Info("Temp block cleaner worker started")
+			c.tempBlockCleaner.Start(workerCtx)
+		}(coreutils.ContextWithLogger(baseCtx))
+		logger.Info("Temp block cleaner worker started")
 	} else {
-		slog.Warn("Temp block cleaner not available for goroutine initialization")
+		logger.Warn("Temp block cleaner not available for goroutine initialization")
 	}
 
 	// Start session cleaner using service (if session repo and global service are set)
@@ -258,10 +262,10 @@ func (c *config) InitializeGoRoutines() {
 			intervalSecs = 60
 		}
 		c.wg.Add(1)
-		go goroutines.SessionCleaner(c.sessionService, c.wg, c.context, time.Duration(intervalSecs)*time.Second)
-		slog.Info("Session cleaner worker started", "interval_seconds", intervalSecs)
+		go goroutines.SessionCleaner(c.sessionService, c.wg, coreutils.ContextWithLogger(baseCtx), time.Duration(intervalSecs)*time.Second)
+		logger.Info("Session cleaner worker started", "interval_seconds", intervalSecs)
 	} else {
-		slog.Warn("Session cleaner prerequisites not met; skipping start")
+		logger.Warn("Session cleaner prerequisites not met; skipping start")
 	}
 
 	// Start validation cleaner if user repository and global service are set
@@ -272,13 +276,13 @@ func (c *config) InitializeGoRoutines() {
 			intervalSecs = 300 // default 5 minutes
 		}
 		c.wg.Add(1)
-		go func() {
+		go func(workerCtx context.Context) {
 			defer c.wg.Done()
-			goroutines.ValidationCleaner(validationSvc, time.Duration(intervalSecs)*time.Second, c.context)
-		}()
-		slog.Info("Validation cleaner worker started", "interval_seconds", intervalSecs)
+			goroutines.ValidationCleaner(validationSvc, time.Duration(intervalSecs)*time.Second, workerCtx)
+		}(coreutils.ContextWithLogger(baseCtx))
+		logger.Info("Validation cleaner worker started", "interval_seconds", intervalSecs)
 	} else {
-		slog.Warn("Validation cleaner prerequisites not met; skipping start")
+		logger.Warn("Validation cleaner prerequisites not met; skipping start")
 	}
 }
 

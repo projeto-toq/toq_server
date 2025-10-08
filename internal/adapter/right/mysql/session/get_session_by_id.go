@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
@@ -19,11 +18,15 @@ func (sa *SessionAdapter) GetSessionByID(ctx context.Context, tx *sql.Tx, id int
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT id, user_id, refresh_hash, token_jti, expires_at, absolute_expires_at, created_at, rotated_at, user_agent, ip, device_id, rotation_counter, last_refresh_at, revoked FROM sessions WHERE id = ?`
 
 	entities, err := sa.Read(ctx, tx, query, id)
 	if err != nil {
-		slog.Error("sessionmysqladapter/GetSessionByID: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.get_session_by_id.read_error", "session_id", id, "error", err)
 		return nil, fmt.Errorf("get session by id: %w", err)
 	}
 
@@ -32,12 +35,16 @@ func (sa *SessionAdapter) GetSessionByID(ctx context.Context, tx *sql.Tx, id int
 	}
 
 	if len(entities) > 1 {
-		slog.Error("sessionmysqladapter/GetSessionByID: multiple sessions found with the same ID", "ID", id)
+		err := fmt.Errorf("multiple sessions found for id %d", id)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.get_session_by_id.multiple_results", "session_id", id, "error", err)
 		return nil, fmt.Errorf("multiple sessions found for id %d", id)
 	}
 
 	session, err = sessionconverters.SessionEntityToDomain(entities[0])
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.get_session_by_id.convert_error", "session_id", id, "error", err)
 		return
 	}
 

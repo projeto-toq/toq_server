@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,11 +15,15 @@ func (sa *SessionAdapter) RevokeSession(ctx context.Context, tx *sql.Tx, id int6
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `UPDATE sessions SET revoked = true WHERE id = ?`
 
 	_, err = sa.Update(ctx, tx, query, id)
 	if err != nil {
-		slog.Error("sessionmysqladapter/RevokeSession: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.revoke_session.update_error", "session_id", id, "error", err)
 		return fmt.Errorf("revoke session: %w", err)
 	}
 

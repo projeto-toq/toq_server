@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -18,6 +17,9 @@ func (ua *UserAdapter) DeleteExpiredValidations(ctx context.Context, tx *sql.Tx,
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// A row can be deleted when none of the three codes is currently valid (all are empty/NULL or expired)
 	query := `DELETE FROM temp_user_validations
 		WHERE
@@ -28,7 +30,8 @@ func (ua *UserAdapter) DeleteExpiredValidations(ctx context.Context, tx *sql.Tx,
 
 	deleted, err := ua.Delete(ctx, tx, query, limit)
 	if err != nil {
-		slog.Error("mysqluseradapter/DeleteExpiredValidations: error executing Delete", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.delete_expired_validations.delete_error", "error", err)
 		return 0, fmt.Errorf("delete expired validations: %w", err)
 	}
 	return deleted, nil

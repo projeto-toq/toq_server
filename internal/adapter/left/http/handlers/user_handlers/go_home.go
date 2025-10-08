@@ -8,11 +8,11 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) GoHome(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Get user information from context (set by middleware)
 	userInfo, ok := middlewares.GetUserInfoFromContext(c)
@@ -30,7 +30,7 @@ func (uh *UserHandler) GoHome(c *gin.Context) {
 	}
 
 	// Prepare response with welcome message
-	currentRole := utils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
+	currentRole := coreutils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
 	// TODO: Código temporário comentado - RoleStatus removido dos tokens
 	// isActive := utils.IsProfileActiveFromStatus(userInfo.RoleStatus)
 

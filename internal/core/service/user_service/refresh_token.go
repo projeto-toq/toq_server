@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	"log/slog"
 	"time"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/events"
@@ -34,18 +33,21 @@ func (us *userService) RefreshTokens(ctx context.Context, refresh string) (token
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("auth.refresh.tx_start_error", "error", txErr)
+		logger.Error("auth.refresh.tx_start_error", "error", txErr)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("auth.refresh.tx_rollback_error", "error", rbErr)
+				logger.Error("auth.refresh.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -57,7 +59,7 @@ func (us *userService) RefreshTokens(ctx context.Context, refresh string) (token
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		utils.SetSpanError(ctx, commitErr)
-		slog.Error("auth.refresh.tx_commit_error", "error", commitErr)
+		logger.Error("auth.refresh.tx_commit_error", "error", commitErr)
 		err = utils.InternalError("Failed to commit transaction")
 		return
 	}
@@ -66,6 +68,9 @@ func (us *userService) RefreshTokens(ctx context.Context, refresh string) (token
 }
 
 func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh string) (tokens usermodel.Tokens, err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	userID, err := validateRefreshToken(refresh)
 	if err != nil {
 		// Erro 401 de token inválido
@@ -78,7 +83,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	session, sessErr := us.sessionRepo.GetActiveSessionByRefreshHash(ctx, tx, hash)
 	if sessErr != nil {
 		// Sessão não encontrada para o refresh apresentado
-		slog.Warn("auth.refresh.invalid_session", "error", sessErr, "refresh_hash_prefix", hash[:8])
+		logger.Warn("auth.refresh.invalid_session", "error", sessErr, "refresh_hash_prefix", hash[:8])
 		// Captura origem ao criar o erro de domínio
 		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshSessionNotFound)
 	}
@@ -88,7 +93,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshReuse.Inc()
-		slog.Warn("auth.refresh.reuse_detected", "user_id", session.GetUserID(), "session_id", session.GetID())
+		logger.Warn("auth.refresh.reuse_detected", "user_id", session.GetUserID(), "session_id", session.GetID())
 		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshTokenReuseDetected)
 	}
 
@@ -103,7 +108,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if session.GetUserID() != userID {
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
-		slog.Warn("auth.refresh.user_mismatch", "jwt_user_id", userID, "session_user_id", session.GetUserID(), "session_id", session.GetID())
+		logger.Warn("auth.refresh.user_mismatch", "jwt_user_id", userID, "session_user_id", session.GetUserID(), "session_id", session.GetID())
 		return tokens, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 
@@ -112,7 +117,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
 		metricRefreshExpired.Inc()
-		slog.Info("auth.refresh.absolute_expired", "user_id", session.GetUserID(), "session_id", session.GetID())
+		logger.Info("auth.refresh.absolute_expired", "user_id", session.GetUserID(), "session_id", session.GetID())
 		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshTokenExpired)
 	}
 
@@ -124,7 +129,7 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	if session.GetRotationCounter() >= globalmodel.GetMaxSessionRotations() {
 		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
-		slog.Warn("auth.refresh.rotation_limit_exceeded", "user_id", session.GetUserID(), "session_id", session.GetID(), "rotation_counter", session.GetRotationCounter())
+		logger.Warn("auth.refresh.rotation_limit_exceeded", "user_id", session.GetUserID(), "session_id", session.GetID(), "rotation_counter", session.GetRotationCounter())
 		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshRotationLimitExceeded)
 	}
 
@@ -141,18 +146,18 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	// Marca a sessão anterior como rotacionada (rotated_at), evitando reutilização do refresh token antigo
 	// Comentário em português: esta marcação permite detectar "reuse" com base em rotated_at != nil
 	if err = us.sessionRepo.MarkSessionRotated(ctx, tx, session.GetID()); err != nil {
-		slog.Warn("auth.refresh.mark_rotated_failed", "session_id", session.GetID(), "error", err)
+		logger.Warn("auth.refresh.mark_rotated_failed", "session_id", session.GetID(), "error", err)
 	}
 
 	// Atualiza metadados da sessão antiga (contador e last_refresh_at) para fins de auditoria
 	if err = us.sessionRepo.UpdateSessionRotation(ctx, tx, session.GetID(), session.GetRotationCounter(), time.Now().UTC()); err != nil {
-		slog.Warn("auth.refresh.update_rotation_failed", "session_id", session.GetID(), "error", err)
+		logger.Warn("auth.refresh.update_rotation_failed", "session_id", session.GetID(), "error", err)
 	} else {
 		// Publish SessionRotated for previous session
 		sid := session.GetID()
 		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionRotated, UserID: session.GetUserID(), SessionID: &sid, DeviceID: session.GetDeviceID()})
 		metricSessionRotated.Inc()
-		slog.Info("auth.refresh.ok", "user_id", session.GetUserID(), "prev_session_id", session.GetID())
+		logger.Info("auth.refresh.ok", "user_id", session.GetUserID(), "prev_session_id", session.GetID())
 	}
 	// Métricas: sucesso
 	metricRefreshSuccess.Inc()

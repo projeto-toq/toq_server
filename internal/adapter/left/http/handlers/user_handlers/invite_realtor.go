@@ -6,10 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) InviteRealtor(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request body
 	var request dto.InviteRealtorRequest

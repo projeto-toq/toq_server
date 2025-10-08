@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -18,6 +17,8 @@ import (
 )
 
 func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, role permissionmodel.RoleSlug) (err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	now := time.Now().UTC()
 	prefix := dataPrefixForRole(role)
@@ -43,7 +44,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	exist, err := us.repo.VerifyUserDuplicity(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.validate_user_data.duplicity_check_error", "error", err)
+		logger.Error("user.validate_user_data.duplicity_check_error", "error", err)
 		return
 	}
 
@@ -126,75 +127,81 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 }
 
 func (us *userService) handleCPFValidationError(ctx context.Context, prefix string, adapterErr error) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	field := func(name string) string {
 		return composeField(prefix, name)
 	}
 	switch {
 	case errors.Is(adapterErr, cpfport.ErrInvalidInput):
-		slog.Warn("user.validate_user_data.cpf_invalid", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cpf_invalid", "err", adapterErr)
 		return utils.ValidationError(field("nationalID"), "Invalid national ID.")
 	case errors.Is(adapterErr, cpfport.ErrBirthDateInvalid):
-		slog.Warn("user.validate_user_data.cpf_birth_date_invalid", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cpf_birth_date_invalid", "err", adapterErr)
 		return utils.ValidationError(field("bornAt"), "Invalid birth date.")
 	case errors.Is(adapterErr, cpfport.ErrDataMismatch):
-		slog.Warn("user.validate_user_data.cpf_birth_date_mismatch", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cpf_birth_date_mismatch", "err", adapterErr)
 		return utils.ValidationError(field("bornAt"), "Birth date does not match government records.")
 	case errors.Is(adapterErr, cpfport.ErrStatusIrregular):
-		slog.Warn("user.validate_user_data.cpf_irregular", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cpf_irregular", "err", adapterErr)
 		return utils.ValidationError(field("nationalID"), "National ID has an irregular status.")
 	case errors.Is(adapterErr, cpfport.ErrNotFound):
-		slog.Warn("user.validate_user_data.cpf_not_found", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cpf_not_found", "err", adapterErr)
 		return utils.ValidationError(field("nationalID"), "National ID not found.")
 	case errors.Is(adapterErr, cpfport.ErrRateLimited):
-		slog.Warn("user.validate_user_data.cpf_rate_limited", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cpf_rate_limited", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
 		return utils.TooManyAttemptsError("National ID lookup rate limit exceeded.")
 	case errors.Is(adapterErr, cpfport.ErrInfra):
-		if mapped := mapCPFInfraErrorToDomain(adapterErr, field); mapped != nil {
+		if mapped := mapCPFInfraErrorToDomain(ctx, adapterErr, field); mapped != nil {
 			return mapped
 		}
-		slog.Error("user.validate_user_data.cpf_infra_error", "err", adapterErr)
+		logger.Error("user.validate_user_data.cpf_infra_error", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
 		return utils.InternalError("Failed to validate national ID.")
 	}
 
-	slog.Error("user.validate_user_data.cpf_unhandled_error", "err", adapterErr)
+	logger.Error("user.validate_user_data.cpf_unhandled_error", "err", adapterErr)
 	utils.SetSpanError(ctx, adapterErr)
 	return utils.InternalError("Failed to validate national ID.")
 }
 
-func mapCPFInfraErrorToDomain(err error, fieldFn func(string) string) error {
+func mapCPFInfraErrorToDomain(ctx context.Context, err error, fieldFn func(string) string) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	lower := strings.ToLower(err.Error())
 	switch {
 	case strings.Contains(lower, "parametro invalido"), strings.Contains(lower, "parâmetro inválido"), strings.Contains(lower, "parametros invalidos"), strings.Contains(lower, "parâmetros inválidos"):
-		slog.Warn("user.validate_user_data.cpf_infra_mapped_invalid", "err", err)
+		logger.Warn("user.validate_user_data.cpf_infra_mapped_invalid", "err", err)
 		return utils.ValidationError(fieldFn("nationalID"), "Invalid national ID.")
 	}
 	return nil
 }
 
 func (us *userService) handleCNPJValidationError(ctx context.Context, prefix string, adapterErr error) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	field := func(name string) string {
 		return composeField(prefix, name)
 	}
 	switch {
 	case errors.Is(adapterErr, cnpjport.ErrInvalid):
-		slog.Warn("user.validate_user_data.cnpj_invalid", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cnpj_invalid", "err", adapterErr)
 		return utils.ValidationError(field("nationalID"), "Invalid company national ID.")
 	case errors.Is(adapterErr, cnpjport.ErrNotFound):
-		slog.Warn("user.validate_user_data.cnpj_not_found", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cnpj_not_found", "err", adapterErr)
 		return utils.ValidationError(field("nationalID"), "Company national ID not found.")
 	case errors.Is(adapterErr, cnpjport.ErrRateLimited):
-		slog.Warn("user.validate_user_data.cnpj_rate_limited", "err", adapterErr)
+		logger.Warn("user.validate_user_data.cnpj_rate_limited", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
 		return utils.TooManyAttemptsError("Company national ID lookup rate limit exceeded.")
 	case errors.Is(adapterErr, cnpjport.ErrInfra):
-		slog.Error("user.validate_user_data.cnpj_infra_error", "err", adapterErr)
+		logger.Error("user.validate_user_data.cnpj_infra_error", "err", adapterErr)
 		utils.SetSpanError(ctx, adapterErr)
 		return utils.InternalError("Failed to validate company national ID.")
 	}
 
-	slog.Error("user.validate_user_data.cnpj_unhandled_error", "err", adapterErr)
+	logger.Error("user.validate_user_data.cnpj_unhandled_error", "err", adapterErr)
 	utils.SetSpanError(ctx, adapterErr)
 	return utils.InternalError("Failed to validate company national ID.")
 }

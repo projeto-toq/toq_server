@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -19,11 +18,15 @@ func (ua *UserAdapter) GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, p
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT * FROM agency_invites WHERE phone_number = ?;`
 
 	entities, err := ua.Read(ctx, tx, query, phoneNumber)
 	if err != nil {
-		slog.Error("mysqluseradapter/GetInviteByPhoneNumber: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_invite_by_phone.read_error", "error", err)
 		return nil, fmt.Errorf("get invite by phone number read: %w", err)
 	}
 
@@ -33,7 +36,9 @@ func (ua *UserAdapter) GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, p
 
 	invite, err = userconverters.AgencyInviteEntityToDomain(entities[0])
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_invite_by_phone.convert_error", "error", err)
+		return nil, fmt.Errorf("convert agency invite entity: %w", err)
 	}
 
 	return invite, nil

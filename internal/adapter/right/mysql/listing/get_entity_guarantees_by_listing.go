@@ -3,8 +3,8 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"log/slog"
 
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
 
@@ -18,21 +18,27 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT * FROM guarantees WHERE listing_id = ?;`
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("Error preparing statement in GetEntityGuaranteesByListing", "error", err)
-		err = fmt.Errorf("prepare get guarantees: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_entity_guarantees.prepare_error", "error", err)
+		return nil, fmt.Errorf("prepare get guarantees: %w", err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, listingID)
-	if err != nil && err != sql.ErrNoRows {
-		slog.Error("Error executing query in GetEntityGuaranteesByListing", "error", err)
-		err = fmt.Errorf("query guarantees by listing: %w", err)
-		return
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, sql.ErrNoRows
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_entity_guarantees.query_error", "error", err)
+		return nil, fmt.Errorf("query guarantees by listing: %w", err)
 	}
 	defer rows.Close()
 
@@ -45,19 +51,19 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 			&guarantee.Guarantee,
 		)
 		if err != nil {
-			slog.Error("Error scanning row in GetEntityGuaranteesByListing", "error", err)
-			err = fmt.Errorf("scan guarantee row: %w", err)
-			return
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.listing.get_entity_guarantees.scan_error", "error", err)
+			return nil, fmt.Errorf("scan guarantee row: %w", err)
 		}
 
 		guarantees = append(guarantees, guarantee)
 	}
 
 	if err = rows.Err(); err != nil {
-		slog.Error("Error iterating over rows in GetEntityGuaranteesByListing", "error", err)
-		err = fmt.Errorf("rows iteration for guarantees: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_entity_guarantees.rows_error", "error", err)
+		return nil, fmt.Errorf("rows iteration for guarantees: %w", err)
 	}
 
-	return
+	return guarantees, nil
 }

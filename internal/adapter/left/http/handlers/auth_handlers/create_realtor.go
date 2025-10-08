@@ -3,14 +3,12 @@ package authhandlers
 import (
 	"net/http"
 
-	"log/slog"
-
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // CreateRealtor handles realtor account creation (public endpoint)
@@ -29,7 +27,8 @@ import (
 //	@Router			/auth/realtor [post]
 func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 	// Observação: tracing de request já é provido por TelemetryMiddleware; evitamos spans duplicados aqui.
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	logger := coreutils.LoggerFromContext(ctx)
 
 	// Parse request
 	var request dto.CreateRealtorRequest
@@ -48,17 +47,17 @@ func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 	// Create user model from DTO (using parsed dates)
 	user, err := ah.createUserFromDTO(request.Realtor, bornAt, creciValidity)
 	if err != nil {
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
 		return
 	}
 
 	// Extract request context for security logging and session metadata
-	reqContext := utils.ExtractRequestContext(c)
+	reqContext := coreutils.ExtractRequestContext(c)
 
 	// Debug: rastrear valores de contexto antes de chamar o serviço
 	headerDeviceID := c.GetHeader("X-Device-Id")
 	ctxDeviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
-	slog.Debug("auth.create_realtor.debug",
+	logger.Debug("auth.create_realtor.debug",
 		"device_token", request.DeviceToken,
 		"ip", reqContext.IPAddress,
 		"user_agent", reqContext.UserAgent,
@@ -69,11 +68,11 @@ func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 	// Call service: cria a conta e autentica via SignIn padrão
 	tokens, err := ah.userService.CreateRealtor(ctx, user, request.Realtor.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)
 	if err != nil {
-		if derr, ok := err.(utils.DomainError); ok {
+		if derr, ok := err.(coreutils.DomainError); ok {
 			httperrors.SendHTTPErrorObj(c, derr)
 			return
 		}
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusConflict, "Failed to create realtor"))
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPError(http.StatusConflict, "Failed to create realtor"))
 		return
 	}
 

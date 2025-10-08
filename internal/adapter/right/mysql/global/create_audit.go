@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	globalconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global/converters"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -19,6 +18,9 @@ func (ga *GlobalAdapter) CreateAudit(ctx context.Context, tx *sql.Tx, audit glob
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `INSERT INTO audit
 			(executed_at, executed_by, table_name, table_id, action)
 			VALUES (?, ?, ?, ?, ?);`
@@ -32,7 +34,8 @@ func (ga *GlobalAdapter) CreateAudit(ctx context.Context, tx *sql.Tx, audit glob
 		entity.TableID,
 		entity.Action)
 	if err != nil {
-		slog.Error("mysqlglobaladapter/CreateAudit: error executing Create", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.global.create_audit.create_error", "error", err)
 		return fmt.Errorf("create audit: %w", err)
 	}
 

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetAllListings handles getting all listings with pagination and filters
@@ -33,7 +33,8 @@ import (
 //	@Router			/listings [get]
 //	@Security		BearerAuth
 func (lh *ListingHandler) GetAllListings(c *gin.Context) {
-	_, spanEnd, err := utils.GenerateTracer(c.Request.Context())
+	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	_, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
 		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return

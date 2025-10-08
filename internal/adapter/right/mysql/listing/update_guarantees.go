@@ -3,10 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
 	"errors"
+
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -17,6 +19,9 @@ func (la *ListingAdapter) UpdateGuarantees(ctx context.Context, tx *sql.Tx, guar
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	//check if there is any data to update
 	if len(guarantees) == 0 {
 		return
@@ -25,19 +30,23 @@ func (la *ListingAdapter) UpdateGuarantees(ctx context.Context, tx *sql.Tx, guar
 	// Remove all guarantees from listing
 	err = la.DeleteListingGuarantees(ctx, tx, guarantees[0].ListingID())
 	if err != nil {
-		//check if the error is not found, because it's ok if there is no row to delete
 		if errors.Is(err, sql.ErrNoRows) {
-			return
+			return nil
 		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_guarantees.delete_error", "error", err)
+		return fmt.Errorf("delete listing guarantees: %w", err)
 	}
 
 	// Insert the new guarrantees
 	for _, guarantee := range guarantees {
 		err = la.CreateGuarantee(ctx, tx, guarantee)
 		if err != nil {
-			return
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.listing.update_guarantees.create_error", "error", err)
+			return fmt.Errorf("create guarantee: %w", err)
 		}
 	}
 
-	return
+	return nil
 }

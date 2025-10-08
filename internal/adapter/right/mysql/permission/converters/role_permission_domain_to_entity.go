@@ -2,16 +2,16 @@ package permissionconverters
 
 import (
 	"encoding/json"
-	"log/slog"
+	"fmt"
 
 	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 )
 
 // RolePermissionDomainToEntity converte RolePermissionInterface para RolePermissionEntity
-func RolePermissionDomainToEntity(rolePermission permissionmodel.RolePermissionInterface) *permissionentities.RolePermissionEntity {
+func RolePermissionDomainToEntity(rolePermission permissionmodel.RolePermissionInterface) (*permissionentities.RolePermissionEntity, error) {
 	if rolePermission == nil {
-		return nil
+		return nil, nil
 	}
 
 	entity := &permissionentities.RolePermissionEntity{
@@ -25,12 +25,11 @@ func RolePermissionDomainToEntity(rolePermission permissionmodel.RolePermissionI
 	if conditions := rolePermission.GetConditions(); conditions != nil {
 		conditionsJSON, err := json.Marshal(conditions)
 		if err != nil {
-			slog.Warn("Failed to marshal role permission conditions", "error", err)
-		} else {
-			conditionsStr := string(conditionsJSON)
-			entity.Conditions = &conditionsStr
+			return entity, fmt.Errorf("marshal role permission conditions: %w", err)
 		}
+		conditionsStr := string(conditionsJSON)
+		entity.Conditions = &conditionsStr
 	}
 
-	return entity
+	return entity, nil
 }

@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -33,6 +32,9 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Normalize to E.164 (also validates)
 	if newPhone, err = validators.NormalizeToE164(newPhone); err != nil {
 		// Map validator error to a domain validation error
@@ -42,14 +44,14 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("phone_change.request.tx_start_error", "error", txErr)
+		logger.Error("phone_change.request.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("phone_change.request.tx_rollback_error", "error", rbErr)
+				logger.Error("phone_change.request.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -62,7 +64,7 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 	// Commit the transaction BEFORE sending notification
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		utils.SetSpanError(ctx, commitErr)
-		slog.Error("phone_change.request.tx_commit_error", "error", commitErr)
+		logger.Error("phone_change.request.tx_commit_error", "error", commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -83,18 +85,20 @@ func (us *userService) RequestPhoneChange(ctx context.Context, newPhone string) 
 	if notifyErr != nil {
 		// Log sem afetar operação principal (commit já feito)
 		utils.SetSpanError(ctx, notifyErr)
-		slog.Error("phone_change.request.notification_error", "user_id", user.GetID(), "error", notifyErr)
+		logger.Error("phone_change.request.notification_error", "user_id", user.GetID(), "error", notifyErr)
 	}
 
 	return
 }
 
 func (us *userService) requestPhoneChange(ctx context.Context, tx *sql.Tx, id int64, phone string) (user usermodel.UserInterface, validation usermodel.ValidationInterface, err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	user, err = us.repo.GetUserByID(ctx, tx, id)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("phone_change.request.read_user_error", "error", err, "user_id", id)
+		logger.Error("phone_change.request.read_user_error", "error", err, "user_id", id)
 		return
 	}
 
@@ -104,7 +108,7 @@ func (us *userService) requestPhoneChange(ctx context.Context, tx *sql.Tx, id in
 	// If phone already in use by another user
 	if exist, verr := us.repo.ExistsPhoneForAnotherUser(ctx, tx, phone, user.GetID()); verr != nil {
 		utils.SetSpanError(ctx, verr)
-		slog.Error("phone_change.request.exists_phone_error", "error", verr, "user_id", user.GetID())
+		logger.Error("phone_change.request.exists_phone_error", "error", verr, "user_id", user.GetID())
 		return nil, nil, verr
 	} else if exist {
 		return nil, nil, utils.ErrPhoneAlreadyInUse
@@ -115,7 +119,7 @@ func (us *userService) requestPhoneChange(ctx context.Context, tx *sql.Tx, id in
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
-			slog.Error("phone_change.request.read_validations_error", "error", err, "user_id", user.GetID())
+			logger.Error("phone_change.request.read_validations_error", "error", err, "user_id", user.GetID())
 			return
 		}
 		validation = usermodel.NewValidation()
@@ -129,7 +133,7 @@ func (us *userService) requestPhoneChange(ctx context.Context, tx *sql.Tx, id in
 	err = us.repo.UpdateUserValidations(ctx, tx, validation)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("phone_change.request.update_validations_error", "error", err, "user_id", user.GetID())
+		logger.Error("phone_change.request.update_validations_error", "error", err, "user_id", user.GetID())
 		return
 	}
 

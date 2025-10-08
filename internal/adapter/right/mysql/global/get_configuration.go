@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,11 +15,15 @@ func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (conf
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT * FROM configuration;`
 
 	entities, err := ga.Read(ctx, tx, query)
 	if err != nil {
-		slog.Error("mysqlglobaladapter/GetConfiguration: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.global.get_configuration.read_error", "error", err)
 		return nil, err
 	}
 
@@ -33,14 +36,18 @@ func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (conf
 	for _, entity := range entities {
 		key, ok := entity[1].([]byte)
 		if !ok {
-			slog.Error("mysqlglobaladapter/GetConfiguration: error converting key to []byte", "key", entity[1])
-			return nil, errors.New("configuration key conversion failed")
+			err := errors.New("configuration key conversion failed")
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.global.get_configuration.key_conversion_error", "key", entity[1], "error", err)
+			return nil, err
 		}
 
 		value, ok := entity[2].([]byte)
 		if !ok {
-			slog.Error("mysqlglobaladapter/GetConfiguration: error converting value to []byte", "value", entity[2])
-			return nil, errors.New("configuration value conversion failed")
+			err := errors.New("configuration value conversion failed")
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.global.get_configuration.value_conversion_error", "value", entity[2], "error", err)
+			return nil, err
 		}
 		configuration[string(key)] = string(value)
 	}

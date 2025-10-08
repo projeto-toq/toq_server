@@ -7,7 +7,7 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // CreateAgency handles agency account creation (public endpoint)
@@ -26,7 +26,7 @@ import (
 //	@Router			/auth/agency [post]
 func (ah *AuthHandler) CreateAgency(c *gin.Context) {
 	// Observação: tracing de request já é provido por TelemetryMiddleware; evitamos spans duplicados aqui.
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request
 	var request dto.CreateAgencyRequest
@@ -45,21 +45,21 @@ func (ah *AuthHandler) CreateAgency(c *gin.Context) {
 	// Create user model from DTO (using parsed dates)
 	user, err := ah.createUserFromDTO(request.Agency, bornAt, creciValidity)
 	if err != nil {
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
 		return
 	}
 
 	// Extract request context for security logging and session metadata
-	reqContext := utils.ExtractRequestContext(c)
+	reqContext := coreutils.ExtractRequestContext(c)
 
 	// Call service: cria a conta e autentica via SignIn padrão
 	tokens, err := ah.userService.CreateAgency(ctx, user, request.Agency.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)
 	if err != nil {
-		if derr, ok := err.(utils.DomainError); ok {
+		if derr, ok := err.(coreutils.DomainError); ok {
 			httperrors.SendHTTPErrorObj(c, derr)
 			return
 		}
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusConflict, "Failed to create agency"))
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPError(http.StatusConflict, "Failed to create agency"))
 		return
 	}
 

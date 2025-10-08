@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -18,6 +17,9 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 		return
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE users SET
 			full_name = ?, nick_name = ?, national_id = ?, creci_number = ?, creci_state = ?, creci_validity = ?,
@@ -50,7 +52,8 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 		entity.ID,
 	)
 	if err != nil {
-		slog.Error("mysqluseradapter/UpdateUserByID: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.update_user_by_id.update_error", "error", err)
 		return fmt.Errorf("update user by id: %w", err)
 	}
 

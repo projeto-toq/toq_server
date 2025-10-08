@@ -2,7 +2,6 @@ package permissionservice
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -12,27 +11,30 @@ func (p *permissionServiceImpl) RefreshUserPermissions(ctx context.Context, user
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if userID <= 0 {
 		return utils.BadRequest("invalid user id")
 	}
 
-	slog.Debug("permission.permissions.refresh.request", "user_id", userID)
+	logger.Debug("permission.permissions.refresh.request", "user_id", userID)
 
 	// Invalidar cache atual
 	if err := p.InvalidateUserCache(ctx, userID); err != nil {
-		slog.Warn("permission.permissions.refresh.invalidate_failed", "user_id", userID, "error", err)
+		logger.Warn("permission.permissions.refresh.invalidate_failed", "user_id", userID, "error", err)
 	}
 
 	// Buscar permissões atuais do banco e recriar cache
 	_, _, err := p.getUserPermissionsWithCache(ctx, userID)
 	if err != nil {
-		slog.Error("permission.permissions.refresh.db_or_cache_failed", "user_id", userID, "error", err)
+		logger.Error("permission.permissions.refresh.db_or_cache_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
 		p.observeCacheOperation("user_permissions_refresh", "error")
 		return utils.InternalError("")
 	}
 
-	slog.Info("permission.permissions.refreshed", "user_id", userID)
+	logger.Info("permission.permissions.refreshed", "user_id", userID)
 	p.observeCacheOperation("user_permissions_refresh", "success")
 	return nil
 }

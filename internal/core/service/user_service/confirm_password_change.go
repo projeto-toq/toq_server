@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -22,17 +21,20 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.confirm_password_change.tx_start_error", "err", txErr)
+		logger.Error("user.confirm_password_change.tx_start_error", "err", txErr)
 		utils.SetSpanError(ctx, txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.confirm_password_change.tx_rollback_error", "err", rbErr)
+				logger.Error("user.confirm_password_change.tx_rollback_error", "err", rbErr)
 				utils.SetSpanError(ctx, rbErr)
 			}
 		}
@@ -47,7 +49,7 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("user.confirm_password_change.tx_commit_error", "err", commitErr)
+		logger.Error("user.confirm_password_change.tx_commit_error", "err", commitErr)
 		utils.SetSpanError(ctx, commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
@@ -56,6 +58,8 @@ func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID str
 }
 
 func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, nationalID string, password string, code string) (err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	now := time.Now().UTC()
 
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
@@ -66,7 +70,7 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 		}
 		// Outros erros são infra
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_password_change.stage_error", "stage", "get_user_by_national_id", "err", err)
+		logger.Error("user.confirm_password_change.stage_error", "stage", "get_user_by_national_id", "err", err)
 		return utils.InternalError("Failed to get user")
 	}
 
@@ -79,7 +83,7 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 		}
 		// Infra
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_password_change.stage_error", "stage", "get_validations", "err", err)
+		logger.Error("user.confirm_password_change.stage_error", "stage", "get_validations", "err", err)
 		return utils.InternalError("Failed to get user validations")
 	}
 
@@ -110,7 +114,7 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_password_change.stage_error", "stage", "update_validations", "err", err)
+		logger.Error("user.confirm_password_change.stage_error", "stage", "update_validations", "err", err)
 		return utils.InternalError("Failed to update validations")
 	}
 
@@ -120,7 +124,7 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 		// Ignorar ausência de registros; tratar demais erros
 		if !errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
-			slog.Error("user.confirm_password_change.stage_error", "stage", "delete_wrong_signin", "err", err)
+			logger.Error("user.confirm_password_change.stage_error", "stage", "delete_wrong_signin", "err", err)
 			return utils.InternalError("Failed to cleanup wrong sign in attempts")
 		}
 	}
@@ -130,14 +134,14 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 	err = us.repo.UpdateUserPasswordByID(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_password_change.stage_error", "stage", "update_user_password", "err", err)
+		logger.Error("user.confirm_password_change.stage_error", "stage", "update_user_password", "err", err)
 		return utils.InternalError("Failed to update user password")
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Alterada a senha do usuário")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_password_change.stage_error", "stage", "audit", "err", err)
+		logger.Error("user.confirm_password_change.stage_error", "stage", "audit", "err", err)
 		return utils.InternalError("Failed to create audit")
 	}
 

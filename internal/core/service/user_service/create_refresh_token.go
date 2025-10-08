@@ -1,7 +1,7 @@
 package userservices
 
 import (
-	"log/slog"
+	"context"
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -13,6 +13,7 @@ import (
 )
 
 func (us *userService) CreateRefreshToken(expired bool, user usermodel.UserInterface, tokens *usermodel.Tokens, jti string) (err error) {
+	logger := utils.LoggerFromContext(context.Background())
 
 	var expires int64
 
@@ -54,7 +55,7 @@ func (us *userService) CreateRefreshToken(expired bool, user usermodel.UserInter
 	//assina o refresh token com a senha
 	refreshToken, err := token.SignedString([]byte(secret))
 	if err != nil {
-		slog.Error("user.create_refresh_token.sign_error", "err", err)
+		logger.Error("user.create_refresh_token.sign_error", "error", err)
 		return utils.InternalError("Failed to sign refresh token")
 	}
 

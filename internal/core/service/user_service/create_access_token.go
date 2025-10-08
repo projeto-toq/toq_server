@@ -1,7 +1,7 @@
 package userservices
 
 import (
-	"log/slog"
+	"context"
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -17,12 +17,13 @@ import (
 // mandatory for access tokens. If the user has no active role, a domain error
 // is returned and no token is issued.
 func (us *userService) CreateAccessToken(secret string, user usermodel.UserInterface, expires int64) (accessToken string, err error) {
+	logger := utils.LoggerFromContext(context.Background())
 	// Exigência: access token requer role ativa
 	activeRole := user.GetActiveRole()
 	if activeRole == nil {
 		// Estado inválido de domínio: usuário deve ter sempre uma role ativa
 		// Promover a log para Error e retornar 500 para facilitar detecção
-		slog.Error("cannot issue access token without active role", "user_id", user.GetID())
+		logger.Error("user.create_access_token.active_role_missing", "user_id", user.GetID())
 		return "", utils.InternalError("Active role missing unexpectedly")
 	}
 
@@ -46,7 +47,7 @@ func (us *userService) CreateAccessToken(secret string, user usermodel.UserInter
 
 	accessToken, err = token.SignedString([]byte(secret))
 	if err != nil {
-		slog.Error("Error trying to generate JWT access token", "err", err)
+		logger.Error("user.create_access_token.sign_error", "error", err)
 		return "", utils.InternalError("Failed to sign access token")
 	}
 

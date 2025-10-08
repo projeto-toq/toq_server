@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,30 +15,34 @@ func (la *ListingAdapter) GetListingCode(ctx context.Context, tx *sql.Tx) (code 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	sql := `UPDATE listing_sequence SET id=LAST_INSERT_ID(id+1);`
 
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
-		slog.Error("Error preparing statement on msqllistingadapter/GetListingCode", "error", err)
-		err = fmt.Errorf("prepare get listing code: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_listing_code.prepare_error", "error", err)
+		return 0, fmt.Errorf("prepare get listing code: %w", err)
 	}
+	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx)
 	if err != nil {
-		slog.Error("Error executing statement on msqllistingadapter/GetListingCode", "error", err)
-		err = fmt.Errorf("exec get listing code: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_listing_code.exec_error", "error", err)
+		return 0, fmt.Errorf("exec get listing code: %w", err)
 	}
 
 	code64, err := result.LastInsertId()
 	if err != nil {
-		slog.Error("Error getting last insert id on msqllistingadapter/GetListingCode", "error", err)
-		err = fmt.Errorf("last insert id for listing code: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_listing_code.last_insert_error", "error", err)
+		return 0, fmt.Errorf("last insert id for listing code: %w", err)
 	}
 
 	code = uint32(code64)
 
-	return
+	return code, nil
 }

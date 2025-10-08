@@ -3,18 +3,20 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
+	"fmt"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // DeactivateAllUserRoles desativa todos os roles de um usuário
 func (pa *PermissionAdapter) DeactivateAllUserRoles(ctx context.Context, tx *sql.Tx, userID int64) error {
-	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return err
 	}
 	defer spanEnd()
+
+	logger = logger.With("user_id", userID)
 
 	query := `
 		UPDATE user_roles
@@ -24,23 +26,26 @@ func (pa *PermissionAdapter) DeactivateAllUserRoles(ctx context.Context, tx *sql
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/DeactivateAllUserRoles: error preparing statement", "error", err)
-		return err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.deactivate_all_user_roles.prepare_error", "error", err)
+		return fmt.Errorf("prepare deactivate all user roles statement: %w", err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, userID)
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/DeactivateAllUserRoles: error executing update", "error", err)
-		return err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.deactivate_all_user_roles.exec_error", "error", err)
+		return fmt.Errorf("execute deactivate all user roles: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/DeactivateAllUserRoles: error getting rows affected", "error", err)
-		return err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.deactivate_all_user_roles.rows_affected_error", "error", err)
+		return fmt.Errorf("rows affected deactivate all user roles: %w", err)
 	}
 
-	slog.Debug("Deactivated user roles", "userID", userID, "rowsAffected", rowsAffected)
+	logger.Debug("mysql.permission.deactivate_all_user_roles.success", "rows_affected", rowsAffected)
 	return nil
 }

@@ -2,19 +2,18 @@ package authhandlers
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
-	"log/slog"
-
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
 	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
 )
@@ -39,12 +38,13 @@ const (
 // @Failure     500 {object} dto.ErrorResponse "Internal server error"
 // @Router      /auth/validate/cpf [post]
 func (ah *AuthHandler) ValidateCPF(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	logger := coreutils.LoggerFromContext(ctx)
 
 	rawBody, err := ah.readRequestBody(c)
 	if err != nil {
-		slog.Error("auth.validate_cpf.read_body_error", "err", err)
-		httperrors.SendHTTPErrorObj(c, utils.InternalError("Failed to process request body."))
+		logger.Error("auth.validate_cpf.read_body_error", "err", err)
+		httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Failed to process request body."))
 		return
 	}
 
@@ -54,13 +54,13 @@ func (ah *AuthHandler) ValidateCPF(c *gin.Context) {
 		return
 	}
 
-	if !ah.validateRequestSignature(c, rawBody, request.Timestamp, request.HMAC, request.NationalID, "cpf") {
+	if !ah.validateRequestSignature(c, ctx, rawBody, request.Timestamp, request.HMAC, request.NationalID, "cpf") {
 		return
 	}
 
 	bornAt, err := time.Parse(dateLayoutISO, request.BornAt)
 	if err != nil {
-		httperrors.SendHTTPErrorObj(c, utils.ValidationError("bornAt", "Invalid date format. Expected YYYY-MM-DD."))
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("bornAt", "Invalid date format. Expected YYYY-MM-DD."))
 		return
 	}
 
@@ -88,12 +88,13 @@ func (ah *AuthHandler) ValidateCPF(c *gin.Context) {
 // @Failure     500 {object} dto.ErrorResponse "Internal server error"
 // @Router      /auth/validate/cnpj [post]
 func (ah *AuthHandler) ValidateCNPJ(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	logger := coreutils.LoggerFromContext(ctx)
 
 	rawBody, err := ah.readRequestBody(c)
 	if err != nil {
-		slog.Error("auth.validate_cnpj.read_body_error", "err", err)
-		httperrors.SendHTTPErrorObj(c, utils.InternalError("Failed to process request body."))
+		logger.Error("auth.validate_cnpj.read_body_error", "err", err)
+		httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Failed to process request body."))
 		return
 	}
 
@@ -103,7 +104,7 @@ func (ah *AuthHandler) ValidateCNPJ(c *gin.Context) {
 		return
 	}
 
-	if !ah.validateRequestSignature(c, rawBody, request.Timestamp, request.HMAC, request.NationalID, "cnpj") {
+	if !ah.validateRequestSignature(c, ctx, rawBody, request.Timestamp, request.HMAC, request.NationalID, "cnpj") {
 		return
 	}
 
@@ -131,12 +132,13 @@ func (ah *AuthHandler) ValidateCNPJ(c *gin.Context) {
 // @Failure     500 {object} dto.ErrorResponse "Internal server error"
 // @Router      /auth/validate/cep [post]
 func (ah *AuthHandler) ValidateCEP(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	logger := coreutils.LoggerFromContext(ctx)
 
 	rawBody, err := ah.readRequestBody(c)
 	if err != nil {
-		slog.Error("auth.validate_cep.read_body_error", "err", err)
-		httperrors.SendHTTPErrorObj(c, utils.InternalError("Failed to process request body."))
+		logger.Error("auth.validate_cep.read_body_error", "err", err)
+		httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Failed to process request body."))
 		return
 	}
 
@@ -146,7 +148,7 @@ func (ah *AuthHandler) ValidateCEP(c *gin.Context) {
 		return
 	}
 
-	if !ah.validateRequestSignature(c, rawBody, request.Timestamp, request.HMAC, request.PostalCode, "cep") {
+	if !ah.validateRequestSignature(c, ctx, rawBody, request.Timestamp, request.HMAC, request.PostalCode, "cep") {
 		return
 	}
 
@@ -179,10 +181,11 @@ func (ah *AuthHandler) readRequestBody(c *gin.Context) ([]byte, error) {
 	return body, nil
 }
 
-func (ah *AuthHandler) validateRequestSignature(c *gin.Context, rawBody []byte, timestamp int64, signature string, identifier string, validationType string) bool {
+func (ah *AuthHandler) validateRequestSignature(c *gin.Context, ctx context.Context, rawBody []byte, timestamp int64, signature string, identifier string, validationType string) bool {
 	if ah.hmacValidator == nil {
-		slog.Error("auth.validate.signature.validator_missing")
-		httperrors.SendHTTPErrorObj(c, utils.InternalError("Signature validator not configured."))
+		logger := coreutils.LoggerFromContext(ctx)
+		logger.Error("auth.validate.signature.validator_missing")
+		httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Signature validator not configured."))
 		return false
 	}
 
@@ -196,8 +199,9 @@ func (ah *AuthHandler) validateRequestSignature(c *gin.Context, rawBody []byte, 
 		return true
 	}
 
-	reqCtx := utils.ExtractRequestContext(c)
-	slog.Warn("auth.validate.signature_failed",
+	reqCtx := coreutils.ExtractRequestContext(c)
+	logger := coreutils.LoggerFromContext(ctx)
+	logger.Warn("auth.validate.signature_failed",
 		"type", validationType,
 		"path", path,
 		"ip", reqCtx.IPAddress,
@@ -213,17 +217,17 @@ func (ah *AuthHandler) validateRequestSignature(c *gin.Context, rawBody []byte, 
 func mapSignatureError(err error) error {
 	switch {
 	case errors.Is(err, hmacauth.ErrTimestampMissing), errors.Is(err, hmacauth.ErrTimestampInvalid):
-		return utils.ValidationError("timestamp", "Invalid or missing request timestamp.")
+		return coreutils.ValidationError("timestamp", "Invalid or missing request timestamp.")
 	case errors.Is(err, hmacauth.ErrTimestampOutsideSkew):
-		return utils.NewHTTPError(http.StatusUnauthorized, "Request timestamp expired.")
+		return coreutils.NewHTTPError(http.StatusUnauthorized, "Request timestamp expired.")
 	case errors.Is(err, hmacauth.ErrSignatureRequired):
-		return utils.ValidationError("hmac", "Request signature is required.")
+		return coreutils.ValidationError("hmac", "Request signature is required.")
 	case errors.Is(err, hmacauth.ErrSignatureInvalid):
-		return utils.ValidationError("hmac", "Invalid request signature format.")
+		return coreutils.ValidationError("hmac", "Invalid request signature format.")
 	case errors.Is(err, hmacauth.ErrSignatureMismatch):
-		return utils.NewHTTPError(http.StatusUnauthorized, "Invalid request signature.")
+		return coreutils.NewHTTPError(http.StatusUnauthorized, "Invalid request signature.")
 	default:
-		return utils.InternalError("Failed to validate request signature.")
+		return coreutils.InternalError("Failed to validate request signature.")
 	}
 }
 

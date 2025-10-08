@@ -94,6 +94,7 @@ func setRootUserContext(c *gin.Context) {
 	ctx := context.WithValue(c.Request.Context(), globalmodel.TokenKey, infos)
 	ctx = context.WithValue(ctx, globalmodel.UserAgentKey, c.GetHeader("User-Agent"))
 	ctx = context.WithValue(ctx, globalmodel.ClientIPKey, c.ClientIP())
+	ctx = coreutils.ContextWithLogger(ctx)
 
 	c.Request = c.Request.WithContext(ctx)
 
@@ -109,6 +110,7 @@ func setUserContext(c *gin.Context, userInfo usermodel.UserInfos) {
 	ctx := context.WithValue(c.Request.Context(), globalmodel.TokenKey, userInfo)
 	ctx = context.WithValue(ctx, globalmodel.UserAgentKey, c.GetHeader("User-Agent"))
 	ctx = context.WithValue(ctx, globalmodel.ClientIPKey, c.ClientIP())
+	ctx = coreutils.ContextWithLogger(ctx)
 
 	c.Request = c.Request.WithContext(ctx)
 

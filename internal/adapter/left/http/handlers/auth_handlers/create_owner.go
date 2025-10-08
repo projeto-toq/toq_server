@@ -4,15 +4,13 @@ import (
 	"net/http"
 	"time"
 
-	"log/slog"
-
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // CreateOwner handles owner account creation (public endpoint)
@@ -31,7 +29,8 @@ import (
 //	@Router			/auth/owner [post]
 func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	// Observação: tracing de request já é provido por TelemetryMiddleware; evitamos spans duplicados aqui.
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	logger := coreutils.LoggerFromContext(ctx)
 
 	// Parse request
 	var request dto.CreateOwnerRequest
@@ -50,17 +49,17 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	// Create user model from DTO (using parsed dates)
 	user, err := ah.createUserFromDTO(request.Owner, bornAt, creciValidity)
 	if err != nil {
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPError(http.StatusUnprocessableEntity, "Validation failed"))
 		return
 	}
 
 	// Extract request context for security logging and session metadata
-	reqContext := utils.ExtractRequestContext(c)
+	reqContext := coreutils.ExtractRequestContext(c)
 
 	// Debug: rastrear valores de contexto antes de chamar o serviço
 	headerDeviceID := c.GetHeader("X-Device-Id")
 	ctxDeviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
-	slog.Debug("auth.create_owner.debug",
+	logger.Debug("auth.create_owner.debug",
 		"device_token", request.DeviceToken,
 		"ip", reqContext.IPAddress,
 		"user_agent", reqContext.UserAgent,
@@ -71,12 +70,12 @@ func (ah *AuthHandler) CreateOwner(c *gin.Context) {
 	// Call service: cria a conta e autentica via SignIn padrão
 	tokens, err := ah.userService.CreateOwner(ctx, user, request.Owner.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)
 	if err != nil {
-		if derr, ok := err.(utils.DomainError); ok {
+		if derr, ok := err.(coreutils.DomainError); ok {
 			httperrors.SendHTTPErrorObj(c, derr)
 			return
 		}
 		// Fallback: conflito genérico
-		httperrors.SendHTTPErrorObj(c, utils.NewHTTPError(http.StatusConflict, "Failed to create owner"))
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPError(http.StatusConflict, "Failed to create owner"))
 		return
 	}
 

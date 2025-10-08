@@ -5,9 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) DeleteRealtorByID(c *gin.Context) {
+	_ = coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	// Method not implemented in service layer yet
 	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "Method not implemented yet")
 }

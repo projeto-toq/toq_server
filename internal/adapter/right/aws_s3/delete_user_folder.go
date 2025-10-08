@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) DeleteUserFolder(ctx context.Context, userID int64) error {
@@ -17,23 +17,27 @@ func (s *S3Adapter) DeleteUserFolder(ctx context.Context, userID int64) error {
 		return errors.New("s3 admin client is nil")
 	}
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	prefix := fmt.Sprintf("%d/", userID)
-	slog.Info("starting efficient user folder deletion in S3", "userID", userID, "bucket", s.bucketName, "prefix", prefix)
+	logger.Info("adapter.s3.delete_user_folder.start", "user_id", userID, "bucket", s.bucketName, "prefix", prefix)
 
 	// 1. Listar todos os objetos do usuário
 	allObjects, err := s.listAllObjectsWithPrefix(ctx, prefix, userID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
 		return err
 	}
 
-	slog.Info("collected all objects for deletion", "userID", userID, "totalCount", len(allObjects))
+	logger.Info("adapter.s3.delete_user_folder.collected", "user_id", userID, "total_count", len(allObjects))
 
 	// 2. Deletar em lotes (S3 permite até 1000 objetos por batch)
 	if err := s.deleteObjectsInBatches(ctx, allObjects, userID); err != nil {
+		utils.SetSpanError(ctx, err)
 		return err
 	}
 
-	slog.Info("user folder completely deleted from S3", "userID", userID, "bucket", s.bucketName)
+	logger.Info("adapter.s3.delete_user_folder.success", "user_id", userID, "bucket", s.bucketName)
 	return nil
 }
 
@@ -41,7 +45,8 @@ func (s *S3Adapter) DeleteUserFolder(ctx context.Context, userID int64) error {
 func (s *S3Adapter) listAllObjectsWithPrefix(ctx context.Context, prefix string, userID int64) ([]string, error) {
 	var allObjects []string
 
-	slog.Debug("starting comprehensive object collection in S3", "userID", userID, "prefix", prefix)
+	logger := utils.LoggerFromContext(ctx)
+	logger.Debug("adapter.s3.delete_user_folder.list.start", "user_id", userID, "prefix", prefix)
 
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.bucketName),
@@ -53,35 +58,38 @@ func (s *S3Adapter) listAllObjectsWithPrefix(ctx context.Context, prefix string,
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
-			slog.Error("failed to list objects in S3", "userID", userID, "error", err)
+			utils.SetSpanError(ctx, err)
+			logger.Error("adapter.s3.delete_user_folder.list.error", "user_id", userID, "error", err)
 			return nil, err
 		}
 
 		for _, obj := range output.Contents {
 			if obj.Key != nil {
 				allObjects = append(allObjects, *obj.Key)
-				slog.Debug("object collected", "userID", userID, "object", *obj.Key, "size", obj.Size)
+				logger.Debug("adapter.s3.delete_user_folder.object_collected", "user_id", userID, "object", *obj.Key, "size", obj.Size)
 			}
 		}
 	}
 
-	slog.Debug("object collection completed", "userID", userID, "totalObjects", len(allObjects))
+	logger.Debug("adapter.s3.delete_user_folder.list.completed", "user_id", userID, "total_objects", len(allObjects))
 	return allObjects, nil
 }
 
 // deleteObjectsInBatches deleta objetos em lotes de até 1000 (limite do S3)
 func (s *S3Adapter) deleteObjectsInBatches(ctx context.Context, objects []string, userID int64) error {
 	if len(objects) == 0 {
-		slog.Info("no objects to delete", "userID", userID)
+		logger := utils.LoggerFromContext(ctx)
+		logger.Info("adapter.s3.delete_user_folder.no_objects", "user_id", userID)
 		return nil
 	}
 
+	logger := utils.LoggerFromContext(ctx)
 	const batchSize = 1000 // Limite máximo do S3 para delete em lote
 	const maxWorkers = 5
 
 	// Dividir em lotes
 	batches := s.chunkObjects(objects, batchSize)
-	slog.Debug("deletion batches created", "userID", userID, "batchCount", len(batches), "batchSize", batchSize)
+	logger.Debug("adapter.s3.delete_user_folder.batches_created", "user_id", userID, "batch_count", len(batches), "batch_size", batchSize)
 
 	// Canal para erros
 	errChan := make(chan error, len(batches))
@@ -100,14 +108,14 @@ func (s *S3Adapter) deleteObjectsInBatches(ctx context.Context, objects []string
 			semaphore <- struct{}{}
 			defer func() { <-semaphore }()
 
-			slog.Debug("starting batch deletion", "userID", userID, "batchIndex", batchIndex, "batchSize", len(objectBatch))
+			logger.Debug("adapter.s3.delete_user_folder.batch_start", "user_id", userID, "batch_index", batchIndex, "batch_size", len(objectBatch))
 
 			if err := s.deleteBatch(ctx, objectBatch, userID, batchIndex); err != nil {
 				errChan <- fmt.Errorf("batch %d failed: %w", batchIndex, err)
 				return
 			}
 
-			slog.Debug("batch deletion completed", "userID", userID, "batchIndex", batchIndex)
+			logger.Debug("adapter.s3.delete_user_folder.batch_completed", "user_id", userID, "batch_index", batchIndex)
 			errChan <- nil
 		}(i, batch)
 	}
@@ -121,12 +129,12 @@ func (s *S3Adapter) deleteObjectsInBatches(ctx context.Context, objects []string
 	// Verificar erros
 	for err := range errChan {
 		if err != nil {
-			slog.Error("parallel deletion failed", "userID", userID, "error", err)
+			logger.Error("adapter.s3.delete_user_folder.parallel_error", "user_id", userID, "error", err)
 			return err
 		}
 	}
 
-	slog.Debug("parallel deletion completed successfully", "userID", userID)
+	logger.Debug("adapter.s3.delete_user_folder.parallel_success", "user_id", userID)
 	return nil
 }
 
@@ -136,6 +144,7 @@ func (s *S3Adapter) deleteBatch(ctx context.Context, objects []string, userID in
 		return nil
 	}
 
+	logger := utils.LoggerFromContext(ctx)
 	// Converter para formato S3
 	var objectIdentifiers []types.ObjectIdentifier
 	for _, objKey := range objects {
@@ -155,19 +164,20 @@ func (s *S3Adapter) deleteBatch(ctx context.Context, objects []string, userID in
 
 	output, err := s.adminClient.DeleteObjects(ctx, input)
 	if err != nil {
-		slog.Error("failed to delete batch in S3", "userID", userID, "batchIndex", batchIndex, "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("adapter.s3.delete_user_folder.batch_error", "user_id", userID, "batch_index", batchIndex, "error", err)
 		return fmt.Errorf("failed to delete batch: %w", err)
 	}
 
 	// Verificar se houve erros em objetos específicos
 	if len(output.Errors) > 0 {
 		for _, deleteError := range output.Errors {
-			slog.Warn("failed to delete specific object", "userID", userID, "object", *deleteError.Key, "error", *deleteError.Message)
+			logger.Warn("adapter.s3.delete_user_folder.object_delete_error", "user_id", userID, "object", *deleteError.Key, "error", *deleteError.Message)
 		}
 		return fmt.Errorf("some objects failed to delete in batch %d", batchIndex)
 	}
 
-	slog.Debug("batch deleted successfully", "userID", userID, "batchIndex", batchIndex, "objectCount", len(objects))
+	logger.Debug("adapter.s3.delete_user_folder.batch_success", "user_id", userID, "batch_index", batchIndex, "object_count", len(objects))
 	return nil
 }
 

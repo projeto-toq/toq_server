@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // VerifyCreciDocuments confirms that the three CRECI documents exist in storage and moves the user to PendingManual.
@@ -26,7 +27,7 @@ type _ = dto.ErrorResponse
 //		@Router       /realtor/creci/verify [post]
 //		@Security     BearerAuth
 func (uh *UserHandler) VerifyCreciDocuments(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	if err := uh.userService.VerifyCreciDocuments(ctx); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

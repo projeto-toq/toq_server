@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,26 +45,29 @@ func (c *CEPAdapter) GetCep(ctx context.Context, cepToSearch string) (cepmodel.C
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	normalizedCEP := normalizeCEP(cepToSearch)
 	if len(normalizedCEP) != 8 {
-		slog.Warn("cep.validation.invalid_input", "input", maskCEP(cepToSearch))
+		logger.Warn("cep.validation.invalid_input", "input", maskCEP(cepToSearch))
 		return nil, cepport.ErrInvalid
 	}
 
 	req, err := c.newCEPRequest(ctx, normalizedCEP)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cep.validation.request_build_error", "err", err)
+		logger.Error("cep.validation.request_build_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to build CEP validation request: %w", cepport.ErrInfra, err)
 	}
 
 	maskedCEP := maskCEP(normalizedCEP)
-	slog.Debug("cep.validation.request", "cep", maskedCEP)
+	logger.Debug("cep.validation.request", "cep", maskedCEP)
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cep.validation.request_error", "err", err)
+		logger.Error("cep.validation.request_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to execute CEP validation request: %w", cepport.ErrInfra, err)
 	}
 	defer resp.Body.Close()
@@ -73,20 +75,20 @@ func (c *CEPAdapter) GetCep(ctx context.Context, cepToSearch string) (cepmodel.C
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cep.validation.read_body_error", "err", err)
+		logger.Error("cep.validation.read_body_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to read CEP validation response: %w", cepport.ErrInfra, err)
 	}
 
 	providerResp, err := decodeCEPResponse(body)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cep.validation.decode_error", "err", err)
+		logger.Error("cep.validation.decode_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to decode CEP validation response: %w", cepport.ErrInfra, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		providerErr := mapCEPProviderError(providerResp.Message, providerResp.Return, resp.StatusCode)
-		logProviderError(providerErr, "cep.validation.provider_http_error", resp.StatusCode)
+		logProviderError(ctx, providerErr, "cep.validation.provider_http_error", resp.StatusCode)
 		if isInfraError(providerErr) {
 			utils.SetSpanError(ctx, providerErr)
 		}
@@ -95,7 +97,7 @@ func (c *CEPAdapter) GetCep(ctx context.Context, cepToSearch string) (cepmodel.C
 
 	if !providerResp.Status || !strings.EqualFold(providerResp.Return, cepReturnOK) {
 		providerErr := mapCEPProviderError(providerResp.Message, providerResp.Return, http.StatusOK)
-		logProviderError(providerErr, "cep.validation.provider_error", 0)
+		logProviderError(ctx, providerErr, "cep.validation.provider_error", 0)
 		if isInfraError(providerErr) {
 			utils.SetSpanError(ctx, providerErr)
 		}
@@ -105,20 +107,20 @@ func (c *CEPAdapter) GetCep(ctx context.Context, cepToSearch string) (cepmodel.C
 	if providerResp.Result == nil {
 		err := fmt.Errorf("%w: cep provider returned empty result", cepport.ErrInfra)
 		utils.SetSpanError(ctx, err)
-		slog.Error("cep.validation.empty_result")
+		logger.Error("cep.validation.empty_result")
 		return nil, err
 	}
 
 	cepModel, err := ConvertCEPEntityToModel(*providerResp.Result)
 	if err != nil {
-		logConversionError(err)
+		logConversionError(ctx, err)
 		if isInfraError(err) {
 			utils.SetSpanError(ctx, err)
 		}
 		return nil, err
 	}
 
-	slog.Debug("cep.validation.success", "cep", maskedCEP, "consumed", providerResp.Consumed)
+	logger.Debug("cep.validation.success", "cep", maskedCEP, "consumed", providerResp.Consumed)
 	return cepModel, nil
 }
 
@@ -188,7 +190,7 @@ func mapCEPProviderError(message, returnField string, statusCode int) error {
 	}
 }
 
-func logProviderError(err error, event string, status int) {
+func logProviderError(ctx context.Context, err error, event string, status int) {
 	if err == nil {
 		return
 	}
@@ -198,21 +200,23 @@ func logProviderError(err error, event string, status int) {
 		attrs = append(attrs, "status_code", status)
 	}
 
+	logger := utils.LoggerFromContext(ctx)
 	if isInfraError(err) {
-		slog.Error(event, attrs...)
+		logger.Error(event, attrs...)
 		return
 	}
 
-	slog.Warn(event, attrs...)
+	logger.Warn(event, attrs...)
 }
 
-func logConversionError(err error) {
+func logConversionError(ctx context.Context, err error) {
+	logger := utils.LoggerFromContext(ctx)
 	if isInfraError(err) {
-		slog.Error("cep.validation.convert_error", "err", err)
+		logger.Error("cep.validation.convert_error", "err", err)
 		return
 	}
 
-	slog.Warn("cep.validation.convert_error", "err", err)
+	logger.Warn("cep.validation.convert_error", "err", err)
 }
 
 func isInfraError(err error) bool {

@@ -3,7 +3,6 @@ package sessionmysqladapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -15,22 +14,28 @@ func (sa *SessionAdapter) Create(ctx context.Context, tx *sql.Tx, query string, 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("sessionmysqladapter/Create: error preparing statement", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.create.prepare_error", "error", err)
 		return 0, err
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		slog.Error("sessionmysqladapter/Create: error executing statement", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.create.exec_error", "error", err)
 		return 0, err
 	}
 
 	id, err = result.LastInsertId()
 	if err != nil {
-		slog.Error("sessionmysqladapter/Create: error getting last insert ID", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.create.last_insert_error", "error", err)
 		return
 	}
 

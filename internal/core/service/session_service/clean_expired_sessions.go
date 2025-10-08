@@ -2,7 +2,6 @@ package sessionservice
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,6 +15,9 @@ func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, e
 	}
 	defer end()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Defensive limit to avoid huge deletes by mistake
 	if limit <= 0 || limit > 5000 {
 		limit = 5000
@@ -25,7 +27,7 @@ func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, e
 	tx, err := s.globalService.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("start_transaction_failed", "err", err)
+		logger.Error("start_transaction_failed", "err", err)
 		return 0, utils.InternalError("")
 	}
 
@@ -34,7 +36,7 @@ func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, e
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("rollback_transaction_failed", "err", rbErr)
+				logger.Error("rollback_transaction_failed", "err", rbErr)
 			}
 		}
 	}()
@@ -43,20 +45,20 @@ func (s *service) CleanExpiredSessions(ctx context.Context, limit int) (int64, e
 	deleted, err := s.repo.DeleteExpiredSessions(ctx, tx, limit)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("delete_expired_sessions_failed", "err", err)
+		logger.Error("delete_expired_sessions_failed", "err", err)
 		return 0, utils.InternalError("")
 	}
 
 	// Commit
 	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("commit_transaction_failed", "err", err)
+		logger.Error("commit_transaction_failed", "err", err)
 		return 0, utils.InternalError("")
 	}
 	committed = true
 
 	// Metrics best-effort
 	metricSessionCleanerDeleted.Add(float64(deleted))
-	slog.Debug("clean_expired_sessions_success", "deleted", deleted)
+	logger.Debug("clean_expired_sessions_success", "deleted", deleted)
 	return deleted, nil
 }

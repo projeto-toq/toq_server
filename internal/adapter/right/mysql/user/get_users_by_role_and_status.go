@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -20,6 +19,9 @@ func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Query joins users with roles and user_roles to filter by active role and status
 	query := `
         SELECT u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
@@ -32,7 +34,8 @@ func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, 
 
 	entities, qerr := ua.Read(ctx, tx, query, int(status), role)
 	if qerr != nil {
-		slog.Error("mysqluseradapter/GetUsersByRoleAndStatus: query error", "error", qerr, "role", role, "status", status)
+		utils.SetSpanError(ctx, qerr)
+		logger.Error("mysql.user.get_users_by_role.read_error", "error", qerr, "role", role, "status", status)
 		return nil, fmt.Errorf("get users by role and status read: %w", qerr)
 	}
 
@@ -44,7 +47,9 @@ func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, 
 	for _, e := range entities {
 		u, convErr := userconverters.UserEntityToDomain(e)
 		if convErr != nil {
-			return nil, convErr
+			utils.SetSpanError(ctx, convErr)
+			logger.Error("mysql.user.get_users_by_role.convert_error", "error", convErr)
+			return nil, fmt.Errorf("convert user entity: %w", convErr)
 		}
 		users = append(users, u)
 	}

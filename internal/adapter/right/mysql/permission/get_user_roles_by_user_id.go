@@ -9,10 +9,19 @@ import (
 	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetUserRolesByUserID busca todos os user_roles de um usuário
-func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error) {
+func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) (userRoles []permissionmodel.UserRoleInterface, err error) {
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer spanEnd()
+
+	logger = logger.With("user_id", userID)
+
 	query := `
 		SELECT id, user_id, role_id, is_active, status, expires_at
 		FROM user_roles 
@@ -22,13 +31,18 @@ func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.T
 
 	results, err := pa.Read(ctx, tx, query, userID)
 	if err != nil {
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.get_user_roles_by_user_id.read_error", "error", err)
+		return nil, fmt.Errorf("get user roles by user id read: %w", err)
 	}
 
-	userRoles := make([]permissionmodel.UserRoleInterface, 0, len(results))
-	for _, row := range results {
+	userRoles = make([]permissionmodel.UserRoleInterface, 0, len(results))
+	for index, row := range results {
 		if len(row) != 6 {
-			return nil, fmt.Errorf("unexpected number of columns: expected 6, got %d", len(row))
+			errColumns := fmt.Errorf("unexpected number of columns: expected 6, got %d", len(row))
+			utils.SetSpanError(ctx, errColumns)
+			logger.Error("mysql.permission.get_user_roles_by_user_id.columns_mismatch", "row_index", index, "error", errColumns)
+			return nil, errColumns
 		}
 
 		entity := &permissionentities.UserRoleEntity{
@@ -46,11 +60,17 @@ func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.T
 			}
 		}
 
-		userRole := permissionconverters.UserRoleEntityToDomain(entity)
+		userRole, convertErr := permissionconverters.UserRoleEntityToDomain(entity)
+		if convertErr != nil {
+			utils.SetSpanError(ctx, convertErr)
+			logger.Error("mysql.permission.get_user_roles_by_user_id.convert_error", "row_index", index, "error", convertErr)
+			return nil, fmt.Errorf("convert user role entity to domain: %w", convertErr)
+		}
 		if userRole != nil {
 			userRoles = append(userRoles, userRole)
 		}
 	}
 
+	logger.Debug("mysql.permission.get_user_roles_by_user_id.success", "count", len(userRoles))
 	return userRoles, nil
 }

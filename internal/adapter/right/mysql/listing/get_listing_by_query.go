@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	listingconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/converters"
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
@@ -20,13 +19,16 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	entityListing := listingentity.ListingEntity{}
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("Error preparing statement on msqllistingadapter/GetListingByQuery", "error", err)
-		err = fmt.Errorf("prepare get listing by query: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_listing_by_query.prepare_error", "error", err)
+		return nil, fmt.Errorf("prepare get listing by query: %w", err)
 	}
 	defer stmt.Close()
 
@@ -73,10 +75,11 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			err = sql.ErrNoRows
+			return nil, sql.ErrNoRows
 		} else {
-			slog.Error("Error scanning row on msqllistingadapter/GetListingByQuery", "error", err)
-			err = fmt.Errorf("scan listing by query: %w", err)
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.listing.get_listing_by_query.scan_error", "error", err)
+			return nil, fmt.Errorf("scan listing by query: %w", err)
 		}
 		return
 	}

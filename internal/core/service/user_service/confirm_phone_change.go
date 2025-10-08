@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -23,6 +22,9 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
@@ -33,14 +35,14 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.confirm_phone_change.tx_start_error", "err", txErr)
+		logger.Error("user.confirm_phone_change.tx_start_error", "err", txErr)
 		utils.SetSpanError(ctx, txErr)
 		return derrors.Infra("Failed to start transaction", txErr)
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.confirm_phone_change.tx_rollback_error", "err", rbErr)
+				logger.Error("user.confirm_phone_change.tx_rollback_error", "err", rbErr)
 			}
 		}
 	}()
@@ -64,7 +66,7 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err
 			return terr
 		}
 		// infra: logar e mapear
-		slog.Error("user.confirm_phone_change.apply_status_transition_error", "err", terr)
+		logger.Error("user.confirm_phone_change.apply_status_transition_error", "err", terr)
 		utils.SetSpanError(ctx, terr)
 		return derrors.Infra("Failed to apply status transition", terr)
 	} else {
@@ -72,7 +74,7 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("user.confirm_phone_change.tx_commit_error", "err", commitErr)
+		logger.Error("user.confirm_phone_change.tx_commit_error", "err", commitErr)
 		utils.SetSpanError(ctx, commitErr)
 		return derrors.Infra("Failed to commit transaction", commitErr)
 	}
@@ -81,6 +83,8 @@ func (us *userService) ConfirmPhoneChange(ctx context.Context, code string) (err
 }
 
 func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userID int64, code string) (err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	now := time.Now().UTC()
 
 	//read the user validation
@@ -91,7 +95,7 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 			return derrors.ErrPhoneChangeNotPending
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_phone_change.stage_error", "stage", "get_validations", "err", err)
+		logger.Error("user.confirm_phone_change.stage_error", "stage", "get_validations", "err", err)
 		return derrors.Infra("Failed to get user validations", err)
 	}
 
@@ -124,7 +128,7 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 	// Uniqueness check before setting
 	if exist, verr := us.repo.ExistsPhoneForAnotherUser(ctx, tx, userValidation.GetNewPhone(), userID); verr != nil {
 		utils.SetSpanError(ctx, verr)
-		slog.Error("user.confirm_phone_change.stage_error", "stage", "exists_phone_for_another_user", "err", verr)
+		logger.Error("user.confirm_phone_change.stage_error", "stage", "exists_phone_for_another_user", "err", verr)
 		return derrors.Infra("Failed to check phone uniqueness", verr)
 	} else if exist {
 		return derrors.ErrPhoneAlreadyInUse
@@ -139,7 +143,7 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_phone_change.stage_error", "stage", "update_validations", "err", err)
+		logger.Error("user.confirm_phone_change.stage_error", "stage", "update_validations", "err", err)
 		return derrors.Infra("Failed to update validations", err)
 	}
 
@@ -149,14 +153,14 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_phone_change.stage_error", "stage", "update_user", "err", err)
+		logger.Error("user.confirm_phone_change.stage_error", "stage", "update_user", "err", err)
 		return derrors.Infra("Failed to update user", err)
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Alterada o telefone do usuário")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_phone_change.stage_error", "stage", "audit", "err", err)
+		logger.Error("user.confirm_phone_change.stage_error", "stage", "audit", "err", err)
 		return derrors.Infra("Failed to create audit", err)
 	}
 

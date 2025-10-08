@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -31,22 +30,27 @@ type UpdateProfileInput struct {
 func (us *userService) UpdateProfile(ctx context.Context, in UpdateProfileInput) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
+		ctx = utils.ContextWithLogger(ctx)
+		utils.LoggerFromContext(ctx).Error("user.update_profile.tracer_error", "error", err)
 		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("user.update_profile.tx_start_error", "error", txErr)
+		logger.Error("user.update_profile.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.update_profile.tx_rollback_error", "error", rbErr)
+				logger.Error("user.update_profile.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -58,7 +62,7 @@ func (us *userService) UpdateProfile(ctx context.Context, in UpdateProfileInput)
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		utils.SetSpanError(ctx, commitErr)
-		slog.Error("user.update_profile.tx_commit_error", "error", commitErr)
+		logger.Error("user.update_profile.tx_commit_error", "error", commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -70,6 +74,9 @@ func (us *userService) updateProfile(
 	tx *sql.Tx,
 	in UpdateProfileInput,
 ) (err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Carrega o usuário antes de aplicar alterações
 	current, err := us.repo.GetUserByID(ctx, tx, in.UserID)
 	if err != nil {
@@ -77,7 +84,7 @@ func (us *userService) updateProfile(
 			return utils.NotFoundError("User")
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.update_profile.read_user_error", "error", err, "user_id", in.UserID)
+		logger.Error("user.update_profile.read_user_error", "error", err, "user_id", in.UserID)
 		return utils.InternalError("Failed to get user by ID")
 	}
 
@@ -122,14 +129,14 @@ func (us *userService) updateProfile(
 	err = us.repo.UpdateUserByID(ctx, tx, current)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.update_profile.update_user_error", "error", err, "user_id", in.UserID)
+		logger.Error("user.update_profile.update_user_error", "error", err, "user_id", in.UserID)
 		return utils.InternalError("Failed to update user")
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário atualizou o perfil")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.update_profile.audit_error", "error", err, "user_id", in.UserID)
+		logger.Error("user.update_profile.audit_error", "error", err, "user_id", in.UserID)
 		return utils.InternalError("Failed to create audit entry")
 	}
 

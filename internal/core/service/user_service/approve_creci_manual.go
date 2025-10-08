@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
@@ -20,6 +19,9 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Validate target status: allowed set is Active or one of the refused statuses
 	if !permissionmodel.IsManualApprovalTarget(target) {
 		return utils.ValidationError("status", "Invalid target status")
@@ -28,14 +30,14 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("admin.approve_creci.tx_start_error", "error", txErr)
+		logger.Error("admin.approve_creci.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("admin.approve_creci.tx_rollback_error", "error", rbErr)
+				logger.Error("admin.approve_creci.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -44,7 +46,7 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if aerr != nil {
 		utils.SetSpanError(ctx, aerr)
-		slog.Error("admin.approve_creci.get_active_role_error", "user_id", userID, "error", aerr)
+		logger.Error("admin.approve_creci.get_active_role_error", "user_id", userID, "error", aerr)
 		return utils.InternalError("Failed to get active role")
 	}
 	if activeRole == nil || activeRole.GetRole() == nil {
@@ -61,19 +63,19 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 			return utils.NotFoundError("Active role to update")
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("admin.approve_creci.update_status_error", "user_id", userID, "role", string(roleSlug), "status", target, "error", err)
+		logger.Error("admin.approve_creci.update_status_error", "user_id", userID, "role", string(roleSlug), "status", target, "error", err)
 		return utils.InternalError("Failed to update user role status")
 	}
 
 	if aerr := us.globalService.CreateAudit(ctx, tx, "user_roles", fmt.Sprintf("Admin manual review: set status to %s", target.String())); aerr != nil {
 		utils.SetSpanError(ctx, aerr)
-		slog.Error("admin.approve_creci.audit_error", "error", aerr)
+		logger.Error("admin.approve_creci.audit_error", "error", aerr)
 		return utils.InternalError("Failed to write audit log")
 	}
 
 	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		slog.Error("admin.approve_creci.tx_commit_error", "error", cmErr)
+		logger.Error("admin.approve_creci.tx_commit_error", "error", cmErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 

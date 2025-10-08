@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
@@ -18,19 +17,23 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 	}
 	defer spanEnd()
 
-	sql := `UPDATE listings SET
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	query := `UPDATE listings SET
 				user_id = ?, code = ?, version = ?, status = ?, zip_code = ?, street = ?, number = ?, complement = ?, neighborhood = ?, city = ?, state = ?,
 				type = ?, owner = ?, land_size = ?, corner = ?, non_buildable = ?, buildable = ?, delivered = ?, who_lives = ?, description = ?,
 				transaction = ?, sell_net = ?, rent_net = ?, condominium = ?, annual_tax = ?, annual_ground_rent = ?, exchange = ?, exchange_perc = ?,
 				installment = ?, financing = ?, visit = ?, tenant_name = ?, tenant_email = ?, tenant_phone = ?, accompanying = ?, deleted = ?
 			WHERE id = ?`
 
-	stmt, err := tx.PrepareContext(ctx, sql)
+	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqllistingadapter/UpdateListing: error preparing statement", "error", err)
-		err = fmt.Errorf("prepare update listing: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_listing.prepare_error", "error", err, "listing_id", listing.ID())
+		return fmt.Errorf("prepare update listing: %w", err)
 	}
+	defer stmt.Close()
 
 	_, err = stmt.ExecContext(ctx,
 		listing.UserID(), listing.Code(), listing.Version(), listing.Status(), listing.ZipCode(),
@@ -48,27 +51,35 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 		listing.TenantPhone(), listing.Accompanying(), listing.Deleted(),
 		listing.ID())
 	if err != nil {
-		slog.Error("mysqllistingadapter/UpdateListing: error executing statement", "error", err)
-		err = fmt.Errorf("exec update listing: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_listing.exec_error", "error", err, "listing_id", listing.ID())
+		return fmt.Errorf("exec update listing: %w", err)
 	}
 
 	err = la.UpdateExchangePlaces(ctx, tx, listing.ExchangePlaces())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_listing.exchange_places_error", "error", err, "listing_id", listing.ID())
+		return fmt.Errorf("update exchange places: %w", err)
 	}
 	err = la.UpdateFeatures(ctx, tx, listing.Features())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_listing.features_error", "error", err, "listing_id", listing.ID())
+		return fmt.Errorf("update features: %w", err)
 	}
 	err = la.UpdateGuarantees(ctx, tx, listing.Guarantees())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_listing.guarantees_error", "error", err, "listing_id", listing.ID())
+		return fmt.Errorf("update guarantees: %w", err)
 	}
 	err = la.UpdateFinancingBlockers(ctx, tx, listing.FinancingBlockers())
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_listing.financing_blockers_error", "error", err, "listing_id", listing.ID())
+		return fmt.Errorf("update financing blockers: %w", err)
 	}
 
-	return
+	return nil
 }

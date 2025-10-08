@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/events"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -18,9 +17,14 @@ import (
 func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
+		ctx = utils.ContextWithLogger(ctx)
+		utils.LoggerFromContext(ctx).Error("user.delete_account.tracer_error", "error", err)
 		return
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	// Resolve userID from context
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
@@ -31,14 +35,14 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("user.delete_account.tx_start_error", "error", txErr)
+		logger.Error("user.delete_account.tx_start_error", "error", txErr)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.delete_account.tx_rollback_error", "error", rbErr)
+				logger.Error("user.delete_account.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -47,7 +51,7 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.get_user_error", "error", err, "user_id", userID)
+		logger.Error("user.delete_account.get_user_error", "error", err, "user_id", userID)
 		return
 	}
 
@@ -55,14 +59,14 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	activeRole, arErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if arErr != nil {
 		utils.SetSpanError(ctx, arErr)
-		slog.Error("user.delete_account.get_active_role_error", "error", arErr, "user_id", userID)
+		logger.Error("user.delete_account.get_active_role_error", "error", arErr, "user_id", userID)
 		return tokens, utils.InternalError("")
 	}
 	if activeRole == nil || activeRole.GetRole() == nil {
 		// Inconsistência interna: por domínio, usuário deve ter role ativa
 		err = utils.InternalError("Active role missing unexpectedly")
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.active_role_missing", "user_id", userID)
+		logger.Error("user.delete_account.active_role_missing", "user_id", userID)
 		return tokens, err
 	}
 	user.SetActiveRole(activeRole)
@@ -71,13 +75,13 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	tokens, publishSessionsEvent, err = us.deleteAccount(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.delete_account_error", "error", err, "user_id", userID)
+		logger.Error("user.delete_account.delete_account_error", "error", err, "user_id", userID)
 		return
 	}
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.tx_commit_error", "error", err)
+		logger.Error("user.delete_account.tx_commit_error", "error", err)
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
@@ -89,12 +93,9 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 }
 
 func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (tokens usermodel.Tokens, publishSessionsEvent bool, err error) {
-	// user, err := us.repo.GetUserByID(ctx, tx, userId)
-	// if err != nil {
-	// 	utils.SetSpanError(ctx, err)
-	// 	slog.Error("user.delete_account.get_user_error", "error", err, "user_id", userId)
-	// 	return
-	// }
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	//delete the account dependencies
 	activeRole := user.GetActiveRole()
 	if activeRole != nil && activeRole.GetRole() != nil {
@@ -124,11 +125,11 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	// Revoke all active sessions for the user (security first)
 	if us.sessionRepo != nil {
 		if err2 := us.sessionRepo.RevokeSessionsByUserID(ctx, tx, user.GetID()); err2 != nil {
-			slog.Warn("user.delete_account.revoke_sessions_warning", "error", err2, "user_id", user.GetID())
+			logger.Warn("user.delete_account.revoke_sessions_warning", "error", err2, "user_id", user.GetID())
 		}
 		if err2 := us.sessionRepo.DeleteSessionsByUserID(ctx, tx, user.GetID()); err2 != nil {
 			utils.SetSpanError(ctx, err2)
-			slog.Error("user.delete_account.delete_sessions_error", "error", err2, "user_id", user.GetID())
+			logger.Error("user.delete_account.delete_sessions_error", "error", err2, "user_id", user.GetID())
 			return tokens, publishSessionsEvent, utils.InternalError("Failed to delete user sessions")
 		}
 		publishSessionsEvent = true
@@ -136,7 +137,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 
 	// Remove all device tokens
 	if err2 := us.repo.RemoveAllDeviceTokens(ctx, tx, user.GetID()); err2 != nil {
-		slog.Warn("user.delete_account.remove_device_tokens_warning", "error", err2, "user_id", user.GetID())
+		logger.Warn("user.delete_account.remove_device_tokens_warning", "error", err2, "user_id", user.GetID())
 	}
 
 	us.setDeletedData(user)
@@ -144,21 +145,21 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.update_user_error", "error", err, "user_id", user.GetID())
+		logger.Error("user.delete_account.update_user_error", "error", err, "user_id", user.GetID())
 		return
 	}
 
 	err = us.repo.UpdateUserPasswordByID(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.update_password_error", "error", err, "user_id", user.GetID())
+		logger.Error("user.delete_account.update_password_error", "error", err, "user_id", user.GetID())
 		return
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Mascarado dados do usuário (conta apagada)")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.audit_users_error", "error", err, "user_id", user.GetID())
+		logger.Error("user.delete_account.audit_users_error", "error", err, "user_id", user.GetID())
 		return
 	}
 
@@ -167,7 +168,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 		folderErr := us.DeleteUserFolder(ctx, user.GetID())
 		if folderErr != nil {
 			// Best-effort: already marked on span inside DeleteUserFolder; just warn here
-			slog.Warn("user.delete_account.delete_user_folder_warning", "error", folderErr, "user_id", user.GetID())
+			logger.Warn("user.delete_account.delete_user_folder_warning", "error", folderErr, "user_id", user.GetID())
 		}
 	}
 
@@ -175,7 +176,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, user.GetID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.get_user_roles_error", "error", err, "user_id", user.GetID())
+		logger.Error("user.delete_account.get_user_roles_error", "error", err, "user_id", user.GetID())
 		return
 	}
 
@@ -184,7 +185,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 			err = us.permissionService.RemoveRoleFromUserWithTx(ctx, tx, user.GetID(), userRole.GetRole().GetID())
 			if err != nil {
 				utils.SetSpanError(ctx, err)
-				slog.Error("user.delete_account.remove_role_error", "error", err, "user_id", user.GetID(), "role_id", userRole.GetRole().GetID())
+				logger.Error("user.delete_account.remove_role_error", "error", err, "user_id", user.GetID(), "role_id", userRole.GetRole().GetID())
 				return
 			}
 		}
@@ -193,7 +194,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Apagados os papéis do usuário, pois a conta foi apagada")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.delete_account.audit_user_roles_error", "error", err, "user_id", user.GetID())
+		logger.Error("user.delete_account.audit_user_roles_error", "error", err, "user_id", user.GetID())
 		return
 	}
 

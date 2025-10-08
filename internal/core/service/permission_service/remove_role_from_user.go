@@ -3,7 +3,6 @@ package permissionservice
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -14,6 +13,9 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if userID <= 0 {
 		return utils.BadRequest("invalid user id")
 	}
@@ -22,18 +24,18 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 		return utils.BadRequest("invalid role id")
 	}
 
-	slog.Debug("permission.role.remove.start", "user_id", userID, "role_id", roleID)
+	logger.Debug("permission.role.remove.start", "user_id", userID, "role_id", roleID)
 
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("permission.role.remove.tx_start_failed", "user_id", userID, "role_id", roleID, "error", err)
+		logger.Error("permission.role.remove.tx_start_failed", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("permission.role.remove.tx_rollback_failed", "user_id", userID, "role_id", roleID, "error", rbErr)
+				logger.Error("permission.role.remove.tx_rollback_failed", "user_id", userID, "role_id", roleID, "error", rbErr)
 				utils.SetSpanError(ctx, rbErr)
 			}
 		}
@@ -44,7 +46,7 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 	}
 
 	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
-		slog.Error("permission.role.remove.tx_commit_failed", "user_id", userID, "role_id", roleID, "error", err)
+		logger.Error("permission.role.remove.tx_commit_failed", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
@@ -54,6 +56,8 @@ func (p *permissionServiceImpl) RemoveRoleFromUser(ctx context.Context, userID, 
 
 // RemoveRoleFromUserWithTx remove um role de um usuário usando uma transação existente
 func (p *permissionServiceImpl) RemoveRoleFromUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	if userID <= 0 {
 		return utils.BadRequest("invalid user id")
 	}
@@ -62,12 +66,12 @@ func (p *permissionServiceImpl) RemoveRoleFromUserWithTx(ctx context.Context, tx
 		return utils.BadRequest("invalid role id")
 	}
 
-	slog.Debug("permission.role.remove.start.tx", "user_id", userID, "role_id", roleID)
+	logger.Debug("permission.role.remove.start.tx", "user_id", userID, "role_id", roleID)
 
 	// Buscar o UserRole existente
 	userRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, tx, userID, roleID)
 	if err != nil {
-		slog.Error("permission.role.get_user_role_failed", "user_id", userID, "role_id", roleID, "error", err)
+		logger.Error("permission.role.get_user_role_failed", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
@@ -78,12 +82,12 @@ func (p *permissionServiceImpl) RemoveRoleFromUserWithTx(ctx context.Context, tx
 	// Remover o UserRole
 	err = p.permissionRepository.DeleteUserRole(ctx, tx, userRole.GetID())
 	if err != nil {
-		slog.Error("permission.role.delete_user_role_failed", "user_id", userID, "role_id", roleID, "user_role_id", userRole.GetID(), "error", err)
+		logger.Error("permission.role.delete_user_role_failed", "user_id", userID, "role_id", roleID, "user_role_id", userRole.GetID(), "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 
-	slog.Info("permission.role.removed", "user_id", userID, "role_id", roleID)
+	logger.Info("permission.role.removed", "user_id", userID, "role_id", roleID)
 	p.invalidateUserCacheSafe(ctx, userID, "remove_role_from_user")
 	return nil
 }

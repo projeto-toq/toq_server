@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	complexrepoconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex/converters"
 	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
@@ -18,22 +17,31 @@ func (ca *ComplexAdapter) GetComplexTowers(ctx context.Context, tx *sql.Tx, comp
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT * FROM complex_towers WHERE complex_id = ?;`
 
 	entities, err := ca.Read(ctx, tx, query, complexID)
 	if err != nil {
-		slog.Error("mysqlcomplexadapter/GetComplexTowers: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.get_towers.read_error", "error", err, "complex_id", complexID)
 		return nil, fmt.Errorf("get complex towers read: %w", err)
 	}
 
 	if len(entities) == 0 {
-		return nil, sql.ErrNoRows
+		err = sql.ErrNoRows
+		utils.SetSpanError(ctx, err)
+		logger.Warn("mysql.complex.get_towers.not_found", "complex_id", complexID)
+		return nil, err
 	}
 
 	for _, entity := range entities {
-		complexTower, err := complexrepoconverters.ComplexTowerEntityToDomain(entity)
-		if err != nil {
-			return nil, fmt.Errorf("convert complex tower entity: %w", err)
+		complexTower, errConv := complexrepoconverters.ComplexTowerEntityToDomain(entity)
+		if errConv != nil {
+			utils.SetSpanError(ctx, errConv)
+			logger.Error("mysql.complex.get_towers.convert_error", "error", errConv, "complex_id", complexID)
+			return nil, fmt.Errorf("convert complex tower entity: %w", errConv)
 		}
 
 		complexTowers = append(complexTowers, complexTower)

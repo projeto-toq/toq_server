@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -19,6 +18,9 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
@@ -29,14 +31,14 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("user.switch_role.tx_start_error", "error", txErr)
+		logger.Error("user.switch_role.tx_start_error", "error", txErr)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.switch_role.tx_rollback_error", "error", rbErr)
+				logger.Error("user.switch_role.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -48,7 +50,7 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		utils.SetSpanError(ctx, commitErr)
-		slog.Error("user.switch_role.tx_commit_error", "error", commitErr)
+		logger.Error("user.switch_role.tx_commit_error", "error", commitErr)
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
@@ -56,11 +58,13 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 }
 
 func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID int64, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	// Verificar se o usuário tem múltiplos roles usando permission service
 	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.switch_role.get_user_roles_error", "error", err, "user_id", userID)
+		logger.Error("user.switch_role.get_user_roles_error", "error", err, "user_id", userID)
 		return
 	}
 
@@ -91,7 +95,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	role, roleErr := us.permissionService.GetRoleBySlugWithTx(ctx, tx, roleSlug)
 	if roleErr != nil {
 		utils.SetSpanError(ctx, roleErr)
-		slog.Error("user.switch_role.get_role_error", "error", roleErr, "role_slug", roleSlug)
+		logger.Error("user.switch_role.get_role_error", "error", roleErr, "role_slug", roleSlug)
 		err = roleErr
 		return
 	}
@@ -99,7 +103,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	err = us.permissionService.SwitchActiveRoleWithTx(ctx, tx, userID, role.GetID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.switch_role.switch_active_role_error", "error", err, "user_id", userID, "role_id", role.GetID())
+		logger.Error("user.switch_role.switch_active_role_error", "error", err, "user_id", userID, "role_id", role.GetID())
 		return
 	}
 
@@ -107,7 +111,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.switch_role.get_user_error", "error", err, "user_id", userID)
+		logger.Error("user.switch_role.get_user_error", "error", err, "user_id", userID)
 		return
 	}
 
@@ -115,7 +119,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	tokens, err = us.CreateTokens(ctx, tx, user, false)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.switch_role.create_tokens_error", "error", err, "user_id", userID)
+		logger.Error("user.switch_role.create_tokens_error", "error", err, "user_id", userID)
 		return
 	}
 

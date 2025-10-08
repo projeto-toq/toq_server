@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/google/uuid"
 )
 
@@ -29,10 +29,10 @@ import (
 //	@Router			/auth/signin [post]
 func (ah *AuthHandler) SignIn(c *gin.Context) {
 	// Observação: tracing de request já é provido por TelemetryMiddleware; evitamos spans duplicados aqui.
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Extract request context for security logging
-	reqContext := utils.ExtractRequestContext(c)
+	reqContext := coreutils.ExtractRequestContext(c)
 
 	// Parse request
 	var request dto.SignInRequest
@@ -57,7 +57,7 @@ func (ah *AuthHandler) SignIn(c *gin.Context) {
 	// Call service with enhanced context
 	tokens, err := ah.userService.SignInWithContext(ctx, request.NationalID, request.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)
 	if err != nil {
-		if derr, ok := err.(utils.DomainError); ok {
+		if derr, ok := err.(coreutils.DomainError); ok {
 			switch derr.Code() {
 			case http.StatusUnauthorized:
 				httperrors.SendHTTPError(c, http.StatusUnauthorized, "INVALID_CREDENTIALS", "Invalid credentials")

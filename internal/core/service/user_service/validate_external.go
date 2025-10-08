@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -17,9 +16,12 @@ func (us *userService) ValidateCPF(ctx context.Context, nationalID string, bornA
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if us.cpf == nil {
 		err := fmt.Errorf("cpf adapter not configured")
-		slog.Error("user.validate_cpf.adapter_missing", "err", err)
+		logger.Error("user.validate_cpf.adapter_missing", "err", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("CPF validation service unavailable")
 	}
@@ -47,9 +49,12 @@ func (us *userService) ValidateCNPJ(ctx context.Context, nationalID string) erro
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if us.cnpj == nil {
 		err := fmt.Errorf("cnpj adapter not configured")
-		slog.Error("user.validate_cnpj.adapter_missing", "err", err)
+		logger.Error("user.validate_cnpj.adapter_missing", "err", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("CNPJ validation service unavailable")
 	}

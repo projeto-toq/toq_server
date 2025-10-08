@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -21,17 +20,20 @@ func (us *userService) RejectInvitation(ctx context.Context, realtorID int64) (e
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.tx_start_error", "error", err)
+		logger.Error("user.reject_invitation.tx_start_error", "error", err)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.reject_invitation.tx_rollback_error", "error", rbErr)
+				logger.Error("user.reject_invitation.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -44,7 +46,7 @@ func (us *userService) RejectInvitation(ctx context.Context, realtorID int64) (e
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.tx_commit_error", "error", err)
+		logger.Error("user.reject_invitation.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -52,11 +54,13 @@ func (us *userService) RejectInvitation(ctx context.Context, realtorID int64) (e
 }
 
 func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID int64) (err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	//recover the realtor
 	realtor, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.read_realtor_error", "error", err, "realtor_id", userID)
+		logger.Error("user.reject_invitation.read_realtor_error", "error", err, "realtor_id", userID)
 		return
 	}
 
@@ -67,7 +71,7 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 			return utils.NotFoundError("Invitation")
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.read_invite_error", "error", err, "phone", realtor.GetPhoneNumber())
+		logger.Error("user.reject_invitation.read_invite_error", "error", err, "phone", realtor.GetPhoneNumber())
 		return utils.InternalError("Failed to get invitation")
 	}
 
@@ -75,7 +79,7 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 	agency, err := us.repo.GetUserByID(ctx, tx, invite.GetAgencyID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.read_agency_error", "error", err, "agency_id", invite.GetAgencyID())
+		logger.Error("user.reject_invitation.read_agency_error", "error", err, "agency_id", invite.GetAgencyID())
 		return
 	}
 
@@ -83,7 +87,7 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 	_, err = us.repo.DeleteInviteByID(ctx, tx, invite.GetID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.delete_invite_error", "error", err, "invite_id", invite.GetID())
+		logger.Error("user.reject_invitation.delete_invite_error", "error", err, "invite_id", invite.GetID())
 		return
 	}
 
@@ -110,21 +114,21 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 	err = notificationService.SendNotification(ctx, emailRequest)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.send_notification_error", "error", err)
+		logger.Error("user.reject_invitation.send_notification_error", "error", err)
 		return
 	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, realtor)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.update_realtor_error", "error", err, "realtor_id", realtor.GetID())
+		logger.Error("user.reject_invitation.update_realtor_error", "error", err, "realtor_id", realtor.GetID())
 		return
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableAgencyInvites, "Convite para relacionamento com imobiliária rejeitado")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.reject_invitation.audit_error", "error", err)
+		logger.Error("user.reject_invitation.audit_error", "error", err)
 		return
 	}
 

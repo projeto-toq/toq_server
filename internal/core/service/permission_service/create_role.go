@@ -2,7 +2,6 @@ package permissionservice
 
 import (
 	"context"
-	"log/slog"
 	"strings"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -15,6 +14,9 @@ func (p *permissionServiceImpl) CreateRole(ctx context.Context, name string, slu
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if strings.TrimSpace(name) == "" {
 		return nil, utils.ValidationError("name", "role name cannot be empty")
 	}
@@ -23,22 +25,22 @@ func (p *permissionServiceImpl) CreateRole(ctx context.Context, name string, slu
 		return nil, utils.ValidationError("slug", "invalid role slug")
 	}
 
-	slog.Debug("permission.role.create.start", "name", name, "slug", slug, "is_system_role", isSystemRole)
+	logger.Debug("permission.role.create.start", "name", name, "slug", slug, "is_system_role", isSystemRole)
 
 	// Verificar se o slug já existe (read-only tx)
 	tx, err := p.globalService.StartReadOnlyTransaction(ctx)
 	if err != nil {
-		slog.Error("permission.role.tx_ro_start_failed", "slug", slug, "error", err)
+		logger.Error("permission.role.tx_ro_start_failed", "slug", slug, "error", err)
 		return nil, utils.InternalError("")
 	}
 	existingRole, getErr := p.permissionRepository.GetRoleBySlug(ctx, tx, slug.String())
 	if getErr != nil {
-		slog.Error("permission.role.get_by_slug_failed", "slug", slug, "error", getErr)
+		logger.Error("permission.role.get_by_slug_failed", "slug", slug, "error", getErr)
 		_ = p.globalService.RollbackTransaction(ctx, tx)
 		return nil, utils.InternalError("")
 	}
 	if cerr := p.globalService.CommitTransaction(ctx, tx); cerr != nil {
-		slog.Error("permission.role.tx_ro_commit_failed", "slug", slug, "error", cerr)
+		logger.Error("permission.role.tx_ro_commit_failed", "slug", slug, "error", cerr)
 		return nil, utils.InternalError("")
 	}
 	if existingRole != nil {
@@ -56,18 +58,18 @@ func (p *permissionServiceImpl) CreateRole(ctx context.Context, name string, slu
 	// Salvar no banco (tx de escrita)
 	wtx, werr := p.globalService.StartTransaction(ctx)
 	if werr != nil {
-		slog.Error("permission.role.tx_start_failed", "slug", slug, "error", werr)
+		logger.Error("permission.role.tx_start_failed", "slug", slug, "error", werr)
 		return nil, utils.InternalError("")
 	}
 	if err = p.permissionRepository.CreateRole(ctx, wtx, newRole); err != nil {
-		slog.Error("permission.role.create_failed", "slug", slug, "error", err)
+		logger.Error("permission.role.create_failed", "slug", slug, "error", err)
 		return nil, utils.InternalError("")
 	}
 	if cerr := p.globalService.CommitTransaction(ctx, wtx); cerr != nil {
-		slog.Error("permission.role.tx_commit_failed", "slug", slug, "error", cerr)
+		logger.Error("permission.role.tx_commit_failed", "slug", slug, "error", cerr)
 		return nil, utils.InternalError("")
 	}
 
-	slog.Info("permission.role.created", "role_id", newRole.GetID(), "slug", slug, "is_system_role", isSystemRole)
+	logger.Info("permission.role.created", "role_id", newRole.GetID(), "slug", slug, "is_system_role", isSystemRole)
 	return newRole, nil
 }

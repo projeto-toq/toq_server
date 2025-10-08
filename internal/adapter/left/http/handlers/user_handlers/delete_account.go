@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // DeleteAccount deletes the authenticated user's account
@@ -22,7 +23,7 @@ import (
 //	@Router       /user/account [delete]
 //	@Security     BearerAuth
 func (uh *UserHandler) DeleteAccount(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Call service to delete account
 	tokens, err := uh.userService.DeleteAccount(ctx)

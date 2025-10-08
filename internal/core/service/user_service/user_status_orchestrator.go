@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 
 	derrors "github.com/giulio-alfieri/toq_server/internal/core/derrors"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
@@ -39,6 +38,8 @@ func decideNextStatusAfterContactChange(role permissionmodel.RoleSlug, emailPend
 // applyStatusTransitionAfterContactChange loads user and validations, then applies the target status
 // based on pending contact factors and active role. Runs inside the provided transaction.
 func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Context, tx *sql.Tx, emailJustConfirmed bool) (permissionmodel.UserRoleStatus, bool, error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	// Carregar usuário e papel ativo
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
@@ -67,7 +68,7 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 		} else {
 			// Outros erros são infraestrutura
 			utils.SetSpanError(ctx, err)
-			slog.Error("user.status_transition.stage_error", "stage", "get_validations", "error", err)
+			logger.Error("user.status_transition.stage_error", "stage", "get_validations", "error", err)
 			return 0, false, err
 		}
 	} else {
@@ -93,12 +94,12 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 			return 0, false, derrors.ErrUserActiveRoleMissing
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.status_transition.stage_error", "stage", "update_role_status", "error", err)
+		logger.Error("user.status_transition.stage_error", "stage", "update_role_status", "error", err)
 		return 0, false, err // infra
 	}
 	if err := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Atualização de status após alteração de contato"); err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.status_transition.stage_error", "stage", "audit", "error", err)
+		logger.Error("user.status_transition.stage_error", "stage", "audit", "error", err)
 		return 0, false, err // infra
 	}
 

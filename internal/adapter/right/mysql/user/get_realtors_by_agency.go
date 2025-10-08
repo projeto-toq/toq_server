@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
@@ -19,11 +18,15 @@ func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agen
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT realtor_id from realtors_agency WHERE agency_id = ?;`
 
 	entities, err := ua.Read(ctx, tx, query, agencyID)
 	if err != nil {
-		slog.Error("mysqluseradapter/GetRealtorsByAgency: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_realtors_by_agency.read_error", "error", err)
 		return nil, fmt.Errorf("get realtors by agency read: %w", err)
 	}
 
@@ -34,12 +37,16 @@ func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agen
 	for _, entity := range entities {
 		id, ok := entity[0].(int64)
 		if !ok {
-			slog.Error("mysqluseradapter/GetRealtorsByAgency: error converting ID to int64", "value", entity[0])
-			return nil, fmt.Errorf("get realtors by agency: invalid id type %T", entity[0])
+			errInvalid := fmt.Errorf("get realtors by agency: invalid id type %T", entity[0])
+			utils.SetSpanError(ctx, errInvalid)
+			logger.Error("mysql.user.get_realtors_by_agency.invalid_id_type", "value", entity[0], "error", errInvalid)
+			return nil, errInvalid
 		}
 		user, err1 := ua.GetUserByID(ctx, tx, id)
 		if err1 != nil {
-			return nil, err1
+			utils.SetSpanError(ctx, err1)
+			logger.Error("mysql.user.get_realtors_by_agency.get_user_error", "user_id", id, "error", err1)
+			return nil, fmt.Errorf("get realtor by id: %w", err1)
 		}
 
 		users = append(users, user)

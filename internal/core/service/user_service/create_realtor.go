@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
@@ -19,16 +18,19 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("user.create_realtor.tx_start_error", "err", err)
+		logger.Error("user.create_realtor.tx_start_error", "err", err)
 		utils.SetSpanError(ctx, err)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.create_realtor.tx_rollback_error", "err", rbErr)
+				logger.Error("user.create_realtor.tx_rollback_error", "err", rbErr)
 				utils.SetSpanError(ctx, rbErr)
 			}
 		}
@@ -41,7 +43,7 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("user.create_realtor.tx_commit_error", "err", err)
+		logger.Error("user.create_realtor.tx_commit_error", "err", err)
 		utils.SetSpanError(ctx, err)
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
@@ -53,6 +55,7 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 
 // createRealtor cria o usuário corretor e retorna o usuário criado
 func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor usermodel.UserInterface) (created usermodel.UserInterface, err error) {
+	ctx = utils.ContextWithLogger(ctx)
 
 	// Usar permission service diretamente para buscar role
 	role, err := us.permissionService.GetRoleBySlugWithTx(ctx, tx, permissionmodel.RoleSlugRealtor)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -21,6 +20,8 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+
 	// Obter o ID do usuário a partir do contexto
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
@@ -30,14 +31,14 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
-		slog.Error("user.confirm_email_change.tx_start_error", "err", txErr)
+		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.tx_start_error", "err", txErr)
 		utils.SetSpanError(ctx, txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("user.confirm_email_change.tx_rollback_error", "err", rbErr)
+				utils.LoggerFromContext(ctx).Error("user.confirm_email_change.tx_rollback_error", "err", rbErr)
 				utils.SetSpanError(ctx, rbErr)
 			}
 		}
@@ -56,7 +57,7 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
-		slog.Error("user.confirm_email_change.tx_commit_error", "err", commitErr)
+		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.tx_commit_error", "err", commitErr)
 		utils.SetSpanError(ctx, commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
@@ -79,7 +80,7 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 		}
 		// Outros erros são infraestrutura
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_email_change.stage_error", "stage", "get_validations", "err", err)
+		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "get_validations", "err", err)
 		return utils.InternalError("Failed to get user validations")
 	}
 
@@ -110,7 +111,7 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	// Verificar se o novo e-mail já está sendo utilizado por outro usuário
 	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, userValidation.GetNewEmail(), userID); verr != nil {
 		utils.SetSpanError(ctx, verr)
-		slog.Error("user.confirm_email_change.stage_error", "stage", "exists_email_for_another_user", "err", verr)
+		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "exists_email_for_another_user", "err", verr)
 		return utils.InternalError("Failed to check email uniqueness")
 	} else if exist {
 		return utils.ErrEmailAlreadyInUse
@@ -126,21 +127,21 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_email_change.stage_error", "stage", "update_validations", "err", err)
+		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "update_validations", "err", err)
 		return utils.InternalError("Failed to update validations")
 	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_email_change.stage_error", "stage", "update_user", "err", err)
+		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "update_user", "err", err)
 		return utils.InternalError("Failed to update user")
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "email do usuário alterado")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.confirm_email_change.stage_error", "stage", "audit", "err", err)
+		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "audit", "err", err)
 		return utils.InternalError("Failed to create audit")
 	}
 	return

@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	"log/slog"
 	"time"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/events"
@@ -20,11 +19,12 @@ import (
 
 func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error) {
 	// Método interno: não iniciar novo tracer; reutilizar ctx
+	ctx = utils.ContextWithLogger(ctx)
 
 	tokens = usermodel.Tokens{}
 
 	if tx == nil {
-		slog.Error("user.create_tokens.tx_nil")
+		utils.LoggerFromContext(ctx).Error("user.create_tokens.tx_nil")
 		return tokens, utils.InternalError("Transaction is nil")
 	}
 
@@ -84,7 +84,7 @@ func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermo
 		// DeviceID placeholder: can be provided via metadata in future
 		if err := us.sessionRepo.CreateSession(ctx, tx, s); err != nil {
 			// Persistência de sessão é infra; logar WARN e seguir (não falha emissão de tokens)
-			slog.Warn("user.create_tokens.persist_session_failed", "err", err)
+			utils.LoggerFromContext(ctx).Warn("user.create_tokens.persist_session_failed", "err", err)
 		} else {
 			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionCreated, UserID: s.GetUserID(), SessionID: ptrInt64(s.GetID()), DeviceID: s.GetDeviceID()})
 		}

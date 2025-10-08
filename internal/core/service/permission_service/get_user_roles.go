@@ -3,7 +3,6 @@ package permissionservice
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -14,6 +13,9 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if userID <= 0 {
 		return nil, utils.BadRequest("invalid user id")
 	}
@@ -21,14 +23,14 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("permission.user_roles.tx_start_failed", "user_id", userID, "error", err)
+		logger.Error("permission.user_roles.tx_start_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("permission.user_roles.tx_rollback_failed", "user_id", userID, "error", rbErr)
+				logger.Error("permission.user_roles.tx_rollback_failed", "user_id", userID, "error", rbErr)
 				utils.SetSpanError(ctx, rbErr)
 			}
 		}
@@ -37,14 +39,14 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	// Busca todas as roles do usuário (ativas e inativas); a regra de negócio prevê apenas uma ativa.
 	userRoles, err := p.permissionRepository.GetUserRolesByUserID(ctx, tx, userID)
 	if err != nil {
-		slog.Error("permission.user_roles.db_failed", "user_id", userID, "error", err)
+		logger.Error("permission.user_roles.db_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 
 	// Commit the transaction
 	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
-		slog.Error("permission.user_roles.tx_commit_failed", "user_id", userID, "error", err)
+		logger.Error("permission.user_roles.tx_commit_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
@@ -57,6 +59,9 @@ func (p *permissionServiceImpl) GetUserRolesWithTx(ctx context.Context, tx *sql.
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if userID <= 0 {
 		return nil, utils.BadRequest("invalid user id")
 	}
@@ -65,6 +70,7 @@ func (p *permissionServiceImpl) GetUserRolesWithTx(ctx context.Context, tx *sql.
 	userRoles, err := p.permissionRepository.GetUserRolesByUserID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
+		logger.Error("permission.user_roles.db_failed", "user_id", userID, "error", err)
 		return nil, utils.InternalError("")
 	}
 

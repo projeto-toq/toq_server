@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
+	"fmt"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -19,11 +19,15 @@ func (ua *UserAdapter) GetUserValidations(ctx context.Context, tx *sql.Tx, id in
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT * FROM temp_user_validations WHERE user_id = ?;`
 
 	entities, err := ua.Read(ctx, tx, query, id)
 	if err != nil {
-		slog.Error("mysqluseradapter/GetUserValidations: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_user_validations.read_error", "error", err)
 		return nil, err
 	}
 
@@ -32,13 +36,17 @@ func (ua *UserAdapter) GetUserValidations(ctx context.Context, tx *sql.Tx, id in
 	}
 
 	if len(entities) > 1 {
-		slog.Error("mysqluseradapter/GetUserValidations: multiple roles found with the same role", "role", id)
-		return nil, errors.New("multiple validations found for user")
+		errMultiple := errors.New("multiple validations found for user")
+		utils.SetSpanError(ctx, errMultiple)
+		logger.Error("mysql.user.get_user_validations.multiple_validations_error", "user_id", id, "error", errMultiple)
+		return nil, errMultiple
 	}
 
 	validation, err = userconverters.UserValidationEntityToDomain(entities[0])
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_user_validations.convert_error", "error", err)
+		return nil, fmt.Errorf("convert user validation entity: %w", err)
 	}
 
 	return

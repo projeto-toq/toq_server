@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -20,9 +19,13 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	entities, err := ua.Read(ctx, tx, "SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE phone_number = ?", phoneNumber)
 	if err != nil {
-		slog.Error("mysqluseradapter/GetUserByPhoneNumber: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_user_by_phone.read_error", "error", err)
 		return nil, fmt.Errorf("get user by phone number read: %w", err)
 	}
 
@@ -31,13 +34,17 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 	}
 
 	if len(entities) > 1 {
-		slog.Error("mysqluseradapter/GetUserByPhoneNumber: multiple users found with the same phone number", "phoneNumber", phoneNumber)
-		return nil, errors.New("multiple users found for phone number")
+		errMultiple := errors.New("multiple users found for phone number")
+		utils.SetSpanError(ctx, errMultiple)
+		logger.Error("mysql.user.get_user_by_phone.multiple_users_error", "phone_number", phoneNumber, "error", errMultiple)
+		return nil, errMultiple
 	}
 
 	user, err = userconverters.UserEntityToDomain(entities[0])
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_user_by_phone.convert_error", "error", err)
+		return nil, fmt.Errorf("convert user entity: %w", err)
 	}
 
 	// Note: Active role should be set by the calling service using Permission Service

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -17,10 +16,14 @@ func (ua *UserAdapter) ExistsPhoneForAnotherUser(ctx context.Context, tx *sql.Tx
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT COUNT(id) as cnt FROM users WHERE phone_number = ? AND id <> ? AND deleted = 0;`
 	entities, err := ua.Read(ctx, tx, query, phone, excludeUserID)
 	if err != nil {
-		slog.Error("mysqluseradapter/ExistsPhoneForAnotherUser: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.exists_phone_for_another.read_error", "error", err)
 		return false, fmt.Errorf("exists phone for another user read: %w", err)
 	}
 	if len(entities) == 0 || len(entities[0]) == 0 {
@@ -28,8 +31,10 @@ func (ua *UserAdapter) ExistsPhoneForAnotherUser(ctx context.Context, tx *sql.Tx
 	}
 	cnt, ok := entities[0][0].(int64)
 	if !ok {
-		slog.Error("mysqluseradapter/ExistsPhoneForAnotherUser: invalid count type", "value", entities[0][0])
-		return false, fmt.Errorf("exists phone for another user: invalid count type %T", entities[0][0])
+		errInvalid := fmt.Errorf("exists phone for another user: invalid count type %T", entities[0][0])
+		utils.SetSpanError(ctx, errInvalid)
+		logger.Error("mysql.user.exists_phone_for_another.invalid_count_type", "value", entities[0][0], "error", errInvalid)
+		return false, errInvalid
 	}
 	return cnt > 0, nil
 }

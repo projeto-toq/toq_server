@@ -2,7 +2,6 @@ package complexrepoconverters
 
 import (
 	"fmt"
-	"log/slog"
 
 	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
 )
@@ -13,21 +12,18 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 
 	id, ok := entity[0].(int64)
 	if !ok {
-		slog.Error("Error converting ID to int64", "ID", entity[0])
 		return nil, fmt.Errorf("convert id to int64: %T", entity[0])
 	}
 	complexTower.SetID(id)
 
 	complex_id, ok := entity[1].(int64)
 	if !ok {
-		slog.Error("Error converting complex_id to int64", "complex_id", entity[1])
 		return nil, fmt.Errorf("convert complex_id to int64: %T", entity[1])
 	}
 	complexTower.SetComplexID(complex_id)
 
 	tower, ok := entity[2].([]byte)
 	if !ok {
-		slog.Error("Error converting tower to []byte", "tower", entity[2])
 		return nil, fmt.Errorf("convert tower to []byte: %T", entity[2])
 	}
 	complexTower.SetTower(string(tower))
@@ -35,7 +31,6 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 	if entity[3] != nil {
 		floors, ok := entity[3].(int64)
 		if !ok {
-			slog.Error("Error converting floors to int64", "floors", entity[3])
 			return nil, fmt.Errorf("convert floors to int64: %T", entity[3])
 		}
 		complexTower.SetFloors(int(floors))
@@ -44,7 +39,6 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 	if entity[4] != nil {
 		total_units, ok := entity[4].(int64)
 		if !ok {
-			slog.Error("Error converting total_units to int64", "total_units", entity[4])
 			return nil, fmt.Errorf("convert total_units to int64: %T", entity[4])
 		}
 		complexTower.SetTotalUnits(int(total_units))
@@ -53,7 +47,6 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 	if entity[5] != nil {
 		units_per_floor, ok := entity[5].(int64)
 		if !ok {
-			slog.Error("Error converting units_per_floor to int64", "units_per_floor", entity[5])
 			return nil, fmt.Errorf("convert units_per_floor to int64: %T", entity[5])
 		}
 		complexTower.SetUnitsPerFloor(int(units_per_floor))

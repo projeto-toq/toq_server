@@ -3,9 +3,7 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -17,34 +15,39 @@ func (la *ListingAdapter) DeleteListingFeatures(ctx context.Context, tx *sql.Tx,
 	}
 	defer spanEnd()
 
-	sql := `DELETE FROM features WHERE listing_id = ?`
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
-	stmt, err := tx.PrepareContext(ctx, sql)
+	query := `DELETE FROM features WHERE listing_id = ?`
+
+	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqllistingadapter/DeleteListingFeatures: error preparing statement", "error", err)
-		err = fmt.Errorf("prepare delete listing features: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_features.prepare_error", "error", err, "listing_id", listingID)
+		return fmt.Errorf("prepare delete listing features: %w", err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, listingID)
 	if err != nil {
-		slog.Error("mysqllistingadapter/DeleteListingFeatures: error executing statement", "error", err)
-		err = fmt.Errorf("exec delete listing features: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_features.exec_error", "error", err, "listing_id", listingID)
+		return fmt.Errorf("exec delete listing features: %w", err)
 	}
 
 	qty, err := result.RowsAffected()
 	if err != nil {
-		slog.Error("mysqllistingadapter/DeleteListingFeatures: error getting rows affected", "error", err)
-		err = fmt.Errorf("rows affected for delete listing features: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_features.rows_affected_error", "error", err, "listing_id", listingID)
+		return fmt.Errorf("rows affected for delete listing features: %w", err)
 	}
 
 	if qty == 0 {
-		err = errors.New("no features rows deleted for listing")
-		return
+		err = fmt.Errorf("no features rows deleted for listing: %w", sql.ErrNoRows)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_features.no_rows", "error", err, "listing_id", listingID)
+		return err
 	}
 
-	return
+	return nil
 }

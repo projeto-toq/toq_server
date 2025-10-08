@@ -3,10 +3,10 @@ package s3adapter
 import (
 	"context"
 	"errors"
-	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (objects []string, err error) {
@@ -15,7 +15,9 @@ func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (o
 		return
 	}
 
-	slog.Debug("Listing bucket objects in S3", "bucket", bucketName)
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+	logger.Debug("adapter.s3.list_objects.start", "bucket", bucketName)
 
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(bucketName),
@@ -26,7 +28,8 @@ func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (o
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(ctx)
 		if err != nil {
-			slog.Error("failed to iterate over bucket objects in S3", "error", err)
+			utils.SetSpanError(ctx, err)
+			logger.Error("adapter.s3.list_objects.iteration_error", "bucket", bucketName, "error", err)
 			return nil, err
 		}
 
@@ -37,6 +40,6 @@ func (s *S3Adapter) ListBucketObjects(ctx context.Context, bucketName string) (o
 		}
 	}
 
-	slog.Debug("Successfully listed bucket objects", "bucket", bucketName, "count", len(objects))
+	logger.Debug("adapter.s3.list_objects.success", "bucket", bucketName, "count", len(objects))
 	return objects, nil
 }

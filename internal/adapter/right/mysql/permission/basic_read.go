@@ -3,7 +3,7 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
+	"fmt"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,24 +16,30 @@ func (pa *PermissionAdapter) Read(ctx context.Context, tx *sql.Tx, query string,
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/Read: error preparing statement", "error", err)
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.read.prepare_error", "error", err)
+		return nil, fmt.Errorf("prepare permission read statement: %w", err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/Read: error executing query", "error", err)
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.read.query_error", "error", err)
+		return nil, fmt.Errorf("query permission read: %w", err)
 	}
 	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/Read: error getting columns", "error", err)
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.read.columns_error", "error", err)
+		return nil, fmt.Errorf("columns permission read: %w", err)
 	}
 
 	var results [][]any
@@ -45,16 +51,18 @@ func (pa *PermissionAdapter) Read(ctx context.Context, tx *sql.Tx, query string,
 		}
 
 		if err := rows.Scan(valuePtrs...); err != nil {
-			slog.Error("mysqlpermissionadapter/Read: error scanning row", "error", err)
-			return nil, err
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.permission.read.scan_error", "error", err)
+			return nil, fmt.Errorf("scan permission read row: %w", err)
 		}
 
 		results = append(results, values)
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("mysqlpermissionadapter/Read: error iterating rows", "error", err)
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.read.rows_error", "error", err)
+		return nil, fmt.Errorf("rows iteration permission read: %w", err)
 	}
 
 	return results, nil

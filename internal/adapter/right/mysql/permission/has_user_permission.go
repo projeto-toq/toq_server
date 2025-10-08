@@ -3,10 +3,21 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
+
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // HasUserPermission verifica se um usuário tem uma permissão específica de forma otimizada
 func (pa *PermissionAdapter) HasUserPermission(ctx context.Context, tx *sql.Tx, userID int64, resource, action string) (bool, error) {
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer spanEnd()
+
+	logger = logger.With("user_id", userID, "resource", resource, "action", action)
+
 	query := `
 		SELECT 1
 		FROM permissions p
@@ -23,8 +34,12 @@ func (pa *PermissionAdapter) HasUserPermission(ctx context.Context, tx *sql.Tx, 
 
 	results, err := pa.Read(ctx, tx, query, userID, resource, action)
 	if err != nil {
-		return false, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.has_user_permission.read_error", "error", err)
+		return false, fmt.Errorf("has user permission read: %w", err)
 	}
 
-	return len(results) > 0, nil
+	hasPermission := len(results) > 0
+	logger.Debug("mysql.permission.has_user_permission.success", "has_permission", hasPermission)
+	return hasPermission, nil
 }

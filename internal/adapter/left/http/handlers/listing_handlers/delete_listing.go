@@ -8,12 +8,13 @@ import (
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // DeleteListing handles deleting an existing listing
 func (lh *ListingHandler) DeleteListing(c *gin.Context) {
-	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
+	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
 		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return

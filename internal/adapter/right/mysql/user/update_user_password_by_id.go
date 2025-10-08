@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
@@ -18,6 +17,9 @@ func (ua *UserAdapter) UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, u
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `UPDATE users SET password = ? WHERE id = ?;`
 
 	_, err = ua.Update(ctx, tx, query,
@@ -25,7 +27,8 @@ func (ua *UserAdapter) UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, u
 		user.GetID(),
 	)
 	if err != nil {
-		slog.Error("mysqluseradapter/UpdateUserPasswordByID: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.update_user_password.update_error", "error", err)
 		return fmt.Errorf("update user password: %w", err)
 	}
 

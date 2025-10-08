@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -25,6 +24,8 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+
 	// normalizar email
 	newEmail = strings.TrimSpace(strings.ToLower(newEmail))
 
@@ -37,14 +38,14 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("email_change.request.tx_start_error", "error", txErr)
+		utils.LoggerFromContext(ctx).Error("email_change.request.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("email_change.request.tx_rollback_error", "error", rbErr)
+				utils.LoggerFromContext(ctx).Error("email_change.request.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -57,7 +58,7 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 	// Commit the transaction BEFORE sending notification
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("email_change.request.tx_commit_error", "error", err)
+		utils.LoggerFromContext(ctx).Error("email_change.request.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -78,7 +79,7 @@ func (us *userService) RequestEmailChange(ctx context.Context, newEmail string) 
 	notifyErr := notificationService.SendNotification(ctx, emailRequest)
 	if notifyErr != nil {
 		utils.SetSpanError(ctx, notifyErr)
-		slog.Error("email_change.request.notification_error", "user_id", user.GetID(), "error", notifyErr)
+		utils.LoggerFromContext(ctx).Error("email_change.request.notification_error", "user_id", user.GetID(), "error", notifyErr)
 	}
 
 	return
@@ -89,7 +90,7 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 	user, err = us.repo.GetUserByID(ctx, tx, id)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("email_change.request.read_user_error", "error", err, "user_id", id)
+		utils.LoggerFromContext(ctx).Error("email_change.request.read_user_error", "error", err, "user_id", id)
 		return
 	}
 
@@ -99,7 +100,7 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 	// Verificar unicidade global (outros usuários não podem ter este email)
 	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, email, user.GetID()); verr != nil {
 		utils.SetSpanError(ctx, verr)
-		slog.Error("email_change.request.exists_email_error", "error", verr, "user_id", user.GetID())
+		utils.LoggerFromContext(ctx).Error("email_change.request.exists_email_error", "error", verr, "user_id", user.GetID())
 		return nil, nil, verr
 	} else if exist {
 		return nil, nil, utils.ErrEmailAlreadyInUse
@@ -110,7 +111,7 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
-			slog.Error("email_change.request.read_validations_error", "error", err, "user_id", user.GetID())
+			utils.LoggerFromContext(ctx).Error("email_change.request.read_validations_error", "error", err, "user_id", user.GetID())
 			return
 		}
 		validation = usermodel.NewValidation()
@@ -123,7 +124,7 @@ func (us *userService) requestEmailChange(ctx context.Context, tx *sql.Tx, id in
 	err = us.repo.UpdateUserValidations(ctx, tx, validation)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("email_change.request.update_validations_error", "error", err, "user_id", user.GetID())
+		utils.LoggerFromContext(ctx).Error("email_change.request.update_validations_error", "error", err, "user_id", user.GetID())
 		return
 	}
 

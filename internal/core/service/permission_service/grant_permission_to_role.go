@@ -2,7 +2,6 @@ package permissionservice
 
 import (
 	"context"
-	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -14,6 +13,9 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if roleID <= 0 {
 		return utils.BadRequest("invalid role id")
 	}
@@ -22,19 +24,19 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 		return utils.BadRequest("invalid permission id")
 	}
 
-	slog.Debug("permission.permission.grant.start", "role_id", roleID, "permission_id", permissionID)
+	logger.Debug("permission.permission.grant.start", "role_id", roleID, "permission_id", permissionID)
 
 	// Start transaction
 	tx, err := p.globalService.StartTransaction(ctx)
 	if err != nil {
-		slog.Error("permission.permission.tx_start_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
+		logger.Error("permission.permission.tx_start_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				slog.Error("permission.permission.tx_rollback_failed", "role_id", roleID, "permission_id", permissionID, "error", rbErr)
+				logger.Error("permission.permission.tx_rollback_failed", "role_id", roleID, "permission_id", permissionID, "error", rbErr)
 				utils.SetSpanError(ctx, rbErr)
 			}
 		}
@@ -43,7 +45,7 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	// Verificar se o role existe
 	role, err := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
 	if err != nil {
-		slog.Error("permission.permission.get_role_failed", "role_id", roleID, "error", err)
+		logger.Error("permission.permission.get_role_failed", "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
@@ -54,7 +56,7 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	// Verificar se a permissão existe
 	permission, err := p.permissionRepository.GetPermissionByID(ctx, tx, permissionID)
 	if err != nil {
-		slog.Error("permission.permission.get_permission_failed", "permission_id", permissionID, "error", err)
+		logger.Error("permission.permission.get_permission_failed", "permission_id", permissionID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
@@ -65,7 +67,7 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	// Verificar se a relação já existe
 	existingRolePermission, err := p.permissionRepository.GetRolePermissionByRoleIDAndPermissionID(ctx, tx, roleID, permissionID)
 	if err != nil {
-		slog.Error("permission.permission.get_role_permission_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
+		logger.Error("permission.permission.get_role_permission_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
@@ -76,7 +78,7 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	// Identificar usuários impactados
 	affectedUserIDs, err := p.permissionRepository.GetActiveUserIDsByRoleID(ctx, tx, roleID)
 	if err != nil {
-		slog.Error("permission.permission.get_role_users_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
+		logger.Error("permission.permission.get_role_users_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
@@ -90,7 +92,7 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	// Salvar no banco
 	err = p.permissionRepository.CreateRolePermission(ctx, tx, rolePermission)
 	if err != nil {
-		slog.Error("permission.permission.create_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
+		logger.Error("permission.permission.create_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
@@ -98,11 +100,11 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 	// Commit the transaction
 	err = p.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
-		slog.Error("permission.permission.tx_commit_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
+		logger.Error("permission.permission.tx_commit_failed", "role_id", roleID, "permission_id", permissionID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
-	slog.Info("permission.permission.granted", "role_id", roleID, "permission_id", permissionID)
+	logger.Info("permission.permission.granted", "role_id", roleID, "permission_id", permissionID)
 	for _, uid := range affectedUserIDs {
 		p.invalidateUserCacheSafe(ctx, uid, "grant_permission_to_role")
 	}

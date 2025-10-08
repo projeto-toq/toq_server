@@ -3,7 +3,7 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
+	"fmt"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,23 +16,29 @@ func (pa *PermissionAdapter) Update(ctx context.Context, tx *sql.Tx, query strin
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/Update: error preparing statement", "error", err)
-		return 0, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.update.prepare_error", "error", err)
+		return 0, fmt.Errorf("prepare permission update statement: %w", err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/Update: error executing statement", "error", err)
-		return 0, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.update.exec_error", "error", err)
+		return 0, fmt.Errorf("exec permission update statement: %w", err)
 	}
 
 	rowsAffected, err = result.RowsAffected()
 	if err != nil {
-		slog.Error("mysqlpermissionadapter/Update: error getting rows affected", "error", err)
-		return 0, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.update.rows_affected_error", "error", err)
+		return 0, fmt.Errorf("rows affected permission update: %w", err)
 	}
 
 	return rowsAffected, nil

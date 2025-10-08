@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
@@ -22,6 +21,9 @@ func (us *userService) GetCreciDownloadURLs(ctx context.Context, targetUserID in
 		return
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	if targetUserID <= 0 {
 		err = utils.ValidationError("id", "User ID must be greater than zero")
@@ -59,7 +61,7 @@ func (us *userService) GetCreciDownloadURLs(ctx context.Context, targetUserID in
 		exists, checkErr := us.cloudStorageService.ObjectExists(ctx, bucket, objectPath)
 		if checkErr != nil {
 			utils.SetSpanError(ctx, checkErr)
-			slog.Error("admin.creci_download.object_exists_error", "user_id", targetUserID, "doc", string(docType), "error", checkErr)
+			logger.Error("admin.creci_download.object_exists_error", "user_id", targetUserID, "doc", string(docType), "error", checkErr)
 			err = utils.InternalError("Failed to check document existence")
 			return
 		}
@@ -76,7 +78,7 @@ func (us *userService) GetCreciDownloadURLs(ctx context.Context, targetUserID in
 	selfieURL, sErr := us.cloudStorageService.GenerateDocumentDownloadURL(targetUserID, storagemodel.DocSelfie)
 	if sErr != nil {
 		utils.SetSpanError(ctx, sErr)
-		slog.Error("admin.creci_download.generate_url_error", "user_id", targetUserID, "doc", string(storagemodel.DocSelfie), "error", sErr)
+		logger.Error("admin.creci_download.generate_url_error", "user_id", targetUserID, "doc", string(storagemodel.DocSelfie), "error", sErr)
 		err = utils.InternalError("Failed to generate download URL")
 		return
 	}
@@ -84,7 +86,7 @@ func (us *userService) GetCreciDownloadURLs(ctx context.Context, targetUserID in
 	frontURL, fErr := us.cloudStorageService.GenerateDocumentDownloadURL(targetUserID, storagemodel.DocFront)
 	if fErr != nil {
 		utils.SetSpanError(ctx, fErr)
-		slog.Error("admin.creci_download.generate_url_error", "user_id", targetUserID, "doc", string(storagemodel.DocFront), "error", fErr)
+		logger.Error("admin.creci_download.generate_url_error", "user_id", targetUserID, "doc", string(storagemodel.DocFront), "error", fErr)
 		err = utils.InternalError("Failed to generate download URL")
 		return
 	}
@@ -92,7 +94,7 @@ func (us *userService) GetCreciDownloadURLs(ctx context.Context, targetUserID in
 	backURL, bErr := us.cloudStorageService.GenerateDocumentDownloadURL(targetUserID, storagemodel.DocBack)
 	if bErr != nil {
 		utils.SetSpanError(ctx, bErr)
-		slog.Error("admin.creci_download.generate_url_error", "user_id", targetUserID, "doc", string(storagemodel.DocBack), "error", bErr)
+		logger.Error("admin.creci_download.generate_url_error", "user_id", targetUserID, "doc", string(storagemodel.DocBack), "error", bErr)
 		err = utils.InternalError("Failed to generate download URL")
 		return
 	}

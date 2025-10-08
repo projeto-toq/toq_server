@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/entities"
 
@@ -19,11 +18,15 @@ func (ua *UserAdapter) CreateDeviceToken(ctx context.Context, tx *sql.Tx, e user
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Table currently has columns: id, user_id, device_token
 	query := `INSERT INTO device_tokens (user_id, device_token) VALUES (?, ?)`
 	id, err := ua.Create(ctx, tx, query, e.UserID, e.Token)
 	if err != nil {
-		slog.Error("mysqluseradapter/CreateDeviceToken: insert failed", "err", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.create_device_token.create_error", "error", err)
 		return 0, fmt.Errorf("insert device_token: %w", err)
 	}
 	return id, nil

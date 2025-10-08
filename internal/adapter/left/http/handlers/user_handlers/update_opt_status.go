@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // UpdateOptStatus updates the user's messaging opt-in status
@@ -24,7 +25,7 @@ import (
 //	@Router       /user/opt-status [put]
 //	@Security     BearerAuth
 func (uh *UserHandler) UpdateOptStatus(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	// Parse request body
 	var request dto.UpdateOptStatusRequest

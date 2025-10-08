@@ -3,7 +3,6 @@ package globalservice
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -15,10 +14,13 @@ func (gs *globalService) StartTransaction(ctx context.Context) (tx *sql.Tx, err 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, err = gs.globalRepo.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("global.tx_start_error", "err", err)
+		logger.Error("global.tx_start_error", "err", err)
 		return nil, utils.InternalError("")
 	}
 
@@ -34,10 +36,13 @@ func (gs *globalService) StartReadOnlyTransaction(ctx context.Context) (tx *sql.
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, err = gs.globalRepo.StartReadOnlyTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("global.tx_start_readonly_error", "err", err)
+		logger.Error("global.tx_start_readonly_error", "err", err)
 		return nil, utils.InternalError("")
 	}
 
@@ -51,10 +56,13 @@ func (gs *globalService) RollbackTransaction(ctx context.Context, tx *sql.Tx) (e
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	err = gs.globalRepo.RollbackTransaction(ctx, tx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("global.tx_rollback_error", "err", err)
+		logger.Error("global.tx_rollback_error", "err", err)
 		return utils.InternalError("")
 	}
 
@@ -68,10 +76,13 @@ func (gs *globalService) CommitTransaction(ctx context.Context, tx *sql.Tx) (err
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	err = gs.globalRepo.CommitTransaction(ctx, tx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("global.tx_commit_error", "err", err)
+		logger.Error("global.tx_commit_error", "err", err)
 		return utils.InternalError("")
 	}
 

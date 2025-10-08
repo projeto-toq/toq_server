@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
+	"fmt"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -20,6 +20,9 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT u.*
 				 FROM users u
 				 JOIN realtors_agency ra ON u.id = ra.agency_id
@@ -27,7 +30,8 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 
 	entities, err := ua.Read(ctx, tx, query, realtorID)
 	if err != nil {
-		slog.Error("mysqluseradapter/GetAgencyOfRealtor: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_agency_of_realtor.read_error", "error", err)
 		return nil, err
 	}
 
@@ -36,10 +40,19 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 	}
 
 	if len(entities) > 1 {
-		slog.Error("mysqluseradapter.GetAgencyOfRealtor: Multiple agencies found for the same realtor ID", "realtorID", realtorID)
-		return nil, errors.New("multiple agencies found for realtor")
+		errMultiple := errors.New("multiple agencies found for realtor")
+		utils.SetSpanError(ctx, errMultiple)
+		logger.Error("mysql.user.get_agency_of_realtor.multiple_agencies_error", "realtor_id", realtorID, "error", errMultiple)
+		return nil, errMultiple
 	}
 
-	return userconverters.UserEntityToDomain(entities[0])
+	agency, err = userconverters.UserEntityToDomain(entities[0])
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_agency_of_realtor.convert_error", "error", err)
+		return nil, fmt.Errorf("convert agency user entity: %w", err)
+	}
+
+	return agency, nil
 
 }

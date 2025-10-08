@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -17,6 +16,9 @@ func (ua *UserAdapter) UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongS
 		return
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	query := `INSERT INTO temp_wrong_signin (
 				user_id, failed_attempts, last_attempt_at
@@ -33,7 +35,8 @@ func (ua *UserAdapter) UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongS
 		entity.LastAttemptAT,
 	)
 	if err != nil {
-		slog.Error("mysqluseradapter/UpdateWrongSignIn: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.update_wrong_signin.update_error", "error", err)
 		return fmt.Errorf("update wrong_signin: %w", err)
 	}
 

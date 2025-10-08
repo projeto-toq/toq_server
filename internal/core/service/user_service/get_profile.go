@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -19,22 +18,27 @@ func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInter
 	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
+		ctx = utils.ContextWithLogger(ctx)
+		utils.LoggerFromContext(ctx).Error("user.get_profile.tracer_error", "error", err)
 		return nil, utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	// Iniciar uma transação somente leitura para otimizar o fluxo de leitura
 	tx, txErr := us.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("user.get_profile.tx_start_error", "error", txErr)
+		logger.Error("user.get_profile.tx_start_error", "error", txErr)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.get_profile.tx_rollback_error", "error", rbErr)
+				logger.Error("user.get_profile.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -45,7 +49,7 @@ func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInter
 			return nil, utils.NotFoundError("User")
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.get_profile.read_user_error", "error", err, "user_id", userID)
+		logger.Error("user.get_profile.read_user_error", "error", err, "user_id", userID)
 		return nil, utils.InternalError("Failed to get user by ID")
 	}
 
@@ -53,7 +57,7 @@ func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInter
 	activeRole, arErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, user.GetID())
 	if arErr != nil {
 		utils.SetSpanError(ctx, arErr)
-		slog.Error("user.get_profile.get_active_role_error", "error", arErr, "user_id", userID)
+		logger.Error("user.get_profile.get_active_role_error", "error", arErr, "user_id", userID)
 		return nil, utils.InternalError("Failed to get active user role")
 	}
 	if activeRole != nil {
@@ -62,7 +66,7 @@ func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInter
 
 	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		slog.Error("user.get_profile.tx_commit_error", "error", cmErr)
+		logger.Error("user.get_profile.tx_commit_error", "error", cmErr)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 

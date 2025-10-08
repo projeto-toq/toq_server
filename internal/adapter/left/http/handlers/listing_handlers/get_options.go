@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // GetOptions handles getting available options for listings
@@ -26,7 +26,8 @@ import (
 //	@Router			/listings/options [get]
 //	@Security		BearerAuth
 func (lh *ListingHandler) GetOptions(c *gin.Context) {
-	ctx, spanEnd, err := utils.GenerateTracer(c.Request.Context())
+	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
 		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
 		return

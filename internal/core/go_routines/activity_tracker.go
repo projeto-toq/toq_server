@@ -2,13 +2,12 @@ package goroutines
 
 import (
 	"context"
-	"log/slog"
 	"strconv"
 	"sync"
 	"time"
 
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -36,12 +35,14 @@ func (at *ActivityTracker) SetUserService(userService userservices.UserServiceIn
 
 // TrackActivity records user activity in Redis (very fast, non-blocking)
 func (at *ActivityTracker) TrackActivity(ctx context.Context, userID int64) {
+	ctx = coreutils.ContextWithLogger(ctx)
+	logger := coreutils.LoggerFromContext(ctx)
 	key := "user_activity:" + strconv.FormatInt(userID, 10)
 
 	// Set with TTL - will expire if user becomes inactive
 	err := at.redisClient.Set(ctx, key, time.Now().Unix(), 5*time.Minute).Err()
 	if err != nil {
-		slog.Error("Failed to track activity in Redis", "userID", userID, "error", err)
+		logger.Error("Failed to track activity in Redis", "userID", userID, "error", err)
 		// Fallback: could add to channel for immediate DB update
 	}
 }
@@ -50,15 +51,18 @@ func (at *ActivityTracker) TrackActivity(ctx context.Context, userID int64) {
 func (at *ActivityTracker) StartBatchWorker(wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 
+	ctx = coreutils.ContextWithLogger(ctx)
+	logger := coreutils.LoggerFromContext(ctx)
+
 	ticker := time.NewTicker(at.flushInterval)
 	defer ticker.Stop()
 
-	slog.Info("Activity batch worker started", "interval", at.flushInterval)
+	logger.Info("Activity batch worker started", "interval", at.flushInterval)
 
 	for {
 		select {
 		case <-ctx.Done():
-			slog.Info("Activity batch worker stopped")
+			logger.Info("Activity batch worker stopped")
 			return
 		case <-ticker.C:
 			at.flushActivitiesToDB(ctx)
@@ -68,19 +72,21 @@ func (at *ActivityTracker) StartBatchWorker(wg *sync.WaitGroup, ctx context.Cont
 
 // flushActivitiesToDB processes Redis data and updates MySQL in batches
 func (at *ActivityTracker) flushActivitiesToDB(ctx context.Context) {
+	ctx = coreutils.ContextWithLogger(ctx)
+	logger := coreutils.LoggerFromContext(ctx)
 	// Get all active users from Redis
 	keys, err := at.redisClient.Keys(ctx, "user_activity:*").Result()
 	if err != nil {
-		slog.Error("Failed to get activity keys from Redis", "error", err)
+		logger.Error("Failed to get activity keys from Redis", "error", err)
 		return
 	}
 
 	if len(keys) == 0 {
-		slog.Debug("No active users to process")
+		logger.Debug("No active users to process")
 		return
 	}
 
-	slog.Debug("Processing active users", "count", len(keys))
+	logger.Debug("Processing active users", "count", len(keys))
 
 	// Process in batches
 	for i := 0; i < len(keys); i += at.batchSize {
@@ -96,6 +102,8 @@ func (at *ActivityTracker) flushActivitiesToDB(ctx context.Context) {
 
 // processBatch handles a batch of user activities
 func (at *ActivityTracker) processBatch(ctx context.Context, keys []string) {
+	ctx = coreutils.ContextWithLogger(ctx)
+	logger := coreutils.LoggerFromContext(ctx)
 	userIDs := make([]int64, 0, len(keys))
 	timestamps := make([]int64, 0, len(keys))
 
@@ -107,7 +115,7 @@ func (at *ActivityTracker) processBatch(ctx context.Context, keys []string) {
 
 	results, err := pipe.Exec(ctx)
 	if err != nil {
-		slog.Error("Failed to get batch data from Redis", "error", err)
+		logger.Error("Failed to get batch data from Redis", "error", err)
 		return
 	}
 
@@ -141,19 +149,19 @@ func (at *ActivityTracker) processBatch(ctx context.Context, keys []string) {
 
 	// Check if userService is available
 	if at.userService == nil {
-		slog.Warn("User service not available, skipping batch update", "count", len(userIDs))
+		logger.Warn("User service not available, skipping batch update", "count", len(userIDs))
 		return
 	}
 
 	// Batch update MySQL without generating additional spans
-	ctxNoTrace := utils.WithSkipTracing(ctx)
+	ctxNoTrace := coreutils.WithSkipTracing(ctx)
 	err = at.userService.BatchUpdateLastActivity(ctxNoTrace, userIDs, timestamps)
 	if err != nil {
-		slog.Error("Failed to batch update activities", "count", len(userIDs), "error", err)
+		logger.Error("Failed to batch update activities", "count", len(userIDs), "error", err)
 		return
 	}
 
-	slog.Debug("Successfully updated user activities", "count", len(userIDs))
+	logger.Debug("Successfully updated user activities", "count", len(userIDs))
 }
 
 // GetActiveUsers returns list of currently active users (from Redis)

@@ -2,7 +2,6 @@ package cpfadapter
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -17,7 +16,6 @@ func ConvertCPFEntityToModel(result cpfResult) (cpfmodel.CPFInterface, error) {
 
 	birthDate, err := time.Parse(cpfDateLayout, result.DataNascimento)
 	if err != nil {
-		slog.Error("cpf.validation.parse_birth_date_error", "value", result.DataNascimento, "err", err)
 		return nil, fmt.Errorf("%w: failed to parse CPF birth date: %w", cpfport.ErrInfra, err)
 	}
 	cpf.SetDataNascimento(birthDate)

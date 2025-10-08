@@ -1,7 +1,7 @@
 package userservices
 
 import (
-	"log/slog"
+	"context"
 	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
@@ -14,7 +14,8 @@ func (us *userService) encryptPassword(password string) (hashPassword string) {
 	// Usa bcrypt com custo padrão; erros aqui são improváveis (custo inválido)
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		slog.Error("encryptPassword: failed to generate bcrypt hash: %v", "err", err)
+		logger := utils.LoggerFromContext(context.Background())
+		logger.Error("user.encrypt_password.hash_error", "error", err)
 		return ""
 	}
 	return string(hash)

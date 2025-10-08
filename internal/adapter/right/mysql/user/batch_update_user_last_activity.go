@@ -3,7 +3,6 @@ package mysqluseradapter
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -16,12 +15,18 @@ func (ua *UserAdapter) BatchUpdateUserLastActivity(ctx context.Context, userIDs 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if len(userIDs) == 0 {
 		return nil
 	}
 
 	if len(userIDs) != len(timestamps) {
-		return fmt.Errorf("userIDs and timestamps length mismatch")
+		errLength := fmt.Errorf("userIDs and timestamps length mismatch")
+		utils.SetSpanError(ctx, errLength)
+		logger.Error("mysql.user.batch_update_last_activity.length_mismatch", "user_ids", len(userIDs), "timestamps", len(timestamps), "error", errLength)
+		return errLength
 	}
 
 	// Build batch update query using CASE WHEN for better performance
@@ -52,22 +57,24 @@ func (ua *UserAdapter) BatchUpdateUserLastActivity(ctx context.Context, userIDs 
 	// Execute batch update
 	stmt, err := ua.db.DB.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqluseradapter/BatchUpdateUserLastActivity: error preparing statement", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.batch_update_last_activity.prepare_error", "error", err)
 		return fmt.Errorf("prepare batch update: %w", err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		slog.Error("mysqluseradapter/BatchUpdateUserLastActivity: error executing statement", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.batch_update_last_activity.exec_error", "error", err)
 		return fmt.Errorf("exec batch update: %w", err)
 	}
 
 	affected, err := result.RowsAffected()
 	if err != nil {
-		slog.Warn("mysqluseradapter/BatchUpdateUserLastActivity: could not get affected rows", "error", err)
+		logger.Warn("mysql.user.batch_update_last_activity.rows_affected_warning", "error", err)
 	} else {
-		slog.Debug("Batch updated user activities", "affected_rows", affected, "batch_size", len(userIDs))
+		logger.Debug("mysql.user.batch_update_last_activity.success", "affected_rows", affected, "batch_size", len(userIDs))
 	}
 
 	return

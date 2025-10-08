@@ -3,9 +3,7 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -17,34 +15,39 @@ func (la *ListingAdapter) DeleteListingGuarantees(ctx context.Context, tx *sql.T
 	}
 	defer spanEnd()
 
-	sql := `DELETE FROM guarantees WHERE listing_id = ?`
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
-	stmt, err := tx.PrepareContext(ctx, sql)
+	query := `DELETE FROM guarantees WHERE listing_id = ?`
+
+	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqllistingadapter/DeleteListingGuarantees: error preparing statement", "error", err)
-		err = fmt.Errorf("prepare delete listing guarantees: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_guarantees.prepare_error", "error", err, "listing_id", listingID)
+		return fmt.Errorf("prepare delete listing guarantees: %w", err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, listingID)
 	if err != nil {
-		slog.Error("mysqllistingadapter/DeleteListingGuarantees: error executing statement", "error", err)
-		err = fmt.Errorf("exec delete listing guarantees: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_guarantees.exec_error", "error", err, "listing_id", listingID)
+		return fmt.Errorf("exec delete listing guarantees: %w", err)
 	}
 
 	qty, err := result.RowsAffected()
 	if err != nil {
-		slog.Error("mysqllistingadapter/DeleteListingGuarantees: error getting rows affected", "error", err)
-		err = fmt.Errorf("rows affected for delete listing guarantees: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_guarantees.rows_affected_error", "error", err, "listing_id", listingID)
+		return fmt.Errorf("rows affected for delete listing guarantees: %w", err)
 	}
 
 	if qty == 0 {
-		err = errors.New("no guarantees rows deleted for listing")
-		return
+		err = fmt.Errorf("no guarantees rows deleted for listing: %w", sql.ErrNoRows)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.delete_guarantees.no_rows", "error", err, "listing_id", listingID)
+		return err
 	}
 
-	return
+	return nil
 }

@@ -1,15 +1,18 @@
 package emailadapter
 
 import (
+	"context"
 	"fmt"
-	"log/slog"
 	"time"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"gopkg.in/gomail.v2"
 )
 
-func (e *EmailAdapter) SendEmail(notification globalmodel.Notification) error {
+func (e *EmailAdapter) SendEmail(ctx context.Context, notification globalmodel.Notification) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	m := gomail.NewMessage()
 
 	// Headers dinâmicos com configuração robusta
@@ -29,19 +32,20 @@ func (e *EmailAdapter) SendEmail(notification globalmodel.Notification) error {
 		if attempt > 0 {
 			// Backoff exponencial: 1s, 2s, 4s...
 			waitTime := time.Duration(attempt) * time.Second
-			slog.Debug("Tentando reenvio de email", "attempt", attempt, "wait", waitTime, "to", notification.To)
+			logger.Debug("email.send.retry_wait", "attempt", attempt, "wait", waitTime, "to", notification.To)
 			time.Sleep(waitTime)
 		}
 
-		slog.Debug("Enviando email", "attempt", attempt+1, "to", notification.To, "subject", notification.Title)
+		logger.Debug("email.send.attempt", "attempt", attempt+1, "to", notification.To, "subject", notification.Title)
 
 		if err := e.dialer.DialAndSend(m); err != nil {
 			lastErr = err
-			slog.Warn("Falha no envio de email", "attempt", attempt+1, "error", err, "to", notification.To)
+			utils.SetSpanError(ctx, err)
+			logger.Warn("email.send.failure", "attempt", attempt+1, "error", err, "to", notification.To)
 			continue
 		}
 
-		slog.Info("Email enviado com sucesso", "to", notification.To, "subject", notification.Title, "attempts", attempt+1)
+		logger.Info("email.send.success", "to", notification.To, "subject", notification.Title, "attempts", attempt+1)
 		return nil // Sucesso
 	}
 

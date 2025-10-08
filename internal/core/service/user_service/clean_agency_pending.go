@@ -2,7 +2,6 @@ package userservices
 
 import (
 	"context"
-	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -11,14 +10,18 @@ import (
 func (us *userService) CleanAgencyPending(ctx context.Context, agency usermodel.UserInterface) (err error) {
 	ctx, spanEnd, terr := utils.GenerateTracer(ctx)
 	if terr != nil {
+		ctx = utils.ContextWithLogger(ctx)
+		utils.LoggerFromContext(ctx).Error("user.clean_agency_pending.tracer_error", "err", terr)
 		return utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+
 	realtors, err := us.GetRealtorsByAgency(ctx, agency.GetID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.clean_agency_pending.get_realtors_error", "agency_id", agency.GetID(), "err", err)
+		utils.LoggerFromContext(ctx).Error("user.clean_agency_pending.get_realtors_error", "agency_id", agency.GetID(), "err", err)
 		return utils.InternalError("Failed to get realtors by agency")
 	}
 

@@ -2,13 +2,13 @@ package s3adapter
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 type S3Adapter struct {
@@ -21,14 +21,17 @@ type S3Adapter struct {
 }
 
 func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter *S3Adapter, CloseFunc func() error, err error) {
-	slog.Info("Creating S3 adapter", "region", env.S3.Region, "bucket", env.S3.BucketName)
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+	logger.Info("adapter.s3.creating", "region", env.S3.Region, "bucket", env.S3.BucketName)
 
 	// Configuração básica da AWS
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(env.S3.Region),
 	)
 	if err != nil {
-		slog.Error("failed to load AWS config", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("adapter.s3.config_error", "error", err)
 		return nil, nil, err
 	}
 
@@ -69,10 +72,10 @@ func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter 
 
 	// CloseFunc (S3 clients não precisam de Close explícito, mas mantemos para compatibilidade)
 	CloseFunc = func() error {
-		slog.Debug("S3 adapter cleanup completed")
+		logger.Debug("adapter.s3.cleanup_completed")
 		return nil
 	}
 
-	slog.Info("S3 adapter created successfully", "bucket", env.S3.BucketName, "region", env.S3.Region)
+	logger.Info("adapter.s3.created", "bucket", env.S3.BucketName, "region", env.S3.Region)
 	return s3Adapter, CloseFunc, nil
 }

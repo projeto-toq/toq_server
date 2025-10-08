@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
@@ -18,17 +17,20 @@ func (ls *listingService) UpdateListing(ctx context.Context, listing listingmode
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, err := ls.gsi.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("listing.update.tx_start_error", "err", err)
+		logger.Error("listing.update.tx_start_error", "err", err)
 		return utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("listing.update.tx_rollback_error", "err", rbErr)
+				logger.Error("listing.update.tx_rollback_error", "err", rbErr)
 			}
 		}
 	}()
@@ -41,7 +43,7 @@ func (ls *listingService) UpdateListing(ctx context.Context, listing listingmode
 	err = ls.gsi.CommitTransaction(ctx, tx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("listing.update.tx_commit_error", "err", err)
+		logger.Error("listing.update.tx_commit_error", "err", err)
 		return utils.InternalError("")
 	}
 

@@ -3,7 +3,7 @@ package mysqluseradapter
 import (
 	"database/sql"
 	"errors"
-	"log/slog"
+	"fmt"
 
 	userentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/entities"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -74,9 +74,9 @@ func (r *DeviceTokenRepository) RemoveToken(userID int64, token string) error {
 func (r *DeviceTokenRepository) RemoveAllByUserID(userID int64) error {
 	_, err := r.db.Exec(`DELETE FROM device_tokens WHERE user_id = ?`, userID)
 	if err != nil {
-		slog.Warn("failed to remove device tokens", "userID", userID, "err", err)
+		return fmt.Errorf("remove device tokens by user %d: %w", userID, err)
 	}
-	return err
+	return nil
 }
 
 func (r *DeviceTokenRepository) ListTokensByOptedInUsers() ([]string, error) {

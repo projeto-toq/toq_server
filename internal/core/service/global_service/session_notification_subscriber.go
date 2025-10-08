@@ -1,10 +1,11 @@
 package globalservice
 
 import (
-	"log/slog"
+	"context"
 	"time"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/events"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -29,7 +30,15 @@ func (gs *globalService) StartSessionEventSubscriber() func() {
 		return func() {}
 	}
 	unsub := bus.Subscribe(func(evt events.SessionEvent) {
-		slog.Debug("session.event.received", "type", evt.Type, "user_id", evt.UserID, "session_id", evt.SessionID, "device_id", evt.DeviceID)
+		ctx := utils.ContextWithLogger(context.Background())
+		logger := utils.LoggerFromContext(ctx).With(
+			"type", evt.Type,
+			"user_id", evt.UserID,
+			"session_id", evt.SessionID,
+			"device_id", evt.DeviceID,
+		)
+
+		logger.Debug("session.event.received")
 		start := time.Now()
 		defer func() {
 			metricSessionEventHandleDuration.WithLabelValues(string(evt.Type)).Observe(time.Since(start).Seconds())
@@ -39,10 +48,10 @@ func (gs *globalService) StartSessionEventSubscriber() func() {
 			// If we have a deviceID, prune tokens associated to that device (schema fallback: no-op)
 			if evt.DeviceID != "" {
 				if err := gs.deviceTokenRepo.RemoveTokensByDeviceID(evt.UserID, evt.DeviceID); err != nil {
-					slog.Warn("session.subscriber.device_tokens_prune_failed", "user_id", evt.UserID, "device_id", evt.DeviceID, "err", err)
+					logger.Warn("session.subscriber.device_tokens_prune_failed", "err", err)
 					metricDevicePruneByEvent.WithLabelValues(string(evt.Type), "error").Inc()
 				} else {
-					slog.Info("session.subscriber.device_tokens_pruned", "user_id", evt.UserID, "device_id", evt.DeviceID)
+					logger.Info("session.subscriber.device_tokens_pruned")
 					metricDevicePruneByEvent.WithLabelValues(string(evt.Type), "success").Inc()
 				}
 			}

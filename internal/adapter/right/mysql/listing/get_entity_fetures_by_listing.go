@@ -3,8 +3,8 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"log/slog"
 
 	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
 
@@ -18,21 +18,27 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT * FROM features WHERE listing_id = ?;`
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("Error preparing statement on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-		err = fmt.Errorf("prepare get features: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_entity_features.prepare_error", "error", err)
+		return nil, fmt.Errorf("prepare get features: %w", err)
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, listingID)
-	if err != nil && err != sql.ErrNoRows {
-		slog.Error("Error executing query on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-		err = fmt.Errorf("query features by listing: %w", err)
-		return
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, sql.ErrNoRows
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_entity_features.query_error", "error", err)
+		return nil, fmt.Errorf("query features by listing: %w", err)
 	}
 	defer rows.Close()
 
@@ -45,19 +51,19 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 			&feature.Quantity,
 		)
 		if err != nil {
-			slog.Error("Error scanning row on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-			err = fmt.Errorf("scan feature row: %w", err)
-			return
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.listing.get_entity_features.scan_error", "error", err)
+			return nil, fmt.Errorf("scan feature row: %w", err)
 		}
 
 		features = append(features, feature)
 	}
 
 	if err = rows.Err(); err != nil {
-		slog.Error("Error iterating over rows on mysqllistingadapter/GetEntityFeaturesByListing", "error", err)
-		err = fmt.Errorf("rows iteration for features: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_entity_features.rows_error", "error", err)
+		return nil, fmt.Errorf("rows iteration for features: %w", err)
 	}
 
-	return
+	return features, nil
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
@@ -18,31 +17,34 @@ func (la *ListingAdapter) CreateGuarantee(ctx context.Context, tx *sql.Tx, guara
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	sql := `INSERT INTO guarantees (listing_id, priority, guarantee) VALUES (?, ?, ?);`
 
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
-		slog.Error("mysqllistingadapter/CreateGuarantee: error preparing statement", "error", err)
-		err = fmt.Errorf("prepare create guarantee: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.create_guarantee.prepare_error", "error", err)
+		return fmt.Errorf("prepare create guarantee: %w", err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, guarantee.ListingID(), guarantee.Priority(), guarantee.Guarantee())
 	if err != nil {
-		slog.Error("mysqllistingadapter/CreateGuarantee: error executing statement", "error", err)
-		err = fmt.Errorf("exec create guarantee: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.create_guarantee.exec_error", "error", err)
+		return fmt.Errorf("exec create guarantee: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		slog.Error("mysqllistingadapter/CreateGuarantee: error getting last insert ID", "error", err)
-		err = fmt.Errorf("last insert id for guarantee: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.create_guarantee.last_insert_error", "error", err)
+		return fmt.Errorf("last insert id for guarantee: %w", err)
 	}
 
 	guarantee.SetID(id)
 
-	return
+	return nil
 }

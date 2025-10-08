@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"log/slog"
-
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -17,17 +15,20 @@ func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, txErr := cs.gsi.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("complex.get_options.tx_start_error", "err", txErr)
+		logger.Error("complex.get_options.tx_start_error", "err", txErr)
 		return 0, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := cs.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("complex.get_options.tx_rollback_error", "err", rbErr)
+				logger.Error("complex.get_options.tx_rollback_error", "err", rbErr)
 			}
 		}
 	}()
@@ -39,7 +40,7 @@ func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number
 
 	if cmErr := cs.gsi.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		slog.Error("complex.get_options.tx_commit_error", "err", cmErr)
+		logger.Error("complex.get_options.tx_commit_error", "err", cmErr)
 		return 0, utils.InternalError("")
 	}
 

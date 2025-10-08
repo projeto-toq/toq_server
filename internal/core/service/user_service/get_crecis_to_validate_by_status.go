@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -19,18 +18,20 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+
 	// Start a database transaction
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.get_crecis_to_validate_by_status.tx_start_error", "error", err)
+		utils.LoggerFromContext(ctx).Error("user.get_crecis_to_validate_by_status.tx_start_error", "error", err)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.get_crecis_to_validate_by_status.tx_rollback_error", "error", rbErr)
+				utils.LoggerFromContext(ctx).Error("user.get_crecis_to_validate_by_status.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -44,13 +45,14 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.get_crecis_to_validate_by_status.tx_commit_error", "error", err)
+		utils.LoggerFromContext(ctx).Error("user.get_crecis_to_validate_by_status.tx_commit_error", "error", err)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 	return
 }
 
 func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
+	ctx = utils.ContextWithLogger(ctx)
 	// Buscar corretores pelo novo método filtrando por role e status
 	realtors, err = us.repo.GetUsersByRoleAndStatus(ctx, tx, permissionmodel.RoleSlugRealtor, UserRoleStatus)
 	if err != nil {
@@ -58,7 +60,7 @@ func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.
 			return nil, nil
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.get_crecis_to_validate_by_status.read_error", "status", UserRoleStatus, "error", err)
+		utils.LoggerFromContext(ctx).Error("user.get_crecis_to_validate_by_status.read_error", "status", UserRoleStatus, "error", err)
 		return nil, utils.InternalError("Failed to list realtors by status")
 	}
 	return realtors, nil

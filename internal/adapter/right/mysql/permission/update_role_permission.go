@@ -3,17 +3,37 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // UpdateRolePermission atualiza um role_permission existente
-func (pa *PermissionAdapter) UpdateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) error {
-	entity := permissionconverters.RolePermissionDomainToEntity(rolePermission)
+func (pa *PermissionAdapter) UpdateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) (err error) {
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return
+	}
+	defer spanEnd()
+
+	entity, convertErr := permissionconverters.RolePermissionDomainToEntity(rolePermission)
+	if convertErr != nil {
+		utils.SetSpanError(ctx, convertErr)
+		logger.Error("mysql.permission.update_role_permission.convert_error", "error", convertErr)
+		return fmt.Errorf("convert role permission domain to entity: %w", convertErr)
+	}
 	if entity == nil {
+		logger.Warn("mysql.permission.update_role_permission.empty_entity")
 		return nil
 	}
+
+	logger = logger.With(
+		"role_permission_id", entity.ID,
+		"role_id", entity.RoleID,
+		"permission_id", entity.PermissionID,
+	)
 
 	query := `
 		UPDATE role_permissions 
@@ -21,13 +41,19 @@ func (pa *PermissionAdapter) UpdateRolePermission(ctx context.Context, tx *sql.T
 		WHERE id = ?
 	`
 
-	_, err := pa.Update(ctx, tx, query,
+	rowsAffected, err := pa.Update(ctx, tx, query,
 		entity.RoleID,
 		entity.PermissionID,
 		entity.Granted,
 		entity.Conditions,
 		entity.ID,
 	)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.update_role_permission.exec_error", "error", err)
+		return fmt.Errorf("update role permission: %w", err)
+	}
 
-	return err
+	logger.Debug("mysql.permission.update_role_permission.success", "rows_affected", rowsAffected)
+	return nil
 }

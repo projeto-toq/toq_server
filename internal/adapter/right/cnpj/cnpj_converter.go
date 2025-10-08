@@ -2,7 +2,6 @@ package cnpjadapter
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -23,7 +22,6 @@ func ConvertCNPJEntityToModel(result cnpjResult) (cnpjmodel.CNPJInterface, error
 
 	openingDate, err := time.Parse(cnpjDateLayout, result.DataNascimento)
 	if err != nil {
-		slog.Error("cnpj.validation.parse_opening_date_error", "value", result.DataNascimento, "err", err)
 		return nil, fmt.Errorf("%w: failed to parse CNPJ opening date: %w", cnpjport.ErrInfra, err)
 	}
 	cnpj.SetDataNascimento(openingDate)

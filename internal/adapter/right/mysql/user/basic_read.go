@@ -3,7 +3,6 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -15,23 +14,29 @@ func (ua *UserAdapter) Read(ctx context.Context, tx *sql.Tx, query string, args 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("Error preparing statement on mysqluseradapter/Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.read.prepare_error", "error", err)
 		return nil, err
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
-		slog.Error("Error executing query on mysqluseradapter/Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.read.query_error", "error", err)
 		return nil, err
 	}
 	defer rows.Close()
 
 	cols, err := rows.Columns()
 	if err != nil {
-		slog.Error("Error getting columns on mysqluseradapter/Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.read.columns_error", "error", err)
 		return nil, err
 	}
 
@@ -45,14 +50,16 @@ func (ua *UserAdapter) Read(ctx context.Context, tx *sql.Tx, query string, args 
 		}
 		err = rows.Scan(entityElementPtrs...)
 		if err != nil {
-			slog.Error("Error scanning row on mysqluseradapter/Read", "error", err)
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.user.read.scan_error", "error", err)
 			return nil, err
 		}
 		entity = append(entity, entityElements)
 	}
 
 	if err = rows.Err(); err != nil {
-		slog.Error("Error iterating over rows on mysqluseradapter/Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.read.rows_error", "error", err)
 		return nil, err
 	}
 

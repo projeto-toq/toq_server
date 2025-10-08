@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 	"time"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -23,18 +22,21 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	// Start transaction
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("auth.request_password_change.tx_start_error", "error", txErr)
+		logger.Error("auth.request_password_change.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("auth.request_password_change.tx_rollback_error", "error", rbErr)
+				logger.Error("auth.request_password_change.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -54,7 +56,7 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	// Commit before notify
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		utils.SetSpanError(ctx, commitErr)
-		slog.Error("auth.request_password_change.tx_commit_error", "error", commitErr)
+		logger.Error("auth.request_password_change.tx_commit_error", "error", commitErr)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -70,7 +72,7 @@ func (us *userService) RequestPasswordChange(ctx context.Context, nationalID str
 	if notifyErr := notificationService.SendNotification(ctx, emailRequest); notifyErr != nil {
 		// Do not impact main operation
 		utils.SetSpanError(ctx, notifyErr)
-		slog.Error("auth.request_password_change.notification_error", "user_id", user.GetID(), "error", notifyErr)
+		logger.Error("auth.request_password_change.notification_error", "user_id", user.GetID(), "error", notifyErr)
 		return nil
 	}
 	return nil

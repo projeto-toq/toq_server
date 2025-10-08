@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -19,18 +18,20 @@ func (us *userService) GetUserByID(ctx context.Context, id int64) (user usermode
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+
 	// Iniciar transação somente leitura para leitura consistente
 	tx, txErr := us.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("user.get_by_id.tx_start_error", "error", txErr)
+		utils.LoggerFromContext(ctx).Error("user.get_by_id.tx_start_error", "error", txErr)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.get_by_id.tx_rollback_error", "error", rbErr)
+				utils.LoggerFromContext(ctx).Error("user.get_by_id.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -42,7 +43,7 @@ func (us *userService) GetUserByID(ctx context.Context, id int64) (user usermode
 
 	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		slog.Error("user.get_by_id.tx_commit_error", "error", cmErr)
+		utils.LoggerFromContext(ctx).Error("user.get_by_id.tx_commit_error", "error", cmErr)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 
@@ -53,6 +54,7 @@ func (us *userService) GetUserByID(ctx context.Context, id int64) (user usermode
 // It enforces the same invariant regarding the active role.
 // Português: use esta variante quando já estiver dentro de uma transação; nunca retorne usuário sem active role.
 func (us *userService) GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error) {
+	ctx = utils.ContextWithLogger(ctx)
 
 	// Carrega o usuário básico
 	user, err = us.repo.GetUserByID(ctx, tx, id)
@@ -61,7 +63,7 @@ func (us *userService) GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int
 			return nil, utils.NotFoundError("User")
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.get_by_id.read_user_error", "error", err, "user_id", id)
+		utils.LoggerFromContext(ctx).Error("user.get_by_id.read_user_error", "error", err, "user_id", id)
 		return nil, utils.InternalError("Failed to get user by ID")
 	}
 
@@ -69,13 +71,13 @@ func (us *userService) GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int
 	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, id)
 	if aerr != nil {
 		utils.SetSpanError(ctx, aerr)
-		slog.Error("user.get_by_id.read_active_role_error", "error", aerr, "user_id", id)
+		utils.LoggerFromContext(ctx).Error("user.get_by_id.read_active_role_error", "error", aerr, "user_id", id)
 		return nil, utils.InternalError("Failed to get active user role")
 	}
 
 	if activeRole == nil {
 		// Invariável do domínio: todo usuário deve ter exatamente um active role válido
-		slog.Error("user.active_role.missing", "user_id", id)
+		utils.LoggerFromContext(ctx).Error("user.active_role.missing", "user_id", id)
 		derr := utils.InternalError("User active role missing")
 		utils.SetSpanError(ctx, derr)
 		return nil, derr

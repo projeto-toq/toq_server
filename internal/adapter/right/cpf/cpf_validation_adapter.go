@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -51,6 +50,9 @@ func (c *CPFAdapter) GetCpf(ctx context.Context, cpfToSearch string, bornAT time
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if bornAT.IsZero() {
 		return nil, cpfport.ErrBirthDateInvalid
 	}
@@ -58,18 +60,18 @@ func (c *CPFAdapter) GetCpf(ctx context.Context, cpfToSearch string, bornAT time
 	req, err := c.newCPFRequest(ctx, cpfToSearch, bornAT)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cpf.validation.request_build_error", "err", err)
+		logger.Error("cpf.validation.request_build_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to build CPF validation request: %w", cpfport.ErrInfra, err)
 	}
 
 	maskedCPF := maskCPF(cpfToSearch)
 	bornAtFormatted := bornAT.Format(cpfDateLayout)
-	slog.Debug("cpf.validation.request", "cpf", maskedCPF, "born_at", bornAtFormatted)
+	logger.Debug("cpf.validation.request", "cpf", maskedCPF, "born_at", bornAtFormatted)
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cpf.validation.request_error", "err", err)
+		logger.Error("cpf.validation.request_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to execute CPF validation request: %w", cpfport.ErrInfra, err)
 	}
 	defer resp.Body.Close()
@@ -77,20 +79,20 @@ func (c *CPFAdapter) GetCpf(ctx context.Context, cpfToSearch string, bornAT time
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cpf.validation.read_body_error", "err", err)
+		logger.Error("cpf.validation.read_body_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to read CPF validation response: %w", cpfport.ErrInfra, err)
 	}
 
 	providerResp, err := decodeCPFResponse(body)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cpf.validation.decode_error", "err", err)
+		logger.Error("cpf.validation.decode_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to decode CPF validation response: %w", cpfport.ErrInfra, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		providerErr := mapProviderError(providerResp.Message, resp.StatusCode)
-		logProviderError(providerErr, "cpf.validation.provider_http_error", resp.StatusCode)
+		logProviderError(ctx, providerErr, "cpf.validation.provider_http_error", resp.StatusCode)
 		if isInfraError(providerErr) {
 			utils.SetSpanError(ctx, providerErr)
 		}
@@ -99,7 +101,7 @@ func (c *CPFAdapter) GetCpf(ctx context.Context, cpfToSearch string, bornAT time
 
 	if !providerResp.Status || !strings.EqualFold(providerResp.Return, cpfReturnOK) {
 		providerErr := mapProviderError(providerResp.Message, http.StatusOK)
-		logProviderError(providerErr, "cpf.validation.provider_error", 0)
+		logProviderError(ctx, providerErr, "cpf.validation.provider_error", 0)
 		if isInfraError(providerErr) {
 			utils.SetSpanError(ctx, providerErr)
 		}
@@ -109,13 +111,13 @@ func (c *CPFAdapter) GetCpf(ctx context.Context, cpfToSearch string, bornAT time
 	if providerResp.Result == nil {
 		err := fmt.Errorf("%w: cpf provider returned empty result", cpfport.ErrInfra)
 		utils.SetSpanError(ctx, err)
-		slog.Error("cpf.validation.empty_result")
+		logger.Error("cpf.validation.empty_result")
 		return nil, err
 	}
 
 	cpfModel, err := ConvertCPFEntityToModel(*providerResp.Result)
 	if err != nil {
-		logConversionError(err)
+		logConversionError(ctx, err)
 		if isInfraError(err) {
 			utils.SetSpanError(ctx, err)
 		}
@@ -123,16 +125,16 @@ func (c *CPFAdapter) GetCpf(ctx context.Context, cpfToSearch string, bornAT time
 	}
 
 	if err := ensureBirthDateMatches(bornAT, cpfModel.GetDataNascimento()); err != nil {
-		logProviderError(err, "cpf.validation.birth_date_mismatch", 0)
+		logProviderError(ctx, err, "cpf.validation.birth_date_mismatch", 0)
 		return nil, err
 	}
 
 	if !isSituacaoRegular(cpfModel.GetSituacaoCadastral()) {
-		slog.Warn("cpf.validation.irregular_status", "cpf", maskedCPF, "status", cpfModel.GetSituacaoCadastral())
+		logger.Warn("cpf.validation.irregular_status", "cpf", maskedCPF, "status", cpfModel.GetSituacaoCadastral())
 		return nil, cpfport.ErrStatusIrregular
 	}
 
-	slog.Debug("cpf.validation.success", "cpf", maskedCPF, "consumed", providerResp.Consumed)
+	logger.Debug("cpf.validation.success", "cpf", maskedCPF, "consumed", providerResp.Consumed)
 	return cpfModel, nil
 }
 
@@ -243,7 +245,7 @@ func isInfraError(err error) bool {
 	return true
 }
 
-func logProviderError(err error, event string, status int) {
+func logProviderError(ctx context.Context, err error, event string, status int) {
 	if err == nil {
 		return
 	}
@@ -253,21 +255,24 @@ func logProviderError(err error, event string, status int) {
 		attrs = append(attrs, "status_code", status)
 	}
 
+	logger := utils.LoggerFromContext(ctx)
 	if isInfraError(err) {
-		slog.Error(event, attrs...)
+		logger.Error(event, attrs...)
 		return
 	}
 
-	slog.Warn(event, attrs...)
+	logger.Warn(event, attrs...)
 }
 
-func logConversionError(err error) {
+func logConversionError(ctx context.Context, err error) {
 	if isInfraError(err) {
-		slog.Error("cpf.validation.convert_error", "err", err)
+		logger := utils.LoggerFromContext(ctx)
+		logger.Error("cpf.validation.convert_error", "err", err)
 		return
 	}
 
-	slog.Warn("cpf.validation.convert_error", "err", err)
+	logger := utils.LoggerFromContext(ctx)
+	logger.Warn("cpf.validation.convert_error", "err", err)
 }
 
 func maskCPF(value string) string {

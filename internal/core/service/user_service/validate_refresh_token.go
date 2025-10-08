@@ -1,7 +1,7 @@
 package userservices
 
 import (
-	"log/slog"
+	"context"
 
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -9,10 +9,12 @@ import (
 )
 
 func validateRefreshToken(refresh string) (userID int64, err error) {
+	logger := utils.LoggerFromContext(context.Background())
+
 	// Validação do token com verificação explícita de método de assinatura e tipagem
 	token, parseErr := jwt.Parse(refresh, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			slog.Warn("jwt.unexpected_signing_method", "alg", token.Header["alg"])
+			logger.Warn("jwt.unexpected_signing_method", "alg", token.Header["alg"])
 			return nil, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 		}
 		secret := globalmodel.GetJWTSecret()
@@ -36,7 +38,7 @@ func validateRefreshToken(refresh string) (userID int64, err error) {
 
 	// Verifica tipagem do token
 	if typ, ok := payload["typ"].(string); !ok || typ != "refresh" {
-		slog.Warn("jwt.invalid_type_for_refresh", "typ", payload["typ"]) // log de segurança
+		logger.Warn("jwt.invalid_type_for_refresh", "typ", payload["typ"]) // log de segurança
 		return 0, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 

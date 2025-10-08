@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
+	"fmt"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -19,11 +19,15 @@ func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, i
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `SELECT * FROM temp_wrong_signin WHERE user_id = ?;`
 
 	entities, err := ua.Read(ctx, tx, query, id)
 	if err != nil {
-		slog.Error("mysqluseradapter/GetWrongSigninByUserID: error executing Read", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_wrong_signin.read_error", "error", err)
 		return nil, err
 	}
 
@@ -32,13 +36,17 @@ func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, i
 	}
 
 	if len(entities) > 1 {
-		slog.Error("mysqluseradapter/GetWrongSigninByUserID: multiple roles found with the same role", "role", id)
-		return nil, errors.New("multiple wrong_signin rows found")
+		errMultiple := errors.New("multiple wrong_signin rows found")
+		utils.SetSpanError(ctx, errMultiple)
+		logger.Error("mysql.user.get_wrong_signin.multiple_rows_error", "user_id", id, "error", errMultiple)
+		return nil, errMultiple
 	}
 
 	wrongSignin, err = userconverters.WrongSignInEntityToDomain(entities[0])
 	if err != nil {
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_wrong_signin.convert_error", "error", err)
+		return nil, fmt.Errorf("convert wrong signin entity: %w", err)
 	}
 
 	return

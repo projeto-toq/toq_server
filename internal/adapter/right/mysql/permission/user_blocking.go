@@ -3,14 +3,23 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
+	"fmt"
 	"time"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // BlockUserTemporarily blocks a user temporarily by updating their user_role status and blocked_until
 func (pa *PermissionAdapter) BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time, reason string) error {
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return err
+	}
+	defer spanEnd()
+
+	logger = logger.With("user_id", userID, "blocked_until", blockedUntil, "reason", reason)
+
 	// O schema de user_roles não contém status_reason nem updated_at; manter apenas campos válidos.
 	query := `
 		UPDATE user_roles 
@@ -18,18 +27,26 @@ func (pa *PermissionAdapter) BlockUserTemporarily(ctx context.Context, tx *sql.T
 		WHERE user_id = ? AND is_active = 1
 	`
 
-	_, err := tx.ExecContext(ctx, query, permissionmodel.StatusTempBlocked, blockedUntil, userID)
-	if err != nil {
-		slog.Error("Failed to block user temporarily", "userID", userID, "error", err)
-		return err
+	if _, err = tx.ExecContext(ctx, query, permissionmodel.StatusTempBlocked, blockedUntil, userID); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.block_user_temporarily.exec_error", "error", err)
+		return fmt.Errorf("block user temporarily exec: %w", err)
 	}
 
-	slog.Debug("User blocked temporarily in database", "userID", userID, "blockedUntil", blockedUntil, "reason", reason)
+	logger.Debug("mysql.permission.block_user_temporarily.success")
 	return nil
 }
 
 // UnblockUser unblocks a user by setting their status back to active and clearing blocked_until
 func (pa *PermissionAdapter) UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error {
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return err
+	}
+	defer spanEnd()
+
+	logger = logger.With("user_id", userID)
+
 	// Remover colunas inexistentes no schema (status_reason, updated_at).
 	query := `
 		UPDATE user_roles 
@@ -37,22 +54,28 @@ func (pa *PermissionAdapter) UnblockUser(ctx context.Context, tx *sql.Tx, userID
 		WHERE user_id = ? AND status = ? AND is_active = 1
 	`
 
-	_, err := tx.ExecContext(ctx, query,
+	if _, err = tx.ExecContext(ctx, query,
 		permissionmodel.StatusActive,
 		userID,
 		permissionmodel.StatusTempBlocked,
-	)
-	if err != nil {
-		slog.Error("Failed to unblock user", "userID", userID, "error", err)
-		return err
+	); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.unblock_user.exec_error", "error", err)
+		return fmt.Errorf("unblock user exec: %w", err)
 	}
 
-	slog.Debug("User unblocked in database", "userID", userID)
+	logger.Debug("mysql.permission.unblock_user.success")
 	return nil
 }
 
 // GetExpiredTempBlockedUsers returns users whose temporary block has expired
 func (pa *PermissionAdapter) GetExpiredTempBlockedUsers(ctx context.Context, tx *sql.Tx) ([]permissionmodel.UserRoleInterface, error) {
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer spanEnd()
+
 	query := `
 		SELECT ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at, ur.blocked_until
 		FROM user_roles ur
@@ -64,24 +87,32 @@ func (pa *PermissionAdapter) GetExpiredTempBlockedUsers(ctx context.Context, tx 
 
 	rows, err := tx.QueryContext(ctx, query, permissionmodel.StatusTempBlocked)
 	if err != nil {
-		slog.Error("Failed to query expired temp blocked users", "error", err)
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.get_expired_temp_blocked_users.query_error", "error", err)
+		return nil, fmt.Errorf("query expired temp blocked users: %w", err)
 	}
 	defer rows.Close()
 
 	var userRoles []permissionmodel.UserRoleInterface
 
+	index := 0
 	for rows.Next() {
+		index++
 		userRole := permissionmodel.NewUserRole()
-		var id, userID, roleID int64
-		var isActive bool
-		var status permissionmodel.UserRoleStatus
-		var expiresAt, blockedUntil *time.Time
+		var (
+			id           int64
+			userID       int64
+			roleID       int64
+			isActive     bool
+			status       permissionmodel.UserRoleStatus
+			expiresAt    sql.NullTime
+			blockedUntil sql.NullTime
+		)
 
-		err := rows.Scan(&id, &userID, &roleID, &isActive, &status, &expiresAt, &blockedUntil)
-		if err != nil {
-			slog.Error("Failed to scan expired temp blocked user row", "error", err)
-			continue
+		if err := rows.Scan(&id, &userID, &roleID, &isActive, &status, &expiresAt, &blockedUntil); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.permission.get_expired_temp_blocked_users.scan_error", "row_index", index-1, "error", err)
+			return nil, fmt.Errorf("scan expired temp blocked user row: %w", err)
 		}
 
 		userRole.SetID(id)
@@ -89,17 +120,25 @@ func (pa *PermissionAdapter) GetExpiredTempBlockedUsers(ctx context.Context, tx 
 		userRole.SetRoleID(roleID)
 		userRole.SetIsActive(isActive)
 		userRole.SetStatus(status)
-		userRole.SetExpiresAt(expiresAt)
-		userRole.SetBlockedUntil(blockedUntil)
+
+		if expiresAt.Valid {
+			t := expiresAt.Time
+			userRole.SetExpiresAt(&t)
+		}
+		if blockedUntil.Valid {
+			t := blockedUntil.Time
+			userRole.SetBlockedUntil(&t)
+		}
 
 		userRoles = append(userRoles, userRole)
 	}
 
 	if err := rows.Err(); err != nil {
-		slog.Error("Error iterating expired temp blocked users rows", "error", err)
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.get_expired_temp_blocked_users.rows_error", "error", err)
+		return nil, fmt.Errorf("iterate expired temp blocked users rows: %w", err)
 	}
 
-	slog.Debug("Found expired temp blocked users", "count", len(userRoles))
+	logger.Debug("mysql.permission.get_expired_temp_blocked_users.success", "count", len(userRoles))
 	return userRoles, nil
 }

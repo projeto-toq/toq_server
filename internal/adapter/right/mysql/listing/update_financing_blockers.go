@@ -3,10 +3,12 @@ package mysqllistingadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
 	"errors"
+
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
@@ -17,6 +19,9 @@ func (la *ListingAdapter) UpdateFinancingBlockers(ctx context.Context, tx *sql.T
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	//check if there is any data to update
 	if len(blockers) == 0 {
 		return
@@ -25,19 +30,23 @@ func (la *ListingAdapter) UpdateFinancingBlockers(ctx context.Context, tx *sql.T
 	// Remove all blocker from listing
 	err = la.DeleteListingFinancingBlockers(ctx, tx, blockers[0].ListingID())
 	if err != nil {
-		//check if the error is not found, because it's ok if there is no row to delete
 		if errors.Is(err, sql.ErrNoRows) {
-			return
+			return nil
 		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.update_financing_blockers.delete_error", "error", err)
+		return fmt.Errorf("delete listing financing blockers: %w", err)
 	}
 
 	// Insert the new blokers
 	for _, blocker := range blockers {
 		err = la.CreateFinancingBlocker(ctx, tx, blocker)
 		if err != nil {
-			return
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.listing.update_financing_blockers.create_error", "error", err)
+			return fmt.Errorf("create financing blocker: %w", err)
 		}
 	}
 
-	return
+	return nil
 }

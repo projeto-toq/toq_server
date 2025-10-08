@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -17,6 +16,9 @@ func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, i
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `UPDATE users SET last_activity_at = ? WHERE id = ?;`
 
 	_, err = ua.Update(ctx, tx, query,
@@ -24,7 +26,8 @@ func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, i
 		id,
 	)
 	if err != nil {
-		slog.Error("mysqluseradapter/UpdateUserLastActivity: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.update_user_last_activity.update_error", "error", err)
 		return fmt.Errorf("update user last_activity: %w", err)
 	}
 

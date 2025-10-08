@@ -3,7 +3,7 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
+	"fmt"
 
 	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
@@ -13,9 +13,13 @@ import (
 
 // GetActiveUserRoleByUserID retorna o role ativo único do usuário
 func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error) {
-	// tracing mínimo no adapter, conforme guia
-	ctx, end, _ := utils.GenerateTracer(ctx)
-	defer end()
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer spanEnd()
+
+	logger = logger.With("user_id", userID)
 
 	// Query com JOIN em roles para popular o Role no UserRole
 	query := `
@@ -58,7 +62,7 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 		rIsActiveInt int64
 	)
 
-	err := tx.QueryRowContext(ctx, query, userID).Scan(
+	err = tx.QueryRowContext(ctx, query, userID).Scan(
 		&id,
 		&uid,
 		&roleID,
@@ -75,10 +79,12 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Nenhum role ativo encontrado
+			logger.Debug("mysql.permission.get_active_user_role_by_user_id.not_found")
 			return nil, nil
 		}
-		slog.Error("mysqlpermissionadapter/GetActiveUserRoleByUserID: error scanning row", "error", err)
-		return nil, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.permission.get_active_user_role_by_user_id.scan_error", "error", err)
+		return nil, fmt.Errorf("get active user role by user id scan: %w", err)
 	}
 
 	// Monta entidades tipadas
@@ -109,11 +115,19 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 	}
 
 	// Converte para domínio e associa Role ao UserRole
-	userRole := permissionconverters.UserRoleEntityToDomain(userRoleEntity)
+	userRole, convertErr := permissionconverters.UserRoleEntityToDomain(userRoleEntity)
+	if convertErr != nil {
+		utils.SetSpanError(ctx, convertErr)
+		logger.Error("mysql.permission.get_active_user_role_by_user_id.convert_user_role_error", "error", convertErr)
+		return nil, fmt.Errorf("convert active user role entity to domain: %w", convertErr)
+	}
 	if userRole != nil {
 		role := permissionconverters.RoleEntityToDomain(roleEntity)
-		userRole.SetRole(role)
+		if role != nil {
+			userRole.SetRole(role)
+		}
 	}
 
+	logger.Debug("mysql.permission.get_active_user_role_by_user_id.success", "role_id", roleID)
 	return userRole, nil
 }

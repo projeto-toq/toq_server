@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -18,6 +17,9 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 		return
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	sql := `INSERT INTO users (
 			full_name, nick_name, national_id, creci_number, creci_state, creci_validity,
@@ -51,7 +53,8 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 		entity.LastSignInAttempt,
 	)
 	if err != nil {
-		slog.Error("mysqluseradapter/CreateUser: error executing Create", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.create_user.create_error", "error", err)
 		return fmt.Errorf("create user: %w", err)
 	}
 

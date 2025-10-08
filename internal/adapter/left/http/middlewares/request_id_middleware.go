@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/google/uuid"
 )
 
@@ -29,6 +30,7 @@ func RequestIDMiddleware() gin.HandlerFunc {
 		// Add request ID to the standard context for service layer compatibility
 		ctx := c.Request.Context()
 		ctx = context.WithValue(ctx, globalmodel.RequestIDKey, requestID)
+		ctx = coreutils.ContextWithLogger(ctx)
 		c.Request = c.Request.WithContext(ctx)
 
 		// Add request ID to Gin context for easy access in handlers and middlewares

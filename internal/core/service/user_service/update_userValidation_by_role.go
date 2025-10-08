@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -26,6 +25,9 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	generateTokens = false
 
 	// Obter role ativa de forma segura via permission service (dentro da mesma transação)
@@ -35,11 +37,11 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 			return false, utils.WrapDomainErrorWithSource(derr)
 		}
 		utils.SetSpanError(ctx, aerr)
-		slog.Error("user.validation.get_active_role_error", "error", aerr, "user_id", userID)
+		logger.Error("user.validation.get_active_role_error", "error", aerr, "user_id", userID)
 		return false, utils.InternalError("Failed to get active user role")
 	}
 	if activeRole == nil || activeRole.GetRole() == nil {
-		slog.Warn("user.validation.active_role_missing", "user_id", userID)
+		logger.Warn("user.validation.active_role_missing", "user_id", userID)
 		return false, utils.ErrUserActiveRoleMissing
 	}
 
@@ -54,7 +56,7 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 				return false, utils.WrapDomainErrorWithSource(derr)
 			}
 			utils.SetSpanError(ctx, err)
-			slog.Error("user.validation.update_status_error", "stage", "email_verified", "error", err, "user_id", userID)
+			logger.Error("user.validation.update_status_error", "stage", "email_verified", "error", err, "user_id", userID)
 			return false, utils.InternalError("Failed to update user status")
 		}
 		generateTokens = true
@@ -66,7 +68,7 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 				return false, utils.WrapDomainErrorWithSource(derr)
 			}
 			utils.SetSpanError(ctx, err)
-			slog.Error("user.validation.update_status_error", "stage", "phone_verified", "error", err, "user_id", userID)
+			logger.Error("user.validation.update_status_error", "stage", "phone_verified", "error", err, "user_id", userID)
 			return false, utils.InternalError("Failed to update user status")
 		}
 		generateTokens = false

@@ -3,7 +3,6 @@ package globalservice
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"strings"
 
 	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
@@ -13,6 +12,9 @@ import (
 )
 
 func (gs *globalService) GetCEP(ctx context.Context, cep string) (cepmodel.CEPInterface, error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	_, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("Failed to initialize CEP lookup")
@@ -23,22 +25,22 @@ func (gs *globalService) GetCEP(ctx context.Context, cep string) (cepmodel.CEPIn
 	if err != nil {
 		switch {
 		case errors.Is(err, cepport.ErrInvalid):
-			slog.Warn("global_service.get_cep.invalid", "err", err, "cep", maskCEPForLog(cep))
+			logger.Warn("global_service.get_cep.invalid", "err", err, "cep", maskCEPForLog(cep))
 			return nil, utils.ValidationError("zip_code", "Invalid CEP")
 		case errors.Is(err, cepport.ErrNotFound):
-			slog.Warn("global_service.get_cep.not_found", "err", err, "cep", maskCEPForLog(cep))
+			logger.Warn("global_service.get_cep.not_found", "err", err, "cep", maskCEPForLog(cep))
 			return nil, utils.ValidationError("zip_code", "CEP not found")
 		case errors.Is(err, cepport.ErrRateLimited):
-			slog.Warn("global_service.get_cep.rate_limited", "err", err, "cep", maskCEPForLog(cep))
+			logger.Warn("global_service.get_cep.rate_limited", "err", err, "cep", maskCEPForLog(cep))
 			utils.SetSpanError(ctx, err)
 			return nil, utils.TooManyAttemptsError("CEP lookup rate limit exceeded")
 		case errors.Is(err, cepport.ErrInfra):
-			slog.Error("global_service.get_cep.infra", "err", err, "cep", maskCEPForLog(cep))
+			logger.Error("global_service.get_cep.infra", "err", err, "cep", maskCEPForLog(cep))
 			utils.SetSpanError(ctx, err)
 			return nil, utils.InternalError("Failed to retrieve CEP information")
 		}
 
-		slog.Error("global_service.get_cep.unhandled", "err", err, "cep", maskCEPForLog(cep))
+		logger.Error("global_service.get_cep.unhandled", "err", err, "cep", maskCEPForLog(cep))
 		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("Failed to retrieve CEP information")
 	}

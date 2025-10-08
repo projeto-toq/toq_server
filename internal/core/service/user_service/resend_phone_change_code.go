@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 	"time"
 
 	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
@@ -25,17 +24,20 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("user.resend_phone_change_code.tx_start_error", "error", txErr)
+		logger.Error("user.resend_phone_change_code.tx_start_error", "error", txErr)
 		return utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.resend_phone_change_code.tx_rollback_error", "error", rbErr)
+				logger.Error("user.resend_phone_change_code.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -48,7 +50,7 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 
 	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.resend_phone_change_code.tx_commit_error", "error", err)
+		logger.Error("user.resend_phone_change_code.tx_commit_error", "error", err)
 		return utils.InternalError("Failed to commit transaction")
 	}
 
@@ -61,7 +63,7 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 	}
 	if notifyErr := notificationService.SendNotification(ctx, smsRequest); notifyErr != nil {
 		utils.SetSpanError(ctx, notifyErr)
-		slog.Error("user.resend_phone_change_code.notification_error", "user_id", userID, "error", notifyErr)
+		logger.Error("user.resend_phone_change_code.notification_error", "user_id", userID, "error", notifyErr)
 	}
 	return
 }
@@ -69,13 +71,15 @@ func (us *userService) ResendPhoneChangeCode(ctx context.Context) (err error) {
 // resendPhoneChangeCode performs the regeneration of the phone code and extends the expiration.
 // Returns the destination phone (new phone) for notification purposes.
 func (us *userService) resendPhoneChangeCode(ctx context.Context, tx *sql.Tx, userID int64) (destPhone string, code string, err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	validation, err := us.repo.GetUserValidations(ctx, tx, userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", "", utils.ErrPhoneChangeNotPending
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.resend_phone_change_code.read_validations_error", "error", err, "user_id", userID)
+		logger.Error("user.resend_phone_change_code.read_validations_error", "error", err, "user_id", userID)
 		return "", "", err
 	}
 
@@ -94,7 +98,7 @@ func (us *userService) resendPhoneChangeCode(ctx context.Context, tx *sql.Tx, us
 	// Verificar unicidade global (outros usuários não podem ter este telefone)
 	if exist, verr := us.repo.ExistsPhoneForAnotherUser(ctx, tx, destPhone, userID); verr != nil {
 		utils.SetSpanError(ctx, verr)
-		slog.Error("user.resend_phone_change_code.exists_phone_error", "error", verr, "user_id", userID)
+		logger.Error("user.resend_phone_change_code.exists_phone_error", "error", verr, "user_id", userID)
 		return "", "", verr
 	} else if exist {
 		return "", "", utils.ErrPhoneAlreadyInUse

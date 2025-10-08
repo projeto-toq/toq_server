@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // PostPhotoUploadURL generates a pre-signed URL to upload a profile photo
@@ -24,7 +25,7 @@ import (
 // @Router       /user/photo/upload-url [post]
 // @Security     BearerAuth
 func (uh *UserHandler) PostPhotoUploadURL(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	var request dto.GetPhotoUploadURLRequest
 	if err := c.ShouldBindJSON(&request); err != nil {

@@ -9,7 +9,7 @@ import (
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 type AdminHandler struct {
@@ -33,7 +33,7 @@ func NewAdminHandlerAdapter(userService userservices.UserServiceInterface) *Admi
 //	@Failure      500  {object}  map[string]any
 //	@Router       /admin/user/pending [get]
 func (h *AdminHandler) GetPendingRealtors(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	// Use service to list by StatusPendingManual
 	realtors, err := h.userService.GetCrecisToValidateByStatus(ctx, permissionmodel.StatusPendingManual)
 	if err != nil {
@@ -70,7 +70,7 @@ func (h *AdminHandler) GetPendingRealtors(c *gin.Context) {
 //	@Failure      500  {object}  map[string]any
 //	@Router       /admin/user [post]
 func (h *AdminHandler) PostAdminGetUser(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminGetUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
@@ -103,7 +103,7 @@ func (h *AdminHandler) PostAdminGetUser(c *gin.Context) {
 //	@Failure      500  {object}  map[string]any
 //	@Router       /admin/user/approve [post]
 func (h *AdminHandler) PostAdminApproveUser(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminApproveUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
@@ -113,7 +113,7 @@ func (h *AdminHandler) PostAdminApproveUser(c *gin.Context) {
 	// Validate status as enum
 	target, statusErr := req.ToStatus()
 	if statusErr != nil {
-		httperrors.SendHTTPErrorObj(c, utils.ValidationError("status", statusErr.Error()))
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("status", statusErr.Error()))
 		return
 	}
 	if err := h.userService.ApproveCreciManual(ctx, req.ID, target); err != nil {
@@ -141,7 +141,7 @@ func (h *AdminHandler) PostAdminApproveUser(c *gin.Context) {
 //	@Failure      500  {object}  map[string]any
 //	@Router       /admin/user/creci-download-url [post]
 func (h *AdminHandler) PostAdminCreciDownloadURL(c *gin.Context) {
-	ctx := c.Request.Context()
+	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminCreciDownloadURLRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))

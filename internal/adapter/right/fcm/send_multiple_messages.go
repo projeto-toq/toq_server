@@ -2,17 +2,25 @@ package fcmadapter
 
 import (
 	"context"
-	"log/slog"
 
 	"firebase.google.com/go/messaging"
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // SendMultipleMessages sends a notification to multiple device tokens
 // Firebase supports up to 500 tokens per batch request
 func (f *FCMAdapter) SendMultipleMessages(ctx context.Context, message globalmodel.Notification, deviceTokens []string) error {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return err
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	if len(deviceTokens) == 0 {
-		slog.Warn("no device tokens provided for multiple message send")
+		logger.Warn("fcm.send_multiple.empty_tokens")
 		return nil
 	}
 
@@ -27,17 +35,25 @@ func (f *FCMAdapter) SendMultipleMessages(ctx context.Context, message globalmod
 
 		batch := deviceTokens[i:end]
 		if err := f.sendBatch(ctx, message, batch); err != nil {
-			slog.Error("failed to send batch", "batch_start", i, "batch_end", end, "error", err)
+			logger.Error("fcm.send_multiple.batch_error", "batch_start", i, "batch_end", end, "error", err)
 			return err
 		}
 
-		slog.Info("batch sent successfully", "tokens_count", len(batch), "batch_start", i)
+		logger.Info("fcm.send_multiple.batch_success", "tokens_count", len(batch), "batch_start", i)
 	}
 
 	return nil
 }
 
 func (f *FCMAdapter) sendBatch(ctx context.Context, message globalmodel.Notification, tokens []string) error {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return err
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 	multicastMessage := &messaging.MulticastMessage{
 		Notification: &messaging.Notification{
 			Title:    message.Title,
@@ -49,12 +65,13 @@ func (f *FCMAdapter) sendBatch(ctx context.Context, message globalmodel.Notifica
 
 	response, err := f.client.SendMulticast(ctx, multicastMessage)
 	if err != nil {
-		slog.Error("failed to send multicast message", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("fcm.send_multiple.multicast_error", "error", err)
 		return err
 	}
 
 	// Log results
-	slog.Info("multicast message sent",
+	logger.Info("fcm.send_multiple.multicast_success",
 		"success_count", response.SuccessCount,
 		"failure_count", response.FailureCount,
 		"total_tokens", len(tokens))
@@ -63,7 +80,7 @@ func (f *FCMAdapter) sendBatch(ctx context.Context, message globalmodel.Notifica
 	if response.FailureCount > 0 {
 		for i, resp := range response.Responses {
 			if !resp.Success {
-				slog.Warn("failed to send to token",
+				logger.Warn("fcm.send_multiple.token_error",
 					"token_index", i,
 					"error", resp.Error)
 			}

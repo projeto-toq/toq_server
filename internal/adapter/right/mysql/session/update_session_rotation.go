@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -17,11 +16,15 @@ func (sa *SessionAdapter) UpdateSessionRotation(ctx context.Context, tx *sql.Tx,
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `UPDATE sessions SET rotation_counter = ?, last_refresh_at = ? WHERE id = ?`
 
 	_, err = sa.Update(ctx, tx, query, rotationCounter, lastRefreshAt, id)
 	if err != nil {
-		slog.Error("sessionmysqladapter/UpdateSessionRotation: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.update_session_rotation.update_error", "session_id", id, "error", err)
 		return fmt.Errorf("update session rotation: %w", err)
 	}
 

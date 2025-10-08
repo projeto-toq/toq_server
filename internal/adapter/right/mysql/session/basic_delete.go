@@ -3,7 +3,6 @@ package sessionmysqladapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -15,22 +14,28 @@ func (sa *SessionAdapter) Delete(ctx context.Context, tx *sql.Tx, query string, 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("sessionmysqladapter/Delete: error preparing statement", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.delete.prepare_error", "error", err)
 		return
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		slog.Error("sessionmysqladapter/Delete: error executing statement", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.delete.exec_error", "error", err)
 		return
 	}
 
 	deleted, err = result.RowsAffected()
 	if err != nil {
-		slog.Error("sessionmysqladapter/Delete: error getting rows affected", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.delete.rows_affected_error", "error", err)
 		return
 	}
 

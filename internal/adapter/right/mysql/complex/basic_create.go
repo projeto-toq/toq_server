@@ -3,7 +3,7 @@ package mysqlcomplexadapter
 import (
 	"context"
 	"database/sql"
-	"log/slog"
+	"fmt"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -15,23 +15,29 @@ func (ca *ComplexAdapter) Create(ctx context.Context, tx *sql.Tx, query string, 
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
-		slog.Error("mysqlcomplexadapter/Create: error preparing statement", "error", err)
-		return 0, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.create.prepare_error", "error", err)
+		return 0, fmt.Errorf("prepare complex create statement: %w", err)
 	}
 	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		slog.Error("mysqlcomplexadapter/Create: error executing statement", "error", err)
-		return 0, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.create.exec_error", "error", err)
+		return 0, fmt.Errorf("exec complex create statement: %w", err)
 	}
 
 	id, err = result.LastInsertId()
 	if err != nil {
-		slog.Error("mysqlcomplexadapter/Create: error getting last insert ID", "error", err)
-		return 0, err
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.create.last_insert_id_error", "error", err)
+		return 0, fmt.Errorf("get complex last insert id: %w", err)
 	}
 
 	return id, nil

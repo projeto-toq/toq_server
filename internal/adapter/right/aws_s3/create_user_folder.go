@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err error) {
@@ -16,7 +16,9 @@ func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err err
 		return
 	}
 
-	slog.Debug("Creating user folder structure in S3", "userID", UserID, "bucket", s.bucketName)
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+	logger.Debug("adapter.s3.create_user_folder.start", "user_id", UserID, "bucket", s.bucketName)
 
 	// Lista de placeholders para criar toda a estrutura de pastas
 	placeholders := []string{
@@ -33,13 +35,14 @@ func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err err
 		})
 
 		if err != nil {
-			slog.Error("failed to create placeholder in S3", "userID", UserID, "path", placeholderPath, "error", err)
+			utils.SetSpanError(ctx, err)
+			logger.Error("adapter.s3.create_user_folder.placeholder_error", "user_id", UserID, "path", placeholderPath, "error", err)
 			return err
 		}
 
-		slog.Debug("placeholder created in S3", "userID", UserID, "path", placeholderPath)
+		logger.Debug("adapter.s3.create_user_folder.placeholder_created", "user_id", UserID, "path", placeholderPath)
 	}
 
-	slog.Info("user folder structure created successfully in S3", "userID", UserID, "bucket", s.bucketName)
+	logger.Info("adapter.s3.create_user_folder.success", "user_id", UserID, "bucket", s.bucketName)
 	return nil
 }

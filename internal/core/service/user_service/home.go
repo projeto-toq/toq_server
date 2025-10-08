@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"log/slog"
 
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 
@@ -18,17 +17,20 @@ func (us *userService) Home(ctx context.Context, userID int64) (user usermodel.U
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.home.tx_start_error", "error", err)
+		logger.Error("user.home.tx_start_error", "error", err)
 		return nil, utils.InternalError("Failed to start transaction")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("user.home.tx_rollback_error", "error", rbErr)
+				logger.Error("user.home.tx_rollback_error", "error", rbErr)
 			}
 		}
 	}()
@@ -39,7 +41,7 @@ func (us *userService) Home(ctx context.Context, userID int64) (user usermodel.U
 			return nil, utils.NotFoundError("User")
 		}
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.home.read_user_error", "error", err, "user_id", userID)
+		logger.Error("user.home.read_user_error", "error", err, "user_id", userID)
 		return nil, utils.InternalError("Failed to get user")
 	}
 
@@ -47,7 +49,7 @@ func (us *userService) Home(ctx context.Context, userID int64) (user usermodel.U
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("user.home.tx_commit_error", "error", err)
+		logger.Error("user.home.tx_commit_error", "error", err)
 		return nil, utils.InternalError("Failed to commit transaction")
 	}
 

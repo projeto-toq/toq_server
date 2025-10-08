@@ -6,9 +6,9 @@ import (
 )
 
 // UserRoleDomainToEntity converte UserRoleInterface para UserRoleEntity
-func UserRoleDomainToEntity(userRole permissionmodel.UserRoleInterface) *permissionentities.UserRoleEntity {
+func UserRoleDomainToEntity(userRole permissionmodel.UserRoleInterface) (*permissionentities.UserRoleEntity, error) {
 	if userRole == nil {
-		return nil
+		return nil, nil
 	}
 
 	entity := &permissionentities.UserRoleEntity{
@@ -23,5 +23,5 @@ func UserRoleDomainToEntity(userRole permissionmodel.UserRoleInterface) *permiss
 		entity.ExpiresAt = expiresAt
 	}
 
-	return entity
+	return entity, nil
 }

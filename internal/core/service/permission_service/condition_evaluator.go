@@ -1,9 +1,10 @@
 package permissionservice
 
 import (
-	"log/slog"
+	"context"
 
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 // ConditionEvaluator avalia condições de permissão
@@ -15,43 +16,47 @@ func NewConditionEvaluator() *ConditionEvaluator {
 }
 
 // Evaluate avalia se as condições são atendidas pelo contexto
-func (e *ConditionEvaluator) Evaluate(conditions map[string]interface{}, context *permissionmodel.PermissionContext) bool {
+func (e *ConditionEvaluator) Evaluate(ctx context.Context, conditions map[string]interface{}, permissionCtx *permissionmodel.PermissionContext) bool {
 	if len(conditions) == 0 {
 		return true // Sem condições = permitido
 	}
 
-	slog.Debug("Evaluating conditions", "conditions", conditions, "context", context)
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	logger.Debug("permission.condition.evaluate", "conditions", conditions, "context", permissionCtx)
 
 	// Verificar condição de proprietário
 	if owner, exists := conditions["owner"]; exists {
-		if !e.checkOwnerCondition(owner, context) {
-			slog.Debug("Owner condition failed", "owner", owner)
+		if !e.checkOwnerCondition(ctx, owner, permissionCtx) {
+			logger.Debug("permission.condition.owner_failed", "owner", owner)
 			return false
 		}
 	}
 
 	// Verificar condição de role
 	if roles, exists := conditions["role"]; exists {
-		if !e.checkRoleCondition(roles, context) {
-			slog.Debug("Role condition failed", "roles", roles)
+		if !e.checkRoleCondition(ctx, roles, permissionCtx) {
+			logger.Debug("permission.condition.role_failed", "roles", roles)
 			return false
 		}
 	}
 
 	// Verificar condição de relacionamento
 	if related, exists := conditions["related"]; exists {
-		if !e.checkRelatedCondition(related, context) {
-			slog.Debug("Related condition failed", "related", related)
+		if !e.checkRelatedCondition(ctx, related, permissionCtx) {
+			logger.Debug("permission.condition.related_failed", "related", related)
 			return false
 		}
 	}
 
-	slog.Debug("All conditions passed")
+	logger.Debug("permission.condition.passed")
 	return true
 }
 
 // checkOwnerCondition verifica condições de proprietário
-func (e *ConditionEvaluator) checkOwnerCondition(owner interface{}, context *permissionmodel.PermissionContext) bool {
+func (e *ConditionEvaluator) checkOwnerCondition(ctx context.Context, owner interface{}, permissionCtx *permissionmodel.PermissionContext) bool {
+	logger := utils.LoggerFromContext(ctx)
 	ownerStr, ok := owner.(string)
 	if !ok {
 		return false
@@ -60,36 +65,37 @@ func (e *ConditionEvaluator) checkOwnerCondition(owner interface{}, context *per
 	switch ownerStr {
 	case "self":
 		// Verifica se o usuário é dono do recurso através dos metadados
-		if resourceOwnerID, exists := context.Metadata["resource_owner_id"]; exists {
+		if resourceOwnerID, exists := permissionCtx.Metadata["resource_owner_id"]; exists {
 			if ownerID, ok := resourceOwnerID.(int64); ok {
-				return ownerID == context.UserID
+				return ownerID == permissionCtx.UserID
 			}
 		}
 		// Fallback: verifica se o resource_id é igual ao user_id (auto-ownership)
-		if resourceID, exists := context.Metadata["resource_id"]; exists {
+		if resourceID, exists := permissionCtx.Metadata["resource_id"]; exists {
 			if resID, ok := resourceID.(int64); ok {
-				return resID == context.UserID
+				return resID == permissionCtx.UserID
 			}
 		}
 		return false
 
 	case "listing_owner":
 		// Verifica se o usuário é proprietário do listing
-		if resourceOwner, exists := context.Metadata["listing_owner_id"]; exists {
+		if resourceOwner, exists := permissionCtx.Metadata["listing_owner_id"]; exists {
 			if ownerID, ok := resourceOwner.(int64); ok {
-				return ownerID == context.UserID
+				return ownerID == permissionCtx.UserID
 			}
 		}
 		return false
 
 	default:
-		slog.Warn("Unknown owner condition", "condition", ownerStr)
+		logger.Warn("permission.condition.owner_unknown", "condition", ownerStr)
 		return false
 	}
 }
 
 // checkRoleCondition verifica condições de role
-func (e *ConditionEvaluator) checkRoleCondition(roles interface{}, context *permissionmodel.PermissionContext) bool {
+func (e *ConditionEvaluator) checkRoleCondition(ctx context.Context, roles interface{}, permissionCtx *permissionmodel.PermissionContext) bool {
+	logger := utils.LoggerFromContext(ctx)
 	// Com a nova estrutura, verificamos o UserRoleID e RoleStatus diretamente
 	// Esta função pode ser simplificada ou usar lookup de role baseado no UserRoleID
 
@@ -101,13 +107,13 @@ func (e *ConditionEvaluator) checkRoleCondition(roles interface{}, context *perm
 	switch roleData := roles.(type) {
 	case string:
 		// Role único - verificar se usuário tem role ativo
-		return e.hasRoleByID(context.UserRoleID)
+		return e.hasRoleByID(permissionCtx.UserRoleID)
 
 	case []interface{}:
 		// Lista de roles (OR lógico)
 		for _, role := range roleData {
 			if _, ok := role.(string); ok {
-				if e.hasRoleByID(context.UserRoleID) {
+				if e.hasRoleByID(permissionCtx.UserRoleID) {
 					return true
 				}
 			}
@@ -115,13 +121,14 @@ func (e *ConditionEvaluator) checkRoleCondition(roles interface{}, context *perm
 		return false
 
 	default:
-		slog.Warn("Invalid role condition format", "roles", roles)
+		logger.Warn("permission.condition.role_invalid_format", "roles", roles)
 		return false
 	}
 }
 
 // checkRelatedCondition verifica condições de relacionamento
-func (e *ConditionEvaluator) checkRelatedCondition(related interface{}, context *permissionmodel.PermissionContext) bool {
+func (e *ConditionEvaluator) checkRelatedCondition(ctx context.Context, related interface{}, permissionCtx *permissionmodel.PermissionContext) bool {
+	logger := utils.LoggerFromContext(ctx)
 	relatedStr, ok := related.(string)
 	if !ok {
 		return false
@@ -130,14 +137,14 @@ func (e *ConditionEvaluator) checkRelatedCondition(related interface{}, context 
 	switch relatedStr {
 	case "owner_or_realtor":
 		// Verifica se é dono ou corretor relacionado
-		return e.isOwnerOrRelatedRealtor(context)
+		return e.isOwnerOrRelatedRealtor(permissionCtx)
 
 	case "same_agency":
 		// Verifica se pertence à mesma agência
-		return e.isSameAgency(context)
+		return e.isSameAgency(permissionCtx)
 
 	default:
-		slog.Warn("Unknown related condition", "condition", relatedStr)
+		logger.Warn("permission.condition.related_unknown", "condition", relatedStr)
 		return false
 	}
 }

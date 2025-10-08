@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,11 +15,15 @@ func (sa *SessionAdapter) MarkSessionRotated(ctx context.Context, tx *sql.Tx, id
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `UPDATE sessions SET rotated_at = UTC_TIMESTAMP() WHERE id = ?`
 
 	_, err = sa.Update(ctx, tx, query, id)
 	if err != nil {
-		slog.Error("sessionmysqladapter/MarkSessionRotated: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.mark_session_rotated.update_error", "session_id", id, "error", err)
 		return fmt.Errorf("mark session rotated: %w", err)
 	}
 

@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 
-	"log/slog"
-
 	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
@@ -19,17 +17,20 @@ func (ls *listingService) StartListing(ctx context.Context, zipCode string, numb
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	tx, txErr := ls.gsi.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		slog.Error("listing.start.tx_start_error", "err", txErr)
+		logger.Error("listing.start.tx_start_error", "err", txErr)
 		return listing, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				slog.Error("listing.start.tx_rollback_error", "err", rbErr)
+				logger.Error("listing.start.tx_rollback_error", "err", rbErr)
 			}
 		}
 	}()
@@ -41,7 +42,7 @@ func (ls *listingService) StartListing(ctx context.Context, zipCode string, numb
 
 	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		slog.Error("listing.start.tx_commit_error", "err", cmErr)
+		logger.Error("listing.start.tx_commit_error", "err", cmErr)
 		return listing, utils.InternalError("")
 	}
 
@@ -78,7 +79,8 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, zipCode 
 		return
 	}
 	if !allowed {
-		slog.Warn("listing.start.not_allowed_property_type", "zip", zipCode, "number", number, "property_type", propertyType)
+		logger := utils.LoggerFromContext(ctx)
+		logger.Warn("listing.start.not_allowed_property_type", "zip", zipCode, "number", number, "property_type", propertyType)
 		return nil, utils.BadRequest("Property type not allowed for this area")
 	}
 
@@ -134,7 +136,8 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, zipCode 
 func (ls *listingService) isPropertyTypeAllowed(ctx context.Context, allowedTypes globalmodel.PropertyType, propertyType globalmodel.PropertyType) (allow bool, err error) {
 	requested := ls.DecodePropertyTypes(ctx, propertyType)
 	if len(requested) != 1 {
-		slog.Warn("listing.start.invalid_property_type_format")
+		logger := utils.LoggerFromContext(ctx)
+		logger.Warn("listing.start.invalid_property_type_format")
 		return false, utils.BadRequest("propertyType must be a single type")
 	}
 	alloweds := ls.DecodePropertyTypes(ctx, allowedTypes)

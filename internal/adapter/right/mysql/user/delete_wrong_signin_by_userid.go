@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -16,11 +15,15 @@ func (ua *UserAdapter) DeleteWrongSignInByUserID(ctx context.Context, tx *sql.Tx
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `DELETE FROM temp_wrong_signin WHERE user_id = ?;`
 
 	deleted, err = ua.Delete(ctx, tx, query, userID)
 	if err != nil {
-		slog.Error("mysqluseradapter/DeleteWrongSignInByUserID: error executing Delete", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.delete_wrong_signin.delete_error", "error", err)
 		return 0, fmt.Errorf("delete temp_wrong_signin: %w", err)
 	}
 

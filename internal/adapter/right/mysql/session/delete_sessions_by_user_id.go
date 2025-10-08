@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
@@ -17,12 +16,16 @@ func (sa *SessionAdapter) DeleteSessionsByUserID(ctx context.Context, tx *sql.Tx
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `DELETE FROM sessions WHERE user_id = ?`
 
 	// Use helper when tx is provided
 	if tx != nil {
 		if _, err := sa.Delete(ctx, tx, query, userID); err != nil {
-			slog.Error("sessionmysqladapter/DeleteSessionsByUserID: error executing Delete with tx", "error", err)
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.session.delete_sessions_by_user_id.delete_error", "user_id", userID, "error", err)
 			return fmt.Errorf("delete sessions by user id: %w", err)
 		}
 		return nil
@@ -31,11 +34,12 @@ func (sa *SessionAdapter) DeleteSessionsByUserID(ctx context.Context, tx *sql.Tx
 	// Fallback if no transaction (should rarely happen in our flows)
 	res, err := sa.db.DB.ExecContext(ctx, query, userID)
 	if err != nil {
-		slog.Error("sessionmysqladapter/DeleteSessionsByUserID: error executing ExecContext", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.delete_sessions_by_user_id.exec_error", "user_id", userID, "error", err)
 		return fmt.Errorf("delete sessions by user id: %w", err)
 	}
 	if _, err := res.RowsAffected(); err != nil {
-		slog.Warn("sessionmysqladapter/DeleteSessionsByUserID: failed to read rows affected", "error", err)
+		logger.Warn("mysql.session.delete_sessions_by_user_id.rows_affected_error", "user_id", userID, "error", err)
 	}
 	return nil
 }

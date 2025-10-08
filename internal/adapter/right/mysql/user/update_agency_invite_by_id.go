@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
@@ -19,6 +18,9 @@ func (ua *UserAdapter) UpdateAgencyInviteByID(ctx context.Context, tx *sql.Tx, i
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `UPDATE agency_invites SET phone_number = ?, agency_id = ? WHERE id = ?;`
 
 	entity := userconverters.AgencyInviteDomainToEntity(invite)
@@ -29,7 +31,8 @@ func (ua *UserAdapter) UpdateAgencyInviteByID(ctx context.Context, tx *sql.Tx, i
 		entity.ID,
 	)
 	if err != nil {
-		slog.Error("mysqluseradapter/UpdateAgencyInviteByID: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.update_agency_invite.update_error", "error", err)
 		return fmt.Errorf("update agency invite: %w", err)
 	}
 

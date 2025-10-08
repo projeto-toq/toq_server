@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
 
@@ -18,6 +17,9 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	sql := `INSERT INTO listings (
 				user_id, code, version, status, zip_code, street, number, complement, neighborhood, city, state,
 				type, owner, land_size, corner, non_buildable, buildable, delivered, who_lives, description,
@@ -27,10 +29,11 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 
 	stmt, err := tx.PrepareContext(ctx, sql)
 	if err != nil {
-		slog.Error("Error preparing statement on msqllistingadapter/CreateListing", "error", err)
-		err = fmt.Errorf("prepare create listing: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.create_listing.prepare_error", "error", err)
+		return fmt.Errorf("prepare create listing: %w", err)
 	}
+	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx,
 		listing.UserID(), listing.Code(), listing.Version(), listing.Status(), listing.ZipCode(),
@@ -47,19 +50,19 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 		listing.ExchangePercentual(), listing.Installment(), listing.Financing(), listing.Visit(), listing.TenantName(), listing.TenantEmail(),
 		listing.TenantPhone(), listing.Accompanying(), listing.Deleted())
 	if err != nil {
-		slog.Error("Error executing statement on msqllistingadapter/CreateListing", "error", err)
-		err = fmt.Errorf("exec create listing: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.create_listing.exec_error", "error", err)
+		return fmt.Errorf("exec create listing: %w", err)
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		slog.Error("Error getting last insert id on msqllistingadapter/CreateListing", "error", err)
-		err = fmt.Errorf("last insert id for create listing: %w", err)
-		return
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.create_listing.last_insert_error", "error", err)
+		return fmt.Errorf("last insert id for create listing: %w", err)
 	}
 
 	listing.SetID(id)
 
-	return
+	return nil
 }

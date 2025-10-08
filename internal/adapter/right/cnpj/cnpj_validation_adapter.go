@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -44,20 +43,23 @@ func (c *CNPJAdapter) GetCNPJ(ctx context.Context, cnpjToSearch string) (cnpjmod
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	req, err := c.newCNPJRequest(ctx, cnpjToSearch)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cnpj.validation.request_build_error", "err", err)
+		logger.Error("cnpj.validation.request_build_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to build CNPJ validation request: %w", cnpjport.ErrInfra, err)
 	}
 
 	maskedCNPJ := maskCNPJ(cnpjToSearch)
-	slog.Debug("cnpj.validation.request", "cnpj", maskedCNPJ)
+	logger.Debug("cnpj.validation.request", "cnpj", maskedCNPJ)
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cnpj.validation.request_error", "err", err)
+		logger.Error("cnpj.validation.request_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to execute CNPJ validation request: %w", cnpjport.ErrInfra, err)
 	}
 	defer resp.Body.Close()
@@ -65,20 +67,20 @@ func (c *CNPJAdapter) GetCNPJ(ctx context.Context, cnpjToSearch string) (cnpjmod
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cnpj.validation.read_body_error", "err", err)
+		logger.Error("cnpj.validation.read_body_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to read CNPJ validation response: %w", cnpjport.ErrInfra, err)
 	}
 
 	providerResp, err := decodeCNPJResponse(body)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		slog.Error("cnpj.validation.decode_error", "err", err)
+		logger.Error("cnpj.validation.decode_error", "err", err)
 		return nil, fmt.Errorf("%w: failed to decode CNPJ validation response: %w", cnpjport.ErrInfra, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		providerErr := mapCNPJProviderError(providerResp.Message, resp.StatusCode)
-		logProviderError(providerErr, "cnpj.validation.provider_http_error", resp.StatusCode)
+		logProviderError(ctx, providerErr, "cnpj.validation.provider_http_error", resp.StatusCode)
 		if isInfraError(providerErr) {
 			utils.SetSpanError(ctx, providerErr)
 		}
@@ -87,7 +89,7 @@ func (c *CNPJAdapter) GetCNPJ(ctx context.Context, cnpjToSearch string) (cnpjmod
 
 	if !providerResp.Status || !strings.EqualFold(providerResp.Return, cnpjReturnOK) {
 		providerErr := mapCNPJProviderError(providerResp.Message, http.StatusOK)
-		logProviderError(providerErr, "cnpj.validation.provider_error", 0)
+		logProviderError(ctx, providerErr, "cnpj.validation.provider_error", 0)
 		if isInfraError(providerErr) {
 			utils.SetSpanError(ctx, providerErr)
 		}
@@ -97,20 +99,20 @@ func (c *CNPJAdapter) GetCNPJ(ctx context.Context, cnpjToSearch string) (cnpjmod
 	if providerResp.Result == nil {
 		err := fmt.Errorf("%w: cnpj provider returned empty result", cnpjport.ErrInfra)
 		utils.SetSpanError(ctx, err)
-		slog.Error("cnpj.validation.empty_result")
+		logger.Error("cnpj.validation.empty_result")
 		return nil, err
 	}
 
 	cnpjModel, err := ConvertCNPJEntityToModel(*providerResp.Result)
 	if err != nil {
-		logConversionError(err)
+		logConversionError(ctx, err)
 		if isInfraError(err) {
 			utils.SetSpanError(ctx, err)
 		}
 		return nil, err
 	}
 
-	slog.Debug("cnpj.validation.success", "cnpj", maskedCNPJ, "consumed", providerResp.Consumed)
+	logger.Debug("cnpj.validation.success", "cnpj", maskedCNPJ, "consumed", providerResp.Consumed)
 	return cnpjModel, nil
 }
 
@@ -190,7 +192,7 @@ func isInfraError(err error) bool {
 	return true
 }
 
-func logProviderError(err error, event string, status int) {
+func logProviderError(ctx context.Context, err error, event string, status int) {
 	if err == nil {
 		return
 	}
@@ -200,21 +202,23 @@ func logProviderError(err error, event string, status int) {
 		attrs = append(attrs, "status_code", status)
 	}
 
+	logger := utils.LoggerFromContext(ctx)
 	if isInfraError(err) {
-		slog.Error(event, attrs...)
+		logger.Error(event, attrs...)
 		return
 	}
 
-	slog.Warn(event, attrs...)
+	logger.Warn(event, attrs...)
 }
 
-func logConversionError(err error) {
+func logConversionError(ctx context.Context, err error) {
+	logger := utils.LoggerFromContext(ctx)
 	if isInfraError(err) {
-		slog.Error("cnpj.validation.convert_error", "err", err)
+		logger.Error("cnpj.validation.convert_error", "err", err)
 		return
 	}
 
-	slog.Warn("cnpj.validation.convert_error", "err", err)
+	logger.Warn("cnpj.validation.convert_error", "err", err)
 }
 
 func maskCNPJ(value string) string {

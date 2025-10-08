@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
 
@@ -19,6 +18,9 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 		return
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	// If all validation codes are empty, cleanup the row instead of upserting blanks
 	if validation.GetEmailCode() == "" && validation.GetPhoneCode() == "" && validation.GetPasswordCode() == "" {
@@ -54,7 +56,8 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 		entity.PasswordCodeExp,
 	)
 	if err != nil {
-		slog.Error("mysqluseradapter/UpdateUserValidations: error executing Update", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.update_user_validations.update_error", "error", err)
 		return fmt.Errorf("update user validations: %w", err)
 	}
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 
 	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
@@ -18,6 +17,9 @@ func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session
 		return
 	}
 	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	query := `INSERT INTO sessions 
 			(user_id, refresh_hash, token_jti, expires_at, absolute_expires_at, created_at, rotated_at, user_agent, ip, device_id, rotation_counter, last_refresh_at, revoked)
@@ -40,7 +42,8 @@ func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session
 		entity.LastRefreshAt,
 		entity.Revoked)
 	if err != nil {
-		slog.Error("sessionmysqladapter/CreateSession: error executing Create", "error", err)
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.create_session.create_error", "error", err)
 		return fmt.Errorf("create session: %w", err)
 	}
 
