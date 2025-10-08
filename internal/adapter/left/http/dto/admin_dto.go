@@ -1,5 +1,11 @@
 package dto
 
+import (
+	"fmt"
+
+	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+)
+
 // Admin endpoints DTOs
 
 // AdminGetPendingRealtorsResponse represents GET /admin/user/pending response
@@ -32,7 +38,21 @@ type AdminGetUserResponse struct {
 // Note: status is an integer matching permission_model.UserRoleStatus
 type AdminApproveUserRequest struct {
 	ID     int64 `json:"id" binding:"required,min=1"`
-	Status int   `json:"status" binding:"required"`
+	Status *int  `json:"status" binding:"required"`
+}
+
+// ToStatus converts the request status into a valid domain status.
+func (r *AdminApproveUserRequest) ToStatus() (permissionmodel.UserRoleStatus, error) {
+	if r == nil || r.Status == nil {
+		return 0, fmt.Errorf("status is required")
+	}
+
+	status := permissionmodel.UserRoleStatus(*r.Status)
+	if !permissionmodel.IsManualApprovalTarget(status) {
+		return 0, fmt.Errorf("invalid status value: %d", *r.Status)
+	}
+
+	return status, nil
 }
 
 // AdminApproveUserResponse represents approval outcome

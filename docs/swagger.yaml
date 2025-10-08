@@ -765,7 +765,7 @@ paths:
       description: Status must be one of the allowed enum values. On success, sends
         FCM notification.
       parameters:
-      - description: User ID and target status (int)
+      - description: 'User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)'
         in: body
         name: request
         required: true

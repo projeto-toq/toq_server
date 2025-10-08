@@ -92,21 +92,21 @@ func (pa PermissionAction) IsValid() bool {
 type UserRoleStatus int
 
 const (
-	StatusActive          UserRoleStatus = iota // normal user status
-	StatusBlocked                               // blocked by admin
-	StatusTempBlocked                           // temporarily blocked due to failed signin attempts
-	StatusPendingBoth                           // awaiting both email and phone confirmation
-	StatusPendingEmail                          // awaiting email confirmation
-	StatusPendingPhone                          // awaiting phone confirmation
-	StatusPendingCreci                          // awaiting creci images to be uploaded
-	StatusPendingCnpj                           // awaiting cnpj images to be uploaded
-	StatusPendingManual                         // awaiting manual verification by admin
-	StatusRejected                              // admin reject the documentation (legacy/general)
-	StatusRefusedImage                          // refused due to image issues (e.g., unreadable/invalid)
-	StatusRefusedDocument                       // refused due to document mismatch/invalidity
-	StatusRefusedData                           // refused due to data inconsistency
-	StatusDeleted                               // user request the deletion of the account
-	StatusInvitePending                         // realtor was invited and is pending acceptance
+	StatusActive          UserRoleStatus = iota // normal user status 0
+	StatusBlocked                               // blocked by admin 1
+	StatusTempBlocked                           // temporarily blocked due to failed signin attempts 2
+	StatusPendingBoth                           // awaiting both email and phone confirmation 3
+	StatusPendingEmail                          // awaiting email confirmation 4
+	StatusPendingPhone                          // awaiting phone confirmation 5
+	StatusPendingCreci                          // awaiting creci images to be uploaded 6
+	StatusPendingCnpj                           // awaiting cnpj images to be uploaded 7
+	StatusPendingManual                         // awaiting manual verification by admin 8
+	StatusRejected                              // admin reject the documentation (legacy/general) 9
+	StatusRefusedImage                          // refused due to image issues (e.g., unreadable/invalid) 10
+	StatusRefusedDocument                       // refused due to document mismatch/invalidity 11
+	StatusRefusedData                           // refused due to data inconsistency 12
+	StatusDeleted                               // user request the deletion of the account 13
+	StatusInvitePending                         // realtor was invited and is pending acceptance 14
 )
 
 // String implementa fmt.Stringer para UserRoleStatus
@@ -132,4 +132,14 @@ func (us UserRoleStatus) String() string {
 		return "unknown"
 	}
 	return statuses[us]
+}
+
+// IsManualApprovalTarget verifies if the status is allowed for manual approval actions.
+func IsManualApprovalTarget(status UserRoleStatus) bool {
+	switch status {
+	case StatusActive, StatusRejected, StatusRefusedImage, StatusRefusedDocument, StatusRefusedData:
+		return true
+	default:
+		return false
+	}
 }

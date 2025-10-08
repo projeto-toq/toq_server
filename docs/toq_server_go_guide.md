@@ -124,6 +124,7 @@ Transações: use o provedor padronizado (global_services/transactions). Service
   - `slog.Info`: eventos esperados de domínio (mudança de status, criação de recurso).
   - `slog.Warn`: anomalias/limites, condições não fatais (ex.: 429/423).
   - `slog.Error`: exclusivamente falhas de infraestrutura (DB, cache, providers externos, transações).
+  - Sempre derive o logger via `utils.LoggerFromContext(ctx)` para garantir `request_id`/`trace_id` automáticos; caso precise reaproveitar o logger, utilize `utils.ContextWithLogger(ctx)` antes de repassar para outras funções.
   - Em Repositórios, evite logs verbosos; sucesso no máximo `DEBUG` quando realmente necessário.
 - Erros e HTTP:
   - Repositórios retornam erros “puros” (ex.: `sql.ErrNoRows`, `fmt.Errorf`), sem pacotes HTTP.

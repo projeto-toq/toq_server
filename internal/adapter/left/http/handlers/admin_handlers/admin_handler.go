@@ -9,6 +9,7 @@ import (
 	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
 	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
 	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 )
 
 type AdminHandler struct {
@@ -93,7 +94,7 @@ func (h *AdminHandler) PostAdminGetUser(c *gin.Context) {
 //	@Tags         Admin
 //	@Accept       json
 //	@Produce      json
-//	@Param        request  body  dto.AdminApproveUserRequest  true  "User ID and target status (int)"
+//	@Param        request  body  dto.AdminApproveUserRequest  true  "User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)"
 //	@Success      200  {object}  dto.AdminApproveUserResponse
 //	@Failure      400  {object}  map[string]any
 //	@Failure      401  {object}  map[string]any
@@ -110,7 +111,11 @@ func (h *AdminHandler) PostAdminApproveUser(c *gin.Context) {
 	}
 
 	// Validate status as enum
-	target := permissionmodel.UserRoleStatus(req.Status)
+	target, statusErr := req.ToStatus()
+	if statusErr != nil {
+		httperrors.SendHTTPErrorObj(c, utils.ValidationError("status", statusErr.Error()))
+		return
+	}
 	if err := h.userService.ApproveCreciManual(ctx, req.ID, target); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

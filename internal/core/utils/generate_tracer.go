@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"runtime"
 	"strings"
 
@@ -40,17 +39,18 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 	if SkipTracingFromContext(ctx) {
 		return ctx, func() {}, nil
 	}
+	logger := LoggerFromContext(ctx)
 	// Get caller information for debugging purposes only
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
-		slog.Error("Failed to get caller information")
+		logger.Error("Failed to get caller information")
 		err = ErrInternalServer
 		return
 	}
 
 	fn := runtime.FuncForPC(pc)
 	if fn == nil {
-		slog.Error("Failed to get function information")
+		logger.Error("Failed to get function information")
 		err = ErrInternalServer
 		return
 	}
@@ -62,7 +62,7 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 	nameParts := strings.Split(lastPart, ".")
 
 	if len(nameParts) < 2 {
-		slog.Error("Failed to get package and function name", "full_name", fullName)
+		logger.Error("Failed to get package and function name", "full_name", fullName)
 		err = ErrInternalServer
 		return
 	}
@@ -78,12 +78,13 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 	requestID := GetRequestIDFromContext(ctx)
 	if requestID == "" {
 		// Continue without request ID - internal operations might not have HTTP context
-		slog.Debug("No request ID in context for internal operation", "operation", operationName)
+		logger.Debug("No request ID in context for internal operation", "operation", operationName)
 	}
 
 	// Create tracer and span
 	tracer := otel.Tracer("toq_server")
 	newctx, span := tracer.Start(ctx, operationName)
+	spanLogger := LoggerFromContext(newctx)
 
 	// Set attributes for debugging and correlation
 	span.SetAttributes(
@@ -103,10 +104,9 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 		// Safe span cleanup with panic recovery
 		defer func() {
 			if r := recover(); r != nil {
-				slog.Warn("Recovered from panic in span.End()",
+				spanLogger.Warn("Recovered from panic in span.End()",
 					"panic", r,
-					"operation", operationName,
-					"request_id", requestID)
+					"operation", operationName)
 			}
 		}()
 
@@ -160,13 +160,14 @@ func GenerateBusinessTracer(ctx context.Context, operationName string) (context.
 	}
 
 	// Create end function with error handling
+	spanLogger := LoggerFromContext(newCtx)
+
 	end := func() {
 		defer func() {
 			if r := recover(); r != nil {
-				slog.Warn("Recovered from panic in business span.End()",
+				spanLogger.Warn("Recovered from panic in business span.End()",
 					"panic", r,
-					"operation", operationName,
-					"request_id", requestID)
+					"operation", operationName)
 			}
 		}()
 

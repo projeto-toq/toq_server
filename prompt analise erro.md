@@ -5,9 +5,25 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Os endpoints de consulta a cpf|cnpj|cep /auth/validate/cpf|cnpj|cep não estão efetivamente retornando os erros como descrito no docs/400-422messages.md.
-Veja o log.md que ao consultar um cpf inválido, o retorno é 500 e não 400 como esperado.
-Confirme que as rotinas estão efetivamente respondendo com os erros esperados.
+Os endpoints de /admin/user/approve está retornando:
+{
+    "code": 400,
+    "details": {
+        "field": "body",
+        "message": "Key: 'AdminApproveUserRequest.Status' Error:Field validation for 'Status' failed on the 'required' tag"
+    },
+    "message": "Key: 'AdminApproveUserRequest.Status' Error:Field validation for 'Status' failed on the 'required' tag"
+}
+com a chamada com body:
+{
+  "id": 14,
+  "status": 0
+}
+
+O user_role tem este conteudo:
+# id, user_id, role_id, is_active, status, expires_at, blocked_until
+'14', '14', '2', '1', '8', NULL, NULL
+
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
 

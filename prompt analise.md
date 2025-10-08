@@ -6,7 +6,7 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Os endpoint /auth/realtor e /auth/owner chamam o serviço create_owner e create_realtor que, ao validar o CEP, sobrepõe eventuais dados de endereço fornecidos pelo usuário pelo resposta a consulta do CEP. Entretanto com a criação do endpoit /auth/validate/cep o frontend pode validar o CEP e os dados fornecidos pelo usuário para numero, bairro e complemento sobrescrevão os dados fornecidos pela consulta ao CEP.
+A geração logs da aplicação, como pode observar no arquivo /logs/toq_server.log, deveria ter um identificador único por transação, que permita correlacionar todos os logs gerados por uma mesma requisição HTTP. O identificador deveria ser request_id, mas ele não permeia todos as entradas de log, o que dificulta a análise de problemas e o rastreamento de requisições específicas.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

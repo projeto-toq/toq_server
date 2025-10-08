@@ -108,7 +108,7 @@ const docTemplate = `{
                 "summary": "Approve or refuse realtor status manually",
                 "parameters": [
                     {
-                        "description": "User ID and target status (int)",
+                        "description": "User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)",
                         "name": "request",
                         "in": "body",
                         "required": true,

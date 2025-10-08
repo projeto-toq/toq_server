@@ -21,13 +21,7 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	defer spanEnd()
 
 	// Validate target status: allowed set is Active or one of the refused statuses
-	allowed := map[permissionmodel.UserRoleStatus]bool{
-		permissionmodel.StatusActive:          true,
-		permissionmodel.StatusRefusedImage:    true,
-		permissionmodel.StatusRefusedDocument: true,
-		permissionmodel.StatusRefusedData:     true,
-	}
-	if !allowed[target] {
+	if !permissionmodel.IsManualApprovalTarget(target) {
 		return utils.ValidationError("status", "Invalid target status")
 	}
 
