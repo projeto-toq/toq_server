@@ -5,10 +5,10 @@ import (
 	"errors"
 	"strings"
 
-	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
-	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
+	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 func (gs *globalService) GetCEP(ctx context.Context, cep string) (cepmodel.CEPInterface, error) {

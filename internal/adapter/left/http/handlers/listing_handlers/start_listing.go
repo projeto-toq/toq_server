@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // StartListing handles creating a new listing

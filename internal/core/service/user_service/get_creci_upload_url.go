@@ -3,10 +3,10 @@ package userservices
 import (
 	"context"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	storagemodel "github.com/projeto-toq/toq_server/internal/core/model/storage_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetCreciUploadURL generates a signed URL to upload CRECI documents (selfie/front/back)

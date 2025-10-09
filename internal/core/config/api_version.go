@@ -1,6 +1,6 @@
 package config
 
-import httpport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http"
+import httpport "github.com/projeto-toq/toq_server/internal/core/port/left/http"
 
 // staticAPIVersionProvider é uma implementação simples que retorna a versão atual
 // da API. Mantém a string centralizada e facilita futuras evoluções.

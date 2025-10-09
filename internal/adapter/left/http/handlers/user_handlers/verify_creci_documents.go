@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // VerifyCreciDocuments confirms that the three CRECI documents exist in storage and moves the user to PendingManual.

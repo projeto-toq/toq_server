@@ -3,7 +3,7 @@ package validationservice
 import (
 	"context"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // CleanExpiredValidations deletes expired validation rows within a transaction boundary

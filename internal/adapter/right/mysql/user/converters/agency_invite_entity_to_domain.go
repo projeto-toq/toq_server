@@ -3,7 +3,7 @@ package userconverters
 import (
 	"fmt"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 func AgencyInviteEntityToDomain(entity []any) (domain usermodel.InviteInterface, err error) {

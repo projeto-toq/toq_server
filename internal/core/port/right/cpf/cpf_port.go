@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	cpfmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cpf_model"
+	cpfmodel "github.com/projeto-toq/toq_server/internal/core/model/cpf_model"
 )
 
 type CPFPortInterface interface {

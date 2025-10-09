@@ -4,14 +4,14 @@ import (
 	"context"
 	"database/sql"
 
-	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
-	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
 
 // LifecycleManager define uma interface para registrar funções de cleanup.

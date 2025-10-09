@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/core/cache"
-	"github.com/giulio-alfieri/toq_server/internal/core/factory"
-	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/projeto-toq/toq_server/internal/core/cache"
+	"github.com/projeto-toq/toq_server/internal/core/factory"
+	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 // Bootstrapper define a interface para o sistema de bootstrap

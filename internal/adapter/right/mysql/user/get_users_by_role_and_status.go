@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetUsersByRoleAndStatus returns users that have an active user_role with the given role slug and status

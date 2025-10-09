@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ExistsEmailForAnotherUser checks if an email is already used by a different user (deleted = 0)

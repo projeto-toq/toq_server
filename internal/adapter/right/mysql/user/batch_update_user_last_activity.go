@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) BatchUpdateUserLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error) {

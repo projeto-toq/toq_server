@@ -1,8 +1,8 @@
 package validationservice
 
 import (
-	userrepo "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/user_repository"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	userrepo "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 )
 
 type service struct {

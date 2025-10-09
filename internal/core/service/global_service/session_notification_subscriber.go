@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/events"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/events"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/converters"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // CreatePermission cria uma nova permissão no banco de dados

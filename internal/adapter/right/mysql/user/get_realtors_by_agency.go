@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agencyID int64) (users []usermodel.UserInterface, err error) {

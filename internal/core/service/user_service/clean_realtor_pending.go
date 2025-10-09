@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (us *userService) CleanRealtorPending(ctx context.Context, realtor usermodel.UserInterface) (err error) {

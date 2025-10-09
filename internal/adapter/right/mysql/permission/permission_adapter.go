@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
-	permissionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/permission_repository"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 type PermissionAdapter struct {

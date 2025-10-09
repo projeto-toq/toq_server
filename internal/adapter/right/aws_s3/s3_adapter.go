@@ -7,8 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 type S3Adapter struct {

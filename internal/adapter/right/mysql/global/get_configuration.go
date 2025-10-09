@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (configuration map[string]string, err error) {

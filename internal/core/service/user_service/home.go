@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (us *userService) Home(ctx context.Context, userID int64) (user usermodel.UserInterface, err error) {

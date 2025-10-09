@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
-	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
+	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
+	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
 )
 
 func ConvertCEPEntityToModel(result cepResult) (cepmodel.CEPInterface, error) {

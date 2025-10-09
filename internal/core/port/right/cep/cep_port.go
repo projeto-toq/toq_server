@@ -3,7 +3,7 @@ package cepport
 import (
 	"context"
 
-	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
+	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
 )
 
 type CEPPortInterface interface {

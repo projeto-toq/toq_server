@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 )
 
 // MetricsHandler expõe endpoint /metrics para coleta pelo Prometheus

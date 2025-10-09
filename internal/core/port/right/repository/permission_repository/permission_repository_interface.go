@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 )
 
 type PermissionRepositoryInterface interface {

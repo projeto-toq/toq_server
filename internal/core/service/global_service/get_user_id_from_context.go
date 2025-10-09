@@ -3,9 +3,9 @@ package globalservice
 import (
 	"context"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetUserIDFromContext extrai o ID do usuário do contexto.

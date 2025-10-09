@@ -6,9 +6,9 @@ import (
 	"database/sql"
 	"encoding/hex"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/events"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/events"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

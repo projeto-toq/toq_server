@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	sessionservice "github.com/giulio-alfieri/toq_server/internal/core/service/session_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	sessionservice "github.com/projeto-toq/toq_server/internal/core/service/session_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // SessionCleaner periodically deletes expired or fully expired sessions.

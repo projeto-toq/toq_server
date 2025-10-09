@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
+	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Context, tx *sql.Tx, listingID int64) (blockers []listingentity.EntityFinancingBlocker, err error) {

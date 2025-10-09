@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"time"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/redis/go-redis/v9"
 )
 

@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	derrors "github.com/giulio-alfieri/toq_server/internal/core/derrors"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // decideNextStatusAfterContactChange decides the next status after a successful email/phone change.

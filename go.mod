@@ -1,4 +1,4 @@
-module github.com/giulio-alfieri/toq_server
+module github.com/projeto-toq/toq_server
 
 go 1.25
 

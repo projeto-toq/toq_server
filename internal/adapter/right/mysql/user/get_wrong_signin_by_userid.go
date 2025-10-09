@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 
-	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, id int64) (wrongSignin usermodel.WrongSigninInterface, err error) {

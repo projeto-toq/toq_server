@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 	"github.com/redis/go-redis/v9"
 )
 

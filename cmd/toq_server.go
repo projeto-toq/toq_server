@@ -23,11 +23,11 @@
 //	@termsOfService	http://swagger.io/terms/
 
 //	@contact.name	TOQ Development Team
-//	@contact.url	https://github.com/giulio-alfieri/toq_server
+//	@contact.url	https://github.com/projeto-toq/toq_server
 //	@contact.email	support@toq.com
 
 //	@license.name	MIT
-//	@license.url	https://github.com/giulio-alfieri/toq_server/blob/main/LICENSE
+//	@license.url	https://github.com/projeto-toq/toq_server/blob/main/LICENSE
 
 //	@host		api.gca.dev.br
 //	@BasePath	/api/v2
@@ -49,10 +49,10 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/giulio-alfieri/toq_server/docs" // This is required for Swagger
+	_ "github.com/projeto-toq/toq_server/docs" // This is required for Swagger
 
-	"github.com/giulio-alfieri/toq_server/internal/core/config"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/projeto-toq/toq_server/internal/core/config"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 type LogConfig struct {

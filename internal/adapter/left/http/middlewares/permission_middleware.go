@@ -5,11 +5,11 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // PermissionMiddleware verifica permissões específicas usando o sistema de permissões avançado

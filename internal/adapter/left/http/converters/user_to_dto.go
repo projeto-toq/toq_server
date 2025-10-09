@@ -3,8 +3,8 @@ package converters
 import (
 	"time"
 
-	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 // ToGetProfileResponse converts a domain user to the public GetProfileResponse DTO (camelCase).

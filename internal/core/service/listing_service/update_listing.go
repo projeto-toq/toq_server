@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) UpdateListing(ctx context.Context, listing listingmodel.ListingInterface) (err error) {

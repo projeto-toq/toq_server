@@ -3,7 +3,7 @@ package usermodel
 import (
 	"time"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 )
 
 // Defines the interface methods for the userDomain interface

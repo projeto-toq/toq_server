@@ -3,9 +3,9 @@ package userservices
 import (
 	"context"
 
-	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
+	storagemodel "github.com/projeto-toq/toq_server/internal/core/model/storage_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (us *userService) GetPhotoUploadURL(ctx context.Context, variant, contentType string) (signedURL string, err error) {

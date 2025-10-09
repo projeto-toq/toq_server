@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	cpfmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cpf_model"
-	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
+	cpfmodel "github.com/projeto-toq/toq_server/internal/core/model/cpf_model"
+	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
 )
 
 func ConvertCPFEntityToModel(result cpfResult) (cpfmodel.CPFInterface, error) {

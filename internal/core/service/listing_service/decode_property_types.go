@@ -3,7 +3,7 @@ package listingservices
 import (
 	"context"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 func (ls *listingService) DecodePropertyTypes(ctx context.Context, propertyTypes globalmodel.PropertyType) (types []int64) {

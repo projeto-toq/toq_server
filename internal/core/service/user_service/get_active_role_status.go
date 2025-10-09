@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetActiveRoleStatus returns only the status of the active user role for the current authenticated user.

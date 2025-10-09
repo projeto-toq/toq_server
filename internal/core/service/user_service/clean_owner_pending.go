@@ -3,8 +3,8 @@ package userservices
 import (
 	"context"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (us *userService) CleanOwnerPending(ctx context.Context, owner usermodel.UserInterface) (err error) {

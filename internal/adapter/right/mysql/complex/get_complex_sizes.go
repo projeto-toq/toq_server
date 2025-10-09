@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	complexrepoconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex/converters"
-	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	complexrepoconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/complex/converters"
+	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ca *ComplexAdapter) GetComplexSizes(ctx context.Context, tx *sql.Tx, complexID int64) (complexSizes []complexmodel.ComplexSizeInterface, err error) {

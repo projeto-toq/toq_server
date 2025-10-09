@@ -5,14 +5,14 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/golang-jwt/jwt"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // AuthMiddleware handles JWT authentication

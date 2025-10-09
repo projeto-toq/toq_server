@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	permissionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/converters"
-	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/converters"
+	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetUserRolesByUserID busca todos os user_roles de um usuário

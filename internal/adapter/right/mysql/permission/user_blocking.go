@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // BlockUserTemporarily blocks a user temporarily by updating their user_role status and blocked_until

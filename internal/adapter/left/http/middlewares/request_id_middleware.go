@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/google/uuid"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // RequestIDMiddleware generates and sets a unique request ID for each HTTP request

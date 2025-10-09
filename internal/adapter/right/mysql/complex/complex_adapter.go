@@ -1,7 +1,7 @@
 package mysqlcomplexadapter
 
 import (
-	mysqlcomplexadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
+	mysqlcomplexadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 )
 
 type ComplexAdapter struct {

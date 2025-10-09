@@ -3,8 +3,8 @@ package validators
 import (
 	"regexp"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/nyaruka/phonenumbers"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func ValidateNoSpecialCharacters(str string) error {

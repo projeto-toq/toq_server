@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/factory"
-	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
-	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
-	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	"github.com/projeto-toq/toq_server/internal/core/factory"
+	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
+	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 )
 
 // InjectDependencies orquestra a criação de todos os adapters usando Factory Pattern

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	storagemodel "github.com/projeto-toq/toq_server/internal/core/model/storage_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 const creciDownloadURLExpirationMinutes = 60

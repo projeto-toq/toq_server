@@ -7,14 +7,14 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/events"
-	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
+	"github.com/projeto-toq/toq_server/internal/core/events"
+	sessionmodel "github.com/projeto-toq/toq_server/internal/core/model/session_model"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
 	"github.com/google/uuid"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (us *userService) CreateTokens(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, expired bool) (tokens usermodel.Tokens, err error) {

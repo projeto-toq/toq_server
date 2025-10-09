@@ -1,9 +1,9 @@
 package listingconverters
 
 import (
-	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
+	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 )
 
 func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.ListingInterface) {

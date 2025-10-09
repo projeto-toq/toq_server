@@ -1,8 +1,8 @@
 package sessionservice
 
 import (
-	sessionrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 )
 
 // service is the concrete implementation of Service.

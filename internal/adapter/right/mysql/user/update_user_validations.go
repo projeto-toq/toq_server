@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	userconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/converters"
+	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error) {

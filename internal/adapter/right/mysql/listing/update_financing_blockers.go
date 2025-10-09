@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 
 	"errors"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, blockers []listingmodel.FinancingBlockerInterface) (err error) {

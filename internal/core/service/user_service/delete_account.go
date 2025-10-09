@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/events"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/events"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // DeleteAccount deletes the current authenticated user's account.

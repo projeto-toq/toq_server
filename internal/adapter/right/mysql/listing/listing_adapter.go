@@ -1,7 +1,7 @@
 package mysqllistingadapter
 
 import (
-	mysqllistingadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
+	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 )
 
 type ListingAdapter struct {

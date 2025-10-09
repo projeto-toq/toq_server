@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // SwitchActiveRole desativa todos os roles do usuário e ativa apenas o especificado

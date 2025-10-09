@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 func (us *userService) CreateUserValidations(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error) {

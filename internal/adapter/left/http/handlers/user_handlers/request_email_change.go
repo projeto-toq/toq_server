@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 // RequestEmailChange

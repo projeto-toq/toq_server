@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	userentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/entities"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // CreateDeviceToken inserts a new device token; ignores duplicate tokens for same user.

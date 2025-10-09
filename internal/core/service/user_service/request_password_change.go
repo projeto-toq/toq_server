@@ -6,10 +6,10 @@ import (
 	"errors"
 	"time"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 // RequestPasswordChange starts the password reset flow in a privacy-preserving way.

@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
 	"errors"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 func (us *userService) ConfirmPasswordChange(ctx context.Context, nationalID string, password string, code string) (err error) {

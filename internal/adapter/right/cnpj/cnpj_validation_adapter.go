@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"strings"
 
-	cnpjmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cnpj_model"
-	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	cnpjmodel "github.com/projeto-toq/toq_server/internal/core/model/cnpj_model"
+	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 const (

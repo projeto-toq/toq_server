@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // PushOptIn sets opt_status=1 for the user indicating consent to receive push notifications.

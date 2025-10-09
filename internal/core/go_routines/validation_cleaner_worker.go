@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	validationservice "github.com/giulio-alfieri/toq_server/internal/core/service/validation_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	validationservice "github.com/projeto-toq/toq_server/internal/core/service/validation_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ValidationCleaner periodically deletes expired rows from temp_user_validations.

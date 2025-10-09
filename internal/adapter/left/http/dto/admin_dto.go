@@ -3,7 +3,7 @@ package dto
 import (
 	"fmt"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 )
 
 // Admin endpoints DTOs

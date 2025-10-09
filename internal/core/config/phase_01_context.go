@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 // Phase01_InitializeContext inicializa o contexto base e sinais do sistema

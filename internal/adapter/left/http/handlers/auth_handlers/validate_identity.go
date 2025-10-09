@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
-	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	httputils "github.com/projeto-toq/toq_server/internal/adapter/left/http/utils"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 const (

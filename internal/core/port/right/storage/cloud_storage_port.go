@@ -3,7 +3,7 @@ package storageport
 import (
 	"context"
 
-	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
+	storagemodel "github.com/projeto-toq/toq_server/internal/core/model/storage_model"
 )
 
 // CloudStoragePortInterface define a abstração para serviços de armazenamento na nuvem

@@ -3,7 +3,7 @@ package sessionservice
 import (
 	"context"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // CleanExpiredSessions deletes expired sessions using a transaction and records metrics.

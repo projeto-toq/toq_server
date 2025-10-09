@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetUserByID returns the domain user with the active role eagerly loaded.

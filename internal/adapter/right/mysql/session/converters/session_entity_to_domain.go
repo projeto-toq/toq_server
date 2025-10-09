@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
+	sessionmodel "github.com/projeto-toq/toq_server/internal/core/model/session_model"
 )
 
 func SessionEntityToDomain(entity []any) (session sessionmodel.SessionInterface, err error) {

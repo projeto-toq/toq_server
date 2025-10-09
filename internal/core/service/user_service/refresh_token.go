@@ -7,12 +7,12 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/events"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	"github.com/projeto-toq/toq_server/internal/core/events"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 var (

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	userentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/entities"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	devicetokenrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/device_token_repository"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	devicetokenrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/device_token_repository"
 )
 
 // Ensure implementation satisfies port

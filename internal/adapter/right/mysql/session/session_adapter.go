@@ -1,8 +1,8 @@
 package sessionmysqladapter
 
 import (
-	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
-	sessionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	sessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 )
 
 // Ensure implementation satisfies port interface

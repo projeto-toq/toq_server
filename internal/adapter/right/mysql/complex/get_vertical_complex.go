@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	complexrepoconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex/converters"
-	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	complexrepoconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/complex/converters"
+	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ca *ComplexAdapter) GetVerticalComplex(ctx context.Context, tx *sql.Tx, zipCode string, number string) (complex complexmodel.ComplexInterface, err error) {

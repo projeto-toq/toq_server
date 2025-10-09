@@ -11,9 +11,9 @@ import (
 	"strings"
 	"unicode"
 
-	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
-	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
+	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 const (

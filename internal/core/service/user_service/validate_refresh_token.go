@@ -3,9 +3,9 @@ package userservices
 import (
 	"context"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
 	"github.com/golang-jwt/jwt"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func validateRefreshToken(refresh string) (userID int64, err error) {

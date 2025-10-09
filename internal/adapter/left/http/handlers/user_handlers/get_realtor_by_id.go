@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 )
 
 func (uh *UserHandler) GetRealtorByID(c *gin.Context) {

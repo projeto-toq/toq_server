@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 func (us *userService) ValidateCPF(ctx context.Context, nationalID string, bornAt time.Time) error {

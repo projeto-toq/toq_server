@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	mysqluseradapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
+	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 
-	userentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/entities"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
 )
 
 type UserAdapter struct {

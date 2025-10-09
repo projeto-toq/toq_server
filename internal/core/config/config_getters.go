@@ -3,8 +3,8 @@ package config
 import (
 	"fmt"
 
-	goroutines "github.com/giulio-alfieri/toq_server/internal/core/go_routines"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 func (c *config) GetActivityTracker() *goroutines.ActivityTracker {

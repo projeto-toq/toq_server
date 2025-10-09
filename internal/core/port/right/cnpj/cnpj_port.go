@@ -3,7 +3,7 @@ package cnpjport
 import (
 	"context"
 
-	cnpjmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cnpj_model"
+	cnpjmodel "github.com/projeto-toq/toq_server/internal/core/model/cnpj_model"
 )
 
 type CNPJPortInterface interface {

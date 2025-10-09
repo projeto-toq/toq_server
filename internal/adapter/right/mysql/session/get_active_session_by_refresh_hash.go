@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	sessionconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/converters"
-	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
+	sessionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session/converters"
+	sessionmodel "github.com/projeto-toq/toq_server/internal/core/model/session_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (sa *SessionAdapter) GetActiveSessionByRefreshHash(ctx context.Context, tx *sql.Tx, hash string) (session sessionmodel.SessionInterface, err error) {

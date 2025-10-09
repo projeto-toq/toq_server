@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ApproveCreciManual updates realtor status from pending manual to approved/refused and sends notification

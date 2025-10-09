@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ResendPhoneChangeCode regenerates the phone change code and extends its expiration.

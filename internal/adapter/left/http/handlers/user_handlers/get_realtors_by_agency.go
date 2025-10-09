@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) GetRealtorsByAgency(c *gin.Context) {

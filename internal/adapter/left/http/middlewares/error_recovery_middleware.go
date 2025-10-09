@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ErrorRecoveryMiddleware recovers from panics, converts them into a structured

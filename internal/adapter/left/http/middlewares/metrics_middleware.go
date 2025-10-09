@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 )
 
 // MetricsMiddleware coleta métricas HTTP para análise no Grafana

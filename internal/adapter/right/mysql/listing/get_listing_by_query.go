@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	listingconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/converters"
-	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
+	listingconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/converters"
+	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, query string, args ...any) (listing listingmodel.ListingInterface, err error) {
@@ -81,7 +81,7 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 			logger.Error("mysql.listing.get_listing_by_query.scan_error", "error", err)
 			return nil, fmt.Errorf("scan listing by query: %w", err)
 		}
-		return
+
 	}
 
 	entityExchangePlaces, err := la.GetEntityExchangePlacesByListing(ctx, tx, entityListing.ID)

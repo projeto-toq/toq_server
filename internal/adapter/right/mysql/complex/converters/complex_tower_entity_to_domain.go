@@ -3,7 +3,7 @@ package complexrepoconverters
 import (
 	"fmt"
 
-	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
+	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
 )
 
 func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.ComplexTowerInterface, err error) {

@@ -1,7 +1,7 @@
 package mysqlglobaladapter
 
 import (
-	mysqlglobaladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
+	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 )
 
 type GlobalAdapter struct {

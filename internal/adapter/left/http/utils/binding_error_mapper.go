@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
 	validator "github.com/go-playground/validator/v10"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // MapBindingError converts binding/validation errors into a DomainError with field-level details.

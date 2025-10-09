@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
+	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
 )
 
 type ComplexRepoPortInterface interface {

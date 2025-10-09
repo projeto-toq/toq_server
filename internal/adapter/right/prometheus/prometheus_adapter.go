@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

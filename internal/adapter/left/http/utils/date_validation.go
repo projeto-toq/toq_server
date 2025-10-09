@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ValidateUserDates parses and validates date fields from a UserCreateRequest.

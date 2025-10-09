@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"time"
 
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 type TempBlockCleanerWorker struct {

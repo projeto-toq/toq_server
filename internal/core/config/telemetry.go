@@ -21,7 +21,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 // TelemetryManager gerencia a inicialização e shutdown do OpenTelemetry

@@ -3,8 +3,8 @@ package complexrepoconverters
 import (
 	"fmt"
 
-	complexmodel "github.com/giulio-alfieri/toq_server/internal/core/model/complex_model"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 func ComplexEntityToDomain(entity []any) (complex complexmodel.ComplexInterface, err error) {

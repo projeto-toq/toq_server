@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // NotificationType define os tipos de notificação suportados

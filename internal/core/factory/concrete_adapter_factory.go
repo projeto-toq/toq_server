@@ -6,50 +6,50 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/cache"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	"github.com/projeto-toq/toq_server/internal/core/cache"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
 	// HTTP handlers
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers"
-	adminhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/admin_handlers"
-	authhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/auth_handlers"
-	listinghandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/listing_handlers"
-	userhandlers "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/handlers/user_handlers"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers"
+	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
+	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
+	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 
 	// Metrics adapter
-	prometheusadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/prometheus"
+	prometheusadapter "github.com/projeto-toq/toq_server/internal/adapter/right/prometheus"
 
 	// Validation adapters
-	cepadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cep"
-	cnpjadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cnpj"
-	cpfadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/cpf"
+	cepadapter "github.com/projeto-toq/toq_server/internal/adapter/right/cep"
+	cnpjadapter "github.com/projeto-toq/toq_server/internal/adapter/right/cnpj"
+	cpfadapter "github.com/projeto-toq/toq_server/internal/adapter/right/cpf"
 
 	// External service adapters
-	emailadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/email"
-	fcmadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/fcm"
-	smsadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/sms"
+	emailadapter "github.com/projeto-toq/toq_server/internal/adapter/right/email"
+	fcmadapter "github.com/projeto-toq/toq_server/internal/adapter/right/fcm"
+	smsadapter "github.com/projeto-toq/toq_server/internal/adapter/right/sms"
 
 	// Storage adapters - AWS S3 (substituindo GCS)
-	s3adapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/aws_s3"
+	s3adapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws_s3"
 
 	// Storage adapters
-	mysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 
 	// Repository adapters
-	mysqlcomplexadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/complex"
-	mysqlglobaladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global"
-	mysqllistingadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing"
-	mysqlpermissionadapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission"
-	sessionmysqladapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session"
-	mysqluseradapter "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user"
+	mysqlcomplexadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/complex"
+	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
+	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
+	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
+	sessionmysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session"
+	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user"
 
 	// Core services
-	complexservice "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	listingservice "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
-	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	userservice "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
+	complexservice "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	listingservice "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
 
 // ConcreteAdapterFactory implementa a interface AdapterFactory

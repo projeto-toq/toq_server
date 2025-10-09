@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetListingByID(ctx context.Context, tx *sql.Tx, listingID int64) (listing listingmodel.ListingInterface, err error) {

@@ -1,11 +1,11 @@
 package userhandlers
 
 import (
-	userhandlerport "github.com/giulio-alfieri/toq_server/internal/core/port/left/http/userhandler"
-	complexservice "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	permissionservice "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
-	userservice "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
+	userhandlerport "github.com/projeto-toq/toq_server/internal/core/port/left/http/userhandler"
+	complexservice "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 )
 
 // UserHandler implementa os handlers HTTP para operações de usuário

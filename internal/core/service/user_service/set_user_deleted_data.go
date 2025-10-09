@@ -3,7 +3,7 @@ package userservices
 import (
 	"time"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 func (us *userService) setDeletedData(user usermodel.UserInterface) {

@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	cpfmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cpf_model"
-	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
+	cpfmodel "github.com/projeto-toq/toq_server/internal/core/model/cpf_model"
+	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 const (

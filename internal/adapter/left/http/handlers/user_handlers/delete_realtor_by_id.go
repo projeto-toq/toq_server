@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (uh *UserHandler) DeleteRealtorByID(c *gin.Context) {

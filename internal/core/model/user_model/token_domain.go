@@ -1,6 +1,6 @@
 package usermodel
 
-import permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+import permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 
 type Tokens struct {
 	//the token to be used on request

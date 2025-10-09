@@ -4,17 +4,17 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/events"
-	cepmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cep_model"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	cepport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cep"
-	emailport "github.com/giulio-alfieri/toq_server/internal/core/port/right/email"
-	fcmport "github.com/giulio-alfieri/toq_server/internal/core/port/right/fcm"
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
-	devicetokenrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/device_token_repository"
-	globalrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/global_repository"
-	smsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/sms"
-	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
+	"github.com/projeto-toq/toq_server/internal/core/events"
+	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
+	emailport "github.com/projeto-toq/toq_server/internal/core/port/right/email"
+	fcmport "github.com/projeto-toq/toq_server/internal/core/port/right/fcm"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
+	devicetokenrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/device_token_repository"
+	globalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
+	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
+	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 )
 
 type globalService struct {

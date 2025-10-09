@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 // Bootstrap é o orquestrador principal do sistema de inicialização

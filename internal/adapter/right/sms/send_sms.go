@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	twilioApi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 

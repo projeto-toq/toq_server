@@ -4,12 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	httpconv "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/converters"
-	dto "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
+	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 type AdminHandler struct {

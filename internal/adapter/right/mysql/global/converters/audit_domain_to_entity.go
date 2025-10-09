@@ -3,8 +3,8 @@ package globalconverters
 import (
 	"context"
 
-	globalentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global/entities"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global/entities"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 func AuditDomainToEntity(ctx context.Context, audit globalmodel.AuditInterface) (entity globalentities.AuditEntity) {

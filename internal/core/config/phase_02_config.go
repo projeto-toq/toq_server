@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 // Phase02_LoadConfiguration carrega e valida toda a configuração do sistema

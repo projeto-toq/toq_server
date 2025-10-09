@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
-	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	validators "github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
+	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, role permissionmodel.RoleSlug) (err error) {

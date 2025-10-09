@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
-	derrors "github.com/giulio-alfieri/toq_server/internal/core/derrors"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ConfirmPhoneChange confirms a pending phone change without creating or returning tokens.

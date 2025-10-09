@@ -9,8 +9,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // TelemetryMiddleware adds OpenTelemetry tracing to HTTP requests.

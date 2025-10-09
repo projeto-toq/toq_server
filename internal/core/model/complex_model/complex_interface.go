@@ -1,6 +1,6 @@
 package complexmodel
 
-import globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+import globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
 type ComplexInterface interface {
 	ID() int64

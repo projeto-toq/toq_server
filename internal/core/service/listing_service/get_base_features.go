@@ -3,8 +3,8 @@ package listingservices
 import (
 	"context"
 
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) GetBaseFeatures(ctx context.Context) (features []listingmodel.BaseFeatureInterface, err error) {

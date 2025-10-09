@@ -3,8 +3,8 @@ package sessionconverters
 import (
 	"context"
 
-	sessionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/session/entities"
-	sessionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/session_model"
+	sessionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session/entities"
+	sessionmodel "github.com/projeto-toq/toq_server/internal/core/model/session_model"
 )
 
 func SessionDomainToEntity(ctx context.Context, session sessionmodel.SessionInterface) sessionentities.SessionEntity {

@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	globalconverters "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/global/converters"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
+	globalconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global/converters"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ga *GlobalAdapter) CreateAudit(ctx context.Context, tx *sql.Tx, audit globalmodel.AuditInterface) (err error) {

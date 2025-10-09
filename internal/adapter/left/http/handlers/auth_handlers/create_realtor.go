@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	httputils "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/utils"
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	httputils "github.com/projeto-toq/toq_server/internal/adapter/left/http/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // CreateRealtor handles realtor account creation (public endpoint)

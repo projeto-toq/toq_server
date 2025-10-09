@@ -1,6 +1,6 @@
 package middlewares
 
-import coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+import coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 
 // Common utility functions for middlewares
 

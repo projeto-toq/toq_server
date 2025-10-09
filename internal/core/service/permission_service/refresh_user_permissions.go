@@ -3,7 +3,7 @@ package permissionservice
 import (
 	"context"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // RefreshUserPermissions atualiza o cache de permissões de um usuário

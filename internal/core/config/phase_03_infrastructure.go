@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/cache"
-	"github.com/giulio-alfieri/toq_server/internal/core/factory"
+	"github.com/projeto-toq/toq_server/internal/core/cache"
+	"github.com/projeto-toq/toq_server/internal/core/factory"
 )
 
 // Phase03_InitializeInfrastructure inicializa a infraestrutura core do sistema

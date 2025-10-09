@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	cnpjmodel "github.com/giulio-alfieri/toq_server/internal/core/model/cnpj_model"
-	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
+	cnpjmodel "github.com/projeto-toq/toq_server/internal/core/model/cnpj_model"
+	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
 )
 
 func ConvertCNPJEntityToModel(result cnpjResult) (cnpjmodel.CNPJInterface, error) {

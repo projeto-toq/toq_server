@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"time"
 
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 
 	"errors"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/validators"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 // RequestPhoneChange starts the phone change flow by generating a validation code

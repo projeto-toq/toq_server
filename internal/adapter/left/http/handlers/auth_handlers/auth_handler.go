@@ -1,9 +1,9 @@
 package authhandlers
 
 import (
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	userservice "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils/hmacauth"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
 
 // AuthHandler implementa os handlers HTTP para operações de autenticação

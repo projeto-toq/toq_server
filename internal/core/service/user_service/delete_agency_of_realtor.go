@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (us *userService) DeleteAgencyOfRealtor(ctx context.Context, realtorID int64) (err error) {

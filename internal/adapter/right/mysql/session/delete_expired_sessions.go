@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	sessionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
+	sessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // Ensure interface method is implemented

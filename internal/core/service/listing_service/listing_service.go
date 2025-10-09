@@ -3,12 +3,12 @@ package listingservices
 import (
 	"context"
 
-	globalmodel "github.com/giulio-alfieri/toq_server/internal/core/model/global_model"
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
-	listingrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/listing_repository"
-	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
-	complexservices "github.com/giulio-alfieri/toq_server/internal/core/service/complex_service"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 )
 
 type listingService struct {

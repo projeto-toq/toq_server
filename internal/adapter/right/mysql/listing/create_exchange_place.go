@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) CreateExchangePlace(ctx context.Context, tx *sql.Tx, place listingmodel.ExchangePlaceInterface) (err error) {

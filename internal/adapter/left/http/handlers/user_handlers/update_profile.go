@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/dto"
-	httperrors "github.com/giulio-alfieri/toq_server/internal/adapter/left/http/http_errors"
-	"github.com/giulio-alfieri/toq_server/internal/adapter/left/http/middlewares"
-	userservices "github.com/giulio-alfieri/toq_server/internal/core/service/user_service"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
+	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // UpdateProfile handles updating user profile

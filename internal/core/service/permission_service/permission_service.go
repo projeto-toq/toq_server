@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"time"
 
-	cacheport "github.com/giulio-alfieri/toq_server/internal/core/cache"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	metricsport "github.com/giulio-alfieri/toq_server/internal/core/port/right/metrics"
-	permissionrepository "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/permission_repository"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/cache"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
+	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 )
 
 type permissionServiceImpl struct {

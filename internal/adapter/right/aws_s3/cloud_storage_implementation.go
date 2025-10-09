@@ -3,7 +3,7 @@ package s3adapter
 import (
 	"fmt"
 
-	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
+	storagemodel "github.com/projeto-toq/toq_server/internal/core/model/storage_model"
 )
 
 // GetBucketConfig retorna a configuração do bucket

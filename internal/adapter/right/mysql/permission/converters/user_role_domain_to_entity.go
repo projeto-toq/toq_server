@@ -1,8 +1,8 @@
 package permissionconverters
 
 import (
-	permissionentities "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/permission/entities"
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
+	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 )
 
 // UserRoleDomainToEntity converte UserRoleInterface para UserRoleEntity

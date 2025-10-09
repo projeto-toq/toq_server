@@ -5,18 +5,18 @@ import (
 	"database/sql"
 	"time"
 
-	permissionmodel "github.com/giulio-alfieri/toq_server/internal/core/model/permission_model"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
-	cnpjport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cnpj"
-	cpfport "github.com/giulio-alfieri/toq_server/internal/core/port/right/cpf"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
+	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
 
-	// creciport "github.com/giulio-alfieri/toq_server/internal/core/port/right/creci"
-	sessionrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/session_repository"
-	userrepoport "github.com/giulio-alfieri/toq_server/internal/core/port/right/repository/user_repository"
-	storageport "github.com/giulio-alfieri/toq_server/internal/core/port/right/storage"
-	globalservice "github.com/giulio-alfieri/toq_server/internal/core/service/global_service"
-	listingservices "github.com/giulio-alfieri/toq_server/internal/core/service/listing_service"
-	permissionservices "github.com/giulio-alfieri/toq_server/internal/core/service/permission_service"
+	// creciport "github.com/projeto-toq/toq_server/internal/core/port/right/creci"
+	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
+	userrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
+	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 )
 
 type userService struct {

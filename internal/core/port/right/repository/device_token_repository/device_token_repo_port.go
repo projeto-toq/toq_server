@@ -1,6 +1,6 @@
 package devicetokenrepository
 
-import usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+import usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 
 // DeviceTokenRepoPortInterface defines persistence operations for device tokens (hexagonal right port)
 type DeviceTokenRepoPortInterface interface {

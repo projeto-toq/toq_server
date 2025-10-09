@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 )
 
 type ListingRepoPortInterface interface {

@@ -3,7 +3,7 @@ package permissionservice
 import (
 	"context"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // RevokePermissionFromRole revoga uma permissão de um role

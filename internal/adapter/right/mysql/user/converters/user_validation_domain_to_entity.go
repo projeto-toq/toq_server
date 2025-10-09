@@ -3,8 +3,8 @@ package userconverters
 import (
 	"database/sql"
 
-	userentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/user/entities"
-	usermodel "github.com/giulio-alfieri/toq_server/internal/core/model/user_model"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 func UserValidationDomainToEntity(domain usermodel.ValidationInterface) (entity userentity.UserValidationEntity) {

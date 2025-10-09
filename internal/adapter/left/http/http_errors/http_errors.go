@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	derrors "github.com/giulio-alfieri/toq_server/internal/core/derrors"
-	coreutils "github.com/giulio-alfieri/toq_server/internal/core/utils"
+	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // SendHTTPError (compat) – keeps current call sites working by accepting status and message directly.

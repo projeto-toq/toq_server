@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	listingentity "github.com/giulio-alfieri/toq_server/internal/adapter/right/mysql/listing/entity"
-	listingmodel "github.com/giulio-alfieri/toq_server/internal/core/model/listing_model"
+	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (la *ListingAdapter) GetBaseFeatures(ctx context.Context, tx *sql.Tx) (features []listingmodel.BaseFeatureInterface, err error) {

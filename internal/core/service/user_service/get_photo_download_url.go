@@ -3,8 +3,8 @@ package userservices
 import (
 	"context"
 
-	storagemodel "github.com/giulio-alfieri/toq_server/internal/core/model/storage_model"
-	"github.com/giulio-alfieri/toq_server/internal/core/utils"
+	storagemodel "github.com/projeto-toq/toq_server/internal/core/model/storage_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetPhotoDownloadURL generates a signed URL for a single photo variant
