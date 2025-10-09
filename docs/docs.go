@@ -2033,6 +2033,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/role/alternative": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Cria um role alternativo para o usuário autenticado (owner ↔ realtor)",
+                "parameters": [
+                    {
+                        "description": "Payload com dados CRECI",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/signout": {
             "post": {
                 "security": [
@@ -2150,6 +2219,34 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleRequest": {
+            "type": "object",
+            "required": [
+                "creciNumber",
+                "creciState",
+                "creciValidity"
+            ],
+            "properties": {
+                "creciNumber": {
+                    "type": "string"
+                },
+                "creciState": {
+                    "type": "string"
+                },
+                "creciValidity": {
+                    "description": "format: 2006-01-02",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest": {
             "type": "object",
             "required": [

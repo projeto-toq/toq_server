@@ -10,6 +10,25 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// alias para garantir que o swagger reconheça o tipo de erro padrão
+type _ = dto.ErrorResponse
+
+// AddAlternativeUserRole processa POST /user/role/alternative e cria um role alternativo (owner ↔ realtor).
+//
+//	@Summary	Cria um role alternativo para o usuário autenticado (owner ↔ realtor)
+//	@Description	Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa.
+//	@Tags		User
+//	@Accept		json
+//	@Produce	json
+//	@Param		request	body	dto.AddAlternativeUserRoleRequest	true	"Payload com dados CRECI"
+//	@Success	200	{object}	dto.AddAlternativeUserRoleResponse
+//	@Failure	400	{object}	dto.ErrorResponse
+//	@Failure	401	{object}	dto.ErrorResponse
+//	@Failure	403	{object}	dto.ErrorResponse
+//	@Failure	409	{object}	dto.ErrorResponse
+//	@Failure	500	{object}	dto.ErrorResponse
+//	@Router		/user/role/alternative [post]
+//	@Security	BearerAuth
 func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
@@ -20,27 +39,55 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 		return
 	}
 
-	// Get user to determine current role - precisamos buscar o usuário para obter o role
+	userInfo, err := coreutils.GetUserInfoFromContext(ctx)
+	if err != nil || userInfo.ID == 0 {
+		httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError(""))
+		return
+	}
+
+	// Get user to determine current role e status
 	user, err := uh.userService.GetProfile(ctx)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	// Determine alternative role based on current active role
-	var alternativeRole permissionmodel.RoleSlug
-	currentRole := coreutils.GetUserRoleSlugFromUserRole(user.GetActiveRole())
-	if currentRole == permissionmodel.RoleSlugOwner {
+	activeRole := user.GetActiveRole()
+	if activeRole == nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.ErrUserActiveRoleMissing)
+		return
+	}
+
+	currentRole := coreutils.GetUserRoleSlugFromUserRole(activeRole)
+	if currentRole != permissionmodel.RoleSlugOwner && currentRole != permissionmodel.RoleSlugRealtor {
+		httperrors.SendHTTPErrorObj(c, coreutils.AuthorizationError("Only owners or realtors can request an alternative role"))
+		return
+	}
+
+	if activeRole.GetStatus() != permissionmodel.StatusActive {
+		httperrors.SendHTTPErrorObj(c, coreutils.ConflictError("Active role status must be active"))
+		return
+	}
+
+	var (
+		alternativeRole permissionmodel.RoleSlug
+		creciArgs       []string
+	)
+
+	switch currentRole {
+	case permissionmodel.RoleSlugOwner:
 		alternativeRole = permissionmodel.RoleSlugRealtor
-	} else {
+		creciArgs = []string{request.CreciNumber, request.CreciState, request.CreciValidity}
+	case permissionmodel.RoleSlugRealtor:
 		alternativeRole = permissionmodel.RoleSlugOwner
+	default:
+		// fallback defensivo, embora já tenhamos retornado acima
+		httperrors.SendHTTPErrorObj(c, coreutils.AuthorizationError("Unsupported role"))
+		return
 	}
 
 	// Call service to add alternative role
-	// Ainda passamos o userID explicitamente aqui pois o caso de uso adiciona role a um usuário específico (o próprio)
-	// Poderíamos migrar para SSOT também, mas mantemos assinatura existente por ora.
-	userInfo, _ := coreutils.GetUserInfoFromContext(ctx)
-	if err := uh.userService.AddAlternativeRole(ctx, userInfo.ID, alternativeRole, request.CreciNumber, request.CreciState, request.CreciValidity); err != nil {
+	if err := uh.userService.AddAlternativeRole(ctx, userInfo.ID, alternativeRole, creciArgs...); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

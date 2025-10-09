@@ -6,6 +6,7 @@ import (
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -70,6 +71,33 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 		return derr
 	}
 
+	currentRoleSlug := utils.GetUserRoleSlugFromUserRole(activeRole)
+	if currentRoleSlug != permissionmodel.RoleSlugOwner && currentRoleSlug != permissionmodel.RoleSlugRealtor {
+		return utils.AuthorizationError("Only owners or realtors can request an alternative role")
+	}
+
+	if activeRole.GetStatus() != permissionmodel.StatusActive {
+		return utils.ConflictError("Active role status must be active")
+	}
+
+	expectedAlternative := permissionmodel.RoleSlugOwner
+	if currentRoleSlug == permissionmodel.RoleSlugOwner {
+		expectedAlternative = permissionmodel.RoleSlugRealtor
+	}
+	if roleSlug != expectedAlternative {
+		return utils.BadRequest("Invalid alternative role for current role")
+	}
+
+	var targetStatus permissionmodel.UserRoleStatus
+	switch roleSlug {
+	case permissionmodel.RoleSlugOwner:
+		targetStatus = permissionmodel.StatusActive
+	case permissionmodel.RoleSlugRealtor:
+		targetStatus = permissionmodel.StatusPendingCreci
+	default:
+		return utils.AuthorizationError("Unsupported alternative role")
+	}
+
 	// Validate creci info for realtor role
 	if roleSlug == permissionmodel.RoleSlugRealtor && len(creciInfo) != 3 {
 		return utils.ValidationError("creciInfo", "Realtor role requires CRECI info")
@@ -84,7 +112,13 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	// Create user role using permission service (not active by default)
-	_, err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil)
+	isActive := false
+	options := &permissionservices.AssignRoleOptions{
+		IsActive: &isActive,
+		Status:   &targetStatus,
+	}
+
+	_, err = us.permissionService.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil, options)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("user.add_alternative_role.permission_assign_role_error", "user_id", userID, "role_id", role.GetID(), "err", err)

@@ -6,11 +6,15 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Ao deletar um Usuário /handler/user_handlers/delete_account.go, deve-se:
-- Alterar `user_role` para StatusDeleted     
-- Apagar dados do S3
-
-O status StatusInvitePending  de constants.go deve ser eliminado. Comente onde for usado e remova-o do enum.
+Os usuários com role Owner e realtor, e somente estes, podem ter um segundo role. Owner pode ser Realtor também e Realtor pode ser Owner também. O sistema deve permitir que um usuário tenha ambos os roles simultaneamente.
+Para tanto:
+- Necessário criar o endpoint POST /user/role, que chamará o service /user/add_alternative_role
+  - Somente usuários autenticados podem chamar este endpoint
+  - Somente usuários com role Owner ou Realtor podem chamar este endpoint - Ajuste CSVs de carga inicial /data
+  - O usuário deverá estar com o status ativo
+  - o novo role deve ser criado com is_active = 0
+  - Se for Owner, o novo role será Realtor e status será StatusActive(0)
+  - Se for Realtor, o novo role será Owner e status será StatusPendingCreci(6)
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
@@ -25,6 +29,7 @@ O status StatusInvitePending  de constants.go deve ser eliminado. Comente onde f
 - Swagger (anotações no código)
 - Documentação (README/docs/*)
 - Observabilidade (métricas/dashboards) — apenas quando estritamente pertinente
+- Não crie/altere arquivos de testes
 
 ## 5) Arquitetura e Fluxo (resumo)
 - Siga o guia: `docs/toq_server_go_guide.md` (Seções 1–4 e 7–11).
@@ -44,21 +49,17 @@ O status StatusInvitePending  de constants.go deve ser eliminado. Comente onde f
 - Payloads de request/response: <resumo>
 - Erros de domínio esperados e mapeamento HTTP: <ex.: ErrX → 409>
 
-## 9) Critérios de Aceite
-- <ex.: Dado usuário sem pendência, confirmar telefone retorna 409 e não marca span como erro>
-- <ex.: Build passa; swagger atualizado; logs seguem convenções>
-
-## 10) Entregáveis Esperados do Agente
+## 9) Entregáveis Esperados do Agente
 - Análise detalhada com checklist dos requisitos e plano por etapas (com ordem de execução).
-- Quality gates rápidos no final: Build, Lint/Typecheck, Tests, Smoke test; e mapeamento Requisito → Status.
+- Quality gates rápidos no final: Build, Lint/Typecheck e mapeamento Requisito → Status.
+- Não é necessário git status -sb nem git diff.
 
-## 11) Restrições e Assunções
+## 10) Restrições e Assunções
 - Ambiente: desenvolvimento (sem back compatibility, sem janela de manutenção, sem migração).
 - Sem uso de mocks nem soluções temporárias em entregas finais.
 
-## 12) Anexos e Referências
+## 11) Anexos e Referências
 - Arquivos relevantes: `docs/toq_server_go_guide.md`.
-- Issues/PRs/Logs/Traces: <links>
 
 ---
 

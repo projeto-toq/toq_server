@@ -9,8 +9,14 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// AssignRoleOptions permite personalizar campos do user_role criado pelo serviço.
+type AssignRoleOptions struct {
+	IsActive *bool
+	Status   *permissionmodel.UserRoleStatus
+}
+
 // AssignRoleToUser atribui um role a um usuário (sem transação - uso direto)
-func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time) (permissionmodel.UserRoleInterface, error) {
+func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (permissionmodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
@@ -33,7 +39,7 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 		}
 	}()
 
-	userRole, err := p.AssignRoleToUserWithTx(ctx, tx, userID, roleID, expiresAt)
+	userRole, err := p.AssignRoleToUserWithTx(ctx, tx, userID, roleID, expiresAt, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +56,7 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 }
 
 // AssignRoleToUserWithTx atribui um role a um usuário (com transação - uso em fluxos)
-func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time) (permissionmodel.UserRoleInterface, error) {
+func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (permissionmodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
@@ -93,8 +99,18 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	userRole := permissionmodel.NewUserRole()
 	userRole.SetUserID(userID)
 	userRole.SetRoleID(roleID)
-	userRole.SetIsActive(true)
-	userRole.SetStatus(permissionmodel.StatusPendingBoth)
+
+	isActive := true
+	if opts != nil && opts.IsActive != nil {
+		isActive = *opts.IsActive
+	}
+	userRole.SetIsActive(isActive)
+
+	status := permissionmodel.StatusPendingBoth
+	if opts != nil && opts.Status != nil {
+		status = *opts.Status
+	}
+	userRole.SetStatus(status)
 
 	if expiresAt != nil {
 		userRole.SetExpiresAt(expiresAt)
@@ -108,7 +124,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 		return nil, utils.InternalError("")
 	}
 
-	logger.Info("permission.role.assigned", "user_id", userID, "role_id", roleID, "role_name", role.GetName())
+	logger.Info("permission.role.assigned", "user_id", userID, "role_id", roleID, "role_name", role.GetName(), "is_active", isActive, "status", status.String())
 	p.invalidateUserCacheSafe(ctx, userID, "assign_role_to_user")
 	return userRole, nil
 }
