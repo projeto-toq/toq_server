@@ -5,10 +5,17 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-durante o handlers/auth_handlers/sign.go não está exigindo device_ID e device_token. Isso deve ser informação obrigatória. Sem isso, não é possivel mandar notificação push.
-No serviço signin, estes campos são tratados como opcionais, mas deveriam ser obrigatórios.
-O serviço de signout deve apagar device_id e device_token.
-O servico de delete_account deve apagar device_id e device_token.
+durante a criação de usuário sem passar x-device-id, ocorre o seguinte erro, mas o usuário foi criado, e não deveria
+
+{"time":"2025-10-09T16:35:14.677696645Z","level":"INFO","msg":"HTTP Response","request_id":"6bed34cb-3b32-4204-8020-90cce63edb82","method":"POST","path":"/api/v2/auth/owner","status":400,"duration":9003898201,"size":95,"client_ip":"93.36.219.115","user_agent":"PostmanRuntime/7.48.0","trace_id":"382ec7e172e9fd8f07ddfc812811d2b0","span_id":"e16a6c71df707e82"}
+{"time":"2025-10-09T16:35:48.410796173Z","level":"INFO","msg":"permission.role.assigned","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","user_id":2,"role_id":3,"role_name":"Proprietário","is_active":true,"status":"pending_both"}
+{"time":"2025-10-09T16:35:48.411699398Z","level":"INFO","msg":"permission.cache.invalidated","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","user_id":2}
+{"time":"2025-10-09T16:35:48.412757549Z","level":"INFO","msg":"permission.cache.invalidated","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","user_id":2}
+{"time":"2025-10-09T16:35:48.487814872Z","level":"INFO","msg":"adapter.s3.create_user_folder.success","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","user_id":2,"bucket":"toq-app-media"}
+{"time":"2025-10-09T16:35:48.494562804Z","level":"WARN","msg":"auth.signin.missing_device_id","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","has_device_id":false}
+{"time":"2025-10-09T16:35:48.494839712Z","level":"ERROR","msg":"mysql.common.transaction.rollback_error","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","error":"sql: transaction has already been committed or rolled back"}
+{"time":"2025-10-09T16:35:48.494959416Z","level":"ERROR","msg":"global.tx_rollback_error","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","err":"rollback tx: sql: transaction has already been committed or rolled back"}
+{"time":"2025-10-09T16:35:48.49510047Z","level":"ERROR","msg":"user.create_owner.tx_rollback_error","request_id":"2cd0ce3c-6d75-4533-826b-54f4c59dc2be","err":"HTTP 500: Internal server error"}
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
@@ -66,4 +73,4 @@ O servico de delete_account deve apagar device_id e device_token.
 - A documentação da solução deve ser clara e concisa.
 - A documentação das funções deve ser em **inglês**.
 - Os comentários internos devem ser em **português**.
-- A API deve ser documentada com **Swagger**, usando anotações diretamente no código.
+- A API deve ser documentada com **Swagger**, usando anotações diretamente no código e não alterando swagger.yaml/json manualmente.

@@ -21,6 +21,12 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
+	rawDeviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
+	ctx, trimmedDeviceToken, trimmedDeviceID, derr := us.sanitizeDeviceContext(ctx, deviceToken, rawDeviceID, "user.create_owner")
+	if derr != nil {
+		return tokens, derr
+	}
+
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		logger.Error("user.create_owner.tx_start_error", "err", err)
@@ -42,6 +48,11 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 		return tokens, err
 	}
 
+	tokens, err = us.signIn(ctx, tx, created.GetNationalID(), plainPassword, trimmedDeviceToken, trimmedDeviceID, ipAddress, userAgent)
+	if err != nil {
+		return tokens, err
+	}
+
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		logger.Error("user.create_owner.tx_commit_error", "err", err)
@@ -49,10 +60,7 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
-	// Após commit, autentica usando SignIn padrão com nationalID normalizado
-	deviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
-	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, deviceID, ipAddress, userAgent)
-	return tokens, err
+	return tokens, nil
 }
 
 // createOwner executa a criação transacional do usuário Owner e retorna o usuário criado

@@ -195,6 +195,7 @@ definitions:
       owner:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserCreateRequest'
     required:
+    - deviceToken
     - owner
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateOwnerResponse:
@@ -209,6 +210,7 @@ definitions:
       realtor:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserCreateRequest'
     required:
+    - deviceToken
     - realtor
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateRealtorResponse:
@@ -480,6 +482,22 @@ definitions:
         type: string
       name:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleRequest:
+    properties:
+      roleSlug:
+        enum:
+        - owner
+        - realtor
+        example: realtor
+        type: string
+    required:
+    - roleSlug
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse'
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse:
     properties:
@@ -2117,6 +2135,51 @@ paths:
       security:
       - BearerAuth: []
       summary: Cria um role alternativo para o usuário autenticado (owner ↔ realtor)
+      tags:
+      - User
+  /user/role/switch:
+    post:
+      consumes:
+      - application/json
+      description: Permite que usuários com roles owner e realtor alternem entre as
+        funções atribuídas.
+      parameters:
+      - description: Slug do role desejado
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Altera o role ativo do usuário autenticado (owner ↔ realtor)
       tags:
       - User
   /user/signout:

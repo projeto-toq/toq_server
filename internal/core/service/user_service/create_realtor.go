@@ -21,6 +21,12 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
+	rawDeviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
+	ctx, trimmedDeviceToken, trimmedDeviceID, derr := us.sanitizeDeviceContext(ctx, deviceToken, rawDeviceID, "user.create_realtor")
+	if derr != nil {
+		return tokens, derr
+	}
+
 	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		logger.Error("user.create_realtor.tx_start_error", "err", err)
@@ -41,6 +47,11 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 		return tokens, err
 	}
 
+	tokens, err = us.signIn(ctx, tx, created.GetNationalID(), plainPassword, trimmedDeviceToken, trimmedDeviceID, ipAddress, userAgent)
+	if err != nil {
+		return tokens, err
+	}
+
 	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		logger.Error("user.create_realtor.tx_commit_error", "err", err)
@@ -48,10 +59,7 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 		return tokens, utils.InternalError("Failed to commit transaction")
 	}
 
-	// Autentica após commit
-	deviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
-	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, deviceID, ipAddress, userAgent)
-	return tokens, err
+	return tokens, nil
 }
 
 // createRealtor cria o usuário corretor e retorna o usuário criado

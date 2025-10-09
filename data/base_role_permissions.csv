@@ -179,3 +179,5 @@ id;role_id;permission_id;granted;conditions
 178;1;52;1;NULL
 179;2;53;1;NULL
 180;3;53;1;NULL
+181;2;54;1;NULL
+182;3;54;1;NULL

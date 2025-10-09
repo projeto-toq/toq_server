@@ -5,7 +5,7 @@ package dto
 // CreateOwnerRequest represents owner creation request
 type CreateOwnerRequest struct {
 	Owner       UserCreateRequest `json:"owner" binding:"required"`
-	DeviceToken string            `json:"deviceToken,omitempty"`
+	DeviceToken string            `json:"deviceToken" binding:"required"`
 }
 
 // CreateOwnerResponse represents owner creation response
@@ -16,7 +16,7 @@ type CreateOwnerResponse struct {
 // CreateRealtorRequest represents realtor creation request
 type CreateRealtorRequest struct {
 	Realtor     UserCreateRequest `json:"realtor" binding:"required"`
-	DeviceToken string            `json:"deviceToken,omitempty"`
+	DeviceToken string            `json:"deviceToken" binding:"required"`
 }
 
 // CreateRealtorResponse represents realtor creation response
@@ -293,7 +293,7 @@ type AddAlternativeUserRoleResponse struct {
 }
 
 type SwitchUserRoleRequest struct {
-	RoleSlug string `json:"roleSlug" binding:"required"`
+	RoleSlug string `json:"roleSlug" binding:"required,oneof=owner realtor" example:"realtor" enum:"owner,realtor" description:"Slug do role desejado (owner ou realtor)"`
 }
 
 type SwitchUserRoleResponse struct {

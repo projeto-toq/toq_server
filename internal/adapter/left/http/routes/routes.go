@@ -167,8 +167,8 @@ func RegisterUserRoutes(
 		user.POST("/phone/resend", userHandler.ResendPhoneChangeCode)
 
 		// Role management (Owner and Realtor only)
-		user.POST("/role/alternative", userHandler.AddAlternativeUserRole)                                     // AddAlternativeUserRole
-		user.POST("/role/switch", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SwitchUserRole
+		user.POST("/role/alternative", userHandler.AddAlternativeUserRole) // AddAlternativeUserRole
+		user.POST("/role/switch", userHandler.SwitchUserRole)              // SwitchUserRole
 	}
 
 	// Agency routes (Agency only)

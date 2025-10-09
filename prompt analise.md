@@ -6,15 +6,14 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Os usuários com role Owner e realtor, e somente estes, podem ter um segundo role. Owner pode ser Realtor também e Realtor pode ser Owner também. O sistema deve permitir que um usuário tenha ambos os roles simultaneamente.
-Para tanto:
-- Necessário criar o endpoint POST /user/role, que chamará o service /user/add_alternative_role
-  - Somente usuários autenticados podem chamar este endpoint
-  - Somente usuários com role Owner ou Realtor podem chamar este endpoint - Ajuste CSVs de carga inicial /data
-  - O usuário deverá estar com o status ativo
-  - o novo role deve ser criado com is_active = 0
-  - Se for Owner, o novo role será Realtor e status será StatusActive(0)
-  - Se for Realtor, o novo role será Owner e status será StatusPendingCreci(6)
+Os usuários com role Owner e realtor, e somente estes, podem ter um segundo role. Owner pode ser Realtor também e Realtor pode ser Owner também. 
+Assim, é necessário:
+- implementar o endpoint POST user/role/switch que permite a alteração do role ativo para o segundo permitido;
+- consummir o serviço user/switch_user_role;
+- deve ser verificado se existe o segundo role para o usuário, caso contrário retornar 400;
+- a troca de roles se dá pela alteração do is_active do role que atual para 0 e do novo role para 1;
+- o endpoint deve retornar 200 com os novos tokens JWT com o role alterado;
+
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

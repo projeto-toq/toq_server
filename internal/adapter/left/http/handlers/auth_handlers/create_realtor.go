@@ -1,9 +1,12 @@
 package authhandlers
 
 import (
+	"context"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	httputils "github.com/projeto-toq/toq_server/internal/adapter/left/http/utils"
@@ -55,19 +58,38 @@ func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 	// Extract request context for security logging and session metadata
 	reqContext := coreutils.ExtractRequestContext(c)
 
+	rawDeviceID := c.GetHeader("X-Device-Id")
+	trimmedDeviceID := strings.TrimSpace(rawDeviceID)
+	if trimmedDeviceID == "" {
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPErrorWithSource(http.StatusBadRequest, "X-Device-Id header is required"))
+		return
+	}
+	if _, err := uuid.Parse(trimmedDeviceID); err != nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPErrorWithSource(http.StatusBadRequest, "X-Device-Id must be a valid UUID"))
+		return
+	}
+
+	trimmedDeviceToken := strings.TrimSpace(request.DeviceToken)
+	if trimmedDeviceToken == "" {
+		httperrors.SendHTTPErrorObj(c, coreutils.NewHTTPErrorWithSource(http.StatusBadRequest, "deviceToken is required"))
+		return
+	}
+
+	ctx = context.WithValue(ctx, globalmodel.DeviceIDKey, trimmedDeviceID)
+	c.Request = c.Request.WithContext(ctx)
+
 	// Debug: rastrear valores de contexto antes de chamar o serviço
-	headerDeviceID := c.GetHeader("X-Device-Id")
 	ctxDeviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
 	logger.Debug("auth.create_realtor.debug",
-		"device_token", request.DeviceToken,
+		"device_token", trimmedDeviceToken,
 		"ip", reqContext.IPAddress,
 		"user_agent", reqContext.UserAgent,
-		"header_device_id", headerDeviceID,
+		"header_device_id", trimmedDeviceID,
 		"ctx_device_id", ctxDeviceID,
 	)
 
 	// Call service: cria a conta e autentica via SignIn padrão
-	tokens, err := ah.userService.CreateRealtor(ctx, user, request.Realtor.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)
+	tokens, err := ah.userService.CreateRealtor(ctx, user, request.Realtor.Password, trimmedDeviceToken, reqContext.IPAddress, reqContext.UserAgent)
 	if err != nil {
 		if derr, ok := err.(coreutils.DomainError); ok {
 			httperrors.SendHTTPErrorObj(c, derr)

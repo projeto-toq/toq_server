@@ -8,8 +8,6 @@ import (
 
 	"errors"
 
-	"github.com/google/uuid"
-
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -40,26 +38,11 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		return
 	}
 
-	trimmedToken := strings.TrimSpace(deviceToken)
-	trimmedDeviceID := strings.TrimSpace(deviceID)
-	if trimmedToken == "" {
-		logger.Warn("auth.signin.missing_device_token", "has_device_token", false)
-		err = utils.BadRequest("deviceToken is required")
+	ctx, trimmedToken, trimmedDeviceID, derr := us.sanitizeDeviceContext(ctx, deviceToken, deviceID, "auth.signin")
+	if derr != nil {
+		err = derr
 		return
 	}
-	if trimmedDeviceID == "" {
-		logger.Warn("auth.signin.missing_device_id", "has_device_id", false)
-		err = utils.BadRequest("deviceID is required")
-		return
-	}
-	if _, parseErr := uuid.Parse(trimmedDeviceID); parseErr != nil {
-		logger.Warn("auth.signin.invalid_device_id", "device_id", trimmedDeviceID)
-		err = utils.BadRequest("deviceID must be a valid UUID")
-		return
-	}
-
-	// Ensure context carries sanitized device ID for downstream usage
-	ctx = context.WithValue(ctx, globalmodel.DeviceIDKey, trimmedDeviceID)
 
 	// Normalize nationalID to digits-only (CPF/CNPJ) for consistent lookup
 	nationalID = validators.OnlyDigits(nationalID)

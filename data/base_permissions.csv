@@ -52,3 +52,4 @@ id;name;resource;action;description;conditions;is_active
 51;HTTP GetPending;http;GET:/api/v2/admin/user/pending;Permite Admin listar corretores pendentes de aprovação;NULL;1
 52;HTTP Admin GetCreciDownloadURL;http;POST:/api/v2/admin/user/creci-download-url;Permite Admin obter URLs de download dos documentos CRECI;NULL;1
 53;HTTP AddAlternativeUserRole;http;POST:/api/v2/user/role/alternative;Permite solicitar criação de role alternativo (owner↔realtor);NULL;1
+54;HTTP SwitchUserRole;http;POST:/api/v2/user/role/switch;Permite alternar a role ativa do usuário autenticado;NULL;1
