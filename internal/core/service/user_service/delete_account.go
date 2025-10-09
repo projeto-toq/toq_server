@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
@@ -167,8 +168,8 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	if us.cloudStorageService != nil {
 		folderErr := us.DeleteUserFolder(ctx, user.GetID())
 		if folderErr != nil {
-			// Best-effort: already marked on span inside DeleteUserFolder; just warn here
-			logger.Warn("user.delete_account.delete_user_folder_warning", "error", folderErr, "user_id", user.GetID())
+			logger.Error("user.delete_account.delete_user_folder_error", "error", folderErr, "user_id", user.GetID())
+			return tokens, publishSessionsEvent, utils.InternalError("Failed to delete user assets")
 		}
 	}
 
@@ -178,6 +179,10 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.delete_account.get_user_roles_error", "error", err, "user_id", user.GetID())
 		return
+	}
+
+	if err = us.markUserRolesAsDeleted(ctx, tx, user.GetID(), userRoles); err != nil {
+		return tokens, publishSessionsEvent, err
 	}
 
 	for _, userRole := range userRoles {
@@ -205,4 +210,44 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	}
 
 	return
+}
+
+func (us *userService) markUserRolesAsDeleted(ctx context.Context, tx *sql.Tx, userID int64, userRoles []permissionmodel.UserRoleInterface) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	processed := make(map[permissionmodel.RoleSlug]struct{})
+
+	for _, userRole := range userRoles {
+		role := userRole.GetRole()
+		if role == nil {
+			logger.Warn("user.delete_account.role_without_details", "user_id", userID, "user_role_id", userRole.GetID())
+			continue
+		}
+
+		slug := permissionmodel.RoleSlug(role.GetSlug())
+		if slug == "" {
+			logger.Warn("user.delete_account.role_without_slug", "user_id", userID, "user_role_id", userRole.GetID())
+			continue
+		}
+
+		if _, seen := processed[slug]; seen {
+			continue
+		}
+		processed[slug] = struct{}{}
+
+		if err := us.repo.UpdateUserRoleStatus(ctx, tx, userID, slug, permissionmodel.StatusDeleted); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				logger.Warn("user.delete_account.update_role_status_no_rows", "user_id", userID, "role_slug", slug)
+				continue
+			}
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.delete_account.update_role_status_error", "error", err, "user_id", userID, "role_slug", slug)
+			return utils.InternalError("Failed to update role status")
+		}
+
+		logger.Info("user.delete_account.role_status_marked_deleted", "user_id", userID, "role_slug", slug)
+	}
+
+	return nil
 }

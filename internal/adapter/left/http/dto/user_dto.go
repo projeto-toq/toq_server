@@ -399,8 +399,11 @@ type UserStatusResponse struct {
 // 6 = pending_creci
 // 7 = pending_cnpj
 // 8 = pending_manual
-// 9 = deleted
-// 10 = invite_pending
+// 9 = rejected
+// 10 = refused_image
+// 11 = refused_document
+// 12 = refused_data
+// 13 = deleted
 type UserStatusData struct {
 	Status int `json:"status" example:"0"`
 }

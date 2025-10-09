@@ -16,6 +16,7 @@ Este documento descreve como o permissionamento funciona no projeto, como mapear
   - Campos: `id`, `role_id`, `permission_id`, `granted`, `conditions`.
 - UserRoles (`user_roles`)
   - Vincula usuários a roles com estado (`is_active`, `status`, `expires_at`, etc.).
+  - Status `deleted` (13) é aplicado quando o usuário solicita exclusão de conta; o status legado `invite_pending` foi descontinuado e convites agora permanecem em `pending_manual` até aceite.
 
 ## Como a checagem de permissão funciona (HTTP)
 

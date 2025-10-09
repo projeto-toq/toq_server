@@ -106,7 +106,6 @@ const (
 	StatusRefusedDocument                       // refused due to document mismatch/invalidity 11
 	StatusRefusedData                           // refused due to data inconsistency 12
 	StatusDeleted                               // user request the deletion of the account 13
-	StatusInvitePending                         // realtor was invited and is pending acceptance 14
 )
 
 // String implementa fmt.Stringer para UserRoleStatus
@@ -126,7 +125,6 @@ func (us UserRoleStatus) String() string {
 		"refused_document",
 		"refused_data",
 		"deleted",
-		"invite_pending",
 	}
 	if us < StatusActive || int(us) >= len(statuses) {
 		return "unknown"

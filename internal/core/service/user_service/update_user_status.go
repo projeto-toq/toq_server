@@ -94,7 +94,7 @@ func (us *userService) updateUserStatus(
 		}
 
 		if exist {
-			nextStatus = permissionmodel.StatusInvitePending
+			nextStatus = permissionmodel.StatusPendingManual // StatusInvitePending removido: reutiliza pending_manual para aguardar aceite do convite
 			nextStatusReason = "Awaiting invite verification"
 			notification = globalmodel.NotificationRealtorInvitePush
 		} else {
@@ -111,7 +111,7 @@ func (us *userService) updateUserStatus(
 		nextStatus = permissionmodel.StatusPendingManual
 		nextStatusReason = "Awaiting manual verification by administrator"
 	case usermodel.ActionFinishedInviteCreated:
-		nextStatus = permissionmodel.StatusInvitePending
+		nextStatus = permissionmodel.StatusPendingManual // StatusInvitePending removido: mantém usuário aguardando aceite manual
 		nextStatusReason = "Awaiting invite verification"
 		notification = globalmodel.NotificationRealtorInvitePush
 	case usermodel.ActionFinishedInviteAccepted:
