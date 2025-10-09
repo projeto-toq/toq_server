@@ -308,6 +308,12 @@ const docTemplate = `{
                 "summary": "Create agency account",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Device ID (UUIDv4). Optional but recommended when providing deviceToken for automatic sign-in",
+                        "name": "X-Device-Id",
+                        "in": "header"
+                    },
+                    {
                         "description": "Agency creation data (include optional deviceToken for push notifications)",
                         "name": "request",
                         "in": "body",
@@ -365,6 +371,12 @@ const docTemplate = `{
                 ],
                 "summary": "Create owner account",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Device ID (UUIDv4). Optional but recommended when providing deviceToken for automatic sign-in",
+                        "name": "X-Device-Id",
+                        "in": "header"
+                    },
                     {
                         "description": "Owner creation data (include optional deviceToken for push notifications)",
                         "name": "request",
@@ -540,6 +552,12 @@ const docTemplate = `{
                 "summary": "Create realtor account",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Device ID (UUIDv4). Optional but recommended when providing deviceToken for automatic sign-in",
+                        "name": "X-Device-Id",
+                        "in": "header"
+                    },
+                    {
                         "description": "Realtor creation data (include optional deviceToken for push notifications)",
                         "name": "request",
                         "in": "body",
@@ -637,7 +655,7 @@ const docTemplate = `{
         },
         "/auth/signin": {
             "post": {
-                "description": "Authenticate user with national ID and password. When sending a deviceToken, provide X-Device-Id (UUIDv4) for per-device associations.",
+                "description": "Authenticate user with national ID and password. Requires deviceToken body field and X-Device-Id (UUIDv4) header for per-device associations.",
                 "consumes": [
                     "application/json"
                 ],
@@ -651,9 +669,10 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device ID (UUIDv4). Required when request contains deviceToken.",
+                        "description": "Device ID (UUIDv4). Required for associating sessions to devices.",
                         "name": "X-Device-Id",
-                        "in": "header"
+                        "in": "header",
+                        "required": true
                     },
                     {
                         "description": "Sign in credentials",
@@ -673,7 +692,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request format or missing/invalid device ID when deviceToken provided",
+                        "description": "Invalid request format or missing/invalid deviceToken or X-Device-Id header",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -2021,7 +2040,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Sign out the current user. If refreshToken or deviceToken is provided, revokes a single session/device; otherwise, global signout. When targeting a device without deviceToken, send X-Device-Id.",
+                "description": "Sign out the current user. If refreshToken or deviceToken is provided, revokes a single session/device and removes associated push tokens. Provide X-Device-Id when targeting a specific device.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2035,7 +2054,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device ID (UUIDv4) for targeted signout when deviceToken isn't provided",
+                        "description": "Device ID (UUIDv4). Recommended for targeted signout so device tokens are purged",
                         "name": "X-Device-Id",
                         "in": "header"
                     },
@@ -2750,6 +2769,7 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SignInRequest": {
             "type": "object",
             "required": [
+                "deviceToken",
                 "nationalID",
                 "password"
             ],
@@ -2780,7 +2800,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "deviceToken": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "fcm_device_token"
                 },
                 "refreshToken": {
                     "type": "string"

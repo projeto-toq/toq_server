@@ -22,7 +22,7 @@ func NewDeviceTokenRepository(db *sql.DB) *DeviceTokenRepository {
 }
 
 func (r *DeviceTokenRepository) ListByUserID(userID int64) ([]usermodel.DeviceTokenInterface, error) {
-	rows, err := r.db.Query(`SELECT id, user_id, device_token FROM device_tokens WHERE user_id = ?`, userID)
+	rows, err := r.db.Query(`SELECT id, user_id, device_token, device_id, platform FROM device_tokens WHERE user_id = ?`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -31,13 +31,15 @@ func (r *DeviceTokenRepository) ListByUserID(userID int64) ([]usermodel.DeviceTo
 	var result []usermodel.DeviceTokenInterface
 	for rows.Next() {
 		var e userentity.DeviceTokenEntity
-		if err := rows.Scan(&e.ID, &e.UserID, &e.Token); err != nil {
+		var platform sql.NullString
+		if err := rows.Scan(&e.ID, &e.UserID, &e.Token, &e.DeviceID, &platform); err != nil {
 			return nil, err
 		}
 		dt := usermodel.NewDeviceToken()
 		dt.SetID(e.ID)
 		dt.SetUserID(e.UserID)
 		dt.SetDeviceToken(e.Token)
+		dt.SetDeviceID(e.DeviceID)
 		result = append(result, dt)
 	}
 	if err := rows.Err(); err != nil {
@@ -50,8 +52,12 @@ func (r *DeviceTokenRepository) AddToken(userID int64, token string, platform *s
 	if token == "" {
 		return nil, errors.New("token required")
 	}
+	var platformArg any
+	if platform != nil {
+		platformArg = *platform
+	}
 	// Upsert-like: ignore duplicate token for same user
-	res, err := r.db.Exec(`INSERT IGNORE INTO device_tokens (user_id, device_token) VALUES (?,?)`, userID, token)
+	res, err := r.db.Exec(`INSERT IGNORE INTO device_tokens (user_id, device_token, device_id, platform) VALUES (?,?,NULL,?)`, userID, token, platformArg)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +66,9 @@ func (r *DeviceTokenRepository) AddToken(userID int64, token string, platform *s
 	dt.SetID(id)
 	dt.SetUserID(userID)
 	dt.SetDeviceToken(token)
+	if platform != nil {
+		// platform stored but not exposed in domain yet
+	}
 	return dt, nil
 }
 
@@ -133,19 +142,56 @@ func (r *DeviceTokenRepository) ListTokensByUserIDIfOptedIn(userID int64) ([]str
 
 // AddTokenForDevice falls back to AddToken when device_id column is not available.
 func (r *DeviceTokenRepository) AddTokenForDevice(userID int64, deviceID, token string, platform *string) (usermodel.DeviceTokenInterface, error) {
-	// Current schema stores only (user_id, device_token), so delegate
-	return r.AddToken(userID, token, platform)
+	if token == "" {
+		return nil, errors.New("token required")
+	}
+	if deviceID == "" {
+		return nil, errors.New("deviceID required")
+	}
+	var platformArg any
+	if platform != nil {
+		platformArg = *platform
+	}
+	res, err := r.db.Exec(`INSERT INTO device_tokens (user_id, device_token, device_id, platform) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE device_token = VALUES(device_token), platform = VALUES(platform)`, userID, token, deviceID, platformArg)
+	if err != nil {
+		return nil, err
+	}
+	id, _ := res.LastInsertId()
+	dt := usermodel.NewDeviceToken()
+	dt.SetID(id)
+	dt.SetUserID(userID)
+	dt.SetDeviceToken(token)
+	dt.SetDeviceID(deviceID)
+	return dt, nil
 }
 
 // RemoveTokensByDeviceID removes tokens for a specific device; fallback removes none if device_id unsupported.
 func (r *DeviceTokenRepository) RemoveTokensByDeviceID(userID int64, deviceID string) error {
-	// Without device_id column, we cannot target by device; no-op to preserve data
-	// Consider full removal by user only when explicitly requested elsewhere.
-	return nil
+	if deviceID == "" {
+		return errors.New("deviceID required")
+	}
+	_, err := r.db.Exec(`DELETE FROM device_tokens WHERE user_id = ? AND device_id = ?`, userID, deviceID)
+	return err
 }
 
 // ListTokensByDeviceID lists tokens for a specific device; fallback returns tokens by user if opted-in.
 func (r *DeviceTokenRepository) ListTokensByDeviceID(userID int64, deviceID string) ([]string, error) {
-	// Fallback to user-level listing under current schema
-	return r.ListTokensByUserIDIfOptedIn(userID)
+	rows, err := r.db.Query(`SELECT device_token FROM device_tokens WHERE user_id = ? AND device_id = ?`, userID, deviceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tokens []string
+	for rows.Next() {
+		var token string
+		if err := rows.Scan(&token); err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, token)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return tokens, nil
 }

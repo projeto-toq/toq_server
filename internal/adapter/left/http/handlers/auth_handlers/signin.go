@@ -2,6 +2,7 @@ package authhandlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -13,14 +14,14 @@ import (
 // SignIn handles user authentication (public endpoint)
 //
 //	@Summary		User sign in
-//	@Description	Authenticate user with national ID and password. When sending a deviceToken, provide X-Device-Id (UUIDv4) for per-device associations.
+//	@Description	Authenticate user with national ID and password. Requires deviceToken body field and X-Device-Id (UUIDv4) header for per-device associations.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			X-Device-Id	header	string	false	"Device ID (UUIDv4). Required when request contains deviceToken."
+//	@Param			X-Device-Id	header	string	true	"Device ID (UUIDv4). Required for associating sessions to devices."
 //	@Param			request	body		dto.SignInRequest	true	"Sign in credentials"
 //	@Success		200		{object}	dto.SignInResponse	"Successful authentication"
-//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format or missing/invalid device ID when deviceToken provided"
+//	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format or missing/invalid deviceToken or X-Device-Id header"
 //	@Failure		401		{object}	dto.ErrorResponse	"Invalid credentials"
 //	@Failure		403		{object}	dto.ErrorResponse	"No active user roles"
 //	@Failure		423		{object}	dto.ErrorResponse	"Account temporarily locked due to security measures"
@@ -41,21 +42,22 @@ func (ah *AuthHandler) SignIn(c *gin.Context) {
 		return
 	}
 
-	// Enforce device header contract when deviceToken is provided (development environment, no backward-compat)
-	if request.DeviceToken != "" {
-		headerDeviceID := c.GetHeader("X-Device-Id")
-		if headerDeviceID == "" {
-			httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_DEVICE_ID", "X-Device-Id header is required when deviceToken is provided")
-			return
-		}
-		if _, err := uuid.Parse(headerDeviceID); err != nil {
-			httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_DEVICE_ID", "X-Device-Id must be a valid UUID")
-			return
-		}
+	headerDeviceID := c.GetHeader("X-Device-Id")
+	if headerDeviceID == "" {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_DEVICE_ID", "X-Device-Id header is required")
+		return
+	}
+	if _, err := uuid.Parse(headerDeviceID); err != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_DEVICE_ID", "X-Device-Id must be a valid UUID")
+		return
+	}
+	if strings.TrimSpace(request.DeviceToken) == "" {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_DEVICE_TOKEN", "deviceToken is required")
+		return
 	}
 
 	// Call service with enhanced context
-	tokens, err := ah.userService.SignInWithContext(ctx, request.NationalID, request.Password, request.DeviceToken, reqContext.IPAddress, reqContext.UserAgent)
+	tokens, err := ah.userService.SignInWithContext(ctx, request.NationalID, request.Password, request.DeviceToken, headerDeviceID, reqContext.IPAddress, reqContext.UserAgent)
 	if err != nil {
 		if derr, ok := err.(coreutils.DomainError); ok {
 			switch derr.Code() {

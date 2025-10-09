@@ -5,24 +5,10 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Os endpoints de /admin/user/approve está retornando:
-{
-    "code": 400,
-    "details": {
-        "field": "body",
-        "message": "Key: 'AdminApproveUserRequest.Status' Error:Field validation for 'Status' failed on the 'required' tag"
-    },
-    "message": "Key: 'AdminApproveUserRequest.Status' Error:Field validation for 'Status' failed on the 'required' tag"
-}
-com a chamada com body:
-{
-  "id": 14,
-  "status": 0
-}
-
-O user_role tem este conteudo:
-# id, user_id, role_id, is_active, status, expires_at, blocked_until
-'14', '14', '2', '1', '8', NULL, NULL
+durante o handlers/auth_handlers/sign.go não está exigindo device_ID e device_token. Isso deve ser informação obrigatória. Sem isso, não é possivel mandar notificação push.
+No serviço signin, estes campos são tratados como opcionais, mas deveriam ser obrigatórios.
+O serviço de signout deve apagar device_id e device_token.
+O servico de delete_account deve apagar device_id e device_token.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 

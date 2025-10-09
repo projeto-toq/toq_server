@@ -11,7 +11,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// ApproveCreciManual updates realtor status from pending manual to approved/refused and sends notification
+// ApproveCreciManual updates realtor status from pending manual to approved/refused and dispatches FCM notifications to all opted-in devices
 func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, target permissionmodel.UserRoleStatus) (err error) {
 	ctx, spanEnd, terr := utils.GenerateTracer(ctx)
 	if terr != nil {
@@ -79,41 +79,67 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 		return utils.InternalError("Failed to commit transaction")
 	}
 
-	// After commit: send push notification if device tokens exist
-	// Build subject/body by status
-	var subject, body string
-	if target == permissionmodel.StatusActive {
-		subject = "Aprovação de Cadastro"
-		body = "Seu cadastro como corretor foi aprovado."
-	} else {
-		subject = "Reprovação de Cadastro"
-		switch target {
-		case permissionmodel.StatusRefusedImage:
-			body = "Seu cadastro foi reprovado por problemas nas imagens enviadas."
-		case permissionmodel.StatusRefusedDocument:
-			body = "Seu cadastro foi reprovado por inconsistência nos documentos."
-		case permissionmodel.StatusRefusedData:
-			body = "Seu cadastro foi reprovado por divergência de dados."
-		default:
-			body = "Seu cadastro foi reprovado."
-		}
-	}
-
-	// Load user to obtain last known device token stored during sign-in
-	// Using a read-only tx internally
-	user, gerr := us.GetUserByID(ctx, userID)
-	if gerr == nil && user != nil {
-		token := user.GetDeviceToken()
-		if token != "" {
-			notify := us.globalService.GetUnifiedNotificationService()
-			_ = notify.SendNotification(ctx, globalservice.NotificationRequest{
-				Type:    globalservice.NotificationTypeFCM,
-				Token:   token,
-				Subject: subject,
-				Body:    body,
-			})
-		}
+	if err := us.sendManualApprovalNotification(ctx, userID, target); err != nil {
+		return err
 	}
 
 	return nil
+}
+
+func (us *userService) sendManualApprovalNotification(ctx context.Context, userID int64, target permissionmodel.UserRoleStatus) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	tokens, err := us.globalService.ListDeviceTokensByUserIDIfOptedIn(ctx, userID)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("admin.approve_creci.list_tokens_error", "user_id", userID, "error", err)
+		return utils.InternalError("Failed to load device tokens")
+	}
+
+	if len(tokens) == 0 {
+		logger.Info("admin.approve_creci.notification_skipped_no_tokens", "user_id", userID, "target_status", target.String())
+		return nil
+	}
+
+	subject, body := buildManualApprovalNotificationPayload(target)
+	notify := us.globalService.GetUnifiedNotificationService()
+
+	for _, token := range tokens {
+		req := globalservice.NotificationRequest{
+			Type:    globalservice.NotificationTypeFCM,
+			Token:   token,
+			Subject: subject,
+			Body:    body,
+		}
+
+		if err := notify.SendNotification(ctx, req); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("admin.approve_creci.notification_error", "user_id", userID, "token", token, "error", err)
+			return utils.InternalError("Failed to dispatch notification")
+		}
+	}
+
+	logger.Info("admin.approve_creci.notification_sent", "user_id", userID, "target_status", target.String(), "tokens_count", len(tokens))
+	return nil
+}
+
+func buildManualApprovalNotificationPayload(target permissionmodel.UserRoleStatus) (subject, body string) {
+	if target == permissionmodel.StatusActive {
+		return "Aprovação de Cadastro", "Seu cadastro como corretor foi aprovado."
+	}
+
+	subject = "Reprovação de Cadastro"
+	body = "Seu cadastro foi reprovado."
+
+	switch target {
+	case permissionmodel.StatusRefusedImage:
+		body = "Seu cadastro foi reprovado por problemas nas imagens enviadas."
+	case permissionmodel.StatusRefusedDocument:
+		body = "Seu cadastro foi reprovado por inconsistência nos documentos."
+	case permissionmodel.StatusRefusedData:
+		body = "Seu cadastro foi reprovado por divergência de dados."
+	}
+
+	return
 }

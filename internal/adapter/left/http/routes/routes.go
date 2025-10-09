@@ -122,7 +122,7 @@ func RegisterUserRoutes(
 		auth.POST("/agency", authHandler.CreateAgency) // CreateAgency
 
 		// SignIn
-		auth.POST("/signin", authHandler.SignIn) // SignIn
+		auth.POST("/signin", middlewares.RequireDeviceIDMiddleware(), authHandler.SignIn) // SignIn
 
 		// RefreshToken
 		auth.POST("/refresh", authHandler.RefreshToken) // RefreshToken

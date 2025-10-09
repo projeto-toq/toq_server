@@ -4,6 +4,7 @@ type deviceToken struct {
 	id           int64
 	userID       int64
 	device_token string
+	deviceID     string
 }
 
 func (u *deviceToken) GetID() int64 {
@@ -27,4 +28,12 @@ func (u *deviceToken) GetDeviceToken() string {
 
 func (u *deviceToken) SetDeviceToken(token string) {
 	u.device_token = token
+}
+
+func (u *deviceToken) GetDeviceID() string {
+	return u.deviceID
+}
+
+func (u *deviceToken) SetDeviceID(deviceID string) {
+	u.deviceID = deviceID
 }

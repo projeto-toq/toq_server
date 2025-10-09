@@ -14,11 +14,11 @@ type _ = dto.ErrorResponse
 
 // SignOut handles user sign out
 // @Summary		Sign out user
-// @Description	Sign out the current user. If refreshToken or deviceToken is provided, revokes a single session/device; otherwise, global signout. When targeting a device without deviceToken, send X-Device-Id.
+// @Description	Sign out the current user. If refreshToken or deviceToken is provided, revokes a single session/device and removes associated push tokens. Provide X-Device-Id when targeting a specific device.
 // @Tags			User
 // @Accept			json
 // @Produce		json
-// @Param			X-Device-Id	header		string	false	"Device ID (UUIDv4) for targeted signout when deviceToken isn't provided"
+// @Param			X-Device-Id	header	string	false	"Device ID (UUIDv4). Recommended for targeted signout so device tokens are purged"
 // @Param			request	body		dto.SignOutRequest	true	"Sign out request"
 // @Success		200		{object}	dto.SignOutResponse	"Sign out confirmation message"
 // @Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
@@ -38,8 +38,11 @@ func (uh *UserHandler) SignOut(c *gin.Context) {
 		return
 	}
 
+	// Extract device identifier if provided
+	headerDeviceID := c.GetHeader("X-Device-Id")
+
 	// Call service
-	if err := uh.userService.SignOut(ctx, request.DeviceToken, request.RefreshToken); err != nil {
+	if err := uh.userService.SignOut(ctx, request.DeviceToken, request.RefreshToken, headerDeviceID); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

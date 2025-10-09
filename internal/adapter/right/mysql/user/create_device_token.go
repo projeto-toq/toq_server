@@ -21,9 +21,24 @@ func (ua *UserAdapter) CreateDeviceToken(ctx context.Context, tx *sql.Tx, e user
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	// Table currently has columns: id, user_id, device_token
-	query := `INSERT INTO device_tokens (user_id, device_token) VALUES (?, ?)`
-	id, err := ua.Create(ctx, tx, query, e.UserID, e.Token)
+	// Insert with device metadata when provided
+	query := `INSERT INTO device_tokens (user_id, device_token, device_id, platform) VALUES (?, ?, ?, ?)`
+
+	var deviceIDArg any
+	if e.DeviceID != "" {
+		deviceIDArg = e.DeviceID
+	} else {
+		deviceIDArg = nil
+	}
+
+	var platformArg any
+	if e.Platform != nil {
+		platformArg = *e.Platform
+	} else {
+		platformArg = nil
+	}
+
+	id, err := ua.Create(ctx, tx, query, e.UserID, e.Token, deviceIDArg, platformArg)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.user.create_device_token.create_error", "error", err)

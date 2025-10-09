@@ -68,7 +68,7 @@ type UserCreateRequest struct {
 type SignInRequest struct {
 	NationalID  string `json:"nationalID" binding:"required" example:"12345678901" description:"User's CPF or CNPJ (punctuation ignored; digits-only used)"`
 	Password    string `json:"password" binding:"required" example:"securePassword123" description:"User's password"`
-	DeviceToken string `json:"deviceToken" example:"fcm_device_token" description:"Optional FCM device token for push notifications"`
+	DeviceToken string `json:"deviceToken" binding:"required" example:"fcm_device_token" description:"FCM device token for push notifications; requires X-Device-Id header"`
 }
 
 // SignInResponse represents successful sign in response with authentication tokens
@@ -97,8 +97,8 @@ type RefreshTokenResponse struct {
 
 // SignOutRequest represents sign out request
 type SignOutRequest struct {
-	DeviceToken  string `json:"deviceToken,omitempty"`
-	RefreshToken string `json:"refreshToken,omitempty"`
+	DeviceToken  string `json:"deviceToken,omitempty" example:"fcm_device_token" description:"Optional FCM device token to target a specific device session; pair with X-Device-Id header when available"`
+	RefreshToken string `json:"refreshToken,omitempty" description:"Optional refresh token to revoke a single session"`
 }
 
 // SignOutResponse represents sign out response

@@ -30,7 +30,7 @@ func (ua *UserAdapter) AddDeviceToken(ctx context.Context, tx *sql.Tx, userID in
 	if token == "" {
 		return nil
 	}
-	e := userentity.DeviceTokenEntity{UserID: userID, Token: token}
+	e := userentity.DeviceTokenEntity{UserID: userID, Token: token, DeviceID: "", Platform: platform}
 	_, err := ua.CreateDeviceToken(ctx, tx, e)
 	return err
 }
@@ -51,12 +51,19 @@ func (ua *UserAdapter) RemoveAllDeviceTokens(ctx context.Context, tx *sql.Tx, us
 
 // AddTokenForDevice stores a token associated to a device when schema supports it; fallback to user-only.
 func (ua *UserAdapter) AddTokenForDevice(ctx context.Context, tx *sql.Tx, userID int64, deviceID, token string, platform *string) error {
-	// Current schema lacks device_id column; fallback to AddDeviceToken
-	return ua.AddDeviceToken(ctx, tx, userID, token, platform)
+	if token == "" {
+		return nil
+	}
+	e := userentity.DeviceTokenEntity{UserID: userID, Token: token, DeviceID: deviceID, Platform: platform}
+	_, err := ua.CreateDeviceToken(ctx, tx, e)
+	return err
 }
 
 // RemoveTokensByDeviceID removes tokens for a specific device; no-op without device_id column.
 func (ua *UserAdapter) RemoveTokensByDeviceID(ctx context.Context, tx *sql.Tx, userID int64, deviceID string) error {
-	// No device_id in current schema; preserve data and do nothing
-	return nil
+	if deviceID == "" {
+		return nil
+	}
+	_, err := tx.ExecContext(ctx, `DELETE FROM device_tokens WHERE user_id = ? AND device_id = ?`, userID, deviceID)
+	return err
 }

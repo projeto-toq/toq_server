@@ -9,6 +9,8 @@ type DeviceTokenInterface interface {
 	SetUserID(int64)
 	GetDeviceToken() string
 	SetDeviceToken(string)
+	GetDeviceID() string
+	SetDeviceID(string)
 }
 
 // NewDeviceToken creates a new deviceToken implementing DeviceTokenInterface.

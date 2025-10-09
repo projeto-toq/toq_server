@@ -49,7 +49,8 @@ func (us *userService) CreateAgency(ctx context.Context, agency usermodel.UserIn
 	}
 
 	// Autentica após commit
-	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, ipAddress, userAgent)
+	deviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
+	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, deviceID, ipAddress, userAgent)
 	return tokens, err
 }
 

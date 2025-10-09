@@ -6,23 +6,24 @@ import (
 	"strings"
 	"time"
 
-	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
-
 	"errors"
 
+	"github.com/google/uuid"
+
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // SignIn autentica um usuário e retorna tokens de acesso
-func (us *userService) SignIn(ctx context.Context, nationalID string, password string, deviceToken string) (tokens usermodel.Tokens, err error) {
-	return us.SignInWithContext(ctx, nationalID, password, deviceToken, "", "")
+func (us *userService) SignIn(ctx context.Context, nationalID string, password string, deviceToken string, deviceID string) (tokens usermodel.Tokens, err error) {
+	return us.SignInWithContext(ctx, nationalID, password, deviceToken, deviceID, "", "")
 }
 
 // SignInWithContext autentica um usuário com contexto de requisição completo
-func (us *userService) SignInWithContext(ctx context.Context, nationalID string, password string, deviceToken string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
+func (us *userService) SignInWithContext(ctx context.Context, nationalID string, password string, deviceToken string, deviceID string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -39,6 +40,27 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		return
 	}
 
+	trimmedToken := strings.TrimSpace(deviceToken)
+	trimmedDeviceID := strings.TrimSpace(deviceID)
+	if trimmedToken == "" {
+		logger.Warn("auth.signin.missing_device_token", "has_device_token", false)
+		err = utils.BadRequest("deviceToken is required")
+		return
+	}
+	if trimmedDeviceID == "" {
+		logger.Warn("auth.signin.missing_device_id", "has_device_id", false)
+		err = utils.BadRequest("deviceID is required")
+		return
+	}
+	if _, parseErr := uuid.Parse(trimmedDeviceID); parseErr != nil {
+		logger.Warn("auth.signin.invalid_device_id", "device_id", trimmedDeviceID)
+		err = utils.BadRequest("deviceID must be a valid UUID")
+		return
+	}
+
+	// Ensure context carries sanitized device ID for downstream usage
+	ctx = context.WithValue(ctx, globalmodel.DeviceIDKey, trimmedDeviceID)
+
 	// Normalize nationalID to digits-only (CPF/CNPJ) for consistent lookup
 	nationalID = validators.OnlyDigits(nationalID)
 
@@ -47,7 +69,7 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		logger.Debug("auth.signin_with_context.debug",
 			// Avoid logging PII values such as national_id
 			"has_national_id", nationalID != "",
-			"has_device_token", deviceToken != "",
+			"has_device_token", trimmedToken != "",
 			"ip", ipAddress,
 			"user_agent", userAgent,
 			"ctx_device_id", did,
@@ -69,7 +91,7 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		}
 	}()
 
-	tokens, err = us.signIn(ctx, tx, nationalID, password, deviceToken, ipAddress, userAgent)
+	tokens, err = us.signIn(ctx, tx, nationalID, password, trimmedToken, trimmedDeviceID, ipAddress, userAgent)
 	if err != nil {
 		return
 	}
@@ -85,7 +107,7 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 	return
 }
 
-func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string, _ string, _ string) (tokens usermodel.Tokens, err error) {
+func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string, deviceID string, _ string, _ string) (tokens usermodel.Tokens, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
@@ -167,18 +189,11 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		logger.Warn("auth.signin.clear_temp_block_failed", "user_id", userID, "error", err)
 	}
 
-	// Adiciona device token se fornecido (preferindo associação por deviceID quando disponível)
+	// Adiciona device token vinculado ao deviceID sanitizado
 	if deviceToken != "" {
-		if did, ok := ctx.Value(globalmodel.DeviceIDKey).(string); ok && did != "" {
-			logger.Debug("auth.signin.device_token.add_for_device", "device_id", did, "user_id", userID)
-			if errAdd := us.repo.AddTokenForDevice(ctx, tx, userID, did, deviceToken, nil); errAdd != nil {
-				logger.Warn("auth.signin.device_token_add_for_device_failed", "user_id", userID, "device_id", did, "error", errAdd)
-			}
-		} else {
-			logger.Debug("auth.signin.device_token.add_user_only", "user_id", userID)
-			if errAdd := us.repo.AddDeviceToken(ctx, tx, userID, deviceToken, nil); errAdd != nil {
-				logger.Warn("auth.signin.device_token_add_failed", "user_id", userID, "error", errAdd)
-			}
+		logger.Debug("auth.signin.device_token.add_for_device", "device_id", deviceID, "user_id", userID)
+		if errAdd := us.repo.AddTokenForDevice(ctx, tx, userID, deviceID, deviceToken, nil); errAdd != nil {
+			logger.Warn("auth.signin.device_token_add_for_device_failed", "user_id", userID, "device_id", deviceID, "error", errAdd)
 		}
 	}
 

@@ -5,6 +5,9 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"strings"
+
+	"github.com/google/uuid"
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
@@ -31,7 +34,7 @@ func init() {
 	prometheus.MustRegister(metricSignoutTotal, metricSignoutSessionsRevoked, metricSignoutDeviceTokensRemoved)
 }
 
-func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken string) (err error) {
+func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken, deviceID string) (err error) {
 	// Obter o ID do usuário do contexto (SSOT)
 	userID, err := us.globalService.GetUserIDFromContext(ctx)
 	if err != nil || userID == 0 {
@@ -46,6 +49,19 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken st
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+
+	trimmedDeviceToken := strings.TrimSpace(deviceToken)
+	trimmedRefreshToken := strings.TrimSpace(refreshToken)
+	trimmedDeviceID := strings.TrimSpace(deviceID)
+
+	if trimmedDeviceID != "" {
+		if _, parseErr := uuid.Parse(trimmedDeviceID); parseErr != nil {
+			logger.Warn("auth.signout.invalid_device_id", "device_id", trimmedDeviceID)
+			return utils.BadRequest("deviceID must be a valid UUID")
+		}
+		// Propagar device ID sanitizado para o contexto
+		ctx = context.WithValue(ctx, globalmodel.DeviceIDKey, trimmedDeviceID)
+	}
 
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
@@ -62,7 +78,7 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken st
 		}
 	}()
 
-	err = us.signOut(ctx, tx, userID, deviceToken, refreshToken)
+	err = us.signOut(ctx, tx, userID, trimmedDeviceToken, trimmedRefreshToken, trimmedDeviceID)
 	if err != nil {
 		return
 	}
@@ -76,16 +92,18 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken st
 	return
 }
 
-func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, deviceToken, refreshToken string) (err error) {
+func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, deviceToken, refreshToken, deviceID string) (err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 	// Determine single-session vs global logout
-	single := refreshToken != "" || deviceToken != ""
+	single := refreshToken != "" || deviceToken != "" || deviceID != ""
 	mode := "global"
 	if single {
 		mode = "single"
 	}
 	metricSignoutTotal.WithLabelValues(mode).Inc()
+
+	targetDeviceID := deviceID
 
 	if single {
 		// Revoke only the session matching the refresh token (if provided & valid)
@@ -102,6 +120,10 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 				us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID, DeviceID: session.GetDeviceID()})
 				// Count revoked session (best-effort; consider success when no revoke error)
 				metricSignoutSessionsRevoked.WithLabelValues(mode).Inc()
+
+				if session.GetDeviceID() != "" {
+					targetDeviceID = session.GetDeviceID()
+				}
 			}
 		}
 		// Remove device tokens
@@ -113,15 +135,13 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 			} else {
 				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "token", "success").Inc()
 			}
-		} else {
-			// If deviceID is available in context, prune tokens for this device
-			if did, ok := ctx.Value(globalmodel.DeviceIDKey).(string); ok && did != "" {
-				if errTok := us.repo.RemoveTokensByDeviceID(ctx, tx, userID, did); errTok != nil {
-					logger.Warn("auth.signout.single.device_tokens_by_device_delete_failed", "user_id", userID, "device_id", did, "error", errTok)
-					metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "error").Inc()
-				} else {
-					metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "success").Inc()
-				}
+		}
+		if targetDeviceID != "" {
+			if errTok := us.repo.RemoveTokensByDeviceID(ctx, tx, userID, targetDeviceID); errTok != nil {
+				logger.Warn("auth.signout.single.device_tokens_by_device_delete_failed", "user_id", userID, "device_id", targetDeviceID, "error", errTok)
+				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "error").Inc()
+			} else {
+				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "success").Inc()
 			}
 		}
 		// Audit

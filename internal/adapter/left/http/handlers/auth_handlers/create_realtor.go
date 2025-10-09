@@ -18,6 +18,7 @@ import (
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
+//	@Param		X-Device-Id	header	string	false	"Device ID (UUIDv4). Optional but recommended when providing deviceToken for automatic sign-in"
 //	@Param			request	body		dto.CreateRealtorRequest	true	"Realtor creation data (include optional deviceToken for push notifications)"
 //	@Success		201		{object}	dto.CreateRealtorResponse
 //	@Failure		400		{object}	dto.ErrorResponse	"Validation error (invalid input data)"

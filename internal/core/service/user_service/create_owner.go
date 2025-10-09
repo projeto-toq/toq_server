@@ -50,7 +50,8 @@ func (us *userService) CreateOwner(ctx context.Context, owner usermodel.UserInte
 	}
 
 	// Após commit, autentica usando SignIn padrão com nationalID normalizado
-	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, ipAddress, userAgent)
+	deviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
+	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, deviceID, ipAddress, userAgent)
 	return tokens, err
 }
 

@@ -3,6 +3,7 @@ package globalservice
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
 	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
@@ -76,6 +77,7 @@ type GlobalServiceInterface interface {
 	// StartReadOnlyTransaction starts a read-only transaction for pure read flows
 	StartReadOnlyTransaction(ctx context.Context) (tx *sql.Tx, err error)
 	GetUserIDFromContext(ctx context.Context) (int64, error)
+	ListDeviceTokensByUserIDIfOptedIn(ctx context.Context, userID int64) ([]string, error)
 }
 
 // GetEventBus returns the in-memory event bus instance
@@ -86,4 +88,12 @@ func (gs *globalService) GetEventBus() events.Bus {
 // GetMetrics returns the metrics port if configured (may be nil)
 func (gs *globalService) GetMetrics() metricsport.MetricsPortInterface {
 	return gs.metrics
+}
+
+// ListDeviceTokensByUserIDIfOptedIn returns all push tokens for a user when promotional opt-in is active.
+func (gs *globalService) ListDeviceTokensByUserIDIfOptedIn(_ context.Context, userID int64) ([]string, error) {
+	if gs.deviceTokenRepo == nil {
+		return nil, fmt.Errorf("device token repository not configured")
+	}
+	return gs.deviceTokenRepo.ListTokensByUserIDIfOptedIn(userID)
 }

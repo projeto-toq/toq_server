@@ -49,7 +49,8 @@ func (us *userService) CreateRealtor(ctx context.Context, realtor usermodel.User
 	}
 
 	// Autentica após commit
-	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, ipAddress, userAgent)
+	deviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
+	tokens, err = us.SignInWithContext(ctx, created.GetNationalID(), plainPassword, deviceToken, deviceID, ipAddress, userAgent)
 	return tokens, err
 }
 
