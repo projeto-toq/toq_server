@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
@@ -11,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error) {
+func (us *userService) SwitchUserRole(ctx context.Context) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return tokens, utils.InternalError("Failed to generate tracer")
@@ -43,7 +44,7 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 		}
 	}()
 
-	tokens, err = us.switchUserRole(ctx, tx, userID, roleSlug)
+	tokens, err = us.switchUserRole(ctx, tx, userID)
 	if err != nil {
 		return
 	}
@@ -57,40 +58,9 @@ func (us *userService) SwitchUserRole(ctx context.Context, roleSlug permissionmo
 	return
 }
 
-func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID int64, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error) {
+func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID int64) (tokens usermodel.Tokens, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-
-	if roleSlug != permissionmodel.RoleSlugOwner && roleSlug != permissionmodel.RoleSlugRealtor {
-		return tokens, utils.AuthorizationError("Only owners or realtors can switch roles")
-	}
-
-	// Recupera as informações dos roles permitidos (alvo e complementar)
-	role, roleErr := us.permissionService.GetRoleBySlugWithTx(ctx, tx, roleSlug)
-	if roleErr != nil {
-		utils.SetSpanError(ctx, roleErr)
-		logger.Error("user.switch_role.get_role_error", "error", roleErr, "role_slug", roleSlug)
-		err = roleErr
-		return
-	}
-
-	otherSlug := permissionmodel.RoleSlugOwner
-	if roleSlug == permissionmodel.RoleSlugOwner {
-		otherSlug = permissionmodel.RoleSlugRealtor
-	}
-
-	otherRole, otherRoleErr := us.permissionService.GetRoleBySlugWithTx(ctx, tx, otherSlug)
-	if otherRoleErr != nil {
-		utils.SetSpanError(ctx, otherRoleErr)
-		logger.Error("user.switch_role.get_role_error", "error", otherRoleErr, "role_slug", otherSlug)
-		err = otherRoleErr
-		return
-	}
-
-	allowedRoleIDs := map[permissionmodel.RoleSlug]int64{
-		roleSlug:  role.GetID(),
-		otherSlug: otherRole.GetID(),
-	}
 
 	activeRole, activeErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if activeErr != nil {
@@ -104,24 +74,34 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 		return tokens, utils.ErrUserActiveRoleMissing
 	}
 
-	currentRoleID := activeRole.GetRoleID()
-	var currentSlug permissionmodel.RoleSlug
-	for slug, id := range allowedRoleIDs {
-		if id == currentRoleID {
-			currentSlug = slug
-			break
-		}
+	currentRole := activeRole.GetRole()
+	if currentRole == nil {
+		return tokens, utils.InternalError("Failed to load active role details")
 	}
 
-	if currentSlug == "" {
+	currentSlug := permissionmodel.RoleSlug(strings.ToLower(currentRole.GetSlug()))
+	var targetSlug permissionmodel.RoleSlug
+	switch currentSlug {
+	case permissionmodel.RoleSlugOwner:
+		targetSlug = permissionmodel.RoleSlugRealtor
+	case permissionmodel.RoleSlugRealtor:
+		targetSlug = permissionmodel.RoleSlugOwner
+	default:
 		return tokens, utils.AuthorizationError("Only owners or realtors can switch roles")
 	}
 
-	if currentRoleID == role.GetID() {
-		return tokens, utils.BadRequest("Requested role is already active")
+	targetRole, roleErr := us.permissionService.GetRoleBySlugWithTx(ctx, tx, targetSlug)
+	if roleErr != nil {
+		utils.SetSpanError(ctx, roleErr)
+		logger.Error("user.switch_role.get_target_role_error", "error", roleErr, "role_slug", targetSlug)
+		err = roleErr
+		return
 	}
 
-	// Verifica se o usuário possui a role alvo cadastrada
+	if targetRole == nil {
+		return tokens, utils.InternalError("Target role not found")
+	}
+
 	userRoles, rolesErr := us.permissionService.GetUserRolesWithTx(ctx, tx, userID)
 	if rolesErr != nil {
 		utils.SetSpanError(ctx, rolesErr)
@@ -132,23 +112,22 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 
 	var hasTarget bool
 	for _, userRole := range userRoles {
-		if userRole.GetRoleID() == role.GetID() {
+		if userRole.GetRoleID() == targetRole.GetID() {
 			hasTarget = true
 			break
 		}
 	}
 
 	if len(userRoles) < 2 || !hasTarget {
-		return tokens, utils.BadRequest(fmt.Sprintf("User must have role '%s' assigned to switch", roleSlug))
+		return tokens, utils.BadRequest(fmt.Sprintf("User must have role '%s' assigned to switch", targetSlug))
 	}
 
-	if err = us.permissionService.SwitchActiveRoleWithTx(ctx, tx, userID, role.GetID()); err != nil {
+	if err = us.permissionService.SwitchActiveRoleWithTx(ctx, tx, userID, targetRole.GetID()); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("user.switch_role.switch_active_role_error", "error", err, "user_id", userID, "role_id", role.GetID())
+		logger.Error("user.switch_role.switch_active_role_error", "error", err, "user_id", userID, "role_id", targetRole.GetID())
 		return
 	}
 
-	// Buscar usuário atualizado
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -156,7 +135,15 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 		return
 	}
 
-	// Gerar novos tokens
+	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	if aerr != nil {
+		utils.SetSpanError(ctx, aerr)
+		utils.LoggerFromContext(ctx).Error("user.switch_role.read_active_role_error", "error", aerr, "user_id", userID)
+		return
+	}
+
+	user.SetActiveRole(activeRole)
+
 	tokens, err = us.CreateTokens(ctx, tx, user, false)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -164,7 +151,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 		return
 	}
 
-	logger.Info("user.switch_role.success", "user_id", userID, "from_role", currentSlug.String(), "to_role", roleSlug.String())
+	logger.Info("user.switch_role.success", "user_id", userID, "from_role", currentSlug.String(), "to_role", targetSlug.String())
 
 	return
 }

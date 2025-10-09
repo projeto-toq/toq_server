@@ -3,9 +3,12 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"strings"
+	"time"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -63,7 +66,13 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	// Check if user has active role
-	activeRole := user.GetActiveRole()
+	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	if aerr != nil {
+		utils.SetSpanError(ctx, aerr)
+		utils.LoggerFromContext(ctx).Error("user.get_active_role_status.read_active_role_error", "error", aerr, "user_id", userID)
+		return utils.InternalError("Failed to get active role")
+	}
+
 	if activeRole == nil {
 		derr := utils.InternalError("Active role missing")
 		utils.LoggerFromContext(ctx).Error("user.active_role.missing", "user_id", userID)
@@ -88,7 +97,10 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 		return utils.BadRequest("Invalid alternative role for current role")
 	}
 
-	var targetStatus permissionmodel.UserRoleStatus
+	var (
+		targetStatus  permissionmodel.UserRoleStatus
+		creciWasSaved bool
+	)
 	switch roleSlug {
 	case permissionmodel.RoleSlugOwner:
 		targetStatus = permissionmodel.StatusActive
@@ -98,9 +110,11 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 		return utils.AuthorizationError("Unsupported alternative role")
 	}
 
-	// Validate creci info for realtor role
-	if roleSlug == permissionmodel.RoleSlugRealtor && len(creciInfo) != 3 {
-		return utils.ValidationError("creciInfo", "Realtor role requires CRECI info")
+	if roleSlug == permissionmodel.RoleSlugRealtor {
+		creciWasSaved, err = us.applyCreciInfoToUser(ctx, tx, user, creciInfo)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Get role from permission service
@@ -135,6 +149,15 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 		}
 	}
 
+	if creciWasSaved {
+		err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Atualizado CRECI para role alternativo")
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			utils.LoggerFromContext(ctx).Error("user.add_alternative_role.audit_user_creci_error", "table", string(globalmodel.TableUsers), "err", err)
+			return utils.InternalError("Failed to create audit record")
+		}
+	}
+
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Criado papel alternativo")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -143,4 +166,77 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	return
+}
+
+// applyCreciInfoToUser validates and persists CRECI data when assigning realtor role.
+func (us *userService) applyCreciInfoToUser(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, creciInfo []string) (bool, error) {
+	logger := utils.LoggerFromContext(ctx)
+
+	if len(creciInfo) != 3 {
+		derr := utils.ValidationError("creciInfo", "Realtor role requires CRECI info")
+		utils.SetSpanError(ctx, derr)
+		return false, derr
+	}
+
+	creciNumber := strings.TrimSpace(creciInfo[0])
+	if creciNumber == "" {
+		derr := utils.ValidationError("creciNumber", "Creci number is required")
+		utils.SetSpanError(ctx, derr)
+		return false, derr
+	}
+
+	creciState := strings.ToUpper(strings.TrimSpace(creciInfo[1]))
+	if len(creciState) != 2 {
+		derr := utils.ValidationError("creciState", "Creci state must have two letters")
+		utils.SetSpanError(ctx, derr)
+		return false, derr
+	}
+
+	creciValidityRaw := strings.TrimSpace(creciInfo[2])
+	if creciValidityRaw == "" {
+		derr := utils.ValidationError("creciValidity", "Creci validity date is required")
+		utils.SetSpanError(ctx, derr)
+		return false, derr
+	}
+
+	creciValidity, perr := time.Parse("2006-01-02", creciValidityRaw)
+	if perr != nil {
+		derr := utils.ValidationError("creciValidity", "Invalid date format, expected YYYY-MM-DD")
+		utils.SetSpanError(ctx, derr)
+		return false, derr
+	}
+
+	currentNumber := user.GetCreciNumber()
+	currentState := user.GetCreciState()
+	currentValidity := user.GetCreciValidity()
+
+	// Log when overwriting existing data with different values.
+	if currentNumber != "" && currentNumber != creciNumber {
+		logger.Warn("user.add_alternative_role.creci_number_overwrite", "user_id", user.GetID(), "previous", currentNumber, "new", creciNumber)
+	}
+	if currentState != "" && currentState != creciState {
+		logger.Warn("user.add_alternative_role.creci_state_overwrite", "user_id", user.GetID(), "previous", currentState, "new", creciState)
+	}
+	if !currentValidity.IsZero() && !currentValidity.Equal(creciValidity) {
+		logger.Warn("user.add_alternative_role.creci_validity_overwrite", "user_id", user.GetID(), "previous", currentValidity.String(), "new", creciValidity.String())
+	}
+
+	hasChanges := currentNumber != creciNumber || currentState != creciState || !currentValidity.Equal(creciValidity)
+	if !hasChanges {
+		return false, nil
+	}
+
+	user.SetCreciNumber(creciNumber)
+	user.SetCreciState(creciState)
+	user.SetCreciValidity(creciValidity)
+
+	if err := us.repo.UpdateUserByID(ctx, tx, user); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("user.add_alternative_role.update_creci_error", "user_id", user.GetID(), "err", err)
+		return false, utils.InternalError("Failed to update user with CRECI info")
+	}
+
+	logger.Info("user.add_alternative_role.creci_updated", "user_id", user.GetID())
+
+	return true, nil
 }

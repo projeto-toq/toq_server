@@ -292,10 +292,6 @@ type AddAlternativeUserRoleResponse struct {
 	Message string `json:"message"`
 }
 
-type SwitchUserRoleRequest struct {
-	RoleSlug string `json:"roleSlug" binding:"required,oneof=owner realtor" example:"realtor" enum:"owner,realtor" description:"Slug do role desejado (owner ou realtor)"`
-}
-
 type SwitchUserRoleResponse struct {
 	Tokens TokensResponse `json:"tokens"`
 }

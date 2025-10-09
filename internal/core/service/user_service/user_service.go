@@ -86,7 +86,7 @@ type UserServiceInterface interface {
 	SignIn(ctx context.Context, nationalID string, password string, deviceToken string, deviceID string) (tokens usermodel.Tokens, err error)
 	SignInWithContext(ctx context.Context, nationalID string, password string, deviceToken string, deviceID string, ipAddress string, userAgent string) (tokens usermodel.Tokens, err error)
 	SignOut(ctx context.Context, deviceToken, refreshToken, deviceID string) (err error)
-	SwitchUserRole(ctx context.Context, roleSlug permissionmodel.RoleSlug) (tokens usermodel.Tokens, err error)
+	SwitchUserRole(ctx context.Context) (tokens usermodel.Tokens, err error)
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	BlockUserTemporarily(ctx context.Context, userID int64) (err error)
 	UnblockUserTemporarily(ctx context.Context, userID int64) (err error)
