@@ -6,7 +6,11 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-A geração logs da aplicação, como pode observar no arquivo /logs/toq_server.log, deveria ter um identificador único por transação, que permita correlacionar todos os logs gerados por uma mesma requisição HTTP. O identificador deveria ser request_id, mas ele não permeia todos as entradas de log, o que dificulta a análise de problemas e o rastreamento de requisições específicas.
+Ao deletar um Usuário /handler/user_handlers/delete_account.go, deve-se:
+- Alterar `user_role` para StatusDeleted     
+- Apagar dados do S3
+
+O status StatusInvitePending  de constants.go deve ser eliminado. Comente onde for usado e remova-o do enum.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
