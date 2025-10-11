@@ -21,6 +21,7 @@ import (
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
 //	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
 //	@Failure		403		{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure		404		{object}	dto.ErrorResponse	"Complex not found"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/listings/options [post]
 //	@Security		BearerAuth

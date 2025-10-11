@@ -1,13 +1,15 @@
 id;name;zip_code;street;number;neighborhood;city;state;reception_phone;sector;main_registration;type
-1;TRIX Tamboré Housing Offices & Shops;06543-001;Av. Marcos Penteado de Ulhôa Rodrigues;4.053;Alphaville;Santana de Parnaíba;SP;;2;98.678;11
-2;Terraços Tamboré ;06543-001;Av. Marcos Penteado de Ulhôa Rodrigues;4.000;Alphaville;Santana de Parnaíba;SP;;0;148.291;1
+1;TRIX Tamboré Housing Offices & Shops;06543-001;Av. Marcos Penteado de Ulhôa Rodrigues;4053;Alphaville;Santana de Parnaíba;SP;;2;98.678;11
+2;Terraços Tamboré ;06543-001;Av. Marcos Penteado de Ulhôa Rodrigues;4000;Alphaville;Santana de Parnaíba;SP;;0;148.291;1
 3;Edifício AlphaLife;06472-001;Av. Copacaba ;291;Alphaville;Barueri;SP;;0;100.570;1
 4;Condomínio Boulevard Tamboré;06543-006;Alameda Canto dos Pássaros ;95;Alphaville;Santana de Parnaíba;SP;;2;;3
 5;Reserva Alphasitio 1;06544-300;Avenida dos Parques ;329;Alphaville;Santana de Parnaíba;SP;;0;135.141;1
 6;Condomínio Paisagem Tamboré;06543-001;Av. Marcos Penteado de Ulhôa Rodrigues, ;2113;Alphaville;Santana de Parnaíba;SP;;0;98.661;1
 7;Edifício Cauaxi Plaza ;06454-020;Avenida Cauaxi ;119;Alphaville;Barueri;SP;;0;63.875;1
 8;Condomínio Edifício Everest Tower;06454-020;Avenida Cauaxi ;189;Alphaville;Barueri;SP;;0;43.773;1
-9;Complexo Madeira Alphaville;06454-010;Alameida Madeira;"328; 362; 398";Alphaville;Barueri;SP;;2;81.417;15
+9;Complexo Madeira Alphaville;06454-010;Alameida Madeira;328;Alphaville;Barueri;SP;;2;81.417;15
+462;Complexo Madeira Alphaville;06454-010;Alameida Madeira;362;Alphaville;Barueri;SP;;2;81.417;15
+463;Complexo Madeira Alphaville;06454-010;Alameida Madeira;398;Alphaville;Barueri;SP;;2;81.417;15
 10;Condomínio Edifício Saint Paul;06454-020;Avenida Cauaxi ;399;Alphaville;Barueri;SP;;0;82.280;1
 11;Condomínio Californian Towers ;06454-020;Avenida Cauaxi ;222;Alphaville;Barueri;SP;;0;71.000;1
 12;Condomínio Premium Tamboré;06460-040;Alameda Cores da Mata ;1973;Alphaville;Barueri;SP;;0;136.672;1

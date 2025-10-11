@@ -2,6 +2,7 @@ package complexrepoconverters
 
 import (
 	"fmt"
+	"strconv"
 
 	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
 )
@@ -22,11 +23,20 @@ func ComplexSizeEntityToDomain(entity []any) (complexSize complexmodel.ComplexSi
 	}
 	complexSize.SetComplexID(complex_id)
 
-	size, ok := entity[2].(float64)
-	if !ok {
+	switch v := entity[2].(type) {
+	case float64:
+		complexSize.SetSize(v)
+	case float32:
+		complexSize.SetSize(float64(v))
+	case []byte:
+		parsed, errParse := strconv.ParseFloat(string(v), 64)
+		if errParse != nil {
+			return nil, fmt.Errorf("convert size to float64: %w", errParse)
+		}
+		complexSize.SetSize(parsed)
+	default:
 		return nil, fmt.Errorf("convert size to float64: %T", entity[2])
 	}
-	complexSize.SetSize(size)
 
 	return
 }

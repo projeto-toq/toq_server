@@ -62,11 +62,10 @@ func (cs *complexService) getOptions(ctx context.Context, tx *sql.Tx, zipCode st
 		complex, err = cs.complexRepository.GetHorizontalComplex(ctx, tx, zipCode)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				return propertyTypes, utils.ValidationError("area_not_covered", "Area not covered yet")
-			} else {
-				utils.SetSpanError(ctx, err)
-				return 0, utils.InternalError("")
+				return propertyTypes, utils.NotFoundError("complex")
 			}
+			utils.SetSpanError(ctx, err)
+			return 0, utils.InternalError("")
 		}
 	}
 

@@ -54,3 +54,4 @@ id;name;resource;action;description;conditions;is_active
 53;HTTP AddAlternativeUserRole;http;POST:/api/v2/user/role/alternative;Permite solicitar criação de role alternativo (owner↔realtor);NULL;1
 54;HTTP SwitchUserRole;http;POST:/api/v2/user/role/switch;Permite alternar a role ativa do usuário autenticado;NULL;1
 55;HTTP Get all listing options;http;POST:/api/v2/listings/options;Permite obter opções de listing baseadas em endereço;NULL;1
+56;HTTP HTTP Start new Listing;http;POST:/api/v2/listing;Permite iniciar o processo de criação de um novo listing;NULL;1

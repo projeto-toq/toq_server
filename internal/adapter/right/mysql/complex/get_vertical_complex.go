@@ -67,13 +67,13 @@ func (ca *ComplexAdapter) GetVerticalComplex(ctx context.Context, tx *sql.Tx, zi
 	}
 	complex.SetComplexTowers(complexTowers)
 
-	complexZipCodes, err := ca.GetComplexZipCodes(ctx, tx, complex.ID())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.complex.get_vertical.zip_codes_error", "error", err, "complex_id", complex.ID())
-		return
-	}
-	complex.SetComplexZipCodes(complexZipCodes)
+	// complexZipCodes, err := ca.GetComplexZipCodes(ctx, tx, complex.ID())
+	// if err != nil {
+	// 	utils.SetSpanError(ctx, err)
+	// 	logger.Error("mysql.complex.get_vertical.zip_codes_error", "error", err, "complex_id", complex.ID())
+	// 	return
+	// }
+	// complex.SetComplexZipCodes(complexZipCodes)
 
 	return
 }
