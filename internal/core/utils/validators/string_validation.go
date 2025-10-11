@@ -2,6 +2,7 @@ package validators
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/nyaruka/phonenumbers"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -94,16 +95,48 @@ func ValidateCode(code string) error {
 	return nil
 }
 
-// ValidateCreciEquality compares two CRECI numbers for equality after normalization using TrimSpaces and RemoveInitialZeroes.
-//
-// Parameters:
-// - creciNumber1: The first CRECI number as a string.
-// - creciNumber2: The second CRECI number as a string.
-//
-// Returns:
-// - isEqual: A boolean indicating whether the two CRECI numbers are equal after normalization.
-// func ValidateCreciEquality(creciNumber1 string, creciNumber2 string) (isEqual bool) {
-// 	creciNumber1 = converters.NormalizeAndTrimString(creciNumber1)
-// 	creciNumber2 = converters.NormalizeAndTrimString(creciNumber2)
-// 	return creciNumber1 == creciNumber2
-// }
+var (
+	creciNumberPattern = regexp.MustCompile(`^[0-9]+-F$`)
+	brazilianUFs       = map[string]struct{}{
+		"AC": {}, "AL": {}, "AP": {}, "AM": {}, "BA": {}, "CE": {}, "DF": {}, "ES": {}, "GO": {},
+		"MA": {}, "MT": {}, "MS": {}, "MG": {}, "PA": {}, "PB": {}, "PR": {}, "PE": {}, "PI": {},
+		"RJ": {}, "RN": {}, "RS": {}, "RO": {}, "RR": {}, "SC": {}, "SP": {}, "SE": {}, "TO": {},
+	}
+)
+
+// ValidateCreciNumber normaliza e valida o formato do número CRECI.
+// Quando required for true, o valor é obrigatório; caso contrário, retorna string vazia se ausente.
+func ValidateCreciNumber(field, value string, required bool) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		if required {
+			return "", utils.ValidationError(field, "Creci number is required")
+		}
+		return "", nil
+	}
+
+	if !creciNumberPattern.MatchString(trimmed) {
+		return "", utils.ValidationError(field, "Creci number must be numeric and end with -F")
+	}
+
+	return trimmed, nil
+}
+
+// ValidateCreciState normaliza e valida o estado CRECI (UF brasileira).
+// Quando required for true, o valor é obrigatório; caso contrário, retorna string vazia se ausente.
+func ValidateCreciState(field, value string, required bool) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		if required {
+			return "", utils.ValidationError(field, "Creci state is required")
+		}
+		return "", nil
+	}
+
+	upper := strings.ToUpper(trimmed)
+	if _, ok := brazilianUFs[upper]; !ok {
+		return "", utils.ValidationError(field, "Creci state must be a valid Brazilian UF")
+	}
+
+	return upper, nil
+}

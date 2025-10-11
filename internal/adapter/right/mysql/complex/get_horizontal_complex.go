@@ -48,21 +48,21 @@ func (ca *ComplexAdapter) GetHorizontalComplex(ctx context.Context, tx *sql.Tx, 
 		}
 	}
 
-	complexSizes, err := ca.GetComplexSizes(ctx, tx, complex.ID())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.complex.get_horizontal.sizes_error", "error", err, "complex_id", complex.ID())
-		return
-	}
-	complex.SetComplexSizes(complexSizes)
+	// complexSizes, err := ca.GetComplexSizes(ctx, tx, complex.ID())
+	// if err != nil {
+	// 	utils.SetSpanError(ctx, err)
+	// 	logger.Error("mysql.complex.get_horizontal.sizes_error", "error", err, "complex_id", complex.ID())
+	// 	return
+	// }
+	// complex.SetComplexSizes(complexSizes)
 
-	complexTowers, err := ca.GetComplexTowers(ctx, tx, complex.ID())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.complex.get_horizontal.towers_error", "error", err, "complex_id", complex.ID())
-		return
-	}
-	complex.SetComplexTowers(complexTowers)
+	// complexTowers, err := ca.GetComplexTowers(ctx, tx, complex.ID())
+	// if err != nil {
+	// 	utils.SetSpanError(ctx, err)
+	// 	logger.Error("mysql.complex.get_horizontal.towers_error", "error", err, "complex_id", complex.ID())
+	// 	return
+	// }
+	// complex.SetComplexTowers(complexTowers)
 
 	complexZipCodes, err := ca.GetComplexZipCodes(ctx, tx, complex.ID())
 	if err != nil {

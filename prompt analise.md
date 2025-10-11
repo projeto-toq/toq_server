@@ -6,14 +6,11 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Os usuários com role Owner e realtor, e somente estes, podem ter um segundo role. Owner pode ser Realtor também e Realtor pode ser Owner também. 
-Assim, é necessário:
-- implementar o endpoint POST user/role/switch que permite a alteração do role ativo para o segundo permitido;
-- consummir o serviço user/switch_user_role;
-- deve ser verificado se existe o segundo role para o usuário, caso contrário retornar 400;
-- a troca de roles se dá pela alteração do is_active do role que atual para 0 e do novo role para 1;
-- o endpoint deve retornar 200 com os novos tokens JWT com o role alterado;
-
+O endpoint /handlers/listing_handler/get_options deve :
+- ser renomeado para post_options;
+- deve ser um POST ao invés de GET, pois tem parametros que devem estar no body e não na URL;
+- deve receber um payload JSON: zipCode (string, obrigatório) e number (string, obrigatório);
+- Isto deve estar claramente documentado no Swagger, por comentários no código e sem alterações manuais em arquivos de documentação.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

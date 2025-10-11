@@ -3,16 +3,14 @@ definitions:
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleRequest:
     properties:
       creciNumber:
+        example: 12345-F
         type: string
       creciState:
+        example: SP
         type: string
       creciValidity:
-        description: 'format: 2006-01-02'
+        example: "2026-12-31"
         type: string
-    required:
-    - creciNumber
-    - creciState
-    - creciValidity
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleResponse:
     properties:
@@ -267,15 +265,21 @@ definitions:
       signedUrl:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsRequest:
+    properties:
+      number:
+        type: string
+      zipCode:
+        type: string
+    required:
+    - number
+    - zipCode
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse:
     properties:
       propertyTypes:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption'
-        type: array
-      statuses:
-        items:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StatusOption'
         type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLRequest:
@@ -476,24 +480,6 @@ definitions:
       id:
         type: integer
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StatusOption:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleRequest:
-    properties:
-      roleSlug:
-        enum:
-        - owner
-        - realtor
-        example: realtor
-        type: string
-    required:
-    - roleSlug
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleResponse:
     properties:
       tokens:
@@ -562,8 +548,10 @@ definitions:
       complement:
         type: string
       creciNumber:
+        example: 12345-F
         type: string
       creciState:
+        example: SP
         type: string
       creciValidity:
         description: 'format: 2006-01-02'
@@ -1107,7 +1095,8 @@ paths:
       - application/json
       description: Create a new realtor account with user and CRECI information. Address
         fields come from CEP lookup, except number, neighborhood and complement which
-        honor the request payload.
+        honor the request payload. CRECI number must be numeric ending with "-F" and
+        CRECI state must be a valid Brazilian UF (both required).
       parameters:
       - description: Device ID (UUIDv4). Optional but recommended when providing deviceToken
           for automatic sign-in
@@ -1503,22 +1492,17 @@ paths:
       tags:
       - Listings
   /listings/options:
-    get:
+    post:
       consumes:
       - application/json
-      description: Get available property types and statuses for listings based on
-        location
+      description: Get available property types for listings based on location
       parameters:
-      - description: Zip code for location-based options
-        in: query
-        name: zipCode
+      - description: Location data for listing options
+        in: body
+        name: request
         required: true
-        type: string
-      - description: Property number
-        in: query
-        name: number
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsRequest'
       produces:
       - application/json
       responses:
@@ -1527,7 +1511,7 @@ paths:
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse'
         "400":
-          description: Missing required parameters
+          description: Invalid request format
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "401":
@@ -2096,8 +2080,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: Permite que owners obtenham role de realtor (pendente CRECI) e
-        vice-versa.
+      description: 'Permite que owners obtenham role de realtor (pendente CRECI) e
+        vice-versa. Campos CRECI são opcionais, porém quando enviados: creciNumber
+        deve ser numérico terminando em "-F" e creciState deve ser uma UF válida (2
+        letras).'
       parameters:
       - description: Payload com dados CRECI
         in: body
@@ -2143,13 +2129,6 @@ paths:
       - application/json
       description: Permite que usuários com roles owner e realtor alternem entre as
         funções atribuídas.
-      parameters:
-      - description: Slug do role desejado
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleRequest'
       produces:
       - application/json
       responses:

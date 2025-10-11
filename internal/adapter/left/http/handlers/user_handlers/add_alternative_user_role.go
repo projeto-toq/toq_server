@@ -2,12 +2,14 @@ package userhandlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 // alias para garantir que o swagger reconheça o tipo de erro padrão
@@ -16,7 +18,7 @@ type _ = dto.ErrorResponse
 // AddAlternativeUserRole processa POST /user/role/alternative e cria um role alternativo (owner ↔ realtor).
 //
 //	@Summary	Cria um role alternativo para o usuário autenticado (owner ↔ realtor)
-//	@Description	Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa.
+//	@Description	Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa. Campos CRECI são opcionais, porém quando enviados: creciNumber deve ser numérico terminando em "-F" e creciState deve ser uma UF válida (2 letras).
 //	@Tags		User
 //	@Accept		json
 //	@Produce	json
@@ -77,7 +79,32 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 	switch currentRole {
 	case permissionmodel.RoleSlugOwner:
 		alternativeRole = permissionmodel.RoleSlugRealtor
-		creciArgs = []string{request.CreciNumber, request.CreciState, request.CreciValidity}
+
+		creciNumber := request.CreciNumber
+		creciState := request.CreciState
+		creciValidity := strings.TrimSpace(request.CreciValidity)
+		creciProvided := strings.TrimSpace(creciNumber) != "" || strings.TrimSpace(creciState) != "" || creciValidity != ""
+
+		if creciProvided {
+			normalizedNumber, err := validators.ValidateCreciNumber("request.creciNumber", creciNumber, true)
+			if err != nil {
+				httperrors.SendHTTPErrorObj(c, err)
+				return
+			}
+
+			normalizedState, err := validators.ValidateCreciState("request.creciState", creciState, true)
+			if err != nil {
+				httperrors.SendHTTPErrorObj(c, err)
+				return
+			}
+
+			if creciValidity == "" {
+				httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("request.creciValidity", "Creci validity is required when sending CRECI data"))
+				return
+			}
+
+			creciArgs = []string{normalizedNumber, normalizedState, creciValidity}
+		}
 	case permissionmodel.RoleSlugRealtor:
 		alternativeRole = permissionmodel.RoleSlugOwner
 	default:

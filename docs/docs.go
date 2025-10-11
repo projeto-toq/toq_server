@@ -539,7 +539,7 @@ const docTemplate = `{
         },
         "/auth/realtor": {
             "post": {
-                "description": "Create a new realtor account with user and CRECI information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload.",
+                "description": "Create a new realtor account with user and CRECI information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload. CRECI number must be numeric ending with \"-F\" and CRECI state must be a valid Brazilian UF (both required).",
                 "consumes": [
                     "application/json"
                 ],
@@ -1135,13 +1135,13 @@ const docTemplate = `{
             }
         },
         "/listings/options": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get available property types and statuses for listings based on location",
+                "description": "Get available property types for listings based on location",
                 "consumes": [
                     "application/json"
                 ],
@@ -1154,18 +1154,13 @@ const docTemplate = `{
                 "summary": "Get listing options",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Zip code for location-based options",
-                        "name": "zipCode",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Property number",
-                        "name": "number",
-                        "in": "query",
-                        "required": true
+                        "description": "Location data for listing options",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1176,7 +1171,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Missing required parameters",
+                        "description": "Invalid request format",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -2040,7 +2035,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa.",
+                "description": "Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa. Campos CRECI são opcionais, porém quando enviados: creciNumber deve ser numérico terminando em \"-F\" e creciState deve ser uma UF válida (2 letras).",
                 "consumes": [
                     "application/json"
                 ],
@@ -2120,17 +2115,6 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Altera o role ativo do usuário autenticado (owner ↔ realtor)",
-                "parameters": [
-                    {
-                        "description": "Slug do role desejado",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleRequest"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2290,21 +2274,18 @@ const docTemplate = `{
     "definitions": {
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleRequest": {
             "type": "object",
-            "required": [
-                "creciNumber",
-                "creciState",
-                "creciValidity"
-            ],
             "properties": {
                 "creciNumber": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "12345-F"
                 },
                 "creciState": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "SP"
                 },
                 "creciValidity": {
-                    "description": "format: 2006-01-02",
-                    "type": "string"
+                    "type": "string",
+                    "example": "2026-12-31"
                 }
             }
         },
@@ -2693,6 +2674,21 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsRequest": {
+            "type": "object",
+            "required": [
+                "number",
+                "zipCode"
+            ],
+            "properties": {
+                "number": {
+                    "type": "string"
+                },
+                "zipCode": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse": {
             "type": "object",
             "properties": {
@@ -2700,12 +2696,6 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption"
-                    }
-                },
-                "statuses": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StatusOption"
                     }
                 }
             }
@@ -3011,33 +3001,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StatusOption": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleRequest": {
-            "type": "object",
-            "required": [
-                "roleSlug"
-            ],
-            "properties": {
-                "roleSlug": {
-                    "type": "string",
-                    "enum": [
-                        "owner",
-                        "realtor"
-                    ],
-                    "example": "realtor"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleResponse": {
             "type": "object",
             "properties": {
@@ -3150,10 +3113,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "creciNumber": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "12345-F"
                 },
                 "creciState": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "SP"
                 },
                 "creciValidity": {
                     "description": "format: 2006-01-02",

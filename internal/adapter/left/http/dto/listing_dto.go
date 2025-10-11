@@ -66,18 +66,17 @@ type ChangeListingStatusResponse struct {
 // GetOptionsResponse represents response for getting options
 type GetOptionsResponse struct {
 	PropertyTypes []PropertyTypeOption `json:"propertyTypes"`
-	Statuses      []StatusOption       `json:"statuses"`
+}
+
+// GetOptionsRequest representa o payload para obter opções de listing
+type GetOptionsRequest struct {
+	ZipCode string `json:"zipCode" binding:"required"`
+	Number  string `json:"number" binding:"required"`
 }
 
 // PropertyTypeOption represents a property type option
 type PropertyTypeOption struct {
 	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-// StatusOption represents a status option
-type StatusOption struct {
-	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 

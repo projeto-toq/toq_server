@@ -8,7 +8,7 @@ type ListingHandlerPort interface {
 	GetAllListings(c *gin.Context)
 	StartListing(c *gin.Context)
 	SearchListing(c *gin.Context)
-	GetOptions(c *gin.Context)
+	PostOptions(c *gin.Context)
 	GetBaseFeatures(c *gin.Context)
 	GetFavoriteListings(c *gin.Context)
 	GetListing(c *gin.Context)

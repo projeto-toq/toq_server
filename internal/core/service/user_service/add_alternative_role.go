@@ -11,6 +11,7 @@ import (
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 func (us *userService) AddAlternativeRole(ctx context.Context, userID int64, roleSlug permissionmodel.RoleSlug, creciInfo ...string) (err error) {
@@ -172,24 +173,26 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 func (us *userService) applyCreciInfoToUser(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface, creciInfo []string) (bool, error) {
 	logger := utils.LoggerFromContext(ctx)
 
+	if len(creciInfo) == 0 {
+		return false, nil
+	}
+
 	if len(creciInfo) != 3 {
-		derr := utils.ValidationError("creciInfo", "Realtor role requires CRECI info")
+		derr := utils.ValidationError("creciInfo", "Realtor role requires full CRECI info (number, state, validity)")
 		utils.SetSpanError(ctx, derr)
 		return false, derr
 	}
 
-	creciNumber := strings.TrimSpace(creciInfo[0])
-	if creciNumber == "" {
-		derr := utils.ValidationError("creciNumber", "Creci number is required")
-		utils.SetSpanError(ctx, derr)
-		return false, derr
+	normalizedNumber, err := validators.ValidateCreciNumber("creciNumber", creciInfo[0], true)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		return false, err
 	}
 
-	creciState := strings.ToUpper(strings.TrimSpace(creciInfo[1]))
-	if len(creciState) != 2 {
-		derr := utils.ValidationError("creciState", "Creci state must have two letters")
-		utils.SetSpanError(ctx, derr)
-		return false, derr
+	normalizedState, err := validators.ValidateCreciState("creciState", creciInfo[1], true)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		return false, err
 	}
 
 	creciValidityRaw := strings.TrimSpace(creciInfo[2])
@@ -211,23 +214,23 @@ func (us *userService) applyCreciInfoToUser(ctx context.Context, tx *sql.Tx, use
 	currentValidity := user.GetCreciValidity()
 
 	// Log when overwriting existing data with different values.
-	if currentNumber != "" && currentNumber != creciNumber {
-		logger.Warn("user.add_alternative_role.creci_number_overwrite", "user_id", user.GetID(), "previous", currentNumber, "new", creciNumber)
+	if currentNumber != "" && currentNumber != normalizedNumber {
+		logger.Warn("user.add_alternative_role.creci_number_overwrite", "user_id", user.GetID(), "previous", currentNumber, "new", normalizedNumber)
 	}
-	if currentState != "" && currentState != creciState {
-		logger.Warn("user.add_alternative_role.creci_state_overwrite", "user_id", user.GetID(), "previous", currentState, "new", creciState)
+	if currentState != "" && currentState != normalizedState {
+		logger.Warn("user.add_alternative_role.creci_state_overwrite", "user_id", user.GetID(), "previous", currentState, "new", normalizedState)
 	}
 	if !currentValidity.IsZero() && !currentValidity.Equal(creciValidity) {
 		logger.Warn("user.add_alternative_role.creci_validity_overwrite", "user_id", user.GetID(), "previous", currentValidity.String(), "new", creciValidity.String())
 	}
 
-	hasChanges := currentNumber != creciNumber || currentState != creciState || !currentValidity.Equal(creciValidity)
+	hasChanges := currentNumber != normalizedNumber || currentState != normalizedState || !currentValidity.Equal(creciValidity)
 	if !hasChanges {
 		return false, nil
 	}
 
-	user.SetCreciNumber(creciNumber)
-	user.SetCreciState(creciState)
+	user.SetCreciNumber(normalizedNumber)
+	user.SetCreciState(normalizedState)
 	user.SetCreciValidity(creciValidity)
 
 	if err := us.repo.UpdateUserByID(ctx, tx, user); err != nil {

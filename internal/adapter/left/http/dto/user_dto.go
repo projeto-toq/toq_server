@@ -40,8 +40,8 @@ type UserCreateRequest struct {
 	FullName      string `json:"fullName,omitempty" binding:"omitempty,min=2,max=100"`
 	NickName      string `json:"nickName" binding:"required,min=3,max=50"`
 	NationalID    string `json:"nationalID" binding:"required"`
-	CreciNumber   string `json:"creciNumber,omitempty"`
-	CreciState    string `json:"creciState,omitempty"`
+	CreciNumber   string `json:"creciNumber,omitempty" example:"12345-F" description:"CRECI number (numeric ending with -F). Required for realtor onboarding flows."`
+	CreciState    string `json:"creciState,omitempty" example:"SP" description:"CRECI state (Brazilian UF). Required for realtor onboarding flows."`
 	CreciValidity string `json:"creciValidity,omitempty"`   // format: 2006-01-02
 	BornAt        string `json:"bornAt" binding:"required"` // format: 2006-01-02
 	PhoneNumber   string `json:"phoneNumber" binding:"required" example:"+5511999999999" description:"Phone number in E.164 format (e.g., +5511999999999)"`
@@ -283,9 +283,9 @@ type ResendPhoneChangeCodeResponse struct {
 
 // Role management
 type AddAlternativeUserRoleRequest struct {
-	CreciNumber   string `json:"creciNumber" binding:"required"`
-	CreciState    string `json:"creciState" binding:"required,len=2"`
-	CreciValidity string `json:"creciValidity" binding:"required"` // format: 2006-01-02
+	CreciNumber   string `json:"creciNumber,omitempty" binding:"omitempty" example:"12345-F" description:"Optional CRECI number (numeric ending with -F); required when providing CRECI data."`
+	CreciState    string `json:"creciState,omitempty" binding:"omitempty,len=2" example:"SP" description:"Optional CRECI state (Brazilian UF); required when providing CRECI data."`
+	CreciValidity string `json:"creciValidity,omitempty" binding:"omitempty" example:"2026-12-31" description:"Optional CRECI validity date (YYYY-MM-DD); required when providing CRECI data."`
 }
 
 type AddAlternativeUserRoleResponse struct {

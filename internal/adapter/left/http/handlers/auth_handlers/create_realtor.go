@@ -12,12 +12,13 @@ import (
 	httputils "github.com/projeto-toq/toq_server/internal/adapter/left/http/utils"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 // CreateRealtor handles realtor account creation (public endpoint)
 //
 //	@Summary		Create realtor account
-//	@Description	Create a new realtor account with user and CRECI information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload.
+//	@Description	Create a new realtor account with user and CRECI information. Address fields come from CEP lookup, except number, neighborhood and complement which honor the request payload. CRECI number must be numeric ending with "-F" and CRECI state must be a valid Brazilian UF (both required).
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
@@ -40,6 +41,22 @@ func (ah *AuthHandler) CreateRealtor(c *gin.Context) {
 		httperrors.SendHTTPErrorObj(c, httputils.MapBindingError(err))
 		return
 	}
+
+	// Validar campos CRECI antes de prosseguir
+	creciNumber, err := validators.ValidateCreciNumber("realtor.creciNumber", request.Realtor.CreciNumber, true)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
+		return
+	}
+
+	creciState, err := validators.ValidateCreciState("realtor.creciState", request.Realtor.CreciState, true)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
+		return
+	}
+
+	request.Realtor.CreciNumber = creciNumber
+	request.Realtor.CreciState = creciState
 
 	// Validate and parse date fields with precise attribution
 	bornAt, creciValidity, derr := httputils.ValidateUserDates(request.Realtor, "realtor")

@@ -23,7 +23,7 @@ func (ca *ComplexAdapter) GetVerticalComplex(ctx context.Context, tx *sql.Tx, zi
 
 	query := `SELECT * FROM complex WHERE zip_code = ? AND number = ?;`
 
-	entity, err := ca.Read(ctx, tx, query, zipCode)
+	entity, err := ca.Read(ctx, tx, query, zipCode, number)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_vertical.read_error", "error", err, "zip_code", zipCode, "number", number)

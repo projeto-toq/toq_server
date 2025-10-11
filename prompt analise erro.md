@@ -5,7 +5,21 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O endpoint POST /user/role/alternative, quando a criando um um slug realtor, sendo feito por um slug owner, os valores recebidos no body das informações de CRECI, mas devem ser salvos no usuário, mas não estão sendo salvos.
+O endpoint POST /listings/options, deve retornar a lista de opções de tipos de imóveis, conforme tabela abaixo. Atualmente, o endpoint não está retornando os dados corretamente.
+
+ComplexType	Tipos	código	bin
+Apartment	Apartamento	1	 1 
+Commercial Store	Loja	2	 10 
+Commercial floor	Laje	4	 100 
+Suite	Sala	8	 1.000 
+House	Casa	16	 10.000 
+Off-plan House	Casa na Planta	32	 100.000 
+Residencial Land	Terreno Residencial	64	 1.000.000 
+Commercial Land	Terreno Comercial	128	 10.000.000 
+Building	Prédio	256	 100.000.000 
+Warehouse	Galpão	512	 1.000.000.000 
+
+não existe esta lista no arquivo de constantes de listings e a func getPropertyTypeName(id int) string decodifica por hardcoded
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
