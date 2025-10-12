@@ -10,7 +10,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (ls *listingService) UpdateListing(ctx context.Context, listing listingmodel.ListingInterface) (err error) {
+func (ls *listingService) UpdateListing(ctx context.Context, input UpdateListingInput) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return utils.InternalError("")
@@ -35,7 +35,7 @@ func (ls *listingService) UpdateListing(ctx context.Context, listing listingmode
 		}
 	}()
 
-	err = ls.updateListing(ctx, tx, listing)
+	err = ls.updateListing(ctx, tx, input)
 	if err != nil {
 		return
 	}
@@ -50,11 +50,11 @@ func (ls *listingService) UpdateListing(ctx context.Context, listing listingmode
 	return
 }
 
-func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error) {
+func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input UpdateListingInput) (err error) {
 
 	exist := true
 	//check if exists the listing
-	existing, err := ls.listingRepository.GetListingByID(ctx, tx, listing.ID())
+	existing, err := ls.listingRepository.GetListingByID(ctx, tx, input.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			exist = false
@@ -82,35 +82,234 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, listing
 		return utils.AuthorizationError("not the listing owner")
 	}
 
-	//update only the allowed fields
-	existing.SetOwner(listing.Owner())
-	existing.SetFeatures(listing.Features())
-	existing.SetLandSize(listing.LandSize())
-	existing.SetCorner(listing.Corner())
-	existing.SetNonBuildable(listing.NonBuildable())
-	existing.SetBuildable(listing.Buildable())
-	existing.SetDelivered(listing.Delivered())
-	existing.SetWhoLives(listing.WhoLives())
-	existing.SetDescription(listing.Description())
-	existing.SetTransaction(listing.Transaction())
-	existing.SetSellNet(listing.SellNet())
-	existing.SetRentNet(listing.RentNet())
-	existing.SetCondominium(listing.Condominium())
-	existing.SetCondominium(listing.Condominium())
-	existing.SetAnnualTax(listing.AnnualTax())
-	existing.SetAnnualGroundRent(listing.AnnualGroundRent())
-	existing.SetExchange(listing.Exchange())
-	existing.SetExchangePercentual(listing.ExchangePercentual())
-	existing.SetExchangePlaces(listing.ExchangePlaces())
-	existing.SetInstallment(listing.Installment())
-	existing.SetFinancing(listing.Financing())
-	existing.SetFinancingBlockers(listing.FinancingBlockers())
-	existing.SetGuarantees(listing.Guarantees())
-	existing.SetVisit(listing.Visit())
-	existing.SetTenantName(listing.TenantName())
-	existing.SetTenantPhone(listing.TenantPhone())
-	existing.SetTenantEmail(listing.TenantEmail())
-	existing.SetAccompanying(listing.Accompanying())
+	//update only the allowed fields respeitando campos opcionais
+	if input.Owner.IsPresent() {
+		if input.Owner.IsNull() {
+			existing.SetOwner(0)
+		} else if value, ok := input.Owner.Value(); ok {
+			existing.SetOwner(value)
+		}
+	}
+
+	if input.Features.IsPresent() {
+		if input.Features.IsNull() {
+			existing.SetFeatures(nil)
+		} else if features, ok := input.Features.Value(); ok {
+			for _, feature := range features {
+				feature.SetListingID(existing.ID())
+			}
+			existing.SetFeatures(features)
+		}
+	}
+
+	if input.LandSize.IsPresent() {
+		if input.LandSize.IsNull() {
+			existing.SetLandSize(0)
+		} else if value, ok := input.LandSize.Value(); ok {
+			existing.SetLandSize(value)
+		}
+	}
+
+	if input.Corner.IsPresent() {
+		if input.Corner.IsNull() {
+			existing.SetCorner(false)
+		} else if value, ok := input.Corner.Value(); ok {
+			existing.SetCorner(value)
+		}
+	}
+
+	if input.NonBuildable.IsPresent() {
+		if input.NonBuildable.IsNull() {
+			existing.SetNonBuildable(0)
+		} else if value, ok := input.NonBuildable.Value(); ok {
+			existing.SetNonBuildable(value)
+		}
+	}
+
+	if input.Buildable.IsPresent() {
+		if input.Buildable.IsNull() {
+			existing.SetBuildable(0)
+		} else if value, ok := input.Buildable.Value(); ok {
+			existing.SetBuildable(value)
+		}
+	}
+
+	if input.Delivered.IsPresent() {
+		if input.Delivered.IsNull() {
+			existing.SetDelivered(0)
+		} else if value, ok := input.Delivered.Value(); ok {
+			existing.SetDelivered(value)
+		}
+	}
+
+	if input.WhoLives.IsPresent() {
+		if input.WhoLives.IsNull() {
+			existing.SetWhoLives(0)
+		} else if value, ok := input.WhoLives.Value(); ok {
+			existing.SetWhoLives(value)
+		}
+	}
+
+	if input.Description.IsPresent() {
+		if input.Description.IsNull() {
+			existing.SetDescription("")
+		} else if value, ok := input.Description.Value(); ok {
+			existing.SetDescription(value)
+		}
+	}
+
+	if input.Transaction.IsPresent() {
+		if input.Transaction.IsNull() {
+			existing.SetTransaction(0)
+		} else if value, ok := input.Transaction.Value(); ok {
+			existing.SetTransaction(value)
+		}
+	}
+
+	if input.SellNet.IsPresent() {
+		if input.SellNet.IsNull() {
+			existing.SetSellNet(0)
+		} else if value, ok := input.SellNet.Value(); ok {
+			existing.SetSellNet(value)
+		}
+	}
+
+	if input.RentNet.IsPresent() {
+		if input.RentNet.IsNull() {
+			existing.SetRentNet(0)
+		} else if value, ok := input.RentNet.Value(); ok {
+			existing.SetRentNet(value)
+		}
+	}
+
+	if input.Condominium.IsPresent() {
+		if input.Condominium.IsNull() {
+			existing.SetCondominium(0)
+		} else if value, ok := input.Condominium.Value(); ok {
+			existing.SetCondominium(value)
+		}
+	}
+
+	if input.AnnualTax.IsPresent() {
+		if input.AnnualTax.IsNull() {
+			existing.SetAnnualTax(0)
+		} else if value, ok := input.AnnualTax.Value(); ok {
+			existing.SetAnnualTax(value)
+		}
+	}
+
+	if input.AnnualGroundRent.IsPresent() {
+		if input.AnnualGroundRent.IsNull() {
+			existing.SetAnnualGroundRent(0)
+		} else if value, ok := input.AnnualGroundRent.Value(); ok {
+			existing.SetAnnualGroundRent(value)
+		}
+	}
+
+	if input.Exchange.IsPresent() {
+		if input.Exchange.IsNull() {
+			existing.SetExchange(false)
+		} else if value, ok := input.Exchange.Value(); ok {
+			existing.SetExchange(value)
+		}
+	}
+
+	if input.ExchangePercentual.IsPresent() {
+		if input.ExchangePercentual.IsNull() {
+			existing.SetExchangePercentual(0)
+		} else if value, ok := input.ExchangePercentual.Value(); ok {
+			existing.SetExchangePercentual(value)
+		}
+	}
+
+	if input.ExchangePlaces.IsPresent() {
+		if input.ExchangePlaces.IsNull() {
+			existing.SetExchangePlaces(nil)
+		} else if places, ok := input.ExchangePlaces.Value(); ok {
+			for _, place := range places {
+				place.SetListingID(existing.ID())
+			}
+			existing.SetExchangePlaces(places)
+		}
+	}
+
+	if input.Installment.IsPresent() {
+		if input.Installment.IsNull() {
+			existing.SetInstallment(0)
+		} else if value, ok := input.Installment.Value(); ok {
+			existing.SetInstallment(value)
+		}
+	}
+
+	if input.Financing.IsPresent() {
+		if input.Financing.IsNull() {
+			existing.SetFinancing(false)
+		} else if value, ok := input.Financing.Value(); ok {
+			existing.SetFinancing(value)
+		}
+	}
+
+	if input.FinancingBlockers.IsPresent() {
+		if input.FinancingBlockers.IsNull() {
+			existing.SetFinancingBlockers(nil)
+		} else if blockers, ok := input.FinancingBlockers.Value(); ok {
+			for _, blocker := range blockers {
+				blocker.SetListingID(existing.ID())
+			}
+			existing.SetFinancingBlockers(blockers)
+		}
+	}
+
+	if input.Guarantees.IsPresent() {
+		if input.Guarantees.IsNull() {
+			existing.SetGuarantees(nil)
+		} else if guarantees, ok := input.Guarantees.Value(); ok {
+			for _, guarantee := range guarantees {
+				guarantee.SetListingID(existing.ID())
+			}
+			existing.SetGuarantees(guarantees)
+		}
+	}
+
+	if input.Visit.IsPresent() {
+		if input.Visit.IsNull() {
+			existing.SetVisit(0)
+		} else if value, ok := input.Visit.Value(); ok {
+			existing.SetVisit(value)
+		}
+	}
+
+	if input.TenantName.IsPresent() {
+		if input.TenantName.IsNull() {
+			existing.SetTenantName("")
+		} else if value, ok := input.TenantName.Value(); ok {
+			existing.SetTenantName(value)
+		}
+	}
+
+	if input.TenantPhone.IsPresent() {
+		if input.TenantPhone.IsNull() {
+			existing.SetTenantPhone("")
+		} else if value, ok := input.TenantPhone.Value(); ok {
+			existing.SetTenantPhone(value)
+		}
+	}
+
+	if input.TenantEmail.IsPresent() {
+		if input.TenantEmail.IsNull() {
+			existing.SetTenantEmail("")
+		} else if value, ok := input.TenantEmail.Value(); ok {
+			existing.SetTenantEmail(value)
+		}
+	}
+
+	if input.Accompanying.IsPresent() {
+		if input.Accompanying.IsNull() {
+			existing.SetAccompanying(0)
+		} else if value, ok := input.Accompanying.Value(); ok {
+			existing.SetAccompanying(value)
+		}
+	}
 
 	//update the listing
 	err = ls.listingRepository.UpdateListing(ctx, tx, existing)

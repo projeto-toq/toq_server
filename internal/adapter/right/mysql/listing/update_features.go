@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, features []listingmodel.FeatureInterface) (err error) {
+func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, listingID int64, features []listingmodel.FeatureInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -22,24 +22,23 @@ func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, featur
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	//check if there is any data to update
-	if len(features) == 0 {
-		return
+	// Remove all features from listing
+	err = la.DeleteListingFeatures(ctx, tx, listingID)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.listing.update_features.delete_error", "error", err)
+			return fmt.Errorf("delete listing features: %w", err)
+		}
 	}
 
-	// Remove all features from listing
-	err = la.DeleteListingFeatures(ctx, tx, features[0].ListingID())
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.update_features.delete_error", "error", err)
-		return fmt.Errorf("delete listing features: %w", err)
+	if len(features) == 0 {
+		return nil
 	}
 
 	// Insert the new features
 	for _, feature := range features {
+		feature.SetListingID(listingID)
 		err = la.CreateFeature(ctx, tx, feature)
 		if err != nil {
 			utils.SetSpanError(ctx, err)

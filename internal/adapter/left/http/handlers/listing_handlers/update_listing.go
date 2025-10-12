@@ -2,54 +2,71 @@ package listinghandlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// UpdateListing handles updating an existing listing
+// UpdateListing atualiza as informações de um anúncio existente.
+//
+//	@Summary	Atualiza um anúncio
+//	@Description	Permite atualização parcial dos campos de um anúncio em rascunho. Campos omitidos permanecem inalterados; campos presentes (inclusive null/vazio) sobrescrevem o valor atual.
+//	@Tags		Listings
+//	@Accept		json
+//	@Produce	json
+//	@Param		request	body	dto.UpdateListingRequest	true	"Dados para atualização (ID obrigatório no corpo)"
+//	@Success	200	{object}	dto.UpdateListingResponse
+//	@Failure	400	{object}	dto.ErrorResponse	"Payload inválido"
+//	@Failure	401	{object}	dto.ErrorResponse	"Não autorizado"
+//	@Failure	403	{object}	dto.ErrorResponse	"Proibido"
+//	@Failure	404	{object}	dto.ErrorResponse	"Não encontrado"
+//	@Failure	409	{object}	dto.ErrorResponse	"Conflito"
+//	@Failure	500	{object}	dto.ErrorResponse	"Erro interno"
+//	@Router		/listings [put]
+//	@Security	BearerAuth
 func (lh *ListingHandler) UpdateListing(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
-	_, spanEnd, err := coreutils.GenerateTracer(baseCtx)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
-		return
-	}
-	defer spanEnd()
 
-	// Get user info from context (set by auth middleware)
 	if _, ok := middlewares.GetUserInfoFromContext(c); !ok {
-		// Se chegar aqui, é erro de pipeline (middleware deveria ter setado)
 		httperrors.SendHTTPError(c, http.StatusInternalServerError, "INTERNAL_CONTEXT_MISSING", "User context not found")
 		return
 	}
 
-	// Get listing ID from URL parameter
-	listingIDStr := c.Param("id")
-	if listingIDStr == "" {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_ID", "Listing ID is required")
-		return
-	}
-
-	_, err = strconv.ParseInt(listingIDStr, 10, 64)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_ID", "Invalid listing ID")
-		return
-	}
-
-	// Parse request body using DTO
 	var request dto.UpdateListingRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
 
-	// Note: The service UpdateListing expects a ListingInterface, not individual fields
-	// This would require first getting the listing, then updating it, then calling the service
-	// For now, we'll return a not implemented response since the service signature doesn't match our needs
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "UPDATE_NOT_IMPLEMENTED", "Update listing service needs refactoring for HTTP usage")
+	if !request.ID.IsPresent() || request.ID.IsNull() {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_ID", "Listing ID must be provided in the request body")
+		return
+	}
+
+	listingID, ok := request.ID.Value()
+	if !ok || listingID <= 0 {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_ID", "Listing ID is invalid")
+		return
+	}
+
+	input, err := converters.UpdateListingRequestToInput(request)
+	if err != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", err.Error())
+		return
+	}
+	input.ID = listingID
+
+	if err := lh.listingService.UpdateListing(baseCtx, input); err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.UpdateListingResponse{
+		Success: true,
+		Message: "Listing updated",
+	})
 }

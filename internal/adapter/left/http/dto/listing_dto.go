@@ -1,5 +1,9 @@
 package dto
 
+import (
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
+)
+
 // Listing DTOs for HTTP handlers
 
 // GetAllListingsRequest represents request for getting all listings
@@ -21,9 +25,14 @@ type GetAllListingsResponse struct {
 
 // StartListingRequest represents request for starting a new listing
 type StartListingRequest struct {
-	ZipCode      string `json:"zipCode" binding:"required"`
-	Number       string `json:"number" binding:"required"`
-	PropertyType int    `json:"propertyType" binding:"required"`
+	Number       string  `json:"number" binding:"required"`
+	City         string  `json:"city" binding:"required"`
+	Neighborhood *string `json:"neighborhood,omitempty"`
+	Complement   *string `json:"complement,omitempty"`
+	State        string  `json:"state" binding:"required"`
+	Street       string  `json:"street" binding:"required"`
+	ZipCode      string  `json:"zipCode" binding:"required"`
+	PropertyType int     `json:"propertyType" binding:"required"`
 }
 
 // StartListingResponse represents response for starting a new listing
@@ -33,11 +42,34 @@ type StartListingResponse struct {
 
 // UpdateListingRequest represents request for updating a listing
 type UpdateListingRequest struct {
-	Title       string  `json:"title,omitempty"`
-	Description string  `json:"description,omitempty"`
-	Price       float64 `json:"price,omitempty"`
-	Status      string  `json:"status,omitempty"`
-	Features    []int   `json:"features,omitempty"`
+	ID                 coreutils.Optional[int64]                               `json:"id"`
+	Owner              coreutils.Optional[int]                                 `json:"owner"`
+	Features           coreutils.Optional[[]UpdateListingFeatureRequest]       `json:"features"`
+	LandSize           coreutils.Optional[float64]                             `json:"landSize"`
+	Corner             coreutils.Optional[bool]                                `json:"corner"`
+	NonBuildable       coreutils.Optional[float64]                             `json:"nonBuildable"`
+	Buildable          coreutils.Optional[float64]                             `json:"buildable"`
+	Delivered          coreutils.Optional[int]                                 `json:"delivered"`
+	WhoLives           coreutils.Optional[int]                                 `json:"whoLives"`
+	Description        coreutils.Optional[string]                              `json:"description"`
+	Transaction        coreutils.Optional[int]                                 `json:"transaction"`
+	SellNet            coreutils.Optional[float64]                             `json:"sellNet"`
+	RentNet            coreutils.Optional[float64]                             `json:"rentNet"`
+	Condominium        coreutils.Optional[float64]                             `json:"condominium"`
+	AnnualTax          coreutils.Optional[float64]                             `json:"annualTax"`
+	AnnualGroundRent   coreutils.Optional[float64]                             `json:"annualGroundRent"`
+	Exchange           coreutils.Optional[bool]                                `json:"exchange"`
+	ExchangePercentual coreutils.Optional[float64]                             `json:"exchangePercentual"`
+	ExchangePlaces     coreutils.Optional[[]UpdateListingExchangePlaceRequest] `json:"exchangePlaces"`
+	Installment        coreutils.Optional[int]                                 `json:"installment"`
+	Financing          coreutils.Optional[bool]                                `json:"financing"`
+	FinancingBlockers  coreutils.Optional[[]int]                               `json:"financingBlockers"`
+	Guarantees         coreutils.Optional[[]UpdateListingGuaranteeRequest]     `json:"guarantees"`
+	Visit              coreutils.Optional[int]                                 `json:"visit"`
+	TenantName         coreutils.Optional[string]                              `json:"tenantName"`
+	TenantEmail        coreutils.Optional[string]                              `json:"tenantEmail"`
+	TenantPhone        coreutils.Optional[string]                              `json:"tenantPhone"`
+	Accompanying       coreutils.Optional[int]                                 `json:"accompanying"`
 }
 
 // UpdateListingResponse represents response for updating a listing
@@ -76,8 +108,8 @@ type GetOptionsRequest struct {
 
 // PropertyTypeOption represents a property type option
 type PropertyTypeOption struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	PropertyType int    `json:"propertyType"`
+	Name         string `json:"name"`
 }
 
 // GetBaseFeaturesResponse represents response for getting base features
@@ -152,4 +184,23 @@ type NotImplementedResponse struct {
 	Error   string `json:"error"`
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+}
+
+// UpdateListingFeatureRequest representa uma feature enviada no update de listing.
+type UpdateListingFeatureRequest struct {
+	FeatureID int64 `json:"featureId"`
+	Quantity  uint8 `json:"quantity"`
+}
+
+// UpdateListingExchangePlaceRequest representa uma localidade de troca no payload de update de listing.
+type UpdateListingExchangePlaceRequest struct {
+	Neighborhood string `json:"neighborhood"`
+	City         string `json:"city"`
+	State        string `json:"state"`
+}
+
+// UpdateListingGuaranteeRequest representa uma garantia enviada no update de listing.
+type UpdateListingGuaranteeRequest struct {
+	Priority  uint8 `json:"priority"`
+	Guarantee int   `json:"guarantee"`
 }

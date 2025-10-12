@@ -6,12 +6,44 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-O endpoint /handlers/listing_handler/get_options deve :
-- ser renomeado para post_options;
-- deve ser um POST ao invés de GET, pois tem parametros que devem estar no body e não na URL;
-- deve receber um payload JSON: zipCode (string, obrigatório) e number (string, obrigatório);
-- Isto deve estar claramente documentado no Swagger, por comentários no código e sem alterações manuais em arquivos de documentação.
+O endpoint /handlers/listing_handlers/update_listing precisda ser implementado. atualmente está respondendo 501, apesar de existir o handler.
+Algumas alterações precisam ser feitas:
+- É necessário que o body da requisição possa os campos abaixo permitindo para criar um listingmodel.ListingInterface que será passado ao service.
+	id                 int64
+	owner              PropertyOwner
+	features           []FeatureInterface
+	landSize           float64
+	corner             bool
+	nonBuildable       float64
+	buildable          float64
+	delivered          PropertyDelivered
+	whoLives           WhoLives
+	description        string
+	transaction        TransactionType
+	sellNet            float64
+	rentNet            float64
+	condominium        float64
+	annualTax          float64
+	annualGroundRent   float64
+	exchange           bool
+	exchangePercentual float64
+	exchangePlaces     []ExchangePlaceInterface
+	installment        InstallmentPlan
+	financing          bool
+	financingBlocker   []FinancingBlockerInterface
+	guarantees         []GuaranteeInterface
+	visit              VisitType
+	tenantName         string
+	tenantEmail        string
+	tenantPhone        string
+	accompanying       AccompanyingType
 
+- somente ID deve ser obrigatório
+- o handler deve criar este objeto e passar para o service
+- O service deve atualizar o listing no banco de dados com os valoreas passados, desde que não seja nulos ou vazios (strings vazias ou slices vazias).
+
+
+  
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
 
@@ -68,7 +100,7 @@ O endpoint /handlers/listing_handler/get_options deve :
 2) Durante a análise/implementação:
 - Seguir o guia `docs/toq_server_go_guide.md` (arquitetura, erros/observabilidade, transações).
 - Manter adapters com erros “puros”; sem HTTP/semântica de domínio nessa camada.
-- Atualizar Swagger quando comportamento público mudar.
+- A documentação Swagger/docs deve ser criada por comentários em DTO/Handler e execução de make swagger. Sem alterações manuais no swagger.yaml/json.
 
 3) Após mudanças:
 - Relatar “requirements coverage” (Requisito → Done/Deferred + motivo).

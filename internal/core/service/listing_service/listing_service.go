@@ -3,7 +3,6 @@ package listingservices
 import (
 	"context"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
@@ -36,8 +35,8 @@ func NewListingService(
 type ListingServiceInterface interface {
 	GetOptions(ctx context.Context, zipCode string, number string) (types []listingmodel.PropertyTypeOption, err error)
 	GetBaseFeatures(ctx context.Context) (features []listingmodel.BaseFeatureInterface, err error)
-	StartListing(ctx context.Context, zipCode string, number string, propertyType globalmodel.PropertyType) (listing listingmodel.ListingInterface, err error)
-	UpdateListing(ctx context.Context, listing listingmodel.ListingInterface) (err error)
+	StartListing(ctx context.Context, input StartListingInput) (listing listingmodel.ListingInterface, err error)
+	UpdateListing(ctx context.Context, input UpdateListingInput) (err error)
 	GetAllListingsByUser(ctx context.Context, userID int64) (listings []listingmodel.ListingInterface, err error)
 	GetAllOffersByUser(ctx context.Context, userID int64) (offers []listingmodel.OfferInterface, err error)
 	GetAllVisitsByUser(ctx context.Context, userID int64) (listings []listingmodel.VisitInterface, err error)

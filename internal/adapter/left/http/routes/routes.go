@@ -212,18 +212,18 @@ func RegisterListingRoutes(
 	listings.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		// Basic CRUD
-		listings.GET("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })               // GetAllListings
-		listings.POST("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })              // StartListing
-		listings.GET("/search", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })        // SearchListing
-		listings.POST("/options", listingHandler.PostOptions)                                                       // PostOptions
-		listings.GET("/features/base", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetBaseFeatures
+		listings.GET("", listingHandler.GetAllListings)                                                      // GetAllListings (returns 501 until service ready)
+		listings.POST("", listingHandler.StartListing)                                                       // StartListing
+		listings.GET("/search", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SearchListing
+		listings.POST("/options", listingHandler.PostOptions)                                                // PostOptions
+		listings.GET("/features/base", listingHandler.GetBaseFeatures)                                       // GetBaseFeatures
 
 		// Favorites (Realtor side)
 		listings.GET("/favorites", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetFavoriteListings
 
 		// Individual listing operations
 		listings.GET("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })             // GetListing
-		listings.PUT("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })             // UpdateListing
+		listings.PUT("", listingHandler.UpdateListing)                                                                // UpdateListing
 		listings.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // DeleteListing
 		listings.POST("/:id/end-update", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EndUpdateListing
 		listings.GET("/:id/status", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // GetListingStatus

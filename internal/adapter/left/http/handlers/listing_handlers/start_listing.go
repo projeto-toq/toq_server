@@ -8,13 +8,14 @@ import (
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // StartListing handles creating a new listing
 //
 //	@Summary		Start a new listing
-//	@Description	Create a new listing with basic information (zip code, number, property type)
+//	@Description	Create a new listing with address details validated against the zip code information
 //	@Tags			Listings
 //	@Accept			json
 //	@Produce		json
@@ -23,6 +24,7 @@ import (
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request format"
 //	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"
 //	@Failure		403		{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure		409		{object}	dto.ErrorResponse	"Conflict"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/listings [post]
 //	@Security		BearerAuth
@@ -49,13 +51,18 @@ func (lh *ListingHandler) StartListing(c *gin.Context) {
 		return
 	}
 
-	// Call service to start listing
-	listing, err := lh.listingService.StartListing(
-		ctx,
-		request.ZipCode,
-		request.Number,
-		globalmodel.PropertyType(request.PropertyType),
-	)
+	input := listingservices.StartListingInput{
+		ZipCode:      request.ZipCode,
+		Number:       request.Number,
+		City:         request.City,
+		State:        request.State,
+		Street:       request.Street,
+		Neighborhood: request.Neighborhood,
+		Complement:   request.Complement,
+		PropertyType: globalmodel.PropertyType(request.PropertyType),
+	}
+
+	listing, err := lh.listingService.StartListing(ctx, input)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

@@ -49,8 +49,8 @@ func (lh *ListingHandler) PostOptions(c *gin.Context) {
 	propertyTypes := make([]dto.PropertyTypeOption, 0, len(types))
 	for _, t := range types {
 		propertyTypes = append(propertyTypes, dto.PropertyTypeOption{
-			ID:   int(t.Code),
-			Name: t.Label,
+			PropertyType: int(t.Code),
+			Name:         t.Label,
 		})
 	}
 

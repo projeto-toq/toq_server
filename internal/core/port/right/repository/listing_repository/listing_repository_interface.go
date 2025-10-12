@@ -15,10 +15,10 @@ type ListingRepoPortInterface interface {
 	CreateFinancingBlocker(ctx context.Context, tx *sql.Tx, blocker listingmodel.FinancingBlockerInterface) (err error)
 
 	UpdateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error)
-	UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, places []listingmodel.ExchangePlaceInterface) (err error)
-	UpdateFeatures(ctx context.Context, tx *sql.Tx, features []listingmodel.FeatureInterface) (err error)
-	UpdateGuarantees(ctx context.Context, tx *sql.Tx, guarantees []listingmodel.GuaranteeInterface) (err error)
-	UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, blockers []listingmodel.FinancingBlockerInterface) (err error)
+	UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, listingID int64, places []listingmodel.ExchangePlaceInterface) (err error)
+	UpdateFeatures(ctx context.Context, tx *sql.Tx, listingID int64, features []listingmodel.FeatureInterface) (err error)
+	UpdateGuarantees(ctx context.Context, tx *sql.Tx, listingID int64, guarantees []listingmodel.GuaranteeInterface) (err error)
+	UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, listingID int64, blockers []listingmodel.FinancingBlockerInterface) (err error)
 
 	DeleteListingExchangePlaces(ctx context.Context, tx *sql.Tx, listingID int64) (err error)
 	DeleteListingFeatures(ctx context.Context, tx *sql.Tx, listingID int64) (err error)

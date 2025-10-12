@@ -4,13 +4,27 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"slices"
+	"strings"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (ls *listingService) StartListing(ctx context.Context, zipCode string, number string, propertyType globalmodel.PropertyType) (listing listingmodel.ListingInterface, err error) {
+// StartListingInput carries the data required to create a new listing.
+type StartListingInput struct {
+	ZipCode      string
+	Number       string
+	City         string
+	State        string
+	Street       string
+	Neighborhood *string
+	Complement   *string
+	PropertyType globalmodel.PropertyType
+}
+
+func (ls *listingService) StartListing(ctx context.Context, input StartListingInput) (listing listingmodel.ListingInterface, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return listing, utils.InternalError("")
@@ -35,7 +49,7 @@ func (ls *listingService) StartListing(ctx context.Context, zipCode string, numb
 		}
 	}()
 
-	listing, err = ls.startListing(ctx, tx, zipCode, number, propertyType)
+	listing, err = ls.startListing(ctx, tx, input)
 	if err != nil {
 		return
 	}
@@ -49,7 +63,10 @@ func (ls *listingService) StartListing(ctx context.Context, zipCode string, numb
 	return
 }
 
-func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, zipCode string, number string, propertyType globalmodel.PropertyType) (listing listingmodel.ListingInterface, err error) {
+func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input StartListingInput) (listing listingmodel.ListingInterface, err error) {
+	zipCode := strings.TrimSpace(input.ZipCode)
+	number := strings.TrimSpace(input.Number)
+	propertyType := input.PropertyType
 
 	exist := true
 	//check if the zipCode and number there is not already a listing
@@ -106,17 +123,50 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, zipCode 
 	listing.SetNumber(number)
 	listing.SetListingType(propertyType)
 
-	//recover the adress from the zipCode and number
+	//recover the address from the zipCode and number
 	address, err := ls.gsi.GetCEP(ctx, zipCode)
 	if err != nil {
 		return
 	}
 
-	listing.SetStreet(address.GetStreet())
-	listing.SetComplement(address.GetComplement())
-	listing.SetNeighborhood(address.GetNeighborhood())
-	listing.SetCity(address.GetCity())
-	listing.SetState(address.GetState())
+	cepStreet := strings.TrimSpace(address.GetStreet())
+	cepCity := strings.TrimSpace(address.GetCity())
+	cepState := strings.TrimSpace(address.GetState())
+
+	// if !equalsNormalized(cepStreet, input.Street) || !equalsNormalized(cepCity, input.City) || !equalsNormalized(cepState, input.State) {
+	// 	logger := utils.LoggerFromContext(ctx)
+	// 	logger.Warn(
+	// 		"listing.start.address_mismatch",
+	// 		"zip", zipCode,
+	// 		"number", number,
+	// 		"cep_street", cepStreet,
+	// 		"cep_city", cepCity,
+	// 		"cep_state", cepState,
+	// 		"request_street", strings.TrimSpace(input.Street),
+	// 		"request_city", strings.TrimSpace(input.City),
+	// 		"request_state", strings.TrimSpace(input.State),
+	// 	)
+	// 	return nil, utils.BadRequest("Provided address does not match zip code information")
+	// }
+
+	cepNeighborhood := strings.TrimSpace(address.GetNeighborhood())
+	cepComplement := strings.TrimSpace(address.GetComplement())
+
+	neighborhood := cepNeighborhood
+	if input.Neighborhood != nil {
+		neighborhood = strings.TrimSpace(*input.Neighborhood)
+	}
+
+	complement := cepComplement
+	if input.Complement != nil {
+		complement = strings.TrimSpace(*input.Complement)
+	}
+
+	listing.SetStreet(cepStreet)
+	listing.SetComplement(complement)
+	listing.SetNeighborhood(neighborhood)
+	listing.SetCity(cepCity)
+	listing.SetState(cepState)
 
 	//create the listing
 	err = ls.listingRepository.CreateListing(ctx, tx, listing)
@@ -141,11 +191,13 @@ func (ls *listingService) isPropertyTypeAllowed(ctx context.Context, allowedType
 		return false, utils.BadRequest("propertyType must be a single type")
 	}
 	alloweds := ls.DecodePropertyTypes(ctx, allowedTypes)
-	for _, allowedType := range alloweds {
-		if allowedType == requested[0] {
-			return true, nil
-		}
+	if slices.Contains(alloweds, requested[0]) {
+		return true, nil
 	}
 
 	return false, nil
 }
+
+// func equalsNormalized(origin, candidate string) bool {
+// 	return strings.EqualFold(strings.TrimSpace(origin), strings.TrimSpace(candidate))
+// }

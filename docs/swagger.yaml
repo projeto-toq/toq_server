@@ -364,10 +364,10 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption:
     properties:
-      id:
-        type: integer
       name:
         type: string
+      propertyType:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RefreshTokenRequest:
     properties:
@@ -464,15 +464,28 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StartListingRequest:
     properties:
+      city:
+        type: string
+      complement:
+        type: string
+      neighborhood:
+        type: string
       number:
         type: string
       propertyType:
         type: integer
+      state:
+        type: string
+      street:
+        type: string
       zipCode:
         type: string
     required:
+    - city
     - number
     - propertyType
+    - state
+    - street
     - zipCode
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StartListingResponse:
@@ -491,6 +504,72 @@ definitions:
         type: string
       refreshToken:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest:
+    properties:
+      accompanying:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int'
+      annualGroundRent:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      annualTax:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      buildable:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      condominium:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      corner:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool'
+      delivered:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int'
+      description:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+      exchange:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool'
+      exchangePercentual:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      exchangePlaces:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingExchangePlaceRequest'
+      features:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingFeatureRequest'
+      financing:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool'
+      financingBlockers:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_int'
+      guarantees:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest'
+      id:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64'
+      installment:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int'
+      landSize:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      nonBuildable:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      owner:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int'
+      rentNet:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      sellNet:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      tenantEmail:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+      tenantName:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+      tenantPhone:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+      transaction:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int'
+      visit:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int'
+      whoLives:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateOptStatusRequest:
     properties:
@@ -720,6 +799,24 @@ definitions:
       valid:
         example: true
         type: boolean
+    type: object
+  ? github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingExchangePlaceRequest
+  : type: object
+  ? github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingFeatureRequest
+  : type: object
+  ? github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest
+  : type: object
+  github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_int:
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool:
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64:
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_utils.Optional-int:
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64:
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_utils.Optional-string:
     type: object
 externalDocs:
   description: OpenAPI
@@ -1425,8 +1522,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new listing with basic information (zip code, number,
-        property type)
+      description: Create a new listing with address details validated against the
+        zip code information
       parameters:
       - description: Listing creation data
         in: body
@@ -1453,6 +1550,10 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -1460,6 +1561,55 @@ paths:
       security:
       - BearerAuth: []
       summary: Start a new listing
+      tags:
+      - Listings
+    put:
+      consumes:
+      - application/json
+      description: Permite atualização parcial dos campos de um anúncio em rascunho.
+        Campos omitidos permanecem inalterados; campos presentes (inclusive null/vazio)
+        sobrescrevem o valor atual.
+      parameters:
+      - description: Dados para atualização (ID obrigatório no corpo)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingResponse'
+        "400":
+          description: Payload inválido
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Não autorizado
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Proibido
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Não encontrado
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflito
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Erro interno
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Atualiza um anúncio
       tags:
       - Listings
   /listings/features/base:
@@ -1520,6 +1670,10 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "403":
           description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Complex not found
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":

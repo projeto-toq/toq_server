@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, places []listingmodel.ExchangePlaceInterface) (err error) {
+func (la *ListingAdapter) UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, listingID int64, places []listingmodel.ExchangePlaceInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -22,24 +22,23 @@ func (la *ListingAdapter) UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	//check if there is any data to update
-	if len(places) == 0 {
-		return
+	//remove all exchange places from listing
+	err = la.DeleteListingExchangePlaces(ctx, tx, listingID)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.listing.update_exchange_places.delete_error", "error", err)
+			return fmt.Errorf("delete listing exchange places: %w", err)
+		}
 	}
 
-	//remove all exchange places from listing
-	err = la.DeleteListingExchangePlaces(ctx, tx, places[0].ListingID())
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.update_exchange_places.delete_error", "error", err)
-		return fmt.Errorf("delete listing exchange places: %w", err)
+	if len(places) == 0 {
+		return nil
 	}
 
 	//insert the new exchange places
 	for _, place := range places {
+		place.SetListingID(listingID)
 		err = la.CreateExchangePlace(ctx, tx, place)
 		if err != nil {
 			utils.SetSpanError(ctx, err)

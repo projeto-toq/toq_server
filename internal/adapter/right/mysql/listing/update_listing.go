@@ -56,25 +56,25 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 		return fmt.Errorf("exec update listing: %w", err)
 	}
 
-	err = la.UpdateExchangePlaces(ctx, tx, listing.ExchangePlaces())
+	err = la.UpdateExchangePlaces(ctx, tx, listing.ID(), listing.ExchangePlaces())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.update_listing.exchange_places_error", "error", err, "listing_id", listing.ID())
 		return fmt.Errorf("update exchange places: %w", err)
 	}
-	err = la.UpdateFeatures(ctx, tx, listing.Features())
+	err = la.UpdateFeatures(ctx, tx, listing.ID(), listing.Features())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.update_listing.features_error", "error", err, "listing_id", listing.ID())
 		return fmt.Errorf("update features: %w", err)
 	}
-	err = la.UpdateGuarantees(ctx, tx, listing.Guarantees())
+	err = la.UpdateGuarantees(ctx, tx, listing.ID(), listing.Guarantees())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.update_listing.guarantees_error", "error", err, "listing_id", listing.ID())
 		return fmt.Errorf("update guarantees: %w", err)
 	}
-	err = la.UpdateFinancingBlockers(ctx, tx, listing.FinancingBlockers())
+	err = la.UpdateFinancingBlockers(ctx, tx, listing.ID(), listing.FinancingBlockers())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.update_listing.financing_blockers_error", "error", err, "listing_id", listing.ID())
