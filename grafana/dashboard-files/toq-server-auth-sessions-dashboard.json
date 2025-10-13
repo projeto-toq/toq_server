@@ -58,7 +58,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (type) (rate(event_bus_published_total{type=~\"session.*\"}[$__rate_interval]))",
+                    "expr": "sum by (type) (rate(event_bus_published_total{type=~\"session.*\", deployment_environment=~\"$environment\"}[$__rate_interval]))",
                     "legendFormat": "{{type}}",
                     "refId": "A"
                 }
@@ -103,7 +103,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "histogram_quantile(0.95, sum by (le,type) (rate(session_event_handle_duration_seconds_bucket{type=~\"session.*\"}[$__rate_interval])))",
+                    "expr": "histogram_quantile(0.95, sum by (le,type) (rate(session_event_handle_duration_seconds_bucket{type=~\"session.*\", deployment_environment=~\"$environment\"}[$__rate_interval])))",
                     "legendFormat": "p95 {{type}}",
                     "refId": "A"
                 },
@@ -112,7 +112,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "histogram_quantile(0.50, sum by (le,type) (rate(session_event_handle_duration_seconds_bucket{type=~\"session.*\"}[$__rate_interval])))",
+                    "expr": "histogram_quantile(0.50, sum by (le,type) (rate(session_event_handle_duration_seconds_bucket{type=~\"session.*\", deployment_environment=~\"$environment\"}[$__rate_interval])))",
                     "legendFormat": "p50 {{type}}",
                     "refId": "B"
                 }
@@ -156,7 +156,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (event) (rate(device_tokens_pruned_total{result=\"success\"}[$__rate_interval]))",
+                    "expr": "sum by (event) (rate(device_tokens_pruned_total{result=\"success\", deployment_environment=~\"$environment\"}[$__rate_interval]))",
                     "legendFormat": "success {{event}}",
                     "refId": "A"
                 },
@@ -165,7 +165,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (event) (rate(device_tokens_pruned_total{result=\"error\"}[$__rate_interval]))",
+                    "expr": "sum by (event) (rate(device_tokens_pruned_total{result=\"error\", deployment_environment=~\"$environment\"}[$__rate_interval]))",
                     "legendFormat": "error {{event}}",
                     "refId": "B"
                 }
@@ -209,7 +209,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "rate(auth_refresh_success_total[$__rate_interval])",
+                    "expr": "rate(auth_refresh_success_total{deployment_environment=~\"$environment\"}[$__rate_interval])",
                     "legendFormat": "refresh success",
                     "refId": "A"
                 },
@@ -218,7 +218,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "rate(auth_refresh_reuse_detected_total[$__rate_interval])",
+                    "expr": "rate(auth_refresh_reuse_detected_total{deployment_environment=~\"$environment\"}[$__rate_interval])",
                     "legendFormat": "refresh reuse detected",
                     "refId": "B"
                 },
@@ -227,7 +227,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "rate(auth_refresh_absolute_expired_total[$__rate_interval])",
+                    "expr": "rate(auth_refresh_absolute_expired_total{deployment_environment=~\"$environment\"}[$__rate_interval])",
                     "legendFormat": "refresh blocked (absolute expiry)",
                     "refId": "C"
                 }
@@ -271,7 +271,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "rate(auth_session_rotated_total[$__rate_interval])",
+                    "expr": "rate(auth_session_rotated_total{deployment_environment=~\"$environment\"}[$__rate_interval])",
                     "legendFormat": "session rotated",
                     "refId": "A"
                 }
@@ -315,7 +315,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (mode) (rate(auth_signout_total[$__rate_interval]))",
+                    "expr": "sum by (mode) (rate(auth_signout_total{deployment_environment=~\"$environment\"}[$__rate_interval]))",
                     "legendFormat": "signout {{mode}}",
                     "refId": "A"
                 },
@@ -324,7 +324,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (mode) (rate(auth_signout_sessions_revoked_total[$__rate_interval]))",
+                    "expr": "sum by (mode) (rate(auth_signout_sessions_revoked_total{deployment_environment=~\"$environment\"}[$__rate_interval]))",
                     "legendFormat": "revoked {{mode}}",
                     "refId": "B"
                 }
@@ -368,7 +368,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (mode,method) (rate(auth_signout_device_tokens_removed_total{result=\"success\"}[$__rate_interval]))",
+                    "expr": "sum by (mode,method) (rate(auth_signout_device_tokens_removed_total{result=\"success\", deployment_environment=~\"$environment\"}[$__rate_interval]))",
                     "legendFormat": "success {{mode}} {{method}}",
                     "refId": "A"
                 },
@@ -377,7 +377,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (mode,method) (rate(auth_signout_device_tokens_removed_total{result=\"error\"}[$__rate_interval]))",
+                    "expr": "sum by (mode,method) (rate(auth_signout_device_tokens_removed_total{result=\"error\", deployment_environment=~\"$environment\"}[$__rate_interval]))",
                     "legendFormat": "error {{mode}} {{method}}",
                     "refId": "B"
                 }
@@ -437,7 +437,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "active_sessions_total",
+                    "expr": "sum(active_sessions_total{deployment_environment=~\"$environment\"})",
                     "legendFormat": "",
                     "refId": "A"
                 }
@@ -481,7 +481,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "rate(session_cleaner_deleted_total[$__rate_interval])",
+                    "expr": "rate(session_cleaner_deleted_total{deployment_environment=~\"$environment\"}[$__rate_interval])",
                     "legendFormat": "deleted by cleaner",
                     "refId": "A"
                 }
@@ -500,6 +500,30 @@
     ],
     "templating": {
         "list": [
+            {
+                "current": {
+                    "selected": true,
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values(active_sessions_total, deployment_environment)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Ambiente",
+                "multi": true,
+                "name": "environment",
+                "options": [],
+                "query": "label_values(active_sessions_total, deployment_environment)",
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
             {
                 "hide": 0,
                 "name": "event_type",

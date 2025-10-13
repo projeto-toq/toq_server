@@ -5,10 +5,21 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O serviço func (cs *complexService) GetOptions quando não encontra o complexo retorna erro 500. O correto é retornar not found.
+O endpoint /user/photo/download-url está retornando para o usuário o url
+{
+    "signedUrl": "https://toq-app-media.s3.us-east-1.amazonaws.com/2/photo/original.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIAQ3EGR6UWYYLJDK5G%2F20251013%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251013T145652Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEJ%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCYexn2IypiM00I85r3R0med9j03GduynSGsdoixwb9CwIhAJ9gcHQBwrZw259LzWOXAhXHdz8t9J3mEmpILdjHnKQzKr0FCEgQABoMMDU4MjY0MjUzNzQxIgwNNJ%2FaOdbdglsVo2MqmgVGdOOTbwnaBrQUq7wVUVNRLxNWdV7YuncMa4AVKXNb6%2FQ2AMKUFePn4sD2qDGzqGLYlSV7IktyYttyISrmT4FRv3GTsWKP4ikHQQjS5Sb7upmGYlaXN7JUmby%2FHc1K8vCo6%2Fu3tVG2mDazgpAysdc4QAVv%2BPSPLK9XsFp8u0d4Xw4ixgLT0zrr1dAQ%2BZGoXbqKqKvCkyE6Ck25sowGCIvjp7uLqh3mjt%2FA0Xw2%2FDiFUBYM6CtlaovmZhNAeeCcAoZWBfJNbVcdLZNSLGi%2FR%2BnlWjl9CFbeeoOb%2Fo80pzfaPCZAQTTOivUh98WCDKK4VJiAqyZCOql2DXKVVnMFhGplP6gRDiBBuEW1nKUJScDxvMfrLXPJmBOzeDckVi0wrxcKZ%2Bm9ibgMeNtSQPuo3n6ld2oB0bv5qdWVzSD0E%2Fa2cexxQb5FHLMJ%2Bxa50nE102E6QTpoj1HPUMXVowgYTXtiIDZELywmKgh1PqLhlkXoQFHxtojsniSvDVmLmH%2BbH4h9b1kFkDSWUTPisQ1MZxAX%2B7ShSYlo7hQ%2F2O%2BLXm%2FjL4SNHEl%2FnLnQKc1mRqRGnvGCZNj7HuKYrIHvDwf58eiKwFN%2FB5HEr4CtpSuNNuWiinAeMkKGOoHms14LXdfbABErqmpAC8i%2Bx2bDfLhCaoItaS3wP1h0%2F4s7CyFxu2Zg339THyRYqH23KAMlh6ZpnXipQ%2F60kCaBStHRANXXwdbCUJk2ARL%2Bu%2BkCzMXA6Y0cqrVL0bIiO%2BT6x7lXNkL%2FYSDFmTbAxRzMLyO6Xjo7oznbloHnKJDPNDDqwPpc8dKcyJmskWpcB9PwjqdD6H0PRUjEhwlQfFeftZ08i8snPgGBy0Yim%2FVQeCSqOY0hgdYRqJOTlPgaqAmuh3ow6Z60xwY6sAEiiqjbnyYxepniOQBt7O2yq9iurOQ7DxVLo5E8IzPgVDVnjNKieb1aQ1tTkDwwGQWY3RCu1hEntGzBZFsP1SECb5fC%2BLKNejdj1S9%2BVF9UuPhnEJtWhVhq2I%2BevOIvRWI6yqOh1%2Bdc5tcsdWssYuaFNniuogexxVPOPqIj2szYsTCpP%2BSmsKIwM7dyizltFZAPto5Yw%2Fioc7qWASy%2BNA6ngK9LcD0RPQ1fi0CQOdu5Jw%3D%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=37f7b367ee7c516a8931698ac2c7f0b8a33b683f165cde1908b830063c6311ae"
+}
 
+entretanto ao colocar esta url no navegador, receno esta mensagem:
+<Error>
+<Code>InvalidAccessKeyId</Code>
+<Message>The AWS Access Key Id you provided does not exist in our records.</Message>
+<AWSAccessKeyId>ASIAQ3EGR6UWYYLJDK5G</AWSAccessKeyId>
+<RequestId>C8F369ZYEPK84GT3</RequestId>
+<HostId>cV0GMYdDFvmgB6BHYNN7bDU1bArka9Qr5AaaFZq12zMqUPG/mZvvlcq7up6ZGtIupk2a7c2rskI=</HostId>
+</Error>
 
-**Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução. 
+**Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 
 ### **Instruções para a Proposição do Plano**
 

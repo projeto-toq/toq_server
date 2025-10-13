@@ -12,17 +12,22 @@ func (b *Bootstrap) Phase07_StartBackgroundWorkers() error {
 	b.logger.Info("🎯 FASE 7: Inicialização de Background Workers")
 	b.logger.Debug("Configurando workers em background")
 
-	// 1. Inicializar goroutines do sistema
-	if err := b.initializeSystemGoroutines(); err != nil {
-		return NewBootstrapError("Phase07", "system_goroutines", "Failed to initialize system goroutines", err)
+	if b.config.AreWorkersEnabled() {
+		// 1. Inicializar goroutines do sistema
+		if err := b.initializeSystemGoroutines(); err != nil {
+			return NewBootstrapError("Phase07", "system_goroutines", "Failed to initialize system goroutines", err)
+		}
+
+		// 2. Configurar activity tracker com user service
+		if err := b.linkActivityTrackerToUserService(); err != nil {
+			return NewBootstrapError("Phase07", "activity_tracker_link", "Failed to link activity tracker to user service", err)
+		}
+	} else {
+		b.logger.Info("Workers desabilitados para o ambiente atual; fase 7 vai pular inicialização",
+			"environment", b.config.GetRuntimeEnvironment())
 	}
 
-	// 2. Configurar activity tracker com user service
-	if err := b.linkActivityTrackerToUserService(); err != nil {
-		return NewBootstrapError("Phase07", "activity_tracker_link", "Failed to link activity tracker to user service", err)
-	}
-
-	// 3. Verificar schema do banco de dados
+	// 3. Verificar schema do banco de dados (executa sempre)
 	if err := b.verifyDatabaseSchema(); err != nil {
 		return NewBootstrapError("Phase07", "database_schema", "Failed to verify database schema", err)
 	}

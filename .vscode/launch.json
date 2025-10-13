@@ -22,7 +22,8 @@
                 "DB_NAME": "toq_db",
                 "PORT": "8080",
                 "ENABLE_PPROF": "true",
-                "PPROF_PORT": "6060"
+                "PPROF_PORT": "6060",
+                "ENVIRONMENT": "dev"
             },
             "args": [
                 "--log-level=info",
@@ -49,7 +50,8 @@
                 "DB_NAME": "toq_db",
                 "PORT": "8080",
                 "ENABLE_PPROF": "false",
-                "PPROF_PORT": "6060"
+                "PPROF_PORT": "6060",
+                "ENVIRONMENT": "homo"
             },
             "args": [
                 "--log-level=info",
@@ -76,7 +78,8 @@
                 "DB_NAME": "toq_db",
                 "PORT": "8080",
                 "ENABLE_PPROF": "true",
-                "PPROF_PORT": "6060"
+                "PPROF_PORT": "6060",
+                "ENVIRONMENT": "dev"
             },
             "args": [
                 "--log-level=debug",

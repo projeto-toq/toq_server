@@ -2,7 +2,9 @@ package s3adapter
 
 import (
 	"context"
+	"os"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
@@ -20,6 +22,7 @@ type S3Adapter struct {
 	region       string
 }
 
+// NewS3Adapter builds an S3 adapter leveraging the default AWS credential chain.
 func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter *S3Adapter, CloseFunc func() error, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
@@ -37,23 +40,17 @@ func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter 
 
 	// Cliente Admin com credenciais específicas
 	adminCfg := cfg.Copy()
-	if env.S3.AdminRole.AccessKeyID != "" && env.S3.AdminRole.SecretAccessKey != "" {
-		adminCfg.Credentials = credentials.NewStaticCredentialsProvider(
-			env.S3.AdminRole.AccessKeyID,
-			env.S3.AdminRole.SecretAccessKey,
-			"", // session token
-		)
+	if provider, mode := resolveStaticCredentials(env.S3.AdminRole.AccessKeyID, env.S3.AdminRole.SecretAccessKey, os.Getenv("TOQ_S3_ADMIN_ACCESS_KEY_ID"), os.Getenv("TOQ_S3_ADMIN_SECRET_ACCESS_KEY")); provider != nil {
+		logger.Info("adapter.s3.credentials.override", "client", "admin", "mode", mode)
+		adminCfg.Credentials = provider
 	}
 	adminClient := s3.NewFromConfig(adminCfg)
 
 	// Cliente Reader com credenciais específicas
 	readerCfg := cfg.Copy()
-	if env.S3.ReaderRole.AccessKeyID != "" && env.S3.ReaderRole.SecretAccessKey != "" {
-		readerCfg.Credentials = credentials.NewStaticCredentialsProvider(
-			env.S3.ReaderRole.AccessKeyID,
-			env.S3.ReaderRole.SecretAccessKey,
-			"", // session token
-		)
+	if provider, mode := resolveStaticCredentials(env.S3.ReaderRole.AccessKeyID, env.S3.ReaderRole.SecretAccessKey, os.Getenv("TOQ_S3_READER_ACCESS_KEY_ID"), os.Getenv("TOQ_S3_READER_SECRET_ACCESS_KEY")); provider != nil {
+		logger.Info("adapter.s3.credentials.override", "client", "reader", "mode", mode)
+		readerCfg.Credentials = provider
 	}
 	readerClient := s3.NewFromConfig(readerCfg)
 
@@ -78,4 +75,15 @@ func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter 
 
 	logger.Info("adapter.s3.created", "bucket", env.S3.BucketName, "region", env.S3.Region)
 	return s3Adapter, CloseFunc, nil
+}
+
+func resolveStaticCredentials(cfgAccessKey, cfgSecretKey, envAccessKey, envSecretKey string) (aws.CredentialsProvider, string) {
+	switch {
+	case cfgAccessKey != "" && cfgSecretKey != "":
+		return credentials.NewStaticCredentialsProvider(cfgAccessKey, cfgSecretKey, ""), "config"
+	case envAccessKey != "" && envSecretKey != "":
+		return credentials.NewStaticCredentialsProvider(envAccessKey, envSecretKey, ""), "environment"
+	default:
+		return nil, "default"
+	}
 }

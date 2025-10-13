@@ -3,6 +3,13 @@ TOQ Server is an HTTP API server for the TOQ App, built with Go, Gin, and a hexa
 
 Developer docs:
 - See `docs/toq_server_go_guide.md` — Global Go developer guide (architecture, DI, repos/DTOs/handlers, logging, tracing, errors, transactions, checklists).
+- S3 credentials now depend on the AWS credential chain (instance profile, environment variables). Do not commit static keys; use `TOQ_S3_*` environment variables only for local overrides.
+
+## Execução em duas instâncias (nohup + F5)
+- **Instância principal (nohup)**: execute `nohup ./bin/toq_server &` sem variáveis extras. O servidor sobe com `ENVIRONMENT=homo`, porta `:8080`, workers em execução e telemetria apontando para o collector de homologação.
+- **Instância de debug (VS Code / F5)**: configure o launch `TOQ Server (Development)` para incluir `ENVIRONMENT=dev` (já presente em `.vscode/launch.json`). Essa instância usa a porta `127.0.0.1:18080`, mantém os workers desativados e envia telemetria marcada como ambiente dev.
+- **Sobrescrita manual de porta**: defina `TOQ_HTTP_PORT` antes de iniciar o binário para forçar uma porta específica sem alterar o YAML.
+- **Observabilidade**: ambas as instâncias continuam exportando métricas via `/metrics`; utilize o label `deployment.environment` nas consultas para diferenciar `homo` de `dev`.
 
 ## API path conventions
 - Base path: `/api/v2`

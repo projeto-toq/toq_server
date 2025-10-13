@@ -68,6 +68,8 @@ type config struct {
 	repositoryAdapters     *factory.RepositoryAdapters
 	adapterFactory         factory.AdapterFactory
 	hmacValidator          *hmacauth.Validator
+	runtimeEnvironment     string
+	workersEnabled         bool
 }
 
 type ConfigInterface interface {
@@ -95,14 +97,18 @@ type ConfigInterface interface {
 	GetHTTPHandlers() *factory.HTTPHandlers
 	GetWG() *sync.WaitGroup
 	GetActivityTracker() *goroutines.ActivityTracker
+	GetRuntimeEnvironment() string
+	AreWorkersEnabled() bool
 	SetHealthServing(serving bool)
 }
 
 func NewConfig(ctx context.Context) ConfigInterface {
 	var wg sync.WaitGroup
 	return &config{
-		context: ctx,
-		wg:      &wg,
+		context:            ctx,
+		wg:                 &wg,
+		workersEnabled:     true,
+		runtimeEnvironment: "homo",
 	}
 }
 
@@ -110,6 +116,13 @@ func (c *config) SetHealthServing(serving bool) {
 	c.readiness = serving
 }
 
+func (c *config) GetRuntimeEnvironment() string {
+	return c.runtimeEnvironment
+}
+
+func (c *config) AreWorkersEnabled() bool {
+	return c.workersEnabled
+}
 func (c *config) GetHTTPServer() *http.Server {
 	return c.httpServer
 }
@@ -230,6 +243,11 @@ func (c *config) InitializeActivityTracker() error {
 
 // InitializeGoRoutines inicializa as goroutines do sistema
 func (c *config) InitializeGoRoutines() {
+	if !c.workersEnabled {
+		slog.Info("Workers desabilitados para este ambiente; ignorando inicialização de goroutines",
+			"environment", c.runtimeEnvironment)
+		return
+	}
 	baseCtx := coreutils.ContextWithLogger(c.context)
 	logger := coreutils.LoggerFromContext(baseCtx)
 
@@ -288,6 +306,11 @@ func (c *config) InitializeGoRoutines() {
 
 // SetActivityTrackerUserService conecta o activity tracker ao user service
 func (c *config) SetActivityTrackerUserService() {
+	if !c.workersEnabled {
+		slog.Info("Workers desabilitados; link entre ActivityTracker e UserService não será aplicado",
+			"environment", c.runtimeEnvironment)
+		return
+	}
 	if c.activityTracker != nil && c.userService != nil {
 		c.activityTracker.SetUserService(c.userService)
 		slog.Info("Activity tracker connected to user service")
@@ -298,6 +321,11 @@ func (c *config) SetActivityTrackerUserService() {
 
 // InitializeTempBlockCleaner inicializa o worker de limpeza de bloqueios temporários
 func (c *config) InitializeTempBlockCleaner() error {
+	if !c.workersEnabled {
+		slog.Info("Workers desabilitados; TempBlockCleaner não será inicializado",
+			"environment", c.runtimeEnvironment)
+		return nil
+	}
 	if c.permissionService == nil {
 		slog.Error("Permission service not available for temp block cleaner initialization")
 		return fmt.Errorf("permission service not initialized")
@@ -401,7 +429,7 @@ func (c *config) InitializeTelemetry() (func(), error) {
 	}
 
 	// Usar o novo TelemetryManager
-	telemetryManager := NewTelemetryManager(c.env)
+	telemetryManager := NewTelemetryManager(c.env, c.runtimeEnvironment)
 
 	shutdownFunc, err := telemetryManager.Initialize(c.context)
 	if err != nil {

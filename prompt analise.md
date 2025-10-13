@@ -6,30 +6,11 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Após a última refatoraçÃo as funções implementadas em global service e global repository nÃo estao coerentes, pois são exclusivas de listings.
-Assim:
-- As funções abaixo que hoje estão em global_repository_interface.go, devem ser movidas para o repositório listing_repository.
-	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
-	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)
-	GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error)
-	GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error)
-	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
-	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
-	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
+Preciso ter 2 instancias do toq_server rodando. Uma que vou chamar por nohup ./bin/toq_server e outra que vou chamar F5, para debug e testes. A instancia F5 deve ter porta diferente da nohup, que é usada pelos clientes de testes.
 
-- As funções abaixo que hoje estão em global_service devem ser movidas para o  listing_service
-
-	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
-	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)
-	GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error)
-	GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error)
-	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
-	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
-	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
-
-- as rotas abaixo estão recebendo o ID como paramêtro, mas o correto é receber o ID no body
-		admin.PUT("/listing/catalog/:id", adminHandler.UpdateListingCatalogValue)
-		admin.DELETE("/listing/catalog/:id", adminHandler.DeleteListingCatalogValue)
+Analise as portas possíveis e possíveis impactos, considerando que a base de dados é a mesma, que a geração de traces e métricas tem o mesmo destino, nos containers docker, etc.
+- Contexto: `toq_server` é um servidor HTTP em Go, seguindo arquitetura limpa com handlers, services e repositories. Usa injeção de dependência via factories. Observabilidade com logs, traces e métricas. Configuração via variáveis de ambiente.
+- como passar a configuração de porta diferente para F5
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

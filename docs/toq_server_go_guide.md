@@ -97,6 +97,11 @@ Backward-compatible: middleware trata ausência de `RoleSlug`.
 
 Shutdown: `Bootstrap.Shutdown()` cancela contexto, aguarda workers e executa cleanup do Lifecycle.
 
+### Perfis de ambiente (`ENVIRONMENT`)
+- `ENVIRONMENT=homo` (default) mantém a porta `:8080`, workers ativos e telemetria de homologação.
+- `ENVIRONMENT=dev` troca a porta para `127.0.0.1:18080`, desativa os workers em background e marca os sinais de observabilidade com `deployment.environment=dev`.
+- Para sobrescrever apenas a porta HTTP sem mudar o perfil, exporte `TOQ_HTTP_PORT` antes de iniciar o binário.
+
 ## 4. Injeção de dependências (Factory Pattern)
 
 - Orquestração em `config.InjectDependencies(lm)` com `AdapterFactory`.

@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -30,12 +32,14 @@ type TelemetryManager struct {
 	metricProvider *sdkmetric.MeterProvider
 	logProvider    *sdklog.LoggerProvider
 	env            globalmodel.Environment
+	runtimeEnv     string
 }
 
 // NewTelemetryManager cria uma nova instância do gerenciador de telemetria
-func NewTelemetryManager(env globalmodel.Environment) *TelemetryManager {
+func NewTelemetryManager(env globalmodel.Environment, runtimeEnv string) *TelemetryManager {
 	return &TelemetryManager{
-		env: env,
+		env:        env,
+		runtimeEnv: runtimeEnv,
 	}
 }
 
@@ -134,14 +138,26 @@ func (tm *TelemetryManager) initializeLogging(ctx context.Context, res *resource
 
 // createResource cria o resource comum para tracing e métricas
 func (tm *TelemetryManager) createResource() (*resource.Resource, error) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "unknown-host"
+	}
+	instanceID := fmt.Sprintf("%s-%d", hostname, os.Getpid())
+
+	attributes := []attribute.KeyValue{
+		semconv.ServiceName("toq_server"),
+		semconv.ServiceVersion(globalmodel.AppVersion),
+		semconv.ServiceInstanceID(instanceID),
+	}
+	if tm.runtimeEnv != "" {
+		attributes = append(attributes, attribute.String("deployment.environment", tm.runtimeEnv))
+	}
+
 	return resource.Merge(
 		resource.Default(),
 		resource.NewWithAttributes(
 			resource.Default().SchemaURL(),
-			semconv.ServiceName("toq_server"),
-			semconv.ServiceVersion("1.0.0"),
-			semconv.ServiceInstanceID("toq_server_instance_1"),
-		),
+			attributes...),
 	)
 }
 

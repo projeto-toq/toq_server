@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,16 +26,79 @@ func (b *Bootstrap) Phase02_LoadConfiguration() error {
 		return NewBootstrapError("Phase02", "load_config", "Failed to load configuration", err)
 	}
 
-	// 2. Validar configuração completa
+	// 2. Aplicar overrides de ambiente (ENVIRONMENT)
+	if err := b.applyRuntimeEnvironmentOverrides(); err != nil {
+		return NewBootstrapError("Phase02", "environment_overrides", "Failed to apply environment overrides", err)
+	}
+
+	// 3. Validar configuração completa
 	if err := b.validateConfiguration(); err != nil {
 		return NewBootstrapError("Phase02", "validation", "Configuration validation failed", err)
 	}
 
-	// 3. Aplicar configurações de segurança (JWT secret e TTLs)
+	// 4. Aplicar configurações de segurança (JWT secret e TTLs)
 	b.applySecurityConfig()
 
 	b.logger.Info("✅ Configuração carregada e validada com sucesso",
 		"version", globalmodel.AppVersion)
+
+	return nil
+}
+
+func (b *Bootstrap) applyRuntimeEnvironmentOverrides() error {
+	environmentName := strings.TrimSpace(os.Getenv("ENVIRONMENT"))
+	if environmentName == "" {
+		environmentName = "homo"
+	}
+	environmentName = strings.ToLower(environmentName)
+
+	cfg, ok := b.config.(*config)
+	if !ok {
+		return fmt.Errorf("runtime config implementation mismatch")
+	}
+
+	workersEnabled := true
+	if b.env != nil && b.env.Profiles != nil {
+		if profile, ok := b.env.Profiles[environmentName]; ok {
+			if port := strings.TrimSpace(profile.HTTP.Port); port != "" {
+				b.env.HTTP.Port = port
+			}
+			if endpoint := strings.TrimSpace(profile.Telemetry.Endpoint); endpoint != "" {
+				b.env.TELEMETRY.OTLP.Endpoint = endpoint
+			}
+			if profile.Telemetry.Insecure != nil {
+				b.env.TELEMETRY.OTLP.Insecure = *profile.Telemetry.Insecure
+			}
+			if profile.Telemetry.Enabled != nil {
+				b.env.TELEMETRY.Enabled = *profile.Telemetry.Enabled
+			}
+			if metricsPort := strings.TrimSpace(profile.Telemetry.MetricsPort); metricsPort != "" {
+				b.env.TELEMETRY.METRICS.Port = metricsPort
+			}
+			if profile.Workers.Enabled != nil {
+				workersEnabled = *profile.Workers.Enabled
+			}
+		} else {
+			slog.Warn("Nenhum profile override encontrado para o ambiente", "environment", environmentName)
+		}
+	}
+
+	if portOverride := strings.TrimSpace(os.Getenv("TOQ_HTTP_PORT")); portOverride != "" {
+		b.env.HTTP.Port = portOverride
+	}
+
+	cfg.runtimeEnvironment = environmentName
+	cfg.workersEnabled = workersEnabled
+
+	if err := os.Setenv("OTEL_RESOURCE_ENVIRONMENT", environmentName); err != nil {
+		slog.Warn("Falha ao propagar OTEL_RESOURCE_ENVIRONMENT", "error", err)
+	}
+
+	slog.Info("Overrides de ambiente aplicados",
+		"environment", environmentName,
+		"http_port", b.env.HTTP.Port,
+		"workers_enabled", workersEnabled,
+		"telemetry_endpoint", b.env.TELEMETRY.OTLP.Endpoint)
 
 	return nil
 }
@@ -217,11 +282,22 @@ func (b *Bootstrap) validateHTTPConfig() error {
 	}
 
 	portStr := b.env.HTTP.Port
-	// Remover ":" incondicionalmente
-	portStr = strings.TrimPrefix(portStr, ":")
+	parsedPort := ""
+	if strings.Contains(portStr, ":") {
+		// Tentativa de dividir host:porta (SplitHostPort aceita ":8080")
+		if host, port, err := net.SplitHostPort(portStr); err == nil {
+			_ = host // host não é usado, validação é apenas do número
+			parsedPort = port
+		} else {
+			// Caso de formato inválido: tentar remover apenas o prefixo :
+			parsedPort = strings.TrimPrefix(portStr, ":")
+		}
+	} else {
+		parsedPort = portStr
+	}
 
-	portInt := 0
-	if _, err := fmt.Sscanf(portStr, "%d", &portInt); err != nil {
+	portInt, err := strconv.Atoi(parsedPort)
+	if err != nil {
 		return fmt.Errorf("invalid HTTP port format: %s", b.env.HTTP.Port)
 	}
 

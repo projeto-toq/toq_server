@@ -119,8 +119,24 @@ type Environment struct {
 		WriterCreds   string `yaml:"writer_creds_path"`
 		ReaderCreds   string `yaml:"reader_creds_path"`
 	}
+	Profiles map[string]ProfileOverrides `yaml:"profiles"`
 	// Health endpoints are now integrated into the main HTTP server
 	// No separate health configuration needed
+}
+
+type ProfileOverrides struct {
+	HTTP struct {
+		Port string `yaml:"port"`
+	} `yaml:"http"`
+	Telemetry struct {
+		Endpoint    string `yaml:"endpoint"`
+		MetricsPort string `yaml:"metrics_port"`
+		Enabled     *bool  `yaml:"enabled"`
+		Insecure    *bool  `yaml:"insecure"`
+	} `yaml:"telemetry"`
+	Workers struct {
+		Enabled *bool `yaml:"enabled"`
+	} `yaml:"workers"`
 }
 
 type HMACSecurityConfig struct {
