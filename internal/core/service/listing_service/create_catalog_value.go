@@ -55,7 +55,7 @@ func (ls *listingService) CreateCatalogValue(ctx context.Context, input CreateCa
 		}
 	}()
 
-	if _, dupErr := ls.gsi.GetCatalogValueBySlug(ctx, tx, category, slug); dupErr == nil {
+	if _, dupErr := ls.listingRepository.GetCatalogValueBySlug(ctx, tx, category, slug); dupErr == nil {
 		return nil, utils.ConflictError("catalog slug already exists")
 	} else if dupErr != sql.ErrNoRows {
 		utils.SetSpanError(ctx, dupErr)
@@ -63,7 +63,7 @@ func (ls *listingService) CreateCatalogValue(ctx context.Context, input CreateCa
 		return nil, utils.InternalError("")
 	}
 
-	nextID, idErr := ls.gsi.GetNextCatalogValueID(ctx, tx, category)
+	nextID, idErr := ls.listingRepository.GetNextCatalogValueID(ctx, tx, category)
 	if idErr != nil {
 		utils.SetSpanError(ctx, idErr)
 		logger.Error("listing.catalog.create.next_id_error", "err", idErr, "category", category)
@@ -72,7 +72,7 @@ func (ls *listingService) CreateCatalogValue(ctx context.Context, input CreateCa
 
 	value := input.ToDomain(nextID)
 
-	if createErr := ls.gsi.CreateCatalogValue(ctx, tx, value); createErr != nil {
+	if createErr := ls.listingRepository.CreateCatalogValue(ctx, tx, value); createErr != nil {
 		utils.SetSpanError(ctx, createErr)
 		logger.Error("listing.catalog.create.exec_error", "err", createErr, "category", category, "slug", slug)
 		return nil, utils.InternalError("")

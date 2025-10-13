@@ -12,7 +12,7 @@ func (ls *listingService) ensureCatalogValue(ctx context.Context, tx *sql.Tx, ca
 		return nil
 	}
 
-	value, err := ls.gsi.GetCatalogValueByID(ctx, tx, category, id)
+	value, err := ls.listingRepository.GetCatalogValueByID(ctx, tx, category, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return utils.ValidationError(field, "invalid value")

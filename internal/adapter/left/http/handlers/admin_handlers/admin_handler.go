@@ -2,7 +2,6 @@ package adminhandlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
@@ -241,13 +240,12 @@ func (h *AdminHandler) CreateListingCatalogValue(c *gin.Context) {
 	c.JSON(http.StatusCreated, httpconv.ToListingCatalogValueResponse(value))
 }
 
-// UpdateListingCatalogValue handles PUT /admin/listing/catalog/:id
+// UpdateListingCatalogValue handles PUT /admin/listing/catalog
 //
 //	@Summary	Atualizar valor de catálogo de listings
 //	@Tags		Admin
 //	@Accept		json
 //	@Produce	json
-//	@Param		id		path	int	true	"Identificador do valor (1-255)"
 //	@Param		request	body	dto.ListingCatalogUpdateRequest	true	"Campos para atualização parcial"
 //	@Success	200	{object}	dto.ListingCatalogValueResponse
 //	@Failure	400	{object}	map[string]any
@@ -256,16 +254,9 @@ func (h *AdminHandler) CreateListingCatalogValue(c *gin.Context) {
 //	@Failure	404	{object}	map[string]any
 //	@Failure	409	{object}	map[string]any
 //	@Failure	500	{object}	map[string]any
-//	@Router		/admin/listing/catalog/{id} [put]
+//	@Router		/admin/listing/catalog [put]
 func (h *AdminHandler) UpdateListingCatalogValue(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
-	idParam := c.Param("id")
-	catalogID, err := strconv.ParseUint(idParam, 10, 8)
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("id", "invalid catalog identifier"))
-		return
-	}
-
 	var req dto.ListingCatalogUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
@@ -274,7 +265,7 @@ func (h *AdminHandler) UpdateListingCatalogValue(c *gin.Context) {
 
 	input := listingservices.UpdateCatalogValueInput{
 		Category:    req.Category,
-		ID:          uint8(catalogID),
+		ID:          req.ID,
 		Slug:        req.Slug,
 		Label:       req.Label,
 		Description: req.Description,
@@ -290,36 +281,29 @@ func (h *AdminHandler) UpdateListingCatalogValue(c *gin.Context) {
 	c.JSON(http.StatusOK, httpconv.ToListingCatalogValueResponse(value))
 }
 
-// DeleteListingCatalogValue handles DELETE /admin/listing/catalog/:id
+// DeleteListingCatalogValue handles DELETE /admin/listing/catalog
 //
 //	@Summary	Desativar valor de catálogo de listings
 //	@Tags		Admin
+//	@Accept		json
 //	@Produce	json
-//	@Param		id		path	int	true	"Identificador do valor (1-255)"
-//	@Param		category	query	string	true	"Categoria do catálogo"
+//	@Param		request	body	dto.ListingCatalogDeleteRequest	true	"Dados para desativação"
 //	@Success	204	"Valor desativado com sucesso"
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
 //	@Failure	403	{object}	map[string]any
 //	@Failure	404	{object}	map[string]any
 //	@Failure	500	{object}	map[string]any
-//	@Router		/admin/listing/catalog/{id} [delete]
+//	@Router		/admin/listing/catalog [delete]
 func (h *AdminHandler) DeleteListingCatalogValue(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
-	idParam := c.Param("id")
-	catalogID, err := strconv.ParseUint(idParam, 10, 8)
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("id", "invalid catalog identifier"))
-		return
-	}
-
-	var query dto.AdminListingCatalogQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
+	var req dto.ListingCatalogDeleteRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}
 
-	if err := h.listingService.DeleteCatalogValue(ctx, query.Category, uint8(catalogID)); err != nil {
+	if err := h.listingService.DeleteCatalogValue(ctx, req.Category, req.ID); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

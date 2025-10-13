@@ -1,4 +1,4 @@
-package mysqlglobaladapter
+package mysqllistingadapter
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (ga *GlobalAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error) {
+func (la *ListingAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (ga *GlobalAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, cate
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.list_catalog_values.prepare_error", "error", err, "category", category)
+		logger.Error("mysql.listing.catalog.list.prepare_error", "error", err, "category", category)
 		return nil, err
 	}
 	defer stmt.Close()
@@ -36,7 +36,7 @@ func (ga *GlobalAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, cate
 	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.list_catalog_values.query_error", "error", err, "category", category)
+		logger.Error("mysql.listing.catalog.list.query_error", "error", err, "category", category)
 		return nil, err
 	}
 	defer rows.Close()
@@ -46,7 +46,7 @@ func (ga *GlobalAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, cate
 		value, scanErr := scanCatalogValue(rows)
 		if scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
-			logger.Error("mysql.global.list_catalog_values.scan_error", "error", scanErr, "category", category)
+			logger.Error("mysql.listing.catalog.list.scan_error", "error", scanErr, "category", category)
 			return nil, scanErr
 		}
 		values = append(values, value)
@@ -54,14 +54,14 @@ func (ga *GlobalAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, cate
 
 	if err = rows.Err(); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.list_catalog_values.rows_error", "error", err, "category", category)
+		logger.Error("mysql.listing.catalog.list.rows_error", "error", err, "category", category)
 		return nil, err
 	}
 
 	return values, nil
 }
 
-func (ga *GlobalAdapter) GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error) {
+func (la *ListingAdapter) GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func (ga *GlobalAdapter) GetCatalogValueByID(ctx context.Context, tx *sql.Tx, ca
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.get_catalog_value.prepare_error", "error", err, "category", category, "id", id)
+		logger.Error("mysql.listing.catalog.get_by_id.prepare_error", "error", err, "category", category, "id", id)
 		return nil, err
 	}
 	defer stmt.Close()
@@ -86,14 +86,14 @@ func (ga *GlobalAdapter) GetCatalogValueByID(ctx context.Context, tx *sql.Tx, ca
 	if scanErr != nil {
 		if scanErr != sql.ErrNoRows {
 			utils.SetSpanError(ctx, scanErr)
-			logger.Error("mysql.global.get_catalog_value.scan_error", "error", scanErr, "category", category, "id", id)
+			logger.Error("mysql.listing.catalog.get_by_id.scan_error", "error", scanErr, "category", category, "id", id)
 		}
 		return nil, scanErr
 	}
 	return value, nil
 }
 
-func (ga *GlobalAdapter) GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error) {
+func (la *ListingAdapter) GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (ga *GlobalAdapter) GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.get_catalog_value_by_slug.prepare_error", "error", err, "category", category, "slug", slug)
+		logger.Error("mysql.listing.catalog.get_by_slug.prepare_error", "error", err, "category", category, "slug", slug)
 		return nil, err
 	}
 	defer stmt.Close()
@@ -118,14 +118,14 @@ func (ga *GlobalAdapter) GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, 
 	if scanErr != nil {
 		if scanErr != sql.ErrNoRows {
 			utils.SetSpanError(ctx, scanErr)
-			logger.Error("mysql.global.get_catalog_value_by_slug.scan_error", "error", scanErr, "category", category, "slug", slug)
+			logger.Error("mysql.listing.catalog.get_by_slug.scan_error", "error", scanErr, "category", category, "slug", slug)
 		}
 		return nil, scanErr
 	}
 	return value, nil
 }
 
-func (ga *GlobalAdapter) GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error) {
+func (la *ListingAdapter) GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return 0, err
@@ -140,7 +140,7 @@ func (ga *GlobalAdapter) GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.next_catalog_value_id.prepare_error", "error", err, "category", category)
+		logger.Error("mysql.listing.catalog.next_id.prepare_error", "error", err, "category", category)
 		return 0, err
 	}
 	defer stmt.Close()
@@ -148,13 +148,13 @@ func (ga *GlobalAdapter) GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, 
 	var nextID uint8
 	if err := stmt.QueryRowContext(ctx, category).Scan(&nextID); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.next_catalog_value_id.scan_error", "error", err, "category", category)
+		logger.Error("mysql.listing.catalog.next_id.scan_error", "error", err, "category", category)
 		return 0, err
 	}
 	return nextID, nil
 }
 
-func (ga *GlobalAdapter) CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error {
+func (la *ListingAdapter) CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
@@ -169,7 +169,7 @@ func (ga *GlobalAdapter) CreateCatalogValue(ctx context.Context, tx *sql.Tx, val
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.create_catalog_value.prepare_error", "error", err, "category", value.Category(), "id", value.ID())
+		logger.Error("mysql.listing.catalog.create.prepare_error", "error", err, "category", value.Category(), "id", value.ID())
 		return err
 	}
 	defer stmt.Close()
@@ -182,14 +182,14 @@ func (ga *GlobalAdapter) CreateCatalogValue(ctx context.Context, tx *sql.Tx, val
 
 	if _, err := stmt.ExecContext(ctx, value.Category(), value.ID(), value.Slug(), value.Label(), description, value.IsActive()); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.create_catalog_value.exec_error", "error", err, "category", value.Category(), "id", value.ID())
+		logger.Error("mysql.listing.catalog.create.exec_error", "error", err, "category", value.Category(), "id", value.ID())
 		return err
 	}
 
 	return nil
 }
 
-func (ga *GlobalAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error {
+func (la *ListingAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
@@ -204,7 +204,7 @@ func (ga *GlobalAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, val
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.update_catalog_value.prepare_error", "error", err, "category", value.Category(), "id", value.ID())
+		logger.Error("mysql.listing.catalog.update.prepare_error", "error", err, "category", value.Category(), "id", value.ID())
 		return err
 	}
 	defer stmt.Close()
@@ -218,14 +218,14 @@ func (ga *GlobalAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, val
 	result, err := stmt.ExecContext(ctx, value.Slug(), value.Label(), description, value.IsActive(), value.Category(), value.ID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.update_catalog_value.exec_error", "error", err, "category", value.Category(), "id", value.ID())
+		logger.Error("mysql.listing.catalog.update.exec_error", "error", err, "category", value.Category(), "id", value.ID())
 		return err
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.update_catalog_value.rows_affected_error", "error", err, "category", value.Category(), "id", value.ID())
+		logger.Error("mysql.listing.catalog.update.rows_affected_error", "error", err, "category", value.Category(), "id", value.ID())
 		return err
 	}
 
@@ -236,7 +236,7 @@ func (ga *GlobalAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, val
 	return nil
 }
 
-func (ga *GlobalAdapter) SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error {
+func (la *ListingAdapter) SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
@@ -251,7 +251,7 @@ func (ga *GlobalAdapter) SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx,
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.soft_delete_catalog_value.prepare_error", "error", err, "category", category, "id", id)
+		logger.Error("mysql.listing.catalog.delete.prepare_error", "error", err, "category", category, "id", id)
 		return err
 	}
 	defer stmt.Close()
@@ -259,14 +259,14 @@ func (ga *GlobalAdapter) SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx,
 	result, err := stmt.ExecContext(ctx, category, id)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.soft_delete_catalog_value.exec_error", "error", err, "category", category, "id", id)
+		logger.Error("mysql.listing.catalog.delete.exec_error", "error", err, "category", category, "id", id)
 		return err
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.soft_delete_catalog_value.rows_affected_error", "error", err, "category", category, "id", id)
+		logger.Error("mysql.listing.catalog.delete.rows_affected_error", "error", err, "category", category, "id", id)
 		return err
 	}
 

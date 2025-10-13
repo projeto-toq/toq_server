@@ -313,8 +313,8 @@ func RegisterAdminRoutes(
 		admin.GET("/user/pending", adminHandler.GetPendingRealtors)
 		admin.GET("/listing/catalog", adminHandler.ListListingCatalogValues)
 		admin.POST("/listing/catalog", adminHandler.CreateListingCatalogValue)
-		admin.PUT("/listing/catalog/:id", adminHandler.UpdateListingCatalogValue)
-		admin.DELETE("/listing/catalog/:id", adminHandler.DeleteListingCatalogValue)
+		admin.PUT("/listing/catalog", adminHandler.UpdateListingCatalogValue)
+		admin.DELETE("/listing/catalog", adminHandler.DeleteListingCatalogValue)
 
 		// POST /admin/user
 		admin.POST("/user", adminHandler.PostAdminGetUser)

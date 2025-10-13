@@ -30,7 +30,7 @@ func (ls *listingService) ListCatalogValues(ctx context.Context, category string
 		return nil, utils.InternalError("")
 	}
 
-	values, repoErr := ls.gsi.ListCatalogValues(ctx, tx, category, includeInactive)
+	values, repoErr := ls.listingRepository.ListCatalogValues(ctx, tx, category, includeInactive)
 	if repoErr != nil {
 		utils.SetSpanError(ctx, repoErr)
 		logger.Error("listing.catalog.list.query_error", "err", repoErr, "category", category, "include_inactive", includeInactive)

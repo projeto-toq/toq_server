@@ -8,7 +8,6 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/events"
 	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
-	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
 	emailport "github.com/projeto-toq/toq_server/internal/core/port/right/email"
 	fcmport "github.com/projeto-toq/toq_server/internal/core/port/right/fcm"
@@ -59,13 +58,6 @@ type GlobalServiceInterface interface {
 	CreateAudit(ctx context.Context, tx *sql.Tx, table globalmodel.TableName, action string, executedBY ...int64) (err error)
 
 	GetConfiguration(ctx context.Context) (configuration map[string]string, err error)
-	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
-	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)
-	GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error)
-	GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error)
-	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
-	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
-	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
 
 	// Novo sistema de notificação unificado
 	GetUnifiedNotificationService() UnifiedNotificationService

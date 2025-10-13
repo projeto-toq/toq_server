@@ -45,7 +45,7 @@ func (ls *listingService) UpdateCatalogValue(ctx context.Context, input UpdateCa
 		}
 	}()
 
-	value, getErr := ls.gsi.GetCatalogValueByID(ctx, tx, category, input.ID)
+	value, getErr := ls.listingRepository.GetCatalogValueByID(ctx, tx, category, input.ID)
 	if getErr != nil {
 		if getErr == sql.ErrNoRows {
 			return nil, utils.NotFoundError("catalog value")
@@ -65,7 +65,7 @@ func (ls *listingService) UpdateCatalogValue(ctx context.Context, input UpdateCa
 				return nil, utils.ValidationError("slug", "slug is required")
 			}
 			if normalized != value.Slug() {
-				if existing, slugErr := ls.gsi.GetCatalogValueBySlug(ctx, tx, category, normalized); slugErr == nil {
+				if existing, slugErr := ls.listingRepository.GetCatalogValueBySlug(ctx, tx, category, normalized); slugErr == nil {
 					if existing.ID() != value.ID() {
 						return nil, utils.ConflictError("catalog slug already exists")
 					}
@@ -113,7 +113,7 @@ func (ls *listingService) UpdateCatalogValue(ctx context.Context, input UpdateCa
 		}
 	}
 
-	if updateErr := ls.gsi.UpdateCatalogValue(ctx, tx, value); updateErr != nil {
+	if updateErr := ls.listingRepository.UpdateCatalogValue(ctx, tx, value); updateErr != nil {
 		if updateErr == sql.ErrNoRows {
 			return nil, utils.NotFoundError("catalog value")
 		}

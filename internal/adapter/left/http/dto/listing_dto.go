@@ -244,9 +244,16 @@ type ListingCatalogCreateRequest struct {
 
 // ListingCatalogUpdateRequest define o payload de atualização parcial de valores de catálogo.
 type ListingCatalogUpdateRequest struct {
+	ID          uint8                      `json:"id" binding:"required,min=1"`
 	Category    string                     `json:"category" binding:"required"`
 	Slug        coreutils.Optional[string] `json:"slug,omitempty"`
 	Label       coreutils.Optional[string] `json:"label,omitempty"`
 	Description coreutils.Optional[string] `json:"description,omitempty"`
 	IsActive    coreutils.Optional[bool]   `json:"isActive,omitempty"`
+}
+
+// ListingCatalogDeleteRequest define o payload de desativação de valores de catálogo.
+type ListingCatalogDeleteRequest struct {
+	ID       uint8  `json:"id" binding:"required,min=1"`
+	Category string `json:"category" binding:"required"`
 }

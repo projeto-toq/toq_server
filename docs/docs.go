@@ -86,6 +86,79 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Atualizar valor de catálogo de listings",
+                "parameters": [
+                    {
+                        "description": "Campos para atualização parcial",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
             "post": {
                 "consumes": [
                     "application/json"
@@ -151,10 +224,8 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/admin/listing/catalog/{id}": {
-            "put": {
+            },
+            "delete": {
                 "consumes": [
                     "application/json"
                 ],
@@ -164,98 +235,16 @@ const docTemplate = `{
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Atualizar valor de catálogo de listings",
+                "summary": "Desativar valor de catálogo de listings",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Identificador do valor (1-255)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Campos para atualização parcial",
+                        "description": "Dados para desativação",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogUpdateRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogDeleteRequest"
                         }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Desativar valor de catálogo de listings",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Identificador do valor (1-255)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Categoria do catálogo",
-                        "name": "category",
-                        "in": "query",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -3208,10 +3197,27 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogDeleteRequest": {
+            "type": "object",
+            "required": [
+                "category",
+                "id"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogUpdateRequest": {
             "type": "object",
             "required": [
-                "category"
+                "category",
+                "id"
             ],
             "properties": {
                 "category": {
@@ -3219,6 +3225,10 @@ const docTemplate = `{
                 },
                 "description": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
+                },
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "isActive": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool"

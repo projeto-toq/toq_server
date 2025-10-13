@@ -45,7 +45,7 @@ func (ls *listingService) DeleteCatalogValue(ctx context.Context, category strin
 		}
 	}()
 
-	if delErr := ls.gsi.SoftDeleteCatalogValue(ctx, tx, category, id); delErr != nil {
+	if delErr := ls.listingRepository.SoftDeleteCatalogValue(ctx, tx, category, id); delErr != nil {
 		if delErr == sql.ErrNoRows {
 			return utils.NotFoundError("catalog value")
 		}
