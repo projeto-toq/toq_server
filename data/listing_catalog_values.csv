@@ -1,0 +1,36 @@
+id;category;slug;label;description;is_active
+1;property_owner;myself;Myself;;1
+2;property_owner;spouse;Spouse;;1
+3;property_owner;parents;Parents;;1
+4;property_owner;grandparents;GrandParents;;1
+5;property_owner;children;Children;;1
+6;property_owner;uncles;Uncles;;1
+7;property_owner;siblings;Siblings;;1
+1;property_delivered;furnished_decorated;Furnished & Decorated;;1
+2;property_delivered;furnished;Furnished;;1
+3;property_delivered;fixtured;Fixtured;;1
+4;property_delivered;as_pictured;As Pictured;;1
+1;who_lives;owner;Owner;;1
+2;who_lives;tenant;Tenant;;1
+3;who_lives;vacant;Vacant;;1
+1;transaction_type;sale;Sale;;1
+2;transaction_type;rent;Rent;;1
+3;transaction_type;both;Both;;1
+1;installment_plan;cash;Cash;;1
+2;installment_plan;short_term;Short Term;;1
+3;installment_plan;medium_term;Medium Term;;1
+4;installment_plan;long_term;Long Term;;1
+1;financing_blocker;pending_probate;Pending Probate;;1
+2;financing_blocker;pending_litigation;Pending Litigation;;1
+3;financing_blocker;pending_no_occupancy_permit;Pending No Occupancy Permit;;1
+4;financing_blocker;other;Other;;1
+1;visit_type;client;Client;;1
+2;visit_type;realtor;Realtor;;1
+3;visit_type;content_producer;Content Productor;;1
+4;visit_type;all;All;;1
+1;accompanying_type;owner;Owner;;1
+2;accompanying_type;assistant;Assitant;;1
+3;accompanying_type;alone;Alone;;1
+1;guarantee_type;security_deposit;Security Deposit;;1
+2;guarantee_type;surety_bond;Surety Bond;;1
+3;guarantee_type;rental_insurance_bond;Rental Insurance Bond;;1

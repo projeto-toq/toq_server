@@ -26,11 +26,7 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.Owner.IsNull() {
 			input.Owner = coreutils.NewOptionalNull[listingmodel.PropertyOwner]()
 		} else if value, ok := req.Owner.Value(); ok {
-			owner := listingmodel.PropertyOwner(value)
-			if err := validatePropertyOwner(owner); err != nil {
-				return input, err
-			}
-			input.Owner = coreutils.NewOptionalValue(owner)
+			input.Owner = coreutils.NewOptionalValue(listingmodel.PropertyOwner(value))
 		}
 	}
 
@@ -88,11 +84,7 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.Delivered.IsNull() {
 			input.Delivered = coreutils.NewOptionalNull[listingmodel.PropertyDelivered]()
 		} else if value, ok := req.Delivered.Value(); ok {
-			delivered := listingmodel.PropertyDelivered(value)
-			if err := validateDelivered(delivered); err != nil {
-				return input, err
-			}
-			input.Delivered = coreutils.NewOptionalValue(delivered)
+			input.Delivered = coreutils.NewOptionalValue(listingmodel.PropertyDelivered(value))
 		}
 	}
 
@@ -100,11 +92,7 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.WhoLives.IsNull() {
 			input.WhoLives = coreutils.NewOptionalNull[listingmodel.WhoLives]()
 		} else if value, ok := req.WhoLives.Value(); ok {
-			wl := listingmodel.WhoLives(value)
-			if err := validateWhoLives(wl); err != nil {
-				return input, err
-			}
-			input.WhoLives = coreutils.NewOptionalValue(wl)
+			input.WhoLives = coreutils.NewOptionalValue(listingmodel.WhoLives(value))
 		}
 	}
 
@@ -112,7 +100,7 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.Description.IsNull() {
 			input.Description = coreutils.NewOptionalNull[string]()
 		} else if value, ok := req.Description.Value(); ok {
-			input.Description = coreutils.NewOptionalValue(strings.TrimSpace(value))
+			input.Description = coreutils.NewOptionalValue(value)
 		}
 	}
 
@@ -120,11 +108,7 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.Transaction.IsNull() {
 			input.Transaction = coreutils.NewOptionalNull[listingmodel.TransactionType]()
 		} else if value, ok := req.Transaction.Value(); ok {
-			transaction := listingmodel.TransactionType(value)
-			if err := validateTransaction(transaction); err != nil {
-				return input, err
-			}
-			input.Transaction = coreutils.NewOptionalValue(transaction)
+			input.Transaction = coreutils.NewOptionalValue(listingmodel.TransactionType(value))
 		}
 	}
 
@@ -204,11 +188,7 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.Installment.IsNull() {
 			input.Installment = coreutils.NewOptionalNull[listingmodel.InstallmentPlan]()
 		} else if value, ok := req.Installment.Value(); ok {
-			plan := listingmodel.InstallmentPlan(value)
-			if err := validateInstallment(plan); err != nil {
-				return input, err
-			}
-			input.Installment = coreutils.NewOptionalValue(plan)
+			input.Installment = coreutils.NewOptionalValue(listingmodel.InstallmentPlan(value))
 		}
 	}
 
@@ -229,12 +209,8 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 				if blockerValue <= 0 {
 					return input, fmt.Errorf("financingBlocker deve ser maior que zero")
 				}
-				blockerEnum := listingmodel.FinancingBlocker(blockerValue)
-				if err := validateFinancingBlocker(blockerEnum); err != nil {
-					return input, err
-				}
 				blocker := listingmodel.NewFinancingBlocker()
-				blocker.SetBlocker(blockerEnum)
+				blocker.SetBlocker(listingmodel.FinancingBlocker(blockerValue))
 				blockers = append(blockers, blocker)
 			}
 			input.FinancingBlockers = coreutils.NewOptionalValue(blockers)
@@ -250,13 +226,9 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 				if guaranteeReq.Guarantee <= 0 {
 					return input, fmt.Errorf("guarantee deve ser maior que zero")
 				}
-				guaranteeEnum := listingmodel.GuaranteeType(guaranteeReq.Guarantee)
-				if err := validateGuarantee(guaranteeEnum); err != nil {
-					return input, err
-				}
 				guarantee := listingmodel.NewGuarantee()
 				guarantee.SetPriority(guaranteeReq.Priority)
-				guarantee.SetGuarantee(guaranteeEnum)
+				guarantee.SetGuarantee(listingmodel.GuaranteeType(guaranteeReq.Guarantee))
 				guarantees = append(guarantees, guarantee)
 			}
 			input.Guarantees = coreutils.NewOptionalValue(guarantees)
@@ -267,11 +239,7 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.Visit.IsNull() {
 			input.Visit = coreutils.NewOptionalNull[listingmodel.VisitType]()
 		} else if value, ok := req.Visit.Value(); ok {
-			visit := listingmodel.VisitType(value)
-			if err := validateVisit(visit); err != nil {
-				return input, err
-			}
-			input.Visit = coreutils.NewOptionalValue(visit)
+			input.Visit = coreutils.NewOptionalValue(listingmodel.VisitType(value))
 		}
 	}
 
@@ -303,103 +271,9 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.Accompanying.IsNull() {
 			input.Accompanying = coreutils.NewOptionalNull[listingmodel.AccompanyingType]()
 		} else if value, ok := req.Accompanying.Value(); ok {
-			accompanying := listingmodel.AccompanyingType(value)
-			if err := validateAccompanying(accompanying); err != nil {
-				return input, err
-			}
-			input.Accompanying = coreutils.NewOptionalValue(accompanying)
+			input.Accompanying = coreutils.NewOptionalValue(listingmodel.AccompanyingType(value))
 		}
 	}
 
 	return input, nil
-}
-
-func validatePropertyOwner(owner listingmodel.PropertyOwner) error {
-	if owner == 0 {
-		return nil
-	}
-	if owner < listingmodel.OwnerMyself || owner > listingmodel.OwnerSiblings {
-		return fmt.Errorf("owner inválido")
-	}
-	return nil
-}
-
-func validateDelivered(delivered listingmodel.PropertyDelivered) error {
-	if delivered == 0 {
-		return nil
-	}
-	if delivered < listingmodel.DeliveredFurnishedDecorated || delivered > listingmodel.DeliverdAsPictured {
-		return fmt.Errorf("delivered inválido")
-	}
-	return nil
-}
-
-func validateWhoLives(who listingmodel.WhoLives) error {
-	if who == 0 {
-		return nil
-	}
-	if who < listingmodel.LivesOwner || who > listingmodel.LivesVacant {
-		return fmt.Errorf("whoLives inválido")
-	}
-	return nil
-}
-
-func validateTransaction(tx listingmodel.TransactionType) error {
-	if tx == 0 {
-		return nil
-	}
-	if tx < listingmodel.TransactionSale || tx > listingmodel.TransactionBoth {
-		return fmt.Errorf("transaction inválido")
-	}
-	return nil
-}
-
-func validateInstallment(plan listingmodel.InstallmentPlan) error {
-	if plan == 0 {
-		return nil
-	}
-	if plan < listingmodel.PlanCash || plan > listingmodel.PlanLongTerm {
-		return fmt.Errorf("installment inválido")
-	}
-	return nil
-}
-
-func validateVisit(visit listingmodel.VisitType) error {
-	if visit == 0 {
-		return nil
-	}
-	if visit < listingmodel.VisitClient || visit > listingmodel.VisitAll {
-		return fmt.Errorf("visit inválido")
-	}
-	return nil
-}
-
-func validateAccompanying(accompanying listingmodel.AccompanyingType) error {
-	if accompanying == 0 {
-		return nil
-	}
-	if accompanying < listingmodel.AccompanyingOwner || accompanying > listingmodel.AccompanyingAlone {
-		return fmt.Errorf("accompanying inválido")
-	}
-	return nil
-}
-
-func validateFinancingBlocker(blocker listingmodel.FinancingBlocker) error {
-	if blocker == 0 {
-		return nil
-	}
-	if blocker < listingmodel.BlockerPendingProbate || blocker > listingmodel.Blockerother {
-		return fmt.Errorf("financingBlocker inválido")
-	}
-	return nil
-}
-
-func validateGuarantee(guarantee listingmodel.GuaranteeType) error {
-	if guarantee == 0 {
-		return nil
-	}
-	if guarantee < listingmodel.GuaranteeDeposit || guarantee > listingmodel.GuaranteeRentalBond {
-		return fmt.Errorf("guarantee inválido")
-	}
-	return nil
 }

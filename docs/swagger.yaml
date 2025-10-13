@@ -324,6 +324,60 @@ definitions:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogCreateRequest:
+    properties:
+      category:
+        type: string
+      description:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+      isActive:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool'
+      label:
+        type: string
+      slug:
+        type: string
+    required:
+    - category
+    - label
+    - slug
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogUpdateRequest:
+    properties:
+      category:
+        type: string
+      description:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+      isActive:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool'
+      label:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+      slug:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
+    required:
+    - category
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      label:
+        type: string
+      slug:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValuesResponse:
+    properties:
+      values:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse'
+        type: array
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse:
     properties:
       complexId:
@@ -836,6 +890,194 @@ info:
   title: TOQ Server API
   version: "1.0"
 paths:
+  /admin/listing/catalog:
+    get:
+      parameters:
+      - description: Categoria do catálogo
+        in: query
+        name: category
+        required: true
+        type: string
+      - description: Retornar valores inativos
+        in: query
+        name: includeInactive
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValuesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Listar valores de catálogo de listings
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Payload de criação
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Criar valor de catálogo de listings
+      tags:
+      - Admin
+  /admin/listing/catalog/{id}:
+    delete:
+      parameters:
+      - description: Identificador do valor (1-255)
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Categoria do catálogo
+        in: query
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Valor desativado com sucesso
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Desativar valor de catálogo de listings
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Identificador do valor (1-255)
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Campos para atualização parcial
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Atualizar valor de catálogo de listings
+      tags:
+      - Admin
   /admin/user:
     post:
       consumes:
@@ -1610,6 +1852,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Atualiza um anúncio
+      tags:
+      - Listings
+  /listings/catalog:
+    get:
+      parameters:
+      - description: Categoria do catálogo
+        in: query
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValuesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Listar valores ativos do catálogo de listings
       tags:
       - Listings
   /listings/features/base:

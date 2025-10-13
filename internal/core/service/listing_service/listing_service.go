@@ -47,4 +47,8 @@ type ListingServiceInterface interface {
 	DeleteListing(ctx context.Context, listingID int64) (err error)
 	CancelOffer(ctx context.Context, offerID int64) (err error)
 	CancelVisit(ctx context.Context, visitID int64) (err error)
+	ListCatalogValues(ctx context.Context, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
+	CreateCatalogValue(ctx context.Context, input CreateCatalogValueInput) (listingmodel.CatalogValueInterface, error)
+	UpdateCatalogValue(ctx context.Context, input UpdateCatalogValueInput) (listingmodel.CatalogValueInterface, error)
+	DeleteCatalogValue(ctx context.Context, category string, id uint8) error
 }

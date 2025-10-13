@@ -6,44 +6,31 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-O endpoint /handlers/listing_handlers/update_listing precisda ser implementado. atualmente está respondendo 501, apesar de existir o handler.
-Algumas alterações precisam ser feitas:
-- É necessário que o body da requisição possa os campos abaixo permitindo para criar um listingmodel.ListingInterface que será passado ao service.
-	id                 int64
-	owner              PropertyOwner
-	features           []FeatureInterface
-	landSize           float64
-	corner             bool
-	nonBuildable       float64
-	buildable          float64
-	delivered          PropertyDelivered
-	whoLives           WhoLives
-	description        string
-	transaction        TransactionType
-	sellNet            float64
-	rentNet            float64
-	condominium        float64
-	annualTax          float64
-	annualGroundRent   float64
-	exchange           bool
-	exchangePercentual float64
-	exchangePlaces     []ExchangePlaceInterface
-	installment        InstallmentPlan
-	financing          bool
-	financingBlocker   []FinancingBlockerInterface
-	guarantees         []GuaranteeInterface
-	visit              VisitType
-	tenantName         string
-	tenantEmail        string
-	tenantPhone        string
-	accompanying       AccompanyingType
+Após a última refatoraçÃo as funções implementadas em global service e global repository nÃo estao coerentes, pois são exclusivas de listings.
+Assim:
+- As funções abaixo que hoje estão em global_repository_interface.go, devem ser movidas para o repositório listing_repository.
+	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
+	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)
+	GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error)
+	GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error)
+	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
+	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
+	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
 
-- somente ID deve ser obrigatório
-- o handler deve criar este objeto e passar para o service
-- O service deve atualizar o listing no banco de dados com os valoreas passados, desde que não seja nulos ou vazios (strings vazias ou slices vazias).
+- As funções abaixo que hoje estão em global_service devem ser movidas para o  listing_service
 
+	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
+	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)
+	GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error)
+	GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error)
+	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
+	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
+	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
 
-  
+- as rotas abaixo estão recebendo o ID como paramêtro, mas o correto é receber o ID no body
+		admin.PUT("/listing/catalog/:id", adminHandler.UpdateListingCatalogValue)
+		admin.DELETE("/listing/catalog/:id", adminHandler.DeleteListingCatalogValue)
+
 - Documentação de referência: `docs/toq_server_go_guide.md`
 
 

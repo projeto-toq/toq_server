@@ -87,6 +87,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.Owner.IsNull() {
 			existing.SetOwner(0)
 		} else if value, ok := input.Owner.Value(); ok {
+			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, uint8(value), "owner"); err != nil {
+				return err
+			}
 			existing.SetOwner(value)
 		}
 	}
@@ -138,6 +141,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.Delivered.IsNull() {
 			existing.SetDelivered(0)
 		} else if value, ok := input.Delivered.Value(); ok {
+			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyDelivered, uint8(value), "delivered"); err != nil {
+				return err
+			}
 			existing.SetDelivered(value)
 		}
 	}
@@ -146,6 +152,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.WhoLives.IsNull() {
 			existing.SetWhoLives(0)
 		} else if value, ok := input.WhoLives.Value(); ok {
+			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryWhoLives, uint8(value), "whoLives"); err != nil {
+				return err
+			}
 			existing.SetWhoLives(value)
 		}
 	}
@@ -162,6 +171,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.Transaction.IsNull() {
 			existing.SetTransaction(0)
 		} else if value, ok := input.Transaction.Value(); ok {
+			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryTransactionType, uint8(value), "transaction"); err != nil {
+				return err
+			}
 			existing.SetTransaction(value)
 		}
 	}
@@ -237,6 +249,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.Installment.IsNull() {
 			existing.SetInstallment(0)
 		} else if value, ok := input.Installment.Value(); ok {
+			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryInstallmentPlan, uint8(value), "installment"); err != nil {
+				return err
+			}
 			existing.SetInstallment(value)
 		}
 	}
@@ -254,6 +269,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 			existing.SetFinancingBlockers(nil)
 		} else if blockers, ok := input.FinancingBlockers.Value(); ok {
 			for _, blocker := range blockers {
+				if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryFinancingBlocker, uint8(blocker.Blocker()), "financingBlockers"); err != nil {
+					return err
+				}
 				blocker.SetListingID(existing.ID())
 			}
 			existing.SetFinancingBlockers(blockers)
@@ -265,6 +283,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 			existing.SetGuarantees(nil)
 		} else if guarantees, ok := input.Guarantees.Value(); ok {
 			for _, guarantee := range guarantees {
+				if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryGuaranteeType, uint8(guarantee.Guarantee()), "guarantees"); err != nil {
+					return err
+				}
 				guarantee.SetListingID(existing.ID())
 			}
 			existing.SetGuarantees(guarantees)
@@ -275,6 +296,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.Visit.IsNull() {
 			existing.SetVisit(0)
 		} else if value, ok := input.Visit.Value(); ok {
+			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryVisitType, uint8(value), "visit"); err != nil {
+				return err
+			}
 			existing.SetVisit(value)
 		}
 	}
@@ -307,6 +331,9 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.Accompanying.IsNull() {
 			existing.SetAccompanying(0)
 		} else if value, ok := input.Accompanying.Value(); ok {
+			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryAccompanyingType, uint8(value), "accompanying"); err != nil {
+				return err
+			}
 			existing.SetAccompanying(value)
 		}
 	}

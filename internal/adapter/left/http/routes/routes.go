@@ -217,6 +217,7 @@ func RegisterListingRoutes(
 		listings.GET("/search", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SearchListing
 		listings.POST("/options", listingHandler.PostOptions)                                                // PostOptions
 		listings.GET("/features/base", listingHandler.GetBaseFeatures)                                       // GetBaseFeatures
+		listings.GET("/catalog", listingHandler.ListCatalogValues)                                           // ListCatalogValues
 
 		// Favorites (Realtor side)
 		listings.GET("/favorites", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetFavoriteListings
@@ -310,6 +311,10 @@ func RegisterAdminRoutes(
 	{
 		// GET /admin/user/pending
 		admin.GET("/user/pending", adminHandler.GetPendingRealtors)
+		admin.GET("/listing/catalog", adminHandler.ListListingCatalogValues)
+		admin.POST("/listing/catalog", adminHandler.CreateListingCatalogValue)
+		admin.PUT("/listing/catalog/:id", adminHandler.UpdateListingCatalogValue)
+		admin.DELETE("/listing/catalog/:id", adminHandler.DeleteListingCatalogValue)
 
 		// POST /admin/user
 		admin.POST("/user", adminHandler.PostAdminGetUser)

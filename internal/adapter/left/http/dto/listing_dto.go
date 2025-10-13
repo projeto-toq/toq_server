@@ -204,3 +204,49 @@ type UpdateListingGuaranteeRequest struct {
 	Priority  uint8 `json:"priority"`
 	Guarantee int   `json:"guarantee"`
 }
+
+// Listing catalog DTOs
+
+// ListingCatalogValueResponse representa um valor de catálogo disponível para listings.
+type ListingCatalogValueResponse struct {
+	ID          int     `json:"id"`
+	Category    string  `json:"category"`
+	Slug        string  `json:"slug"`
+	Label       string  `json:"label"`
+	Description *string `json:"description,omitempty"`
+	IsActive    bool    `json:"isActive"`
+}
+
+// ListingCatalogValuesResponse agrega os valores retornados pelo serviço de catálogo.
+type ListingCatalogValuesResponse struct {
+	Values []ListingCatalogValueResponse `json:"values"`
+}
+
+// ListingCatalogQuery captura os parâmetros de consulta para listar valores de catálogo no app.
+type ListingCatalogQuery struct {
+	Category string `form:"category" binding:"required"`
+}
+
+// AdminListingCatalogQuery estende a consulta permitindo incluir valores inativos.
+type AdminListingCatalogQuery struct {
+	Category        string `form:"category" binding:"required"`
+	IncludeInactive bool   `form:"includeInactive,default=false"`
+}
+
+// ListingCatalogCreateRequest define o payload para criação de valores de catálogo.
+type ListingCatalogCreateRequest struct {
+	Category    string                     `json:"category" binding:"required"`
+	Slug        string                     `json:"slug" binding:"required"`
+	Label       string                     `json:"label" binding:"required"`
+	Description coreutils.Optional[string] `json:"description,omitempty"`
+	IsActive    coreutils.Optional[bool]   `json:"isActive,omitempty"`
+}
+
+// ListingCatalogUpdateRequest define o payload de atualização parcial de valores de catálogo.
+type ListingCatalogUpdateRequest struct {
+	Category    string                     `json:"category" binding:"required"`
+	Slug        coreutils.Optional[string] `json:"slug,omitempty"`
+	Label       coreutils.Optional[string] `json:"label,omitempty"`
+	Description coreutils.Optional[string] `json:"description,omitempty"`
+	IsActive    coreutils.Optional[bool]   `json:"isActive,omitempty"`
+}

@@ -247,6 +247,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	// Create admin handler using the adapter
 	adminHandler := adminhandlers.NewAdminHandlerAdapter(
 		userService,
+		listingService,
 	)
 
 	// Create metrics handler (optional)

@@ -10,6 +10,7 @@ type ListingHandlerPort interface {
 	SearchListing(c *gin.Context)
 	PostOptions(c *gin.Context)
 	GetBaseFeatures(c *gin.Context)
+	ListCatalogValues(c *gin.Context)
 	GetFavoriteListings(c *gin.Context)
 	GetListing(c *gin.Context)
 	UpdateListing(c *gin.Context)
