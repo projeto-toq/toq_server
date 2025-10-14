@@ -62,3 +62,11 @@ id;name;resource;action;description;conditions;is_active
 61;HTTP Admin Update Listing Catalog;http;PUT:/api/v2/admin/listing/catalog;Permite atualizar valores do catálogo de listings;NULL;1
 62;HTTP Admin Delete Listing Catalog;http;DELETE:/api/v2/admin/listing/catalog;Permite desativar valores do catálogo de listings;NULL;1
 63;HTTP Get Listing Base Features;http;GET:/api/v2/listings/features/base;Permite listar as comodidades;NULL;1
+64;HTTP Get Roles;http;GET:/api/v2/admin/roles;Permite listar roles com filtro e paginação;NULL;1
+65;HTTP Create Role;http;POST:/api/v2/admin/roles;Permite criar nova role;NULL;1
+66;HTTP Update Role;http;PUT:/api/v2/admin/roles;Permite atualizar role existente;NULL;1
+67;HTTP Delete Role;http;DELETE:/api/v2/admin/roles;Permite desativar role existente;NULL;1
+68;HTTP Admin Get Users;http;GET:/api/v2/admin/users;Permite listar usuários do sistema com filtro e paginação;NULL;1
+69;HTTP Admin Create System User;http;POST:/api/v2/admin/system-users;Permite criar novo usuário do sistema;NULL;1
+70;HTTP Admin Update System User;http;PUT:/api/v2/admin/system-users;Permite atualizar usuário do sistema;NULL;1
+71;HTTP Admin Delete System User;http;DELETE:/api/v2/admin/system-users;Permite deletar usuário do sistema;NULL;1
