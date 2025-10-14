@@ -41,6 +41,7 @@ Sumário
 - internal/
   - adapter/
     - left/http/ — Handlers, middlewares, serialização de erro.
+      - handlers/admin_handlers/ — um arquivo por endpoint admin, mantendo handlers curtos e focados.
     - right/mysql/ — Repositórios MySQL (implementações de Ports).
     - right/* — Providers externos (aws_s3, sms, email, fcm, ...).
   - core/
@@ -228,6 +229,9 @@ Padrão de DTOs e Handlers:
 - Validação de DTO no handler (ou binder), sem regras de negócio; regras ficam no Service.
 - Erros: sempre `http_errors.SendHTTPErrorObj(c, err)`.
 - Swagger: documente via anotações no código do handler/DTO e não diretamente nos arquivos json/yaml.
+- Regras para os endpoints admin:
+  - Cada rota deve possuir seu handler em arquivo dedicado dentro de `handlers/admin_handlers/`.
+  - Somente endpoints GET podem receber filtros via query; demais verbos devem transportar identificadores e dados no corpo JSON (sem path params).
 
 ### 7.5 Workers/Go routines
 

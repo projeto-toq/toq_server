@@ -246,10 +246,14 @@ definitions:
         type: string
       phoneNumber:
         type: string
+      userId:
+        minimum: 1
+        type: integer
     required:
     - email
     - fullName
     - phoneNumber
+    - userId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUserRoleResume:
     properties:
@@ -1674,16 +1678,10 @@ paths:
       summary: Create a new system user
       tags:
       - Admin
-  /admin/system-users/{id}:
     put:
       consumes:
       - application/json
       parameters:
-      - description: System user ID
-        in: path
-        name: id
-        required: true
-        type: integer
       - description: Update payload
         in: body
         name: request

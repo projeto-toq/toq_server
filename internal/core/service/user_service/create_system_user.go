@@ -122,7 +122,7 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 	if _, err := us.repo.GetUserByNationalID(ctx, tx, cpfDigits); err == nil {
 		opErr = utils.ConflictError("CPF already in use")
 		return SystemUserResult{}, opErr
-	} else if err != nil && !errorsIsNoRows(err) {
+	} else if !errorsIsNoRows(err) {
 		utils.SetSpanError(ctx, err)
 		logger.Error("admin.users.create.cpf_check_failed", "error", err)
 		opErr = utils.InternalError("")
