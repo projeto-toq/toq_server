@@ -169,6 +169,9 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.Listing == nil {
 		slog.Error("repositories.Listing is nil")
 	}
+	if repositories.PhotoSession == nil {
+		slog.Error("repositories.PhotoSession is nil")
+	}
 	if repositories.Session == nil {
 		slog.Error("repositories.Session is nil")
 	}
@@ -181,13 +184,14 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 
 	// Criar uma cópia dos repositórios para evitar problemas com ponteiros
 	c.repositoryAdapters = &factory.RepositoryAdapters{
-		User:        repositories.User,
-		Global:      repositories.Global,
-		Complex:     repositories.Complex,
-		Listing:     repositories.Listing,
-		Session:     repositories.Session,
-		Permission:  repositories.Permission,
-		DeviceToken: repositories.DeviceToken,
+		User:         repositories.User,
+		Global:       repositories.Global,
+		Complex:      repositories.Complex,
+		Listing:      repositories.Listing,
+		PhotoSession: repositories.PhotoSession,
+		Session:      repositories.Session,
+		Permission:   repositories.Permission,
+		DeviceToken:  repositories.DeviceToken,
 	}
 
 	slog.Info("Repository adapters assigned successfully")

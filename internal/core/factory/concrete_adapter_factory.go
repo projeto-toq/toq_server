@@ -40,6 +40,7 @@ import (
 	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
 	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
+	mysqlphotosessionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/photo_session"
 	sessionmysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session"
 	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user"
 
@@ -191,6 +192,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Listing Repository
 	listingRepo := mysqllistingadapter.NewListingAdapter(database)
 
+	// Photo Session Repository
+	photoSessionRepo := mysqlphotosessionadapter.NewPhotoSessionAdapter(database)
+
 	// Session Repository
 	sessionRepo := sessionmysqladapter.NewSessionAdapter(database)
 
@@ -200,13 +204,14 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
-		User:        userRepo,
-		Global:      globalRepo,
-		Complex:     complexRepo,
-		Listing:     listingRepo,
-		Session:     sessionRepo,
-		Permission:  permissionRepo,
-		DeviceToken: deviceTokenRepo,
+		User:         userRepo,
+		Global:       globalRepo,
+		Complex:      complexRepo,
+		Listing:      listingRepo,
+		PhotoSession: photoSessionRepo,
+		Session:      sessionRepo,
+		Permission:   permissionRepo,
+		DeviceToken:  deviceTokenRepo,
 	}, nil
 }
 

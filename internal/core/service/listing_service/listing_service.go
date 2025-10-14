@@ -5,6 +5,7 @@ import (
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	photosessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
@@ -12,6 +13,7 @@ import (
 
 type listingService struct {
 	listingRepository listingrepository.ListingRepoPortInterface
+	photoSessionRepo  photosessionrepository.PhotoSessionRepositoryInterface
 	csi               complexservices.ComplexServiceInterface
 	gsi               globalservice.GlobalServiceInterface
 	gcs               storageport.CloudStoragePortInterface
@@ -19,6 +21,7 @@ type listingService struct {
 
 func NewListingService(
 	lr listingrepository.ListingRepoPortInterface,
+	ps photosessionrepository.PhotoSessionRepositoryInterface,
 	csi complexservices.ComplexServiceInterface,
 	gsi globalservice.GlobalServiceInterface,
 	gcs storageport.CloudStoragePortInterface,
@@ -26,6 +29,7 @@ func NewListingService(
 ) ListingServiceInterface {
 	return &listingService{
 		listingRepository: lr,
+		photoSessionRepo:  ps,
 		csi:               csi,
 		gsi:               gsi,
 		gcs:               gcs,
@@ -51,4 +55,8 @@ type ListingServiceInterface interface {
 	CreateCatalogValue(ctx context.Context, input CreateCatalogValueInput) (listingmodel.CatalogValueInterface, error)
 	UpdateCatalogValue(ctx context.Context, input UpdateCatalogValueInput) (listingmodel.CatalogValueInterface, error)
 	DeleteCatalogValue(ctx context.Context, category string, id uint8) error
+	ListPhotographerSlots(ctx context.Context, input ListPhotographerSlotsInput) (ListPhotographerSlotsOutput, error)
+	ReservePhotoSession(ctx context.Context, input ReservePhotoSessionInput) (ReservePhotoSessionOutput, error)
+	ConfirmPhotoSession(ctx context.Context, input ConfirmPhotoSessionInput) (ConfirmPhotoSessionOutput, error)
+	CancelPhotoSession(ctx context.Context, input CancelPhotoSessionInput) error
 }

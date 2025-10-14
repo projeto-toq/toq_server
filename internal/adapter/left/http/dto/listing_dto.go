@@ -299,3 +299,62 @@ type ListingCatalogDeleteRequest struct {
 	ID       uint8  `json:"id" binding:"required,min=1"`
 	Category string `json:"category" binding:"required"`
 }
+
+// ListPhotographerSlotsRequest define filtros e paginação para consulta de slots.
+type ListPhotographerSlotsRequest struct {
+	From   string `form:"from" binding:"omitempty" example:"2025-10-20"`
+	To     string `form:"to" binding:"omitempty" example:"2025-10-31"`
+	Period string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
+	Page   int    `form:"page,default=1" binding:"min=1"`
+	Size   int    `form:"size,default=20" binding:"min=1,max=100"`
+	Sort   string `form:"sort,default=date_asc" binding:"omitempty,oneof=date_asc date_desc photographer_asc photographer_desc"`
+}
+
+// PhotographerSlotResponse representa um slot disponível na agenda dos fotógrafos.
+type PhotographerSlotResponse struct {
+	SlotID             uint64  `json:"slotId" example:"123"`
+	PhotographerUserID uint64  `json:"photographerUserId" example:"45"`
+	SlotDate           string  `json:"slotDate" example:"2025-10-25"`
+	Period             string  `json:"period" example:"MORNING"`
+	Status             string  `json:"status" example:"AVAILABLE"`
+	ReservedUntil      *string `json:"reservedUntil,omitempty" example:"2025-10-24T12:00:00Z"`
+}
+
+// ListPhotographerSlotsResponse agrega slots e paginação.
+type ListPhotographerSlotsResponse struct {
+	Data       []PhotographerSlotResponse `json:"data"`
+	Pagination PaginationResponse         `json:"pagination"`
+}
+
+// ReservePhotoSessionRequest representa o corpo para reservar um slot.
+type ReservePhotoSessionRequest struct {
+	ListingID int64  `json:"listingId" binding:"required" example:"1001"`
+	SlotID    uint64 `json:"slotId" binding:"required" example:"2002"`
+}
+
+// ReservePhotoSessionResponse retorna dados da reserva temporária.
+type ReservePhotoSessionResponse struct {
+	SlotID           uint64 `json:"slotId" example:"2002"`
+	ReservationToken string `json:"reservationToken" example:"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"`
+	ExpiresAt        string `json:"expiresAt" example:"2025-10-24T14:45:00Z"`
+}
+
+// ConfirmPhotoSessionRequest representa o payload para confirmar a sessão de fotos.
+type ConfirmPhotoSessionRequest struct {
+	ListingID        int64  `json:"listingId" binding:"required" example:"1001"`
+	SlotID           uint64 `json:"slotId" binding:"required" example:"2002"`
+	ReservationToken string `json:"reservationToken" binding:"required" example:"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"`
+}
+
+// ConfirmPhotoSessionResponse retorna dados da sessão confirmada.
+type ConfirmPhotoSessionResponse struct {
+	PhotoSessionID uint64 `json:"photoSessionId" example:"3003"`
+	SlotID         uint64 `json:"slotId" example:"2002"`
+	ScheduledStart string `json:"scheduledStart" example:"2025-10-24T09:00:00Z"`
+	ScheduledEnd   string `json:"scheduledEnd" example:"2025-10-24T13:00:00Z"`
+}
+
+// CancelPhotoSessionRequest representa o corpo para cancelamento de sessão de fotos.
+type CancelPhotoSessionRequest struct {
+	PhotoSessionID uint64 `json:"photoSessionId" binding:"required" example:"3003"`
+}

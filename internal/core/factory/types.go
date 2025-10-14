@@ -20,6 +20,7 @@ import (
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
+	photosessionrepo "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 )
@@ -49,13 +50,14 @@ type StorageAdapters struct {
 
 // RepositoryAdapters agrupa todos os repositórios MySQL
 type RepositoryAdapters struct {
-	User        userrepoport.UserRepoPortInterface
-	Global      globalrepoport.GlobalRepoPortInterface
-	Complex     complexrepoport.ComplexRepoPortInterface
-	Listing     listingrepoport.ListingRepoPortInterface
-	Session     sessionrepoport.SessionRepoPortInterface
-	Permission  permissionrepository.PermissionRepositoryInterface
-	DeviceToken *mysqluseradapter.DeviceTokenRepository
+	User         userrepoport.UserRepoPortInterface
+	Global       globalrepoport.GlobalRepoPortInterface
+	Complex      complexrepoport.ComplexRepoPortInterface
+	Listing      listingrepoport.ListingRepoPortInterface
+	PhotoSession photosessionrepo.PhotoSessionRepositoryInterface
+	Session      sessionrepoport.SessionRepoPortInterface
+	Permission   permissionrepository.PermissionRepositoryInterface
+	DeviceToken  *mysqluseradapter.DeviceTokenRepository
 }
 
 // HTTPHandlers agrupa todos os handlers HTTP

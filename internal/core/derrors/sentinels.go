@@ -29,4 +29,9 @@ var (
 
 	ErrCEPInvalid  = errors.New("invalid CEP")
 	ErrCEPNotFound = errors.New("CEP not found")
+
+	ErrSlotUnavailable           = errors.New("photographer slot unavailable")
+	ErrReservationExpired        = errors.New("photographer slot reservation expired")
+	ErrListingNotEligible        = errors.New("listing not eligible for photo session")
+	ErrPhotoSessionNotCancelable = errors.New("photo session cannot be cancelled")
 )

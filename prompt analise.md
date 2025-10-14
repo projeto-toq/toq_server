@@ -6,11 +6,16 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Preciso ter 2 instancias do toq_server rodando. Uma que vou chamar por nohup ./bin/toq_server e outra que vou chamar F5, para debug e testes. A instancia F5 deve ter porta diferente da nohup, que é usada pelos clientes de testes.
-
-Analise as portas possíveis e possíveis impactos, considerando que a base de dados é a mesma, que a geração de traces e métricas tem o mesmo destino, nos containers docker, etc.
-- Contexto: `toq_server` é um servidor HTTP em Go, seguindo arquitetura limpa com handlers, services e repositories. Usa injeção de dependência via factories. Observabilidade com logs, traces e métricas. Configuração via variáveis de ambiente.
-- como passar a configuração de porta diferente para F5
+Continuando com a criação do toq_server, precisamos criar as agendas dos fotografos.
+- Fotografos, role photographer, é um usuário com is_system_role = true.
+- existem vários fotografos no sistema.
+- cada fotografo tem uma agenda de fotos, com datas e horários disponíveis e alocados para efetuar fotos dos imóveis.
+- Ao final do cadastramento do imóvel, o proprietário deverá ver os horários disponíveis e escolher um horário para a foto do imóvel. esta busca de horários disponíveis deve ser feita em todas as agendas dos fotógrafos.
+- O proprietário só poderá escolher um horário disponível.
+- Ao escolher o horário, o sistema deve alocar este horário na agenda do fotógrafo.
+- O tempod para execução das fotos é de 4 horas, portanto, cada sessão ocorrerá de manha ou de tarde.
+- Considernando as regras acima, e o atual banco de dados que tema representação de suas tabelas no script /scripts/db_creation.sql, qual sua sugestão de modelo de dados para representar as agendas dos fotógrafos?
+ 
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

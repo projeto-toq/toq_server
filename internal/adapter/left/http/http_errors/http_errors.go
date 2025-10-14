@@ -71,6 +71,14 @@ func mapErrorToHTTP(err error) (status int, message string, details any) {
 		return http.StatusConflict, "Phone already in use", nil
 	case errorsIs(err, derrors.ErrUserActiveRoleMissing):
 		return http.StatusConflict, "Active role missing for user", nil
+	case errorsIs(err, derrors.ErrSlotUnavailable):
+		return http.StatusConflict, "Photographer slot unavailable", nil
+	case errorsIs(err, derrors.ErrReservationExpired):
+		return http.StatusGone, "Photographer slot reservation expired", nil
+	case errorsIs(err, derrors.ErrListingNotEligible):
+		return http.StatusConflict, "Listing not eligible for photo session", nil
+	case errorsIs(err, derrors.ErrPhotoSessionNotCancelable):
+		return http.StatusConflict, "Photo session cannot be cancelled", nil
 	}
 	// Legado: DomainError (utils) – preservar status/mensagem sem wrap
 	if derr, ok := err.(coreutils.DomainError); ok {

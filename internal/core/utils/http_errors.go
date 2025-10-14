@@ -203,6 +203,14 @@ var (
 	ErrPasswordChangeCodeExpired = NewHTTPError(http.StatusGone, "Password change code expired")
 )
 
+// Photographer sessions specific errors
+var (
+	ErrPhotographerSlotUnavailable    = NewHTTPError(http.StatusConflict, "Photographer slot unavailable")
+	ErrPhotographerReservationExpired = NewHTTPError(http.StatusGone, "Photographer slot reservation expired")
+	ErrListingNotEligibleForPhoto     = NewHTTPError(http.StatusConflict, "Listing not eligible for photo session")
+	ErrPhotoSessionNotCancelable      = NewHTTPError(http.StatusConflict, "Photo session cannot be cancelled")
+)
+
 // ValidationError creates a structured validation error
 func ValidationError(field, message string) *HTTPError {
 	if message == "" {

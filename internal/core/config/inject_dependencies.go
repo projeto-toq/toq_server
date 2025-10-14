@@ -197,6 +197,7 @@ func (c *config) InitListingHandler() {
 	slog.Debug("Initializing Listing Handler")
 	c.listingService = listingservices.NewListingService(
 		c.repositoryAdapters.Listing,
+		c.repositoryAdapters.PhotoSession,
 		c.complexService,
 		c.globalService,
 		c.cloudStorage,

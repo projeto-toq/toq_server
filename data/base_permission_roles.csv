@@ -1,8 +1,9 @@
 id;name;slug;description;is_system_role;is_active
 1;Administrador;admin;Acesso total ao sistema;1;1
-2;Corretor;realtor;Corretor - visualização e busca de imóveis;1;1
-3;Proprietário;owner;Proprietário - gerencia seus próprios imóveis;1;1
-4;Imobiliária;agency;Imobiliária - gerencia imóveis e corretores;1;1
+2;Corretor;realtor;Corretor - visualização e busca de imóveis;0;1
+3;Proprietário;owner;Proprietário - gerencia seus próprios imóveis;0;1
+4;Imobiliária;agency;Imobiliária - gerencia imóveis e corretores;0;1
 5;Gerente;manager;Gerente com acesso a relatórios e gestão;1;1
 6;Atendente Corretor;realtor_support;Atendente - gerencia perfis de corretor e busca imóveis;1;1
 7;Atendente Proprietário;owner_support;Atendente - gerencia perfis de proprietário e imóveis cadastrados;1;1
+8;Fotógrafo;photographer;Fotógrafo - gerencia suas próprias agendas de fotos;1;1
