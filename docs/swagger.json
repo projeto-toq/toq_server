@@ -20,6 +20,7 @@
     "paths": {
         "/admin/listing/catalog": {
             "get": {
+                "description": "Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.",
                 "consumes": [
                     "application/json"
                 ],
@@ -29,10 +30,10 @@
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Listar valores de catálogo de listings",
+                "summary": "List listing catalog values",
                 "parameters": [
                     {
-                        "description": "Payload de consulta",
+                        "description": "Filter payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -88,10 +89,10 @@
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Atualizar valor de catálogo de listings",
+                "summary": "Update a listing catalog value",
                 "parameters": [
                     {
-                        "description": "Campos para atualização parcial",
+                        "description": "Partial update payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -161,10 +162,10 @@
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Criar valor de catálogo de listings",
+                "summary": "Create a listing catalog value",
                 "parameters": [
                     {
-                        "description": "Payload de criação",
+                        "description": "Creation payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -227,10 +228,10 @@
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Desativar valor de catálogo de listings",
+                "summary": "Deactivate a listing catalog value",
                 "parameters": [
                     {
-                        "description": "Dados para desativação",
+                        "description": "Deactivation payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -241,7 +242,7 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Valor desativado com sucesso"
+                        "description": "Catalog value deactivated"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1288,7 +1289,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Permite atualização parcial dos campos de um anúncio em rascunho. Campos omitidos permanecem inalterados; campos presentes (inclusive null/vazio) sobrescrevem o valor atual.",
+                "description": "Allows partial updates for draft listings. Omitted fields remain unchanged; present fields (including null/empty) overwrite stored values.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1298,10 +1299,10 @@
                 "tags": [
                     "Listings"
                 ],
-                "summary": "Atualiza um anúncio",
+                "summary": "Update a listing",
                 "parameters": [
                     {
-                        "description": "Dados para atualização (ID obrigatório no corpo)",
+                        "description": "Payload for update (ID must be provided in the body)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1318,37 +1319,37 @@
                         }
                     },
                     "400": {
-                        "description": "Payload inválido",
+                        "description": "Invalid payload",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "401": {
-                        "description": "Não autorizado",
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "403": {
-                        "description": "Proibido",
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "404": {
-                        "description": "Não encontrado",
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "409": {
-                        "description": "Conflito",
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Erro interno",
+                        "description": "Internal error",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -1430,6 +1431,7 @@
                         "BearerAuth": []
                     }
                 ],
+                "description": "Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1439,10 +1441,10 @@
                 "tags": [
                     "Listings"
                 ],
-                "summary": "Listar valores ativos do catálogo de listings",
+                "summary": "List active listing catalog values",
                 "parameters": [
                     {
-                        "description": "Payload de consulta",
+                        "description": "Filter payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2442,7 +2444,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa. Campos CRECI são opcionais, porém quando enviados: creciNumber deve ser numérico terminando em \"-F\" e creciState deve ser uma UF válida (2 letras).",
+                "description": "Allows owners to request a realtor role (pending CRECI validation) and vice versa. CRECI fields are optional, but when provided: creciNumber must end with \"-F\", and creciState must be a valid Brazilian state abbreviation (2 letters).",
                 "consumes": [
                     "application/json"
                 ],
@@ -2452,10 +2454,10 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "Cria um role alternativo para o usuário autenticado (owner ↔ realtor)",
+                "summary": "Create an alternative role for the authenticated user (owner ↔ realtor)",
                 "parameters": [
                     {
-                        "description": "Payload com dados CRECI",
+                        "description": "Payload containing CRECI data",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -2511,7 +2513,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Permite que usuários com roles owner e realtor alternem entre as funções atribuídas.",
+                "description": "Allows users who have both owner and realtor roles to switch between them.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2521,7 +2523,7 @@
                 "tags": [
                     "User"
                 ],
-                "summary": "Altera o role ativo do usuário autenticado (owner ↔ realtor)",
+                "summary": "Switch the authenticated user's active role (owner ↔ realtor)",
                 "responses": {
                     "200": {
                         "description": "OK",

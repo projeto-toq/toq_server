@@ -15,14 +15,14 @@ import (
 // alias para garantir que o swagger reconheça o tipo de erro padrão
 type _ = dto.ErrorResponse
 
-// AddAlternativeUserRole processa POST /user/role/alternative e cria um role alternativo (owner ↔ realtor).
+// AddAlternativeUserRole handles POST /user/role/alternative and creates an alternative role (owner ↔ realtor).
 //
-//	@Summary	Cria um role alternativo para o usuário autenticado (owner ↔ realtor)
-//	@Description	Permite que owners obtenham role de realtor (pendente CRECI) e vice-versa. Campos CRECI são opcionais, porém quando enviados: creciNumber deve ser numérico terminando em "-F" e creciState deve ser uma UF válida (2 letras).
+//	@Summary	Create an alternative role for the authenticated user (owner ↔ realtor)
+//	@Description	Allows owners to request a realtor role (pending CRECI validation) and vice versa. CRECI fields are optional, but when provided: creciNumber must end with "-F", and creciState must be a valid Brazilian state abbreviation (2 letters).
 //	@Tags		User
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.AddAlternativeUserRoleRequest	true	"Payload com dados CRECI"
+//	@Param		request	body	dto.AddAlternativeUserRoleRequest	true	"Payload containing CRECI data"
 //	@Success	200	{object}	dto.AddAlternativeUserRoleResponse
 //	@Failure	400	{object}	dto.ErrorResponse
 //	@Failure	401	{object}	dto.ErrorResponse

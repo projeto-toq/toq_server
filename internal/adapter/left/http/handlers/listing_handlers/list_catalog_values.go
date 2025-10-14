@@ -10,13 +10,14 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// ListCatalogValues handles GET /listings/catalog
+// ListCatalogValues handles GET /listings/catalog.
 //
-//	@Summary	Listar valores ativos do catálogo de listings
+//	@Summary	List active listing catalog values
+//	@Description	Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.
 //	@Tags		Listings
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.ListingCatalogRequest	true	"Payload de consulta"
+//	@Param		request	body	dto.ListingCatalogRequest	true	"Filter payload"
 //	@Success	200	{object}	dto.ListingCatalogValuesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any

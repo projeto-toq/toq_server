@@ -171,13 +171,14 @@ func (h *AdminHandler) PostAdminCreciDownloadURL(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// ListListingCatalogValues handles GET /admin/listing/catalog
+// ListListingCatalogValues handles GET /admin/listing/catalog.
 //
-//	@Summary	Listar valores de catálogo de listings
+//	@Summary	List listing catalog values
+//	@Description	Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.
 //	@Tags		Admin
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.AdminListingCatalogRequest	true	"Payload de consulta"
+//	@Param		request	body	dto.AdminListingCatalogRequest	true	"Filter payload"
 //	@Success	200	{object}	dto.ListingCatalogValuesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -201,13 +202,13 @@ func (h *AdminHandler) ListListingCatalogValues(c *gin.Context) {
 	c.JSON(http.StatusOK, httpconv.ToListingCatalogValuesResponse(values))
 }
 
-// CreateListingCatalogValue handles POST /admin/listing/catalog
+// CreateListingCatalogValue handles POST /admin/listing/catalog.
 //
-//	@Summary	Criar valor de catálogo de listings
+//	@Summary	Create a listing catalog value
 //	@Tags		Admin
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.ListingCatalogCreateRequest	true	"Payload de criação"
+//	@Param		request	body	dto.ListingCatalogCreateRequest	true	"Creation payload"
 //	@Success	201	{object}	dto.ListingCatalogValueResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -240,13 +241,13 @@ func (h *AdminHandler) CreateListingCatalogValue(c *gin.Context) {
 	c.JSON(http.StatusCreated, httpconv.ToListingCatalogValueResponse(value))
 }
 
-// UpdateListingCatalogValue handles PUT /admin/listing/catalog
+// UpdateListingCatalogValue handles PUT /admin/listing/catalog.
 //
-//	@Summary	Atualizar valor de catálogo de listings
+//	@Summary	Update a listing catalog value
 //	@Tags		Admin
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.ListingCatalogUpdateRequest	true	"Campos para atualização parcial"
+//	@Param		request	body	dto.ListingCatalogUpdateRequest	true	"Partial update payload"
 //	@Success	200	{object}	dto.ListingCatalogValueResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -281,14 +282,14 @@ func (h *AdminHandler) UpdateListingCatalogValue(c *gin.Context) {
 	c.JSON(http.StatusOK, httpconv.ToListingCatalogValueResponse(value))
 }
 
-// DeleteListingCatalogValue handles DELETE /admin/listing/catalog
+// DeleteListingCatalogValue handles DELETE /admin/listing/catalog.
 //
-//	@Summary	Desativar valor de catálogo de listings
+//	@Summary	Deactivate a listing catalog value
 //	@Tags		Admin
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.ListingCatalogDeleteRequest	true	"Dados para desativação"
-//	@Success	204	"Valor desativado com sucesso"
+//	@Param		request	body	dto.ListingCatalogDeleteRequest	true	"Deactivation payload"
+//	@Success	204	"Catalog value deactivated"
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
 //	@Failure	403	{object}	map[string]any

@@ -5,7 +5,22 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O endpoint func (lh *ListingHandler) ListCatalogValues(c *gin.Context) está solicitando o category por param e não no body, como deveria ser.
+- Após atualização das tabela de permissionamento, conforme abaixo, o endpoint GET /api/v2//listings/features/base continua dando erro 
+{
+    "code": 403,
+    "details": null,
+    "message": "Insufficient permissions"
+}
+
+
+permissions
+# id, name, resource, action, description, conditions, is_active
+'63', 'HTTP Get Listing Base Features', 'http', 'GET:/api/v2//listings/features/base', 'Permite consultar as comodidades', NULL, '1'
+
+role_permissions
+# id, role_id, permission_id, granted, conditions
+'197', '3', '63', '1', NULL
+
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 

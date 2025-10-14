@@ -207,7 +207,7 @@ type UpdateListingGuaranteeRequest struct {
 
 // Listing catalog DTOs
 
-// ListingCatalogValueResponse representa um valor de catálogo disponível para listings.
+// ListingCatalogValueResponse represents a catalog entry available for listings.
 type ListingCatalogValueResponse struct {
 	ID          int     `json:"id"`
 	Category    string  `json:"category"`
@@ -217,23 +217,23 @@ type ListingCatalogValueResponse struct {
 	IsActive    bool    `json:"isActive"`
 }
 
-// ListingCatalogValuesResponse agrega os valores retornados pelo serviço de catálogo.
+// ListingCatalogValuesResponse aggregates catalog values returned by the service.
 type ListingCatalogValuesResponse struct {
 	Values []ListingCatalogValueResponse `json:"values"`
 }
 
-// ListingCatalogRequest captura o payload para listar valores de catálogo disponíveis no app.
+// ListingCatalogRequest captures the payload used to list catalog values in the app.
 type ListingCatalogRequest struct {
 	Category string `json:"category" binding:"required"`
 }
 
-// AdminListingCatalogRequest define o payload de consulta para o catálogo no painel admin.
+// AdminListingCatalogRequest defines the payload used to query the catalog from the admin panel.
 type AdminListingCatalogRequest struct {
 	Category        string `json:"category" binding:"required"`
 	IncludeInactive bool   `json:"includeInactive"`
 }
 
-// ListingCatalogCreateRequest define o payload para criação de valores de catálogo.
+// ListingCatalogCreateRequest defines the payload for creating catalog values.
 type ListingCatalogCreateRequest struct {
 	Category    string                     `json:"category" binding:"required"`
 	Slug        string                     `json:"slug" binding:"required"`
@@ -242,7 +242,7 @@ type ListingCatalogCreateRequest struct {
 	IsActive    coreutils.Optional[bool]   `json:"isActive,omitempty"`
 }
 
-// ListingCatalogUpdateRequest define o payload de atualização parcial de valores de catálogo.
+// ListingCatalogUpdateRequest defines the payload for partially updating catalog values.
 type ListingCatalogUpdateRequest struct {
 	ID          uint8                      `json:"id" binding:"required,min=1"`
 	Category    string                     `json:"category" binding:"required"`
@@ -252,7 +252,7 @@ type ListingCatalogUpdateRequest struct {
 	IsActive    coreutils.Optional[bool]   `json:"isActive,omitempty"`
 }
 
-// ListingCatalogDeleteRequest define o payload de desativação de valores de catálogo.
+// ListingCatalogDeleteRequest defines the payload for deactivating catalog values.
 type ListingCatalogDeleteRequest struct {
 	ID       uint8  `json:"id" binding:"required,min=1"`
 	Category string `json:"category" binding:"required"`

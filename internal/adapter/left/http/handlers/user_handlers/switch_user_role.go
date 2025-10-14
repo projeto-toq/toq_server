@@ -12,10 +12,10 @@ import (
 // alias para garantir que o swagger reconheça o tipo de erro padrão
 type _ = dto.ErrorResponse
 
-// SwitchUserRole processa POST /user/role/switch permitindo owners e realtors alternarem a role ativa.
+// SwitchUserRole handles POST /user/role/switch, allowing owners and realtors to toggle the active role.
 //
-//	@Summary	Altera o role ativo do usuário autenticado (owner ↔ realtor)
-//	@Description	Permite que usuários com roles owner e realtor alternem entre as funções atribuídas.
+//	@Summary	Switch the authenticated user's active role (owner ↔ realtor)
+//	@Description	Allows users who have both owner and realtor roles to switch between them.
 //	@Tags	User
 //	@Accept	json
 //	@Produce	json

@@ -573,10 +573,47 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`role_permissions` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`listing_catalog_values`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`listing_catalog_values` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`listing_catalog_values` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `category` VARCHAR(45) NOT NULL,
+  `slug` VARCHAR(50) NOT NULL,
+  `label` VARCHAR(100) NOT NULL,
+  `description` VARCHAR(255) NULL,
+  `is_active` TINYINT NULL DEFAULT 1,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_listing_catalog_category_slug` (`category` ASC, `slug` ASC) VISIBLE)
+ENGINE = InnoDB;
+
 -- begin attached script 'script'
 -- Desabilitar verificação de foreign keys durante o LOAD DATA
 SET FOREIGN_KEY_CHECKS = 0;
 START TRANSACTION;
+
+-- Esvaziar as tabelas antes de carregar os novos dados
+-- Use TRUNCATE TABLE para limpar os dados de forma eficiente.
+-- TRUNCATE TABLE base_features;
+-- TRUNCATE TABLE complex_zip_codes;
+-- TRUNCATE TABLE complex_towers;
+-- TRUNCATE TABLE complex_sizes;
+-- TRUNCATE TABLE complex;
+-- TRUNCATE TABLE role_permissions;
+-- TRUNCATE TABLE permissions;
+-- TRUNCATE TABLE roles;
+-- TRUNCATE TABLE user_roles;
+-- TRUNCATE TABLE listing_catalog_values;
+
+LOAD DATA INFILE '/var/lib/mysql-files/base_features.csv'
+INTO TABLE base_features
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES;
 
 LOAD DATA INFILE '/var/lib/mysql-files/complex.csv'
 INTO TABLE complex
@@ -649,6 +686,13 @@ LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
 (id, user_id, role_id, is_active, status, blocked_until, @expires_at)
 SET expires_at = NULLIF(@expires_at, 'NULL');
+
+LOAD DATA INFILE '/var/lib/mysql-files/listing_catalog_values.csv'
+INTO TABLE listing_catalog_values
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
 
 -- Reabilitar verificação de foreign keys
 SET FOREIGN_KEY_CHECKS = 1;

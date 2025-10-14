@@ -11,21 +11,21 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// UpdateListing atualiza as informações de um anúncio existente.
+// UpdateListing updates an existing listing.
 //
-//	@Summary	Atualiza um anúncio
-//	@Description	Permite atualização parcial dos campos de um anúncio em rascunho. Campos omitidos permanecem inalterados; campos presentes (inclusive null/vazio) sobrescrevem o valor atual.
+//	@Summary	Update a listing
+//	@Description	Allows partial updates for draft listings. Omitted fields remain unchanged; present fields (including null/empty) overwrite stored values.
 //	@Tags		Listings
 //	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.UpdateListingRequest	true	"Dados para atualização (ID obrigatório no corpo)"
+//	@Param		request	body	dto.UpdateListingRequest	true	"Payload for update (ID must be provided in the body)"
 //	@Success	200	{object}	dto.UpdateListingResponse
-//	@Failure	400	{object}	dto.ErrorResponse	"Payload inválido"
-//	@Failure	401	{object}	dto.ErrorResponse	"Não autorizado"
-//	@Failure	403	{object}	dto.ErrorResponse	"Proibido"
-//	@Failure	404	{object}	dto.ErrorResponse	"Não encontrado"
-//	@Failure	409	{object}	dto.ErrorResponse	"Conflito"
-//	@Failure	500	{object}	dto.ErrorResponse	"Erro interno"
+//	@Failure	400	{object}	dto.ErrorResponse	"Invalid payload"
+//	@Failure	401	{object}	dto.ErrorResponse	"Unauthorized"
+//	@Failure	403	{object}	dto.ErrorResponse	"Forbidden"
+//	@Failure	404	{object}	dto.ErrorResponse	"Not found"
+//	@Failure	409	{object}	dto.ErrorResponse	"Conflict"
+//	@Failure	500	{object}	dto.ErrorResponse	"Internal error"
 //	@Router		/listings [put]
 //	@Security	BearerAuth
 func (lh *ListingHandler) UpdateListing(c *gin.Context) {

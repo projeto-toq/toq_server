@@ -61,3 +61,4 @@ id;name;resource;action;description;conditions;is_active
 60;HTTP Admin Create Listing Catalog;http;POST:/api/v2/admin/listing/catalog;Permite criar novos valores no catálogo de listings;NULL;1
 61;HTTP Admin Update Listing Catalog;http;PUT:/api/v2/admin/listing/catalog;Permite atualizar valores do catálogo de listings;NULL;1
 62;HTTP Admin Delete Listing Catalog;http;DELETE:/api/v2/admin/listing/catalog;Permite desativar valores do catálogo de listings;NULL;1
+63;HTTP Get Listing Base Features;http;GET:/api/v2/listings/features/base;Permite listar as comodidades;NULL;1

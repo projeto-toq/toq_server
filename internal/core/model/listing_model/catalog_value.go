@@ -1,6 +1,6 @@
 package listingmodel
 
-// CatalogValueInterface representa um valor de catálogo utilizado em vários campos de Listing.
+// CatalogValueInterface represents a catalog value used across multiple listing fields.
 type CatalogValueInterface interface {
 	ID() uint8
 	SetID(uint8)
@@ -25,7 +25,7 @@ type catalogValue struct {
 	isActive    bool
 }
 
-// NewCatalogValue inicializa uma nova instância de CatalogValueInterface.
+// NewCatalogValue creates a new CatalogValueInterface instance.
 func NewCatalogValue() CatalogValueInterface {
 	return &catalogValue{}
 }
@@ -78,7 +78,7 @@ func (cv *catalogValue) SetIsActive(active bool) {
 	cv.isActive = active
 }
 
-// AllowedCatalogCategories retorna todas as categorias de catálogo suportadas.
+// AllowedCatalogCategories returns all supported catalog categories.
 func AllowedCatalogCategories() []string {
 	return []string{
 		CatalogCategoryPropertyOwner,
@@ -93,7 +93,7 @@ func AllowedCatalogCategories() []string {
 	}
 }
 
-// IsValidCatalogCategory indica se a categoria enviada é suportada pelo domínio.
+// IsValidCatalogCategory indicates whether the provided category is supported by the domain.
 func IsValidCatalogCategory(category string) bool {
 	for _, allowed := range AllowedCatalogCategories() {
 		if allowed == category {
