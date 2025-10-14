@@ -222,15 +222,15 @@ type ListingCatalogValuesResponse struct {
 	Values []ListingCatalogValueResponse `json:"values"`
 }
 
-// ListingCatalogQuery captura os parâmetros de consulta para listar valores de catálogo no app.
-type ListingCatalogQuery struct {
-	Category string `form:"category" binding:"required"`
+// ListingCatalogRequest captura o payload para listar valores de catálogo disponíveis no app.
+type ListingCatalogRequest struct {
+	Category string `json:"category" binding:"required"`
 }
 
-// AdminListingCatalogQuery estende a consulta permitindo incluir valores inativos.
-type AdminListingCatalogQuery struct {
-	Category        string `form:"category" binding:"required"`
-	IncludeInactive bool   `form:"includeInactive,default=false"`
+// AdminListingCatalogRequest define o payload de consulta para o catálogo no painel admin.
+type AdminListingCatalogRequest struct {
+	Category        string `json:"category" binding:"required"`
+	IncludeInactive bool   `json:"includeInactive"`
 }
 
 // ListingCatalogCreateRequest define o payload para criação de valores de catálogo.

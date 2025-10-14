@@ -27,6 +27,9 @@ const docTemplate = `{
     "paths": {
         "/admin/listing/catalog": {
             "get": {
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -36,17 +39,13 @@ const docTemplate = `{
                 "summary": "Listar valores de catálogo de listings",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Categoria do catálogo",
-                        "name": "category",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Retornar valores inativos",
-                        "name": "includeInactive",
-                        "in": "query"
+                        "description": "Payload de consulta",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1438,6 +1437,9 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1447,11 +1449,13 @@ const docTemplate = `{
                 "summary": "Listar valores ativos do catálogo de listings",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Categoria do catálogo",
-                        "name": "category",
-                        "in": "query",
-                        "required": true
+                        "description": "Payload de consulta",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -2799,6 +2803,20 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest": {
+            "type": "object",
+            "required": [
+                "category"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "includeInactive": {
+                    "type": "boolean"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor": {
             "type": "object",
             "properties": {
@@ -3210,6 +3228,17 @@ const docTemplate = `{
                 "id": {
                     "type": "integer",
                     "minimum": 1
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogRequest": {
+            "type": "object",
+            "required": [
+                "category"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
                 }
             }
         },

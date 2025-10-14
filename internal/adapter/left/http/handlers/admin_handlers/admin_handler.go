@@ -175,9 +175,9 @@ func (h *AdminHandler) PostAdminCreciDownloadURL(c *gin.Context) {
 //
 //	@Summary	Listar valores de catálogo de listings
 //	@Tags		Admin
+//	@Accept		json
 //	@Produce	json
-//	@Param		category		query	string	true	"Categoria do catálogo"
-//	@Param		includeInactive	query	bool	false	"Retornar valores inativos"
+//	@Param		request	body	dto.AdminListingCatalogRequest	true	"Payload de consulta"
 //	@Success	200	{object}	dto.ListingCatalogValuesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -186,13 +186,13 @@ func (h *AdminHandler) PostAdminCreciDownloadURL(c *gin.Context) {
 //	@Router		/admin/listing/catalog [get]
 func (h *AdminHandler) ListListingCatalogValues(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
-	var query dto.AdminListingCatalogQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
+	var req dto.AdminListingCatalogRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}
 
-	values, err := h.listingService.ListCatalogValues(ctx, query.Category, query.IncludeInactive)
+	values, err := h.listingService.ListCatalogValues(ctx, req.Category, req.IncludeInactive)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

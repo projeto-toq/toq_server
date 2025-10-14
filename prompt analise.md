@@ -48,7 +48,7 @@ Analise as portas possíveis e possíveis impactos, considerando que a base de d
 ## 9) Entregáveis Esperados do Agente
 - Análise detalhada com checklist dos requisitos e plano por etapas (com ordem de execução).
 - Quality gates rápidos no final: Build, Lint/Typecheck e mapeamento Requisito → Status.
-- Não é necessário git status -sb nem git diff.
+- Não execute git status, git diff nem go test.
 
 ## 10) Restrições e Assunções
 - Ambiente: desenvolvimento (sem back compatibility, sem janela de manutenção, sem migração).
@@ -68,7 +68,7 @@ Analise as portas possíveis e possíveis impactos, considerando que a base de d
 2) Durante a análise/implementação:
 - Seguir o guia `docs/toq_server_go_guide.md` (arquitetura, erros/observabilidade, transações).
 - Manter adapters com erros “puros”; sem HTTP/semântica de domínio nessa camada.
-- A documentação Swagger/docs deve ser criada por comentários em DTO/Handler e execução de make swagger. Sem alterações manuais no swagger.yaml/json.
+- A documentação Swagger/docs deve ser criada por comentários, em inglês em DTO/Handler e execução de make swagger. Sem alterações manuais no swagger.yaml/json.
 
 3) Após mudanças:
 - Relatar “requirements coverage” (Requisito → Done/Deferred + motivo).

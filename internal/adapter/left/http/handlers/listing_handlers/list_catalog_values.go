@@ -14,8 +14,9 @@ import (
 //
 //	@Summary	Listar valores ativos do catálogo de listings
 //	@Tags		Listings
+//	@Accept		json
 //	@Produce	json
-//	@Param		category	query	string	true	"Categoria do catálogo"
+//	@Param		request	body	dto.ListingCatalogRequest	true	"Payload de consulta"
 //	@Success	200	{object}	dto.ListingCatalogValuesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -26,13 +27,13 @@ import (
 func (lh *ListingHandler) ListCatalogValues(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
-	var query dto.ListingCatalogQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
+	var req dto.ListingCatalogRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}
 
-	values, err := lh.listingService.ListCatalogValues(ctx, query.Category, false)
+	values, err := lh.listingService.ListCatalogValues(ctx, req.Category, false)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

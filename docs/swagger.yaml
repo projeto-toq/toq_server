@@ -77,6 +77,15 @@ definitions:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest:
+    properties:
+      category:
+        type: string
+      includeInactive:
+        type: boolean
+    required:
+    - category
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor:
     properties:
       creciNumber:
@@ -351,6 +360,13 @@ definitions:
     required:
     - category
     - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogRequest:
+    properties:
+      category:
+        type: string
+    required:
+    - category
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogUpdateRequest:
     properties:
@@ -950,16 +966,15 @@ paths:
       tags:
       - Admin
     get:
+      consumes:
+      - application/json
       parameters:
-      - description: Categoria do catálogo
-        in: query
-        name: category
+      - description: Payload de consulta
+        in: body
+        name: request
         required: true
-        type: string
-      - description: Retornar valores inativos
-        in: query
-        name: includeInactive
-        type: boolean
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest'
       produces:
       - application/json
       responses:
@@ -1863,12 +1878,15 @@ paths:
       - Listings
   /listings/catalog:
     get:
+      consumes:
+      - application/json
       parameters:
-      - description: Categoria do catálogo
-        in: query
-        name: category
+      - description: Payload de consulta
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogRequest'
       produces:
       - application/json
       responses:
