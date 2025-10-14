@@ -77,3 +77,130 @@ type AdminCreciDownloadURLResponse struct {
 	URLs             AdminCreciDocumentURLs `json:"urls"`
 	ExpiresInMinutes int                    `json:"expiresInMinutes"`
 }
+
+// AdminListUsersRequest represents GET /admin/users filters
+type AdminListUsersRequest struct {
+	Page         int    `form:"page,default=1" binding:"min=1"`
+	Limit        int    `form:"limit,default=20" binding:"min=1,max=100"`
+	RoleName     string `form:"roleName"`
+	RoleSlug     string `form:"roleSlug"`
+	RoleStatus   *int   `form:"roleStatus"`
+	IsSystemRole *bool  `form:"isSystemRole"`
+	FullName     string `form:"fullName"`
+	CPF          string `form:"cpf"`
+	Email        string `form:"email"`
+	PhoneNumber  string `form:"phoneNumber"`
+	Deleted      *bool  `form:"deleted"`
+}
+
+// AdminListUsersResponse represents admin users listing payload
+type AdminListUsersResponse struct {
+	Users      []AdminUserSummary `json:"users"`
+	Pagination PaginationResponse `json:"pagination"`
+}
+
+// AdminUserSummary minimal projection for admin list
+type AdminUserSummary struct {
+	ID          int64               `json:"id"`
+	FullName    string              `json:"fullName"`
+	Email       string              `json:"email"`
+	PhoneNumber string              `json:"phoneNumber"`
+	CPF         string              `json:"cpf"`
+	Deleted     bool                `json:"deleted"`
+	Role        AdminUserRoleResume `json:"role"`
+}
+
+// AdminUserRoleResume wraps active role information
+type AdminUserRoleResume struct {
+	UserRoleID   int64  `json:"userRoleId"`
+	RoleID       int64  `json:"roleId"`
+	RoleName     string `json:"roleName"`
+	RoleSlug     string `json:"roleSlug"`
+	IsSystemRole bool   `json:"isSystemRole"`
+	Status       string `json:"status"`
+	IsActive     bool   `json:"isActive"`
+}
+
+// AdminCreateSystemUserRequest represents POST /admin/system-users request
+type AdminCreateSystemUserRequest struct {
+	FullName    string `json:"fullName" binding:"required,min=2,max=150"`
+	Email       string `json:"email" binding:"required,email"`
+	PhoneNumber string `json:"phoneNumber" binding:"required"`
+	CPF         string `json:"cpf" binding:"required"`
+	RoleSlug    string `json:"roleSlug" binding:"required"`
+	BornAt      string `json:"bornAt" binding:"required"`
+}
+
+// AdminUpdateSystemUserRequest represents PUT /admin/system-users request body
+type AdminUpdateSystemUserRequest struct {
+	UserID      int64  `json:"userId" binding:"required,min=1"`
+	FullName    string `json:"fullName" binding:"required,min=2,max=150"`
+	Email       string `json:"email" binding:"required,email"`
+	PhoneNumber string `json:"phoneNumber" binding:"required"`
+}
+
+// AdminSystemUserResponse basic response for create/update actions
+type AdminSystemUserResponse struct {
+	UserID  int64  `json:"userId"`
+	Slug    string `json:"roleSlug"`
+	Email   string `json:"email"`
+	Message string `json:"message"`
+}
+
+// AdminDeleteSystemUserRequest represents DELETE /admin/system-users payload
+type AdminDeleteSystemUserRequest struct {
+	UserID int64 `json:"userId" binding:"required,min=1"`
+}
+
+// AdminListRolesRequest represents GET /admin/roles filters
+type AdminListRolesRequest struct {
+	Page         int    `form:"page,default=1" binding:"min=1"`
+	Limit        int    `form:"limit,default=20" binding:"min=1,max=100"`
+	Name         string `form:"name"`
+	Slug         string `form:"slug"`
+	IsSystemRole *bool  `form:"isSystemRole"`
+	IsActive     *bool  `form:"isActive"`
+}
+
+// AdminRoleSummary minimal role representation
+type AdminRoleSummary struct {
+	ID           int64  `json:"id"`
+	Name         string `json:"name"`
+	Slug         string `json:"slug"`
+	Description  string `json:"description"`
+	IsSystemRole bool   `json:"isSystemRole"`
+	IsActive     bool   `json:"isActive"`
+}
+
+// AdminListRolesResponse wraps role listing
+type AdminListRolesResponse struct {
+	Roles      []AdminRoleSummary `json:"roles"`
+	Pagination PaginationResponse `json:"pagination"`
+}
+
+// AdminCreateRoleRequest represents POST /admin/roles request body
+type AdminCreateRoleRequest struct {
+	Name         string `json:"name" binding:"required,min=2,max=100"`
+	Slug         string `json:"slug" binding:"required"`
+	Description  string `json:"description"`
+	IsSystemRole bool   `json:"isSystemRole"`
+}
+
+// AdminUpdateRoleRequest represents PUT /admin/roles request body
+type AdminUpdateRoleRequest struct {
+	ID          int64  `json:"id" binding:"required,min=1"`
+	Name        string `json:"name" binding:"required,min=2,max=100"`
+	Description string `json:"description"`
+	IsActive    bool   `json:"isActive"`
+}
+
+// AdminDeleteRoleRequest represents DELETE /admin/roles request body
+type AdminDeleteRoleRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
+}
+
+// AdminRoleResponse basic role response payload
+type AdminRoleResponse struct {
+	ID      int64  `json:"id"`
+	Message string `json:"message"`
+}

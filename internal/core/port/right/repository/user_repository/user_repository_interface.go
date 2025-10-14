@@ -9,6 +9,7 @@ import (
 )
 
 type UserRepoPortInterface interface {
+	ListUsersWithFilters(ctx context.Context, tx *sql.Tx, filter ListUsersFilter) (ListUsersResult, error)
 	CreateAgencyInvite(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, phoneNumber string) (err error)
 	CreateAgencyRelationship(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, realtor usermodel.UserInterface) (id int64, err error)
 	CreateUser(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
@@ -53,4 +54,23 @@ type UserRepoPortInterface interface {
 	// DeleteExpiredValidations removes temp_user_validations rows where all codes are empty or expired
 	// Returns number of rows deleted
 	DeleteExpiredValidations(ctx context.Context, tx *sql.Tx, limit int) (int64, error)
+}
+
+type ListUsersFilter struct {
+	Page         int
+	Limit        int
+	RoleName     string
+	RoleSlug     string
+	RoleStatus   *permissionmodel.UserRoleStatus
+	IsSystemRole *bool
+	FullName     string
+	CPF          string
+	Email        string
+	PhoneNumber  string
+	Deleted      *bool
+}
+
+type ListUsersResult struct {
+	Users []usermodel.UserInterface
+	Total int64
 }

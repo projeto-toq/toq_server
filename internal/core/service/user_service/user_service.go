@@ -116,6 +116,12 @@ type UserServiceInterface interface {
 	// ApproveCreciManual updates realtor status from pending manual to approved/refused and sends notification
 	ApproveCreciManual(ctx context.Context, userID int64, status permissionmodel.UserRoleStatus) error
 
+	// Admin system user management
+	ListUsers(ctx context.Context, input ListUsersInput) (ListUsersOutput, error)
+	CreateSystemUser(ctx context.Context, input CreateSystemUserInput) (SystemUserResult, error)
+	UpdateSystemUser(ctx context.Context, input UpdateSystemUserInput) (SystemUserResult, error)
+	DeleteSystemUser(ctx context.Context, input DeleteSystemUserInput) error
+
 	ValidateCPF(ctx context.Context, nationalID string, bornAt time.Time) error
 	ValidateCNPJ(ctx context.Context, nationalID string) error
 }

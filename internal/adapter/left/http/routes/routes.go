@@ -317,10 +317,18 @@ func RegisterAdminRoutes(
 	{
 		// GET /admin/user/pending
 		admin.GET("/user/pending", adminHandler.GetPendingRealtors)
+		admin.GET("/users", adminHandler.GetAdminUsers)
 		admin.GET("/listing/catalog", adminHandler.ListListingCatalogValues)
 		admin.POST("/listing/catalog", adminHandler.CreateListingCatalogValue)
 		admin.PUT("/listing/catalog", adminHandler.UpdateListingCatalogValue)
 		admin.DELETE("/listing/catalog", adminHandler.DeleteListingCatalogValue)
+		admin.POST("/system-users", adminHandler.PostAdminCreateSystemUser)
+		admin.PUT("/system-users", adminHandler.PutAdminUpdateSystemUser)
+		admin.DELETE("/system-users", adminHandler.DeleteAdminSystemUser)
+		admin.GET("/roles", adminHandler.GetAdminRoles)
+		admin.POST("/roles", adminHandler.PostAdminCreateRole)
+		admin.PUT("/roles", adminHandler.PutAdminUpdateRole)
+		admin.DELETE("/roles", adminHandler.DeleteAdminRole)
 
 		// POST /admin/user
 		admin.POST("/user", adminHandler.PostAdminGetUser)

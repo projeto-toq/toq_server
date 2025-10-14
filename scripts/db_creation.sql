@@ -590,6 +590,87 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_catalog_values` (
   UNIQUE INDEX `uk_listing_catalog_category_slug` (`category` ASC, `slug` ASC) VISIBLE)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`photographer_time_slots`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`photographer_time_slots` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_time_slots` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `photographer_user_id` INT UNSIGNED NOT NULL,
+  `slot_date` DATE NOT NULL,
+  `period` ENUM('MORNING', 'AFTERNOON') NOT NULL,
+  `status` ENUM('AVAILABLE', 'RESERVED', 'BOOKED', 'BLOCKED') NOT NULL DEFAULT 'AVAILABLE',
+  `reservation_token` VARCHAR(45) NULL,
+  `reserved_until` DATETIME NULL,
+  `booked_at` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_slots_photographer_date_period` (`photographer_user_id` ASC, `slot_date` ASC, `period` ASC) VISIBLE,
+  CONSTRAINT `fk_slots_photographer_user`
+    FOREIGN KEY (`photographer_user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`photographer_slot_bookings`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`photographer_slot_bookings` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_slot_bookings` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `slot_id` INT UNSIGNED NOT NULL,
+  `listing_id` INT UNSIGNED NOT NULL,
+  `scheduled_start` DATETIME NOT NULL,
+  `scheduled_end` DATETIME NOT NULL,
+  `status` ENUM('ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NOT NULL DEFAULT 'ACTIVE',
+  `created_by` INT UNSIGNED NOT NULL,
+  `notes` VARCHAR(255) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_bookings_slot` (`slot_id` ASC) VISIBLE,
+  INDEX `fk_bookings_listing_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_bookings_created_by_idx` (`created_by` ASC) VISIBLE,
+  CONSTRAINT `fk_bookings_slot`
+    FOREIGN KEY (`slot_id`)
+    REFERENCES `toq_db`.`photographer_time_slots` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_bookings_listing`
+    FOREIGN KEY (`listing_id`)
+    REFERENCES `toq_db`.`listings` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_bookings_created_by`
+    FOREIGN KEY (`created_by`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`photographer_time_off`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`photographer_time_off` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_time_off` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `photographer_user_id` INT UNSIGNED NOT NULL,
+  `start_date` DATE NOT NULL,
+  `end_date` DATE NOT NULL,
+  `reason` VARCHAR(150) NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_time_off_photographer_user_idx` (`photographer_user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_time_off_photographer_user`
+    FOREIGN KEY (`photographer_user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 -- begin attached script 'script'
 -- Desabilitar verificação de foreign keys durante o LOAD DATA
 SET FOREIGN_KEY_CHECKS = 0;

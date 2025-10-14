@@ -79,6 +79,20 @@ func mapErrorToHTTP(err error) (status int, message string, details any) {
 		return http.StatusConflict, "Listing not eligible for photo session", nil
 	case errorsIs(err, derrors.ErrPhotoSessionNotCancelable):
 		return http.StatusConflict, "Photo session cannot be cancelled", nil
+	case errorsIs(err, derrors.ErrRoleNotSystem):
+		return http.StatusBadRequest, "Role must be a system role", nil
+	case errorsIs(err, derrors.ErrAdminRoleProtected):
+		return http.StatusForbidden, "Admin role cannot be altered", nil
+	case errorsIs(err, derrors.ErrCannotDeleteLoggedUser):
+		return http.StatusForbidden, "Cannot delete the logged user", nil
+	case errorsIs(err, derrors.ErrUserAlreadyDeleted):
+		return http.StatusConflict, "User already deleted", nil
+	case errorsIs(err, derrors.ErrRoleSlugImmutable):
+		return http.StatusBadRequest, "Role slug cannot be changed", nil
+	case errorsIs(err, derrors.ErrSystemUserRoleMismatch):
+		return http.StatusConflict, "User is not associated with a system role", nil
+	case errorsIs(err, derrors.ErrRoleDeletionHasUsers):
+		return http.StatusConflict, "Role still assigned to active users", nil
 	}
 	// Legado: DomainError (utils) – preservar status/mensagem sem wrap
 	if derr, ok := err.(coreutils.DomainError); ok {

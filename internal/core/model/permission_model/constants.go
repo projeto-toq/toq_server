@@ -1,5 +1,7 @@
 package permissionmodel
 
+import "regexp"
+
 // RoleSlug representa os slugs de roles do sistema
 type RoleSlug string
 
@@ -16,13 +18,13 @@ func (rs RoleSlug) String() string {
 }
 
 // IsValid verifica se o slug é válido
+var roleSlugPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{1,63}$`)
+
 func (rs RoleSlug) IsValid() bool {
-	switch rs {
-	case RoleSlugRoot, RoleSlugOwner, RoleSlugRealtor, RoleSlugAgency:
-		return true
-	default:
+	if rs == "" {
 		return false
 	}
+	return roleSlugPattern.MatchString(rs.String())
 }
 
 // GetAllRoleSlugs retorna todos os slugs válidos

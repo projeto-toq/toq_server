@@ -5,21 +5,14 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-- Após atualização das tabela de permissionamento, conforme abaixo, o endpoint GET /api/v2//listings/features/base continua dando erro 
-{
-    "code": 403,
-    "details": null,
-    "message": "Insufficient permissions"
-}
+- Após a ultima refatoração alguns pontos ficaram pendentes:
+  - todas as rotas de /admin estão no mesmo arquivo admin_handler.go, tornando extenso e de difícil manutenção. Coloque cada endpoint em um arquivo separado.
+  - o nome do arquivo e /user_service/admin_user.go não está adequado, renomeie para get_users.go e ajuste o nome das structs e métodos relacionados.
+  - o nome da função func (us *userService) ListAdminUsers(ctx context.Context, input ListAdminUsersInput) (ListAdminUsersOutput, error) não está adequado, renomeie para ListUsers e ajuste o nome das structs e métodos relacionados.
+  - dentro de admin_users.go existem várias funções o que contraria o guia do projeto. divida as funções em arquivos separados.
+  - nenhuma rota deve passar variável por parametro, apenas o GET com filtros. PUT /admin/system-users/{id} deve passar id no body. 
+  - atualize o guia do projeto com esta regra.
 
-
-permissions
-# id, name, resource, action, description, conditions, is_active
-'63', 'HTTP Get Listing Base Features', 'http', 'GET:/api/v2//listings/features/base', 'Permite consultar as comodidades', NULL, '1'
-
-role_permissions
-# id, role_id, permission_id, granted, conditions
-'197', '3', '63', '1', NULL
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

@@ -1,5 +1,14 @@
 basePath: /api/v2
 definitions:
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse:
+    properties:
+      data: {}
+      error: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleRequest:
     properties:
       creciNumber:
@@ -33,6 +42,46 @@ definitions:
       message:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateRoleRequest:
+    properties:
+      description:
+        type: string
+      isSystemRole:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      slug:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateSystemUserRequest:
+    properties:
+      bornAt:
+        type: string
+      cpf:
+        type: string
+      email:
+        type: string
+      fullName:
+        maxLength: 150
+        minLength: 2
+        type: string
+      phoneNumber:
+        type: string
+      roleSlug:
+        type: string
+    required:
+    - bornAt
+    - cpf
+    - email
+    - fullName
+    - phoneNumber
+    - roleSlug
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDocumentURLs:
     properties:
       back:
@@ -57,6 +106,22 @@ definitions:
       urls:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDocumentURLs'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteRoleRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteSystemUserRequest:
+    properties:
+      userId:
+        minimum: 1
+        type: integer
+    required:
+    - userId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse:
     properties:
       realtors:
@@ -76,6 +141,24 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRolesResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      roles:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleSummary'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      users:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUserSummary'
+        type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest:
     properties:
@@ -102,6 +185,105 @@ definitions:
         type: string
       nickName:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleResponse:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleSummary:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      isSystemRole:
+        type: boolean
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminSystemUserResponse:
+    properties:
+      email:
+        type: string
+      message:
+        type: string
+      roleSlug:
+        type: string
+      userId:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateRoleRequest:
+    properties:
+      description:
+        type: string
+      id:
+        minimum: 1
+        type: integer
+      isActive:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - id
+    - name
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateSystemUserRequest:
+    properties:
+      email:
+        type: string
+      fullName:
+        maxLength: 150
+        minLength: 2
+        type: string
+      phoneNumber:
+        type: string
+    required:
+    - email
+    - fullName
+    - phoneNumber
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUserRoleResume:
+    properties:
+      isActive:
+        type: boolean
+      isSystemRole:
+        type: boolean
+      roleId:
+        type: integer
+      roleName:
+        type: string
+      roleSlug:
+        type: string
+      status:
+        type: string
+      userRoleId:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUserSummary:
+    properties:
+      cpf:
+        type: string
+      deleted:
+        type: boolean
+      email:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: integer
+      phoneNumber:
+        type: string
+      role:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUserRoleResume'
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.BaseFeature:
     properties:
@@ -137,6 +319,14 @@ definitions:
       valid:
         example: true
         type: boolean
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CancelPhotoSessionRequest:
+    properties:
+      photoSessionId:
+        example: 3003
+        type: integer
+    required:
+    - photoSessionId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest:
     properties:
@@ -180,6 +370,37 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionRequest:
+    properties:
+      listingId:
+        example: 1001
+        type: integer
+      reservationToken:
+        example: c36b754f-6c37-4c15-8f25-9d77ddf9bb3e
+        type: string
+      slotId:
+        example: 2002
+        type: integer
+    required:
+    - listingId
+    - reservationToken
+    - slotId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse:
+    properties:
+      photoSessionId:
+        example: 3003
+        type: integer
+      scheduledEnd:
+        example: "2025-10-24T13:00:00Z"
+        type: string
+      scheduledStart:
+        example: "2025-10-24T09:00:00Z"
+        type: string
+      slotId:
+        example: 2002
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateAgencyRequest:
     properties:
@@ -333,6 +554,15 @@ definitions:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerSlotResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogCreateRequest:
     properties:
       category:
@@ -447,6 +677,27 @@ definitions:
       totalPages:
         type: integer
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerSlotResponse:
+    properties:
+      period:
+        example: MORNING
+        type: string
+      photographerUserId:
+        example: 45
+        type: integer
+      reservedUntil:
+        example: "2025-10-24T12:00:00Z"
+        type: string
+      slotDate:
+        example: "2025-10-25"
+        type: string
+      slotId:
+        example: 123
+        type: integer
+      status:
+        example: AVAILABLE
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption:
     properties:
       name:
@@ -512,6 +763,30 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionRequest:
+    properties:
+      listingId:
+        example: 1001
+        type: integer
+      slotId:
+        example: 2002
+        type: integer
+    required:
+    - listingId
+    - slotId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionResponse:
+    properties:
+      expiresAt:
+        example: "2025-10-24T14:45:00Z"
+        type: string
+      reservationToken:
+        example: c36b754f-6c37-4c15-8f25-9d77ddf9bb3e
+        type: string
+      slotId:
+        example: 2002
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SignInRequest:
     properties:
@@ -1103,6 +1378,358 @@ paths:
       summary: Update a listing catalog value
       tags:
       - Admin
+  /admin/roles:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role deletion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Role deactivated
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete (deactivate) a role
+      tags:
+      - Admin
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
+      - description: Filter by slug
+        in: query
+        name: slug
+        type: string
+      - description: Filter by system role flag
+        in: query
+        name: isSystemRole
+        type: boolean
+      - description: Filter by active flag
+        in: query
+        name: isActive
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRolesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List roles with pagination
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a role
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a role
+      tags:
+      - Admin
+  /admin/system-users:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Deletion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteSystemUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: System user deactivated
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Deactivate a system user
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: System user payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateSystemUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminSystemUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new system user
+      tags:
+      - Admin
+  /admin/system-users/{id}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: System user ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateSystemUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminSystemUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update system user data
+      tags:
+      - Admin
   /admin/user:
     post:
       consumes:
@@ -1287,6 +1914,85 @@ paths:
             additionalProperties: true
             type: object
       summary: List realtors pending manual validation
+      tags:
+      - Admin
+  /admin/users:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by role name
+        in: query
+        name: roleName
+        type: string
+      - description: Filter by role slug
+        in: query
+        name: roleSlug
+        type: string
+      - description: Filter by role status enum
+        in: query
+        name: roleStatus
+        type: integer
+      - description: Filter by system role flag
+        in: query
+        name: isSystemRole
+        type: boolean
+      - description: Filter by full name
+        in: query
+        name: fullName
+        type: string
+      - description: Filter by CPF
+        in: query
+        name: cpf
+        type: string
+      - description: Filter by email
+        in: query
+        name: email
+        type: string
+      - description: Filter by phone
+        in: query
+        name: phoneNumber
+        type: string
+      - description: Filter by deletion flag
+        in: query
+        name: deleted
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List admin-facing users with filters
       tags:
       - Admin
   /auth/agency:
@@ -1999,6 +2705,219 @@ paths:
       security:
       - BearerAuth: []
       summary: Get listing options
+      tags:
+      - Listings
+  /listings/photo-session/cancel:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Cancel payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CancelPhotoSessionRequest'
+        x-example: '{"photoSessionId":3003}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Photo session not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancel a booked photo session
+      tags:
+      - Listings
+  /listings/photo-session/confirm:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Confirmation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionRequest'
+        x-example: '{"listingId":1001,"slotId":2002,"reservationToken":"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Reservation not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Slot unavailable
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm a photo session reservation
+      tags:
+      - Listings
+  /listings/photo-session/reserve:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Reservation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionRequest'
+        x-example: '{"listingId":1001,"slotId":2002}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionResponse'
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Slot or listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Slot unavailable
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reserve a photo session slot
+      tags:
+      - Listings
+  /listings/photo-session/slots:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Start date filter (YYYY-MM-DD)
+        example: "2025-10-20"
+        format: date
+        in: query
+        name: from
+        type: string
+      - description: End date filter (YYYY-MM-DD)
+        example: "2025-10-31"
+        format: date
+        in: query
+        name: to
+        type: string
+      - description: Slot period
+        enum:
+        - MORNING
+        - AFTERNOON
+        example: MORNING
+        in: query
+        name: period
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: size
+        type: integer
+      - default: date_asc
+        description: Sort order
+        enum:
+        - date_asc
+        - date_desc
+        - photographer_asc
+        - photographer_desc
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse'
+        "400":
+          description: Invalid filters
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List available photographer slots
       tags:
       - Listings
   /realtor/creci/upload-url:

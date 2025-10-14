@@ -34,4 +34,12 @@ var (
 	ErrReservationExpired        = errors.New("photographer slot reservation expired")
 	ErrListingNotEligible        = errors.New("listing not eligible for photo session")
 	ErrPhotoSessionNotCancelable = errors.New("photo session cannot be cancelled")
+
+	ErrRoleNotSystem          = errors.New("role is not marked as system role")
+	ErrAdminRoleProtected     = errors.New("admin role cannot be altered")
+	ErrCannotDeleteLoggedUser = errors.New("logged user cannot delete itself")
+	ErrUserAlreadyDeleted     = errors.New("user already deleted")
+	ErrRoleSlugImmutable      = errors.New("role slug cannot be changed")
+	ErrSystemUserRoleMismatch = errors.New("user role slug mismatch")
+	ErrRoleDeletionHasUsers   = errors.New("role still assigned to users")
 )

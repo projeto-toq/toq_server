@@ -14,6 +14,7 @@ type PermissionRepositoryInterface interface {
 	GetRoleByID(ctx context.Context, tx *sql.Tx, roleID int64) (permissionmodel.RoleInterface, error)
 	GetRoleBySlug(ctx context.Context, tx *sql.Tx, slug string) (permissionmodel.RoleInterface, error)
 	GetAllRoles(ctx context.Context, tx *sql.Tx) ([]permissionmodel.RoleInterface, error)
+	ListRoles(ctx context.Context, tx *sql.Tx, filter RoleListFilter) (RoleListResult, error)
 	UpdateRole(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleInterface) error
 	DeleteRole(ctx context.Context, tx *sql.Tx, roleID int64) error
 
@@ -55,4 +56,18 @@ type PermissionRepositoryInterface interface {
 	GetUserPermissions(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
 	HasUserPermission(ctx context.Context, tx *sql.Tx, userID int64, resource, action string) (bool, error)
 	GetUserPermissionsByResource(ctx context.Context, tx *sql.Tx, userID int64, resource string) ([]permissionmodel.PermissionInterface, error)
+}
+
+type RoleListFilter struct {
+	Page         int
+	Limit        int
+	Name         string
+	Slug         string
+	IsSystemRole *bool
+	IsActive     *bool
+}
+
+type RoleListResult struct {
+	Roles []permissionmodel.RoleInterface
+	Total int64
 }

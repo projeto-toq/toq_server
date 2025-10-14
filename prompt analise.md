@@ -6,16 +6,13 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Continuando com a criação do toq_server, precisamos criar as agendas dos fotografos.
-- Fotografos, role photographer, é um usuário com is_system_role = true.
-- existem vários fotografos no sistema.
-- cada fotografo tem uma agenda de fotos, com datas e horários disponíveis e alocados para efetuar fotos dos imóveis.
-- Ao final do cadastramento do imóvel, o proprietário deverá ver os horários disponíveis e escolher um horário para a foto do imóvel. esta busca de horários disponíveis deve ser feita em todas as agendas dos fotógrafos.
-- O proprietário só poderá escolher um horário disponível.
-- Ao escolher o horário, o sistema deve alocar este horário na agenda do fotógrafo.
-- O tempod para execução das fotos é de 4 horas, portanto, cada sessão ocorrerá de manha ou de tarde.
-- Considernando as regras acima, e o atual banco de dados que tema representação de suas tabelas no script /scripts/db_creation.sql, qual sua sugestão de modelo de dados para representar as agendas dos fotógrafos?
- 
+Continuando com a criação do toq_server, precisamos
+
+- Criar um CRUD para gerencias o permissionamento de usuários via roles.
+- permitir criar, editar, listar e deletar permissões de acesso atualizando as tabelas permissions e role_permissions.
+- estas rotas serão acessiveis apenas para usuários com a role admin.
+- deverá haver rotas para gerencias as permissões e rotas para associar as roles as permissoes
+
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

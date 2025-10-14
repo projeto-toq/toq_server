@@ -2,49 +2,74 @@ package userservices
 
 import (
 	"context"
+	"strings"
 
-	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (us *userService) GetUsers(ctx context.Context) (users []usermodel.UserInterface, err error) {
+// ListUsers retorna usuários com filtros e paginação para o painel admin.
+func (us *userService) ListUsers(ctx context.Context, input ListUsersInput) (ListUsersOutput, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return nil, utils.InternalError("Failed to generate tracer")
+		return ListUsersOutput{}, utils.InternalError("Failed to generate tracer")
 	}
 	defer spanEnd()
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	// Start transaction
-	tx, txErr := us.globalService.StartTransaction(ctx)
+	if input.Page <= 0 {
+		input.Page = 1
+	}
+	if input.Limit <= 0 {
+		input.Limit = 20
+	}
+
+	tx, txErr := us.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("user.get_users.tx_start_error", "error", txErr)
-		return nil, utils.InternalError("Failed to start transaction")
+		logger.Error("admin.users.list.tx_start_failed", "error", txErr)
+		return ListUsersOutput{}, utils.InternalError("")
 	}
 	defer func() {
-		if err != nil {
-			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				utils.SetSpanError(ctx, rbErr)
-				logger.Error("user.get_users.tx_rollback_error", "error", rbErr)
-			}
-		}
+		_ = us.globalService.RollbackTransaction(ctx, tx)
 	}()
 
-	users, err = us.repo.GetUsers(ctx, tx)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.get_users.read_users_error", "error", err)
-		return nil, utils.MapRepositoryError(err, "Users not found")
+	var statusPtr *permissionmodel.UserRoleStatus
+	if input.RoleStatus != nil {
+		statusCopy := *input.RoleStatus
+		statusPtr = &statusCopy
 	}
 
-	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {
-		utils.SetSpanError(ctx, cmErr)
-		logger.Error("user.get_users.tx_commit_error", "error", cmErr)
-		return nil, utils.InternalError("Failed to commit transaction")
+	filter := userrepository.ListUsersFilter{
+		Page:         input.Page,
+		Limit:        input.Limit,
+		RoleName:     strings.TrimSpace(input.RoleName),
+		RoleSlug:     strings.TrimSpace(input.RoleSlug),
+		RoleStatus:   statusPtr,
+		IsSystemRole: input.IsSystemRole,
+		FullName:     strings.TrimSpace(input.FullName),
+		CPF:          strings.TrimSpace(input.CPF),
+		Email:        strings.TrimSpace(input.Email),
+		PhoneNumber:  strings.TrimSpace(input.PhoneNumber),
+		Deleted:      input.Deleted,
 	}
 
-	return
+	result, listErr := us.repo.ListUsersWithFilters(ctx, tx, filter)
+	if listErr != nil {
+		utils.SetSpanError(ctx, listErr)
+		logger.Error("admin.users.list.repo_error", "error", listErr)
+		return ListUsersOutput{}, utils.InternalError("")
+	}
+
+	output := ListUsersOutput{
+		Users: result.Users,
+		Total: result.Total,
+		Page:  filter.Page,
+		Limit: filter.Limit,
+	}
+
+	return output, nil
 }
