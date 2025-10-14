@@ -54,8 +54,8 @@ id;name;resource;action;description;conditions;is_active
 53;HTTP AddAlternativeUserRole;http;POST:/api/v2/user/role/alternative;Permite solicitar criação de role alternativo (owner↔realtor);NULL;1
 54;HTTP SwitchUserRole;http;POST:/api/v2/user/role/switch;Permite alternar a role ativa do usuário autenticado;NULL;1
 55;HTTP Get all listing options;http;POST:/api/v2/listings/options;Permite obter opções de listing baseadas em endereço;NULL;1
-56;HTTP Start new Listing;http;POST:/api/v2/listing;Permite iniciar o processo de criação de um novo listing;NULL;1
-57;HTTP Update a Listing;http;PUT:/api/v2/listing;Permite atualizar um listing específico em draft;NULL;1
+56;HTTP Start new Listing;http;POST:/api/v2/listings;Permite iniciar o processo de criação de um novo listing;NULL;1
+57;HTTP Update a Listing;http;PUT:/api/v2/listings;Permite atualizar um listing específico em draft;NULL;1
 58;HTTP Get Listing Catalog;http;GET:/api/v2/listings/catalog;Permite consultar valores de catálogo de listings;NULL;1
 59;HTTP Admin Get Listing Catalog;http;GET:/api/v2/admin/listing/catalog;Permite listar valores de catálogo de listings no painel admin;NULL;1
 60;HTTP Admin Create Listing Catalog;http;POST:/api/v2/admin/listing/catalog;Permite criar novos valores no catálogo de listings;NULL;1

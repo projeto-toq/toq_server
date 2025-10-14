@@ -40,7 +40,49 @@ type StartListingResponse struct {
 	ID int64 `json:"id"`
 }
 
-// UpdateListingRequest represents request for updating a listing
+// UpdateListingRequest represents request for updating a listing.
+//
+// Exemplo completo de payload (todos os campos preenchidos):
+//
+//	{
+//	  "id": 98765,
+//	  "owner": 2,
+//	  "features": [
+//	    {"featureId": 101, "quantity": 2},
+//	    {"featureId": 205, "quantity": 1}
+//	  ],
+//	  "landSize": 423.5,
+//	  "corner": true,
+//	  "nonBuildable": 12.75,
+//	  "buildable": 410.75,
+//	  "delivered": 1,
+//	  "whoLives": 3,
+//	  "description": "Apartamento amplo com vista panoramica",
+//	  "transaction": 2,
+//	  "sellNet": 1200000,
+//	  "rentNet": 8500,
+//	  "condominium": 1200.5,
+//	  "annualTax": 3400.75,
+//	  "annualGroundRent": 1800,
+//	  "exchange": true,
+//	  "exchangePercentual": 50,
+//	  "exchangePlaces": [
+//	    {"neighborhood": "Vila Mariana", "city": "Sao Paulo", "state": "SP"},
+//	    {"neighborhood": "Centro", "city": "Campinas", "state": "SP"}
+//	  ],
+//	  "installment": 2,
+//	  "financing": true,
+//	  "financingBlockers": [4, 7],
+//	  "guarantees": [
+//	    {"priority": 1, "guarantee": 33},
+//	    {"priority": 2, "guarantee": 34}
+//	  ],
+//	  "visit": 3,
+//	  "tenantName": "Joao da Silva",
+//	  "tenantEmail": "joao.silva@example.com",
+//	  "tenantPhone": "+55 11 91234-5678",
+//	  "accompanying": 2
+//	}
 type UpdateListingRequest struct {
 	ID                 coreutils.Optional[int64]                               `json:"id"`
 	Owner              coreutils.Optional[int]                                 `json:"owner"`
