@@ -377,6 +377,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 1,
+                        "example": 1,
                         "description": "Page number",
                         "name": "page",
                         "in": "query"
@@ -384,32 +385,58 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 20,
+                        "example": 20,
                         "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by name",
+                        "example": "\"*Manager*\"",
+                        "description": "Filter by name (supports '*' wildcard)",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by slug",
+                        "example": "\"*admin*\"",
+                        "description": "Filter by slug (supports '*' wildcard)",
                         "name": "slug",
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "example": "\"*acesso*\"",
+                        "description": "Filter by description (supports '*' wildcard)",
+                        "name": "description",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
+                        "example": true,
                         "description": "Filter by system role flag",
                         "name": "isSystemRole",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
+                        "example": true,
                         "description": "Filter by active flag",
                         "name": "isActive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 10,
+                        "description": "Filter by role ID (from)",
+                        "name": "idFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 200,
+                        "description": "Filter by role ID (to)",
+                        "name": "idTo",
                         "in": "query"
                     }
                 ],
@@ -1176,6 +1203,24 @@ const docTemplate = `{
                     "Admin"
                 ],
                 "summary": "List realtors pending manual validation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "example": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "example": 20,
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1227,6 +1272,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 1,
+                        "example": 1,
                         "description": "Page number",
                         "name": "page",
                         "in": "query"
@@ -1234,62 +1280,114 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 20,
+                        "example": 20,
                         "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by role name",
+                        "example": "\"*manager*\"",
+                        "description": "Filter by role name (supports '*' wildcard)",
                         "name": "roleName",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by role slug",
+                        "example": "\"*admin*\"",
+                        "description": "Filter by role slug (supports '*' wildcard)",
                         "name": "roleSlug",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Filter by role status enum",
                         "name": "roleStatus",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
+                        "example": true,
                         "description": "Filter by system role flag",
                         "name": "isSystemRole",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by full name",
+                        "example": "\"*Silva*\"",
+                        "description": "Filter by full name (supports '*' wildcard)",
                         "name": "fullName",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by CPF",
+                        "example": "\"123*456\"",
+                        "description": "Filter by CPF (supports '*' wildcard)",
                         "name": "cpf",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by email",
+                        "example": "\"*toq.com*\"",
+                        "description": "Filter by email (supports '*' wildcard)",
                         "name": "email",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by phone",
+                        "example": "\"*119*\"",
+                        "description": "Filter by phone (supports '*' wildcard)",
                         "name": "phoneNumber",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
+                        "example": false,
                         "description": "Filter by deletion flag",
                         "name": "deleted",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 100,
+                        "description": "Filter by user ID (from)",
+                        "name": "idFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 250,
+                        "description": "Filter by user ID (to)",
+                        "name": "idTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"1990-01-01\"",
+                        "description": "Filter by birth date from (RFC3339 or YYYY-MM-DD)",
+                        "name": "bornAtFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2000-12-31\"",
+                        "description": "Filter by birth date to (RFC3339 or YYYY-MM-DD)",
+                        "name": "bornAtTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2025-01-01T00:00:00Z\"",
+                        "description": "Filter by last activity from (RFC3339 or YYYY-MM-DD)",
+                        "name": "lastActivityFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2025-01-31T23:59:59Z\"",
+                        "description": "Filter by last activity to (RFC3339 or YYYY-MM-DD)",
+                        "name": "lastActivityTo",
                         "in": "query"
                     }
                 ],
@@ -1962,66 +2060,134 @@ const docTemplate = `{
         },
         "/listings": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get all listings with optional filters for status, location, price range, etc.",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Supports pagination, wildcard search for strings using '*', and range filters for numbers and dates.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Listings"
                 ],
-                "summary": "Get all listings with pagination and filters",
+                "summary": "List all listings with filters",
                 "parameters": [
                     {
-                        "minimum": 1,
                         "type": "integer",
-                        "description": "Page number (default: 1)",
+                        "default": 1,
+                        "example": 1,
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
-                        "maximum": 100,
-                        "minimum": 1,
                         "type": "integer",
-                        "description": "Items per page (default: 10)",
+                        "default": 10,
+                        "example": 20,
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by listing status",
+                        "example": "\"PUBLISHED\"",
+                        "description": "Listing status (enum name or numeric)",
                         "name": "status",
                         "in": "query"
                     },
                     {
+                        "type": "integer",
+                        "example": 1024,
+                        "description": "Exact listing code",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
-                        "description": "Filter by user ID",
+                        "example": "\"*garden*\"",
+                        "description": "Filter by listing title/description (supports '*' wildcard)",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 55,
+                        "description": "Filter by owner user id",
                         "name": "userId",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by zip code",
+                        "example": "\"12345*\"",
+                        "description": "Filter by zip code (supports '*' wildcard)",
                         "name": "zipCode",
                         "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "description": "Minimum price filter",
-                        "name": "minPrice",
+                        "type": "string",
+                        "example": "\"*Paulista*\"",
+                        "description": "Filter by city (supports '*' wildcard)",
+                        "name": "city",
                         "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "description": "Maximum price filter",
-                        "name": "maxPrice",
+                        "type": "string",
+                        "example": "\"*Centro*\"",
+                        "description": "Filter by neighborhood (supports '*' wildcard)",
+                        "name": "neighborhood",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2025-01-01\"",
+                        "description": "Filter by creation date from (RFC3339 or YYYY-MM-DD)",
+                        "name": "createdFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2025-01-31\"",
+                        "description": "Filter by creation date to (RFC3339 or YYYY-MM-DD)",
+                        "name": "createdTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "example": 100000,
+                        "description": "Minimum sell price",
+                        "name": "minSell",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "example": 900000,
+                        "description": "Maximum sell price",
+                        "name": "maxSell",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "example": 1500,
+                        "description": "Minimum rent price",
+                        "name": "minRent",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "example": 8000,
+                        "description": "Maximum rent price",
+                        "name": "maxRent",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "example": 120.5,
+                        "description": "Minimum land size",
+                        "name": "minLandSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "example": 500.75,
+                        "description": "Maximum land size",
+                        "name": "maxLandSize",
                         "in": "query"
                     }
                 ],
@@ -2033,33 +2199,31 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid request parameters",
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "501": {
-                        "description": "Service method not implemented",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -3971,6 +4135,9 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse": {
             "type": "object",
             "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                },
                 "realtors": {
                     "type": "array",
                     "items": {

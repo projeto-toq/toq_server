@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"time"
+
+	// "time"
 
 	listingconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/converters"
 	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
@@ -135,8 +136,8 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	l.tenant_phone,
 	l.accompanying,
 	l.deleted,
-	l.created_at, //TODO não existe no database
-	l.updated_at  //TODO não existe no database
+	// l.created_at, // não existe no database
+	// l.updated_at  // não existe no database
 	FROM listings l`
 
 	listQuery := baseSelect + " " + whereClause + " ORDER BY l.id DESC LIMIT ? OFFSET ?"
@@ -194,8 +195,8 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 			&entity.TenantPhone,
 			&entity.Accompanying,
 			&entity.Deleted,
-			&entity.CreatedAt,
-			&entity.UpdatedAt,
+			// &entity.CreatedAt,
+			// &entity.UpdatedAt,
 		)
 		if scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
@@ -205,21 +206,21 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 
 		listing := listingconverters.ListingEntityToDomain(entity)
 		if listing != nil {
-			var createdAt *time.Time
-			if entity.CreatedAt.Valid {
-				ts := entity.CreatedAt.Time
-				createdAt = &ts
-			}
-			var updatedAt *time.Time
-			if entity.UpdatedAt.Valid {
-				ts := entity.UpdatedAt.Time
-				updatedAt = &ts
-			}
+			// var createdAt *time.Time
+			// if entity.CreatedAt.Valid {
+			// 	ts := entity.CreatedAt.Time
+			// 	createdAt = &ts
+			// }
+			// var updatedAt *time.Time
+			// if entity.UpdatedAt.Valid {
+			// 	ts := entity.UpdatedAt.Time
+			// 	updatedAt = &ts
+			// }
 
 			result.Records = append(result.Records, listingrepository.ListingRecord{
-				Listing:   listing,
-				CreatedAt: createdAt,
-				UpdatedAt: updatedAt,
+				Listing: listing,
+				// CreatedAt: createdAt,
+				// UpdatedAt: updatedAt,
 			})
 		}
 	}

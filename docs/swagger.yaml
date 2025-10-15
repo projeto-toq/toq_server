@@ -124,6 +124,8 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse:
     properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
       realtors:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor'
@@ -1505,30 +1507,51 @@ paths:
       parameters:
       - default: 1
         description: Page number
+        example: 1
         in: query
         name: page
         type: integer
       - default: 20
         description: Page size
+        example: 20
         in: query
         name: limit
         type: integer
-      - description: Filter by name
+      - description: Filter by name (supports '*' wildcard)
+        example: '"*Manager*"'
         in: query
         name: name
         type: string
-      - description: Filter by slug
+      - description: Filter by slug (supports '*' wildcard)
+        example: '"*admin*"'
         in: query
         name: slug
         type: string
+      - description: Filter by description (supports '*' wildcard)
+        example: '"*acesso*"'
+        in: query
+        name: description
+        type: string
       - description: Filter by system role flag
+        example: true
         in: query
         name: isSystemRole
         type: boolean
       - description: Filter by active flag
+        example: true
         in: query
         name: isActive
         type: boolean
+      - description: Filter by role ID (from)
+        example: 10
+        in: query
+        name: idFrom
+        type: integer
+      - description: Filter by role ID (to)
+        example: 200
+        in: query
+        name: idTo
+        type: integer
       produces:
       - application/json
       responses:
@@ -2005,6 +2028,19 @@ paths:
     get:
       description: Returns id, nickname, fullName, nationalID, creciNumber, creciValidity,
         creciState
+      parameters:
+      - default: 1
+        description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        example: 20
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -2040,50 +2076,91 @@ paths:
       parameters:
       - default: 1
         description: Page number
+        example: 1
         in: query
         name: page
         type: integer
       - default: 20
         description: Page size
+        example: 20
         in: query
         name: limit
         type: integer
-      - description: Filter by role name
+      - description: Filter by role name (supports '*' wildcard)
+        example: '"*manager*"'
         in: query
         name: roleName
         type: string
-      - description: Filter by role slug
+      - description: Filter by role slug (supports '*' wildcard)
+        example: '"*admin*"'
         in: query
         name: roleSlug
         type: string
       - description: Filter by role status enum
+        example: 1
         in: query
         name: roleStatus
         type: integer
       - description: Filter by system role flag
+        example: true
         in: query
         name: isSystemRole
         type: boolean
-      - description: Filter by full name
+      - description: Filter by full name (supports '*' wildcard)
+        example: '"*Silva*"'
         in: query
         name: fullName
         type: string
-      - description: Filter by CPF
+      - description: Filter by CPF (supports '*' wildcard)
+        example: '"123*456"'
         in: query
         name: cpf
         type: string
-      - description: Filter by email
+      - description: Filter by email (supports '*' wildcard)
+        example: '"*toq.com*"'
         in: query
         name: email
         type: string
-      - description: Filter by phone
+      - description: Filter by phone (supports '*' wildcard)
+        example: '"*119*"'
         in: query
         name: phoneNumber
         type: string
       - description: Filter by deletion flag
+        example: false
         in: query
         name: deleted
         type: boolean
+      - description: Filter by user ID (from)
+        example: 100
+        in: query
+        name: idFrom
+        type: integer
+      - description: Filter by user ID (to)
+        example: 250
+        in: query
+        name: idTo
+        type: integer
+      - description: Filter by birth date from (RFC3339 or YYYY-MM-DD)
+        example: '"1990-01-01"'
+        in: query
+        name: bornAtFrom
+        type: string
+      - description: Filter by birth date to (RFC3339 or YYYY-MM-DD)
+        example: '"2000-12-31"'
+        in: query
+        name: bornAtTo
+        type: string
+      - description: Filter by last activity from (RFC3339 or YYYY-MM-DD)
+        example: '"2025-01-01T00:00:00Z"'
+        in: query
+        name: lastActivityFrom
+        type: string
+      - description: Filter by last activity to (RFC3339 or YYYY-MM-DD)
+        example: '"2025-01-31T23:59:59Z"'
+        in: query
+        name: lastActivityTo
+        type: string
       produces:
       - application/json
       responses:
@@ -2543,42 +2620,96 @@ paths:
       - Authentication
   /listings:
     get:
-      consumes:
-      - application/json
-      description: Get all listings with optional filters for status, location, price
-        range, etc.
+      description: Supports pagination, wildcard search for strings using '*', and
+        range filters for numbers and dates.
       parameters:
-      - description: 'Page number (default: 1)'
+      - default: 1
+        description: Page number
+        example: 1
         in: query
-        minimum: 1
         name: page
         type: integer
-      - description: 'Items per page (default: 10)'
+      - default: 10
+        description: Page size
+        example: 20
         in: query
-        maximum: 100
-        minimum: 1
         name: limit
         type: integer
-      - description: Filter by listing status
+      - description: Listing status (enum name or numeric)
+        example: '"PUBLISHED"'
         in: query
         name: status
         type: string
-      - description: Filter by user ID
+      - description: Exact listing code
+        example: 1024
+        in: query
+        name: code
+        type: integer
+      - description: Filter by listing title/description (supports '*' wildcard)
+        example: '"*garden*"'
+        in: query
+        name: title
+        type: string
+      - description: Filter by owner user id
+        example: 55
         in: query
         name: userId
-        type: string
-      - description: Filter by zip code
+        type: integer
+      - description: Filter by zip code (supports '*' wildcard)
+        example: '"12345*"'
         in: query
         name: zipCode
         type: string
-      - description: Minimum price filter
+      - description: Filter by city (supports '*' wildcard)
+        example: '"*Paulista*"'
         in: query
-        name: minPrice
-        type: integer
-      - description: Maximum price filter
+        name: city
+        type: string
+      - description: Filter by neighborhood (supports '*' wildcard)
+        example: '"*Centro*"'
         in: query
-        name: maxPrice
-        type: integer
+        name: neighborhood
+        type: string
+      - description: Filter by creation date from (RFC3339 or YYYY-MM-DD)
+        example: '"2025-01-01"'
+        in: query
+        name: createdFrom
+        type: string
+      - description: Filter by creation date to (RFC3339 or YYYY-MM-DD)
+        example: '"2025-01-31"'
+        in: query
+        name: createdTo
+        type: string
+      - description: Minimum sell price
+        example: 100000
+        in: query
+        name: minSell
+        type: number
+      - description: Maximum sell price
+        example: 900000
+        in: query
+        name: maxSell
+        type: number
+      - description: Minimum rent price
+        example: 1500
+        in: query
+        name: minRent
+        type: number
+      - description: Maximum rent price
+        example: 8000
+        in: query
+        name: maxRent
+        type: number
+      - description: Minimum land size
+        example: 120.5
+        in: query
+        name: minLandSize
+        type: number
+      - description: Maximum land size
+        example: 500.75
+        in: query
+        name: maxLandSize
+        type: number
       produces:
       - application/json
       responses:
@@ -2587,28 +2718,26 @@ paths:
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetAllListingsResponse'
         "400":
-          description: Invalid request parameters
+          description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            additionalProperties: true
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            additionalProperties: true
+            type: object
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+            additionalProperties: true
+            type: object
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "501":
-          description: Service method not implemented
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get all listings with pagination and filters
+            additionalProperties: true
+            type: object
+      summary: List all listings with filters
       tags:
       - Listings
     post:

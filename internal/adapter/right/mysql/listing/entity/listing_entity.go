@@ -48,8 +48,8 @@ type ListingEntity struct {
 	TenantPhone        sql.NullString
 	Accompanying       sql.NullInt16
 	Deleted            sql.NullInt16
-	CreatedAt          sql.NullTime //TODO não existe no database
-	UpdatedAt          sql.NullTime //TODO não existe no database
+	// CreatedAt          sql.NullTime // não existe no database
+	// UpdatedAt          sql.NullTime // não existe no database
 }
 
 func (e *ListingEntity) ToString(entity sql.NullString) string {
