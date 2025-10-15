@@ -16,8 +16,11 @@ type ListRolesInput struct {
 	Limit        int
 	Name         string
 	Slug         string
+	Description  string
 	IsSystemRole *bool
 	IsActive     *bool
+	IDFrom       *int64
+	IDTo         *int64
 }
 
 // ListRolesOutput agrega roles e metadados de paginação.
@@ -60,10 +63,13 @@ func (p *permissionServiceImpl) ListRoles(ctx context.Context, input ListRolesIn
 	repoFilter := permissionrepository.RoleListFilter{
 		Page:         input.Page,
 		Limit:        input.Limit,
-		Name:         input.Name,
-		Slug:         input.Slug,
+		Name:         utils.NormalizeSearchPattern(input.Name),
+		Slug:         utils.NormalizeSearchPattern(input.Slug),
+		Description:  utils.NormalizeSearchPattern(input.Description),
 		IsSystemRole: input.IsSystemRole,
 		IsActive:     input.IsActive,
+		IDFrom:       input.IDFrom,
+		IDTo:         input.IDTo,
 	}
 
 	res, listErr := p.permissionRepository.ListRoles(ctx, tx, repoFilter)
@@ -269,4 +275,73 @@ func (p *permissionServiceImpl) DeleteRole(ctx context.Context, roleID int64) er
 
 	logger.Info("permission.role.deactivated", "role_id", roleID, "slug", slug)
 	return nil
+}
+
+// RestoreRole reactivates a previously deactivated role.
+func (p *permissionServiceImpl) RestoreRole(ctx context.Context, roleID int64) (permissionmodel.RoleInterface, error) {
+	ctx, end, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return nil, utils.InternalError("Failed to generate tracer")
+	}
+	defer end()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	if roleID <= 0 {
+		return nil, utils.BadRequest("invalid role id")
+	}
+
+	tx, txErr := p.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("permission.role.restore.tx_start_failed", "role_id", roleID, "error", txErr)
+		return nil, utils.InternalError("")
+	}
+
+	var opErr error
+	defer func() {
+		if opErr != nil {
+			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
+				logger.Error("permission.role.restore.tx_rollback_failed", "role_id", roleID, "error", rbErr)
+			}
+		}
+	}()
+
+	existing, repoErr := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
+	if repoErr != nil {
+		utils.SetSpanError(ctx, repoErr)
+		logger.Error("permission.role.restore.repo_get_error", "role_id", roleID, "error", repoErr)
+		opErr = utils.InternalError("")
+		return nil, opErr
+	}
+	if existing == nil {
+		opErr = utils.NotFoundError("role")
+		return nil, opErr
+	}
+
+	if existing.GetIsActive() {
+		opErr = utils.ConflictError("role already active")
+		return nil, opErr
+	}
+
+	originalSlug := existing.GetSlug()
+	existing.SetIsActive(true)
+
+	if updateErr := p.permissionRepository.UpdateRole(ctx, tx, existing); updateErr != nil {
+		utils.SetSpanError(ctx, updateErr)
+		logger.Error("permission.role.restore.repo_update_error", "role_id", roleID, "error", updateErr)
+		opErr = utils.InternalError("")
+		return nil, opErr
+	}
+
+	if commitErr := p.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+		utils.SetSpanError(ctx, commitErr)
+		logger.Error("permission.role.restore.tx_commit_failed", "role_id", roleID, "error", commitErr)
+		return nil, utils.InternalError("")
+	}
+
+	logger.Info("permission.role.restored", "role_id", roleID, "slug", originalSlug)
+	return existing, nil
 }

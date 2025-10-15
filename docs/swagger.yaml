@@ -186,6 +186,14 @@ definitions:
       nickName:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRestoreRoleRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleResponse:
     properties:
       id:
@@ -601,6 +609,17 @@ definitions:
         type: string
     required:
     - category
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogRestoreRequest:
+    properties:
+      category:
+        type: string
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - category
+    - id
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogUpdateRequest:
     properties:
@@ -1382,6 +1401,57 @@ paths:
       summary: Update a listing catalog value
       tags:
       - Admin
+  /admin/listing/catalog/restore:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Reactivation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogRestoreRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Reactivate a listing catalog value
+      tags:
+      - Admin
   /admin/roles:
     delete:
       consumes:
@@ -1582,6 +1652,57 @@ paths:
             additionalProperties: true
             type: object
       summary: Update a role
+      tags:
+      - Admin
+  /admin/roles/restore:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role reactivation payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRestoreRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Reactivate a role
       tags:
       - Admin
   /admin/system-users:

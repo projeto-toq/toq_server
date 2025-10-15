@@ -19,6 +19,8 @@ func NewUserAdapter(db *mysqluseradapter.Database) *UserAdapter {
 	}
 }
 
+//TODO estas funções não podem estar neste arquivo. Aqui só interface e NewFUNC
+
 // GetDeviceTokenRepository returns a repository bound to the underlying *sql.DB
 // Avoids leaking *sql.DB outside adapter layer.
 func (ua *UserAdapter) GetDeviceTokenRepository() *DeviceTokenRepository {

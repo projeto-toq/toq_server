@@ -3,6 +3,7 @@ package listingrepository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 )
@@ -29,6 +30,7 @@ type ListingRepoPortInterface interface {
 	GetBaseFeatures(ctx context.Context, tx *sql.Tx) (features []listingmodel.BaseFeatureInterface, err error)
 	GetListingByZipNumber(ctx context.Context, tx *sql.Tx, zip string, number string) (listing listingmodel.ListingInterface, err error)
 	GetListingByID(ctx context.Context, tx *sql.Tx, listingID int64) (listing listingmodel.ListingInterface, err error)
+	ListListings(ctx context.Context, tx *sql.Tx, filter ListListingsFilter) (ListListingsResult, error)
 
 	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
 	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)
@@ -37,4 +39,35 @@ type ListingRepoPortInterface interface {
 	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
 	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
 	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
+}
+
+type ListListingsFilter struct {
+	Page         int
+	Limit        int
+	Status       *listingmodel.ListingStatus
+	Code         *uint32
+	Title        string
+	ZipCode      string
+	City         string
+	Neighborhood string
+	UserID       *int64
+	CreatedFrom  *time.Time
+	CreatedTo    *time.Time
+	MinSellPrice *float64
+	MaxSellPrice *float64
+	MinRentPrice *float64
+	MaxRentPrice *float64
+	MinLandSize  *float64
+	MaxLandSize  *float64
+}
+
+type ListListingsResult struct {
+	Records []ListingRecord
+	Total   int64
+}
+
+type ListingRecord struct {
+	Listing   listingmodel.ListingInterface
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
 }

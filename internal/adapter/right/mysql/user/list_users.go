@@ -39,10 +39,10 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 
 	if filter.RoleName != "" {
 		conditions = append(conditions, "r.name LIKE ?")
-		args = append(args, "%"+filter.RoleName+"%")
+		args = append(args, filter.RoleName)
 	}
 	if filter.RoleSlug != "" {
-		conditions = append(conditions, "r.slug = ?")
+		conditions = append(conditions, "r.slug LIKE ?")
 		args = append(args, filter.RoleSlug)
 	}
 	if filter.RoleStatus != nil {
@@ -59,19 +59,19 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 	}
 	if filter.FullName != "" {
 		conditions = append(conditions, "u.full_name LIKE ?")
-		args = append(args, "%"+filter.FullName+"%")
+		args = append(args, filter.FullName)
 	}
 	if filter.CPF != "" {
-		conditions = append(conditions, "u.national_id = ?")
+		conditions = append(conditions, "u.national_id LIKE ?")
 		args = append(args, filter.CPF)
 	}
 	if filter.Email != "" {
 		conditions = append(conditions, "u.email LIKE ?")
-		args = append(args, "%"+filter.Email+"%")
+		args = append(args, filter.Email)
 	}
 	if filter.PhoneNumber != "" {
 		conditions = append(conditions, "u.phone_number LIKE ?")
-		args = append(args, "%"+filter.PhoneNumber+"%")
+		args = append(args, filter.PhoneNumber)
 	}
 	if filter.Deleted != nil {
 		conditions = append(conditions, "u.deleted = ?")
@@ -80,6 +80,30 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 		} else {
 			args = append(args, 0)
 		}
+	}
+	if filter.IDFrom != nil {
+		conditions = append(conditions, "u.id >= ?")
+		args = append(args, *filter.IDFrom)
+	}
+	if filter.IDTo != nil {
+		conditions = append(conditions, "u.id <= ?")
+		args = append(args, *filter.IDTo)
+	}
+	if filter.BornAtFrom != nil {
+		conditions = append(conditions, "u.born_at >= ?")
+		args = append(args, *filter.BornAtFrom)
+	}
+	if filter.BornAtTo != nil {
+		conditions = append(conditions, "u.born_at <= ?")
+		args = append(args, *filter.BornAtTo)
+	}
+	if filter.LastActivityFrom != nil {
+		conditions = append(conditions, "u.last_activity_at >= ?")
+		args = append(args, *filter.LastActivityFrom)
+	}
+	if filter.LastActivityTo != nil {
+		conditions = append(conditions, "u.last_activity_at <= ?")
+		args = append(args, *filter.LastActivityTo)
 	}
 
 	whereClause := "WHERE " + strings.Join(conditions, " AND ")

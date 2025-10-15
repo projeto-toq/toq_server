@@ -9,7 +9,7 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 Continuando com a criação do toq_server, precisamos
 
 - Criar um CRUD para gerencias o permissionamento de usuários via roles.
-- permitir criar, editar, listar e deletar permissões de acesso atualizando as tabelas permissions e role_permissions.
+- permitir criar, editar, listar e deletar (hard delete) permissões de acesso atualizando as tabelas permissions e role_permissions.
 - estas rotas serão acessiveis apenas para usuários com a role admin.
 - deverá haver rotas para gerencias as permissões e rotas para associar as roles as permissoes
 

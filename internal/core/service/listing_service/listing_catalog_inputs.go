@@ -22,6 +22,11 @@ type UpdateCatalogValueInput struct {
 	IsActive    coreutils.Optional[bool]
 }
 
+type RestoreCatalogValueInput struct {
+	Category string
+	ID       uint8
+}
+
 func (in CreateCatalogValueInput) ToDomain(nextID uint8) listingmodel.CatalogValueInterface {
 	value := listingmodel.NewCatalogValue()
 	value.SetID(nextID)

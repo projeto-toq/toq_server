@@ -35,11 +35,15 @@ func (pa *PermissionAdapter) ListRoles(ctx context.Context, tx *sql.Tx, filter p
 
 	if filter.Name != "" {
 		conditions = append(conditions, "r.name LIKE ?")
-		args = append(args, "%"+filter.Name+"%")
+		args = append(args, filter.Name)
 	}
 	if filter.Slug != "" {
-		conditions = append(conditions, "r.slug = ?")
+		conditions = append(conditions, "r.slug LIKE ?")
 		args = append(args, filter.Slug)
+	}
+	if filter.Description != "" {
+		conditions = append(conditions, "r.description LIKE ?")
+		args = append(args, filter.Description)
 	}
 	if filter.IsSystemRole != nil {
 		conditions = append(conditions, "r.is_system_role = ?")
@@ -56,6 +60,14 @@ func (pa *PermissionAdapter) ListRoles(ctx context.Context, tx *sql.Tx, filter p
 		} else {
 			args = append(args, 0)
 		}
+	}
+	if filter.IDFrom != nil {
+		conditions = append(conditions, "r.id >= ?")
+		args = append(args, *filter.IDFrom)
+	}
+	if filter.IDTo != nil {
+		conditions = append(conditions, "r.id <= ?")
+		args = append(args, *filter.IDTo)
 	}
 
 	whereClause := "WHERE " + strings.Join(conditions, " AND ")

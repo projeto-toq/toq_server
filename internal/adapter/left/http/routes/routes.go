@@ -321,6 +321,7 @@ func RegisterAdminRoutes(
 		admin.GET("/listing/catalog", adminHandler.ListListingCatalogValues)
 		admin.POST("/listing/catalog", adminHandler.CreateListingCatalogValue)
 		admin.PUT("/listing/catalog", adminHandler.UpdateListingCatalogValue)
+		admin.POST("/listing/catalog/restore", adminHandler.RestoreListingCatalogValue)
 		admin.DELETE("/listing/catalog", adminHandler.DeleteListingCatalogValue)
 		admin.POST("/system-users", adminHandler.PostAdminCreateSystemUser)
 		admin.PUT("/system-users", adminHandler.PutAdminUpdateSystemUser)
@@ -328,6 +329,7 @@ func RegisterAdminRoutes(
 		admin.GET("/roles", adminHandler.GetAdminRoles)
 		admin.POST("/roles", adminHandler.PostAdminCreateRole)
 		admin.PUT("/roles", adminHandler.PutAdminUpdateRole)
+		admin.POST("/roles/restore", adminHandler.RestoreAdminRole)
 		admin.DELETE("/roles", adminHandler.DeleteAdminRole)
 
 		// POST /admin/user

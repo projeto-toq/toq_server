@@ -8,13 +8,23 @@ import (
 
 // GetAllListingsRequest represents request for getting all listings
 type GetAllListingsRequest struct {
-	Page     int    `form:"page,default=1" binding:"min=1"`
-	Limit    int    `form:"limit,default=10" binding:"min=1,max=100"`
-	Status   string `form:"status,omitempty"`
-	UserID   string `form:"userId,omitempty"`
-	ZipCode  string `form:"zipCode,omitempty"`
-	MinPrice int    `form:"minPrice,omitempty"`
-	MaxPrice int    `form:"maxPrice,omitempty"`
+	Page         int    `form:"page,default=1" binding:"min=1"`
+	Limit        int    `form:"limit,default=10" binding:"min=1,max=100"`
+	Status       string `form:"status,omitempty"`
+	Code         string `form:"code,omitempty"`
+	Title        string `form:"title,omitempty"`
+	UserID       string `form:"userId,omitempty"`
+	ZipCode      string `form:"zipCode,omitempty"`
+	City         string `form:"city,omitempty"`
+	Neighborhood string `form:"neighborhood,omitempty"`
+	CreatedFrom  string `form:"createdFrom,omitempty"`
+	CreatedTo    string `form:"createdTo,omitempty"`
+	MinSellPrice string `form:"minSell,omitempty"`
+	MaxSellPrice string `form:"maxSell,omitempty"`
+	MinRentPrice string `form:"minRent,omitempty"`
+	MaxRentPrice string `form:"maxRent,omitempty"`
+	MinLandSize  string `form:"minLandSize,omitempty"`
+	MaxLandSize  string `form:"maxLandSize,omitempty"`
 }
 
 // GetAllListingsResponse represents response for getting all listings
@@ -296,6 +306,12 @@ type ListingCatalogUpdateRequest struct {
 
 // ListingCatalogDeleteRequest defines the payload for deactivating catalog values.
 type ListingCatalogDeleteRequest struct {
+	ID       uint8  `json:"id" binding:"required,min=1"`
+	Category string `json:"category" binding:"required"`
+}
+
+// ListingCatalogRestoreRequest defines the payload for reactivating catalog values.
+type ListingCatalogRestoreRequest struct {
 	ID       uint8  `json:"id" binding:"required,min=1"`
 	Category string `json:"category" binding:"required"`
 }

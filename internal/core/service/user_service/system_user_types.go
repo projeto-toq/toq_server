@@ -11,17 +11,23 @@ const systemUserTemplateID int64 = 1
 
 // ListUsersInput encapsula filtros aceitos para listagem de usuários via painel admin.
 type ListUsersInput struct {
-	Page         int
-	Limit        int
-	RoleName     string
-	RoleSlug     string
-	RoleStatus   *permissionmodel.UserRoleStatus
-	IsSystemRole *bool
-	FullName     string
-	CPF          string
-	Email        string
-	PhoneNumber  string
-	Deleted      *bool
+	Page             int
+	Limit            int
+	RoleName         string
+	RoleSlug         string
+	RoleStatus       *permissionmodel.UserRoleStatus
+	IsSystemRole     *bool
+	FullName         string
+	CPF              string
+	Email            string
+	PhoneNumber      string
+	Deleted          *bool
+	IDFrom           *int64
+	IDTo             *int64
+	BornAtFrom       *time.Time
+	BornAtTo         *time.Time
+	LastActivityFrom *time.Time
+	LastActivityTo   *time.Time
 }
 
 // ListUsersOutput descreve o resultado da listagem de usuários admin.
@@ -30,6 +36,14 @@ type ListUsersOutput struct {
 	Total int64
 	Page  int
 	Limit int
+}
+
+// ListPendingRealtorsOutput aggregates pending realtor data with pagination metadata.
+type ListPendingRealtorsOutput struct {
+	Realtors []usermodel.UserInterface
+	Total    int64
+	Page     int
+	Limit    int
 }
 
 // CreateSystemUserInput representa o payload necessário para criar um usuário de sistema.

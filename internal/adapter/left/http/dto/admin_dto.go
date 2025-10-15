@@ -8,9 +8,16 @@ import (
 
 // Admin endpoints DTOs
 
+// AdminGetPendingRealtorsRequest captures filters for GET /admin/user/pending
+type AdminGetPendingRealtorsRequest struct {
+	Page  int `form:"page,default=1" binding:"min=1"`
+	Limit int `form:"limit,default=20" binding:"min=1,max=100"`
+}
+
 // AdminGetPendingRealtorsResponse represents GET /admin/user/pending response
 type AdminGetPendingRealtorsResponse struct {
-	Realtors []AdminPendingRealtor `json:"realtors"`
+	Realtors   []AdminPendingRealtor `json:"realtors"`
+	Pagination PaginationResponse    `json:"pagination"`
 }
 
 // AdminPendingRealtor minimal fields required by the spec
@@ -80,17 +87,23 @@ type AdminCreciDownloadURLResponse struct {
 
 // AdminListUsersRequest represents GET /admin/users filters
 type AdminListUsersRequest struct {
-	Page         int    `form:"page,default=1" binding:"min=1"`
-	Limit        int    `form:"limit,default=20" binding:"min=1,max=100"`
-	RoleName     string `form:"roleName"`
-	RoleSlug     string `form:"roleSlug"`
-	RoleStatus   *int   `form:"roleStatus"`
-	IsSystemRole *bool  `form:"isSystemRole"`
-	FullName     string `form:"fullName"`
-	CPF          string `form:"cpf"`
-	Email        string `form:"email"`
-	PhoneNumber  string `form:"phoneNumber"`
-	Deleted      *bool  `form:"deleted"`
+	Page             int    `form:"page,default=1" binding:"min=1"`
+	Limit            int    `form:"limit,default=20" binding:"min=1,max=100"`
+	RoleName         string `form:"roleName"`
+	RoleSlug         string `form:"roleSlug"`
+	RoleStatus       *int   `form:"roleStatus"`
+	IsSystemRole     *bool  `form:"isSystemRole"`
+	FullName         string `form:"fullName"`
+	CPF              string `form:"cpf"`
+	Email            string `form:"email"`
+	PhoneNumber      string `form:"phoneNumber"`
+	Deleted          *bool  `form:"deleted"`
+	IDFrom           *int64 `form:"idFrom" binding:"omitempty,min=1"`
+	IDTo             *int64 `form:"idTo" binding:"omitempty,min=1"`
+	BornAtFrom       string `form:"bornAtFrom"`
+	BornAtTo         string `form:"bornAtTo"`
+	LastActivityFrom string `form:"lastActivityFrom"`
+	LastActivityTo   string `form:"lastActivityTo"`
 }
 
 // AdminListUsersResponse represents admin users listing payload
@@ -158,8 +171,11 @@ type AdminListRolesRequest struct {
 	Limit        int    `form:"limit,default=20" binding:"min=1,max=100"`
 	Name         string `form:"name"`
 	Slug         string `form:"slug"`
+	Description  string `form:"description"`
 	IsSystemRole *bool  `form:"isSystemRole"`
 	IsActive     *bool  `form:"isActive"`
+	IDFrom       *int64 `form:"idFrom" binding:"omitempty,min=1"`
+	IDTo         *int64 `form:"idTo" binding:"omitempty,min=1"`
 }
 
 // AdminRoleSummary minimal role representation
@@ -196,6 +212,11 @@ type AdminUpdateRoleRequest struct {
 
 // AdminDeleteRoleRequest represents DELETE /admin/roles request body
 type AdminDeleteRoleRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
+}
+
+// AdminRestoreRoleRequest represents POST /admin/roles/restore request body
+type AdminRestoreRoleRequest struct {
 	ID int64 `json:"id" binding:"required,min=1"`
 }
 

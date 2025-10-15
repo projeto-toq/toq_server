@@ -42,6 +42,7 @@ type ListingServiceInterface interface {
 	StartListing(ctx context.Context, input StartListingInput) (listing listingmodel.ListingInterface, err error)
 	UpdateListing(ctx context.Context, input UpdateListingInput) (err error)
 	GetAllListingsByUser(ctx context.Context, userID int64) (listings []listingmodel.ListingInterface, err error)
+	ListListings(ctx context.Context, input ListListingsInput) (ListListingsOutput, error)
 	GetAllOffersByUser(ctx context.Context, userID int64) (offers []listingmodel.OfferInterface, err error)
 	GetAllVisitsByUser(ctx context.Context, userID int64) (listings []listingmodel.VisitInterface, err error)
 	ApproveOffer(ctx context.Context, offerID int64) (err error)
@@ -55,6 +56,7 @@ type ListingServiceInterface interface {
 	CreateCatalogValue(ctx context.Context, input CreateCatalogValueInput) (listingmodel.CatalogValueInterface, error)
 	UpdateCatalogValue(ctx context.Context, input UpdateCatalogValueInput) (listingmodel.CatalogValueInterface, error)
 	DeleteCatalogValue(ctx context.Context, category string, id uint8) error
+	RestoreCatalogValue(ctx context.Context, input RestoreCatalogValueInput) (listingmodel.CatalogValueInterface, error)
 	ListPhotographerSlots(ctx context.Context, input ListPhotographerSlotsInput) (ListPhotographerSlotsOutput, error)
 	ReservePhotoSession(ctx context.Context, input ReservePhotoSessionInput) (ReservePhotoSessionOutput, error)
 	ConfirmPhotoSession(ctx context.Context, input ConfirmPhotoSessionInput) (ConfirmPhotoSessionOutput, error)

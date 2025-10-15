@@ -70,3 +70,5 @@ id;name;resource;action;description;conditions;is_active
 69;HTTP Admin Create System User;http;POST:/api/v2/admin/system-users;Permite criar novo usuário do sistema;NULL;1
 70;HTTP Admin Update System User;http;PUT:/api/v2/admin/system-users;Permite atualizar usuário do sistema;NULL;1
 71;HTTP Admin Delete System User;http;DELETE:/api/v2/admin/system-users;Permite deletar usuário do sistema;NULL;1
+72;HTTP Admin Restore Role;http;POST:/api/v2/admin/roles/restore;Permite reativar uma role desativada;NULL;1
+73;HTTP Admin Restore Listing Catalog;http;POST:/api/v2/admin/listing/catalog/restore;Permite reativar um valor de catálogo de listing desativado;NULL;1

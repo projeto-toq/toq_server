@@ -44,6 +44,7 @@ type PermissionServiceInterface interface {
 	CreateRole(ctx context.Context, name string, slug permissionmodel.RoleSlug, description string, isSystemRole bool) (permissionmodel.RoleInterface, error)
 	UpdateRole(ctx context.Context, input UpdateRoleInput) (permissionmodel.RoleInterface, error)
 	DeleteRole(ctx context.Context, roleID int64) error
+	RestoreRole(ctx context.Context, roleID int64) (permissionmodel.RoleInterface, error)
 	ListRoles(ctx context.Context, input ListRolesInput) (ListRolesOutput, error)
 	GetRoleByID(ctx context.Context, roleID int64) (permissionmodel.RoleInterface, error)
 	AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (permissionmodel.UserRoleInterface, error)

@@ -118,6 +118,7 @@ type UserServiceInterface interface {
 
 	// Admin system user management
 	ListUsers(ctx context.Context, input ListUsersInput) (ListUsersOutput, error)
+	ListPendingRealtors(ctx context.Context, page, limit int) (ListPendingRealtorsOutput, error)
 	CreateSystemUser(ctx context.Context, input CreateSystemUserInput) (SystemUserResult, error)
 	UpdateSystemUser(ctx context.Context, input UpdateSystemUserInput) (SystemUserResult, error)
 	DeleteSystemUser(ctx context.Context, input DeleteSystemUserInput) error

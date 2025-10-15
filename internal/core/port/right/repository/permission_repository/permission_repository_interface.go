@@ -63,8 +63,11 @@ type RoleListFilter struct {
 	Limit        int
 	Name         string
 	Slug         string
+	Description  string
 	IsSystemRole *bool
 	IsActive     *bool
+	IDFrom       *int64
+	IDTo         *int64
 }
 
 type RoleListResult struct {

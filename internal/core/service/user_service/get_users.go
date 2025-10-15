@@ -2,7 +2,6 @@ package userservices
 
 import (
 	"context"
-	"strings"
 
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
@@ -44,17 +43,23 @@ func (us *userService) ListUsers(ctx context.Context, input ListUsersInput) (Lis
 	}
 
 	filter := userrepository.ListUsersFilter{
-		Page:         input.Page,
-		Limit:        input.Limit,
-		RoleName:     strings.TrimSpace(input.RoleName),
-		RoleSlug:     strings.TrimSpace(input.RoleSlug),
-		RoleStatus:   statusPtr,
-		IsSystemRole: input.IsSystemRole,
-		FullName:     strings.TrimSpace(input.FullName),
-		CPF:          strings.TrimSpace(input.CPF),
-		Email:        strings.TrimSpace(input.Email),
-		PhoneNumber:  strings.TrimSpace(input.PhoneNumber),
-		Deleted:      input.Deleted,
+		Page:             input.Page,
+		Limit:            input.Limit,
+		RoleName:         utils.NormalizeSearchPattern(input.RoleName),
+		RoleSlug:         utils.NormalizeSearchPattern(input.RoleSlug),
+		RoleStatus:       statusPtr,
+		IsSystemRole:     input.IsSystemRole,
+		FullName:         utils.NormalizeSearchPattern(input.FullName),
+		CPF:              utils.NormalizeSearchPattern(input.CPF),
+		Email:            utils.NormalizeSearchPattern(input.Email),
+		PhoneNumber:      utils.NormalizeSearchPattern(input.PhoneNumber),
+		Deleted:          input.Deleted,
+		IDFrom:           input.IDFrom,
+		IDTo:             input.IDTo,
+		BornAtFrom:       input.BornAtFrom,
+		BornAtTo:         input.BornAtTo,
+		LastActivityFrom: input.LastActivityFrom,
+		LastActivityTo:   input.LastActivityTo,
 	}
 
 	result, listErr := us.repo.ListUsersWithFilters(ctx, tx, filter)

@@ -3,6 +3,7 @@ package userrepository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
@@ -57,17 +58,23 @@ type UserRepoPortInterface interface {
 }
 
 type ListUsersFilter struct {
-	Page         int
-	Limit        int
-	RoleName     string
-	RoleSlug     string
-	RoleStatus   *permissionmodel.UserRoleStatus
-	IsSystemRole *bool
-	FullName     string
-	CPF          string
-	Email        string
-	PhoneNumber  string
-	Deleted      *bool
+	Page             int
+	Limit            int
+	RoleName         string
+	RoleSlug         string
+	RoleStatus       *permissionmodel.UserRoleStatus
+	IsSystemRole     *bool
+	FullName         string
+	CPF              string
+	Email            string
+	PhoneNumber      string
+	Deleted          *bool
+	IDFrom           *int64
+	IDTo             *int64
+	BornAtFrom       *time.Time
+	BornAtTo         *time.Time
+	LastActivityFrom *time.Time
+	LastActivityTo   *time.Time
 }
 
 type ListUsersResult struct {

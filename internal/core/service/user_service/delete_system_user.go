@@ -63,6 +63,8 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		return opErr
 	}
 
+	us.setDeletedData(existing)
+
 	activeRole, arErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, input.UserID)
 	if arErr != nil {
 		utils.SetSpanError(ctx, arErr)
@@ -96,13 +98,18 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 	if removeTokensErr := us.repo.RemoveAllDeviceTokens(ctx, tx, existing.GetID()); removeTokensErr != nil {
 		logger.Warn("admin.users.delete.remove_tokens_failed", "user_id", existing.GetID(), "error", removeTokensErr)
 	}
-
-	existing.SetDeleted(true)
 	existing.SetLastActivityAt(time.Now().UTC())
 
 	if updateErr := us.repo.UpdateUserByID(ctx, tx, existing); updateErr != nil {
 		utils.SetSpanError(ctx, updateErr)
 		logger.Error("admin.users.delete.update_user_failed", "user_id", existing.GetID(), "error", updateErr)
+		opErr = utils.InternalError("")
+		return opErr
+	}
+
+	if pwdErr := us.repo.UpdateUserPasswordByID(ctx, tx, existing); pwdErr != nil {
+		utils.SetSpanError(ctx, pwdErr)
+		logger.Error("admin.users.delete.update_password_failed", "user_id", existing.GetID(), "error", pwdErr)
 		opErr = utils.InternalError("")
 		return opErr
 	}
@@ -118,7 +125,7 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		}
 	}
 
-	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário de sistema desativado via painel admin", existing.GetID()); auditErr != nil {
+	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Dados do usuário mascarados e conta desativada via painel admin", existing.GetID()); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
 		logger.Error("admin.users.delete.audit_failed", "user_id", existing.GetID(), "error", auditErr)
 		opErr = utils.InternalError("")

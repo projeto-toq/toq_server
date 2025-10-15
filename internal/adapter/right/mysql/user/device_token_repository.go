@@ -66,9 +66,9 @@ func (r *DeviceTokenRepository) AddToken(userID int64, token string, platform *s
 	dt.SetID(id)
 	dt.SetUserID(userID)
 	dt.SetDeviceToken(token)
-	if platform != nil {
-		// platform stored but not exposed in domain yet
-	}
+	// if platform != nil {
+	// 	// platform stored but not exposed in domain yet
+	// }
 	return dt, nil
 }
 
