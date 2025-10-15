@@ -72,3 +72,11 @@ id;name;resource;action;description;conditions;is_active
 71;HTTP Admin Delete System User;http;DELETE:/api/v2/admin/system-users;Permite deletar usuário do sistema;NULL;1
 72;HTTP Admin Restore Role;http;POST:/api/v2/admin/roles/restore;Permite reativar uma role desativada;NULL;1
 73;HTTP Admin Restore Listing Catalog;http;POST:/api/v2/admin/listing/catalog/restore;Permite reativar um valor de catálogo de listing desativado;NULL;1
+74;HTTP Admin List Permissions;http;GET:/api/v2/admin/permissions;Permite listar permissões administrativas;NULL;1
+75;HTTP Admin Create Permission;http;POST:/api/v2/admin/permissions;Permite criar novas permissões administrativas;NULL;1
+76;HTTP Admin Update Permission;http;PUT:/api/v2/admin/permissions;Permite atualizar permissões administrativas;NULL;1
+77;HTTP Admin Delete Permission;http;DELETE:/api/v2/admin/permissions;Permite excluir permissões administrativas;NULL;1
+78;HTTP Admin List Role Permissions;http;GET:/api/v2/admin/role-permissions;Permite listar relações role-permission;NULL;1
+79;HTTP Admin Create Role Permission;http;POST:/api/v2/admin/role-permissions;Permite criar relações role-permission;NULL;1
+80;HTTP Admin Update Role Permission;http;PUT:/api/v2/admin/role-permissions;Permite atualizar relações role-permission;NULL;1
+81;HTTP Admin Delete Role Permission;http;DELETE:/api/v2/admin/role-permissions;Permite excluir relações role-permission;NULL;1

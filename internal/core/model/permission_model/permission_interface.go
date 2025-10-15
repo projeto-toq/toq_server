@@ -15,4 +15,6 @@ type PermissionInterface interface {
 	SetConditions(conditions map[string]interface{})
 	SetConditionsFromJSON(jsonData []byte) error
 	GetConditionsAsJSON() ([]byte, error)
+	GetIsActive() bool
+	SetIsActive(isActive bool)
 }

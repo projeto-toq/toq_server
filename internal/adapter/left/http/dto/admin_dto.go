@@ -225,3 +225,109 @@ type AdminRoleResponse struct {
 	ID      int64  `json:"id"`
 	Message string `json:"message"`
 }
+
+// AdminListPermissionsRequest captures filters for GET /admin/permissions
+type AdminListPermissionsRequest struct {
+	Page     int    `form:"page,default=1" binding:"min=1"`
+	Limit    int    `form:"limit,default=20" binding:"min=1,max=100"`
+	Name     string `form:"name"`
+	Resource string `form:"resource"`
+	Action   string `form:"action"`
+	IsActive *bool  `form:"isActive"`
+}
+
+// AdminPermissionSummary minimal projection for permission
+type AdminPermissionSummary struct {
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Resource    string         `json:"resource"`
+	Action      string         `json:"action"`
+	Description string         `json:"description"`
+	Conditions  map[string]any `json:"conditions,omitempty"`
+	IsActive    bool           `json:"isActive"`
+}
+
+// AdminListPermissionsResponse wraps permission listing
+type AdminListPermissionsResponse struct {
+	Permissions []AdminPermissionSummary `json:"permissions"`
+	Pagination  PaginationResponse       `json:"pagination"`
+}
+
+// AdminCreatePermissionRequest represents POST /admin/permissions payload
+type AdminCreatePermissionRequest struct {
+	Name        string         `json:"name" binding:"required,min=2,max=100"`
+	Resource    string         `json:"resource" binding:"required,min=1,max=50"`
+	Action      string         `json:"action" binding:"required,min=1,max=50"`
+	Description string         `json:"description"`
+	Conditions  map[string]any `json:"conditions"`
+}
+
+// AdminUpdatePermissionRequest represents PUT /admin/permissions payload
+type AdminUpdatePermissionRequest struct {
+	ID          int64          `json:"id" binding:"required,min=1"`
+	Name        string         `json:"name" binding:"required,min=2,max=100"`
+	Description string         `json:"description"`
+	IsActive    *bool          `json:"isActive"`
+	Conditions  map[string]any `json:"conditions"`
+}
+
+// AdminDeletePermissionRequest represents DELETE /admin/permissions payload
+type AdminDeletePermissionRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
+}
+
+// AdminPermissionResponse basic response for permission operations
+type AdminPermissionResponse struct {
+	ID      int64  `json:"id"`
+	Message string `json:"message"`
+}
+
+// AdminListRolePermissionsRequest filters GET /admin/role-permissions
+type AdminListRolePermissionsRequest struct {
+	Page         int    `form:"page,default=1" binding:"min=1"`
+	Limit        int    `form:"limit,default=20" binding:"min=1,max=100"`
+	RoleID       *int64 `form:"roleId" binding:"omitempty,min=1"`
+	PermissionID *int64 `form:"permissionId" binding:"omitempty,min=1"`
+	Granted      *bool  `form:"granted"`
+}
+
+// AdminRolePermissionSummary minimal projection for role-permission links
+type AdminRolePermissionSummary struct {
+	ID           int64          `json:"id"`
+	RoleID       int64          `json:"roleId"`
+	PermissionID int64          `json:"permissionId"`
+	Granted      bool           `json:"granted"`
+	Conditions   map[string]any `json:"conditions,omitempty"`
+}
+
+// AdminListRolePermissionsResponse wraps role-permission listing
+type AdminListRolePermissionsResponse struct {
+	RolePermissions []AdminRolePermissionSummary `json:"rolePermissions"`
+	Pagination      PaginationResponse           `json:"pagination"`
+}
+
+// AdminCreateRolePermissionRequest represents POST /admin/role-permissions payload
+type AdminCreateRolePermissionRequest struct {
+	RoleID       int64          `json:"roleId" binding:"required,min=1"`
+	PermissionID int64          `json:"permissionId" binding:"required,min=1"`
+	Granted      *bool          `json:"granted"`
+	Conditions   map[string]any `json:"conditions"`
+}
+
+// AdminUpdateRolePermissionRequest represents PUT /admin/role-permissions payload
+type AdminUpdateRolePermissionRequest struct {
+	ID         int64          `json:"id" binding:"required,min=1"`
+	Granted    *bool          `json:"granted"`
+	Conditions map[string]any `json:"conditions"`
+}
+
+// AdminDeleteRolePermissionRequest represents DELETE /admin/role-permissions payload
+type AdminDeleteRolePermissionRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
+}
+
+// AdminRolePermissionResponse basic response for role-permission operations
+type AdminRolePermissionResponse struct {
+	ID      int64  `json:"id"`
+	Message string `json:"message"`
+}

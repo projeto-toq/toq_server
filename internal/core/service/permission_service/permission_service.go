@@ -51,8 +51,17 @@ type PermissionServiceInterface interface {
 	RemoveRoleFromUser(ctx context.Context, userID, roleID int64) error
 
 	// Gestão de permissões
+	ListPermissions(ctx context.Context, input ListPermissionsInput) (ListPermissionsOutput, error)
+	GetPermissionByID(ctx context.Context, permissionID int64) (permissionmodel.PermissionInterface, error)
+	CreatePermission(ctx context.Context, input CreatePermissionInput) (permissionmodel.PermissionInterface, error)
+	UpdatePermission(ctx context.Context, input UpdatePermissionInput) (permissionmodel.PermissionInterface, error)
+	DeletePermission(ctx context.Context, permissionID int64) error
 	GrantPermissionToRole(ctx context.Context, roleID, permissionID int64) error
 	RevokePermissionFromRole(ctx context.Context, roleID, permissionID int64) error
+	ListRolePermissions(ctx context.Context, input ListRolePermissionsInput) (ListRolePermissionsOutput, error)
+	CreateRolePermission(ctx context.Context, input CreateRolePermissionInput) (permissionmodel.RolePermissionInterface, error)
+	UpdateRolePermission(ctx context.Context, input UpdateRolePermissionInput) (permissionmodel.RolePermissionInterface, error)
+	DeleteRolePermission(ctx context.Context, rolePermissionID int64) error
 
 	// Cache management
 	InvalidateUserCache(ctx context.Context, userID int64) error

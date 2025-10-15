@@ -20,6 +20,7 @@ func PermissionEntityToDomain(entity *permissionentities.PermissionEntity) (perm
 	permission.SetResource(entity.Resource)
 	permission.SetAction(entity.Action)
 	permission.SetDescription(entity.Description)
+	permission.SetIsActive(entity.IsActive)
 
 	// Converter JSON conditions se existir
 	if entity.Conditions != nil && *entity.Conditions != "" {

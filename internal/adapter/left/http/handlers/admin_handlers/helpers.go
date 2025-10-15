@@ -65,3 +65,43 @@ func toAdminRoleSummary(role permissionmodel.RoleInterface) dto.AdminRoleSummary
 		IsActive:     role.GetIsActive(),
 	}
 }
+
+func toAdminPermissionSummary(permission permissionmodel.PermissionInterface) dto.AdminPermissionSummary {
+	if permission == nil {
+		return dto.AdminPermissionSummary{}
+	}
+
+	resp := dto.AdminPermissionSummary{
+		ID:          permission.GetID(),
+		Name:        permission.GetName(),
+		Resource:    permission.GetResource(),
+		Action:      permission.GetAction(),
+		Description: permission.GetDescription(),
+		IsActive:    permission.GetIsActive(),
+	}
+
+	if conditions := permission.GetConditions(); conditions != nil {
+		resp.Conditions = conditions
+	}
+
+	return resp
+}
+
+func toAdminRolePermissionSummary(rolePermission permissionmodel.RolePermissionInterface) dto.AdminRolePermissionSummary {
+	if rolePermission == nil {
+		return dto.AdminRolePermissionSummary{}
+	}
+
+	resp := dto.AdminRolePermissionSummary{
+		ID:           rolePermission.GetID(),
+		RoleID:       rolePermission.GetRoleID(),
+		PermissionID: rolePermission.GetPermissionID(),
+		Granted:      rolePermission.GetGranted(),
+	}
+
+	if conditions := rolePermission.GetConditions(); conditions != nil {
+		resp.Conditions = conditions
+	}
+
+	return resp
+}

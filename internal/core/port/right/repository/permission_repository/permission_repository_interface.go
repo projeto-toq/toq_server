@@ -25,6 +25,7 @@ type PermissionRepositoryInterface interface {
 	GetPermissionsByResource(ctx context.Context, tx *sql.Tx, resource string) ([]permissionmodel.PermissionInterface, error)
 	GetPermissionsByResourceAndAction(ctx context.Context, tx *sql.Tx, resource, action string) ([]permissionmodel.PermissionInterface, error)
 	GetAllPermissions(ctx context.Context, tx *sql.Tx) ([]permissionmodel.PermissionInterface, error)
+	ListPermissions(ctx context.Context, tx *sql.Tx, filter PermissionListFilter) (PermissionListResult, error)
 	UpdatePermission(ctx context.Context, tx *sql.Tx, permission permissionmodel.PermissionInterface) error
 	DeletePermission(ctx context.Context, tx *sql.Tx, permissionID int64) error
 
@@ -41,11 +42,14 @@ type PermissionRepositoryInterface interface {
 
 	// RolePermission operations
 	CreateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) error
+	GetRolePermissionByID(ctx context.Context, tx *sql.Tx, rolePermissionID int64) (permissionmodel.RolePermissionInterface, error)
 	GetRolePermissionsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) ([]permissionmodel.RolePermissionInterface, error)
 	GetGrantedPermissionsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) ([]permissionmodel.PermissionInterface, error)
 	GetRolePermissionByRoleIDAndPermissionID(ctx context.Context, tx *sql.Tx, roleID, permissionID int64) (permissionmodel.RolePermissionInterface, error)
+	ListRolePermissions(ctx context.Context, tx *sql.Tx, filter RolePermissionListFilter) (RolePermissionListResult, error)
 	UpdateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) error
 	DeleteRolePermission(ctx context.Context, tx *sql.Tx, rolePermissionID int64) error
+	GetRoleIDsByPermissionID(ctx context.Context, tx *sql.Tx, permissionID int64) ([]int64, error)
 
 	// User blocking operations
 	BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time, reason string) error
@@ -73,4 +77,31 @@ type RoleListFilter struct {
 type RoleListResult struct {
 	Roles []permissionmodel.RoleInterface
 	Total int64
+}
+
+type PermissionListFilter struct {
+	Page     int
+	Limit    int
+	Name     string
+	Resource string
+	Action   string
+	IsActive *bool
+}
+
+type PermissionListResult struct {
+	Permissions []permissionmodel.PermissionInterface
+	Total       int64
+}
+
+type RolePermissionListFilter struct {
+	Page         int
+	Limit        int
+	RoleID       *int64
+	PermissionID *int64
+	Granted      *bool
+}
+
+type RolePermissionListResult struct {
+	RolePermissions []permissionmodel.RolePermissionInterface
+	Total           int64
 }

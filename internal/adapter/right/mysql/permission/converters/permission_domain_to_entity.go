@@ -21,7 +21,7 @@ func PermissionDomainToEntity(permission permissionmodel.PermissionInterface) (*
 		Resource:    permission.GetResource(),
 		Action:      permission.GetAction(),
 		Description: permission.GetDescription(),
-		IsActive:    true, // Default to active
+		IsActive:    permission.GetIsActive(),
 	}
 
 	// Converter conditions para JSON se existir

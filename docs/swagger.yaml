@@ -42,6 +42,47 @@ definitions:
       message:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreatePermissionRequest:
+    properties:
+      action:
+        maxLength: 50
+        minLength: 1
+        type: string
+      conditions:
+        additionalProperties: {}
+        type: object
+      description:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      resource:
+        maxLength: 50
+        minLength: 1
+        type: string
+    required:
+    - action
+    - name
+    - resource
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateRolePermissionRequest:
+    properties:
+      conditions:
+        additionalProperties: {}
+        type: object
+      granted:
+        type: boolean
+      permissionId:
+        minimum: 1
+        type: integer
+      roleId:
+        minimum: 1
+        type: integer
+    required:
+    - permissionId
+    - roleId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateRoleRequest:
     properties:
       description:
@@ -106,6 +147,22 @@ definitions:
       urls:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDocumentURLs'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeletePermissionRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteRolePermissionRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteRoleRequest:
     properties:
       id:
@@ -143,6 +200,24 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListPermissionsResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      permissions:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionSummary'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRolePermissionsResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      rolePermissions:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionSummary'
+        type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRolesResponse:
     properties:
@@ -188,6 +263,31 @@ definitions:
       nickName:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionResponse:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionSummary:
+    properties:
+      action:
+        type: string
+      conditions:
+        additionalProperties: {}
+        type: object
+      description:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      name:
+        type: string
+      resource:
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRestoreRoleRequest:
     properties:
       id:
@@ -195,6 +295,27 @@ definitions:
         type: integer
     required:
     - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionResponse:
+    properties:
+      id:
+        type: integer
+      message:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionSummary:
+    properties:
+      conditions:
+        additionalProperties: {}
+        type: object
+      granted:
+        type: boolean
+      id:
+        type: integer
+      permissionId:
+        type: integer
+      roleId:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleResponse:
     properties:
@@ -228,6 +349,39 @@ definitions:
         type: string
       userId:
         type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdatePermissionRequest:
+    properties:
+      conditions:
+        additionalProperties: {}
+        type: object
+      description:
+        type: string
+      id:
+        minimum: 1
+        type: integer
+      isActive:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - id
+    - name
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateRolePermissionRequest:
+    properties:
+      conditions:
+        additionalProperties: {}
+        type: object
+      granted:
+        type: boolean
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateRoleRequest:
     properties:
@@ -1452,6 +1606,404 @@ paths:
             additionalProperties: true
             type: object
       summary: Reactivate a listing catalog value
+      tags:
+      - Admin
+  /admin/permissions:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Permission identifier
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeletePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Hard delete a permission
+      tags:
+      - Admin
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by name (supports '*' wildcard)
+        in: query
+        name: name
+        type: string
+      - description: Filter by resource (supports '*' wildcard)
+        in: query
+        name: resource
+        type: string
+      - description: Filter by action (supports '*' wildcard)
+        in: query
+        name: action
+        type: string
+      - description: Filter by active flag
+        in: query
+        name: isActive
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListPermissionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List permissions with pagination
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Permission payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new permission
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Permission payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update an existing permission
+      tags:
+      - Admin
+  /admin/role-permissions:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role-permission payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteRolePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a role-permission association
+      tags:
+      - Admin
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by role ID
+        in: query
+        name: roleId
+        type: integer
+      - description: Filter by permission ID
+        in: query
+        name: permissionId
+        type: integer
+      - description: Filter by granted flag
+        in: query
+        name: granted
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRolePermissionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List role-permission associations
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role-permission payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateRolePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a role-permission association
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role-permission payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateRolePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a role-permission association
       tags:
       - Admin
   /admin/roles:

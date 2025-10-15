@@ -331,6 +331,14 @@ func RegisterAdminRoutes(
 		admin.PUT("/roles", adminHandler.PutAdminUpdateRole)
 		admin.POST("/roles/restore", adminHandler.RestoreAdminRole)
 		admin.DELETE("/roles", adminHandler.DeleteAdminRole)
+		admin.GET("/permissions", adminHandler.GetAdminPermissions)
+		admin.POST("/permissions", adminHandler.PostAdminCreatePermission)
+		admin.PUT("/permissions", adminHandler.PutAdminUpdatePermission)
+		admin.DELETE("/permissions", adminHandler.DeleteAdminPermission)
+		admin.GET("/role-permissions", adminHandler.GetAdminRolePermissions)
+		admin.POST("/role-permissions", adminHandler.PostAdminCreateRolePermission)
+		admin.PUT("/role-permissions", adminHandler.PutAdminUpdateRolePermission)
+		admin.DELETE("/role-permissions", adminHandler.DeleteAdminRolePermission)
 
 		// POST /admin/user
 		admin.POST("/user", adminHandler.PostAdminGetUser)

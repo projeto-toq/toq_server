@@ -11,10 +11,13 @@ type permission struct {
 	resource    string
 	action      string
 	conditions  map[string]interface{}
+	isActive    bool
 }
 
 func NewPermission() PermissionInterface {
-	return &permission{}
+	return &permission{
+		isActive: true,
+	}
 }
 
 func (p *permission) GetID() int64 {
@@ -63,6 +66,14 @@ func (p *permission) GetConditions() map[string]interface{} {
 
 func (p *permission) SetConditions(conditions map[string]interface{}) {
 	p.conditions = conditions
+}
+
+func (p *permission) GetIsActive() bool {
+	return p.isActive
+}
+
+func (p *permission) SetIsActive(isActive bool) {
+	p.isActive = isActive
 }
 
 func (p *permission) SetConditionsFromJSON(jsonData []byte) error {
