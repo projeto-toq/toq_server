@@ -80,3 +80,4 @@ id;name;resource;action;description;conditions;is_active
 79;HTTP Admin Create Role Permission;http;POST:/api/v2/admin/role-permissions;Permite criar relações role-permission;NULL;1
 80;HTTP Admin Update Role Permission;http;PUT:/api/v2/admin/role-permissions;Permite atualizar relações role-permission;NULL;1
 81;HTTP Admin Delete Role Permission;http;DELETE:/api/v2/admin/role-permissions;Permite excluir relações role-permission;NULL;1
+82;HTTP End Update Listing;http;POST:/api/v2/listings/end-update;Permite finalizar atualização de listing;NULL;1

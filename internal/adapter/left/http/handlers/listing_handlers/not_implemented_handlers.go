@@ -127,12 +127,6 @@ func (lh *ListingHandler) GetListing(c *gin.Context) {
 	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "GetListing service method not implemented yet")
 }
 
-// EndUpdateListing handles ending the update process for a listing
-// Service method not implemented yet
-func (lh *ListingHandler) EndUpdateListing(c *gin.Context) {
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "EndUpdateListing service method not implemented yet")
-}
-
 // GetListingStatus handles getting listing status
 // Service method not implemented yet
 func (lh *ListingHandler) GetListingStatus(c *gin.Context) {

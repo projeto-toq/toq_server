@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 )
 
@@ -30,6 +31,7 @@ type ListingRepoPortInterface interface {
 	GetBaseFeatures(ctx context.Context, tx *sql.Tx) (features []listingmodel.BaseFeatureInterface, err error)
 	GetListingByZipNumber(ctx context.Context, tx *sql.Tx, zip string, number string) (listing listingmodel.ListingInterface, err error)
 	GetListingByID(ctx context.Context, tx *sql.Tx, listingID int64) (listing listingmodel.ListingInterface, err error)
+	GetListingForEndUpdate(ctx context.Context, tx *sql.Tx, listingID int64) (ListingEndUpdateData, error)
 	ListListings(ctx context.Context, tx *sql.Tx, filter ListListingsFilter) (ListListingsResult, error)
 
 	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
@@ -39,6 +41,8 @@ type ListingRepoPortInterface interface {
 	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
 	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
 	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
+
+	UpdateListingStatus(ctx context.Context, tx *sql.Tx, listingID int64, newStatus listingmodel.ListingStatus, expectedCurrent listingmodel.ListingStatus) error
 }
 
 type ListListingsFilter struct {
@@ -70,4 +74,43 @@ type ListingRecord struct {
 	Listing   listingmodel.ListingInterface
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
+}
+
+// ListingEndUpdateData aggregates the raw values needed to validate the end-update flow.
+type ListingEndUpdateData struct {
+	ListingID              int64
+	UserID                 int64
+	Status                 listingmodel.ListingStatus
+	Code                   uint32
+	Version                uint8
+	ZipCode                string
+	Street                 sql.NullString
+	Number                 sql.NullString
+	City                   sql.NullString
+	State                  sql.NullString
+	ListingType            globalmodel.PropertyType
+	Owner                  sql.NullInt16
+	Buildable              sql.NullFloat64
+	Delivered              sql.NullInt16
+	WhoLives               sql.NullInt16
+	Description            sql.NullString
+	Transaction            sql.NullInt16
+	Visit                  sql.NullInt16
+	Accompanying           sql.NullInt16
+	AnnualTax              sql.NullFloat64
+	Exchange               sql.NullInt16
+	ExchangePercentual     sql.NullFloat64
+	SaleNet                sql.NullFloat64
+	RentNet                sql.NullFloat64
+	Condominium            sql.NullFloat64
+	LandSize               sql.NullFloat64
+	Corner                 sql.NullInt16
+	TenantName             sql.NullString
+	TenantPhone            sql.NullString
+	TenantEmail            sql.NullString
+	Financing              sql.NullInt16
+	FeaturesCount          int
+	ExchangePlacesCount    int
+	FinancingBlockersCount int
+	GuaranteesCount        int
 }

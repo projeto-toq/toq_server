@@ -41,6 +41,7 @@ type ListingServiceInterface interface {
 	GetBaseFeatures(ctx context.Context) (features []listingmodel.BaseFeatureInterface, err error)
 	StartListing(ctx context.Context, input StartListingInput) (listing listingmodel.ListingInterface, err error)
 	UpdateListing(ctx context.Context, input UpdateListingInput) (err error)
+	EndUpdateListing(ctx context.Context, input EndUpdateListingInput) error
 	GetAllListingsByUser(ctx context.Context, userID int64) (listings []listingmodel.ListingInterface, err error)
 	ListListings(ctx context.Context, input ListListingsInput) (ListListingsOutput, error)
 	GetAllOffersByUser(ctx context.Context, userID int64) (offers []listingmodel.OfferInterface, err error)

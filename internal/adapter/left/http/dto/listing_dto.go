@@ -130,6 +130,17 @@ type UpdateListingResponse struct {
 	Message string `json:"message"`
 }
 
+// EndUpdateListingRequest representa o payload para finalizar a atualização de um listing.
+type EndUpdateListingRequest struct {
+	ListingID int64 `json:"listingId" binding:"required"`
+}
+
+// EndUpdateListingResponse representa a resposta ao finalizar a atualização de um listing.
+type EndUpdateListingResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 // DeleteListingResponse represents response for deleting a listing
 type DeleteListingResponse struct {
 	Success bool   `json:"success"`
