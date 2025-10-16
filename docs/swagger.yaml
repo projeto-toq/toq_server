@@ -1363,17 +1363,16 @@ externalDocs:
 host: api.gca.dev.br
 info:
   contact:
-    email: support@toq.com
+    email: projeto.toq@gmail.com
     name: TOQ Development Team
     url: https://github.com/projeto-toq/toq_server
   description: TOQ Server - Real Estate HTTP API Server with hexagonal architecture.
-    All phone numbers supplied to the API must be in E.164 format (e.g., +5511999999999).
   license:
     name: MIT
     url: https://github.com/projeto-toq/toq_server/blob/main/LICENSE
   termsOfService: http://swagger.io/terms/
   title: TOQ Server API
-  version: "1.0"
+  version: "2.0"
 paths:
   /admin/listing/catalog:
     delete:

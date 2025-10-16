@@ -1,19 +1,19 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "TOQ Server - Real Estate HTTP API Server with hexagonal architecture. All phone numbers supplied to the API must be in E.164 format (e.g., +5511999999999).",
+        "description": "TOQ Server - Real Estate HTTP API Server with hexagonal architecture.",
         "title": "TOQ Server API",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "TOQ Development Team",
             "url": "https://github.com/projeto-toq/toq_server",
-            "email": "support@toq.com"
+            "email": "projeto.toq@gmail.com"
         },
         "license": {
             "name": "MIT",
             "url": "https://github.com/projeto-toq/toq_server/blob/main/LICENSE"
         },
-        "version": "1.0"
+        "version": "2.0"
     },
     "host": "api.gca.dev.br",
     "basePath": "/api/v2",

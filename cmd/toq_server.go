@@ -18,13 +18,13 @@
 // External Services: FCM, SMS, Email, CEP/CPF/CNPJ validation
 
 //	@title			TOQ Server API
-//	@version		1.0
-//	@description	TOQ Server - Real Estate HTTP API Server with hexagonal architecture. All phone numbers supplied to the API must be in E.164 format (e.g., +5511999999999).
+//	@version		2.0
+//	@description	TOQ Server - Real Estate HTTP API Server with hexagonal architecture.
 //	@termsOfService	http://swagger.io/terms/
 
 //	@contact.name	TOQ Development Team
 //	@contact.url	https://github.com/projeto-toq/toq_server
-//	@contact.email	support@toq.com
+//	@contact.email	projeto.toq@gmail.com
 
 //	@license.name	MIT
 //	@license.url	https://github.com/projeto-toq/toq_server/blob/main/LICENSE

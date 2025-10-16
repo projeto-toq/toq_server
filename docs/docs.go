@@ -14,7 +14,7 @@ const docTemplate = `{
         "contact": {
             "name": "TOQ Development Team",
             "url": "https://github.com/projeto-toq/toq_server",
-            "email": "support@toq.com"
+            "email": "projeto.toq@gmail.com"
         },
         "license": {
             "name": "MIT",
@@ -6566,12 +6566,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "2.0",
 	Host:             "api.gca.dev.br",
 	BasePath:         "/api/v2",
 	Schemes:          []string{},
 	Title:            "TOQ Server API",
-	Description:      "TOQ Server - Real Estate HTTP API Server with hexagonal architecture. All phone numbers supplied to the API must be in E.164 format (e.g., +5511999999999).",
+	Description:      "TOQ Server - Real Estate HTTP API Server with hexagonal architecture.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

@@ -183,7 +183,7 @@ func parseListingStatus(raw string) (*listingmodel.ListingStatus, error) {
 
 	if numeric, numErr := strconv.Atoi(trimmed); numErr == nil {
 		status := listingmodel.ListingStatus(numeric)
-		if status >= listingmodel.StatusDraft && status <= listingmodel.StatusPublished {
+		if status >= listingmodel.StatusDraft && status <= listingmodel.StatusArchived {
 			return &status, nil
 		}
 		return nil, fmt.Errorf("invalid listing status value")
@@ -194,10 +194,21 @@ func parseListingStatus(raw string) (*listingmodel.ListingStatus, error) {
 	normalized = strings.ReplaceAll(normalized, "_", "")
 
 	mapping := map[string]listingmodel.ListingStatus{
-		"DRAFT":            listingmodel.StatusDraft,
-		"AWAITINGPHOTO":    listingmodel.StatusAwaitingPhoto,
-		"AWAITINGAPPROVAL": listingmodel.StatusAwaitingApproval,
-		"PUBLISHED":        listingmodel.StatusPublished,
+		"DRAFT":                  listingmodel.StatusDraft,
+		"PENDINGPHOTOSCHEDULING": listingmodel.StatusPendingPhotoScheduling,
+		"PHOTOSSCHEDULED":        listingmodel.StatusPhotosScheduled,
+		"PENDINGPHOTOPROCESSING": listingmodel.StatusPendingPhotoProcessing,
+		"PENDINGOWNERAPPROVAL":   listingmodel.StatusPendingOwnerApproval,
+		"PENDINGADMINREVIEW":     listingmodel.StatusPendingAdminReview,
+		"PUBLISHED":              listingmodel.StatusPublished,
+		"UNDEROFFER":             listingmodel.StatusUnderOffer,
+		"UNDERNEGOTIATION":       listingmodel.StatusUnderNegotiation,
+		"CLOSED":                 listingmodel.StatusClosed,
+		"SUSPENDED":              listingmodel.StatusSuspended,
+		"REJECTEDBYOWNER":        listingmodel.StatusRejectedByOwner,
+		"NEEDSREVISION":          listingmodel.StatusNeedsRevision,
+		"EXPIRED":                listingmodel.StatusExpired,
+		"ARCHIVED":               listingmodel.StatusArchived,
 	}
 	if status, ok := mapping[normalized]; ok {
 		return &status, nil

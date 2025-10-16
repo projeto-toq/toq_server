@@ -120,7 +120,12 @@ func sessionWindowForPeriod(date time.Time, period photosessionmodel.SlotPeriod)
 
 func listingEligibleForPhotoSession(status listingmodel.ListingStatus) bool {
 	switch status {
-	case listingmodel.StatusDraft, listingmodel.StatusAwaitingPhoto:
+	case
+		// listingmodel.StatusDraft,
+		listingmodel.StatusPendingPhotoScheduling,
+		listingmodel.StatusPhotosScheduled: //,
+		// listingmodel.StatusPendingPhotoProcessing,
+		// listingmodel.StatusPendingOwnerApproval		:
 		return true
 	default:
 		return false
