@@ -150,7 +150,7 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 
 	// Regras condicionais para o tipo de transação.
 	txnValue := uint8(data.Transaction.Int16)
-	txnCatalog, err := ls.listingRepository.GetCatalogValueByID(ctx, tx, listingmodel.CatalogCategoryTransactionType, txnValue)
+	txnCatalog, err := ls.listingRepository.GetCatalogValueByNumeric(ctx, tx, listingmodel.CatalogCategoryTransactionType, txnValue)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return utils.BadRequest("Transaction type is invalid")
@@ -231,7 +231,7 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 	// Regras adicionais quando quem mora é inquilino.
 	if data.WhoLives.Valid {
 		whoLivesValue := uint8(data.WhoLives.Int16)
-		whoLivesCatalog, catalogErr := ls.listingRepository.GetCatalogValueByID(ctx, tx, listingmodel.CatalogCategoryWhoLives, whoLivesValue)
+		whoLivesCatalog, catalogErr := ls.listingRepository.GetCatalogValueByNumeric(ctx, tx, listingmodel.CatalogCategoryWhoLives, whoLivesValue)
 		if catalogErr != nil {
 			if errors.Is(catalogErr, sql.ErrNoRows) {
 				return utils.BadRequest("Who lives value is invalid")

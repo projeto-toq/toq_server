@@ -20,7 +20,7 @@ func (ls *listingService) resolveCatalogValue(ctx context.Context, tx *sql.Tx, c
 		if !value.IsActive() {
 			return 0, utils.ValidationError(field, "value is inactive")
 		}
-		return value.ID(), nil
+		return value.NumericValue(), nil
 	}
 
 	slug := selection.SlugValue()
@@ -41,5 +41,5 @@ func (ls *listingService) resolveCatalogValue(ctx context.Context, tx *sql.Tx, c
 		return 0, utils.ValidationError(field, "value is inactive")
 	}
 
-	return value.ID(), nil
+	return value.NumericValue(), nil
 }

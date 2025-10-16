@@ -27,9 +27,10 @@ type RestoreCatalogValueInput struct {
 	ID       uint8
 }
 
-func (in CreateCatalogValueInput) ToDomain(nextID uint8) listingmodel.CatalogValueInterface {
+func (in CreateCatalogValueInput) ToDomain(nextID, nextNumeric uint8) listingmodel.CatalogValueInterface {
 	value := listingmodel.NewCatalogValue()
 	value.SetID(nextID)
+	value.SetNumericValue(nextNumeric)
 	value.SetCategory(in.Category)
 	value.SetSlug(in.Slug)
 	value.SetLabel(in.Label)

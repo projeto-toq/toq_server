@@ -272,12 +272,13 @@ type UpdateListingGuaranteeRequest struct {
 
 // ListingCatalogValueResponse represents a catalog entry available for listings.
 type ListingCatalogValueResponse struct {
-	ID          int     `json:"id"`
-	Category    string  `json:"category"`
-	Slug        string  `json:"slug"`
-	Label       string  `json:"label"`
-	Description *string `json:"description,omitempty"`
-	IsActive    bool    `json:"isActive"`
+	ID           int     `json:"id"`
+	Category     string  `json:"category"`
+	NumericValue int     `json:"numericValue"`
+	Slug         string  `json:"slug"`
+	Label        string  `json:"label"`
+	Description  *string `json:"description,omitempty"`
+	IsActive     bool    `json:"isActive"`
 }
 
 // ListingCatalogValuesResponse aggregates catalog values returned by the service.

@@ -70,7 +70,14 @@ func (ls *listingService) CreateCatalogValue(ctx context.Context, input CreateCa
 		return nil, utils.InternalError("")
 	}
 
-	value := input.ToDomain(nextID)
+	nextNumeric, numericErr := ls.listingRepository.GetNextCatalogNumericValue(ctx, tx, category)
+	if numericErr != nil {
+		utils.SetSpanError(ctx, numericErr)
+		logger.Error("listing.catalog.create.next_numeric_error", "err", numericErr, "category", category)
+		return nil, utils.InternalError("")
+	}
+
+	value := input.ToDomain(nextID, nextNumeric)
 
 	if createErr := ls.listingRepository.CreateCatalogValue(ctx, tx, value); createErr != nil {
 		utils.SetSpanError(ctx, createErr)

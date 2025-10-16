@@ -8,11 +8,12 @@ import (
 // ToListingCatalogValueResponse converte um valor de catálogo do domínio para o DTO utilizado nas respostas HTTP.
 func ToListingCatalogValueResponse(value listingmodel.CatalogValueInterface) dto.ListingCatalogValueResponse {
 	resp := dto.ListingCatalogValueResponse{
-		ID:       int(value.ID()),
-		Category: value.Category(),
-		Slug:     value.Slug(),
-		Label:    value.Label(),
-		IsActive: value.IsActive(),
+		ID:           int(value.ID()),
+		Category:     value.Category(),
+		NumericValue: int(value.NumericValue()),
+		Slug:         value.Slug(),
+		Label:        value.Label(),
+		IsActive:     value.IsActive(),
 	}
 
 	if desc := value.Description(); desc != nil {

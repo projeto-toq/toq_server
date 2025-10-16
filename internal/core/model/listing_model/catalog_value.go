@@ -4,6 +4,8 @@ package listingmodel
 type CatalogValueInterface interface {
 	ID() uint8
 	SetID(uint8)
+	NumericValue() uint8
+	SetNumericValue(uint8)
 	Category() string
 	SetCategory(string)
 	Slug() string
@@ -17,12 +19,13 @@ type CatalogValueInterface interface {
 }
 
 type catalogValue struct {
-	id          uint8
-	category    string
-	slug        string
-	label       string
-	description *string
-	isActive    bool
+	id           uint8
+	numericValue uint8
+	category     string
+	slug         string
+	label        string
+	description  *string
+	isActive     bool
 }
 
 // NewCatalogValue creates a new CatalogValueInterface instance.
@@ -36,6 +39,14 @@ func (cv *catalogValue) ID() uint8 {
 
 func (cv *catalogValue) SetID(id uint8) {
 	cv.id = id
+}
+
+func (cv *catalogValue) NumericValue() uint8 {
+	return cv.numericValue
+}
+
+func (cv *catalogValue) SetNumericValue(value uint8) {
+	cv.numericValue = value
 }
 
 func (cv *catalogValue) Category() string {

@@ -582,12 +582,14 @@ DROP TABLE IF EXISTS `toq_db`.`listing_catalog_values` ;
 CREATE TABLE IF NOT EXISTS `toq_db`.`listing_catalog_values` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `category` VARCHAR(45) NOT NULL,
+  `numeric_value` TINYINT UNSIGNED NOT NULL,
   `slug` VARCHAR(50) NOT NULL,
   `label` VARCHAR(100) NOT NULL,
   `description` VARCHAR(255) NULL,
   `is_active` TINYINT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_listing_catalog_category_slug` (`category` ASC, `slug` ASC) VISIBLE)
+  UNIQUE INDEX `uk_listing_catalog_category_slug` (`category` ASC, `slug` ASC) VISIBLE,
+  UNIQUE INDEX `uk_listing_category_numeric` (`category` ASC, `numeric_value` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 

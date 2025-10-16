@@ -37,7 +37,9 @@ type ListingRepoPortInterface interface {
 	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
 	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)
 	GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx, category, slug string) (listingmodel.CatalogValueInterface, error)
+	GetCatalogValueByNumeric(ctx context.Context, tx *sql.Tx, category string, numericValue uint8) (listingmodel.CatalogValueInterface, error)
 	GetNextCatalogValueID(ctx context.Context, tx *sql.Tx, category string) (uint8, error)
+	GetNextCatalogNumericValue(ctx context.Context, tx *sql.Tx, category string) (uint8, error)
 	CreateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
 	UpdateCatalogValue(ctx context.Context, tx *sql.Tx, value listingmodel.CatalogValueInterface) error
 	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
