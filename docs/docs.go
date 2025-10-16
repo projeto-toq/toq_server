@@ -2829,7 +2829,7 @@ const docTemplate = `{
                 "summary": "Update a listing",
                 "parameters": [
                     {
-                        "x-example": "{\"id\":98765,\"owner\":2,\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":1,\"whoLives\":3,\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":2,\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":2,\"financing\":true,\"financingBlockers\":[4,7],\"guarantees\":[{\"priority\":1,\"guarantee\":33},{\"priority\":2,\"guarantee\":34}],\"visit\":3,\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+55 11 91234-5678\",\"accompanying\":2}",
+                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+55 11 91234-5678\",\"accompanying\":\"assistant\"}",
                         "description": "Payload for update (ID must be provided in the body)",
                         "name": "request",
                         "in": "body",
@@ -6193,7 +6193,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "accompanying": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "annualGroundRent": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
@@ -6211,7 +6211,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool"
                 },
                 "delivered": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "description": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
@@ -6232,7 +6232,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool"
                 },
                 "financingBlockers": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_string"
                 },
                 "guarantees": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest"
@@ -6241,7 +6241,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64"
                 },
                 "installment": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "landSize": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
@@ -6250,7 +6250,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
                 },
                 "owner": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "rentNet": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
@@ -6268,13 +6268,13 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "transaction": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "visit": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "whoLives": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 }
             }
         },
@@ -6629,16 +6629,13 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest": {
             "type": "object"
         },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_int": {
+        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_string": {
             "type": "object"
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool": {
             "type": "object"
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64": {
-            "type": "object"
-        },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-int": {
             "type": "object"
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64": {

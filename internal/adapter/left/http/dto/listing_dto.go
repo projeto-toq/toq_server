@@ -56,7 +56,7 @@ type StartListingResponse struct {
 //
 //	{
 //	  "id": 98765,
-//	  "owner": 2,
+//	  "owner": "myself",
 //	  "features": [
 //	    {"featureId": 101, "quantity": 2},
 //	    {"featureId": 205, "quantity": 1}
@@ -65,10 +65,10 @@ type StartListingResponse struct {
 //	  "corner": true,
 //	  "nonBuildable": 12.75,
 //	  "buildable": 410.75,
-//	  "delivered": 1,
-//	  "whoLives": 3,
+//	  "delivered": "furnished",
+//	  "whoLives": "tenant",
 //	  "description": "Apartamento amplo com vista panoramica",
-//	  "transaction": 2,
+//	  "transaction": "sale",
 //	  "sellNet": 1200000,
 //	  "rentNet": 8500,
 //	  "condominium": 1200.5,
@@ -80,31 +80,31 @@ type StartListingResponse struct {
 //	    {"neighborhood": "Vila Mariana", "city": "Sao Paulo", "state": "SP"},
 //	    {"neighborhood": "Centro", "city": "Campinas", "state": "SP"}
 //	  ],
-//	  "installment": 2,
+//	  "installment": "short_term",
 //	  "financing": true,
-//	  "financingBlockers": [4, 7],
+//	  "financingBlockers": ["pending_probate", "other"],
 //	  "guarantees": [
-//	    {"priority": 1, "guarantee": 33},
-//	    {"priority": 2, "guarantee": 34}
+//	    {"priority": 1, "guarantee": "security_deposit"},
+//	    {"priority": 2, "guarantee": "surety_bond"}
 //	  ],
-//	  "visit": 3,
+//	  "visit": "client",
 //	  "tenantName": "Joao da Silva",
 //	  "tenantEmail": "joao.silva@example.com",
 //	  "tenantPhone": "+55 11 91234-5678",
-//	  "accompanying": 2
+//	  "accompanying": "assistant"
 //	}
 type UpdateListingRequest struct {
 	ID                 coreutils.Optional[int64]                               `json:"id"`
-	Owner              coreutils.Optional[int]                                 `json:"owner"`
+	Owner              coreutils.Optional[string]                              `json:"owner"`
 	Features           coreutils.Optional[[]UpdateListingFeatureRequest]       `json:"features"`
 	LandSize           coreutils.Optional[float64]                             `json:"landSize"`
 	Corner             coreutils.Optional[bool]                                `json:"corner"`
 	NonBuildable       coreutils.Optional[float64]                             `json:"nonBuildable"`
 	Buildable          coreutils.Optional[float64]                             `json:"buildable"`
-	Delivered          coreutils.Optional[int]                                 `json:"delivered"`
-	WhoLives           coreutils.Optional[int]                                 `json:"whoLives"`
+	Delivered          coreutils.Optional[string]                              `json:"delivered"`
+	WhoLives           coreutils.Optional[string]                              `json:"whoLives"`
 	Description        coreutils.Optional[string]                              `json:"description"`
-	Transaction        coreutils.Optional[int]                                 `json:"transaction"`
+	Transaction        coreutils.Optional[string]                              `json:"transaction"`
 	SellNet            coreutils.Optional[float64]                             `json:"sellNet"`
 	RentNet            coreutils.Optional[float64]                             `json:"rentNet"`
 	Condominium        coreutils.Optional[float64]                             `json:"condominium"`
@@ -113,15 +113,15 @@ type UpdateListingRequest struct {
 	Exchange           coreutils.Optional[bool]                                `json:"exchange"`
 	ExchangePercentual coreutils.Optional[float64]                             `json:"exchangePercentual"`
 	ExchangePlaces     coreutils.Optional[[]UpdateListingExchangePlaceRequest] `json:"exchangePlaces"`
-	Installment        coreutils.Optional[int]                                 `json:"installment"`
+	Installment        coreutils.Optional[string]                              `json:"installment"`
 	Financing          coreutils.Optional[bool]                                `json:"financing"`
-	FinancingBlockers  coreutils.Optional[[]int]                               `json:"financingBlockers"`
+	FinancingBlockers  coreutils.Optional[[]string]                            `json:"financingBlockers"`
 	Guarantees         coreutils.Optional[[]UpdateListingGuaranteeRequest]     `json:"guarantees"`
-	Visit              coreutils.Optional[int]                                 `json:"visit"`
+	Visit              coreutils.Optional[string]                              `json:"visit"`
 	TenantName         coreutils.Optional[string]                              `json:"tenantName"`
 	TenantEmail        coreutils.Optional[string]                              `json:"tenantEmail"`
 	TenantPhone        coreutils.Optional[string]                              `json:"tenantPhone"`
-	Accompanying       coreutils.Optional[int]                                 `json:"accompanying"`
+	Accompanying       coreutils.Optional[string]                              `json:"accompanying"`
 }
 
 // UpdateListingResponse represents response for updating a listing
@@ -264,8 +264,8 @@ type UpdateListingExchangePlaceRequest struct {
 
 // UpdateListingGuaranteeRequest representa uma garantia enviada no update de listing.
 type UpdateListingGuaranteeRequest struct {
-	Priority  uint8 `json:"priority"`
-	Guarantee int   `json:"guarantee"`
+	Priority  uint8  `json:"priority"`
+	Guarantee string `json:"guarantee"`
 }
 
 // Listing catalog DTOs

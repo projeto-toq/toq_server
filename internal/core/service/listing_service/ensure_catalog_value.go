@@ -7,23 +7,39 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (ls *listingService) ensureCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8, field string) error {
-	if id == 0 {
-		return nil
+func (ls *listingService) resolveCatalogValue(ctx context.Context, tx *sql.Tx, category, field string, selection CatalogSelection) (uint8, error) {
+	if selection.HasID() {
+		value, err := ls.listingRepository.GetCatalogValueByID(ctx, tx, category, selection.IDValue())
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return 0, utils.ValidationError(field, "invalid value")
+			}
+			utils.SetSpanError(ctx, err)
+			return 0, utils.InternalError("")
+		}
+		if !value.IsActive() {
+			return 0, utils.ValidationError(field, "value is inactive")
+		}
+		return value.ID(), nil
 	}
 
-	value, err := ls.listingRepository.GetCatalogValueByID(ctx, tx, category, id)
+	slug := selection.SlugValue()
+	if slug == "" {
+		return 0, utils.ValidationError(field, "invalid value")
+	}
+
+	value, err := ls.listingRepository.GetCatalogValueBySlug(ctx, tx, category, slug)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return utils.ValidationError(field, "invalid value")
+			return 0, utils.ValidationError(field, "invalid value")
 		}
 		utils.SetSpanError(ctx, err)
-		return utils.InternalError("")
+		return 0, utils.InternalError("")
 	}
 
 	if !value.IsActive() {
-		return utils.ValidationError(field, "value is inactive")
+		return 0, utils.ValidationError(field, "value is inactive")
 	}
 
-	return nil
+	return value.ID(), nil
 }

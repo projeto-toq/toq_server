@@ -24,9 +24,13 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.Owner.IsPresent() {
 		if req.Owner.IsNull() {
-			input.Owner = coreutils.NewOptionalNull[listingmodel.PropertyOwner]()
+			input.Owner = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
 		} else if value, ok := req.Owner.Value(); ok {
-			input.Owner = coreutils.NewOptionalValue(listingmodel.PropertyOwner(value))
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("owner slug deve ser informado")
+			}
+			input.Owner = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
 		}
 	}
 
@@ -82,17 +86,25 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.Delivered.IsPresent() {
 		if req.Delivered.IsNull() {
-			input.Delivered = coreutils.NewOptionalNull[listingmodel.PropertyDelivered]()
+			input.Delivered = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
 		} else if value, ok := req.Delivered.Value(); ok {
-			input.Delivered = coreutils.NewOptionalValue(listingmodel.PropertyDelivered(value))
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("delivered slug deve ser informado")
+			}
+			input.Delivered = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
 		}
 	}
 
 	if req.WhoLives.IsPresent() {
 		if req.WhoLives.IsNull() {
-			input.WhoLives = coreutils.NewOptionalNull[listingmodel.WhoLives]()
+			input.WhoLives = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
 		} else if value, ok := req.WhoLives.Value(); ok {
-			input.WhoLives = coreutils.NewOptionalValue(listingmodel.WhoLives(value))
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("whoLives slug deve ser informado")
+			}
+			input.WhoLives = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
 		}
 	}
 
@@ -106,9 +118,13 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.Transaction.IsPresent() {
 		if req.Transaction.IsNull() {
-			input.Transaction = coreutils.NewOptionalNull[listingmodel.TransactionType]()
+			input.Transaction = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
 		} else if value, ok := req.Transaction.Value(); ok {
-			input.Transaction = coreutils.NewOptionalValue(listingmodel.TransactionType(value))
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("transaction slug deve ser informado")
+			}
+			input.Transaction = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
 		}
 	}
 
@@ -186,9 +202,13 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.Installment.IsPresent() {
 		if req.Installment.IsNull() {
-			input.Installment = coreutils.NewOptionalNull[listingmodel.InstallmentPlan]()
+			input.Installment = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
 		} else if value, ok := req.Installment.Value(); ok {
-			input.Installment = coreutils.NewOptionalValue(listingmodel.InstallmentPlan(value))
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("installment slug deve ser informado")
+			}
+			input.Installment = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
 		}
 	}
 
@@ -202,16 +222,15 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.FinancingBlockers.IsPresent() {
 		if req.FinancingBlockers.IsNull() {
-			input.FinancingBlockers = coreutils.NewOptionalNull[[]listingmodel.FinancingBlockerInterface]()
+			input.FinancingBlockers = coreutils.NewOptionalNull[[]listingservices.CatalogSelection]()
 		} else if blockersReq, ok := req.FinancingBlockers.Value(); ok {
-			blockers := make([]listingmodel.FinancingBlockerInterface, 0, len(blockersReq))
-			for _, blockerValue := range blockersReq {
-				if blockerValue <= 0 {
-					return input, fmt.Errorf("financingBlocker deve ser maior que zero")
+			blockers := make([]listingservices.CatalogSelection, 0, len(blockersReq))
+			for _, blockerSlug := range blockersReq {
+				slug := strings.TrimSpace(blockerSlug)
+				if slug == "" {
+					return input, fmt.Errorf("financingBlocker slug deve ser informado")
 				}
-				blocker := listingmodel.NewFinancingBlocker()
-				blocker.SetBlocker(listingmodel.FinancingBlocker(blockerValue))
-				blockers = append(blockers, blocker)
+				blockers = append(blockers, listingservices.NewCatalogSelectionFromSlug(slug))
 			}
 			input.FinancingBlockers = coreutils.NewOptionalValue(blockers)
 		}
@@ -219,17 +238,18 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.Guarantees.IsPresent() {
 		if req.Guarantees.IsNull() {
-			input.Guarantees = coreutils.NewOptionalNull[[]listingmodel.GuaranteeInterface]()
+			input.Guarantees = coreutils.NewOptionalNull[[]listingservices.GuaranteeUpdate]()
 		} else if guaranteesReq, ok := req.Guarantees.Value(); ok {
-			guarantees := make([]listingmodel.GuaranteeInterface, 0, len(guaranteesReq))
+			guarantees := make([]listingservices.GuaranteeUpdate, 0, len(guaranteesReq))
 			for _, guaranteeReq := range guaranteesReq {
-				if guaranteeReq.Guarantee <= 0 {
-					return input, fmt.Errorf("guarantee deve ser maior que zero")
+				slug := strings.TrimSpace(guaranteeReq.Guarantee)
+				if slug == "" {
+					return input, fmt.Errorf("guarantee slug deve ser informado")
 				}
-				guarantee := listingmodel.NewGuarantee()
-				guarantee.SetPriority(guaranteeReq.Priority)
-				guarantee.SetGuarantee(listingmodel.GuaranteeType(guaranteeReq.Guarantee))
-				guarantees = append(guarantees, guarantee)
+				guarantees = append(guarantees, listingservices.GuaranteeUpdate{
+					Priority:  guaranteeReq.Priority,
+					Selection: listingservices.NewCatalogSelectionFromSlug(slug),
+				})
 			}
 			input.Guarantees = coreutils.NewOptionalValue(guarantees)
 		}
@@ -237,9 +257,13 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.Visit.IsPresent() {
 		if req.Visit.IsNull() {
-			input.Visit = coreutils.NewOptionalNull[listingmodel.VisitType]()
+			input.Visit = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
 		} else if value, ok := req.Visit.Value(); ok {
-			input.Visit = coreutils.NewOptionalValue(listingmodel.VisitType(value))
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("visit slug deve ser informado")
+			}
+			input.Visit = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
 		}
 	}
 
@@ -269,9 +293,13 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 
 	if req.Accompanying.IsPresent() {
 		if req.Accompanying.IsNull() {
-			input.Accompanying = coreutils.NewOptionalNull[listingmodel.AccompanyingType]()
+			input.Accompanying = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
 		} else if value, ok := req.Accompanying.Value(); ok {
-			input.Accompanying = coreutils.NewOptionalValue(listingmodel.AccompanyingType(value))
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("accompanying slug deve ser informado")
+			}
+			input.Accompanying = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
 		}
 	}
 

@@ -5,22 +5,14 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O procedimento de conversão dos valores da tabela listing_catalog_values para os valores equivalentes na tabela listings está com erro.
+Após a refatoração para recuperar os valores da tabela listing_catalog_values através de slugs, a rotina está dependente que o ID se mantenha o mesmo, o que não é garantido.
 
-A tabela listing_catalog_values substituiu as constantes que estavam em listing_model/constants.go e que tinham valores numericos consecutivos para cada conjunto.
+Caso haja alguma alteração na tabela listing_catalog_values, como a adição de um novo valor no meio da tabela, os IDs mudam e o sistema quebra.
 
-A tabela listings espera valores numericos para os campos de catalog. Como por exemplo transactions: 1 para sell, 2 para rent e 3 para both.
+Assim, incluir uma coluna de valor numerico na tabela listing_catalog_values que será único para cada category deixa mais robusto o sistema.
 
-Mas isso não está acontecendo. recebo o erro 400 invalid value ao tentar PUT /listings com o payload:
----json
-{
-  "id": 1,
-  "transaction": 1
-}
----
-- Será que o endepoint PUT /listings deveria receber o valor slug para os campos de catalog e não o valor numerico? Isso permitiria converter o slug para o valor ID da tabela listing_catalog_values para o campo da tabela listings.
-- Ou o endpoint PUT /listings deveria continuar recebendo o valor numerico, mas a tabela listing_catalog_values deveria ter os valores numericos corretos para cada slug?
-- Apresente a opção mais adequada e um plano detalhado para a implementação da solução. 
+A processo cotinua sendo endpoints enviar slugs para atualizar o listing, mas a rotina de decodificação do slug para o ID do listing_catalog_values passa a ser feita através do valor numerico e não mais do ID.
+
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 

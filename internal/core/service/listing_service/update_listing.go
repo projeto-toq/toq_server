@@ -86,11 +86,12 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.Owner.IsPresent() {
 		if input.Owner.IsNull() {
 			existing.SetOwner(0)
-		} else if value, ok := input.Owner.Value(); ok {
-			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, uint8(value), "owner"); err != nil {
-				return err
+		} else if selection, ok := input.Owner.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, "owner", selection)
+			if resolveErr != nil {
+				return resolveErr
 			}
-			existing.SetOwner(value)
+			existing.SetOwner(listingmodel.PropertyOwner(resolvedID))
 		}
 	}
 
@@ -140,22 +141,24 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.Delivered.IsPresent() {
 		if input.Delivered.IsNull() {
 			existing.SetDelivered(0)
-		} else if value, ok := input.Delivered.Value(); ok {
-			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyDelivered, uint8(value), "delivered"); err != nil {
-				return err
+		} else if selection, ok := input.Delivered.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyDelivered, "delivered", selection)
+			if resolveErr != nil {
+				return resolveErr
 			}
-			existing.SetDelivered(value)
+			existing.SetDelivered(listingmodel.PropertyDelivered(resolvedID))
 		}
 	}
 
 	if input.WhoLives.IsPresent() {
 		if input.WhoLives.IsNull() {
 			existing.SetWhoLives(0)
-		} else if value, ok := input.WhoLives.Value(); ok {
-			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryWhoLives, uint8(value), "whoLives"); err != nil {
-				return err
+		} else if selection, ok := input.WhoLives.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryWhoLives, "whoLives", selection)
+			if resolveErr != nil {
+				return resolveErr
 			}
-			existing.SetWhoLives(value)
+			existing.SetWhoLives(listingmodel.WhoLives(resolvedID))
 		}
 	}
 
@@ -170,11 +173,12 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.Transaction.IsPresent() {
 		if input.Transaction.IsNull() {
 			existing.SetTransaction(0)
-		} else if value, ok := input.Transaction.Value(); ok {
-			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryTransactionType, uint8(value), "transaction"); err != nil {
-				return err
+		} else if selection, ok := input.Transaction.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryTransactionType, "transaction", selection)
+			if resolveErr != nil {
+				return resolveErr
 			}
-			existing.SetTransaction(value)
+			existing.SetTransaction(listingmodel.TransactionType(resolvedID))
 		}
 	}
 
@@ -248,11 +252,12 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.Installment.IsPresent() {
 		if input.Installment.IsNull() {
 			existing.SetInstallment(0)
-		} else if value, ok := input.Installment.Value(); ok {
-			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryInstallmentPlan, uint8(value), "installment"); err != nil {
-				return err
+		} else if selection, ok := input.Installment.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryInstallmentPlan, "installment", selection)
+			if resolveErr != nil {
+				return resolveErr
 			}
-			existing.SetInstallment(value)
+			existing.SetInstallment(listingmodel.InstallmentPlan(resolvedID))
 		}
 	}
 
@@ -267,12 +272,17 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.FinancingBlockers.IsPresent() {
 		if input.FinancingBlockers.IsNull() {
 			existing.SetFinancingBlockers(nil)
-		} else if blockers, ok := input.FinancingBlockers.Value(); ok {
-			for _, blocker := range blockers {
-				if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryFinancingBlocker, uint8(blocker.Blocker()), "financingBlockers"); err != nil {
-					return err
+		} else if selections, ok := input.FinancingBlockers.Value(); ok {
+			blockers := make([]listingmodel.FinancingBlockerInterface, 0, len(selections))
+			for _, selection := range selections {
+				resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryFinancingBlocker, "financingBlockers", selection)
+				if resolveErr != nil {
+					return resolveErr
 				}
+				blocker := listingmodel.NewFinancingBlocker()
+				blocker.SetBlocker(listingmodel.FinancingBlocker(resolvedID))
 				blocker.SetListingID(existing.ID())
+				blockers = append(blockers, blocker)
 			}
 			existing.SetFinancingBlockers(blockers)
 		}
@@ -281,12 +291,18 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.Guarantees.IsPresent() {
 		if input.Guarantees.IsNull() {
 			existing.SetGuarantees(nil)
-		} else if guarantees, ok := input.Guarantees.Value(); ok {
-			for _, guarantee := range guarantees {
-				if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryGuaranteeType, uint8(guarantee.Guarantee()), "guarantees"); err != nil {
-					return err
+		} else if guaranteesUpdate, ok := input.Guarantees.Value(); ok {
+			guarantees := make([]listingmodel.GuaranteeInterface, 0, len(guaranteesUpdate))
+			for _, update := range guaranteesUpdate {
+				resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryGuaranteeType, "guarantees", update.Selection)
+				if resolveErr != nil {
+					return resolveErr
 				}
+				guarantee := listingmodel.NewGuarantee()
+				guarantee.SetPriority(update.Priority)
+				guarantee.SetGuarantee(listingmodel.GuaranteeType(resolvedID))
 				guarantee.SetListingID(existing.ID())
+				guarantees = append(guarantees, guarantee)
 			}
 			existing.SetGuarantees(guarantees)
 		}
@@ -295,11 +311,12 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.Visit.IsPresent() {
 		if input.Visit.IsNull() {
 			existing.SetVisit(0)
-		} else if value, ok := input.Visit.Value(); ok {
-			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryVisitType, uint8(value), "visit"); err != nil {
-				return err
+		} else if selection, ok := input.Visit.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryVisitType, "visit", selection)
+			if resolveErr != nil {
+				return resolveErr
 			}
-			existing.SetVisit(value)
+			existing.SetVisit(listingmodel.VisitType(resolvedID))
 		}
 	}
 
@@ -330,11 +347,12 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if input.Accompanying.IsPresent() {
 		if input.Accompanying.IsNull() {
 			existing.SetAccompanying(0)
-		} else if value, ok := input.Accompanying.Value(); ok {
-			if err := ls.ensureCatalogValue(ctx, tx, listingmodel.CatalogCategoryAccompanyingType, uint8(value), "accompanying"); err != nil {
-				return err
+		} else if selection, ok := input.Accompanying.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryAccompanyingType, "accompanying", selection)
+			if resolveErr != nil {
+				return resolveErr
 			}
-			existing.SetAccompanying(value)
+			existing.SetAccompanying(listingmodel.AccompanyingType(resolvedID))
 		}
 	}
 
