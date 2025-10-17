@@ -496,6 +496,15 @@ definitions:
     required:
     - photoSessionId
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse:
+    properties:
+      label:
+        type: string
+      numericValue:
+        type: integer
+      slug:
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest:
     properties:
       code:
@@ -677,6 +686,13 @@ definitions:
       signedUrl:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetListingDetailRequest:
+    properties:
+      listingId:
+        type: integer
+    required:
+    - listingId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsRequest:
     properties:
       number:
@@ -833,6 +849,152 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse'
         type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingDetailResponse:
+    properties:
+      accompanying:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      annualGroundRent:
+        type: number
+      annualTax:
+        type: number
+      buildable:
+        type: number
+      city:
+        type: string
+      code:
+        type: integer
+      complement:
+        type: string
+      condominium:
+        type: number
+      corner:
+        type: boolean
+      deleted:
+        type: boolean
+      delivered:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      description:
+        type: string
+      exchange:
+        type: boolean
+      exchangePercentual:
+        type: number
+      exchangePlaces:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingExchangePlaceResponse'
+        type: array
+      features:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFeatureResponse'
+        type: array
+      financing:
+        type: boolean
+      financingBlockers:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFinancingBlockerResponse'
+        type: array
+      guarantees:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingGuaranteeResponse'
+        type: array
+      id:
+        type: integer
+      installment:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      landSize:
+        type: number
+      neighborhood:
+        type: string
+      nonBuildable:
+        type: number
+      number:
+        type: string
+      owner:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      propertyType:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse'
+      rentNet:
+        type: number
+      sellNet:
+        type: number
+      state:
+        type: string
+      status:
+        type: string
+      street:
+        type: string
+      tenantEmail:
+        type: string
+      tenantName:
+        type: string
+      tenantPhone:
+        type: string
+      transaction:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      userId:
+        type: integer
+      version:
+        type: integer
+      visit:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      whoLives:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      zipCode:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingExchangePlaceResponse:
+    properties:
+      city:
+        type: string
+      id:
+        type: integer
+      listingId:
+        type: integer
+      neighborhood:
+        type: string
+      state:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFeatureResponse:
+    properties:
+      featureId:
+        type: integer
+      id:
+        type: integer
+      listingId:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFinancingBlockerResponse:
+    properties:
+      blocker:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      id:
+        type: integer
+      listingId:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingGuaranteeResponse:
+    properties:
+      guarantee:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      id:
+        type: integer
+      listingId:
+        type: integer
+      priority:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse:
+    properties:
+      code:
+        type: integer
+      label:
+        type: string
+      propertyBit:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse:
     properties:
@@ -3457,6 +3619,50 @@ paths:
       security:
       - BearerAuth: []
       summary: List active listing catalog values
+      tags:
+      - Listings
+  /listings/detail:
+    get:
+      consumes:
+      - application/json
+      description: Returns all fields of a listing given its identifier.
+      parameters:
+      - description: Listing identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetListingDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get listing detail
       tags:
       - Listings
   /listings/end-update:

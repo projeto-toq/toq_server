@@ -50,6 +50,102 @@ type StartListingResponse struct {
 	ID int64 `json:"id"`
 }
 
+// GetListingDetailRequest representa a requisição para obter os detalhes completos de um listing.
+type GetListingDetailRequest struct {
+	ListingID int64 `json:"listingId" binding:"required"`
+}
+
+// CatalogItemResponse padroniza valores de catálogo retornados pelo endpoint de detalhes de listing.
+type CatalogItemResponse struct {
+	NumericValue uint8  `json:"numericValue"`
+	Slug         string `json:"slug,omitempty"`
+	Label        string `json:"label,omitempty"`
+}
+
+// ListingPropertyTypeResponse expõe metadados do tipo de imóvel associado ao listing.
+type ListingPropertyTypeResponse struct {
+	Code        int64  `json:"code,omitempty"`
+	Label       string `json:"label,omitempty"`
+	PropertyBit uint16 `json:"propertyBit"`
+}
+
+// ListingFeatureResponse representa uma feature associada ao listing.
+type ListingFeatureResponse struct {
+	ID        int64 `json:"id"`
+	ListingID int64 `json:"listingId"`
+	FeatureID int64 `json:"featureId"`
+	Quantity  uint8 `json:"quantity"`
+}
+
+// ListingExchangePlaceResponse expõe um local aceito para permuta.
+type ListingExchangePlaceResponse struct {
+	ID           int64  `json:"id"`
+	ListingID    int64  `json:"listingId"`
+	Neighborhood string `json:"neighborhood"`
+	City         string `json:"city"`
+	State        string `json:"state"`
+}
+
+// ListingFinancingBlockerResponse representa um impeditivo de financiamento associado ao listing.
+type ListingFinancingBlockerResponse struct {
+	ID        int64               `json:"id"`
+	ListingID int64               `json:"listingId"`
+	Blocker   CatalogItemResponse `json:"blocker"`
+}
+
+// ListingGuaranteeResponse representa uma garantia aceita no listing.
+type ListingGuaranteeResponse struct {
+	ID        int64               `json:"id"`
+	ListingID int64               `json:"listingId"`
+	Priority  uint8               `json:"priority"`
+	Guarantee CatalogItemResponse `json:"guarantee"`
+}
+
+// ListingDetailResponse agrega todos os campos do listing.
+type ListingDetailResponse struct {
+	ID                 int64                             `json:"id"`
+	UserID             int64                             `json:"userId"`
+	Code               uint32                            `json:"code"`
+	Version            uint8                             `json:"version"`
+	Status             string                            `json:"status"`
+	ZipCode            string                            `json:"zipCode"`
+	Street             string                            `json:"street"`
+	Number             string                            `json:"number"`
+	Complement         string                            `json:"complement"`
+	Neighborhood       string                            `json:"neighborhood"`
+	City               string                            `json:"city"`
+	State              string                            `json:"state"`
+	PropertyType       *ListingPropertyTypeResponse      `json:"propertyType,omitempty"`
+	Owner              *CatalogItemResponse              `json:"owner,omitempty"`
+	Features           []ListingFeatureResponse          `json:"features,omitempty"`
+	LandSize           float64                           `json:"landSize"`
+	Corner             bool                              `json:"corner"`
+	NonBuildable       float64                           `json:"nonBuildable"`
+	Buildable          float64                           `json:"buildable"`
+	Delivered          *CatalogItemResponse              `json:"delivered,omitempty"`
+	WhoLives           *CatalogItemResponse              `json:"whoLives,omitempty"`
+	Description        string                            `json:"description"`
+	Transaction        *CatalogItemResponse              `json:"transaction,omitempty"`
+	SellNet            float64                           `json:"sellNet"`
+	RentNet            float64                           `json:"rentNet"`
+	Condominium        float64                           `json:"condominium"`
+	AnnualTax          float64                           `json:"annualTax"`
+	AnnualGroundRent   float64                           `json:"annualGroundRent"`
+	Exchange           bool                              `json:"exchange"`
+	ExchangePercentual float64                           `json:"exchangePercentual"`
+	ExchangePlaces     []ListingExchangePlaceResponse    `json:"exchangePlaces,omitempty"`
+	Installment        *CatalogItemResponse              `json:"installment,omitempty"`
+	Financing          bool                              `json:"financing"`
+	FinancingBlockers  []ListingFinancingBlockerResponse `json:"financingBlockers,omitempty"`
+	Guarantees         []ListingGuaranteeResponse        `json:"guarantees,omitempty"`
+	Visit              *CatalogItemResponse              `json:"visit,omitempty"`
+	TenantName         string                            `json:"tenantName"`
+	TenantEmail        string                            `json:"tenantEmail"`
+	TenantPhone        string                            `json:"tenantPhone"`
+	Accompanying       *CatalogItemResponse              `json:"accompanying,omitempty"`
+	Deleted            bool                              `json:"deleted"`
+}
+
 // UpdateListingRequest represents request for updating a listing.
 //
 // Exemplo completo de payload (todos os campos preenchidos):

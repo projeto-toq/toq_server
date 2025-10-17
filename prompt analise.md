@@ -8,56 +8,10 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 ## 2) Requisição
 Continuando com a criação do toq_server, precisamos
 
-- Adicionar nova rota HTTP para finalizar a atualização de um anúncio (EndUpdate). podemos usar o listings.POST("/end-update", ...). que já existe e hoje retorna 501.
-- É necessário criar o handler, service e repository (se necessário) para essa funcionalidade.
-- a regra de negócio a ser implementada é a seguinte:
-  - O anúncio deve estar no seguinte status: StatusDraft.
-  - Campos básicos obrigatóriamente preeenchidos:
-    - Code
-	- Version
-	- status
-	- ZipCode
-	- Street
-	- Number
-	- city
-	- State
-	- type
-	- Owner
-	- Buildable
-	- deliverd
-	- Who_lives
-	- Description
-	- Transaction
-	- visit
-	- accompanying
-	- annual_tax
-	- registros na tabela features para este listing
-  - Caso transaction_type seja sale os campos abaixe serão obrigatórios além dos básicos:
-	- SaleNet
-	- exchange - caso seja 1 (sim aceita permuta):
-		- devem haver registros na tabela exchange_places para este listing
-		- exchange_perc 
-	- financing - caso seja 0 (não pode financiar) devem haver registros na tabela financing blockers para este listing
-  - Caso transaction_type seja rent os campos abaixe serão obrigatórios além dos básicos:
-	- Rent_net
-	- registros na tabela guarantees para este listing
-  - Caso type seja 1 ou 4 os campos abaixe serão obrigatórios além dos básicos:
-	- Condominium
-  - Caso type seja 16, 32, 64 ou 128 os campos abaixe serão obrigatórios além dos básicos:
-	- land_size
-	- buildable_size
-	- corner
-  - Caso who_lives seja tenant os campos abaixe serão obrigatórios além dos básicos:
-	- tenant_name
-	- tenant_phone
-	- tenant_email
-- Após a validação o status deve ser alterado para StatusPendingPhotoScheduling
-- Caso alguma validação falhe deve ser retornado um erro 400 com a mensagem do erro detalhando o motivo do erro
-- Caso o anúncio não esteja no status StatusDraft deve ser retornado um erro 409
-- Caso o anúncio não seja encontrado deve ser retornado um erro 404
-- A rota deve ser autenticada e somente owner pode acessar. Ajustar /data/base_permission e /data/base_role_permission.
-- Somente o owner do anúncio pode finalizar a atualização do anúncio
-- Estas regras provavelmente serão alteradas no futuro, mas por enquanto precisamos seguir exatamente o que está descrito acima. Assim, documente muito bem no código e nos comentários as regras de negócio implementadas, facilitando eventuais alterações futuras.
+- Adicionar nova rota GET HTTP para listar um listing específico baseado em um ID fornecido no body.
+- Todos os campos do listing devem ser retornados no response.
+- Todos os perfis devem ter acesso ao endpoint, portanto altere permissions.csv e role_permissions.csv conforme necessário.
+- O endpoint deve ser documentado no Swagger com comentários no código.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

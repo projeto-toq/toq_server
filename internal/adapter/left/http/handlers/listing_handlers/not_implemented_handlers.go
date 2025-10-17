@@ -121,12 +121,6 @@ func (lh *ListingHandler) GetFavoriteListings(c *gin.Context) {
 	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "GetFavoriteListings service method not implemented yet")
 }
 
-// GetListing handles getting a specific listing
-// Service method not implemented yet
-func (lh *ListingHandler) GetListing(c *gin.Context) {
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "GetListing service method not implemented yet")
-}
-
 // GetListingStatus handles getting listing status
 // Service method not implemented yet
 func (lh *ListingHandler) GetListingStatus(c *gin.Context) {

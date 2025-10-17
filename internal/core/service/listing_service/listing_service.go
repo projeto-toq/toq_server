@@ -62,4 +62,5 @@ type ListingServiceInterface interface {
 	ReservePhotoSession(ctx context.Context, input ReservePhotoSessionInput) (ReservePhotoSessionOutput, error)
 	ConfirmPhotoSession(ctx context.Context, input ConfirmPhotoSessionInput) (ConfirmPhotoSessionOutput, error)
 	CancelPhotoSession(ctx context.Context, input CancelPhotoSessionInput) error
+	GetListingDetail(ctx context.Context, listingID int64) (ListingDetailOutput, error)
 }

@@ -229,6 +229,7 @@ func RegisterListingRoutes(
 		listings.POST("/photo-session/cancel", listingHandler.CancelPhotoSession)
 
 		// Individual listing operations
+		listings.GET("/detail", listingHandler.GetListing)                                                       // GetListing
 		listings.GET("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })        // GetListing
 		listings.PUT("", listingHandler.UpdateListing)                                                           // UpdateListing
 		listings.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })     // DeleteListing

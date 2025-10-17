@@ -3029,6 +3029,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/listings/detail": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all fields of a listing given its identifier.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Get listing detail",
+                "parameters": [
+                    {
+                        "description": "Listing identifier",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetListingDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/listings/end-update": {
             "post": {
                 "security": [
@@ -5354,6 +5423,20 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "numericValue": {
+                    "type": "integer"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest": {
             "type": "object",
             "required": [
@@ -5628,6 +5711,17 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetListingDetailRequest": {
+            "type": "object",
+            "required": [
+                "listingId"
+            ],
+            "properties": {
+                "listingId": {
+                    "type": "integer"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsRequest": {
             "type": "object",
             "required": [
@@ -5860,6 +5954,228 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse"
                     }
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingDetailResponse": {
+            "type": "object",
+            "properties": {
+                "accompanying": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "annualGroundRent": {
+                    "type": "number"
+                },
+                "annualTax": {
+                    "type": "number"
+                },
+                "buildable": {
+                    "type": "number"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "complement": {
+                    "type": "string"
+                },
+                "condominium": {
+                    "type": "number"
+                },
+                "corner": {
+                    "type": "boolean"
+                },
+                "deleted": {
+                    "type": "boolean"
+                },
+                "delivered": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "exchange": {
+                    "type": "boolean"
+                },
+                "exchangePercentual": {
+                    "type": "number"
+                },
+                "exchangePlaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingExchangePlaceResponse"
+                    }
+                },
+                "features": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFeatureResponse"
+                    }
+                },
+                "financing": {
+                    "type": "boolean"
+                },
+                "financingBlockers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFinancingBlockerResponse"
+                    }
+                },
+                "guarantees": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingGuaranteeResponse"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "installment": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "landSize": {
+                    "type": "number"
+                },
+                "neighborhood": {
+                    "type": "string"
+                },
+                "nonBuildable": {
+                    "type": "number"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "propertyType": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse"
+                },
+                "rentNet": {
+                    "type": "number"
+                },
+                "sellNet": {
+                    "type": "number"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "tenantEmail": {
+                    "type": "string"
+                },
+                "tenantName": {
+                    "type": "string"
+                },
+                "tenantPhone": {
+                    "type": "string"
+                },
+                "transaction": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "userId": {
+                    "type": "integer"
+                },
+                "version": {
+                    "type": "integer"
+                },
+                "visit": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "whoLives": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "zipCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingExchangePlaceResponse": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "listingId": {
+                    "type": "integer"
+                },
+                "neighborhood": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFeatureResponse": {
+            "type": "object",
+            "properties": {
+                "featureId": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "listingId": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFinancingBlockerResponse": {
+            "type": "object",
+            "properties": {
+                "blocker": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "listingId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingGuaranteeResponse": {
+            "type": "object",
+            "properties": {
+                "guarantee": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "listingId": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "propertyBit": {
+                    "type": "integer"
                 }
             }
         },
