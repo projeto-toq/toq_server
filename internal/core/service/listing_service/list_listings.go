@@ -2,6 +2,7 @@ package listingservices
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -73,13 +74,15 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		_ = ls.gsi.RollbackTransaction(ctx, tx)
 	}()
 
+	zipFilter := sanitizeZipFilter(input.ZipCode)
+
 	repoFilter := listingrepository.ListListingsFilter{
 		Page:         input.Page,
 		Limit:        input.Limit,
 		Status:       input.Status,
 		Code:         input.Code,
 		Title:        utils.NormalizeSearchPattern(input.Title),
-		ZipCode:      utils.NormalizeSearchPattern(input.ZipCode),
+		ZipCode:      utils.NormalizeSearchPattern(zipFilter),
 		City:         utils.NormalizeSearchPattern(input.City),
 		Neighborhood: utils.NormalizeSearchPattern(input.Neighborhood),
 		UserID:       input.UserID,
@@ -115,4 +118,21 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		Page:  repoFilter.Page,
 		Limit: repoFilter.Limit,
 	}, nil
+}
+
+func sanitizeZipFilter(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return ""
+	}
+	var builder strings.Builder
+	for _, r := range trimmed {
+		switch {
+		case r >= '0' && r <= '9':
+			builder.WriteRune(r)
+		case r == '*', r == '%':
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
 }

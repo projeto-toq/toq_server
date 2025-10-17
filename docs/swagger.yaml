@@ -475,9 +475,6 @@ definitions:
       neighborhood:
         example: Bela Vista
         type: string
-      postalCode:
-        example: "12345678"
-        type: string
       state:
         example: SP
         type: string
@@ -487,6 +484,9 @@ definitions:
       valid:
         example: true
         type: boolean
+      zipCode:
+        example: "06543001"
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CancelPhotoSessionRequest:
     properties:
@@ -822,6 +822,8 @@ definitions:
         type: boolean
       label:
         type: string
+      numericValue:
+        type: integer
       slug:
         type: string
     type: object
@@ -1032,6 +1034,7 @@ definitions:
       street:
         type: string
       zipCode:
+        example: "06543001"
         type: string
     required:
     - city
@@ -1215,6 +1218,7 @@ definitions:
       street:
         type: string
       zipCode:
+        example: "06543001"
         type: string
     required:
     - bornAt
@@ -1299,16 +1303,16 @@ definitions:
       hmac:
         example: a1b2c3
         type: string
-      postalCode:
-        example: "12345678"
-        type: string
       timestamp:
         example: 1712345678
         type: integer
+      zipCode:
+        example: "06543001"
+        type: string
     required:
     - hmac
-    - postalCode
     - timestamp
+    - zipCode
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ValidateCNPJRequest:
     properties:
@@ -3218,8 +3222,8 @@ paths:
         in: query
         name: userId
         type: integer
-      - description: Filter by zip code (supports '*' wildcard)
-        example: '"12345*"'
+      - description: Filter by zip code (digits only; supports '*' wildcard)
+        example: '"06543*"'
         in: query
         name: zipCode
         type: string
@@ -3363,6 +3367,16 @@ paths:
           amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"annualTax":3400.75,"annualGroundRent":1800,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila
           Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao
           da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+55 11 91234-5678","accompanying":"assistant"}'
+      - description: Payload for update (ID must be provided in the body)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest'
+        x-example: '{"id":98765,"owner":"myself","features":[{"featureId":101,"quantity":2},{"featureId":205,"quantity":1}],"landSize":423.5,"corner":true,"nonBuildable":12.75,"buildable":410.75,"delivered":"furnished","whoLives":"tenant","description":"Apartamento
+          amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"annualTax":3400.75,"annualGroundRent":1800,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila
+          Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao
+          da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+5511912345678","accompanying":"assistant"}'
       produces:
       - application/json
       responses:

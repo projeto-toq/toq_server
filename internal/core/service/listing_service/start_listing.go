@@ -10,6 +10,7 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 // StartListingInput carries the data required to create a new listing.
@@ -65,6 +66,11 @@ func (ls *listingService) StartListing(ctx context.Context, input StartListingIn
 
 func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input StartListingInput) (listing listingmodel.ListingInterface, err error) {
 	zipCode := strings.TrimSpace(input.ZipCode)
+	normalizedZip, normErr := validators.NormalizeCEP(zipCode)
+	if normErr != nil {
+		return nil, utils.ValidationError("zipCode", "Zip code must contain exactly 8 digits without separators.")
+	}
+	zipCode = normalizedZip
 	number := strings.TrimSpace(input.Number)
 	propertyType := input.PropertyType
 

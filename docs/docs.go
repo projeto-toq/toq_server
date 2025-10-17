@@ -2697,8 +2697,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "example": "\"12345*\"",
-                        "description": "Filter by zip code (supports '*' wildcard)",
+                        "example": "\"06543*\"",
+                        "description": "Filter by zip code (digits only; supports '*' wildcard)",
                         "name": "zipCode",
                         "in": "query"
                     },
@@ -2830,6 +2830,16 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+55 11 91234-5678\",\"accompanying\":\"assistant\"}",
+                        "description": "Payload for update (ID must be provided in the body)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest"
+                        }
+                    },
+                    {
+                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+5511912345678\",\"accompanying\":\"assistant\"}",
                         "description": "Payload for update (ID must be provided in the body)",
                         "name": "request",
                         "in": "body",
@@ -5314,10 +5324,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Bela Vista"
                 },
-                "postalCode": {
-                    "type": "string",
-                    "example": "12345678"
-                },
                 "state": {
                     "type": "string",
                     "example": "SP"
@@ -5329,6 +5335,10 @@ const docTemplate = `{
                 "valid": {
                     "type": "boolean",
                     "example": true
+                },
+                "zipCode": {
+                    "type": "string",
+                    "example": "06543001"
                 }
             }
         },
@@ -5834,6 +5844,9 @@ const docTemplate = `{
                 "label": {
                     "type": "string"
                 },
+                "numericValue": {
+                    "type": "integer"
+                },
                 "slug": {
                     "type": "string"
                 }
@@ -6158,7 +6171,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "zipCode": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "06543001"
                 }
             }
         },
@@ -6430,7 +6444,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "zipCode": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "06543001"
                 }
             }
         },
@@ -6543,21 +6558,21 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "hmac",
-                "postalCode",
-                "timestamp"
+                "timestamp",
+                "zipCode"
             ],
             "properties": {
                 "hmac": {
                     "type": "string",
                     "example": "a1b2c3"
                 },
-                "postalCode": {
-                    "type": "string",
-                    "example": "12345678"
-                },
                 "timestamp": {
                     "type": "integer",
                     "example": 1712345678
+                },
+                "zipCode": {
+                    "type": "string",
+                    "example": "06543001"
                 }
             }
         },

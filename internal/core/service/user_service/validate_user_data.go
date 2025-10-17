@@ -87,7 +87,13 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	}
 
 	//validate the user zipcode
-	cep, err := us.globalService.GetCEP(ctx, user.GetZipCode())
+	zipCandidate := strings.TrimSpace(user.GetZipCode())
+	normalizedZip, zipErr := validators.NormalizeCEP(zipCandidate)
+	if zipErr != nil {
+		return utils.ValidationError(field("zipCode"), "Zip code must contain exactly 8 digits without separators.")
+	}
+	user.SetZipCode(normalizedZip)
+	cep, err := us.globalService.GetCEP(ctx, normalizedZip)
 	if err != nil {
 		return err
 	}

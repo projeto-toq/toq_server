@@ -3,10 +3,12 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"time"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 // UpdateProfileInput represents allowed fields for profile updates.
@@ -102,7 +104,16 @@ func (us *userService) updateProfile(
 		current.SetBornAt(bornAt)
 	}
 	if in.ZipCode != nil {
-		current.SetZipCode(*in.ZipCode)
+		zipCandidate := strings.TrimSpace(*in.ZipCode)
+		if zipCandidate == "" {
+			current.SetZipCode("")
+		} else {
+			normalizedZip, zipErr := validators.NormalizeCEP(zipCandidate)
+			if zipErr != nil {
+				return utils.ValidationError("zipCode", "Zip code must contain exactly 8 digits without separators.")
+			}
+			current.SetZipCode(normalizedZip)
+		}
 	}
 	if in.Street != nil {
 		current.SetStreet(*in.Street)

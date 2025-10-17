@@ -46,7 +46,7 @@ type UserCreateRequest struct {
 	BornAt        string `json:"bornAt" binding:"required"` // format: 2006-01-02
 	PhoneNumber   string `json:"phoneNumber" binding:"required" example:"+5511999999999" description:"Phone number in E.164 format (e.g., +5511999999999)"`
 	Email         string `json:"email" binding:"required,email"`
-	ZipCode       string `json:"zipCode" binding:"required"`
+	ZipCode       string `json:"zipCode" binding:"required" example:"06543001" description:"Zip code without separators (8 digits)."`
 	Street        string `json:"street,omitempty"`
 	Number        string `json:"number,omitempty"`
 	Complement    string `json:"complement,omitempty"`
@@ -147,7 +147,7 @@ type UpdateProfileResponse struct {
 type UpdateUserRequest struct {
 	NickName     string `json:"nickName,omitempty" binding:"omitempty,min=2,max=50"`
 	BornAt       string `json:"bornAt,omitempty"` // format: 2006-01-02
-	ZipCode      string `json:"zipCode,omitempty"`
+	ZipCode      string `json:"zipCode,omitempty" description:"Zip code without separators (8 digits)."`
 	Street       string `json:"street,omitempty"`
 	Number       string `json:"number,omitempty"`
 	Complement   string `json:"complement,omitempty"`

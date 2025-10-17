@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 func (ls *listingService) UpdateListing(ctx context.Context, input UpdateListingInput) (err error) {
@@ -332,7 +334,15 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		if input.TenantPhone.IsNull() {
 			existing.SetTenantPhone("")
 		} else if value, ok := input.TenantPhone.Value(); ok {
-			existing.SetTenantPhone(value)
+			trimmed := strings.TrimSpace(value)
+			if trimmed == "" {
+				return utils.ValidationError("tenantPhone", "Tenant phone must not be empty when provided.")
+			}
+			normalizedPhone, phoneErr := validators.NormalizeToE164(trimmed)
+			if phoneErr != nil {
+				return utils.ValidationError("tenantPhone", "Tenant phone must be in valid E.164 format (e.g., +5511912345678).")
+			}
+			existing.SetTenantPhone(normalizedPhone)
 		}
 	}
 

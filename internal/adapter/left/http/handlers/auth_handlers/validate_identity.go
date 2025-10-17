@@ -148,11 +148,11 @@ func (ah *AuthHandler) ValidateCEP(c *gin.Context) {
 		return
 	}
 
-	if !ah.validateRequestSignature(c, ctx, rawBody, request.Timestamp, request.HMAC, request.PostalCode, "cep") {
+	if !ah.validateRequestSignature(c, ctx, rawBody, request.Timestamp, request.HMAC, request.ZipCode, "cep") {
 		return
 	}
 
-	cepInfo, err := ah.globalService.GetCEP(ctx, request.PostalCode)
+	cepInfo, err := ah.globalService.GetCEP(ctx, request.ZipCode)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
@@ -160,7 +160,7 @@ func (ah *AuthHandler) ValidateCEP(c *gin.Context) {
 
 	response := dto.CEPValidationResponse{
 		Valid:        true,
-		PostalCode:   cepInfo.GetCep(),
+		ZipCode:      cepInfo.GetCep(),
 		Street:       cepInfo.GetStreet(),
 		Complement:   cepInfo.GetComplement(),
 		Neighborhood: cepInfo.GetNeighborhood(),

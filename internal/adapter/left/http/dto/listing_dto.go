@@ -41,7 +41,7 @@ type StartListingRequest struct {
 	Complement   *string `json:"complement,omitempty"`
 	State        string  `json:"state" binding:"required"`
 	Street       string  `json:"street" binding:"required"`
-	ZipCode      string  `json:"zipCode" binding:"required"`
+	ZipCode      string  `json:"zipCode" binding:"required" example:"06543001" description:"Zip code without separators (8 digits)."`
 	PropertyType int     `json:"propertyType" binding:"required"`
 }
 
@@ -90,7 +90,7 @@ type StartListingResponse struct {
 //	  "visit": "client",
 //	  "tenantName": "Joao da Silva",
 //	  "tenantEmail": "joao.silva@example.com",
-//	  "tenantPhone": "+55 11 91234-5678",
+//	  "tenantPhone": "+5511912345678",
 //	  "accompanying": "assistant"
 //	}
 type UpdateListingRequest struct {
@@ -120,7 +120,7 @@ type UpdateListingRequest struct {
 	Visit              coreutils.Optional[string]                              `json:"visit"`
 	TenantName         coreutils.Optional[string]                              `json:"tenantName"`
 	TenantEmail        coreutils.Optional[string]                              `json:"tenantEmail"`
-	TenantPhone        coreutils.Optional[string]                              `json:"tenantPhone"`
+	TenantPhone        coreutils.Optional[string]                              `json:"tenantPhone" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
 	Accompanying       coreutils.Optional[string]                              `json:"accompanying"`
 }
 

@@ -3,9 +3,11 @@ package complexservices
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
+	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
 func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number string) (propertyTypes globalmodel.PropertyType, err error) {
@@ -14,6 +16,14 @@ func (cs *complexService) GetOptions(ctx context.Context, zipCode string, number
 		return 0, utils.InternalError("")
 	}
 	defer spanEnd()
+
+	zipCandidate := strings.TrimSpace(zipCode)
+	normalizedZip, normErr := validators.NormalizeCEP(zipCandidate)
+	if normErr != nil {
+		return 0, utils.ValidationError("zipCode", "Zip code must contain exactly 8 digits without separators.")
+	}
+	zipCode = normalizedZip
+	number = strings.TrimSpace(number)
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)

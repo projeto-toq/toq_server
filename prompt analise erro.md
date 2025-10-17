@@ -5,13 +5,15 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após a refatoração para recuperar os valores da tabela listing_catalog_values através de slugs, a rotina está dependente que o ID se mantenha o mesmo, o que não é garantido.
+Com o processo de construção da aplicação por várias pessoas, temos variações na forma como o zipCode é recebido em diferentes endpoints. Alguns  recebem como 06543-001 e outros como 06543001.
 
-Caso haja alguma alteração na tabela listing_catalog_values, como a adição de um novo valor no meio da tabela, os IDs mudam e o sistema quebra.
+- verifique como o endpoint POST /auth/owner está lidando com o zipCode. A forma como ele recebe deve ser o padrão para todos os endpoints que recebem o zipCode.
+- verifique os outros endpoints que recebem o zipCode e faça as alterações necessárias para que todos sigam o mesmo padrão do endpoint POST /auth/owner.
+- documente a forma correta com exemplo no swagger para cada endpoint que recebe o zipCode.
+- alguns endpoints recebem zipCode como postalCode, verifique e padronize para zipCode em todos os endpoints.
 
-Assim, incluir uma coluna de valor numerico na tabela listing_catalog_values que será único para cada category deixa mais robusto o sistema.
-
-A processo cotinua sendo endpoints enviar slugs para atualizar o listing, mas a rotina de decodificação do slug para o ID do listing_catalog_values passa a ser feita através do valor numerico e não mais do ID.
+Outro problema identificado é que alguns endpoints que recebem telefone estão recebendo telefoones fora da formatação E.164.
+- Verifique todos os endpoints que recebem telefone e faça as alterações necessárias para que todos sigam a formatação E.164. Documente a forma correta com exemplo no swagger para cada endpoint que recebe telefone.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

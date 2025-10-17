@@ -27,7 +27,7 @@ import (
 //	@Param        code           query  int     false  "Exact listing code" example(1024)
 //	@Param        title          query  string  false  "Filter by listing title/description (supports '*' wildcard)" example("*garden*")
 //	@Param        userId         query  int     false  "Filter by owner user id" example(55)
-//	@Param        zipCode        query  string  false  "Filter by zip code (supports '*' wildcard)" example("12345*")
+//	@Param        zipCode        query  string  false  "Filter by zip code (digits only; supports '*' wildcard)" example("06543*")
 //	@Param        city           query  string  false  "Filter by city (supports '*' wildcard)" example("*Paulista*")
 //	@Param        neighborhood   query  string  false  "Filter by neighborhood (supports '*' wildcard)" example("*Centro*")
 //	@Param        createdFrom    query  string  false  "Filter by creation date from (RFC3339 or YYYY-MM-DD)" example("2025-01-01")

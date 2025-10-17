@@ -20,11 +20,11 @@ type ValidateCNPJRequest struct {
 }
 
 // ValidateCEPRequest representa o payload de validação de CEP
-// @Example {"postalCode":"12345678","timestamp":1712345678,"hmac":"<signature>"}
+// @Example {"zipCode":"06543001","timestamp":1712345678,"hmac":"<signature>"}
 type ValidateCEPRequest struct {
-	PostalCode string `json:"postalCode" binding:"required" example:"12345678"`
-	Timestamp  int64  `json:"timestamp" binding:"required" example:"1712345678"`
-	HMAC       string `json:"hmac" binding:"required" example:"a1b2c3"`
+	ZipCode   string `json:"zipCode" binding:"required" example:"06543001" description:"Zip code without separators (8 digits)."`
+	Timestamp int64  `json:"timestamp" binding:"required" example:"1712345678"`
+	HMAC      string `json:"hmac" binding:"required" example:"a1b2c3"`
 }
 
 // ValidationResultResponse indica se a validação foi bem-sucedida
@@ -37,7 +37,7 @@ type ValidationResultResponse struct {
 // swagger:model CEPValidationResponse
 type CEPValidationResponse struct {
 	Valid        bool   `json:"valid" example:"true"`
-	PostalCode   string `json:"postalCode" example:"12345678"`
+	ZipCode      string `json:"zipCode" example:"06543001"`
 	Street       string `json:"street" example:"Av. Paulista"`
 	Complement   string `json:"complement" example:"Apto 101"`
 	Neighborhood string `json:"neighborhood" example:"Bela Vista"`

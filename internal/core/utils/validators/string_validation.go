@@ -1,6 +1,7 @@
 package validators
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 
@@ -96,6 +97,7 @@ func ValidateCode(code string) error {
 }
 
 var (
+	cepStrictPattern   = regexp.MustCompile(`^[0-9]{8}$`)
 	creciNumberPattern = regexp.MustCompile(`^[0-9]+-F$`)
 	brazilianUFs       = map[string]struct{}{
 		"AC": {}, "AL": {}, "AP": {}, "AM": {}, "BA": {}, "CE": {}, "DF": {}, "ES": {}, "GO": {},
@@ -103,6 +105,18 @@ var (
 		"RJ": {}, "RN": {}, "RS": {}, "RO": {}, "RR": {}, "SC": {}, "SP": {}, "SE": {}, "TO": {},
 	}
 )
+
+var ErrInvalidCEPFormat = errors.New("invalid CEP format")
+
+// NormalizeCEP validates and enforces CEP format (eight digits) returning the trimmed value.
+// Returns ErrInvalidCEPFormat when the input does not comply.
+func NormalizeCEP(value string) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	if !cepStrictPattern.MatchString(trimmed) {
+		return "", ErrInvalidCEPFormat
+	}
+	return trimmed, nil
+}
 
 // ValidateCreciNumber normaliza e valida o formato do número CRECI.
 // Quando required for true, o valor é obrigatório; caso contrário, retorna string vazia se ausente.
