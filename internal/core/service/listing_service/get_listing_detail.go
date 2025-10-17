@@ -23,6 +23,13 @@ type FinancingBlockerDetail struct {
 	Catalog *CatalogValueDetail
 }
 
+// FeatureDetail agrega informações de catálogo para uma feature associada ao listing.
+type FeatureDetail struct {
+	Feature     string
+	Description string
+	Quantity    uint8
+}
+
 // GuaranteeDetail combina a garantia com a entrada correspondente no catálogo.
 type GuaranteeDetail struct {
 	Item    listingmodel.GuaranteeInterface
@@ -32,6 +39,7 @@ type GuaranteeDetail struct {
 // ListingDetailOutput encapsula o listing e metadados associados.
 type ListingDetailOutput struct {
 	Listing           listingmodel.ListingInterface
+	Features          []FeatureDetail
 	Owner             *CatalogValueDetail
 	Delivered         *CatalogValueDetail
 	WhoLives          *CatalogValueDetail
@@ -83,6 +91,51 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 	output.Listing = listing
 
 	cache := make(map[string]*CatalogValueDetail)
+
+	if listingFeatures := listing.Features(); len(listingFeatures) > 0 {
+		ids := make([]int64, 0, len(listingFeatures))
+		seen := make(map[int64]struct{}, len(listingFeatures))
+		for _, feature := range listingFeatures {
+			featureID := feature.FeatureID()
+			if featureID == 0 {
+				continue
+			}
+			if _, ok := seen[featureID]; !ok {
+				seen[featureID] = struct{}{}
+				ids = append(ids, featureID)
+			}
+		}
+
+		featureMap, ferr := ls.listingRepository.GetBaseFeaturesByIDs(ctx, tx, ids)
+		if ferr != nil {
+			utils.SetSpanError(ctx, ferr)
+			logger.Error("listing.detail.get_features_metadata_error", "err", ferr, "listing_id", listingID)
+			return output, utils.InternalError("")
+		}
+
+		featureDetails := make([]FeatureDetail, 0, len(listingFeatures))
+		for _, feature := range listingFeatures {
+			featureID := feature.FeatureID()
+			metadata, ok := featureMap[featureID]
+			if !ok {
+				logger.Warn("listing.detail.base_feature_not_found", "feature_id", featureID)
+				featureDetails = append(featureDetails, FeatureDetail{
+					Feature:     "",
+					Description: "",
+					Quantity:    feature.Quantity(),
+				})
+				continue
+			}
+
+			featureDetails = append(featureDetails, FeatureDetail{
+				Feature:     metadata.Feature(),
+				Description: metadata.Description(),
+				Quantity:    feature.Quantity(),
+			})
+		}
+
+		output.Features = featureDetails
+	}
 
 	ownerDetail, derr := ls.fetchCatalogValueDetail(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, uint8(listing.Owner()), cache)
 	if derr != nil {

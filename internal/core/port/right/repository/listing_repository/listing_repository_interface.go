@@ -29,6 +29,7 @@ type ListingRepoPortInterface interface {
 
 	GetListingCode(ctx context.Context, tx *sql.Tx) (code uint32, err error)
 	GetBaseFeatures(ctx context.Context, tx *sql.Tx) (features []listingmodel.BaseFeatureInterface, err error)
+	GetBaseFeaturesByIDs(ctx context.Context, tx *sql.Tx, ids []int64) (map[int64]listingmodel.BaseFeatureInterface, error)
 	GetListingByZipNumber(ctx context.Context, tx *sql.Tx, zip string, number string) (listing listingmodel.ListingInterface, err error)
 	GetListingByID(ctx context.Context, tx *sql.Tx, listingID int64) (listing listingmodel.ListingInterface, err error)
 	GetListingForEndUpdate(ctx context.Context, tx *sql.Tx, listingID int64) (ListingEndUpdateData, error)

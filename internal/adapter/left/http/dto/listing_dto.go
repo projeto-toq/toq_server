@@ -69,12 +69,11 @@ type ListingPropertyTypeResponse struct {
 	PropertyBit uint16 `json:"propertyBit"`
 }
 
-// ListingFeatureResponse representa uma feature associada ao listing.
+// ListingFeatureResponse representa uma feature do listing com metadados enriquecidos.
 type ListingFeatureResponse struct {
-	ID        int64 `json:"id"`
-	ListingID int64 `json:"listingId"`
-	FeatureID int64 `json:"featureId"`
-	Quantity  uint8 `json:"quantity"`
+	Feature     string `json:"feature"`
+	Description string `json:"description,omitempty"`
+	Quantity    uint8  `json:"quantity"`
 }
 
 // ListingExchangePlaceResponse expõe um local aceito para permuta.

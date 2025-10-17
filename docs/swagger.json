@@ -6113,14 +6113,11 @@
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFeatureResponse": {
             "type": "object",
             "properties": {
-                "featureId": {
-                    "type": "integer"
+                "description": {
+                    "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "listingId": {
-                    "type": "integer"
+                "feature": {
+                    "type": "string"
                 },
                 "quantity": {
                     "type": "integer"

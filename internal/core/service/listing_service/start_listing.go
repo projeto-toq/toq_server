@@ -138,23 +138,6 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 	cepStreet := strings.TrimSpace(address.GetStreet())
 	cepCity := strings.TrimSpace(address.GetCity())
 	cepState := strings.TrimSpace(address.GetState())
-
-	// if !equalsNormalized(cepStreet, input.Street) || !equalsNormalized(cepCity, input.City) || !equalsNormalized(cepState, input.State) {
-	// 	logger := utils.LoggerFromContext(ctx)
-	// 	logger.Warn(
-	// 		"listing.start.address_mismatch",
-	// 		"zip", zipCode,
-	// 		"number", number,
-	// 		"cep_street", cepStreet,
-	// 		"cep_city", cepCity,
-	// 		"cep_state", cepState,
-	// 		"request_street", strings.TrimSpace(input.Street),
-	// 		"request_city", strings.TrimSpace(input.City),
-	// 		"request_state", strings.TrimSpace(input.State),
-	// 	)
-	// 	return nil, utils.BadRequest("Provided address does not match zip code information")
-	// }
-
 	cepNeighborhood := strings.TrimSpace(address.GetNeighborhood())
 	cepComplement := strings.TrimSpace(address.GetComplement())
 
@@ -203,7 +186,3 @@ func (ls *listingService) isPropertyTypeAllowed(ctx context.Context, allowedType
 
 	return false, nil
 }
-
-// func equalsNormalized(origin, candidate string) bool {
-// 	return strings.EqualFold(strings.TrimSpace(origin), strings.TrimSpace(candidate))
-// }

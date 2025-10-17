@@ -958,12 +958,10 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFeatureResponse:
     properties:
-      featureId:
-        type: integer
-      id:
-        type: integer
-      listingId:
-        type: integer
+      description:
+        type: string
+      feature:
+        type: string
       quantity:
         type: integer
     type: object

@@ -62,13 +62,12 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 	resp.Visit = catalogDetailToPointer(detail.Visit, uint8(listing.Visit()))
 	resp.Accompanying = catalogDetailToPointer(detail.Accompanying, uint8(listing.Accompanying()))
 
-	resp.Features = make([]dto.ListingFeatureResponse, 0, len(listing.Features()))
-	for _, feature := range listing.Features() {
+	resp.Features = make([]dto.ListingFeatureResponse, 0, len(detail.Features))
+	for _, feature := range detail.Features {
 		resp.Features = append(resp.Features, dto.ListingFeatureResponse{
-			ID:        feature.ID(),
-			ListingID: feature.ListingID(),
-			FeatureID: feature.FeatureID(),
-			Quantity:  feature.Quantity(),
+			Feature:     feature.Feature,
+			Description: strings.TrimSpace(feature.Description),
+			Quantity:    feature.Quantity,
 		})
 	}
 
