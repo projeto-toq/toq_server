@@ -87,7 +87,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	//update only the allowed fields respeitando campos opcionais
 	if input.Owner.IsPresent() {
 		if input.Owner.IsNull() {
-			existing.SetOwner(0)
+			existing.UnsetOwner()
 		} else if selection, ok := input.Owner.Value(); ok {
 			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, "owner", selection)
 			if resolveErr != nil {
@@ -110,7 +110,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.LandSize.IsPresent() {
 		if input.LandSize.IsNull() {
-			existing.SetLandSize(0)
+			existing.UnsetLandSize()
 		} else if value, ok := input.LandSize.Value(); ok {
 			existing.SetLandSize(value)
 		}
@@ -118,7 +118,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Corner.IsPresent() {
 		if input.Corner.IsNull() {
-			existing.SetCorner(false)
+			existing.UnsetCorner()
 		} else if value, ok := input.Corner.Value(); ok {
 			existing.SetCorner(value)
 		}
@@ -126,7 +126,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.NonBuildable.IsPresent() {
 		if input.NonBuildable.IsNull() {
-			existing.SetNonBuildable(0)
+			existing.UnsetNonBuildable()
 		} else if value, ok := input.NonBuildable.Value(); ok {
 			existing.SetNonBuildable(value)
 		}
@@ -134,7 +134,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Buildable.IsPresent() {
 		if input.Buildable.IsNull() {
-			existing.SetBuildable(0)
+			existing.UnsetBuildable()
 		} else if value, ok := input.Buildable.Value(); ok {
 			existing.SetBuildable(value)
 		}
@@ -142,7 +142,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Delivered.IsPresent() {
 		if input.Delivered.IsNull() {
-			existing.SetDelivered(0)
+			existing.UnsetDelivered()
 		} else if selection, ok := input.Delivered.Value(); ok {
 			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryPropertyDelivered, "delivered", selection)
 			if resolveErr != nil {
@@ -154,7 +154,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.WhoLives.IsPresent() {
 		if input.WhoLives.IsNull() {
-			existing.SetWhoLives(0)
+			existing.UnsetWhoLives()
 		} else if selection, ok := input.WhoLives.Value(); ok {
 			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryWhoLives, "whoLives", selection)
 			if resolveErr != nil {
@@ -166,7 +166,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Description.IsPresent() {
 		if input.Description.IsNull() {
-			existing.SetDescription("")
+			existing.UnsetDescription()
 		} else if value, ok := input.Description.Value(); ok {
 			existing.SetDescription(value)
 		}
@@ -174,7 +174,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Transaction.IsPresent() {
 		if input.Transaction.IsNull() {
-			existing.SetTransaction(0)
+			existing.UnsetTransaction()
 		} else if selection, ok := input.Transaction.Value(); ok {
 			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryTransactionType, "transaction", selection)
 			if resolveErr != nil {
@@ -186,7 +186,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.SellNet.IsPresent() {
 		if input.SellNet.IsNull() {
-			existing.SetSellNet(0)
+			existing.UnsetSellNet()
 		} else if value, ok := input.SellNet.Value(); ok {
 			existing.SetSellNet(value)
 		}
@@ -194,7 +194,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.RentNet.IsPresent() {
 		if input.RentNet.IsNull() {
-			existing.SetRentNet(0)
+			existing.UnsetRentNet()
 		} else if value, ok := input.RentNet.Value(); ok {
 			existing.SetRentNet(value)
 		}
@@ -202,7 +202,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Condominium.IsPresent() {
 		if input.Condominium.IsNull() {
-			existing.SetCondominium(0)
+			existing.UnsetCondominium()
 		} else if value, ok := input.Condominium.Value(); ok {
 			existing.SetCondominium(value)
 		}
@@ -210,7 +210,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.AnnualTax.IsPresent() {
 		if input.AnnualTax.IsNull() {
-			existing.SetAnnualTax(0)
+			existing.UnsetAnnualTax()
 		} else if value, ok := input.AnnualTax.Value(); ok {
 			existing.SetAnnualTax(value)
 		}
@@ -218,7 +218,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.AnnualGroundRent.IsPresent() {
 		if input.AnnualGroundRent.IsNull() {
-			existing.SetAnnualGroundRent(0)
+			existing.UnsetAnnualGroundRent()
 		} else if value, ok := input.AnnualGroundRent.Value(); ok {
 			existing.SetAnnualGroundRent(value)
 		}
@@ -226,7 +226,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Exchange.IsPresent() {
 		if input.Exchange.IsNull() {
-			existing.SetExchange(false)
+			existing.UnsetExchange()
 		} else if value, ok := input.Exchange.Value(); ok {
 			existing.SetExchange(value)
 		}
@@ -234,7 +234,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.ExchangePercentual.IsPresent() {
 		if input.ExchangePercentual.IsNull() {
-			existing.SetExchangePercentual(0)
+			existing.UnsetExchangePercentual()
 		} else if value, ok := input.ExchangePercentual.Value(); ok {
 			existing.SetExchangePercentual(value)
 		}
@@ -253,7 +253,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Installment.IsPresent() {
 		if input.Installment.IsNull() {
-			existing.SetInstallment(0)
+			existing.UnsetInstallment()
 		} else if selection, ok := input.Installment.Value(); ok {
 			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryInstallmentPlan, "installment", selection)
 			if resolveErr != nil {
@@ -265,7 +265,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Financing.IsPresent() {
 		if input.Financing.IsNull() {
-			existing.SetFinancing(false)
+			existing.UnsetFinancing()
 		} else if value, ok := input.Financing.Value(); ok {
 			existing.SetFinancing(value)
 		}
@@ -312,7 +312,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Visit.IsPresent() {
 		if input.Visit.IsNull() {
-			existing.SetVisit(0)
+			existing.UnsetVisit()
 		} else if selection, ok := input.Visit.Value(); ok {
 			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryVisitType, "visit", selection)
 			if resolveErr != nil {
@@ -324,7 +324,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.TenantName.IsPresent() {
 		if input.TenantName.IsNull() {
-			existing.SetTenantName("")
+			existing.UnsetTenantName()
 		} else if value, ok := input.TenantName.Value(); ok {
 			existing.SetTenantName(value)
 		}
@@ -332,7 +332,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.TenantPhone.IsPresent() {
 		if input.TenantPhone.IsNull() {
-			existing.SetTenantPhone("")
+			existing.UnsetTenantPhone()
 		} else if value, ok := input.TenantPhone.Value(); ok {
 			trimmed := strings.TrimSpace(value)
 			if trimmed == "" {
@@ -348,7 +348,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.TenantEmail.IsPresent() {
 		if input.TenantEmail.IsNull() {
-			existing.SetTenantEmail("")
+			existing.UnsetTenantEmail()
 		} else if value, ok := input.TenantEmail.Value(); ok {
 			existing.SetTenantEmail(value)
 		}
@@ -356,7 +356,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 
 	if input.Accompanying.IsPresent() {
 		if input.Accompanying.IsNull() {
-			existing.SetAccompanying(0)
+			existing.UnsetAccompanying()
 		} else if selection, ok := input.Accompanying.Value(); ok {
 			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryAccompanyingType, "accompanying", selection)
 			if resolveErr != nil {

@@ -1,53 +1,73 @@
 package listingmodel
 
-import (
-	"database/sql"
-
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
-)
+import globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
 type listing struct {
-	id                 int64
-	user_id            int64
-	code               uint32
-	version            uint8
-	status             ListingStatus
-	zip_code           string
-	street             string
-	number             string
-	complement         string
-	neighborhood       string
-	city               string
-	state              string
-	listingType        globalmodel.PropertyType
-	owner              PropertyOwner
-	features           []FeatureInterface
-	landSize           float64
-	corner             bool
-	nonBuildable       float64
-	buildable          float64
-	delivered          PropertyDelivered
-	whoLives           WhoLives
-	description        string
-	transaction        TransactionType
-	sellNet            float64
-	rentNet            float64
-	condominium        float64
-	annualTax          float64
-	annualGroundRent   float64
-	exchange           bool
-	exchangePercentual float64
-	exchangePlaces     []ExchangePlaceInterface
-	installment        InstallmentPlan
-	financing          bool
-	financingBlocker   []FinancingBlockerInterface
-	guarantees         []GuaranteeInterface
-	visit              VisitType
-	tenantName         string
-	tenantEmail        string
-	tenantPhone        string
-	accompanying       AccompanyingType
-	deleted            bool
+	id                      int64
+	user_id                 int64
+	code                    uint32
+	version                 uint8
+	status                  ListingStatus
+	zip_code                string
+	street                  string
+	number                  string
+	complement              string
+	neighborhood            string
+	city                    string
+	state                   string
+	listingType             globalmodel.PropertyType
+	owner                   PropertyOwner
+	ownerValid              bool
+	features                []FeatureInterface
+	landSize                float64
+	landSizeValid           bool
+	corner                  bool
+	cornerValid             bool
+	nonBuildable            float64
+	nonBuildableValid       bool
+	buildable               float64
+	buildableValid          bool
+	delivered               PropertyDelivered
+	deliveredValid          bool
+	whoLives                WhoLives
+	whoLivesValid           bool
+	description             string
+	descriptionValid        bool
+	transaction             TransactionType
+	transactionValid        bool
+	sellNet                 float64
+	sellNetValid            bool
+	rentNet                 float64
+	rentNetValid            bool
+	condominium             float64
+	condominiumValid        bool
+	annualTax               float64
+	annualTaxValid          bool
+	annualGroundRent        float64
+	annualGroundRentValid   bool
+	exchange                bool
+	exchangeValid           bool
+	exchangePercentual      float64
+	exchangePercentualValid bool
+	exchangePlaces          []ExchangePlaceInterface
+	installment             InstallmentPlan
+	installmentValid        bool
+	financing               bool
+	financingValid          bool
+	financingBlocker        []FinancingBlockerInterface
+	guarantees              []GuaranteeInterface
+	visit                   VisitType
+	visitValid              bool
+	tenantName              string
+	tenantNameValid         bool
+	tenantEmail             string
+	tenantEmailValid        bool
+	tenantPhone             string
+	tenantPhoneValid        bool
+	accompanying            AccompanyingType
+	accompanyingValid       bool
+	deleted                 bool
+	deletedValid            bool
 }
 
 func (l *listing) ID() int64 {
@@ -160,6 +180,16 @@ func (l *listing) Owner() PropertyOwner {
 
 func (l *listing) SetOwner(owner PropertyOwner) {
 	l.owner = owner
+	l.ownerValid = true
+}
+
+func (l *listing) HasOwner() bool {
+	return l.ownerValid
+}
+
+func (l *listing) UnsetOwner() {
+	l.owner = 0
+	l.ownerValid = false
 }
 
 func (l *listing) Features() []FeatureInterface {
@@ -176,6 +206,16 @@ func (l *listing) LandSize() float64 {
 
 func (l *listing) SetLandSize(landsize float64) {
 	l.landSize = landsize
+	l.landSizeValid = true
+}
+
+func (l *listing) HasLandSize() bool {
+	return l.landSizeValid
+}
+
+func (l *listing) UnsetLandSize() {
+	l.landSize = 0
+	l.landSizeValid = false
 }
 
 func (l *listing) Corner() bool {
@@ -184,6 +224,16 @@ func (l *listing) Corner() bool {
 
 func (l *listing) SetCorner(corner bool) {
 	l.corner = corner
+	l.cornerValid = true
+}
+
+func (l *listing) HasCorner() bool {
+	return l.cornerValid
+}
+
+func (l *listing) UnsetCorner() {
+	l.corner = false
+	l.cornerValid = false
 }
 
 func (l *listing) NonBuildable() float64 {
@@ -192,6 +242,16 @@ func (l *listing) NonBuildable() float64 {
 
 func (l *listing) SetNonBuildable(nonBuildable float64) {
 	l.nonBuildable = nonBuildable
+	l.nonBuildableValid = true
+}
+
+func (l *listing) HasNonBuildable() bool {
+	return l.nonBuildableValid
+}
+
+func (l *listing) UnsetNonBuildable() {
+	l.nonBuildable = 0
+	l.nonBuildableValid = false
 }
 
 func (l *listing) Buildable() float64 {
@@ -200,6 +260,16 @@ func (l *listing) Buildable() float64 {
 
 func (l *listing) SetBuildable(buildable float64) {
 	l.buildable = buildable
+	l.buildableValid = true
+}
+
+func (l *listing) HasBuildable() bool {
+	return l.buildableValid
+}
+
+func (l *listing) UnsetBuildable() {
+	l.buildable = 0
+	l.buildableValid = false
 }
 
 func (l *listing) Delivered() PropertyDelivered {
@@ -208,6 +278,16 @@ func (l *listing) Delivered() PropertyDelivered {
 
 func (l *listing) SetDelivered(delivered PropertyDelivered) {
 	l.delivered = delivered
+	l.deliveredValid = true
+}
+
+func (l *listing) HasDelivered() bool {
+	return l.deliveredValid
+}
+
+func (l *listing) UnsetDelivered() {
+	l.delivered = 0
+	l.deliveredValid = false
 }
 
 func (l *listing) WhoLives() WhoLives {
@@ -216,6 +296,16 @@ func (l *listing) WhoLives() WhoLives {
 
 func (l *listing) SetWhoLives(whoLives WhoLives) {
 	l.whoLives = whoLives
+	l.whoLivesValid = true
+}
+
+func (l *listing) HasWhoLives() bool {
+	return l.whoLivesValid
+}
+
+func (l *listing) UnsetWhoLives() {
+	l.whoLives = 0
+	l.whoLivesValid = false
 }
 
 func (l *listing) Description() string {
@@ -224,6 +314,16 @@ func (l *listing) Description() string {
 
 func (l *listing) SetDescription(description string) {
 	l.description = description
+	l.descriptionValid = true
+}
+
+func (l *listing) HasDescription() bool {
+	return l.descriptionValid
+}
+
+func (l *listing) UnsetDescription() {
+	l.description = ""
+	l.descriptionValid = false
 }
 
 func (l *listing) Transaction() TransactionType {
@@ -232,6 +332,16 @@ func (l *listing) Transaction() TransactionType {
 
 func (l *listing) SetTransaction(transaction TransactionType) {
 	l.transaction = transaction
+	l.transactionValid = true
+}
+
+func (l *listing) HasTransaction() bool {
+	return l.transactionValid
+}
+
+func (l *listing) UnsetTransaction() {
+	l.transaction = 0
+	l.transactionValid = false
 }
 
 func (l *listing) SellNet() float64 {
@@ -240,6 +350,16 @@ func (l *listing) SellNet() float64 {
 
 func (l *listing) SetSellNet(sellNet float64) {
 	l.sellNet = sellNet
+	l.sellNetValid = true
+}
+
+func (l *listing) HasSellNet() bool {
+	return l.sellNetValid
+}
+
+func (l *listing) UnsetSellNet() {
+	l.sellNet = 0
+	l.sellNetValid = false
 }
 
 func (l *listing) RentNet() float64 {
@@ -248,6 +368,16 @@ func (l *listing) RentNet() float64 {
 
 func (l *listing) SetRentNet(rentNet float64) {
 	l.rentNet = rentNet
+	l.rentNetValid = true
+}
+
+func (l *listing) HasRentNet() bool {
+	return l.rentNetValid
+}
+
+func (l *listing) UnsetRentNet() {
+	l.rentNet = 0
+	l.rentNetValid = false
 }
 
 func (l *listing) Condominium() float64 {
@@ -256,6 +386,16 @@ func (l *listing) Condominium() float64 {
 
 func (l *listing) SetCondominium(condominium float64) {
 	l.condominium = condominium
+	l.condominiumValid = true
+}
+
+func (l *listing) HasCondominium() bool {
+	return l.condominiumValid
+}
+
+func (l *listing) UnsetCondominium() {
+	l.condominium = 0
+	l.condominiumValid = false
 }
 
 func (l *listing) AnnualTax() float64 {
@@ -264,6 +404,16 @@ func (l *listing) AnnualTax() float64 {
 
 func (l *listing) SetAnnualTax(annualTax float64) {
 	l.annualTax = annualTax
+	l.annualTaxValid = true
+}
+
+func (l *listing) HasAnnualTax() bool {
+	return l.annualTaxValid
+}
+
+func (l *listing) UnsetAnnualTax() {
+	l.annualTax = 0
+	l.annualTaxValid = false
 }
 
 func (l *listing) AnnualGroundRent() float64 {
@@ -272,6 +422,16 @@ func (l *listing) AnnualGroundRent() float64 {
 
 func (l *listing) SetAnnualGroundRent(annualGroundRent float64) {
 	l.annualGroundRent = annualGroundRent
+	l.annualGroundRentValid = true
+}
+
+func (l *listing) HasAnnualGroundRent() bool {
+	return l.annualGroundRentValid
+}
+
+func (l *listing) UnsetAnnualGroundRent() {
+	l.annualGroundRent = 0
+	l.annualGroundRentValid = false
 }
 
 func (l *listing) Exchange() bool {
@@ -280,6 +440,16 @@ func (l *listing) Exchange() bool {
 
 func (l *listing) SetExchange(exchange bool) {
 	l.exchange = exchange
+	l.exchangeValid = true
+}
+
+func (l *listing) HasExchange() bool {
+	return l.exchangeValid
+}
+
+func (l *listing) UnsetExchange() {
+	l.exchange = false
+	l.exchangeValid = false
 }
 
 func (l *listing) ExchangePercentual() float64 {
@@ -288,6 +458,16 @@ func (l *listing) ExchangePercentual() float64 {
 
 func (l *listing) SetExchangePercentual(exchangePercentual float64) {
 	l.exchangePercentual = exchangePercentual
+	l.exchangePercentualValid = true
+}
+
+func (l *listing) HasExchangePercentual() bool {
+	return l.exchangePercentualValid
+}
+
+func (l *listing) UnsetExchangePercentual() {
+	l.exchangePercentual = 0
+	l.exchangePercentualValid = false
 }
 
 func (l *listing) ExchangePlaces() []ExchangePlaceInterface {
@@ -304,6 +484,16 @@ func (l *listing) Installment() InstallmentPlan {
 
 func (l *listing) SetInstallment(installment InstallmentPlan) {
 	l.installment = installment
+	l.installmentValid = true
+}
+
+func (l *listing) HasInstallment() bool {
+	return l.installmentValid
+}
+
+func (l *listing) UnsetInstallment() {
+	l.installment = 0
+	l.installmentValid = false
 }
 
 func (l *listing) Financing() bool {
@@ -312,6 +502,16 @@ func (l *listing) Financing() bool {
 
 func (l *listing) SetFinancing(financing bool) {
 	l.financing = financing
+	l.financingValid = true
+}
+
+func (l *listing) HasFinancing() bool {
+	return l.financingValid
+}
+
+func (l *listing) UnsetFinancing() {
+	l.financing = false
+	l.financingValid = false
 }
 
 func (l *listing) FinancingBlockers() []FinancingBlockerInterface {
@@ -336,6 +536,16 @@ func (l *listing) Visit() VisitType {
 
 func (l *listing) SetVisit(visit VisitType) {
 	l.visit = visit
+	l.visitValid = true
+}
+
+func (l *listing) HasVisit() bool {
+	return l.visitValid
+}
+
+func (l *listing) UnsetVisit() {
+	l.visit = 0
+	l.visitValid = false
 }
 
 func (l *listing) TenantName() string {
@@ -344,6 +554,16 @@ func (l *listing) TenantName() string {
 
 func (l *listing) SetTenantName(tenantName string) {
 	l.tenantName = tenantName
+	l.tenantNameValid = true
+}
+
+func (l *listing) HasTenantName() bool {
+	return l.tenantNameValid
+}
+
+func (l *listing) UnsetTenantName() {
+	l.tenantName = ""
+	l.tenantNameValid = false
 }
 
 func (l *listing) TenantEmail() string {
@@ -352,6 +572,16 @@ func (l *listing) TenantEmail() string {
 
 func (l *listing) SetTenantEmail(tenantEmail string) {
 	l.tenantEmail = tenantEmail
+	l.tenantEmailValid = true
+}
+
+func (l *listing) HasTenantEmail() bool {
+	return l.tenantEmailValid
+}
+
+func (l *listing) UnsetTenantEmail() {
+	l.tenantEmail = ""
+	l.tenantEmailValid = false
 }
 
 func (l *listing) TenantPhone() string {
@@ -360,6 +590,16 @@ func (l *listing) TenantPhone() string {
 
 func (l *listing) SetTenantPhone(tenantPhone string) {
 	l.tenantPhone = tenantPhone
+	l.tenantPhoneValid = true
+}
+
+func (l *listing) HasTenantPhone() bool {
+	return l.tenantPhoneValid
+}
+
+func (l *listing) UnsetTenantPhone() {
+	l.tenantPhone = ""
+	l.tenantPhoneValid = false
 }
 
 func (l *listing) Accompanying() AccompanyingType {
@@ -368,6 +608,16 @@ func (l *listing) Accompanying() AccompanyingType {
 
 func (l *listing) SetAccompanying(accompanying AccompanyingType) {
 	l.accompanying = accompanying
+	l.accompanyingValid = true
+}
+
+func (l *listing) HasAccompanying() bool {
+	return l.accompanyingValid
+}
+
+func (l *listing) UnsetAccompanying() {
+	l.accompanying = 0
+	l.accompanyingValid = false
 }
 
 func (l *listing) Deleted() bool {
@@ -376,41 +626,14 @@ func (l *listing) Deleted() bool {
 
 func (l *listing) SetDeleted(deleted bool) {
 	l.deleted = deleted
+	l.deletedValid = true
 }
 
-func (l *listing) ToSQLNullString(input string) sql.NullString {
-	if input == "" {
-		return sql.NullString{String: input, Valid: false}
-	}
-	return sql.NullString{String: input, Valid: true}
+func (l *listing) HasDeleted() bool {
+	return l.deletedValid
 }
 
-func (l *listing) ToSQLNullInt(input any) sql.NullInt64 {
-	switch val := input.(type) {
-	case bool:
-		if val {
-			return sql.NullInt64{Int64: 1, Valid: false}
-		} else {
-			return sql.NullInt64{Int64: 0, Valid: true}
-		}
-	case int64:
-		return sql.NullInt64{Int64: val, Valid: true}
-	case uint32:
-		return sql.NullInt64{Int64: int64(val), Valid: true}
-	case uint16:
-		return sql.NullInt64{Int64: int64(val), Valid: true}
-	case uint8:
-		return sql.NullInt64{Int64: int64(val), Valid: true}
-	case uint:
-		return sql.NullInt64{Int64: int64(val), Valid: true}
-	default:
-		return sql.NullInt64{Int64: 0, Valid: false}
-	}
-}
-
-func (l *listing) ToSQLNullFloat64(value float64) sql.NullFloat64 {
-	if value == 0 {
-		return sql.NullFloat64{Float64: 0, Valid: false}
-	}
-	return sql.NullFloat64{Float64: value, Valid: true}
+func (l *listing) UnsetDeleted() {
+	l.deleted = false
+	l.deletedValid = false
 }

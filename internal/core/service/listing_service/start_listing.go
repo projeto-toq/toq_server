@@ -156,6 +156,7 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 	listing.SetNeighborhood(neighborhood)
 	listing.SetCity(cepCity)
 	listing.SetState(cepState)
+	listing.SetDeleted(false)
 
 	//create the listing
 	err = ls.listingRepository.CreateListing(ctx, tx, listing)

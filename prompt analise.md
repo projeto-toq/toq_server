@@ -8,8 +8,10 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 ## 2) Requisição
 Continuando com a criação do toq_server, precisamos
 
-- Adicionar nova rota GET HTTP para listar um listing específico baseado em um ID fornecido no body.
-- Todos os campos do listing devem ser retornados no response.
+- Adicionar nova rota GET HTTP para listar os tamanhos disponíveis para um determinado empreendimento baseado no zipCode e number fornecido no body.
+- A tabela complex_sizes já existe no banco de dados e já possui dados populados. Ela tem FK com a tabela complexes.
+- A tabela complexes, pode localizar o empreendimento baseado no zipCode e number.
+- a resposta deve ser uma lista de objetos JSON com os campos id (int), size (float). NotFound se não for localizado o empreendimento ou os sizes.
 - Todos os perfis devem ter acesso ao endpoint, portanto altere permissions.csv e role_permissions.csv conforme necessário.
 - O endpoint deve ser documentado no Swagger com comentários no código.
 

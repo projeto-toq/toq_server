@@ -23,49 +23,129 @@ func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.
 	listing.SetCity(e.ToString(e.City))
 	listing.SetState(e.ToString(e.State))
 	listing.SetListingType(globalmodel.PropertyType(e.ListingType))
-	listing.SetOwner(listingmodel.PropertyOwner(e.ToUint8(e.Owner)))
+	if e.Owner.Valid {
+		listing.SetOwner(listingmodel.PropertyOwner(uint8(e.Owner.Int16)))
+	} else {
+		listing.UnsetOwner()
+	}
 	listing.SetFeatures(e.FeaturesToDomain())
-	listing.SetLandSize(e.ToFloat64(e.LandSize))
+	if e.LandSize.Valid {
+		listing.SetLandSize(e.LandSize.Float64)
+	} else {
+		listing.UnsetLandSize()
+	}
 	if e.Corner.Valid {
 		listing.SetCorner(e.Corner.Int16 == 1)
 	} else {
-		listing.SetCorner(false)
+		listing.UnsetCorner()
 	}
-	listing.SetNonBuildable(e.ToFloat64(e.NonBuildable))
-	listing.SetBuildable(e.ToFloat64(e.Buildable))
-	listing.SetDelivered(listingmodel.PropertyDelivered(e.ToUint8(e.Delivered)))
-	listing.SetWhoLives(listingmodel.WhoLives(e.ToUint8(e.WhoLives)))
-	listing.SetDescription(e.ToString(e.Description))
-	listing.SetTransaction(listingmodel.TransactionType(e.ToUint8(e.Transaction)))
-	listing.SetSellNet(e.ToFloat64(e.SellNet))
-	listing.SetRentNet(e.ToFloat64(e.RentNet))
-	listing.SetCondominium(e.ToFloat64(e.Condominium))
-	listing.SetAnnualTax(e.ToFloat64(e.AnnualTax))
-	listing.SetAnnualGroundRent(e.ToFloat64(e.AnnualGroundRent))
+	if e.NonBuildable.Valid {
+		listing.SetNonBuildable(e.NonBuildable.Float64)
+	} else {
+		listing.UnsetNonBuildable()
+	}
+	if e.Buildable.Valid {
+		listing.SetBuildable(e.Buildable.Float64)
+	} else {
+		listing.UnsetBuildable()
+	}
+	if e.Delivered.Valid {
+		listing.SetDelivered(listingmodel.PropertyDelivered(uint8(e.Delivered.Int16)))
+	} else {
+		listing.UnsetDelivered()
+	}
+	if e.WhoLives.Valid {
+		listing.SetWhoLives(listingmodel.WhoLives(uint8(e.WhoLives.Int16)))
+	} else {
+		listing.UnsetWhoLives()
+	}
+	if e.Description.Valid {
+		listing.SetDescription(e.Description.String)
+	} else {
+		listing.UnsetDescription()
+	}
+	if e.Transaction.Valid {
+		listing.SetTransaction(listingmodel.TransactionType(uint8(e.Transaction.Int16)))
+	} else {
+		listing.UnsetTransaction()
+	}
+	if e.SellNet.Valid {
+		listing.SetSellNet(e.SellNet.Float64)
+	} else {
+		listing.UnsetSellNet()
+	}
+	if e.RentNet.Valid {
+		listing.SetRentNet(e.RentNet.Float64)
+	} else {
+		listing.UnsetRentNet()
+	}
+	if e.Condominium.Valid {
+		listing.SetCondominium(e.Condominium.Float64)
+	} else {
+		listing.UnsetCondominium()
+	}
+	if e.AnnualTax.Valid {
+		listing.SetAnnualTax(e.AnnualTax.Float64)
+	} else {
+		listing.UnsetAnnualTax()
+	}
+	if e.AnnualGroundRent.Valid {
+		listing.SetAnnualGroundRent(e.AnnualGroundRent.Float64)
+	} else {
+		listing.UnsetAnnualGroundRent()
+	}
 	if e.Exchange.Valid {
 		listing.SetExchange(e.Exchange.Int16 == 1)
 	} else {
-		listing.SetExchange(false)
+		listing.UnsetExchange()
 	}
-	listing.SetExchangePercentual(e.ToFloat64(e.ExchangePercentual))
+	if e.ExchangePercentual.Valid {
+		listing.SetExchangePercentual(e.ExchangePercentual.Float64)
+	} else {
+		listing.UnsetExchangePercentual()
+	}
 	listing.SetExchangePlaces(e.ExchangePlacesToDomain())
-	listing.SetInstallment(listingmodel.InstallmentPlan(e.ToUint8(e.Installment)))
+	if e.Installment.Valid {
+		listing.SetInstallment(listingmodel.InstallmentPlan(uint8(e.Installment.Int16)))
+	} else {
+		listing.UnsetInstallment()
+	}
 	if e.Financing.Valid {
 		listing.SetFinancing(e.Financing.Int16 == 1)
 	} else {
-		listing.SetFinancing(false)
+		listing.UnsetFinancing()
 	}
 	listing.SetFinancingBlockers(e.FinancingBlockersToDomain())
 	listing.SetGuarantees(e.GuaranteesToDomain())
-	listing.SetVisit(listingmodel.VisitType(e.ToUint8(e.Visit)))
-	listing.SetTenantName(e.ToString(e.TenantName))
-	listing.SetTenantEmail(e.ToString(e.TenantEmail))
-	listing.SetTenantPhone(e.ToString(e.TenantPhone))
-	listing.SetAccompanying(listingmodel.AccompanyingType(e.ToUint8(e.Accompanying)))
+	if e.Visit.Valid {
+		listing.SetVisit(listingmodel.VisitType(uint8(e.Visit.Int16)))
+	} else {
+		listing.UnsetVisit()
+	}
+	if e.TenantName.Valid {
+		listing.SetTenantName(e.TenantName.String)
+	} else {
+		listing.UnsetTenantName()
+	}
+	if e.TenantEmail.Valid {
+		listing.SetTenantEmail(e.TenantEmail.String)
+	} else {
+		listing.UnsetTenantEmail()
+	}
+	if e.TenantPhone.Valid {
+		listing.SetTenantPhone(e.TenantPhone.String)
+	} else {
+		listing.UnsetTenantPhone()
+	}
+	if e.Accompanying.Valid {
+		listing.SetAccompanying(listingmodel.AccompanyingType(uint8(e.Accompanying.Int16)))
+	} else {
+		listing.UnsetAccompanying()
+	}
 	if e.Deleted.Valid {
 		listing.SetDeleted(e.Deleted.Int16 == 1)
 	} else {
-		listing.SetDeleted(false)
+		listing.UnsetDeleted()
 	}
 
 	return

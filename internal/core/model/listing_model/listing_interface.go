@@ -1,10 +1,6 @@
 package listingmodel
 
-import (
-	"database/sql"
-
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
-)
+import globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
 type ListingInterface interface {
 	ID() int64
@@ -35,64 +31,108 @@ type ListingInterface interface {
 	SetListingType(listingType globalmodel.PropertyType)
 	Owner() PropertyOwner
 	SetOwner(owner PropertyOwner)
+	HasOwner() bool
+	UnsetOwner()
 	Features() []FeatureInterface
 	SetFeatures(features []FeatureInterface)
 	LandSize() float64
 	SetLandSize(landsize float64)
+	HasLandSize() bool
+	UnsetLandSize()
 	Corner() bool
 	SetCorner(corner bool)
+	HasCorner() bool
+	UnsetCorner()
 	NonBuildable() float64
 	SetNonBuildable(nonBuildable float64)
+	HasNonBuildable() bool
+	UnsetNonBuildable()
 	Buildable() float64
 	SetBuildable(buildable float64)
+	HasBuildable() bool
+	UnsetBuildable()
 	Delivered() PropertyDelivered
 	SetDelivered(delivered PropertyDelivered)
+	HasDelivered() bool
+	UnsetDelivered()
 	WhoLives() WhoLives
 	SetWhoLives(whoLives WhoLives)
+	HasWhoLives() bool
+	UnsetWhoLives()
 	Description() string
 	SetDescription(description string)
+	HasDescription() bool
+	UnsetDescription()
 	Transaction() TransactionType
 	SetTransaction(transaction TransactionType)
+	HasTransaction() bool
+	UnsetTransaction()
 	SellNet() float64
 	SetSellNet(sellNet float64)
+	HasSellNet() bool
+	UnsetSellNet()
 	RentNet() float64
 	SetRentNet(rentNet float64)
+	HasRentNet() bool
+	UnsetRentNet()
 	Condominium() float64
 	SetCondominium(condominium float64)
+	HasCondominium() bool
+	UnsetCondominium()
 	AnnualTax() float64
 	SetAnnualTax(annualTax float64)
+	HasAnnualTax() bool
+	UnsetAnnualTax()
 	AnnualGroundRent() float64
 	SetAnnualGroundRent(annualGroundRent float64)
+	HasAnnualGroundRent() bool
+	UnsetAnnualGroundRent()
 	Exchange() bool
 	SetExchange(exchange bool)
+	HasExchange() bool
+	UnsetExchange()
 	ExchangePercentual() float64
 	SetExchangePercentual(exchangePercentual float64)
+	HasExchangePercentual() bool
+	UnsetExchangePercentual()
 	ExchangePlaces() []ExchangePlaceInterface
 	SetExchangePlaces(exchangePlaces []ExchangePlaceInterface)
 	Installment() InstallmentPlan
 	SetInstallment(installment InstallmentPlan)
+	HasInstallment() bool
+	UnsetInstallment()
 	Financing() bool
 	SetFinancing(financing bool)
+	HasFinancing() bool
+	UnsetFinancing()
 	FinancingBlockers() []FinancingBlockerInterface
 	SetFinancingBlockers(financingBlockers []FinancingBlockerInterface)
 	Guarantees() []GuaranteeInterface
 	SetGuarantees(guarantees []GuaranteeInterface)
 	Visit() VisitType
 	SetVisit(visit VisitType)
+	HasVisit() bool
+	UnsetVisit()
 	TenantName() string
 	SetTenantName(tenantName string)
+	HasTenantName() bool
+	UnsetTenantName()
 	TenantEmail() string
 	SetTenantEmail(tenantEmail string)
+	HasTenantEmail() bool
+	UnsetTenantEmail()
 	TenantPhone() string
 	SetTenantPhone(tenantPhone string)
+	HasTenantPhone() bool
+	UnsetTenantPhone()
 	Accompanying() AccompanyingType
 	SetAccompanying(accompanying AccompanyingType)
+	HasAccompanying() bool
+	UnsetAccompanying()
 	Deleted() bool
 	SetDeleted(deleted bool)
-
-	ToSQLNullString(input string) sql.NullString
-	ToSQLNullInt(input any) sql.NullInt64
-	ToSQLNullFloat64(value float64) sql.NullFloat64
+	HasDeleted() bool
+	UnsetDeleted()
 }
 
 func NewListing() ListingInterface {

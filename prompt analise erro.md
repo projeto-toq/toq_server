@@ -5,15 +5,10 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Com o processo de construção da aplicação por várias pessoas, temos variações na forma como o zipCode é recebido em diferentes endpoints. Alguns  recebem como 06543-001 e outros como 06543001.
+O ideia da criação de listing é de que na POST /listings somente os dados passados no body sejam efetivamente salvos no DB. todos os outros devem permanecer null. A cada novo PUT /listings somente os dados passados no body devem ser atualizados, os demais devem permanecer como estão no DB. Caso o dado passado no body seja null, o valor no DB deve ser atualizado para null. Assim é possível diferenciar um campo float de null (nunca foi passado), 0.0 (foi passado 0) e outro valor. Isso não está acontecendo com esperado.
 
-- verifique como o endpoint POST /auth/owner está lidando com o zipCode. A forma como ele recebe deve ser o padrão para todos os endpoints que recebem o zipCode.
-- verifique os outros endpoints que recebem o zipCode e faça as alterações necessárias para que todos sigam o mesmo padrão do endpoint POST /auth/owner.
-- documente a forma correta com exemplo no swagger para cada endpoint que recebe o zipCode.
-- alguns endpoints recebem zipCode como postalCode, verifique e padronize para zipCode em todos os endpoints.
-
-Outro problema identificado é que alguns endpoints que recebem telefone estão recebendo telefoones fora da formatação E.164.
-- Verifique todos os endpoints que recebem telefone e faça as alterações necessárias para que todos sigam a formatação E.164. Documente a forma correta com exemplo no swagger para cada endpoint que recebe telefone.
+- Na criação do Listing, todos os campos são gravados eliminado os null.
+- Na atualização do Listing, os campos que não são passados no body estão sendo zerados (float 0, int 0, string "" etc) ao invés de permanecerem com o valor que já existe no DB.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
