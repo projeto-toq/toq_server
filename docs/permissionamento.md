@@ -102,7 +102,7 @@ Se o endpoint legado `/api/v1/auth/signout` também existir, crie outra permiss�
 ### Permissão para download administrativo dos documentos CRECI
 
 - `resource = http`
-- `action = POST:/api/v2/admin/user/creci-download-url`
+- `action = POST:/api/v2/admin/users/creci/download-url`
 - Concedida inicialmente ao role **Administrador** (`role_id = 1`) em `data/base_role_permissions.csv`.
 - Descrição: possibilita ao time admin gerar URLs assinadas para selfie/front/back do CRECI do usuário alvo.
 

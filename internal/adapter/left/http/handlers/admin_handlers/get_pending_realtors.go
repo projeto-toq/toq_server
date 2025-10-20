@@ -10,7 +10,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetPendingRealtors handles GET /admin/user/pending
+// GetPendingRealtors handles GET /admin/users/creci/pending
 //
 //	@Summary      List realtors pending manual validation
 //	@Description  Returns id, nickname, fullName, nationalID, creciNumber, creciValidity, creciState
@@ -23,7 +23,7 @@ import (
 //	@Failure      401  {object}  map[string]any
 //	@Failure      403  {object}  map[string]any
 //	@Failure      500  {object}  map[string]any
-//	@Router       /admin/user/pending [get]
+//	@Router       /admin/users/creci/pending [get]
 func (h *AdminHandler) GetPendingRealtors(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminGetPendingRealtorsRequest

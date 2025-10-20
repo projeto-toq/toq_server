@@ -15,9 +15,9 @@ import (
 //	@Summary	List listing catalog values
 //	@Description	Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.
 //	@Tags		Admin
-//	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.AdminListingCatalogRequest	true	"Filter payload"
+//	@Param		category	query	string	true	"Catalog category"
+//	@Param		includeInactive	query	bool	false	"Include inactive values"
 //	@Success	200	{object}	dto.ListingCatalogValuesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -27,7 +27,7 @@ import (
 func (h *AdminHandler) ListListingCatalogValues(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminListingCatalogRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}

@@ -321,10 +321,11 @@ func RegisterAdminRoutes(
 	admin.Use(middlewares.RequireAdminPermission(permissionService))
 
 	{
-		// GET /admin/user/pending
-		admin.GET("/user/pending", adminHandler.GetPendingRealtors)
+		// GET /admin/users/creci/pending
+		admin.GET("/users/creci/pending", adminHandler.GetPendingRealtors)
 		admin.GET("/users", adminHandler.GetAdminUsers)
 		admin.GET("/listing/catalog", adminHandler.ListListingCatalogValues)
+		admin.POST("/listing/catalog/detail", adminHandler.PostAdminGetListingCatalogDetail)
 		admin.POST("/listing/catalog", adminHandler.CreateListingCatalogValue)
 		admin.PUT("/listing/catalog", adminHandler.UpdateListingCatalogValue)
 		admin.POST("/listing/catalog/restore", adminHandler.RestoreListingCatalogValue)
@@ -348,31 +349,35 @@ func RegisterAdminRoutes(
 		admin.POST("/complexes/zip-codes", adminHandler.PostAdminCreateComplexZipCode)
 		admin.PUT("/complexes/zip-codes", adminHandler.PutAdminUpdateComplexZipCode)
 		admin.DELETE("/complexes/zip-codes", adminHandler.DeleteAdminComplexZipCode)
-		admin.POST("/system-users", adminHandler.PostAdminCreateSystemUser)
-		admin.PUT("/system-users", adminHandler.PutAdminUpdateSystemUser)
-		admin.DELETE("/system-users", adminHandler.DeleteAdminSystemUser)
+		admin.POST("/complexes/zip-codes/detail", adminHandler.PostAdminGetComplexZipCodeDetail)
+		admin.POST("/users/system", adminHandler.PostAdminCreateSystemUser)
+		admin.PUT("/users/system", adminHandler.PutAdminUpdateSystemUser)
+		admin.DELETE("/users/system", adminHandler.DeleteAdminSystemUser)
 		admin.GET("/roles", adminHandler.GetAdminRoles)
+		admin.POST("/roles/detail", adminHandler.PostAdminGetRoleDetail)
 		admin.POST("/roles", adminHandler.PostAdminCreateRole)
 		admin.PUT("/roles", adminHandler.PutAdminUpdateRole)
 		admin.POST("/roles/restore", adminHandler.RestoreAdminRole)
 		admin.DELETE("/roles", adminHandler.DeleteAdminRole)
 		admin.GET("/permissions", adminHandler.GetAdminPermissions)
+		admin.POST("/permissions/detail", adminHandler.PostAdminGetPermissionDetail)
 		admin.POST("/permissions", adminHandler.PostAdminCreatePermission)
 		admin.PUT("/permissions", adminHandler.PutAdminUpdatePermission)
 		admin.DELETE("/permissions", adminHandler.DeleteAdminPermission)
 		admin.GET("/role-permissions", adminHandler.GetAdminRolePermissions)
+		admin.POST("/role-permissions/detail", adminHandler.PostAdminGetRolePermissionDetail)
 		admin.POST("/role-permissions", adminHandler.PostAdminCreateRolePermission)
 		admin.PUT("/role-permissions", adminHandler.PutAdminUpdateRolePermission)
 		admin.DELETE("/role-permissions", adminHandler.DeleteAdminRolePermission)
 
-		// POST /admin/user
-		admin.POST("/user", adminHandler.PostAdminGetUser)
+		// POST /admin/users/detail
+		admin.POST("/users/detail", adminHandler.PostAdminGetUser)
 
-		// POST /admin/user/approve
-		admin.POST("/user/approve", adminHandler.PostAdminApproveUser)
+		// POST /admin/users/creci/approve
+		admin.POST("/users/creci/approve", adminHandler.PostAdminApproveUser)
 
-		// POST /admin/user/creci-download-url
-		admin.POST("/user/creci-download-url", adminHandler.PostAdminCreciDownloadURL)
+		// POST /admin/users/creci/download-url
+		admin.POST("/users/creci/download-url", adminHandler.PostAdminCreciDownloadURL)
 	}
 
 }

@@ -218,10 +218,10 @@ type AdminDeleteComplexZipCodeRequest struct {
 
 // AdminListComplexZipCodesRequest representa filtros para CEPs vinculados a empreendimentos.
 type AdminListComplexZipCodesRequest struct {
-	ComplexID int64  `json:"complexId"`
-	ZipCode   string `json:"zipCode"`
-	Page      int    `json:"page"`
-	Limit     int    `json:"limit"`
+	ComplexID int64  `json:"complexId" form:"complexId"`
+	ZipCode   string `json:"zipCode" form:"zipCode"`
+	Page      int    `json:"page" form:"page"`
+	Limit     int    `json:"limit" form:"limit"`
 }
 
 // AdminListComplexZipCodesResponse encapsula os CEPs retornados.
@@ -229,4 +229,9 @@ type AdminListComplexZipCodesResponse struct {
 	ZipCodes []ComplexZipCodeResponse `json:"zipCodes"`
 	Page     int                      `json:"page"`
 	Limit    int                      `json:"limit"`
+}
+
+// AdminGetComplexZipCodeDetailRequest represents the payload to fetch a complex zip code detail.
+type AdminGetComplexZipCodeDetailRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
 }

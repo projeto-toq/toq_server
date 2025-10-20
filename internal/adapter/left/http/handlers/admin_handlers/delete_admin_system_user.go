@@ -10,7 +10,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// DeleteAdminSystemUser handles DELETE /admin/system-users
+// DeleteAdminSystemUser handles DELETE /admin/users/system
 //
 //	@Summary      Deactivate a system user
 //	@Tags         Admin
@@ -24,7 +24,7 @@ import (
 //	@Failure      404  {object}  map[string]any
 //	@Failure      409  {object}  map[string]any
 //	@Failure      500  {object}  map[string]any
-//	@Router       /admin/system-users [delete]
+//	@Router       /admin/users/system [delete]
 func (h *AdminHandler) DeleteAdminSystemUser(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminDeleteSystemUserRequest

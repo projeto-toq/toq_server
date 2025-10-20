@@ -388,8 +388,14 @@ type ListingCatalogRequest struct {
 
 // AdminListingCatalogRequest defines the payload used to query the catalog from the admin panel.
 type AdminListingCatalogRequest struct {
-	Category        string `json:"category" binding:"required"`
-	IncludeInactive bool   `json:"includeInactive"`
+	Category        string `json:"category" form:"category" binding:"required"`
+	IncludeInactive bool   `json:"includeInactive" form:"includeInactive"`
+}
+
+// AdminGetListingCatalogDetailRequest represents the payload to fetch a catalog value detail.
+type AdminGetListingCatalogDetailRequest struct {
+	Category string `json:"category" form:"category" binding:"required"`
+	ID       int    `json:"id" form:"id" binding:"required,min=1,max=255"`
 }
 
 // ListingCatalogCreateRequest defines the payload for creating catalog values.

@@ -8,13 +8,13 @@ import (
 
 // Admin endpoints DTOs
 
-// AdminGetPendingRealtorsRequest captures filters for GET /admin/user/pending
+// AdminGetPendingRealtorsRequest captures filters for GET /admin/users/creci/pending
 type AdminGetPendingRealtorsRequest struct {
 	Page  int `form:"page,default=1" binding:"min=1"`
 	Limit int `form:"limit,default=20" binding:"min=1,max=100"`
 }
 
-// AdminGetPendingRealtorsResponse represents GET /admin/user/pending response
+// AdminGetPendingRealtorsResponse represents GET /admin/users/creci/pending response
 type AdminGetPendingRealtorsResponse struct {
 	Realtors   []AdminPendingRealtor `json:"realtors"`
 	Pagination PaginationResponse    `json:"pagination"`
@@ -31,7 +31,7 @@ type AdminPendingRealtor struct {
 	CreciState    string `json:"creciState"`
 }
 
-// AdminGetUserRequest represents POST /admin/user request
+// AdminGetUserRequest represents POST /admin/users/detail request
 type AdminGetUserRequest struct {
 	ID int64 `json:"id" binding:"required,min=1"`
 }
@@ -41,7 +41,7 @@ type AdminGetUserResponse struct {
 	User UserResponse `json:"user"`
 }
 
-// AdminApproveUserRequest represents POST /admin/user/approve request
+// AdminApproveUserRequest represents POST /admin/users/creci/approve request
 // Note: status is an integer matching permission_model.UserRoleStatus
 type AdminApproveUserRequest struct {
 	ID     int64 `json:"id" binding:"required,min=1"`
@@ -67,7 +67,7 @@ type AdminApproveUserResponse struct {
 	Message string `json:"message"`
 }
 
-// AdminCreciDownloadURLRequest representa POST /admin/user/creci-download-url request
+// AdminCreciDownloadURLRequest representa POST /admin/users/creci/download-url request
 type AdminCreciDownloadURLRequest struct {
 	ID int64 `json:"id" binding:"required,min=1"`
 }
@@ -134,7 +134,7 @@ type AdminUserRoleResume struct {
 	IsActive     bool   `json:"isActive"`
 }
 
-// AdminCreateSystemUserRequest represents POST /admin/system-users request
+// AdminCreateSystemUserRequest represents POST /admin/users/system request
 type AdminCreateSystemUserRequest struct {
 	FullName    string `json:"fullName" binding:"required,min=2,max=150"`
 	Email       string `json:"email" binding:"required,email"`
@@ -144,7 +144,7 @@ type AdminCreateSystemUserRequest struct {
 	BornAt      string `json:"bornAt" binding:"required"`
 }
 
-// AdminUpdateSystemUserRequest represents PUT /admin/system-users request body
+// AdminUpdateSystemUserRequest represents PUT /admin/users/system request body
 type AdminUpdateSystemUserRequest struct {
 	UserID      int64  `json:"userId" binding:"required,min=1"`
 	FullName    string `json:"fullName" binding:"required,min=2,max=150"`
@@ -160,7 +160,7 @@ type AdminSystemUserResponse struct {
 	Message string `json:"message"`
 }
 
-// AdminDeleteSystemUserRequest represents DELETE /admin/system-users payload
+// AdminDeleteSystemUserRequest represents DELETE /admin/users/system payload
 type AdminDeleteSystemUserRequest struct {
 	UserID int64 `json:"userId" binding:"required,min=1"`
 }
@@ -192,6 +192,11 @@ type AdminRoleSummary struct {
 type AdminListRolesResponse struct {
 	Roles      []AdminRoleSummary `json:"roles"`
 	Pagination PaginationResponse `json:"pagination"`
+}
+
+// AdminGetRoleDetailRequest represents the payload for fetching a role detail.
+type AdminGetRoleDetailRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
 }
 
 // AdminCreateRoleRequest represents POST /admin/roles request body
@@ -282,6 +287,11 @@ type AdminPermissionResponse struct {
 	Message string `json:"message"`
 }
 
+// AdminGetPermissionDetailRequest represents the payload for fetching a permission detail.
+type AdminGetPermissionDetailRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
+}
+
 // AdminListRolePermissionsRequest filters GET /admin/role-permissions
 type AdminListRolePermissionsRequest struct {
 	Page         int    `form:"page,default=1" binding:"min=1"`
@@ -330,4 +340,9 @@ type AdminDeleteRolePermissionRequest struct {
 type AdminRolePermissionResponse struct {
 	ID      int64  `json:"id"`
 	Message string `json:"message"`
+}
+
+// AdminGetRolePermissionDetailRequest represents the payload for fetching a role-permission detail.
+type AdminGetRolePermissionDetailRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
 }

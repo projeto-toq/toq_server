@@ -9,7 +9,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PostAdminApproveUser handles POST /admin/user/approve
+// PostAdminApproveUser handles POST /admin/users/creci/approve
 //
 //	@Summary      Approve or refuse realtor status manually
 //	@Description  Status must be one of the allowed enum values. On success, sends FCM notification.
@@ -23,7 +23,7 @@ import (
 //	@Failure      403  {object}  map[string]any
 //	@Failure      409  {object}  map[string]any
 //	@Failure      500  {object}  map[string]any
-//	@Router       /admin/user/approve [post]
+//	@Router       /admin/users/creci/approve [post]
 func (h *AdminHandler) PostAdminApproveUser(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminApproveUserRequest

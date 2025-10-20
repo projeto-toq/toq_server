@@ -62,6 +62,7 @@ type PermissionServiceInterface interface {
 	CreateRolePermission(ctx context.Context, input CreateRolePermissionInput) (permissionmodel.RolePermissionInterface, error)
 	UpdateRolePermission(ctx context.Context, input UpdateRolePermissionInput) (permissionmodel.RolePermissionInterface, error)
 	DeleteRolePermission(ctx context.Context, rolePermissionID int64) error
+	GetRolePermissionByID(ctx context.Context, rolePermissionID int64) (permissionmodel.RolePermissionInterface, error)
 
 	// Cache management
 	InvalidateUserCache(ctx context.Context, userID int64) error

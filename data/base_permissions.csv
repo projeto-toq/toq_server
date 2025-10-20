@@ -47,10 +47,10 @@ id;name;resource;action;description;conditions;is_active
 46;HTTP UpdateOptStatus;http;PUT:/api/v2/user/opt-status;Permite atualizar o status de opt-in de notificações;NULL;1
 47;HTTP DeleteAccount;http;DELETE:/api/v2/user/account;Permite deletar a própria conta;NULL;1
 48;HTTP GetUserStatus;http;GET:/api/v2/user/status;Permite consultar o status da role ativa do usuário autenticado;NULL;1
-49;HTTP GetUser;http;POST:/api/v2/admin/user;Permite Admin consultar detalhes de um usuário específico;NULL;1
-50;HTTP ApproveUser;http;POST:/api/v2/admin/user/approve;Permite Admin aprovar/reprovar corretor;NULL;1
-51;HTTP GetPending;http;GET:/api/v2/admin/user/pending;Permite Admin listar corretores pendentes de aprovação;NULL;1
-52;HTTP Admin GetCreciDownloadURL;http;POST:/api/v2/admin/user/creci-download-url;Permite Admin obter URLs de download dos documentos CRECI;NULL;1
+49;HTTP GetUser;http;POST:/api/v2/admin/users/detail;Permite Admin consultar detalhes de um usuário específico;NULL;1
+50;HTTP ApproveUser;http;POST:/api/v2/admin/users/creci/approve;Permite Admin aprovar/reprovar corretor;NULL;1
+51;HTTP GetPending;http;GET:/api/v2/admin/users/creci/pending;Permite Admin listar corretores pendentes de aprovação;NULL;1
+52;HTTP Admin GetCreciDownloadURL;http;POST:/api/v2/admin/users/creci/download-url;Permite Admin obter URLs de download dos documentos CRECI;NULL;1
 53;HTTP AddAlternativeUserRole;http;POST:/api/v2/user/role/alternative;Permite solicitar criação de role alternativo (owner↔realtor);NULL;1
 54;HTTP SwitchUserRole;http;POST:/api/v2/user/role/switch;Permite alternar a role ativa do usuário autenticado;NULL;1
 55;HTTP Get all listing options;http;POST:/api/v2/listings/options;Permite obter opções de listing baseadas em endereço;NULL;1
@@ -67,9 +67,9 @@ id;name;resource;action;description;conditions;is_active
 66;HTTP Update Role;http;PUT:/api/v2/admin/roles;Permite atualizar role existente;NULL;1
 67;HTTP Delete Role;http;DELETE:/api/v2/admin/roles;Permite desativar role existente;NULL;1
 68;HTTP Admin Get Users;http;GET:/api/v2/admin/users;Permite listar usuários do sistema com filtro e paginação;NULL;1
-69;HTTP Admin Create System User;http;POST:/api/v2/admin/system-users;Permite criar novo usuário do sistema;NULL;1
-70;HTTP Admin Update System User;http;PUT:/api/v2/admin/system-users;Permite atualizar usuário do sistema;NULL;1
-71;HTTP Admin Delete System User;http;DELETE:/api/v2/admin/system-users;Permite deletar usuário do sistema;NULL;1
+69;HTTP Admin Create System User;http;POST:/api/v2/admin/users/system;Permite criar novo usuário do sistema;NULL;1
+70;HTTP Admin Update System User;http;PUT:/api/v2/admin/users/system;Permite atualizar usuário do sistema;NULL;1
+71;HTTP Admin Delete System User;http;DELETE:/api/v2/admin/users/system;Permite deletar usuário do sistema;NULL;1
 72;HTTP Admin Restore Role;http;POST:/api/v2/admin/roles/restore;Permite reativar uma role desativada;NULL;1
 73;HTTP Admin Restore Listing Catalog;http;POST:/api/v2/admin/listing/catalog/restore;Permite reativar um valor de catálogo de listing desativado;NULL;1
 74;HTTP Admin List Permissions;http;GET:/api/v2/admin/permissions;Permite listar permissões administrativas;NULL;1

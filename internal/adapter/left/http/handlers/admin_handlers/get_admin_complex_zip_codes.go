@@ -15,9 +15,11 @@ import (
 //
 //	@Summary	List complex zip codes
 //	@Tags		Admin
-//	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.AdminListComplexZipCodesRequest	true	"Complex zip code filters"
+//	@Param		complexId	query	int	false	"Complex identifier"
+//	@Param		zipCode		query	string	false	"Zip code filter"
+//	@Param		page		query	int	false	"Page number"
+//	@Param		limit		query	int	false	"Page size"
 //	@Success	200	{object}	dto.AdminListComplexZipCodesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -28,7 +30,7 @@ func (h *AdminHandler) GetAdminComplexZipCodes(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	var req dto.AdminListComplexZipCodesRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}

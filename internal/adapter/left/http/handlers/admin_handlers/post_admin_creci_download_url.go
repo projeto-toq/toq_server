@@ -9,7 +9,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PostAdminCreciDownloadURL handles POST /admin/user/creci-download-url
+// PostAdminCreciDownloadURL handles POST /admin/users/creci/download-url
 //
 //	@Summary      Get signed download URLs for CRECI documents
 //	@Description  Returns signed URLs (selfie/front/back) for a realtor user, valid for a limited time
@@ -25,7 +25,7 @@ import (
 //	@Failure      409  {object}  map[string]any
 //	@Failure      422  {object}  map[string]any
 //	@Failure      500  {object}  map[string]any
-//	@Router       /admin/user/creci-download-url [post]
+//	@Router       /admin/users/creci/download-url [post]
 func (h *AdminHandler) PostAdminCreciDownloadURL(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminCreciDownloadURLRequest

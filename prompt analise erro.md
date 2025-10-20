@@ -5,14 +5,15 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Com os ajuste feitos na última refatoração onde foir implementado o CRUD de complex algumas correções são necessárias:
+É necessário fazer algumas correçoes nos endpoints de admin:
 
-- o endpoint GET /admin/complexes que possui filtros e paginação deve passar os parametros via query params e não via body como está atualmente.
-- o endpoint GET /admin/complexes/sizes que possui filtros e paginação deve passar os parametros via query params e não via body como está atualmente.
-- é necessário cria um endpoint POST /admin/complexes/sizes/detail com o id no body para retornar o detalhe de um size específico.
-- o endpoint GET /admin/complexes/towers que possui filtros e paginação deve passar os parametros via query params e não via body como está atualmente.
-- é necessário cria um endpoint POST /admin/complexes/towers/detail com o id no body para retornar o detalhe de uma tower específica.
-
+- o endpoint PUT /admin/system-users deve passar a PUT /admin/users/system;
+- o endpoint POST /admin/system-users deve passar a POST /admin/users/system;
+- o endpoint DELETE /admin/system-users deve passar a DELETE /admin/users/system;
+- o endpoint POST /admin/user deve passar a POST /admin/users;
+- o endpoint POST /admin/user/approve deve passar a /admin/user/creci/approve;
+- o endpoint POST /admin/user/creci-download-url deve passar a /admin/users/creci/download-url;
+- o endpoint GET /admin/user/pending deve passar a /admin/users/creci/pending;
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 

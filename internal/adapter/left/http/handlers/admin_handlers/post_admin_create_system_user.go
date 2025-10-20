@@ -13,7 +13,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PostAdminCreateSystemUser handles POST /admin/system-users
+// PostAdminCreateSystemUser handles POST /admin/users/system
 //
 //	@Summary      Create a new system user
 //	@Tags         Admin
@@ -26,7 +26,7 @@ import (
 //	@Failure      403  {object}  map[string]any
 //	@Failure      409  {object}  map[string]any
 //	@Failure      500  {object}  map[string]any
-//	@Router       /admin/system-users [post]
+//	@Router       /admin/users/system [post]
 func (h *AdminHandler) PostAdminCreateSystemUser(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminCreateSystemUserRequest

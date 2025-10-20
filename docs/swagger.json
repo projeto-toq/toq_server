@@ -1046,9 +1046,6 @@
         },
         "/admin/complexes/zip-codes": {
             "get": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1058,13 +1055,28 @@
                 "summary": "List complex zip codes",
                 "parameters": [
                     {
-                        "description": "Complex zip code filters",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesRequest"
-                        }
+                        "type": "integer",
+                        "description": "Complex identifier",
+                        "name": "complexId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Zip code filter",
+                        "name": "zipCode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1300,9 +1312,8 @@
                 }
             }
         },
-        "/admin/listing/catalog": {
-            "get": {
-                "description": "Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.",
+        "/admin/complexes/zip-codes/detail": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -1312,16 +1323,86 @@
                 "tags": [
                     "Admin"
                 ],
-                "summary": "List listing catalog values",
+                "summary": "Get complex zip code detail",
                 "parameters": [
                     {
-                        "description": "Filter payload",
+                        "description": "Complex zip code detail payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexZipCodeDetailRequest"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/listing/catalog": {
+            "get": {
+                "description": "Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List listing catalog values",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Catalog category",
+                        "name": "category",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include inactive values",
+                        "name": "includeInactive",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1525,6 +1606,74 @@
                 "responses": {
                     "204": {
                         "description": "Catalog value deactivated"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/listing/catalog/detail": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get listing catalog value detail",
+                "parameters": [
+                    {
+                        "description": "Listing catalog detail payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetListingCatalogDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1933,6 +2082,74 @@
                 }
             }
         },
+        "/admin/permissions/detail": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get permission detail",
+                "parameters": [
+                    {
+                        "description": "Permission detail payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPermissionDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionSummary"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/admin/role-permissions": {
             "get": {
                 "produces": [
@@ -2181,6 +2398,74 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/role-permissions/detail": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get role-permission detail",
+                "parameters": [
+                    {
+                        "description": "Role-permission detail payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRolePermissionDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionSummary"
                         }
                     },
                     "400": {
@@ -2544,6 +2829,74 @@
                 }
             }
         },
+        "/admin/roles/detail": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get role detail",
+                "parameters": [
+                    {
+                        "description": "Role detail payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRoleDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleSummary"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/admin/roles/restore": {
             "post": {
                 "consumes": [
@@ -2619,7 +2972,463 @@
                 }
             }
         },
-        "/admin/system-users": {
+        "/admin/users": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List admin-facing users with filters",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "example": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "example": 20,
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"*manager*\"",
+                        "description": "Filter by role name (supports '*' wildcard)",
+                        "name": "roleName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"*admin*\"",
+                        "description": "Filter by role slug (supports '*' wildcard)",
+                        "name": "roleSlug",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Filter by role status enum",
+                        "name": "roleStatus",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "example": true,
+                        "description": "Filter by system role flag",
+                        "name": "isSystemRole",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"*Silva*\"",
+                        "description": "Filter by full name (supports '*' wildcard)",
+                        "name": "fullName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"123*456\"",
+                        "description": "Filter by CPF (supports '*' wildcard)",
+                        "name": "cpf",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"*toq.com*\"",
+                        "description": "Filter by email (supports '*' wildcard)",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"*119*\"",
+                        "description": "Filter by phone (supports '*' wildcard)",
+                        "name": "phoneNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "example": false,
+                        "description": "Filter by deletion flag",
+                        "name": "deleted",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 100,
+                        "description": "Filter by user ID (from)",
+                        "name": "idFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 250,
+                        "description": "Filter by user ID (to)",
+                        "name": "idTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"1990-01-01\"",
+                        "description": "Filter by birth date from (RFC3339 or YYYY-MM-DD)",
+                        "name": "bornAtFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2000-12-31\"",
+                        "description": "Filter by birth date to (RFC3339 or YYYY-MM-DD)",
+                        "name": "bornAtTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2025-01-01T00:00:00Z\"",
+                        "description": "Filter by last activity from (RFC3339 or YYYY-MM-DD)",
+                        "name": "lastActivityFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2025-01-31T23:59:59Z\"",
+                        "description": "Filter by last activity to (RFC3339 or YYYY-MM-DD)",
+                        "name": "lastActivityTo",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/creci/approve": {
+            "post": {
+                "description": "Status must be one of the allowed enum values. On success, sends FCM notification.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Approve or refuse realtor status manually",
+                "parameters": [
+                    {
+                        "description": "User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/creci/download-url": {
+            "post": {
+                "description": "Returns signed URLs (selfie/front/back) for a realtor user, valid for a limited time",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get signed download URLs for CRECI documents",
+                "parameters": [
+                    {
+                        "description": "User ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/creci/pending": {
+            "get": {
+                "description": "Returns id, nickname, fullName, nationalID, creciNumber, creciValidity, creciState",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List realtors pending manual validation",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "example": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "example": 20,
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/detail": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get full user by ID",
+                "parameters": [
+                    {
+                        "description": "User ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/system": {
             "put": {
                 "consumes": [
                     "application/json"
@@ -2815,462 +3624,6 @@
                     },
                     "409": {
                         "description": "Conflict",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/user": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Get full user by ID",
-                "parameters": [
-                    {
-                        "description": "User ID",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/user/approve": {
-            "post": {
-                "description": "Status must be one of the allowed enum values. On success, sends FCM notification.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Approve or refuse realtor status manually",
-                "parameters": [
-                    {
-                        "description": "User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/user/creci-download-url": {
-            "post": {
-                "description": "Returns signed URLs (selfie/front/back) for a realtor user, valid for a limited time",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Get signed download URLs for CRECI documents",
-                "parameters": [
-                    {
-                        "description": "User ID",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/user/pending": {
-            "get": {
-                "description": "Returns id, nickname, fullName, nationalID, creciNumber, creciValidity, creciState",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "List realtors pending manual validation",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "example": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 20,
-                        "example": 20,
-                        "description": "Page size",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/users": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "List admin-facing users with filters",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "example": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 20,
-                        "example": 20,
-                        "description": "Page size",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"*manager*\"",
-                        "description": "Filter by role name (supports '*' wildcard)",
-                        "name": "roleName",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"*admin*\"",
-                        "description": "Filter by role slug (supports '*' wildcard)",
-                        "name": "roleSlug",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "example": 1,
-                        "description": "Filter by role status enum",
-                        "name": "roleStatus",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "example": true,
-                        "description": "Filter by system role flag",
-                        "name": "isSystemRole",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"*Silva*\"",
-                        "description": "Filter by full name (supports '*' wildcard)",
-                        "name": "fullName",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"123*456\"",
-                        "description": "Filter by CPF (supports '*' wildcard)",
-                        "name": "cpf",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"*toq.com*\"",
-                        "description": "Filter by email (supports '*' wildcard)",
-                        "name": "email",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"*119*\"",
-                        "description": "Filter by phone (supports '*' wildcard)",
-                        "name": "phoneNumber",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "example": false,
-                        "description": "Filter by deletion flag",
-                        "name": "deleted",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "example": 100,
-                        "description": "Filter by user ID (from)",
-                        "name": "idFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "example": 250,
-                        "description": "Filter by user ID (to)",
-                        "name": "idTo",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"1990-01-01\"",
-                        "description": "Filter by birth date from (RFC3339 or YYYY-MM-DD)",
-                        "name": "bornAtFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"2000-12-31\"",
-                        "description": "Filter by birth date to (RFC3339 or YYYY-MM-DD)",
-                        "name": "bornAtTo",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"2025-01-01T00:00:00Z\"",
-                        "description": "Filter by last activity from (RFC3339 or YYYY-MM-DD)",
-                        "name": "lastActivityFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"2025-01-31T23:59:59Z\"",
-                        "description": "Filter by last activity to (RFC3339 or YYYY-MM-DD)",
-                        "name": "lastActivityTo",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -6473,6 +6826,35 @@
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexZipCodeDetailRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetListingCatalogDetailRequest": {
+            "type": "object",
+            "required": [
+                "category",
+                "id"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "maximum": 255,
+                    "minimum": 1
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse": {
             "type": "object",
             "properties": {
@@ -6484,6 +6866,42 @@
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor"
                     }
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPermissionDetailRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRoleDetailRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRolePermissionDetailRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -6538,23 +6956,6 @@
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse"
                     }
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesRequest": {
-            "type": "object",
-            "properties": {
-                "complexId": {
-                    "type": "integer"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "zipCode": {
-                    "type": "string"
                 }
             }
         },
@@ -6645,20 +7046,6 @@
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUserSummary"
                     }
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest": {
-            "type": "object",
-            "required": [
-                "category"
-            ],
-            "properties": {
-                "category": {
-                    "type": "string"
-                },
-                "includeInactive": {
-                    "type": "boolean"
                 }
             }
         },

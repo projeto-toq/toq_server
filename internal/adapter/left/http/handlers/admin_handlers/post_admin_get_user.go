@@ -10,7 +10,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PostAdminGetUser handles POST /admin/user
+// PostAdminGetUser handles POST /admin/users/detail
 //
 //	@Summary      Get full user by ID
 //	@Tags         Admin
@@ -23,7 +23,7 @@ import (
 //	@Failure      403  {object}  map[string]any
 //	@Failure      404  {object}  map[string]any
 //	@Failure      500  {object}  map[string]any
-//	@Router       /admin/user [post]
+//	@Router       /admin/users/detail [post]
 func (h *AdminHandler) PostAdminGetUser(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminGetUserRequest

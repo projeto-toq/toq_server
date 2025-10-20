@@ -11,7 +11,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PutAdminUpdateSystemUser handles PUT /admin/system-users
+// PutAdminUpdateSystemUser handles PUT /admin/users/system
 //
 //	@Summary      Update system user data
 //	@Tags         Admin
@@ -25,7 +25,7 @@ import (
 //	@Failure      404  {object}  map[string]any
 //	@Failure      409  {object}  map[string]any
 //	@Failure      500  {object}  map[string]any
-//	@Router       /admin/system-users [put]
+//	@Router       /admin/users/system [put]
 func (h *AdminHandler) PutAdminUpdateSystemUser(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	var req dto.AdminUpdateSystemUserRequest

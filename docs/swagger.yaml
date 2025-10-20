@@ -309,6 +309,26 @@ definitions:
     required:
     - id
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexZipCodeDetailRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetListingCatalogDetailRequest:
+    properties:
+      category:
+        type: string
+      id:
+        maximum: 255
+        minimum: 1
+        type: integer
+    required:
+    - category
+    - id
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse:
     properties:
       pagination:
@@ -317,6 +337,30 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor'
         type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPermissionDetailRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRoleDetailRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRolePermissionDetailRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest:
     properties:
@@ -352,17 +396,6 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse'
         type: array
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesRequest:
-    properties:
-      complexId:
-        type: integer
-      limit:
-        type: integer
-      page:
-        type: integer
-      zipCode:
-        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesResponse:
     properties:
@@ -421,15 +454,6 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUserSummary'
         type: array
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest:
-    properties:
-      category:
-        type: string
-      includeInactive:
-        type: boolean
-    required:
-    - category
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPendingRealtor:
     properties:
@@ -2647,15 +2671,23 @@ paths:
       tags:
       - Admin
     get:
-      consumes:
-      - application/json
       parameters:
-      - description: Complex zip code filters
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesRequest'
+      - description: Complex identifier
+        in: query
+        name: complexId
+        type: integer
+      - description: Zip code filter
+        in: query
+        name: zipCode
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -2776,6 +2808,52 @@ paths:
       summary: Update a complex zip code
       tags:
       - Admin
+  /admin/complexes/zip-codes/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex zip code detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexZipCodeDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get complex zip code detail
+      tags:
+      - Admin
   /admin/listing/catalog:
     delete:
       consumes:
@@ -2821,18 +2899,19 @@ paths:
       tags:
       - Admin
     get:
-      consumes:
-      - application/json
       description: 'Available categories: property_owner, property_delivered, who_lives,
         transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type,
         guarantee_type.'
       parameters:
-      - description: Filter payload
-        in: body
-        name: request
+      - description: Catalog category
+        in: query
+        name: category
         required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListingCatalogRequest'
+        type: string
+      - description: Include inactive values
+        in: query
+        name: includeInactive
+        type: boolean
       produces:
       - application/json
       responses:
@@ -2956,6 +3035,52 @@ paths:
             additionalProperties: true
             type: object
       summary: Update a listing catalog value
+      tags:
+      - Admin
+  /admin/listing/catalog/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Listing catalog detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetListingCatalogDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get listing catalog value detail
       tags:
       - Admin
   /admin/listing/catalog/restore:
@@ -3210,6 +3335,52 @@ paths:
       summary: Update an existing permission
       tags:
       - Admin
+  /admin/permissions/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Permission detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPermissionDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminPermissionSummary'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get permission detail
+      tags:
+      - Admin
   /admin/role-permissions:
     delete:
       consumes:
@@ -3405,6 +3576,52 @@ paths:
             additionalProperties: true
             type: object
       summary: Update a role-permission association
+      tags:
+      - Admin
+  /admin/role-permissions/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role-permission detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRolePermissionDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionSummary'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get role-permission detail
       tags:
       - Admin
   /admin/roles:
@@ -3630,6 +3847,52 @@ paths:
       summary: Update a role
       tags:
       - Admin
+  /admin/roles/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Role detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetRoleDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleSummary'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get role detail
+      tags:
+      - Admin
   /admin/roles/restore:
     post:
       consumes:
@@ -3681,7 +3944,326 @@ paths:
       summary: Reactivate a role
       tags:
       - Admin
-  /admin/system-users:
+  /admin/users:
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by role name (supports '*' wildcard)
+        example: '"*manager*"'
+        in: query
+        name: roleName
+        type: string
+      - description: Filter by role slug (supports '*' wildcard)
+        example: '"*admin*"'
+        in: query
+        name: roleSlug
+        type: string
+      - description: Filter by role status enum
+        example: 1
+        in: query
+        name: roleStatus
+        type: integer
+      - description: Filter by system role flag
+        example: true
+        in: query
+        name: isSystemRole
+        type: boolean
+      - description: Filter by full name (supports '*' wildcard)
+        example: '"*Silva*"'
+        in: query
+        name: fullName
+        type: string
+      - description: Filter by CPF (supports '*' wildcard)
+        example: '"123*456"'
+        in: query
+        name: cpf
+        type: string
+      - description: Filter by email (supports '*' wildcard)
+        example: '"*toq.com*"'
+        in: query
+        name: email
+        type: string
+      - description: Filter by phone (supports '*' wildcard)
+        example: '"*119*"'
+        in: query
+        name: phoneNumber
+        type: string
+      - description: Filter by deletion flag
+        example: false
+        in: query
+        name: deleted
+        type: boolean
+      - description: Filter by user ID (from)
+        example: 100
+        in: query
+        name: idFrom
+        type: integer
+      - description: Filter by user ID (to)
+        example: 250
+        in: query
+        name: idTo
+        type: integer
+      - description: Filter by birth date from (RFC3339 or YYYY-MM-DD)
+        example: '"1990-01-01"'
+        in: query
+        name: bornAtFrom
+        type: string
+      - description: Filter by birth date to (RFC3339 or YYYY-MM-DD)
+        example: '"2000-12-31"'
+        in: query
+        name: bornAtTo
+        type: string
+      - description: Filter by last activity from (RFC3339 or YYYY-MM-DD)
+        example: '"2025-01-01T00:00:00Z"'
+        in: query
+        name: lastActivityFrom
+        type: string
+      - description: Filter by last activity to (RFC3339 or YYYY-MM-DD)
+        example: '"2025-01-31T23:59:59Z"'
+        in: query
+        name: lastActivityTo
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List admin-facing users with filters
+      tags:
+      - Admin
+  /admin/users/creci/approve:
+    post:
+      consumes:
+      - application/json
+      description: Status must be one of the allowed enum values. On success, sends
+        FCM notification.
+      parameters:
+      - description: 'User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)'
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Approve or refuse realtor status manually
+      tags:
+      - Admin
+  /admin/users/creci/download-url:
+    post:
+      consumes:
+      - application/json
+      description: Returns signed URLs (selfie/front/back) for a realtor user, valid
+        for a limited time
+      parameters:
+      - description: User ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get signed download URLs for CRECI documents
+      tags:
+      - Admin
+  /admin/users/creci/pending:
+    get:
+      description: Returns id, nickname, fullName, nationalID, creciNumber, creciValidity,
+        creciState
+      parameters:
+      - default: 1
+        description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List realtors pending manual validation
+      tags:
+      - Admin
+  /admin/users/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get full user by ID
+      tags:
+      - Admin
+  /admin/users/system:
     delete:
       consumes:
       - application/json
@@ -3823,325 +4405,6 @@ paths:
             additionalProperties: true
             type: object
       summary: Update system user data
-      tags:
-      - Admin
-  /admin/user:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: User ID
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetUserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "403":
-          description: Forbidden
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get full user by ID
-      tags:
-      - Admin
-  /admin/user/approve:
-    post:
-      consumes:
-      - application/json
-      description: Status must be one of the allowed enum values. On success, sends
-        FCM notification.
-      parameters:
-      - description: 'User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)'
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminApproveUserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "403":
-          description: Forbidden
-          schema:
-            additionalProperties: true
-            type: object
-        "409":
-          description: Conflict
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Approve or refuse realtor status manually
-      tags:
-      - Admin
-  /admin/user/creci-download-url:
-    post:
-      consumes:
-      - application/json
-      description: Returns signed URLs (selfie/front/back) for a realtor user, valid
-        for a limited time
-      parameters:
-      - description: User ID
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDownloadURLResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "403":
-          description: Forbidden
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "409":
-          description: Conflict
-          schema:
-            additionalProperties: true
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get signed download URLs for CRECI documents
-      tags:
-      - Admin
-  /admin/user/pending:
-    get:
-      description: Returns id, nickname, fullName, nationalID, creciNumber, creciValidity,
-        creciState
-      parameters:
-      - default: 1
-        description: Page number
-        example: 1
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Page size
-        example: 20
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "403":
-          description: Forbidden
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: List realtors pending manual validation
-      tags:
-      - Admin
-  /admin/users:
-    get:
-      parameters:
-      - default: 1
-        description: Page number
-        example: 1
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Page size
-        example: 20
-        in: query
-        name: limit
-        type: integer
-      - description: Filter by role name (supports '*' wildcard)
-        example: '"*manager*"'
-        in: query
-        name: roleName
-        type: string
-      - description: Filter by role slug (supports '*' wildcard)
-        example: '"*admin*"'
-        in: query
-        name: roleSlug
-        type: string
-      - description: Filter by role status enum
-        example: 1
-        in: query
-        name: roleStatus
-        type: integer
-      - description: Filter by system role flag
-        example: true
-        in: query
-        name: isSystemRole
-        type: boolean
-      - description: Filter by full name (supports '*' wildcard)
-        example: '"*Silva*"'
-        in: query
-        name: fullName
-        type: string
-      - description: Filter by CPF (supports '*' wildcard)
-        example: '"123*456"'
-        in: query
-        name: cpf
-        type: string
-      - description: Filter by email (supports '*' wildcard)
-        example: '"*toq.com*"'
-        in: query
-        name: email
-        type: string
-      - description: Filter by phone (supports '*' wildcard)
-        example: '"*119*"'
-        in: query
-        name: phoneNumber
-        type: string
-      - description: Filter by deletion flag
-        example: false
-        in: query
-        name: deleted
-        type: boolean
-      - description: Filter by user ID (from)
-        example: 100
-        in: query
-        name: idFrom
-        type: integer
-      - description: Filter by user ID (to)
-        example: 250
-        in: query
-        name: idTo
-        type: integer
-      - description: Filter by birth date from (RFC3339 or YYYY-MM-DD)
-        example: '"1990-01-01"'
-        in: query
-        name: bornAtFrom
-        type: string
-      - description: Filter by birth date to (RFC3339 or YYYY-MM-DD)
-        example: '"2000-12-31"'
-        in: query
-        name: bornAtTo
-        type: string
-      - description: Filter by last activity from (RFC3339 or YYYY-MM-DD)
-        example: '"2025-01-01T00:00:00Z"'
-        in: query
-        name: lastActivityFrom
-        type: string
-      - description: Filter by last activity to (RFC3339 or YYYY-MM-DD)
-        example: '"2025-01-31T23:59:59Z"'
-        in: query
-        name: lastActivityTo
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "403":
-          description: Forbidden
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: List admin-facing users with filters
       tags:
       - Admin
   /auth/agency:
