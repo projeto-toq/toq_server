@@ -6,20 +6,34 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Continuando com a criação do toq_server, precisamos
-
-- Adicionar as rotas de CRUD para as entidades complex e suas relacionadas: complex_towers, complex_sizes, complex_zipcodes.
-  - a tabela complex contem os dados dos empreendimentos de todos os tipos cobertos pela toq. Através do zipcode e number podemos localizar um empreendimento e pelo type saber quais os propertyTypes são possíveis neste empreendimento.
-  - a tabela complex_towers - contem os dados das torres dentro de cada empreendimento. Cada registro está associada a um empreendimento específico através de uma chave estrangeira.
-  - a tabela complex_sizes - contem os tamanhos disponíveis para cada empreendimento. Cada registro está associado a um empreendimento específico através de uma chave estrangeira.
-  - a tabela complex_zipcodes - contem os zipcodes associados a cada empreendimento, para o caso de condomínios horizontais onde diversos zipcodes podem estar presentes para cada empreendimento. Cada registro está associado a um empreendimento específico através de uma chave estrangeira.
-- O seed da tabela complex_sizes ja existe, mas o campo description está vazio. Atualize o seed para preencher este campo com descrições apropriadas para cada size. Seja criativo para gerar descrições realistas.
-- o acesso aos endpoints de CRUD deve ser permitido apenas para perfis de administradores. Portanto, altere permissions.csv e role_permissions.csv conforme necessário.
-- Deverá existir, adicionalmente, uma rota GET HTTP para listar os tamanhos disponíveis para um determinado empreendimento baseado no zipCode e number fornecido no body.
-- A tabela complexes, pode localizar o empreendimento baseado no zipCode e number.
-- a resposta deve ser uma lista de objetos JSON com os campos id (int), size (float) e description (string). NotFound se não for localizado o empreendimento. Se o empreendimento existir mas a busca em `complex_sizes` retornar `not_found`, trate respondendo `description` como string vazia.
-- Todos os perfis devem ter acesso ao endpoint, portanto altere permissions.csv e role_permissions.csv conforme necessário.
-- Os endpoints devem ser documentados no Swagger com comentários no código.
+Continuando com a criação do toq_server, precisamos preparar as agendas dos imóveis e a visão do proprietário.
+A regra de negçocio estabelece que:
+- Cada imóvel tem uma única agenda.
+- A agenda do imóvel serve para definir os horários disponíveis para visitas.
+- A agenda terá os seguintes tipos de entradas:
+  - Horários de bloqueio (indisponibilidade para visitas). Por default, na criação da agenda, o imóvel estará com bloqueio de segunda a domingo, das 18:00 às 07:59.
+  - Horários de bloqueio temporário (indisponibilidade temporária para visitas, como férias do proprietário).
+  - Informações de feriados nacionais, estaduais e municipais - não gerando bloqueio na agenda
+    - estas informações virão de calendario de feriados que deve ser criado.
+  - Horários com visitas:
+    - Visitas agendadas por corretores ainda não aceitas - não gerando bloqueio na agenda
+    - Visitas confirmadas (aceitas pelo proprietário) - gerando agenda ocupada
+    - Visitas canceladas deverão sair da agenda. - liberando o horário
+  - Horários com fotografias agendadas - gerando agenda ocupada
+- A agenda deve permitir ao proprietário:
+  - ter uma visão consolidada das agendas de todos os imóveis deste proprietário, permitindo a consulta por período (data inicial e data final) e retornando todas as entradas consolidadas.
+  - consultas por período (data inicial e data final) e retornar todas as entradas da agenda do imóvel.
+  - criar, atualizar e deletar entradas de bloqueio e bloqueio temporário para um imóvel específico.
+- A agenda deve permitir ao corretor:
+  - consultar a disponibilidade do imóvel por período (data inicial e data final), retornando os horários livres sem dizer o motivo do bloqueio.
+- os calendários de feriados devem ter CRUD completo, mas só poderão ser manipulados por usuários com role Admin.
+- A criação da agenda deve ser automática na criação do imóvel, já com os bloqueios padrão definidos.
+- crie as definições das tabelas necessáris para suportar as regras acima. Farei a criação manualmente.
+- crie os endpoints HTTP necessários para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
+- crie os services e repositories necessários para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
+- crie os DTOs necessários para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
+- crie as permissões necessárias para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
+- Alteres base_permissions.csv e base_role_permissions.csv para incluir as novas permissões criadas.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

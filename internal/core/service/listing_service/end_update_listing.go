@@ -64,7 +64,7 @@ func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateL
 		return verr
 	}
 
-	updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, input.ListingID, listingmodel.StatusPendingPhotoScheduling, listingmodel.StatusDraft)
+	updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, input.ListingID, listingmodel.StatusPendingAvailability, listingmodel.StatusDraft)
 	if updateErr != nil {
 		if errors.Is(updateErr, sql.ErrNoRows) {
 			return utils.ConflictError("Listing status changed while finishing update")

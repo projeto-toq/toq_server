@@ -33,6 +33,8 @@ const (
 	StatusExpired
 	// StatusArchived: Anúncio removido do catálogo e mantido apenas para histórico.
 	StatusArchived
+	// StatusPendingAvailability: Anúncio criado, aguardando criação de agenda de disponibilidades.
+	StatusPendingAvailability
 )
 
 func (s ListingStatus) String() string {
@@ -67,6 +69,8 @@ func (s ListingStatus) String() string {
 		return "EXPIRED"
 	case StatusArchived:
 		return "ARCHIVED"
+	case StatusPendingAvailability:
+		return "PENDING_AVAILABILITY"
 	default:
 		return "UNKNOWN"
 	}
