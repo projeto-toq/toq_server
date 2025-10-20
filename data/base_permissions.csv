@@ -47,7 +47,7 @@ id;name;resource;action;description;conditions;is_active
 46;HTTP UpdateOptStatus;http;PUT:/api/v2/user/opt-status;Permite atualizar o status de opt-in de notificações;NULL;1
 47;HTTP DeleteAccount;http;DELETE:/api/v2/user/account;Permite deletar a própria conta;NULL;1
 48;HTTP GetUserStatus;http;GET:/api/v2/user/status;Permite consultar o status da role ativa do usuário autenticado;NULL;1
-49;HTTP GetUser;http;POST:/api/v2/admin/users/detail;Permite Admin consultar detalhes de um usuário específico;NULL;1
+49;HTTP GetUser Detail;http;POST:/api/v2/admin/users/detail;Permite Admin consultar detalhes de um usuário específico;NULL;1
 50;HTTP ApproveUser;http;POST:/api/v2/admin/users/creci/approve;Permite Admin aprovar/reprovar corretor;NULL;1
 51;HTTP GetPending;http;GET:/api/v2/admin/users/creci/pending;Permite Admin listar corretores pendentes de aprovação;NULL;1
 52;HTTP Admin GetCreciDownloadURL;http;POST:/api/v2/admin/users/creci/download-url;Permite Admin obter URLs de download dos documentos CRECI;NULL;1
@@ -100,3 +100,9 @@ id;name;resource;action;description;conditions;is_active
 99;HTTP Admin Update Complex Zip Code;http;PUT:/api/v2/admin/complexes/zip-codes;Permite atualizar CEPs associados a complexos no painel admin;NULL;1
 100;HTTP Admin Delete Complex Zip Code;http;DELETE:/api/v2/admin/complexes/zip-codes;Permite deletar CEPs associados a complexos no painel admin;NULL;1
 101;HTTP Get Complex Sizes;http;GET:/api/v2/complex/sizes;Permite listar tamanhos de complexos;NULL;1
+102;HTTP Admin Get Complex Zip Code Detail;http;POST:/api/v2/admin/complexes/zip-codes/detail;Permite consultar detalhes de CEP associados a complexos no painel admin;NULL;1
+103;HTTP Admin Get Complex Size Detail;http;POST:/api/v2/admin/complexes/sizes/detail;Permite consultar detalhes de um valor de catálogo de tamanho de complexo no painel admin;NULL;1
+104;HTTP Admin Get Complex Tower Detail;http;POST:/api/v2/admin/complexes/towers/detail;Permite consultar detalhes de uma torre de complexo no painel admin;NULL;1
+105;HTTP Admin Get Listing Catalog Detail;http;POST:/api/v2/admin/listing/catalog/detail;Permite consultar detalhes de um valor de catálogo de listing no painel admin;NULL;1
+106;HTTP Admin Get Permissions Detail;http;GET:/api/v2/admin/permissions/detail;Permite consultar detalhes de permissões administrativas no painel admin;NULL;1
+107;HTTP Admin Get Roles Detail;http;POST:/api/v2/admin/roles/detail;Permite consultar detalhes de uma role administrativa no painel admin;NULL;1
