@@ -25,7 +25,7 @@ FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 LINES
-(id, complex_id, size);
+(id, complex_id, size, description);
 
 LOAD DATA INFILE '/var/lib/mysql-files/complex_towers.csv'
 INTO TABLE complex_towers

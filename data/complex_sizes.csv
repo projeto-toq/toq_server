@@ -1,560 +1,560 @@
-"id";"complex_id";"size"
-1;1;39.0
-2;1;39.6
-3;1;48.0
-4;1;48.6
-5;1;49.12
-6;1;49.56
-7;1;50.0
-8;1;59.24
-9;1;79.19
-10;1;81.35
-11;1;96.7
-12;2;196.0
-13;2;197.0
-14;2;201.0
-15;2;306.0
-16;3;86.56
-17;4;311.51
-18;4;295.68
-19;4;319.34
-20;4;224.51
-21;4;228.53
-22;4;197.25
-23;4;183.87
-24;4;203.81
-25;4;139.39
-26;4;140.0
-27;4;136.39
-28;4;234.79
-29;4;223.0
-30;4;242.42
-31;4;168.43
-32;4;172.25
-33;5;100.8
-34;5;143.61
-35;5;116.62
-36;5;72.99
-37;5;190.0
-38;5;179.87
-39;5;135.1
-40;5;155.23
-41;5;96.51
-42;5;72.62
-43;6;142.77
-44;6;156.58
-45;6;123.12
-46;6;116.37
-47;6;115.82
-48;6;94.47
-49;6;94.12
-50;7;296.95
-51;8;107.56
-52;9;26.11
-53;9;38.68
-54;9;38.82
-55;9;52.78
-56;9;26.11
-57;9;38.32
-58;9;53.35
-59;10;175.08
-60;11;162.24
-61;12;172.7
-62;12;156.04
-63;12;122.0
-64;12;186.68
-65;12;146.62
-66;12;142.27
-67;12;112.62
-68;12;111.89
-69;12;180.37
-70;12;175.32
-71;12;182.41
-72;13;141.09
-73;13;125.37
-74;13;89.14
-75;13;213.69
-76;13;82.5
-77;13;54.33
-78;13;58.03
-79;13;57.33
-80;13;59.83
-81;13;56.13
-82;13;55.51
-83;14;164.42
-84;15;39.6
-85;15;43.78
-86;15;38.82
-87;15;40.3
-88;15;43.9
-89;16;61.04
-90;16;52.75
-91;16;122.95
-92;16;114.66
-93;17;153.6
-94;17;260.02
-95;18;168.14
-96;18;309.54
-97;19;39.09
-98;19;57.84
-99;19;46.25
-100;20;98.33
-101;21;127.46
-102;21;252.54
-103;22;91.52
-104;23;109.85
-105;24;64.0
-106;24;62.5
-107;24;69.5
-108;25;55.93
-109;25;119.35
-110;25;116.05
-111;26;421.82
-112;26;713.03
-113;27;68.19
-114;27;48.08
-115;27;63.8
-116;27;76.1
-117;27;122.16
-118;27;118.46
-119;27;123.58
-120;27;124.94
-121;27;127.07
-122;27;121.57
-123;27;120.75
-124;27;120.33
-125;27;118.15
-126;27;88.03
-127;27;85.32
-128;27;86.2
-129;27;83.14
-130;27;113.03
-131;27;126.18
-132;27;103.12
-133;28;79.8
-134;28;60.36
-135;29;62.22
-136;29;86.52
-137;30;77.11
-138;30;76.04
-139;31;90.28
-140;32;0.0
-141;33;57.63
-142;33;77.1
-143;34;84.38
-144;34;78.08
-145;35;0.0
-146;36;0.0
-147;37;235.86
-148;37;246.65
-149;37;333.92
-150;37;340.01
-151;38;162.02
-152;38;164.88
-153;39;94.12
-154;40;84.17
-155;40;80.2
-156;41;128.16
-157;42;106.29
-158;42;109.32
-159;42;218.31
-160;43;75.0
-161;43;74.0
-162;44;111.23
-163;44;201.46
-164;45;65.68
-165;45;53.9
-166;45;47.94
-167;45;50.65
-168;46;72.22
-169;46;77.03
-170;46;71.68
-171;46;99.56
-172;46;108.78
-173;47;58.14
-174;47;66.23
-175;48;61.3
-176;48;73.02
-177;48;59.15
-178;48;34.22
-179;48;36.02
-180;49;57.0
-181;49;63.0
-182;49;64.0
-183;49;75.0
-184;49;76.0
-185;49;87.0
-186;49;79.0
-187;49;163.0
-188;49;106.0
-189;49;108.0
-190;49;111.0
-191;49;115.0
-192;49;230.0
-193;50;91.0
-194;50;94.3
-195;50;91.62
-196;50;94.89
-197;50;93.69
-198;50;96.96
-199;51;96.43
-200;51;74.22
-201;51;86.83
-202;51;65.57
-203;52;110.24
-204;52;105.85
-205;52;133.14
-206;53;238.0
-207;53;425.0
-208;53;200.0
-209;53;387.5
-210;53;389.8
-211;53;328.8
-212;53;636.8
-213;53;330.8
-214;54;185.45
-215;54;191.65
-216;54;279.75
-217;54;188.93
-218;54;200.76
-219;54;217.79
-220;54;124.86
-221;54;98.02
-222;54;264.59
-223;54;150.81
-224;54;154.17
-225;54;137.91
-226;54;152.85
-227;54;123.82
-228;54;439.61
-229;54;344.25
-230;55;261.14
-231;55;258.0
-232;55;500.12
-233;55;494.93
-234;56;202.0
-235;57;107.42
-236;57;78.64
-237;57;79.06
-238;57;150.0
-239;57;158.02
-240;57;152.82
-241;58;106.76
-242;58;104.43
-243;58;106.47
-244;58;98.91
-245;58;76.3
-246;58;69.64
-247;58;64.12
-248;58;146.14
-249;59;174.29
-250;59;150.49
-251;59;192.55
-252;59;248.98
-253;59;329.89
-254;60;66.38
-255;60;50.31
-256;60;50.63
-257;61;66.66
-258;61;66.38
-259;61;63.02
-260;61;66.4
-261;62;77.63
-262;62;66.74
-263;62;50.05
-264;62;135.19
-265;62;108.09
-266;62;213.94
-267;62;168.64
-268;62;70.27
-269;63;91.21
-270;63;96.16
-271;63;78.36
-272;63;88.64
-273;63;48.2
-274;63;74.05
-275;63;68.02
-276;63;42.24
-277;63;68.7
-278;63;67.72
-279;63;142.37
-280;63;135.03
-281;63;110.65
-282;63;82.21
-283;63;79.2
-284;63;172.17
-285;63;68.71
-286;63;177.6
-287;63;145.13
-288;63;142.72
-289;64;339.49
-290;64;206.47
-291;64;350.63
-292;65;185.05
-293;65;177.48
-294;65;176.97
-295;65;185.56
-296;65;342.82
-297;65;136.05
-298;65;145.77
-299;65;153.08
-300;66;0.0
-301;67;75.5
-302;67;62.4
-303;67;65.37
-304;67;63.59
-305;67;62.41
-306;67;73.0
-307;68;334.0
-308;68;264.0
-309;68;239.0
-310;68;285.0
-311;68;228.0
-312;68;278.0
-313;68;498.0
-314;68;379.0
-315;69;410.0
-316;69;708.0
-317;69;313.0
-318;69;552.0
-319;69;462.0
-320;69;723.0
-321;70;69.0
-322;70;62.34
-323;70;60.11
-324;70;61.73
-325;70;54.8
-326;70;49.0
-327;70;53.46
-328;70;59.08
-329;70;47.52
-330;70;83.73
-331;71;0.0
-332;72;43.2
-333;72;62.92
-334;72;61.66
-335;73;81.0
-336;73;49.0
-337;73;64.0
-338;73;167.07
-339;73;75.07
-340;73;121.02
-341;74;60.61
-342;74;40.65
-343;74;70.59
-344;74;140.47
-345;74;127.24
-346;74;80.66
-347;74;127.69
-348;74;140.54
-349;75;83.39
-350;75;81.41
-351;75;78.97
-352;75;83.66
-353;75;83.68
-354;75;80.62
-355;76;84.15
-356;76;84.55
-357;76;85.96
-358;76;84.24
-359;77;78.82
-360;78;144.34
-361;78;110.29
-362;78;94.01
-363;79;231.75
-364;79;110.5
-365;79;179.88
-366;79;179.82
-367;79;81.3
-368;79;80.0
-369;79;82.23
-370;80;148.88
-371;80;122.59
-372;80;119.8
-373;80;100.21
-374;81;367.24
-375;81;322.42
-376;81;284.06
-377;82;158.6
-378;82;132.74
-379;83;46.11
-380;83;58.09
-381;83;45.72
-382;84;33.6
-383;84;46.75
-384;84;32.23
-385;84;30.25
-386;84;50.06
-387;85;56.34
-388;85;57.9
-389;86;205.88
-390;86;359.98
-391;86;203.25
-392;86;355.73
-393;86;203.58
-394;86;356.32
-395;87;179.61
-396;87;176.12
-397;88;157.53
-398;89;69.0
-399;89;70.0
-400;89;88.0
-401;90;0.0
-402;91;0.0
-403;92;0.0
-404;93;0.0
-405;94;0.0
-406;95;0.0
-407;96;0.0
-408;97;0.0
-409;98;0.0
-410;99;0.0
-411;100;0.0
-412;101;0.0
-413;102;0.0
-414;103;0.0
-415;104;0.0
-416;105;0.0
-417;106;0.0
-418;107;0.0
-419;108;0.0
-420;109;0.0
-421;110;0.0
-422;111;0.0
-423;112;0.0
-424;113;0.0
-425;114;0.0
-426;115;0.0
-427;116;0.0
-428;117;0.0
-429;118;0.0
-430;119;0.0
-431;120;54.0
-432;120;69.0
-433;120;88.0
-434;121;0.0
-435;122;0.0
-436;123;56.96
-437;123;69.0
-438;123;71.7
-439;123;55.0
-440;123;55.29
-441;124;98.31
-442;124;79.31
-443;125;133.11
-444;125;130.18
-445;125;113.2
-446;126;139.24
-447;127;131.62
-448;127;128.82
-449;127;101.28
-450;128;94.4
-451;129;0.0
-452;130;196.99
-453;130;194.42
-454;130;88.59
-455;130;120.33
-456;130;213.21
-457;130;164.19
-458;131;190.14
-459;131;166.05
-460;131;268.54
-461;131;266.37
-462;131;381.92
-463;131;222.29
-464;131;151.74
-465;131;271.89
-466;131;315.11
-467;131;402.38
-468;131;272.08
-469;132;181.48
-470;133;81.7
-471;133;90.11
-472;134;109.36
-473;134;83.94
-474;134;83.76
-475;134;128.55
-476;134;133.77
-477;134;132.68
-478;134;83.83
-479;134;83.79
-480;135;252.69
-481;135;711.24
-482;136;127.81
-483;136;256.91
-484;137;180.0
-485;137;95.5
-486;137;123.0
-487;138;53.0
-488;138;49.0
-489;138;78.0
-490;138;52.0
-491;139;287.3
-492;140;175.77
-493;140;157.76
-494;140;143.42
-495;141;160.38
-496;141;320.76
-497;142;151.5
-498;142;303.0
-499;143;160.51
-500;143;321.02
-501;144;97.28
-502;144;91.14
-503;144;66.89
-504;144;68.43
-505;144;62.44
-506;144;86.15
-507;145;348.5
-508;145;344.0
-509;145;282.5
-510;145;657.5
-511;145;498.5
-512;146;0.0
-513;147;0.0
-514;148;79.4
-515;148;59.93
-516;149;0.0
-517;150;0.0
-518;151;0.0
-519;152;0.0
-520;153;360.0
-521;153;676.72
-522;154;106.24
-523;154;116.14
-524;155;91.0
-525;155;83.4
-526;155;175.71
-527;155;160.17
-528;155;168.11
-529;156;84.26
-530;156;82.05
-531;157;207.77
-532;157;212.64
-533;157;412.42
-534;157;408.7
-535;157;220.75
-536;157;300.42
-537;158;117.5
-538;158;191.69
-539;159;117.5
-540;159;191.69
-541;160;278.14
-542;161;301.54
-543;162;143.58
-544;163;112.0
-545;163;85.0
-546;462;26.11
-547;462;38.68
-548;462;38.82
-549;462;52.78
-550;462;26.11
-551;462;38.32
-552;462;53.35
-553;463;26.11
-554;463;38.68
-555;463;38.82
-556;463;52.78
-557;463;26.11
-558;463;38.32
-559;463;53.35
+"id";"complex_id";"size";"description"
+1;1;39.0;"Studio Compacto: Design funcional para otimização de espaço."
+2;1;39.6;"Studio Plus: Um toque extra de metragem para maior liberdade."
+3;1;48.0;"Apartamento Essencial: Planta base com 1 dormitório bem distribuído."
+4;1;48.6;"Varanda Minimalista: O essencial com um respiro ao ar livre."
+5;1;49.12;"Conforto Otimizado: Espaço ideal para casal, sem desperdícios."
+6;1;49.56;"Planta Smart: Layout inteligente para máxima funcionalidade."
+7;1;50.0;"Nível Conforto: Suíte integrada e área de serviço discreta."
+8;1;59.24;"Opção Família Curta: 1 Suíte e sala ampliada."
+9;1;79.19;"Configuração Ampliada: Potencial para 2º dormitório ou home office."
+10;1;81.35;"Planta Master: 2 quartos e área social generosa."
+11;1;96.7;"Cobertura Baixa: O máximo de espaço interno na torre."
+12;2;196.0;"Conceito Aconchego: Planta com sala de estar e jantar integradas."
+13;2;197.0;"Design Contemporâneo: Planta levemente maior, ideal para personalização."
+14;2;201.0;"Elegância Funcional: Sala de TV e 3 suítes bem dimensionadas."
+15;2;306.0;"Alto Padrão: 4 suítes, varanda gourmet e elevador privativo."
+16;3;86.56;"Unidade Padrão: Distribuição clássica para famílias."
+17;4;311.51;"Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego."
+18;4;295.68;"Planta Premium: Sala principal com pé direito duplo e vista privilegiada."
+19;4;319.34;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+20;4;224.51;"Opção Varanda: Suítes com acesso direto à sacada."
+21;4;228.53;"Planta Garden: Unidade térrea com jardim privativo."
+22;4;197.25;"Elegância Funcional: 3 Suítes e área de serviço completa."
+23;4;183.87;"Unidade Padrão Conforto: Suíte master ampliada e varanda."
+24;4;203.81;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+25;4;139.39;"Planta Compacta Premium: 2 Suítes, ideal para quem busca praticidade."
+26;4;140.0;"Design Otimizado: Metragem aproveitada ao máximo."
+27;4;136.39;"Versão Essencial: O mais prático da categoria, sem abrir mão da qualidade."
+28;4;234.79;"Jardim Suspenso: Varanda ampla com potencial de paisagismo."
+29;4;223.0;"Ambientes Integrados: Fluxo livre entre sala e cozinha gourmet."
+30;4;242.42;"Exclusividade Total: A metragem mais completa da torre."
+31;4;168.43;"Otimizado Luxo: Espaço para adega e lavabo social."
+32;4;172.25;"Conforto Superior: Com closet na suíte principal."
+33;5;100.8;"Planta Superior: Acima de 100m² para maior liberdade de layout."
+34;5;143.61;"Loft Duplo: Pé direito alto com área íntima no mezanino."
+35;5;116.62;"Unidade Padrão: Com a metragem ideal para sua família."
+36;5;72.99;"Planta Compacta Plus: Studio ou 1 dormitório com área de serviço."
+37;5;190.0;"Cobertura Baixa: Terraço com potencial para jacuzzi."
+38;5;179.87;"Conforto King Size: Suítes amplas para camas maiores."
+39;5;135.1;"Design Modular: Paredes que permitem diferentes configurações."
+40;5;155.23;"Varanda Estendida: Perfeita para receber amigos."
+41;5;96.51;"Versão Essencial: O mais prático da categoria."
+42;5;72.62;"Studio Gourmet: Cozinha aberta e sala aconchegante."
+43;6;142.77;"Planta Master: 3 suítes e varanda técnica."
+44;6;156.58;"Varanda Estendida: Mais espaço para seu lazer."
+45;6;123.12;"Unidade Padrão: Distribuição clássica e funcional."
+46;6;116.37;"Design Otimizado: Planta com ambientes bem delimitados."
+47;6;115.82;"Conforto Essencial: A opção ideal para quem busca praticidade."
+48;6;94.47;"Compacto Funcional: Sala e cozinha integradas."
+49;6;94.12;"Versão Smart: Metragem inteligente para um dia a dia dinâmico."
+50;7;296.95;"Unidade Exclusiva: 3 suítes com ampla área social."
+51;8;107.56;"Planta Essencial: 2 dormitórios com varanda."
+52;9;26.11;"Micro Studio: Otimização máxima, ideal para investimento."
+53;9;38.68;"Studio Plus: Com espaço extra para bancada de trabalho."
+54;9;38.82;"Studio Conforto: Cozinha americana e área de serviço compacta."
+55;9;52.78;"Loft Urbano: Pé direito duplo com potencial para mezanino."
+56;9;26.11;"Micro Studio Versão B: Layout espelhado."
+57;9;38.32;"Studio Varanda: O essencial com um respiro ao ar livre."
+58;9;53.35;"Loft Garden: Unidade térrea com pequeno pátio."
+59;10;175.08;"Unidade Padrão: 3 Suítes, varanda gourmet e lavabo."
+60;11;162.24;"Planta Master: 4 dormitórios ou 3 suítes com escritório."
+61;12;172.7;"Conforto Ampliado: Mais espaço nas áreas sociais e íntimas."
+62;12;156.04;"Planta Padrão: 3 dormitórios, sendo 1 suíte."
+63;12;122.0;"Compacto Premium: 2 suítes e área social integrada."
+64;12;186.68;"Varanda Estendida: A maior sacada da torre."
+65;12;146.62;"Unidade Garden: Térreo com área externa privativa."
+66;12;142.27;"Design Otimizado: Ambientes bem definidos e funcionais."
+67;12;112.62;"Essencial Conforto: Opção mais econômica e inteligente."
+68;12;111.89;"Versão Smart: Metragem que surpreende na distribuição."
+69;12;180.37;"Nível Master: Closet na suíte principal e lavabo."
+70;12;175.32;"Elegância Funcional: Sala ampla com dois ambientes."
+71;12;182.41;"Exclusividade Total: Sala de jantar para 8 lugares."
+72;13;141.09;"Unidade Padrão: 3 dormitórios com varanda."
+73;13;125.37;"Compacto Premium: 2 suítes e lavabo."
+74;13;89.14;"Essencial Família: 2 quartos e área de serviço."
+75;13;213.69;"Cobertura Duplex: Terraço com churrasqueira e vista panorâmica."
+76;13;82.5;"Planta Smart: Otimização de espaços."
+77;13;54.33;"Studio Varanda: Ideal para jovens e investidores."
+78;13;58.03;"Studio Premium: Maior área social integrada."
+79;13;57.33;"Studio Conforto: Cozinha americana completa."
+80;13;59.83;"Studio Master: Mais espaço na área de descanso."
+81;13;56.13;"Studio Essencial: A melhor opção custo-benefício."
+82;13;55.51;"Studio Design: Planta flexível para diferentes layouts."
+83;14;164.42;"Unidade Padrão: 3 suítes com 2 vagas de garagem."
+84;15;39.6;"Studio Otimizado: Design funcional para o dia a dia."
+85;15;43.78;"Studio Plus: Com espaço extra para bancada de trabalho."
+86;15;38.82;"Studio Varanda: Um respiro ao ar livre."
+87;15;40.3;"Studio Conforto: Cozinha americana completa."
+88;15;43.9;"Studio Garden: Unidade térrea com pátio privativo."
+89;16;61.04;"Planta Essencial: 1 dormitório e área de serviço."
+90;16;52.75;"Compacto Funcional: Studio com design moderno."
+91;16;122.95;"Unidade Padrão: 2 suítes com lavabo e varanda."
+92;16;114.66;"Design Otimizado: O essencial para uma família."
+93;17;153.6;"Unidade Padrão: 3 suítes e varanda gourmet."
+94;17;260.02;"Cobertura Duplex: Área de lazer privativa no piso superior."
+95;18;168.14;"Planta Essencial: 3 dormitórios com suíte."
+96;18;309.54;"Planta Master: 4 suítes, varanda ampla e lavabo."
+97;19;39.09;"Studio Compacto: Ideal para investidores e primeira moradia."
+98;19;57.84;"Studio Premium: Com cozinha gourmet e varanda."
+99;19;46.25;"Studio Conforto: Espaço para home office ou leitura."
+100;20;98.33;"Unidade Padrão: 2 dormitórios com suíte e varanda."
+101;21;127.46;"Planta Essencial: 3 dormitórios e área de serviço."
+102;21;252.54;"Loft Duplex: O charme do pé direito duplo com 2 suítes."
+103;22;91.52;"Unidade Padrão: 2 dormitórios com varanda."
+104;23;109.85;"Planta Essencial: 2 suítes e área social integrada."
+105;24;64.0;"Studio Plus: Com espaço extra para bancada de trabalho."
+106;24;62.5;"Studio Essencial: A melhor opção custo-benefício."
+107;24;69.5;"Studio Premium: Mais espaço na área de descanso e estar."
+108;25;55.93;"Studio Compacto: Design funcional e moderno."
+109;25;119.35;"Unidade Padrão: 2 suítes com lavabo e varanda."
+110;25;116.05;"Design Otimizado: O essencial para uma família."
+111;26;421.82;"Planta Master: 4 suítes, varanda ampla e elevador privativo."
+112;26;713.03;"Cobertura Exclusiva: O maior apartamento do empreendimento."
+113;27;68.19;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+114;27;48.08;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+115;27;63.8;"Essencial Conforto: Cozinha americana completa."
+116;27;76.1;"Unidade Padrão: 2 dormitórios e área de serviço discreta."
+117;27;122.16;"Planta Varanda Gourmet: Ideal para receber amigos."
+118;27;118.46;"Design Otimizado: Ambientes bem definidos e funcionais."
+119;27;123.58;"Nível Conforto: Suíte master ampliada e lavabo."
+120;27;124.94;"Exclusividade Total: A metragem mais completa da torre."
+121;27;127.07;"Cobertura Baixa: O máximo de espaço interno na torre."
+122;27;121.57;"Versão Smart: Metragem que surpreende na distribuição."
+123;27;120.75;"Jardim Suspenso: Varanda ampla com potencial de paisagismo."
+124;27;120.33;"Planta Flexível: Paredes que permitem diferentes configurações."
+125;27;118.15;"Otimizado Luxo: Espaço para adega e lavabo social."
+126;27;88.03;"Planta Família Curta: 2 dormitórios e sala de jantar."
+127;27;85.32;"Versão Essencial: O mais prático da categoria."
+128;27;86.2;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+129;27;83.14;"Design Minimalista: Foco na funcionalidade."
+130;27;113.03;"Planta Garden: Unidade térrea com jardim privativo."
+131;27;126.18;"Planta Master: 2 suítes e área de serviço completa."
+132;27;103.12;"Unidade Superior: Acima de 100m² para maior liberdade de layout."
+133;28;79.8;"Planta Padrão: 2 dormitórios com varanda."
+134;28;60.36;"Compacto Funcional: Studio com design moderno."
+135;29;62.22;"Studio Essencial: A melhor opção custo-benefício."
+136;29;86.52;"Planta Padrão: 2 dormitórios com suíte."
+137;30;77.11;"Unidade Padrão: 2 dormitórios e varanda."
+138;30;76.04;"Design Otimizado: Ambientes bem definidos e funcionais."
+139;31;90.28;"Planta Essencial: 2 suítes e área social integrada."
+140;32;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+141;33;57.63;"Studio Compacto: Ideal para investidores e primeira moradia."
+142;33;77.1;"Unidade Padrão: 2 dormitórios com varanda."
+143;34;84.38;"Planta Essencial: 2 dormitórios e área de serviço."
+144;34;78.08;"Design Otimizado: Ambientes bem definidos e funcionais."
+145;35;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+146;36;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+147;37;235.86;"Planta Padrão: 3 suítes, varanda ampla e lavabo."
+148;37;246.65;"Conforto Ampliado: Mais espaço nas áreas sociais e íntimas."
+149;37;333.92;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+150;37;340.01;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+151;38;162.02;"Unidade Padrão: 3 dormitórios, sendo 1 suíte."
+152;38;164.88;"Design Otimizado: Planta com ambientes bem delimitados."
+153;39;94.12;"Planta Essencial: 2 dormitórios e varanda."
+154;40;84.17;"Unidade Padrão: 2 dormitórios com suíte."
+155;40;80.2;"Design Otimizado: O essencial para uma família."
+156;41;128.16;"Planta Essencial: 3 dormitórios e área de serviço."
+157;42;106.29;"Unidade Padrão: 2 suítes com lavabo."
+158;42;109.32;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+159;42;218.31;"Cobertura Duplex: Área de lazer privativa no piso superior."
+160;43;75.0;"Unidade Padrão: 2 dormitórios com varanda."
+161;43;74.0;"Design Otimizado: Ambientes bem definidos e funcionais."
+162;44;111.23;"Planta Essencial: 2 suítes e área social integrada."
+163;44;201.46;"Loft Duplex: O charme do pé direito duplo com 2 suítes."
+164;45;65.68;"Compacto Funcional: Sala e cozinha integradas."
+165;45;53.9;"Studio Essencial: A melhor opção custo-benefício."
+166;45;47.94;"Studio Compacto: Otimização máxima, ideal para investimento."
+167;45;50.65;"Studio Varanda: O essencial com um respiro ao ar livre."
+168;46;72.22;"Unidade Padrão: 2 dormitórios com varanda."
+169;46;77.03;"Conforto Otimizado: Espaço ideal para casal."
+170;46;71.68;"Design Minimalista: Foco na funcionalidade."
+171;46;99.56;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+172;46;108.78;"Varanda Estendida: Perfeita para receber amigos."
+173;47;58.14;"Studio Premium: Com cozinha gourmet e varanda."
+174;47;66.23;"Unidade Padrão: 1 suíte e sala de estar aconchegante."
+175;48;61.3;"Studio Plus: Com espaço extra para bancada de trabalho."
+176;48;73.02;"Unidade Padrão: 2 dormitórios com varanda."
+177;48;59.15;"Studio Conforto: Cozinha americana completa."
+178;48;34.22;"Micro Studio: Otimização máxima, ideal para investimento."
+179;48;36.02;"Micro Studio Varanda: Um toque de ar livre."
+180;49;57.0;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+181;49;63.0;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+182;49;64.0;"Essencial Conforto: Cozinha americana completa."
+183;49;75.0;"Unidade Padrão: 2 dormitórios e área de serviço discreta."
+184;49;76.0;"Planta Família Curta: 2 dormitórios e sala de jantar."
+185;49;87.0;"Design Otimizado: Ambientes bem definidos e funcionais."
+186;49;79.0;"Versão Smart: Metragem que surpreende na distribuição."
+187;49;163.0;"Varanda Estendida: Perfeita para receber amigos."
+188;49;106.0;"Nível Conforto: Suíte master ampliada e lavabo."
+189;49;108.0;"Exclusividade Total: A metragem mais completa da torre."
+190;49;111.0;"Jardim Suspenso: Varanda ampla com potencial de paisagismo."
+191;49;115.0;"Cobertura Baixa: O máximo de espaço interno na torre."
+192;49;230.0;"Cobertura Duplex: Área de lazer privativa no piso superior."
+193;50;91.0;"Unidade Padrão: 2 dormitórios com varanda."
+194;50;94.3;"Conforto Otimizado: Espaço ideal para casal."
+195;50;91.62;"Design Minimalista: Foco na funcionalidade."
+196;50;94.89;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+197;50;93.69;"Versão Essencial: O mais prático da categoria."
+198;50;96.96;"Varanda Estendida: Perfeita para receber amigos."
+199;51;96.43;"Unidade Padrão: 2 suítes com varanda."
+200;51;74.22;"Compacto Funcional: Studio com design moderno."
+201;51;86.83;"Planta Essencial: 2 dormitórios com suíte."
+202;51;65.57;"Studio Essencial: A melhor opção custo-benefício."
+203;52;110.24;"Unidade Padrão: 3 dormitórios com suíte e varanda."
+204;52;105.85;"Design Otimizado: Ambientes bem definidos e funcionais."
+205;52;133.14;"Planta Master: 3 suítes com lavabo."
+206;53;238.0;"Planta Padrão: 4 suítes, varanda ampla e lavabo."
+207;53;425.0;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+208;53;200.0;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+209;53;387.5;"Cobertura Baixa: O máximo de espaço interno na torre."
+210;53;389.8;"Planta Garden: Unidade térrea com jardim privativo."
+211;53;328.8;"Design Smart: Com divisória inteligente e cômodos bem definidos."
+212;53;636.8;"Exclusividade Total: Sala de jantar para 12 lugares."
+213;53;330.8;"Jardim Suspenso: Varanda ampla com potencial de paisagismo."
+214;54;185.45;"Planta Padrão: 3 suítes, varanda ampla e lavabo."
+215;54;191.65;"Conforto Ampliado: Mais espaço nas áreas sociais e íntimas."
+216;54;279.75;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+217;54;188.93;"Design Otimizado: Ambientes bem definidos e funcionais."
+218;54;200.76;"Nível Master: Closet na suíte principal e lavabo."
+219;54;217.79;"Varanda Estendida: A maior sacada da torre."
+220;54;124.86;"Compacto Premium: 2 suítes e área social integrada."
+221;54;98.02;"Planta Essencial: 2 dormitórios com suíte e varanda."
+222;54;264.59;"Elegância Funcional: Sala ampla com dois ambientes."
+223;54;150.81;"Unidade Garden: Térreo com área externa privativa."
+224;54;154.17;"Design Modular: Paredes que permitem diferentes configurações."
+225;54;137.91;"Versão Essencial: O mais prático da categoria."
+226;54;152.85;"Otimizado Luxo: Espaço para adega e lavabo social."
+227;54;123.82;"Planta Flexível: Paredes que permitem diferentes configurações."
+228;54;439.61;"Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego."
+229;54;344.25;"Planta Premium: Sala principal com pé direito duplo e vista privilegiada."
+230;55;261.14;"Planta Padrão: 4 suítes, varanda ampla e lavabo."
+231;55;258.0;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+232;55;500.12;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+233;55;494.93;"Cobertura Exclusiva: O maior apartamento do empreendimento."
+234;56;202.0;"Unidade Padrão: 3 suítes e varanda gourmet."
+235;57;107.42;"Planta Padrão: 2 suítes com varanda."
+236;57;78.64;"Compacto Funcional: Studio com design moderno."
+237;57;79.06;"Studio Plus: Com espaço extra para bancada de trabalho."
+238;57;150.0;"Planta Master: 3 suítes com lavabo."
+239;57;158.02;"Varanda Estendida: A maior sacada da torre."
+240;57;152.82;"Nível Master: Closet na suíte principal e lavabo."
+241;58;106.76;"Unidade Padrão: 2 suítes com varanda."
+242;58;104.43;"Design Otimizado: Ambientes bem definidos e funcionais."
+243;58;106.47;"Conforto Otimizado: Espaço ideal para casal."
+244;58;98.91;"Planta Essencial: 2 dormitórios com suíte e varanda."
+245;58;76.3;"Compacto Funcional: Studio com design moderno."
+246;58;69.64;"Studio Plus: Com espaço extra para bancada de trabalho."
+247;58;64.12;"Studio Essencial: A melhor opção custo-benefício."
+248;58;146.14;"Planta Master: 3 suítes com lavabo."
+249;59;174.29;"Planta Padrão: 3 suítes, varanda ampla e lavabo."
+250;59;150.49;"Compacto Premium: 2 suítes e área social integrada."
+251;59;192.55;"Conforto Ampliado: Mais espaço nas áreas sociais e íntimas."
+252;59;248.98;"Elegância Funcional: Sala ampla com dois ambientes."
+253;59;329.89;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+254;60;66.38;"Unidade Padrão: 2 dormitórios com varanda."
+255;60;50.31;"Studio Compacto: Design funcional e moderno."
+256;60;50.63;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+257;61;66.66;"Unidade Padrão: 2 dormitórios com varanda."
+258;61;66.38;"Conforto Otimizado: Espaço ideal para casal."
+259;61;63.02;"Design Minimalista: Foco na funcionalidade."
+260;61;66.4;"Planta Essencial: 2 dormitórios e área de serviço."
+261;62;77.63;"Unidade Padrão: 2 dormitórios com varanda."
+262;62;66.74;"Compacto Funcional: Studio com design moderno."
+263;62;50.05;"Studio Compacto: Otimização máxima, ideal para investimento."
+264;62;135.19;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+265;62;108.09;"Design Otimizado: Ambientes bem definidos e funcionais."
+266;62;213.94;"Cobertura Duplex: Área de lazer privativa no piso superior."
+267;62;168.64;"Varanda Estendida: Perfeita para receber amigos."
+268;62;70.27;"Studio Plus: Com espaço extra para bancada de trabalho."
+269;63;91.21;"Unidade Padrão: 2 suítes com varanda."
+270;63;96.16;"Conforto Otimizado: Espaço ideal para casal."
+271;63;78.36;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+272;63;88.64;"Design Otimizado: Ambientes bem definidos e funcionais."
+273;63;48.2;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+274;63;74.05;"Essencial Conforto: Cozinha americana completa."
+275;63;68.02;"Studio Essencial: A melhor opção custo-benefício."
+276;63;42.24;"Micro Studio: Otimização máxima, ideal para investimento."
+277;63;68.7;"Studio Plus: Com espaço extra para bancada de trabalho."
+278;63;67.72;"Studio Design: Planta flexível para diferentes layouts."
+279;63;142.37;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+280;63;135.03;"Varanda Estendida: Perfeita para receber amigos."
+281;63;110.65;"Nível Conforto: Suíte master ampliada e lavabo."
+282;63;82.21;"Planta Família Curta: 2 dormitórios e sala de jantar."
+283;63;79.2;"Versão Smart: Metragem que surpreende na distribuição."
+284;63;172.17;"Cobertura Baixa: O máximo de espaço interno na torre."
+285;63;68.71;"Jardim Suspenso: Varanda ampla com potencial de paisagismo."
+286;63;177.6;"Exclusividade Total: A metragem mais completa da torre."
+287;63;145.13;"Otimizado Luxo: Espaço para adega e lavabo social."
+288;63;142.72;"Planta Flexível: Paredes que permitem diferentes configurações."
+289;64;339.49;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+290;64;206.47;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+291;64;350.63;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+292;65;185.05;"Planta Padrão: 3 suítes, varanda ampla e lavabo."
+293;65;177.48;"Design Otimizado: Ambientes bem definidos e funcionais."
+294;65;176.97;"Conforto Ampliado: Mais espaço nas áreas sociais e íntimas."
+295;65;185.56;"Nível Master: Closet na suíte principal e lavabo."
+296;65;342.82;"Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego."
+297;65;136.05;"Compacto Premium: 2 suítes e área social integrada."
+298;65;145.77;"Unidade Garden: Térreo com área externa privativa."
+299;65;153.08;"Design Modular: Paredes que permitem diferentes configurações."
+300;66;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+301;67;75.5;"Unidade Padrão: 2 dormitórios com varanda."
+302;67;62.4;"Compacto Funcional: Studio com design moderno."
+303;67;65.37;"Studio Plus: Com espaço extra para bancada de trabalho."
+304;67;63.59;"Studio Conforto: Cozinha americana completa."
+305;67;62.41;"Studio Essencial: A melhor opção custo-benefício."
+306;67;73.0;"Design Minimalista: Foco na funcionalidade."
+307;68;334.0;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+308;68;264.0;"Elegância Funcional: Sala ampla com dois ambientes."
+309;68;239.0;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+310;68;285.0;"Nível Master: Closet na suíte principal e lavabo."
+311;68;228.0;"Planta Varanda Gourmet: Ideal para receber amigos."
+312;68;278.0;"Varanda Estendida: A maior sacada da torre."
+313;68;498.0;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+314;68;379.0;"Cobertura Baixa: O máximo de espaço interno na torre."
+315;69;410.0;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+316;69;708.0;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+317;69;313.0;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+318;69;552.0;"Cobertura Exclusiva: O maior apartamento do empreendimento."
+319;69;462.0;"Nível Master: Closet na suíte principal e lavabo."
+320;69;723.0;"Exclusividade Total: Sala de jantar para 12 lugares."
+321;70;69.0;"Unidade Padrão: 2 dormitórios com varanda."
+322;70;62.34;"Compacto Funcional: Studio com design moderno."
+323;70;60.11;"Studio Compacto: Otimização máxima, ideal para investimento."
+324;70;61.73;"Studio Plus: Com espaço extra para bancada de trabalho."
+325;70;54.8;"Studio Essencial: A melhor opção custo-benefício."
+326;70;49.0;"Micro Studio: Otimização máxima, ideal para investimento."
+327;70;53.46;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+328;70;59.08;"Studio Conforto: Cozinha americana completa."
+329;70;47.52;"Design Minimalista: Foco na funcionalidade."
+330;70;83.73;"Planta Família Curta: 2 dormitórios e sala de jantar."
+331;71;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+332;72;43.2;"Studio Compacto: Design funcional e moderno."
+333;72;62.92;"Unidade Padrão: 1 suíte e sala de estar aconchegante."
+334;72;61.66;"Studio Plus: Com espaço extra para bancada de trabalho."
+335;73;81.0;"Unidade Padrão: 2 dormitórios com varanda."
+336;73;49.0;"Studio Compacto: Otimização máxima, ideal para investimento."
+337;73;64.0;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+338;73;167.07;"Planta Master: 3 suítes com lavabo."
+339;73;75.07;"Design Otimizado: Ambientes bem definidos e funcionais."
+340;73;121.02;"Varanda Estendida: Perfeita para receber amigos."
+341;74;60.61;"Unidade Padrão: 2 dormitórios com varanda."
+342;74;40.65;"Studio Compacto: Design funcional e moderno."
+343;74;70.59;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+344;74;140.47;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+345;74;127.24;"Varanda Estendida: Perfeita para receber amigos."
+346;74;80.66;"Design Otimizado: Ambientes bem definidos e funcionais."
+347;74;127.69;"Nível Conforto: Suíte master ampliada e lavabo."
+348;74;140.54;"Cobertura Baixa: O máximo de espaço interno na torre."
+349;75;83.39;"Unidade Padrão: 2 dormitórios com varanda."
+350;75;81.41;"Design Otimizado: Ambientes bem definidos e funcionais."
+351;75;78.97;"Conforto Otimizado: Espaço ideal para casal."
+352;75;83.66;"Planta Essencial: 2 dormitórios e área de serviço."
+353;75;83.68;"Versão Smart: Metragem que surpreende na distribuição."
+354;75;80.62;"Design Minimalista: Foco na funcionalidade."
+355;76;84.15;"Unidade Padrão: 2 dormitórios com varanda."
+356;76;84.55;"Conforto Otimizado: Espaço ideal para casal."
+357;76;85.96;"Planta Essencial: 2 dormitórios e área de serviço."
+358;76;84.24;"Design Otimizado: Ambientes bem definidos e funcionais."
+359;77;78.82;"Unidade Padrão: 2 dormitórios com varanda."
+360;78;144.34;"Planta Master: 3 suítes com lavabo."
+361;78;110.29;"Unidade Padrão: 2 suítes com varanda."
+362;78;94.01;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+363;79;231.75;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+364;79;110.5;"Compacto Premium: 2 suítes e área social integrada."
+365;79;179.88;"Unidade Padrão: 3 suítes, varanda ampla e lavabo."
+366;79;179.82;"Design Otimizado: Ambientes bem definidos e funcionais."
+367;79;81.3;"Planta Essencial: 2 dormitórios com suíte."
+368;79;80.0;"Compacto Funcional: Studio com design moderno."
+369;79;82.23;"Studio Plus: Com espaço extra para bancada de trabalho."
+370;80;148.88;"Planta Master: 3 suítes com lavabo."
+371;80;122.59;"Unidade Padrão: 2 suítes com varanda."
+372;80;119.8;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+373;80;100.21;"Design Otimizado: Ambientes bem definidos e funcionais."
+374;81;367.24;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+375;81;322.42;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+376;81;284.06;"Elegância Funcional: Sala ampla com dois ambientes."
+377;82;158.6;"Unidade Padrão: 3 dormitórios, sendo 1 suíte."
+378;82;132.74;"Compacto Premium: 2 suítes e área social integrada."
+379;83;46.11;"Studio Compacto: Otimização máxima, ideal para investimento."
+380;83;58.09;"Unidade Padrão: 1 suíte e sala de estar aconchegante."
+381;83;45.72;"Design Minimalista: Foco na funcionalidade."
+382;84;33.6;"Micro Studio: Otimização máxima, ideal para investimento."
+383;84;46.75;"Studio Compacto: Design funcional e moderno."
+384;84;32.23;"Micro Studio Versão B: Layout espelhado."
+385;84;30.25;"Nano Studio: O menor e mais prático."
+386;84;50.06;"Studio Plus: Com espaço extra para bancada de trabalho."
+387;85;56.34;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+388;85;57.9;"Studio Conforto: Cozinha americana completa."
+389;86;205.88;"Planta Padrão: 3 suítes, varanda ampla e lavabo."
+390;86;359.98;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+391;86;203.25;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+392;86;355.73;"Design Otimizado: Ambientes bem definidos e funcionais."
+393;86;203.58;"Elegância Funcional: Sala ampla com dois ambientes."
+394;86;356.32;"Varanda Estendida: A maior sacada da torre."
+395;87;179.61;"Unidade Padrão: 3 suítes, varanda ampla e lavabo."
+396;87;176.12;"Design Otimizado: Ambientes bem definidos e funcionais."
+397;88;157.53;"Planta Essencial: 3 dormitórios com suíte."
+398;89;69.0;"Unidade Padrão: 2 dormitórios com varanda."
+399;89;70.0;"Conforto Otimizado: Espaço ideal para casal."
+400;89;88.0;"Planta Família Curta: 2 dormitórios e sala de jantar."
+401;90;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+402;91;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+403;92;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+404;93;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+405;94;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+406;95;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+407;96;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+408;97;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+409;98;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+410;99;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+411;100;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+412;101;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+413;102;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+414;103;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+415;104;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+416;105;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+417;106;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+418;107;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+419;108;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+420;109;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+421;110;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+422;111;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+423;112;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+424;113;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+425;114;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+426;115;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+427;116;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+428;117;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+429;118;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+430;119;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+431;120;54.0;"Studio Compacto: Design funcional e moderno."
+432;120;69.0;"Unidade Padrão: 2 dormitórios com varanda."
+433;120;88.0;"Planta Família Curta: 2 dormitórios e sala de jantar."
+434;121;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+435;122;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+436;123;56.96;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+437;123;69.0;"Unidade Padrão: 2 dormitórios com varanda."
+438;123;71.7;"Conforto Otimizado: Espaço ideal para casal."
+439;123;55.0;"Studio Compacto: Design funcional e moderno."
+440;123;55.29;"Studio Conforto: Cozinha americana completa."
+441;124;98.31;"Unidade Padrão: 2 suítes com varanda."
+442;124;79.31;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+443;125;133.11;"Planta Master: 3 suítes com lavabo."
+444;125;130.18;"Unidade Padrão: 2 suítes com varanda."
+445;125;113.2;"Design Otimizado: Ambientes bem definidos e funcionais."
+446;126;139.24;"Planta Essencial: 3 dormitórios e área de serviço."
+447;127;131.62;"Planta Master: 3 suítes com lavabo."
+448;127;128.82;"Unidade Padrão: 2 suítes com varanda."
+449;127;101.28;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+450;128;94.4;"Unidade Padrão: 2 dormitórios com varanda."
+451;129;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+452;130;196.99;"Planta Master: 4 dormitórios ou 3 suítes com escritório."
+453;130;194.42;"Unidade Padrão: 3 suítes, varanda ampla e lavabo."
+454;130;88.59;"Planta Essencial: 2 dormitórios com suíte."
+455;130;120.33;"Compacto Premium: 2 suítes e área social integrada."
+456;130;213.21;"Varanda Estendida: A maior sacada da torre."
+457;130;164.19;"Design Otimizado: Ambientes bem definidos e funcionais."
+458;131;190.14;"Planta Padrão: 3 suítes, varanda ampla e lavabo."
+459;131;166.05;"Compacto Premium: 2 suítes e área social integrada."
+460;131;268.54;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+461;131;266.37;"Conforto Ampliado: Mais espaço nas áreas sociais e íntimas."
+462;131;381.92;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+463;131;222.29;"Nível Master: Closet na suíte principal e lavabo."
+464;131;151.74;"Design Otimizado: Ambientes bem definidos e funcionais."
+465;131;271.89;"Elegância Funcional: Sala ampla com dois ambientes."
+466;131;315.11;"Jardim Suspenso: Varanda ampla com potencial de paisagismo."
+467;131;402.38;"Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego."
+468;131;272.08;"Exclusividade Total: A metragem mais completa da torre."
+469;132;181.48;"Unidade Padrão: 3 suítes, varanda ampla e lavabo."
+470;133;81.7;"Unidade Padrão: 2 dormitórios com varanda."
+471;133;90.11;"Planta Família Curta: 2 dormitórios e sala de jantar."
+472;134;109.36;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+473;134;83.94;"Unidade Padrão: 2 dormitórios com varanda."
+474;134;83.76;"Design Otimizado: Ambientes bem definidos e funcionais."
+475;134;128.55;"Varanda Estendida: Perfeita para receber amigos."
+476;134;133.77;"Nível Conforto: Suíte master ampliada e lavabo."
+477;134;132.68;"Otimizado Luxo: Espaço para adega e lavabo social."
+478;134;83.83;"Conforto Otimizado: Espaço ideal para casal."
+479;134;83.79;"Planta Essencial: 2 dormitórios e área de serviço."
+480;135;252.69;"Unidade Padrão: 3 suítes, varanda ampla e lavabo."
+481;135;711.24;"Cobertura Exclusiva: O maior apartamento do empreendimento."
+482;136;127.81;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+483;136;256.91;"Cobertura Duplex: Área de lazer privativa no piso superior."
+484;137;180.0;"Planta Master: 4 dormitórios ou 3 suítes com escritório."
+485;137;95.5;"Unidade Padrão: 2 suítes com varanda."
+486;137;123.0;"Compacto Premium: 2 suítes e área social integrada."
+487;138;53.0;"Studio Compacto: Design funcional e moderno."
+488;138;49.0;"Micro Studio: Otimização máxima, ideal para investimento."
+489;138;78.0;"Unidade Padrão: 2 dormitórios com varanda."
+490;138;52.0;"Studio Varanda: Otimização de espaço com respiro ao ar livre."
+491;139;287.3;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+492;140;175.77;"Unidade Padrão: 3 suítes, varanda ampla e lavabo."
+493;140;157.76;"Design Otimizado: Ambientes bem definidos e funcionais."
+494;140;143.42;"Compacto Premium: 2 suítes e área social integrada."
+495;141;160.38;"Unidade Padrão: 3 dormitórios, sendo 1 suíte."
+496;141;320.76;"Cobertura Duplex: Área de lazer privativa no piso superior."
+497;142;151.5;"Unidade Padrão: 3 dormitórios, sendo 1 suíte."
+498;142;303.0;"Cobertura Duplex: Área de lazer privativa no piso superior."
+499;143;160.51;"Unidade Padrão: 3 dormitórios, sendo 1 suíte."
+500;143;321.02;"Cobertura Duplex: Área de lazer privativa no piso superior."
+501;144;97.28;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+502;144;91.14;"Unidade Padrão: 2 suítes com varanda."
+503;144;66.89;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+504;144;68.43;"Studio Plus: Com espaço extra para bancada de trabalho."
+505;144;62.44;"Studio Essencial: A melhor opção custo-benefício."
+506;144;86.15;"Design Otimizado: Ambientes bem definidos e funcionais."
+507;145;348.5;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+508;145;344.0;"Conceito Aconchego: Sala de estar e jantar com iluminação natural."
+509;145;282.5;"Elegância Funcional: Sala ampla com dois ambientes."
+510;145;657.5;"Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório."
+511;145;498.5;"Cobertura Baixa: O máximo de espaço interno na torre."
+512;146;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+513;147;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+514;148;79.4;"Unidade Padrão: 2 dormitórios com varanda."
+515;148;59.93;"Compacto Funcional: Studio com design moderno."
+516;149;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+517;150;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+518;151;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+519;152;0.0;"Planta Conceitual: Para desenvolvimento futuro ou customização extrema."
+520;153;360.0;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+521;153;676.72;"Cobertura Exclusiva: O maior apartamento do empreendimento."
+522;154;106.24;"Unidade Padrão: 2 suítes com varanda."
+523;154;116.14;"Planta Master: 3 dormitórios ou 2 suítes com escritório."
+524;155;91.0;"Planta Essencial: 2 dormitórios com suíte."
+525;155;83.4;"Compacto Funcional: Studio com design moderno."
+526;155;175.71;"Planta Master: 3 suítes com lavabo."
+527;155;160.17;"Unidade Padrão: 3 dormitórios, sendo 1 suíte."
+528;155;168.11;"Varanda Estendida: Perfeita para receber amigos."
+529;156;84.26;"Unidade Padrão: 2 dormitórios com varanda."
+530;156;82.05;"Design Otimizado: Ambientes bem definidos e funcionais."
+531;157;207.77;"Planta Master: 4 dormitórios ou 3 suítes com escritório."
+532;157;212.64;"Unidade Padrão: 3 suítes, varanda ampla e lavabo."
+533;157;412.42;"Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego."
+534;157;408.7;"Planta Premium: Sala principal com pé direito duplo e vista privilegiada."
+535;157;220.75;"Nível Master: Closet na suíte principal e lavabo."
+536;157;300.42;"Elegância Funcional: Sala ampla com dois ambientes."
+537;158;117.5;"Unidade Padrão: 2 suítes com varanda."
+538;158;191.69;"Planta Master: 3 suítes com lavabo."
+539;159;117.5;"Unidade Padrão: 2 suítes com varanda."
+540;159;191.69;"Planta Master: 3 suítes com lavabo."
+541;160;278.14;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+542;161;301.54;"Planta Master: 4 suítes, varanda gourmet e elevador privativo."
+543;162;143.58;"Unidade Padrão: 3 dormitórios, sendo 1 suíte."
+544;163;112.0;"Unidade Padrão: 2 suítes com varanda."
+545;163;85.0;"Compacto Premium: 1 suíte e sala de estar aconchegante."
+546;462;26.11;"Micro Studio: Otimização máxima, ideal para investimento."
+547;462;38.68;"Studio Plus: Com espaço extra para bancada de trabalho."
+548;462;38.82;"Studio Conforto: Cozinha americana e área de serviço compacta."
+549;462;52.78;"Loft Urbano: Pé direito duplo com potencial para mezanino."
+550;462;26.11;"Micro Studio Versão B: Layout espelhado."
+551;462;38.32;"Studio Varanda: O essencial com um respiro ao ar livre."
+552;462;53.35;"Loft Garden: Unidade térrea com pequeno pátio."
+553;463;26.11;"Micro Studio: Otimização máxima, ideal para investimento."
+554;463;38.68;"Studio Plus: Com espaço extra para bancada de trabalho."
+555;463;38.82;"Studio Conforto: Cozinha americana e área de serviço compacta."
+556;463;52.78;"Loft Urbano: Pé direito duplo com potencial para mezanino."
+557;463;26.11;"Micro Studio Versão B: Layout espelhado."
+558;463;38.32;"Studio Varanda: O essencial com um respiro ao ar livre."
+559;463;53.35;"Loft Garden: Unidade térrea com pequeno pátio."

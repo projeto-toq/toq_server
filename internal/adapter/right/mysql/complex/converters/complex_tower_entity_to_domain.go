@@ -33,7 +33,8 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 		if !ok {
 			return nil, fmt.Errorf("convert floors to int64: %T", entity[3])
 		}
-		complexTower.SetFloors(int(floors))
+		v := int(floors)
+		complexTower.SetFloors(&v)
 	}
 
 	if entity[4] != nil {
@@ -41,7 +42,8 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 		if !ok {
 			return nil, fmt.Errorf("convert total_units to int64: %T", entity[4])
 		}
-		complexTower.SetTotalUnits(int(total_units))
+		v := int(total_units)
+		complexTower.SetTotalUnits(&v)
 	}
 
 	if entity[5] != nil {
@@ -49,7 +51,8 @@ func ComplexTowerEntityToDomain(entity []any) (complexTower complexmodel.Complex
 		if !ok {
 			return nil, fmt.Errorf("convert units_per_floor to int64: %T", entity[5])
 		}
-		complexTower.SetUnitsPerFloor(int(units_per_floor))
+		v := int(units_per_floor)
+		complexTower.SetUnitsPerFloor(&v)
 	}
 
 	return

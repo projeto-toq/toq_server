@@ -1,0 +1,77 @@
+package complexservices
+
+import (
+	"context"
+
+	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
+	repository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/complex_repository"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
+)
+
+// ListComplexZipCodes retorna os CEPs cadastrados para um empreendimento.
+func (cs *complexService) ListComplexZipCodes(ctx context.Context, filter ListComplexZipCodesInput) ([]complexmodel.ComplexZipCodeInterface, error) {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return nil, utils.InternalError("")
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	if filter.ComplexID > 0 {
+		if err := ensurePositiveID("complexId", filter.ComplexID); err != nil {
+			return nil, err
+		}
+	}
+
+	var normalizedZip string
+	if filter.ZipCode != "" {
+		normalizedZip, err = normalizeAndValidateZip(filter.ZipCode)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	page, limit := sanitizePagination(filter.Page, filter.Limit)
+	offset := (page - 1) * limit
+
+	params := repository.ListComplexZipCodesParams{
+		ComplexID: filter.ComplexID,
+		ZipCode:   normalizedZip,
+		Limit:     limit,
+		Offset:    offset,
+	}
+
+	tx, txErr := cs.gsi.StartTransaction(ctx)
+	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("complex.zip.list.tx_start_error", "err", txErr)
+		return nil, utils.InternalError("")
+	}
+	success := false
+	defer func() {
+		if !success {
+			if rbErr := cs.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
+				logger.Error("complex.zip.list.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
+
+	zipCodes, err := cs.complexRepository.ListComplexZipCodes(ctx, tx, params)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("complex.zip.list.repo_error", "err", err)
+		return nil, utils.InternalError("")
+	}
+
+	if cmErr := cs.gsi.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
+		logger.Error("complex.zip.list.tx_commit_error", "err", cmErr)
+		return nil, utils.InternalError("")
+	}
+
+	success = true
+	return zipCodes, nil
+}

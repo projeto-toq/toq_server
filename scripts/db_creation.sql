@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`complex_sizes` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `complex_id` INT UNSIGNED NOT NULL,
   `size` FLOAT UNSIGNED NOT NULL,
+  `description` VARCHAR(255) NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_complex_sizes_idx` (`complex_id` ASC) VISIBLE,
   CONSTRAINT `fk_complex_sizes`

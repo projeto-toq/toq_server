@@ -4,9 +4,9 @@ type complexTower struct {
 	id            int64
 	complexID     int64
 	tower         string
-	floors        int
-	totalUnits    int
-	unitsPerFloor int
+	floors        *int
+	totalUnits    *int
+	unitsPerFloor *int
 }
 
 func (ct *complexTower) ID() int64 {
@@ -33,26 +33,26 @@ func (ct *complexTower) SetTower(tower string) {
 	ct.tower = tower
 }
 
-func (ct *complexTower) Floors() int {
+func (ct *complexTower) Floors() *int {
 	return ct.floors
 }
 
-func (ct *complexTower) SetFloors(floors int) {
+func (ct *complexTower) SetFloors(floors *int) {
 	ct.floors = floors
 }
 
-func (ct *complexTower) TotalUnits() int {
+func (ct *complexTower) TotalUnits() *int {
 	return ct.totalUnits
 }
 
-func (ct *complexTower) SetTotalUnits(totalUnits int) {
+func (ct *complexTower) SetTotalUnits(totalUnits *int) {
 	ct.totalUnits = totalUnits
 }
 
-func (ct *complexTower) UnitsPerFloor() int {
+func (ct *complexTower) UnitsPerFloor() *int {
 	return ct.unitsPerFloor
 }
 
-func (ct *complexTower) SetUnitsPerFloor(unitsPerFloor int) {
+func (ct *complexTower) SetUnitsPerFloor(unitsPerFloor *int) {
 	ct.unitsPerFloor = unitsPerFloor
 }

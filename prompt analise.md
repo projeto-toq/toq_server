@@ -8,12 +8,18 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 ## 2) Requisição
 Continuando com a criação do toq_server, precisamos
 
-- Adicionar nova rota GET HTTP para listar os tamanhos disponíveis para um determinado empreendimento baseado no zipCode e number fornecido no body.
-- A tabela complex_sizes já existe no banco de dados e já possui dados populados. Ela tem FK com a tabela complexes.
+- Adicionar as rotas de CRUD para as entidades complex e suas relacionadas: complex_towers, complex_sizes, complex_zipcodes.
+  - a tabela complex contem os dados dos empreendimentos de todos os tipos cobertos pela toq. Através do zipcode e number podemos localizar um empreendimento e pelo type saber quais os propertyTypes são possíveis neste empreendimento.
+  - a tabela complex_towers - contem os dados das torres dentro de cada empreendimento. Cada registro está associada a um empreendimento específico através de uma chave estrangeira.
+  - a tabela complex_sizes - contem os tamanhos disponíveis para cada empreendimento. Cada registro está associado a um empreendimento específico através de uma chave estrangeira.
+  - a tabela complex_zipcodes - contem os zipcodes associados a cada empreendimento, para o caso de condomínios horizontais onde diversos zipcodes podem estar presentes para cada empreendimento. Cada registro está associado a um empreendimento específico através de uma chave estrangeira.
+- O seed da tabela complex_sizes ja existe, mas o campo description está vazio. Atualize o seed para preencher este campo com descrições apropriadas para cada size. Seja criativo para gerar descrições realistas.
+- o acesso aos endpoints de CRUD deve ser permitido apenas para perfis de administradores. Portanto, altere permissions.csv e role_permissions.csv conforme necessário.
+- Deverá existir, adicionalmente, uma rota GET HTTP para listar os tamanhos disponíveis para um determinado empreendimento baseado no zipCode e number fornecido no body.
 - A tabela complexes, pode localizar o empreendimento baseado no zipCode e number.
-- a resposta deve ser uma lista de objetos JSON com os campos id (int), size (float). NotFound se não for localizado o empreendimento ou os sizes.
+- a resposta deve ser uma lista de objetos JSON com os campos id (int), size (float) e description (string). NotFound se não for localizado o empreendimento. Se o empreendimento existir mas a busca em `complex_sizes` retornar `not_found`, trate respondendo `description` como string vazia.
 - Todos os perfis devem ter acesso ao endpoint, portanto altere permissions.csv e role_permissions.csv conforme necessário.
-- O endpoint deve ser documentado no Swagger com comentários no código.
+- Os endpoints devem ser documentados no Swagger com comentários no código.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

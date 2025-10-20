@@ -42,6 +42,80 @@ definitions:
       message:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexRequest:
+    properties:
+      city:
+        type: string
+      mainRegistration:
+        type: string
+      name:
+        type: string
+      neighborhood:
+        type: string
+      number:
+        type: string
+      phoneNumber:
+        type: string
+      propertyType:
+        type: integer
+      sector:
+        type: integer
+      state:
+        type: string
+      street:
+        type: string
+      zipCode:
+        type: string
+    required:
+    - city
+    - name
+    - number
+    - propertyType
+    - sector
+    - state
+    - zipCode
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexSizeRequest:
+    properties:
+      complexId:
+        minimum: 1
+        type: integer
+      description:
+        type: string
+      size:
+        type: number
+    required:
+    - complexId
+    - size
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexTowerRequest:
+    properties:
+      complexId:
+        minimum: 1
+        type: integer
+      floors:
+        type: integer
+      totalUnits:
+        type: integer
+      tower:
+        type: string
+      unitsPerFloor:
+        type: integer
+    required:
+    - complexId
+    - tower
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexZipCodeRequest:
+    properties:
+      complexId:
+        minimum: 1
+        type: integer
+      zipCode:
+        type: string
+    required:
+    - complexId
+    - zipCode
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreatePermissionRequest:
     properties:
       action:
@@ -147,6 +221,38 @@ definitions:
       urls:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreciDocumentURLs'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexSizeRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexTowerRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexZipCodeRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeletePermissionRequest:
     properties:
       id:
@@ -179,6 +285,14 @@ definitions:
     required:
     - userId
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexDetailRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse:
     properties:
       pagination:
@@ -200,6 +314,100 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesRequest:
+    properties:
+      complexId:
+        type: integer
+      limit:
+        type: integer
+      page:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      sizes:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersRequest:
+    properties:
+      complexId:
+        type: integer
+      limit:
+        type: integer
+      page:
+        type: integer
+      tower:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      towers:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesRequest:
+    properties:
+      complexId:
+        type: integer
+      limit:
+        type: integer
+      page:
+        type: integer
+      zipCode:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      zipCodes:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesRequest:
+    properties:
+      city:
+        type: string
+      limit:
+        type: integer
+      name:
+        type: string
+      page:
+        type: integer
+      propertyType:
+        type: integer
+      sector:
+        type: integer
+      state:
+        type: string
+      zipCode:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesResponse:
+    properties:
+      complexes:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListPermissionsResponse:
     properties:
@@ -349,6 +557,96 @@ definitions:
         type: string
       userId:
         type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexRequest:
+    properties:
+      city:
+        type: string
+      id:
+        minimum: 1
+        type: integer
+      mainRegistration:
+        type: string
+      name:
+        type: string
+      neighborhood:
+        type: string
+      number:
+        type: string
+      phoneNumber:
+        type: string
+      propertyType:
+        type: integer
+      sector:
+        type: integer
+      state:
+        type: string
+      street:
+        type: string
+      zipCode:
+        type: string
+    required:
+    - city
+    - id
+    - name
+    - number
+    - propertyType
+    - sector
+    - state
+    - zipCode
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexSizeRequest:
+    properties:
+      complexId:
+        minimum: 1
+        type: integer
+      description:
+        type: string
+      id:
+        minimum: 1
+        type: integer
+      size:
+        type: number
+    required:
+    - complexId
+    - id
+    - size
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexTowerRequest:
+    properties:
+      complexId:
+        minimum: 1
+        type: integer
+      floors:
+        type: integer
+      id:
+        minimum: 1
+        type: integer
+      totalUnits:
+        type: integer
+      tower:
+        type: string
+      unitsPerFloor:
+        type: integer
+    required:
+    - complexId
+    - id
+    - tower
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexZipCodeRequest:
+    properties:
+      complexId:
+        minimum: 1
+        type: integer
+      id:
+        minimum: 1
+        type: integer
+      zipCode:
+        type: string
+    required:
+    - complexId
+    - id
+    - zipCode
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdatePermissionRequest:
     properties:
@@ -503,6 +801,80 @@ definitions:
       numericValue:
         type: integer
       slug:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse:
+    properties:
+      city:
+        type: string
+      id:
+        type: integer
+      mainRegistration:
+        type: string
+      name:
+        type: string
+      neighborhood:
+        type: string
+      number:
+        type: string
+      phoneNumber:
+        type: string
+      propertyType:
+        type: integer
+      sector:
+        type: integer
+      sizes:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
+        type: array
+      state:
+        type: string
+      street:
+        type: string
+      towers:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse'
+        type: array
+      zipCode:
+        type: string
+      zipCodes:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse:
+    properties:
+      complexId:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      size:
+        type: number
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse:
+    properties:
+      complexId:
+        type: integer
+      floors:
+        type: integer
+      id:
+        type: integer
+      totalUnits:
+        type: integer
+      tower:
+        type: string
+      unitsPerFloor:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse:
+    properties:
+      complexId:
+        type: integer
+      id:
+        type: integer
+      zipCode:
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmEmailChangeRequest:
@@ -760,6 +1132,13 @@ definitions:
         type: array
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListSizesByAddressResponse:
+    properties:
+      sizes:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
+        type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogCreateRequest:
     properties:
@@ -1550,6 +1929,748 @@ info:
   title: TOQ Server API
   version: "2.0"
 paths:
+  /admin/complexes:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex deletion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Complex deleted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a complex
+      tags:
+      - Admin
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex filters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List complexes
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a complex
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a complex
+      tags:
+      - Admin
+  /admin/complexes/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get complex detail
+      tags:
+      - Admin
+  /admin/complexes/sizes:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex size deletion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexSizeRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Complex size deleted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a complex size
+      tags:
+      - Admin
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex size filters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List complex sizes
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex size payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexSizeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a complex size
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex size payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexSizeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a complex size
+      tags:
+      - Admin
+  /admin/complexes/towers:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex tower deletion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexTowerRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Complex tower deleted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a complex tower
+      tags:
+      - Admin
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex tower filters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List complex towers
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex tower payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexTowerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a complex tower
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex tower payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexTowerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a complex tower
+      tags:
+      - Admin
+  /admin/complexes/zip-codes:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex zip code deletion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexZipCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Complex zip code deleted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a complex zip code
+      tags:
+      - Admin
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex zip code filters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexZipCodesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List complex zip codes
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex zip code payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexZipCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a complex zip code
+      tags:
+      - Admin
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex zip code payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateComplexZipCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a complex zip code
+      tags:
+      - Admin
   /admin/listing/catalog:
     delete:
       consumes:
@@ -3345,6 +4466,45 @@ paths:
       summary: Validate CPF
       tags:
       - Authentication
+  /complex/sizes:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex zip code
+        in: query
+        name: zipCode
+        required: true
+        type: string
+      - description: Complex street number
+        in: query
+        name: number
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListSizesByAddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List complex sizes by address
+      tags:
+      - Complex
   /listings:
     get:
       description: Supports pagination, wildcard search for strings using '*', and

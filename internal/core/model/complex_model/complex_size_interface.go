@@ -7,6 +7,8 @@ type ComplexSizeInterface interface {
 	SetComplexID(complexID int64)
 	Size() float64
 	SetSize(size float64)
+	Description() string
+	SetDescription(description string)
 }
 
 func NewComplexSize() ComplexSizeInterface {

@@ -38,5 +38,13 @@ func ComplexSizeEntityToDomain(entity []any) (complexSize complexmodel.ComplexSi
 		return nil, fmt.Errorf("convert size to float64: %T", entity[2])
 	}
 
+	if len(entity) > 3 && entity[3] != nil {
+		descriptionBytes, ok := entity[3].([]byte)
+		if !ok {
+			return nil, fmt.Errorf("convert description to []byte: %T", entity[3])
+		}
+		complexSize.SetDescription(string(descriptionBytes))
+	}
+
 	return
 }

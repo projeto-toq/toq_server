@@ -1,9 +1,10 @@
 package complexmodel
 
 type complexSize struct {
-	id        int64
-	complexID int64
-	size      float64
+	id          int64
+	complexID   int64
+	size        float64
+	description string
 }
 
 func (cs *complexSize) ID() int64 {
@@ -28,4 +29,12 @@ func (cs *complexSize) Size() float64 {
 
 func (cs *complexSize) SetSize(size float64) {
 	cs.size = size
+}
+
+func (cs *complexSize) Description() string {
+	return cs.description
+}
+
+func (cs *complexSize) SetDescription(description string) {
+	cs.description = description
 }

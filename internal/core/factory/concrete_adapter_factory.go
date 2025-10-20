@@ -13,6 +13,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers"
 	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
+	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 
@@ -254,6 +255,11 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		userService,
 		listingService,
 		permissionService,
+		complexService,
+	)
+
+	complexHandler := complexhandlers.NewComplexHandlerAdapter(
+		complexService,
 	)
 
 	// Create metrics handler (optional)
@@ -270,5 +276,6 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		AuthHandler:    authHandler,
 		MetricsHandler: metricsHandler,
 		AdminHandler:   adminHandler,
+		ComplexHandler: complexHandler,
 	}
 }

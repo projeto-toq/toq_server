@@ -5,10 +5,10 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O ideia da criação de listing é de que na POST /listings somente os dados passados no body sejam efetivamente salvos no DB. todos os outros devem permanecer null. A cada novo PUT /listings somente os dados passados no body devem ser atualizados, os demais devem permanecer como estão no DB. Caso o dado passado no body seja null, o valor no DB deve ser atualizado para null. Assim é possível diferenciar um campo float de null (nunca foi passado), 0.0 (foi passado 0) e outro valor. Isso não está acontecendo com esperado.
+Com os ajuste feitos na última refatoração onde foir implementado o CRUD de complex algumas correções são necessárias:
 
-- Na criação do Listing, todos os campos são gravados eliminado os null.
-- Na atualização do Listing, os campos que não são passados no body estão sendo zerados (float 0, int 0, string "" etc) ao invés de permanecerem com o valor que já existe no DB.
+- Os novos endpoints criados para complex, são acessíveis apenas a admin, e os arquivos base_permission.csv e base_role_permissions.csv devem ser atualizados para refletir essas mudanças.
+- O novo endpoint de /complex/sizes [get] deve ser acessível a todos os roles, e os arquivos base_permission.csv e base_role_permissions.csv devem ser atualizados para refletir essa mudança.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

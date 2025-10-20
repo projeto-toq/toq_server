@@ -82,3 +82,21 @@ id;name;resource;action;description;conditions;is_active
 81;HTTP Admin Delete Role Permission;http;DELETE:/api/v2/admin/role-permissions;Permite excluir relações role-permission;NULL;1
 82;HTTP End Update Listing;http;POST:/api/v2/listings/end-update;Permite finalizar atualização de listing;NULL;1
 83;HTTP Get Listing Detail;http;GET:/api/v2/listings/detail;Permite consultar detalhes completos de um listing;NULL;1
+84;HTTP Admin Get Complexes;http;GET:/api/v2/admin/complexes;Permite listar complexos no painel admin;NULL;1
+85;HTTP Admin Create Complex;http;POST:/api/v2/admin/complexes;Permite criar novos complexos no painel admin;NULL;1
+86;HTTP Admin Update Complex;http;PUT:/api/v2/admin/complexes;Permite atualizar complexos no painel admin;NULL;1
+87;HTTP Admin Delete Complex;http;DELETE:/api/v2/admin/complexes;Permite deletar complexos no painel admin;NULL;1
+88;HTTP Admin Get Complex Detail;http;POST:/api/v2/admin/complexes/detail;Permite consultar detalhes de um complexo no painel admin;NULL;1
+89;HTTP Admin Get Complex Towers;http;GET:/api/v2/admin/complexes/towers;Permite listar torres de complexos no painel admin;NULL;1
+90;HTTP Admin Create Complex Tower;http;POST:/api/v2/admin/complexes/towers;Permite criar torres de complexos no painel admin;NULL;1
+91;HTTP Admin Update Complex Tower;http;PUT:/api/v2/admin/complexes/towers;Permite atualizar torres de complexos no painel admin;NULL;1
+92;HTTP Admin Delete Complex Tower;http;DELETE:/api/v2/admin/complexes/towers;Permite deletar torres de complexos no painel admin;NULL;1
+93;HTTP Admin Get Complex Sizes;http;GET:/api/v2/admin/complexes/sizes;Permite listar tamanhos de complexos no painel admin;NULL;1
+94;HTTP Admin Create Complex Size;http;POST:/api/v2/admin/complexes/sizes;Permite criar tamanhos de complexos no painel admin;NULL;1
+95;HTTP Admin Update Complex Size;http;PUT:/api/v2/admin/complexes/sizes;Permite atualizar tamanhos de complexos no painel admin;NULL;1
+96;HTTP Admin Delete Complex Size;http;DELETE:/api/v2/admin/complexes/sizes;Permite deletar tamanhos de complexos no painel admin;NULL;1
+97;HTTP Admin Get Complex Zip Codes;http;GET:/api/v2/admin/complexes/zip-codes;Permite listar CEPs associados a complexos no painel admin;NULL;1
+98;HTTP Admin Create Complex Zip Code;http;POST:/api/v2/admin/complexes/zip-codes;Permite criar CEPs associados a complexos no painel admin;NULL;1
+99;HTTP Admin Update Complex Zip Code;http;PUT:/api/v2/admin/complexes/zip-codes;Permite atualizar CEPs associados a complexos no painel admin;NULL;1
+100;HTTP Admin Delete Complex Zip Code;http;DELETE:/api/v2/admin/complexes/zip-codes;Permite deletar CEPs associados a complexos no painel admin;NULL;1
+101;HTTP Get Complex Sizes;http;GET:/api/v2/complex/sizes;Permite listar tamanhos de complexos;NULL;1

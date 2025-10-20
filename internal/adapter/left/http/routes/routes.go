@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
+	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
@@ -45,6 +46,7 @@ func SetupRoutes(
 	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
 	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
 	adminHandler := handlers.AdminHandler.(*adminhandlers.AdminHandler)
+	complexHandler := handlers.ComplexHandler.(*complexhandlers.ComplexHandler)
 	// API base routes (v2)
 	base := "/api/v2"
 	if versionProvider != nil {
@@ -60,6 +62,9 @@ func SetupRoutes(
 
 	// Register admin routes with dependencies
 	RegisterAdminRoutes(v1, adminHandler, activityTracker, permissionService)
+
+	// Register complex routes (authenticated)
+	RegisterComplexRoutes(v1, complexHandler, activityTracker, permissionService)
 }
 
 // setupGlobalMiddlewares configura middlewares aplicados a todas as rotas
@@ -324,6 +329,23 @@ func RegisterAdminRoutes(
 		admin.PUT("/listing/catalog", adminHandler.UpdateListingCatalogValue)
 		admin.POST("/listing/catalog/restore", adminHandler.RestoreListingCatalogValue)
 		admin.DELETE("/listing/catalog", adminHandler.DeleteListingCatalogValue)
+		admin.GET("/complexes", adminHandler.GetAdminComplexes)
+		admin.POST("/complexes", adminHandler.PostAdminCreateComplex)
+		admin.PUT("/complexes", adminHandler.PutAdminUpdateComplex)
+		admin.DELETE("/complexes", adminHandler.DeleteAdminComplex)
+		admin.POST("/complexes/detail", adminHandler.PostAdminGetComplexDetail)
+		admin.GET("/complexes/towers", adminHandler.GetAdminComplexTowers)
+		admin.POST("/complexes/towers", adminHandler.PostAdminCreateComplexTower)
+		admin.PUT("/complexes/towers", adminHandler.PutAdminUpdateComplexTower)
+		admin.DELETE("/complexes/towers", adminHandler.DeleteAdminComplexTower)
+		admin.GET("/complexes/sizes", adminHandler.GetAdminComplexSizes)
+		admin.POST("/complexes/sizes", adminHandler.PostAdminCreateComplexSize)
+		admin.PUT("/complexes/sizes", adminHandler.PutAdminUpdateComplexSize)
+		admin.DELETE("/complexes/sizes", adminHandler.DeleteAdminComplexSize)
+		admin.GET("/complexes/zip-codes", adminHandler.GetAdminComplexZipCodes)
+		admin.POST("/complexes/zip-codes", adminHandler.PostAdminCreateComplexZipCode)
+		admin.PUT("/complexes/zip-codes", adminHandler.PutAdminUpdateComplexZipCode)
+		admin.DELETE("/complexes/zip-codes", adminHandler.DeleteAdminComplexZipCode)
 		admin.POST("/system-users", adminHandler.PostAdminCreateSystemUser)
 		admin.PUT("/system-users", adminHandler.PutAdminUpdateSystemUser)
 		admin.DELETE("/system-users", adminHandler.DeleteAdminSystemUser)
@@ -351,4 +373,19 @@ func RegisterAdminRoutes(
 		admin.POST("/user/creci-download-url", adminHandler.PostAdminCreciDownloadURL)
 	}
 
+}
+
+// RegisterComplexRoutes configura rotas autenticadas relacionadas aos empreendimentos.
+func RegisterComplexRoutes(
+	router *gin.RouterGroup,
+	complexHandler *complexhandlers.ComplexHandler,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
+	complex := router.Group("/complex")
+	complex.Use(middlewares.AuthMiddleware(activityTracker))
+	complex.Use(middlewares.PermissionMiddleware(permissionService))
+	{
+		complex.GET("/sizes", complexHandler.ListSizesByAddress)
+	}
 }
