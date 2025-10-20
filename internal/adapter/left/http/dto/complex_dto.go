@@ -93,14 +93,14 @@ type AdminDeleteComplexRequest struct {
 
 // AdminListComplexesRequest representa filtros para listagem de empreendimentos.
 type AdminListComplexesRequest struct {
-	Name         string  `json:"name"`
-	ZipCode      string  `json:"zipCode"`
-	City         string  `json:"city"`
-	State        string  `json:"state"`
-	Sector       *uint8  `json:"sector"`
-	PropertyType *uint16 `json:"propertyType"`
-	Page         int     `json:"page"`
-	Limit        int     `json:"limit"`
+	Name         string  `json:"name" form:"name"`
+	ZipCode      string  `json:"zipCode" form:"zipCode"`
+	City         string  `json:"city" form:"city"`
+	State        string  `json:"state" form:"state"`
+	Sector       *uint8  `json:"sector" form:"sector"`
+	PropertyType *uint16 `json:"propertyType" form:"propertyType"`
+	Page         int     `json:"page" form:"page"`
+	Limit        int     `json:"limit" form:"limit"`
 }
 
 // AdminGetComplexDetailRequest representa o payload para obter detalhes de um empreendimento.
@@ -141,10 +141,10 @@ type AdminDeleteComplexTowerRequest struct {
 
 // AdminListComplexTowersRequest representa filtros para listagem de torres.
 type AdminListComplexTowersRequest struct {
-	ComplexID int64  `json:"complexId"`
-	Tower     string `json:"tower"`
-	Page      int    `json:"page"`
-	Limit     int    `json:"limit"`
+	ComplexID int64  `json:"complexId" form:"complexId"`
+	Tower     string `json:"tower" form:"tower"`
+	Page      int    `json:"page" form:"page"`
+	Limit     int    `json:"limit" form:"limit"`
 }
 
 // AdminListComplexTowersResponse encapsula a lista de torres retornada.
@@ -176,9 +176,19 @@ type AdminDeleteComplexSizeRequest struct {
 
 // AdminListComplexSizesRequest representa filtros para tamanhos.
 type AdminListComplexSizesRequest struct {
-	ComplexID int64 `json:"complexId"`
-	Page      int   `json:"page"`
-	Limit     int   `json:"limit"`
+	ComplexID int64 `json:"complexId" form:"complexId"`
+	Page      int   `json:"page" form:"page"`
+	Limit     int   `json:"limit" form:"limit"`
+}
+
+// AdminGetComplexSizeDetailRequest represents the payload to fetch a complex size detail.
+type AdminGetComplexSizeDetailRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
+}
+
+// AdminGetComplexTowerDetailRequest represents the payload to fetch a complex tower detail.
+type AdminGetComplexTowerDetailRequest struct {
+	ID int64 `json:"id" binding:"required,min=1"`
 }
 
 // AdminListComplexSizesResponse encapsula tamanhos retornados.

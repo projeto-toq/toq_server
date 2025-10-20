@@ -15,9 +15,10 @@ import (
 //
 //	@Summary	List complex sizes
 //	@Tags		Admin
-//	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.AdminListComplexSizesRequest	true	"Complex size filters"
+//	@Param		complexId	query	int	false	"Complex identifier"
+//	@Param		page		query	int	false	"Page number"
+//	@Param		limit	query	int	false	"Page size"
 //	@Success	200	{object}	dto.AdminListComplexSizesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -28,7 +29,7 @@ func (h *AdminHandler) GetAdminComplexSizes(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	var req dto.AdminListComplexSizesRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}

@@ -17,9 +17,15 @@ import (
 //
 //	@Summary	List complexes
 //	@Tags		Admin
-//	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.AdminListComplexesRequest	true	"Complex filters"
+//	@Param		name	query	string	false	"Complex name filter"
+//	@Param		zipCode	query	string	false	"Complex zip code"
+//	@Param		city	query	string	false	"Complex city"
+//	@Param		state	query	string	false	"Complex state"
+//	@Param		sector	query	int	false	"Sector identifier"
+//	@Param		propertyType	query	int	false	"Property type identifier"
+//	@Param		page	query	int	false	"Page number"
+//	@Param		limit	query	int	false	"Page size"
 //	@Success	200	{object}	dto.AdminListComplexesResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -30,7 +36,7 @@ func (h *AdminHandler) GetAdminComplexes(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	var req dto.AdminListComplexesRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}

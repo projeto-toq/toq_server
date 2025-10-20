@@ -15,9 +15,11 @@ import (
 //
 //	@Summary	List complex towers
 //	@Tags		Admin
-//	@Accept		json
 //	@Produce	json
-//	@Param		request	body	dto.AdminListComplexTowersRequest	true	"Complex tower filters"
+//	@Param		complexId	query	int	false	"Complex identifier"
+//	@Param		tower	query	string	false	"Tower name filter"
+//	@Param		page	query	int	false	"Page number"
+//	@Param		limit	query	int	false	"Page size"
 //	@Success	200	{object}	dto.AdminListComplexTowersResponse
 //	@Failure	400	{object}	map[string]any
 //	@Failure	401	{object}	map[string]any
@@ -28,7 +30,7 @@ func (h *AdminHandler) GetAdminComplexTowers(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	var req dto.AdminListComplexTowersRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		httperrors.SendHTTPErrorObj(c, httperrors.ConvertBindError(err))
 		return
 	}

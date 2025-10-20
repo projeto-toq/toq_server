@@ -293,6 +293,22 @@ definitions:
     required:
     - id
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexSizeDetailRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexTowerDetailRequest:
+    properties:
+      id:
+        minimum: 1
+        type: integer
+    required:
+    - id
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse:
     properties:
       pagination:
@@ -315,15 +331,6 @@ definitions:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesRequest:
-    properties:
-      complexId:
-        type: integer
-      limit:
-        type: integer
-      page:
-        type: integer
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesResponse:
     properties:
       limit:
@@ -334,17 +341,6 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
         type: array
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersRequest:
-    properties:
-      complexId:
-        type: integer
-      limit:
-        type: integer
-      page:
-        type: integer
-      tower:
-        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersResponse:
     properties:
@@ -378,25 +374,6 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse'
         type: array
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesRequest:
-    properties:
-      city:
-        type: string
-      limit:
-        type: integer
-      name:
-        type: string
-      page:
-        type: integer
-      propertyType:
-        type: integer
-      sector:
-        type: integer
-      state:
-        type: string
-      zipCode:
-        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesResponse:
     properties:
@@ -1974,15 +1951,39 @@ paths:
       tags:
       - Admin
     get:
-      consumes:
-      - application/json
       parameters:
-      - description: Complex filters
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesRequest'
+      - description: Complex name filter
+        in: query
+        name: name
+        type: string
+      - description: Complex zip code
+        in: query
+        name: zipCode
+        type: string
+      - description: Complex city
+        in: query
+        name: city
+        type: string
+      - description: Complex state
+        in: query
+        name: state
+        type: string
+      - description: Sector identifier
+        in: query
+        name: sector
+        type: integer
+      - description: Property type identifier
+        in: query
+        name: propertyType
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -2194,15 +2195,19 @@ paths:
       tags:
       - Admin
     get:
-      consumes:
-      - application/json
       parameters:
-      - description: Complex size filters
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesRequest'
+      - description: Complex identifier
+        in: query
+        name: complexId
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -2323,6 +2328,52 @@ paths:
       summary: Update a complex size
       tags:
       - Admin
+  /admin/complexes/sizes/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex size detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexSizeDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get complex size detail
+      tags:
+      - Admin
   /admin/complexes/towers:
     delete:
       consumes:
@@ -2368,15 +2419,23 @@ paths:
       tags:
       - Admin
     get:
-      consumes:
-      - application/json
       parameters:
-      - description: Complex tower filters
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersRequest'
+      - description: Complex identifier
+        in: query
+        name: complexId
+        type: integer
+      - description: Tower name filter
+        in: query
+        name: tower
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -2495,6 +2554,52 @@ paths:
             additionalProperties: true
             type: object
       summary: Update a complex tower
+      tags:
+      - Admin
+  /admin/complexes/towers/detail:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Complex tower detail payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexTowerDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get complex tower detail
       tags:
       - Admin
   /admin/complexes/zip-codes:

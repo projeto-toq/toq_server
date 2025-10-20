@@ -27,9 +27,6 @@ const docTemplate = `{
     "paths": {
         "/admin/complexes": {
             "get": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -39,13 +36,52 @@ const docTemplate = `{
                 "summary": "List complexes",
                 "parameters": [
                     {
-                        "description": "Complex filters",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesRequest"
-                        }
+                        "type": "string",
+                        "description": "Complex name filter",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Complex zip code",
+                        "name": "zipCode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Complex city",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Complex state",
+                        "name": "state",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Sector identifier",
+                        "name": "sector",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Property type identifier",
+                        "name": "propertyType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -351,9 +387,6 @@ const docTemplate = `{
         },
         "/admin/complexes/sizes": {
             "get": {
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -363,13 +396,22 @@ const docTemplate = `{
                 "summary": "List complex sizes",
                 "parameters": [
                     {
-                        "description": "Complex size filters",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesRequest"
-                        }
+                        "type": "integer",
+                        "description": "Complex identifier",
+                        "name": "complexId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -605,8 +647,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/complexes/towers": {
-            "get": {
+        "/admin/complexes/sizes/detail": {
+            "post": {
                 "consumes": [
                     "application/json"
                 ],
@@ -616,16 +658,96 @@ const docTemplate = `{
                 "tags": [
                     "Admin"
                 ],
-                "summary": "List complex towers",
+                "summary": "Get complex size detail",
                 "parameters": [
                     {
-                        "description": "Complex tower filters",
+                        "description": "Complex size detail payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexSizeDetailRequest"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/complexes/towers": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List complex towers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Complex identifier",
+                        "name": "complexId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tower name filter",
+                        "name": "tower",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -822,6 +944,74 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "Complex tower deleted"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/complexes/towers/detail": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Get complex tower detail",
+                "parameters": [
+                    {
+                        "description": "Complex tower detail payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexTowerDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexTowerResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -6266,6 +6456,30 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexSizeDetailRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexTowerDetailRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetPendingRealtorsResponse": {
             "type": "object",
             "properties": {
@@ -6300,20 +6514,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesRequest": {
-            "type": "object",
-            "properties": {
-                "complexId": {
-                    "type": "integer"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexSizesResponse": {
             "type": "object",
             "properties": {
@@ -6328,23 +6528,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse"
                     }
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexTowersRequest": {
-            "type": "object",
-            "properties": {
-                "complexId": {
-                    "type": "integer"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "tower": {
-                    "type": "string"
                 }
             }
         },
@@ -6396,35 +6579,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexZipCodeResponse"
                     }
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListComplexesRequest": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "propertyType": {
-                    "type": "integer"
-                },
-                "sector": {
-                    "type": "integer"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "zipCode": {
-                    "type": "string"
                 }
             }
         },

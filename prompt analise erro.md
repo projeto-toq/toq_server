@@ -7,8 +7,11 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 **Problemas:**
 Com os ajuste feitos na última refatoração onde foir implementado o CRUD de complex algumas correções são necessárias:
 
-- Os novos endpoints criados para complex, são acessíveis apenas a admin, e os arquivos base_permission.csv e base_role_permissions.csv devem ser atualizados para refletir essas mudanças.
-- O novo endpoint de /complex/sizes [get] deve ser acessível a todos os roles, e os arquivos base_permission.csv e base_role_permissions.csv devem ser atualizados para refletir essa mudança.
+- o endpoint GET /admin/complexes que possui filtros e paginação deve passar os parametros via query params e não via body como está atualmente.
+- o endpoint GET /admin/complexes/sizes que possui filtros e paginação deve passar os parametros via query params e não via body como está atualmente.
+- é necessário cria um endpoint POST /admin/complexes/sizes/detail com o id no body para retornar o detalhe de um size específico.
+- o endpoint GET /admin/complexes/towers que possui filtros e paginação deve passar os parametros via query params e não via body como está atualmente.
+- é necessário cria um endpoint POST /admin/complexes/towers/detail com o id no body para retornar o detalhe de uma tower específica.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

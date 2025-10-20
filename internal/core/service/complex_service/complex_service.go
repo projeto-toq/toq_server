@@ -40,9 +40,11 @@ type ComplexServiceInterface interface {
 	UpdateComplexSize(ctx context.Context, input UpdateComplexSizeInput) (complexmodel.ComplexSizeInterface, error)
 	DeleteComplexSize(ctx context.Context, id int64) error
 	ListComplexSizes(ctx context.Context, filter ListComplexSizesInput) ([]complexmodel.ComplexSizeInterface, error)
+	GetComplexSizeDetail(ctx context.Context, id int64) (complexmodel.ComplexSizeInterface, error)
 	CreateComplexZipCode(ctx context.Context, input CreateComplexZipCodeInput) (complexmodel.ComplexZipCodeInterface, error)
 	UpdateComplexZipCode(ctx context.Context, input UpdateComplexZipCodeInput) (complexmodel.ComplexZipCodeInterface, error)
 	DeleteComplexZipCode(ctx context.Context, id int64) error
 	ListComplexZipCodes(ctx context.Context, filter ListComplexZipCodesInput) ([]complexmodel.ComplexZipCodeInterface, error)
 	ListSizesByAddress(ctx context.Context, input ListSizesByAddressInput) ([]complexmodel.ComplexSizeInterface, error)
+	GetComplexTowerDetail(ctx context.Context, id int64) (complexmodel.ComplexTowerInterface, error)
 }
