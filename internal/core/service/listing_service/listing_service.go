@@ -9,6 +9,7 @@ import (
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 )
 
 type listingService struct {
@@ -17,6 +18,7 @@ type listingService struct {
 	csi               complexservices.ComplexServiceInterface
 	gsi               globalservice.GlobalServiceInterface
 	gcs               storageport.CloudStoragePortInterface
+	scheduleService   scheduleservices.ScheduleServiceInterface
 }
 
 func NewListingService(
@@ -25,6 +27,7 @@ func NewListingService(
 	csi complexservices.ComplexServiceInterface,
 	gsi globalservice.GlobalServiceInterface,
 	gcs storageport.CloudStoragePortInterface,
+	ss scheduleservices.ScheduleServiceInterface,
 
 ) ListingServiceInterface {
 	return &listingService{
@@ -33,6 +36,7 @@ func NewListingService(
 		csi:               csi,
 		gsi:               gsi,
 		gcs:               gcs,
+		scheduleService:   ss,
 	}
 }
 

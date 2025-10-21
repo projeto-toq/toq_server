@@ -2,6 +2,7 @@ package scheduleservices
 
 import (
 	"context"
+	"database/sql"
 
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -12,6 +13,7 @@ import (
 // ScheduleServiceInterface exposes operations to orchestrate listing agendas.
 type ScheduleServiceInterface interface {
 	CreateDefaultAgenda(ctx context.Context, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error)
+	CreateDefaultAgendaWithTx(ctx context.Context, tx *sql.Tx, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error)
 	GetAgendaByListingID(ctx context.Context, listingID int64) (schedulemodel.AgendaInterface, error)
 	ListOwnerSummary(ctx context.Context, filter schedulemodel.OwnerSummaryFilter) (schedulemodel.OwnerSummaryResult, error)
 	ListAgendaEntries(ctx context.Context, filter schedulemodel.AgendaDetailFilter) (schedulemodel.AgendaDetailResult, error)

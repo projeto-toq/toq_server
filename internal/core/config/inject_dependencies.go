@@ -257,6 +257,7 @@ func (c *config) InitListingHandler() {
 		c.complexService,
 		c.globalService,
 		c.cloudStorage,
+		c.scheduleService,
 	)
 	// HTTP handler initialization is done during HTTP server setup
 }

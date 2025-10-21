@@ -9,8 +9,41 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
+
+const fallbackListingTimezone = "America/Sao_Paulo"
+
+var stateTimezoneLookup = map[string]string{
+	"AC": "America/Rio_Branco",
+	"AL": "America/Maceio",
+	"AM": "America/Manaus",
+	"AP": "America/Belem",
+	"BA": "America/Bahia",
+	"CE": "America/Fortaleza",
+	"DF": "America/Sao_Paulo",
+	"ES": "America/Sao_Paulo",
+	"GO": "America/Sao_Paulo",
+	"MA": "America/Fortaleza",
+	"MG": "America/Sao_Paulo",
+	"MS": "America/Campo_Grande",
+	"MT": "America/Cuiaba",
+	"PA": "America/Belem",
+	"PB": "America/Fortaleza",
+	"PE": "America/Recife",
+	"PI": "America/Fortaleza",
+	"PR": "America/Sao_Paulo",
+	"RJ": "America/Sao_Paulo",
+	"RN": "America/Fortaleza",
+	"RO": "America/Porto_Velho",
+	"RR": "America/Boa_Vista",
+	"RS": "America/Sao_Paulo",
+	"SC": "America/Sao_Paulo",
+	"SE": "America/Maceio",
+	"SP": "America/Sao_Paulo",
+	"TO": "America/Araguaina",
+}
 
 func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateListingInput) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -76,6 +109,19 @@ func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateL
 
 	if auditErr := ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio finalizado (end-update)"); auditErr != nil {
 		return auditErr
+	}
+
+	timezone := resolveListingTimezone(snapshot)
+	agendaInput := scheduleservices.CreateDefaultAgendaInput{
+		ListingID: input.ListingID,
+		OwnerID:   userID,
+		Timezone:  timezone,
+		ActorID:   userID,
+	}
+	if _, agendaErr := ls.scheduleService.CreateDefaultAgendaWithTx(ctx, tx, agendaInput); agendaErr != nil {
+		utils.SetSpanError(ctx, agendaErr)
+		logger.Error("listing.end_update.create_default_agenda_error", "err", agendaErr, "listing_id", input.ListingID)
+		return agendaErr
 	}
 
 	if err = ls.gsi.CommitTransaction(ctx, tx); err != nil {
@@ -255,4 +301,14 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 	}
 
 	return nil
+}
+
+func resolveListingTimezone(data listingrepository.ListingEndUpdateData) string {
+	if data.State.Valid {
+		state := strings.ToUpper(strings.TrimSpace(data.State.String))
+		if tz, ok := stateTimezoneLookup[state]; ok && tz != "" {
+			return tz
+		}
+	}
+	return fallbackListingTimezone
 }

@@ -18,17 +18,8 @@ const (
 )
 
 func (s *scheduleService) CreateDefaultAgenda(ctx context.Context, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error) {
-	if input.ListingID <= 0 {
-		return nil, utils.ValidationError("listingId", "listingId must be greater than zero")
-	}
-	if input.OwnerID <= 0 {
-		return nil, utils.ValidationError("ownerId", "ownerId must be greater than zero")
-	}
-	if strings.TrimSpace(input.Timezone) == "" {
-		return nil, utils.ValidationError("timezone", "timezone is required")
-	}
-	if input.ActorID <= 0 {
-		return nil, utils.ValidationError("actorId", "actorId must be greater than zero")
+	if err := validateDefaultAgendaInput(input); err != nil {
+		return nil, err
 	}
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -57,9 +48,50 @@ func (s *scheduleService) CreateDefaultAgenda(ctx context.Context, input CreateD
 		}
 	}()
 
+	agenda, opErr := s.createDefaultAgendaTx(ctx, tx, input)
+	if opErr != nil {
+		return nil, opErr
+	}
+
+	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
+		logger.Error("schedule.create_default_agenda.tx_commit_error", "err", cmErr)
+		return nil, utils.InternalError("")
+	}
+
+	committed = true
+
+	return agenda, nil
+}
+
+func (s *scheduleService) CreateDefaultAgendaWithTx(ctx context.Context, tx *sql.Tx, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error) {
+	if tx == nil {
+		ctx = utils.ContextWithLogger(ctx)
+		logger := utils.LoggerFromContext(ctx)
+		logger.Error("schedule.create_default_agenda.missing_tx", "listing_id", input.ListingID)
+		return nil, utils.InternalError("")
+	}
+	if err := validateDefaultAgendaInput(input); err != nil {
+		return nil, err
+	}
+
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return nil, utils.InternalError("")
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+
+	return s.createDefaultAgendaTx(ctx, tx, input)
+}
+
+func (s *scheduleService) createDefaultAgendaTx(ctx context.Context, tx *sql.Tx, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error) {
+	logger := utils.LoggerFromContext(ctx)
+
 	existing, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
 	if err == nil && existing != nil {
-		return nil, utils.ConflictError("Agenda already exists for listing")
+		return existing, nil
 	}
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, err)
@@ -89,15 +121,23 @@ func (s *scheduleService) CreateDefaultAgenda(ctx context.Context, input CreateD
 		}
 	}
 
-	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
-		utils.SetSpanError(ctx, cmErr)
-		logger.Error("schedule.create_default_agenda.tx_commit_error", "err", cmErr)
-		return nil, utils.InternalError("")
-	}
-
-	committed = true
-
 	return agenda, nil
+}
+
+func validateDefaultAgendaInput(input CreateDefaultAgendaInput) *utils.HTTPError {
+	if input.ListingID <= 0 {
+		return utils.ValidationError("listingId", "listingId must be greater than zero")
+	}
+	if input.OwnerID <= 0 {
+		return utils.ValidationError("ownerId", "ownerId must be greater than zero")
+	}
+	if strings.TrimSpace(input.Timezone) == "" {
+		return utils.ValidationError("timezone", "timezone is required")
+	}
+	if input.ActorID <= 0 {
+		return utils.ValidationError("actorId", "actorId must be greater than zero")
+	}
+	return nil
 }
 
 func buildDefaultBlockRules(agendaID uint64) []schedulemodel.AgendaRuleInterface {
