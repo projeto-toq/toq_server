@@ -9,8 +9,10 @@ import (
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 )
 
@@ -189,6 +191,60 @@ func (c *config) InitComplexHandler() {
 	slog.Debug("Initializing Complex Handler")
 	c.complexService = complexservices.NewComplexService(
 		c.repositoryAdapters.Complex,
+		c.globalService,
+	)
+}
+
+func (c *config) InitHolidayService() {
+	slog.Debug("Initializing Holiday Service")
+
+	if c.repositoryAdapters == nil {
+		slog.Error("repositoryAdapters is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Holiday == nil {
+		slog.Error("repositoryAdapters.Holiday is nil")
+		return
+	}
+
+	if c.globalService == nil {
+		slog.Error("globalService is nil")
+		return
+	}
+
+	c.holidayService = holidayservices.NewHolidayService(
+		c.repositoryAdapters.Holiday,
+		c.globalService,
+	)
+}
+
+func (c *config) InitScheduleService() {
+	slog.Debug("Initializing Schedule Service")
+
+	if c.repositoryAdapters == nil {
+		slog.Error("repositoryAdapters is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Schedule == nil {
+		slog.Error("repositoryAdapters.Schedule is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Listing == nil {
+		slog.Error("repositoryAdapters.Listing is nil")
+		return
+	}
+
+	if c.globalService == nil {
+		slog.Error("globalService is nil")
+		return
+	}
+
+	c.scheduleService = scheduleservices.NewScheduleService(
+		c.repositoryAdapters.Schedule,
+		c.repositoryAdapters.Listing,
 		c.globalService,
 	)
 }

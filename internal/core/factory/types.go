@@ -18,11 +18,14 @@ import (
 	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user"
 	complexrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/complex_repository"
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
+	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
 	photosessionrepo "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
+	schedulerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/schedule_repository"
 	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
+	visitrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/visit_repository"
 )
 
 // ValidationAdapters agrupa adapters de validação externa
@@ -54,6 +57,9 @@ type RepositoryAdapters struct {
 	Global       globalrepoport.GlobalRepoPortInterface
 	Complex      complexrepoport.ComplexRepoPortInterface
 	Listing      listingrepoport.ListingRepoPortInterface
+	Holiday      holidayrepository.HolidayRepositoryInterface
+	Schedule     schedulerepository.ScheduleRepositoryInterface
+	Visit        visitrepository.VisitRepositoryInterface
 	PhotoSession photosessionrepo.PhotoSessionRepositoryInterface
 	Session      sessionrepoport.SessionRepoPortInterface
 	Permission   permissionrepository.PermissionRepositoryInterface

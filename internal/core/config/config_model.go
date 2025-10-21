@@ -28,8 +28,10 @@ import (
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	sessionservice "github.com/projeto-toq/toq_server/internal/core/service/session_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	validationservice "github.com/projeto-toq/toq_server/internal/core/service/validation_service"
@@ -57,6 +59,8 @@ type config struct {
 	listingService         listingservices.ListingServiceInterface
 	complexService         complexservices.ComplexServiceInterface
 	permissionService      permissionservices.PermissionServiceInterface
+	holidayService         holidayservices.HolidayServiceInterface
+	scheduleService        scheduleservices.ScheduleServiceInterface
 	metricsAdapter         *factory.MetricsAdapter
 	cep                    cepport.CEPPortInterface
 	cpf                    cpfport.CPFPortInterface
@@ -84,6 +88,8 @@ type ConfigInterface interface {
 	InitGlobalService()
 	InitUserHandler()
 	InitComplexHandler()
+	InitHolidayService()
+	InitScheduleService()
 	InitListingHandler()
 	InitPermissionHandler()
 	InitializeGoRoutines()
@@ -169,6 +175,15 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.Listing == nil {
 		slog.Error("repositories.Listing is nil")
 	}
+	if repositories.Holiday == nil {
+		slog.Error("repositories.Holiday is nil")
+	}
+	if repositories.Schedule == nil {
+		slog.Error("repositories.Schedule is nil")
+	}
+	if repositories.Visit == nil {
+		slog.Error("repositories.Visit is nil")
+	}
 	if repositories.PhotoSession == nil {
 		slog.Error("repositories.PhotoSession is nil")
 	}
@@ -188,6 +203,9 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 		Global:       repositories.Global,
 		Complex:      repositories.Complex,
 		Listing:      repositories.Listing,
+		Holiday:      repositories.Holiday,
+		Schedule:     repositories.Schedule,
+		Visit:        repositories.Visit,
 		PhotoSession: repositories.PhotoSession,
 		Session:      repositories.Session,
 		Permission:   repositories.Permission,
@@ -220,6 +238,8 @@ func (c *config) initializeServices() {
 	c.InitGlobalService()
 	c.InitPermissionHandler()
 	c.InitComplexHandler()
+	c.InitHolidayService()
+	c.InitScheduleService()
 	c.InitListingHandler()
 	c.InitUserHandler()
 

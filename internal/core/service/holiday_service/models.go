@@ -1,0 +1,37 @@
+package holidayservices
+
+import (
+	"time"
+
+	holidaymodel "github.com/projeto-toq/toq_server/internal/core/model/holiday_model"
+)
+
+// CreateCalendarInput carries the data required to create a holiday calendar.
+type CreateCalendarInput struct {
+	Name      string
+	Scope     holidaymodel.CalendarScope
+	State     string
+	CityIBGE  string
+	IsActive  bool
+	CreatedBy int64
+}
+
+// UpdateCalendarInput captures the information to update an existing calendar.
+type UpdateCalendarInput struct {
+	ID        uint64
+	Name      string
+	Scope     holidaymodel.CalendarScope
+	State     string
+	CityIBGE  string
+	IsActive  bool
+	UpdatedBy int64
+}
+
+// CreateCalendarDateInput describes the payload to register a holiday date.
+type CreateCalendarDateInput struct {
+	CalendarID  uint64
+	HolidayDate time.Time
+	Label       string
+	Recurrent   bool
+	CreatedBy   int64
+}

@@ -39,11 +39,14 @@ import (
 	// Repository adapters
 	mysqlcomplexadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/complex"
 	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
+	mysqlholidayadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday"
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
 	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
 	mysqlphotosessionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/photo_session"
+	mysqlscheduleadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule"
 	sessionmysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session"
 	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user"
+	mysqlvisitadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit"
 
 	// Core services
 	complexservice "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
@@ -193,6 +196,15 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Listing Repository
 	listingRepo := mysqllistingadapter.NewListingAdapter(database)
 
+	// Holiday Repository
+	holidayRepo := mysqlholidayadapter.NewHolidayAdapter(database)
+
+	// Schedule Repository
+	scheduleRepo := mysqlscheduleadapter.NewScheduleAdapter(database)
+
+	// Visit Repository
+	visitRepo := mysqlvisitadapter.NewVisitAdapter(database)
+
 	// Photo Session Repository
 	photoSessionRepo := mysqlphotosessionadapter.NewPhotoSessionAdapter(database)
 
@@ -209,6 +221,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 		Global:       globalRepo,
 		Complex:      complexRepo,
 		Listing:      listingRepo,
+		Holiday:      holidayRepo,
+		Schedule:     scheduleRepo,
+		Visit:        visitRepo,
 		PhotoSession: photoSessionRepo,
 		Session:      sessionRepo,
 		Permission:   permissionRepo,
