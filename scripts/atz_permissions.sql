@@ -14,9 +14,8 @@ INTO TABLE permissions
 FIELDS TERMINATED BY ';'
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(id, name, action, description, is_active)
-SET conditions = NULLIF(@conditions, 'NULL');
+IGNORE 1 ROWS;
+
 
 -- Importar role_permissions
 LOAD DATA INFILE '/var/lib/mysql-files/base_role_permissions.csv'
@@ -24,10 +23,7 @@ INTO TABLE role_permissions
 FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS
-(id, role_id, permission_id, granted)
-SET conditions = NULLIF(@conditions, 'NULL');
-
+IGNORE 1 ROWS;
 
 
 -- Reabilitar verificação de foreign keys

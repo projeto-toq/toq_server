@@ -122,29 +122,18 @@ definitions:
         maxLength: 50
         minLength: 1
         type: string
-      conditions:
-        additionalProperties: {}
-        type: object
       description:
         type: string
       name:
         maxLength: 100
         minLength: 2
         type: string
-      resource:
-        maxLength: 50
-        minLength: 1
-        type: string
     required:
     - action
     - name
-    - resource
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateRolePermissionRequest:
     properties:
-      conditions:
-        additionalProperties: {}
-        type: object
       granted:
         type: boolean
       permissionId:
@@ -483,9 +472,6 @@ definitions:
     properties:
       action:
         type: string
-      conditions:
-        additionalProperties: {}
-        type: object
       description:
         type: string
       id:
@@ -493,8 +479,6 @@ definitions:
       isActive:
         type: boolean
       name:
-        type: string
-      resource:
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRestoreRoleRequest:
@@ -514,9 +498,6 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionSummary:
     properties:
-      conditions:
-        additionalProperties: {}
-        type: object
       granted:
         type: boolean
       id:
@@ -651,9 +632,6 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdatePermissionRequest:
     properties:
-      conditions:
-        additionalProperties: {}
-        type: object
       description:
         type: string
       id:
@@ -671,9 +649,6 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminUpdateRolePermissionRequest:
     properties:
-      conditions:
-        additionalProperties: {}
-        type: object
       granted:
         type: boolean
       id:
@@ -3832,10 +3807,6 @@ paths:
         in: query
         name: name
         type: string
-      - description: Filter by resource (supports '*' wildcard)
-        in: query
-        name: resource
-        type: string
       - description: Filter by action (supports '*' wildcard)
         in: query
         name: action
@@ -4949,6 +4920,8 @@ paths:
     post:
       consumes:
       - application/json
+      description: Create a System User with specified role and details. Not for Owner/Realtor
+        user creation. Email with instruction will be sent to the new user.
       parameters:
       - description: System user payload
         in: body

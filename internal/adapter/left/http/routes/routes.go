@@ -138,6 +138,11 @@ func RegisterUserRoutes(
 
 		// RefreshToken
 		auth.POST("/refresh", authHandler.RefreshToken) // RefreshToken
+
+		// Password reset workflow
+		auth.POST("/password/reset/request", authHandler.RequestPasswordChange)
+		auth.POST("/password/reset/confirm", authHandler.ConfirmPasswordChange)
+		//auth.POST("/password/reset/resend", authHandler.ResendPasswordResetCode)
 	}
 
 	// User routes (authenticated)
@@ -169,6 +174,13 @@ func RegisterUserRoutes(
 		// Role management (Owner and Realtor only)
 		user.POST("/role/alternative", userHandler.AddAlternativeUserRole) // AddAlternativeUserRole
 		user.POST("/role/switch", userHandler.SwitchUserRole)              // SwitchUserRole
+
+		// Profile management
+		user.GET("/profile", userHandler.GetProfile)    // GetProfile
+		user.PUT("/profile", userHandler.UpdateProfile) // UpdateProfile
+
+		// Account management
+		user.DELETE("/account", userHandler.DeleteAccount)
 	}
 
 	// Agency routes (Agency only)

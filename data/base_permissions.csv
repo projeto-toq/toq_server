@@ -1,90 +1,90 @@
-id;name;resource;action;description;is_active
-1;HTTP SignOut;http;POST:/api/v2/user/signout;Permite encerrar a sessão;1
-2;HTTP GetProfile;http;GET:/api/v2/user/profile;Permite consultar o próprio perfil;1
-3;HTTP UpdateProfile;http;PUT:/api/v2/user/profile;Permite atualizar o próprio perfil;1
-4;HTTP GetPhotoUploadURL;http;POST:/api/v2/user/photo/upload-url;Permite obter URL de upload da foto de perfil;1
-5;HTTP PostPhotoDownloadURL;http;POST:/api/v2/user/photo/download-url;Permite obter URL de download da foto de perfil;1
-6;HTTP RequestEmailChange;http;POST:/api/v2/user/email/request;Permite solicitar troca de e-mail;1
-7;HTTP ConfirmEmailChange;http;POST:/api/v2/user/email/confirm;Permite confirmar troca de e-mail;1
-8;HTTP ResendEmailChangeCode;http;POST:/api/v2/user/email/resend;Permite reenviar código de troca de e-mail;1
-9;HTTP RequestPhoneChange;http;POST:/api/v2/user/phone/request;Permite solicitar troca de telefone;1
-10;HTTP ConfirmPhoneChange;http;POST:/api/v2/user/phone/confirm;Permite confirmar troca de telefone;1
-11;HTTP ResendPhoneChangeCode;http;POST:/api/v2/user/phone/resend;Permite reenviar código de troca de telefone;1
-12;HTTP GetCreciUploadURL;http;POST:/api/v2/realtor/creci/upload-url;Permite obter URL de upload dos documentos CRECI;1
-13;HTTP VerifyCreciDocuments;http;POST:/api/v2/realtor/creci/verify;Permite verificar documentos CRECI e enviar para validação manual;1
-14;HTTP UpdateOptStatus;http;PUT:/api/v2/user/opt-status;Permite atualizar o status de opt-in de notificações;1
-15;HTTP DeleteAccount;http;DELETE:/api/v2/user/account;Permite deletar a própria conta;1
-16;HTTP GetUserStatus;http;GET:/api/v2/user/status;Permite consultar o status da role ativa do usuário autenticado;1
-17;HTTP GetUser Detail;http;POST:/api/v2/admin/users/detail;Permite Admin consultar detalhes de um usuário específico;1
-18;HTTP ApproveUser;http;POST:/api/v2/admin/users/creci/approve;Permite Admin aprovar/reprovar corretor;1
-19;HTTP GetPending;http;GET:/api/v2/admin/users/creci/pending;Permite Admin listar corretores pendentes de aprovação;1
-20;HTTP Admin GetCreciDownloadURL;http;POST:/api/v2/admin/users/creci/download-url;Permite Admin obter URLs de download dos documentos CRECI;1
-21;HTTP AddAlternativeUserRole;http;POST:/api/v2/user/role/alternative;Permite solicitar criação de role alternativo (owner↔realtor);1
-22;HTTP SwitchUserRole;http;POST:/api/v2/user/role/switch;Permite alternar a role ativa do usuário autenticado;1
-23;HTTP Get all listing options;http;POST:/api/v2/listings/options;Permite obter opções de listing baseadas em endereço;1
-24;HTTP Start new Listing;http;POST:/api/v2/listings;Permite iniciar o processo de criação de um novo listing;1
-25;HTTP Update a Listing;http;PUT:/api/v2/listings;Permite atualizar um listing específico em draft;1
-26;HTTP Get Listing Catalog;http;GET:/api/v2/listings/catalog;Permite consultar valores de catálogo de listings;1
-27;HTTP Admin Get Listing Catalog;http;GET:/api/v2/admin/listing/catalog;Permite listar valores de catálogo de listings no painel admin;1
-28;HTTP Admin Create Listing Catalog;http;POST:/api/v2/admin/listing/catalog;Permite criar novos valores no catálogo de listings;1
-29;HTTP Admin Update Listing Catalog;http;PUT:/api/v2/admin/listing/catalog;Permite atualizar valores do catálogo de listings;1
-30;HTTP Admin Delete Listing Catalog;http;DELETE:/api/v2/admin/listing/catalog;Permite desativar valores do catálogo de listings;1
-31;HTTP Get Listing Base Features;http;GET:/api/v2/listings/features/base;Permite listar as comodidades;1
-32;HTTP Get Roles;http;GET:/api/v2/admin/roles;Permite listar roles com filtro e paginação;1
-33;HTTP Create Role;http;POST:/api/v2/admin/roles;Permite criar nova role;1
-34;HTTP Update Role;http;PUT:/api/v2/admin/roles;Permite atualizar role existente;1
-35;HTTP Delete Role;http;DELETE:/api/v2/admin/roles;Permite desativar role existente;1
-36;HTTP Admin Get Users;http;GET:/api/v2/admin/users;Permite listar usuários do sistema com filtro e paginação;1
-37;HTTP Admin Create System User;http;POST:/api/v2/admin/users/system;Permite criar novo usuário do sistema;1
-38;HTTP Admin Update System User;http;PUT:/api/v2/admin/users/system;Permite atualizar usuário do sistema;1
-39;HTTP Admin Delete System User;http;DELETE:/api/v2/admin/users/system;Permite deletar usuário do sistema;1
-40;HTTP Admin Restore Role;http;POST:/api/v2/admin/roles/restore;Permite reativar uma role desativada;1
-41;HTTP Admin Restore Listing Catalog;http;POST:/api/v2/admin/listing/catalog/restore;Permite reativar um valor de catálogo de listing desativado;1
-42;HTTP Admin List Permissions;http;GET:/api/v2/admin/permissions;Permite listar permissões administrativas;1
-43;HTTP Admin Create Permission;http;POST:/api/v2/admin/permissions;Permite criar novas permissões administrativas;1
-44;HTTP Admin Update Permission;http;PUT:/api/v2/admin/permissions;Permite atualizar permissões administrativas;1
-45;HTTP Admin Delete Permission;http;DELETE:/api/v2/admin/permissions;Permite excluir permissões administrativas;1
-46;HTTP Admin List Role Permissions;http;GET:/api/v2/admin/role-permissions;Permite listar relações role-permission;1
-47;HTTP Admin Create Role Permission;http;POST:/api/v2/admin/role-permissions;Permite criar relações role-permission;1
-48;HTTP Admin Update Role Permission;http;PUT:/api/v2/admin/role-permissions;Permite atualizar relações role-permission;1
-49;HTTP Admin Delete Role Permission;http;DELETE:/api/v2/admin/role-permissions;Permite excluir relações role-permission;1
-50;HTTP End Update Listing;http;POST:/api/v2/listings/end-update;Permite finalizar atualização de listing;1
-51;HTTP Get Listing Detail;http;GET:/api/v2/listings/detail;Permite consultar detalhes completos de um listing;1
-52;HTTP Admin Get Complexes;http;GET:/api/v2/admin/complexes;Permite listar complexos no painel admin;1
-53;HTTP Admin Create Complex;http;POST:/api/v2/admin/complexes;Permite criar novos complexos no painel admin;1
-54;HTTP Admin Update Complex;http;PUT:/api/v2/admin/complexes;Permite atualizar complexos no painel admin;1
-55;HTTP Admin Delete Complex;http;DELETE:/api/v2/admin/complexes;Permite deletar complexos no painel admin;1
-56;HTTP Admin Get Complex Detail;http;POST:/api/v2/admin/complexes/detail;Permite consultar detalhes de um complexo no painel admin;1
-57;HTTP Admin Get Complex Towers;http;GET:/api/v2/admin/complexes/towers;Permite listar torres de complexos no painel admin;1
-58;HTTP Admin Create Complex Tower;http;POST:/api/v2/admin/complexes/towers;Permite criar torres de complexos no painel admin;1
-59;HTTP Admin Update Complex Tower;http;PUT:/api/v2/admin/complexes/towers;Permite atualizar torres de complexos no painel admin;1
-60;HTTP Admin Delete Complex Tower;http;DELETE:/api/v2/admin/complexes/towers;Permite deletar torres de complexos no painel admin;1
-61;HTTP Admin Get Complex Sizes;http;GET:/api/v2/admin/complexes/sizes;Permite listar tamanhos de complexos no painel admin;1
-62;HTTP Admin Create Complex Size;http;POST:/api/v2/admin/complexes/sizes;Permite criar tamanhos de complexos no painel admin;1
-63;HTTP Admin Update Complex Size;http;PUT:/api/v2/admin/complexes/sizes;Permite atualizar tamanhos de complexos no painel admin;1
-64;HTTP Admin Delete Complex Size;http;DELETE:/api/v2/admin/complexes/sizes;Permite deletar tamanhos de complexos no painel admin;1
-65;HTTP Admin Get Complex Zip Codes;http;GET:/api/v2/admin/complexes/zip-codes;Permite listar CEPs associados a complexos no painel admin;1
-66;HTTP Admin Create Complex Zip Code;http;POST:/api/v2/admin/complexes/zip-codes;Permite criar CEPs associados a complexos no painel admin;1
-67;HTTP Admin Update Complex Zip Code;http;PUT:/api/v2/admin/complexes/zip-codes;Permite atualizar CEPs associados a complexos no painel admin;1
-68;HTTP Admin Delete Complex Zip Code;http;DELETE:/api/v2/admin/complexes/zip-codes;Permite deletar CEPs associados a complexos no painel admin;1
-69;HTTP Get Complex Sizes;http;GET:/api/v2/complex/sizes;Permite listar tamanhos de complexos;1
-70;HTTP Admin Get Complex Zip Code Detail;http;POST:/api/v2/admin/complexes/zip-codes/detail;Permite consultar detalhes de CEP associados a complexos no painel admin;1
-71;HTTP Admin Get Complex Size Detail;http;POST:/api/v2/admin/complexes/sizes/detail;Permite consultar detalhes de um valor de catálogo de tamanho de complexo no painel admin;1
-72;HTTP Admin Get Complex Tower Detail;http;POST:/api/v2/admin/complexes/towers/detail;Permite consultar detalhes de uma torre de complexo no painel admin;1
-73;HTTP Admin Get Listing Catalog Detail;http;POST:/api/v2/admin/listing/catalog/detail;Permite consultar detalhes de um valor de catálogo de listing no painel admin;1
-74;HTTP Admin Get Permissions Detail;http;GET:/api/v2/admin/permissions/detail;Permite consultar detalhes de permissões administrativas no painel admin;1
-75;HTTP Admin Get Roles Detail;http;POST:/api/v2/admin/roles/detail;Permite consultar detalhes de uma role administrativa no painel admin;1
-76;HTTP Schedule Owner Summary;http;POST:/api/v2/schedules/owner/summary;Permite consultar visão consolidada das agendas do proprietário;1
-77;HTTP Schedule Listing Detail;http;POST:/api/v2/schedules/listing/detail;Permite consultar entradas da agenda de um listing;1
-78;HTTP Schedule Create Block;http;POST:/api/v2/schedules/listing/block;Permite criar bloqueios na agenda de um listing;1
-79;HTTP Schedule Update Block;http;PUT:/api/v2/schedules/listing/block;Permite atualizar bloqueios na agenda de um listing;1
-80;HTTP Schedule Delete Block;http;DELETE:/api/v2/schedules/listing/block;Permite remover bloqueios da agenda de um listing;1
-81;HTTP Schedule Listing Availability;http;POST:/api/v2/schedules/listing/availability;Permite consultar disponibilidade de um listing;1
-82;HTTP Admin List Holiday Calendars;http;GET:/api/v2/admin/holidays/calendars;Permite listar calendários de feriados;1
-83;HTTP Admin Get Holiday Calendar Detail;http;POST:/api/v2/admin/holidays/calendars/detail;Permite consultar detalhes de um calendário de feriados;1
-84;HTTP Admin Create Holiday Calendar;http;POST:/api/v2/admin/holidays/calendars;Permite criar calendários de feriados;1
-85;HTTP Admin Update Holiday Calendar;http;PUT:/api/v2/admin/holidays/calendars;Permite atualizar calendários de feriados;1
-86;HTTP Admin Create Holiday Date;http;POST:/api/v2/admin/holidays/dates;Permite criar datas de feriados;1
-87;HTTP Admin List Holiday Dates;http;GET:/api/v2/admin/holidays/dates;Permite listar datas de feriados;1
-88;HTTP Admin Delete Holiday Date;http;DELETE:/api/v2/admin/holidays/dates;Permite deletar datas de feriados;1
-89;HTTP Get Listings;http;GET:/api/v2/listings;Permite listar listings utilizando regras de escopo;1
+id;name;action;description;is_active
+1;"HTTP SignOut";"POST:/api/v2/user/signout";"Permite encerrar a sessão";1
+2;"HTTP GetProfile";"GET:/api/v2/user/profile";"Permite consultar o próprio perfil";1
+3;"HTTP UpdateProfile";"PUT:/api/v2/user/profile";"Permite atualizar o próprio perfil";1
+4;"HTTP GetPhotoUploadURL";"POST:/api/v2/user/photo/upload-url";"Permite obter URL de upload da foto de perfil";1
+5;"HTTP PostPhotoDownloadURL";"POST:/api/v2/user/photo/download-url";"Permite obter URL de download da foto de perfil";1
+6;"HTTP RequestEmailChange";"POST:/api/v2/user/email/request";"Permite solicitar troca de e-mail";1
+7;"HTTP ConfirmEmailChange";"POST:/api/v2/user/email/confirm";"Permite confirmar troca de e-mail";1
+8;"HTTP ResendEmailChangeCode";"POST:/api/v2/user/email/resend";"Permite reenviar código de troca de e-mail";1
+9;"HTTP RequestPhoneChange";"POST:/api/v2/user/phone/request";"Permite solicitar troca de telefone";1
+10;"HTTP ConfirmPhoneChange";"POST:/api/v2/user/phone/confirm";"Permite confirmar troca de telefone";1
+11;"HTTP ResendPhoneChangeCode";"POST:/api/v2/user/phone/resend";"Permite reenviar código de troca de telefone";1
+12;"HTTP GetCreciUploadURL";"POST:/api/v2/realtor/creci/upload-url";"Permite obter URL de upload dos documentos CRECI";1
+13;"HTTP VerifyCreciDocuments";"POST:/api/v2/realtor/creci/verify";"Permite verificar documentos CRECI e enviar para validação manual";1
+14;"HTTP UpdateOptStatus";"PUT:/api/v2/user/opt-status";"Permite atualizar o status de opt-in de notificações";1
+15;"HTTP DeleteAccount";"DELETE:/api/v2/user/account";"Permite deletar a própria conta";1
+16;"HTTP GetUserStatus";"GET:/api/v2/user/status";"Permite consultar o status da role ativa do usuário autenticado";1
+17;"HTTP GetUser Detail";"POST:/api/v2/admin/users/detail";"Permite Admin consultar detalhes de um usuário específico";1
+18;"HTTP ApproveUser";"POST:/api/v2/admin/users/creci/approve";"Permite Admin aprovar/reprovar corretor";1
+19;"HTTP GetPending";"GET:/api/v2/admin/users/creci/pending";"Permite Admin listar corretores pendentes de aprovação";1
+20;"HTTP Admin GetCreciDownloadURL";"POST:/api/v2/admin/users/creci/download-url";"Permite Admin obter URLs de download dos documentos CRECI";1
+21;"HTTP AddAlternativeUserRole";"POST:/api/v2/user/role/alternative";"Permite solicitar criação de role alternativo (owner↔realtor)";1
+22;"HTTP SwitchUserRole";"POST:/api/v2/user/role/switch";"Permite alternar a role ativa do usuário autenticado";1
+23;"HTTP Get all listing options";"POST:/api/v2/listings/options";"Permite obter opções de listing baseadas em endereço";1
+24;"HTTP Start new Listing";"POST:/api/v2/listings";"Permite iniciar o processo de criação de um novo listing";1
+25;"HTTP Update a Listing";"PUT:/api/v2/listings";"Permite atualizar um listing específico em draft";1
+26;"HTTP Get Listing Catalog";"GET:/api/v2/listings/catalog";"Permite consultar valores de catálogo de listings";1
+27;"HTTP Admin Get Listing Catalog";"GET:/api/v2/admin/listing/catalog";"Permite listar valores de catálogo de listings no painel admin";1
+28;"HTTP Admin Create Listing Catalog";"POST:/api/v2/admin/listing/catalog";"Permite criar novos valores no catálogo de listings";1
+29;"HTTP Admin Update Listing Catalog";"PUT:/api/v2/admin/listing/catalog";"Permite atualizar valores do catálogo de listings";1
+30;"HTTP Admin Delete Listing Catalog";"DELETE:/api/v2/admin/listing/catalog";"Permite desativar valores do catálogo de listings";1
+31;"HTTP Get Listing Base Features";"GET:/api/v2/listings/features/base";"Permite listar as comodidades";1
+32;"HTTP Get Roles";"GET:/api/v2/admin/roles";"Permite listar roles com filtro e paginação";1
+33;"HTTP Create Role";"POST:/api/v2/admin/roles";"Permite criar nova role";1
+34;"HTTP Update Role";"PUT:/api/v2/admin/roles";"Permite atualizar role existente";1
+35;"HTTP Delete Role";"DELETE:/api/v2/admin/roles";"Permite desativar role existente";1
+36;"HTTP Admin Get Users";"GET:/api/v2/admin/users";"Permite listar usuários do sistema com filtro e paginação";1
+37;"HTTP Admin Create System User";"POST:/api/v2/admin/users/system";"Permite criar novo usuário do sistema";1
+38;"HTTP Admin Update System User";"PUT:/api/v2/admin/users/system";"Permite atualizar usuário do sistema";1
+39;"HTTP Admin Delete System User";"DELETE:/api/v2/admin/users/system";"Permite deletar usuário do sistema";1
+40;"HTTP Admin Restore Role";"POST:/api/v2/admin/roles/restore";"Permite reativar uma role desativada";1
+41;"HTTP Admin Restore Listing Catalog";"POST:/api/v2/admin/listing/catalog/restore";"Permite reativar um valor de catálogo de listing desativado";1
+42;"HTTP Admin List Permissions";"GET:/api/v2/admin/permissions";"Permite listar permissões administrativas";1
+43;"HTTP Admin Create Permission";"POST:/api/v2/admin/permissions";"Permite criar novas permissões administrativas";1
+44;"HTTP Admin Update Permission";"PUT:/api/v2/admin/permissions";"Permite atualizar permissões administrativas";1
+45;"HTTP Admin Delete Permission";"DELETE:/api/v2/admin/permissions";"Permite excluir permissões administrativas";1
+46;"HTTP Admin List Role Permissions";"GET:/api/v2/admin/role-permissions";"Permite listar relações role-permission";1
+47;"HTTP Admin Create Role Permission";"POST:/api/v2/admin/role-permissions";"Permite criar relações role-permission";1
+48;"HTTP Admin Update Role Permission";"PUT:/api/v2/admin/role-permissions";"Permite atualizar relações role-permission";1
+49;"HTTP Admin Delete Role Permission";"DELETE:/api/v2/admin/role-permissions";"Permite excluir relações role-permission";1
+50;"HTTP End Update Listing";"POST:/api/v2/listings/end-update";"Permite finalizar atualização de listing";1
+51;"HTTP Get Listing Detail";"GET:/api/v2/listings/detail";"Permite consultar detalhes completos de um listing";1
+52;"HTTP Admin Get Complexes";"GET:/api/v2/admin/complexes";"Permite listar complexos no painel admin";1
+53;"HTTP Admin Create Complex";"POST:/api/v2/admin/complexes";"Permite criar novos complexos no painel admin";1
+54;"HTTP Admin Update Complex";"PUT:/api/v2/admin/complexes";"Permite atualizar complexos no painel admin";1
+55;"HTTP Admin Delete Complex";"DELETE:/api/v2/admin/complexes";"Permite deletar complexos no painel admin";1
+56;"HTTP Admin Get Complex Detail";"POST:/api/v2/admin/complexes/detail";"Permite consultar detalhes de um complexo no painel admin";1
+57;"HTTP Admin Get Complex Towers";"GET:/api/v2/admin/complexes/towers";"Permite listar torres de complexos no painel admin";1
+58;"HTTP Admin Create Complex Tower";"POST:/api/v2/admin/complexes/towers";"Permite criar torres de complexos no painel admin";1
+59;"HTTP Admin Update Complex Tower";"PUT:/api/v2/admin/complexes/towers";"Permite atualizar torres de complexos no painel admin";1
+60;"HTTP Admin Delete Complex Tower";"DELETE:/api/v2/admin/complexes/towers";"Permite deletar torres de complexos no painel admin";1
+61;"HTTP Admin Get Complex Sizes";"GET:/api/v2/admin/complexes/sizes";"Permite listar tamanhos de complexos no painel admin";1
+62;"HTTP Admin Create Complex Size";"POST:/api/v2/admin/complexes/sizes";"Permite criar tamanhos de complexos no painel admin";1
+63;"HTTP Admin Update Complex Size";"PUT:/api/v2/admin/complexes/sizes";"Permite atualizar tamanhos de complexos no painel admin";1
+64;"HTTP Admin Delete Complex Size";"DELETE:/api/v2/admin/complexes/sizes";"Permite deletar tamanhos de complexos no painel admin";1
+65;"HTTP Admin Get Complex Zip Codes";"GET:/api/v2/admin/complexes/zip-codes";"Permite listar CEPs associados a complexos no painel admin";1
+66;"HTTP Admin Create Complex Zip Code";"POST:/api/v2/admin/complexes/zip-codes";"Permite criar CEPs associados a complexos no painel admin";1
+67;"HTTP Admin Update Complex Zip Code";"PUT:/api/v2/admin/complexes/zip-codes";"Permite atualizar CEPs associados a complexos no painel admin";1
+68;"HTTP Admin Delete Complex Zip Code";"DELETE:/api/v2/admin/complexes/zip-codes";"Permite deletar CEPs associados a complexos no painel admin";1
+69;"HTTP Get Complex Sizes";"GET:/api/v2/complex/sizes";"Permite listar tamanhos de complexos";1
+70;"HTTP Admin Get Complex Zip Code Detail";"POST:/api/v2/admin/complexes/zip-codes/detail";"Permite consultar detalhes de CEP associados a complexos no painel admin";1
+71;"HTTP Admin Get Complex Size Detail";"POST:/api/v2/admin/complexes/sizes/detail";"Permite consultar detalhes de um valor de catálogo de tamanho de complexo no painel admin";1
+72;"HTTP Admin Get Complex Tower Detail";"POST:/api/v2/admin/complexes/towers/detail";"Permite consultar detalhes de uma torre de complexo no painel admin";1
+73;"HTTP Admin Get Listing Catalog Detail";"POST:/api/v2/admin/listing/catalog/detail";"Permite consultar detalhes de um valor de catálogo de listing no painel admin";1
+74;"HTTP Admin Get Permissions Detail";"GET:/api/v2/admin/permissions/detail";"Permite consultar detalhes de permissões administrativas no painel admin";1
+75;"HTTP Admin Get Roles Detail";"POST:/api/v2/admin/roles/detail";"Permite consultar detalhes de uma role administrativa no painel admin";1
+76;"HTTP Schedule Owner Summary";"POST:/api/v2/schedules/owner/summary";"Permite consultar visão consolidada das agendas do proprietário";1
+77;"HTTP Schedule Listing Detail";"POST:/api/v2/schedules/listing/detail";"Permite consultar entradas da agenda de um listing";1
+78;"HTTP Schedule Create Block";"POST:/api/v2/schedules/listing/block";"Permite criar bloqueios na agenda de um listing";1
+79;"HTTP Schedule Update Block";"PUT:/api/v2/schedules/listing/block";"Permite atualizar bloqueios na agenda de um listing";1
+80;"HTTP Schedule Delete Block";"DELETE:/api/v2/schedules/listing/block";"Permite remover bloqueios da agenda de um listing";1
+81;"HTTP Schedule Listing Availability";"POST:/api/v2/schedules/listing/availability";"Permite consultar disponibilidade de um listing";1
+82;"HTTP Admin List Holiday Calendars";"GET:/api/v2/admin/holidays/calendars";"Permite listar calendários de feriados";1
+83;"HTTP Admin Get Holiday Calendar Detail";"POST:/api/v2/admin/holidays/calendars/detail";"Permite consultar detalhes de um calendário de feriados";1
+84;"HTTP Admin Create Holiday Calendar";"POST:/api/v2/admin/holidays/calendars";"Permite criar calendários de feriados";1
+85;"HTTP Admin Update Holiday Calendar";"PUT:/api/v2/admin/holidays/calendars";"Permite atualizar calendários de feriados";1
+86;"HTTP Admin Create Holiday Date";"POST:/api/v2/admin/holidays/dates";"Permite criar datas de feriados";1
+87;"HTTP Admin List Holiday Dates";"GET:/api/v2/admin/holidays/dates";"Permite listar datas de feriados";1
+88;"HTTP Admin Delete Holiday Date";"DELETE:/api/v2/admin/holidays/dates";"Permite deletar datas de feriados";1
+89;"HTTP Get Listings";"GET:/api/v2/listings";"Permite listar listings utilizando regras de escopo";1

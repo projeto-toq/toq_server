@@ -2355,12 +2355,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Filter by resource (supports '*' wildcard)",
-                        "name": "resource",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "description": "Filter by action (supports '*' wildcard)",
                         "name": "action",
                         "in": "query"
@@ -4036,6 +4030,7 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "description": "Create a System User with specified role and details. Not for Owner/Realtor user creation. Email with instruction will be sent to the new user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7501,18 +7496,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "action",
-                "name",
-                "resource"
+                "name"
             ],
             "properties": {
                 "action": {
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 1
-                },
-                "conditions": {
-                    "type": "object",
-                    "additionalProperties": {}
                 },
                 "description": {
                     "type": "string"
@@ -7521,11 +7511,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 2
-                },
-                "resource": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 1
                 }
             }
         },
@@ -7536,10 +7521,6 @@ const docTemplate = `{
                 "roleId"
             ],
             "properties": {
-                "conditions": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
                 "granted": {
                     "type": "boolean"
                 },
@@ -8044,10 +8025,6 @@ const docTemplate = `{
                 "action": {
                     "type": "string"
                 },
-                "conditions": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
                 "description": {
                     "type": "string"
                 },
@@ -8058,9 +8035,6 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "resource": {
                     "type": "string"
                 }
             }
@@ -8091,10 +8065,6 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRolePermissionSummary": {
             "type": "object",
             "properties": {
-                "conditions": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
                 "granted": {
                     "type": "boolean"
                 },
@@ -8294,10 +8264,6 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
-                "conditions": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
                 "description": {
                     "type": "string"
                 },
@@ -8321,10 +8287,6 @@ const docTemplate = `{
                 "id"
             ],
             "properties": {
-                "conditions": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
                 "granted": {
                     "type": "boolean"
                 },
