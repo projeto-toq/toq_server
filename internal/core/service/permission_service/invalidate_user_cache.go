@@ -35,7 +35,7 @@ func (p *permissionServiceImpl) InvalidateUserCache(ctx context.Context, userID 
 		return err
 	}
 
-	// Em seguida, limpar chaves granulares de permissões (resource/action)
+	// Em seguida, limpar chaves granulares de permissões (action-only)
 	// Best-effort granular clean (sem retorno de erro)
 	p.cache.CleanByUser(ctx, userID)
 

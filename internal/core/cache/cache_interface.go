@@ -13,17 +13,16 @@ import (
 // Focado em cache de permissões modernas usando permission_model
 type CacheInterface interface {
 	// Métodos de cache de permissões (principal funcionalidade)
-	Get(ctx context.Context, userID int64, resource permissionmodel.PermissionResource, action permissionmodel.PermissionAction) (allowed bool, valid bool, err error)
-	Set(ctx context.Context, userID int64, resource permissionmodel.PermissionResource, action permissionmodel.PermissionAction, allowed bool, roleSlug permissionmodel.RoleSlug) error
+	Get(ctx context.Context, userID int64, action string) (allowed bool, valid bool, err error)
+	Set(ctx context.Context, userID int64, action string, allowed bool, roleSlug permissionmodel.RoleSlug) error
 
 	// Métodos de cache de roles
 	GetRole(ctx context.Context, roleSlug permissionmodel.RoleSlug) (roleID int64, valid bool, err error)
 	SetRole(ctx context.Context, roleID int64, roleName string, roleSlug permissionmodel.RoleSlug, description string, isActive bool) error
 
 	// Métodos de limpeza específica
-	CleanByUser(ctx context.Context, userID int64)                                    // Limpar cache de um usuário específico
-	CleanByResource(ctx context.Context, resource permissionmodel.PermissionResource) // Limpar cache de um recurso específico
-	Clean(ctx context.Context)                                                        // Limpeza geral do cache Redis
+	CleanByUser(ctx context.Context, userID int64) // Limpar cache de um usuário específico
+	Clean(ctx context.Context)                     // Limpeza geral do cache Redis
 
 	// Métodos de cache de permissões de usuário
 	GetUserPermissions(ctx context.Context, userID int64) ([]byte, error)

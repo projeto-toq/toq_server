@@ -6,29 +6,32 @@ import (
 	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ListListingsInput captures filters and pagination for listing search.
 type ListListingsInput struct {
-	Page         int
-	Limit        int
-	Status       *listingmodel.ListingStatus
-	Code         *uint32
-	Title        string
-	ZipCode      string
-	City         string
-	Neighborhood string
-	UserID       *int64
-	CreatedFrom  *time.Time
-	CreatedTo    *time.Time
-	MinSellPrice *float64
-	MaxSellPrice *float64
-	MinRentPrice *float64
-	MaxRentPrice *float64
-	MinLandSize  *float64
-	MaxLandSize  *float64
+	Page              int
+	Limit             int
+	Status            *listingmodel.ListingStatus
+	Code              *uint32
+	Title             string
+	ZipCode           string
+	City              string
+	Neighborhood      string
+	UserID            *int64
+	CreatedFrom       *time.Time
+	CreatedTo         *time.Time
+	MinSellPrice      *float64
+	MaxSellPrice      *float64
+	MinRentPrice      *float64
+	MaxRentPrice      *float64
+	MinLandSize       *float64
+	MaxLandSize       *float64
+	RequesterUserID   int64
+	RequesterRoleSlug permissionmodel.RoleSlug
 }
 
 // ListListingsOutput encapsulates listings and paging metadata.
@@ -56,6 +59,12 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+
+	if input.RequesterRoleSlug == permissionmodel.RoleSlugOwner {
+		ownerID := input.RequesterUserID
+		input.UserID = &ownerID
+		logger.Debug("listing.list.owner_scope_enforced", "user_id", ownerID)
+	}
 
 	if input.Page <= 0 {
 		input.Page = 1

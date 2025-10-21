@@ -74,14 +74,9 @@ func toAdminPermissionSummary(permission permissionmodel.PermissionInterface) dt
 	resp := dto.AdminPermissionSummary{
 		ID:          permission.GetID(),
 		Name:        permission.GetName(),
-		Resource:    permission.GetResource(),
 		Action:      permission.GetAction(),
 		Description: permission.GetDescription(),
 		IsActive:    permission.GetIsActive(),
-	}
-
-	if conditions := permission.GetConditions(); conditions != nil {
-		resp.Conditions = conditions
 	}
 
 	return resp

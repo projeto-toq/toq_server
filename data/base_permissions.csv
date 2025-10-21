@@ -119,3 +119,4 @@ id;name;resource;action;description;conditions;is_active
 118;HTTP Admin Create Holiday Date;http;POST:/api/v2/admin/holidays/dates;Permite criar datas de feriados;NULL;1
 119;HTTP Admin List Holiday Dates;http;GET:/api/v2/admin/holidays/dates;Permite listar datas de feriados;NULL;1
 120;HTTP Admin Delete Holiday Date;http;DELETE:/api/v2/admin/holidays/dates;Permite deletar datas de feriados;NULL;1
+121;HTTP Get Listings;http;GET:/api/v2/listings;Permite listar listings utilizando regras de escopo;NULL;1

@@ -5,6 +5,7 @@ type PermissionContext struct {
 	UserID     int64                  `json:"user_id"`
 	UserRoleID int64                  `json:"user_role_id"`
 	RoleStatus UserRoleStatus         `json:"role_status"`
+	RoleSlug   RoleSlug               `json:"role_slug"`
 	Metadata   map[string]interface{} `json:"metadata"`
 }
 
@@ -14,6 +15,7 @@ func NewPermissionContext(userID, userRoleID int64) *PermissionContext {
 		UserID:     userID,
 		UserRoleID: userRoleID,
 		RoleStatus: StatusActive, // Mantém por compatibilidade, mas será ignorado
+		RoleSlug:   "",
 		Metadata:   make(map[string]interface{}),
 	}
 }
@@ -28,6 +30,17 @@ func (pc *PermissionContext) AddMetadata(key string, value interface{}) *Permiss
 func (pc *PermissionContext) WithMetadata(metadata map[string]interface{}) *PermissionContext {
 	pc.Metadata = metadata
 	return pc
+}
+
+// SetRoleSlug define o role slug associado ao contexto
+func (pc *PermissionContext) SetRoleSlug(roleSlug RoleSlug) *PermissionContext {
+	pc.RoleSlug = roleSlug
+	return pc
+}
+
+// GetRoleSlug retorna o role slug associado ao contexto
+func (pc *PermissionContext) GetRoleSlug() RoleSlug {
+	return pc.RoleSlug
 }
 
 // HasRole verifica se o usuário possui um role específico

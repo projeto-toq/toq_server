@@ -1,23 +1,17 @@
 package permissionmodel
 
-import (
-	"encoding/json"
-)
-
+// permission represents a simplified permission focused on HTTP actions.
 type permission struct {
 	id          int64
 	name        string
 	description string
-	resource    string
 	action      string
-	conditions  map[string]interface{}
 	isActive    bool
 }
 
+// NewPermission creates a new permission with default active flag.
 func NewPermission() PermissionInterface {
-	return &permission{
-		isActive: true,
-	}
+	return &permission{isActive: true}
 }
 
 func (p *permission) GetID() int64 {
@@ -44,14 +38,6 @@ func (p *permission) SetDescription(description string) {
 	p.description = description
 }
 
-func (p *permission) GetResource() string {
-	return p.resource
-}
-
-func (p *permission) SetResource(resource string) {
-	p.resource = resource
-}
-
 func (p *permission) GetAction() string {
 	return p.action
 }
@@ -60,42 +46,10 @@ func (p *permission) SetAction(action string) {
 	p.action = action
 }
 
-func (p *permission) GetConditions() map[string]interface{} {
-	return p.conditions
-}
-
-func (p *permission) SetConditions(conditions map[string]interface{}) {
-	p.conditions = conditions
-}
-
 func (p *permission) GetIsActive() bool {
 	return p.isActive
 }
 
 func (p *permission) SetIsActive(isActive bool) {
 	p.isActive = isActive
-}
-
-func (p *permission) SetConditionsFromJSON(jsonData []byte) error {
-	if len(jsonData) == 0 {
-		p.conditions = nil
-		return nil
-	}
-
-	var conditions map[string]interface{}
-	err := json.Unmarshal(jsonData, &conditions)
-	if err != nil {
-		return err
-	}
-
-	p.conditions = conditions
-	return nil
-}
-
-func (p *permission) GetConditionsAsJSON() ([]byte, error) {
-	if p.conditions == nil {
-		return nil, nil
-	}
-
-	return json.Marshal(p.conditions)
 }

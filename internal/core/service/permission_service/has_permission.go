@@ -20,16 +20,14 @@ type CachedUserPermissions struct {
 
 // PermissionSerializable representa uma permissão serializada para JSON
 type PermissionSerializable struct {
-	ID          int64                  `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Resource    string                 `json:"resource"`
-	Action      string                 `json:"action"`
-	Conditions  map[string]interface{} `json:"conditions,omitempty"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Action      string `json:"action"`
 }
 
-// HasPermission verifica se o usuário tem uma permissão específica
-func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64, resource, action string, permContext *permissionmodel.PermissionContext) (bool, error) {
+// hasPermissionByAction verifica se o usuário possui a ação informada
+func (p *permissionServiceImpl) hasPermissionByAction(ctx context.Context, userID int64, action string) (bool, error) {
 	// Tracing da operação
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
@@ -41,11 +39,11 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 		return false, utils.BadRequest("invalid user id")
 	}
 
-	if resource == "" || action == "" {
-		return false, utils.BadRequest("invalid resource or action")
+	if action == "" {
+		return false, utils.BadRequest("invalid action")
 	}
 
-	logger.Debug("permission.check.start", "user_id", userID, "resource", resource, "action", action)
+	logger.Debug("permission.check.start", "user_id", userID, "action", action)
 
 	// Tentar buscar permissões do cache primeiro
 	userPermissions, cacheHit, err := p.getUserPermissionsWithCache(ctx, userID)
@@ -55,32 +53,13 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 		return false, utils.InternalError("")
 	}
 
-	// Verificar cada permissão
-	evaluator := NewConditionEvaluator()
 	evaluatePermissions := func(perms []permissionmodel.PermissionInterface) bool {
 		for _, permission := range perms {
-			if permission.GetResource() != resource || permission.GetAction() != action {
-				continue
+			if permission.GetAction() == action {
+				logger.Info("permission.check.allowed", "user_id", userID, "action", action, "permission_id", permission.GetID())
+				return true
 			}
-
-			if permission.GetConditions() != nil {
-				if permContext == nil {
-					// Sem contexto mas com condições - negar
-					continue
-				}
-
-				if evaluator.Evaluate(ctx, permission.GetConditions(), permContext) {
-					logger.Info("permission.check.allowed", "user_id", userID, "resource", resource, "action", action, "permission_id", permission.GetID())
-					return true
-				}
-				continue
-			}
-
-			// Permissão sem condições
-			logger.Info("permission.check.allowed", "user_id", userID, "resource", resource, "action", action, "permission_id", permission.GetID())
-			return true
 		}
-
 		return false
 	}
 
@@ -90,28 +69,28 @@ func (p *permissionServiceImpl) HasPermission(ctx context.Context, userID int64,
 		}
 
 		if attempt == 0 && cacheHit {
-			logger.Info("permission.cache.refresh_on_miss", "user_id", userID, "resource", resource, "action", action)
+			logger.Info("permission.cache.refresh_on_miss", "user_id", userID, "action", action)
 			if err := p.RefreshUserPermissions(ctx, userID); err != nil {
-				logger.Error("permission.cache.refresh_on_miss_failed", "user_id", userID, "resource", resource, "action", action, "error", err)
+				logger.Error("permission.cache.refresh_on_miss_failed", "user_id", userID, "action", action, "error", err)
 				utils.SetSpanError(ctx, err)
 				return false, utils.InternalError("")
 			}
 
 			userPermissions, cacheHit, err = p.getUserPermissionsWithCache(ctx, userID)
 			if err != nil {
-				logger.Error("permission.cache.refresh_reload_failed", "user_id", userID, "resource", resource, "action", action, "error", err)
+				logger.Error("permission.cache.refresh_reload_failed", "user_id", userID, "action", action, "error", err)
 				utils.SetSpanError(ctx, err)
 				return false, utils.InternalError("")
 			}
 
-			logger.Info("permission.cache.refresh_on_miss_completed", "user_id", userID, "resource", resource, "action", action, "permissions", len(userPermissions))
+			logger.Info("permission.cache.refresh_on_miss_completed", "user_id", userID, "action", action, "permissions", len(userPermissions))
 			continue
 		}
 
 		break
 	}
 
-	logger.Warn("permission.check.denied", "user_id", userID, "resource", resource, "action", action)
+	logger.Warn("permission.check.denied", "user_id", userID, "action", action)
 	return false, nil
 }
 
@@ -202,11 +181,7 @@ func (p *permissionServiceImpl) getUserPermissionsFromCache(ctx context.Context,
 		permission.SetID(perm.ID)
 		permission.SetName(perm.Name)
 		permission.SetDescription(perm.Description)
-		permission.SetResource(perm.Resource)
 		permission.SetAction(perm.Action)
-		if perm.Conditions != nil {
-			permission.SetConditions(perm.Conditions)
-		}
 		permissions = append(permissions, permission)
 	}
 
@@ -238,9 +213,7 @@ func (p *permissionServiceImpl) setUserPermissionsInCache(ctx context.Context, c
 			ID:          perm.GetID(),
 			Name:        perm.GetName(),
 			Description: perm.GetDescription(),
-			Resource:    perm.GetResource(),
 			Action:      perm.GetAction(),
-			Conditions:  perm.GetConditions(),
 		}
 		serializable = append(serializable, permStruct)
 	}

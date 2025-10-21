@@ -15,7 +15,7 @@ FIELDS TERMINATED BY ';'
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
-(id, name, resource, action, description, @conditions, is_active)
+(id, name, action, description, is_active)
 SET conditions = NULLIF(@conditions, 'NULL');
 
 -- Importar role_permissions
@@ -25,7 +25,7 @@ FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
-(id, role_id, permission_id, granted, @conditions)
+(id, role_id, permission_id, granted)
 SET conditions = NULLIF(@conditions, 'NULL');
 
 

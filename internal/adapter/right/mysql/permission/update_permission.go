@@ -31,22 +31,20 @@ func (pa *PermissionAdapter) UpdatePermission(ctx context.Context, tx *sql.Tx, p
 
 	logger = logger.With(
 		"permission_id", entity.ID,
-		"resource", entity.Resource,
 		"action", entity.Action,
 	)
 
 	query := `
 		UPDATE permissions 
-		SET name = ?, resource = ?, action = ?, description = ?, conditions = ?, is_active = ?
+		SET name = ?, action = ?, description = ?, is_active = ?
 		WHERE id = ?
 	`
 
 	rowsAffected, err := pa.Update(ctx, tx, query,
 		entity.Name,
-		entity.Resource,
 		entity.Action,
 		entity.Description,
-		entity.Conditions,
+		entity.ID,
 		entity.IsActive,
 		entity.ID,
 	)

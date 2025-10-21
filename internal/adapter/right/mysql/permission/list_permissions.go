@@ -36,10 +36,6 @@ func (pa *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, fi
 		conditions = append(conditions, "p.name LIKE ?")
 		args = append(args, filter.Name)
 	}
-	if filter.Resource != "" {
-		conditions = append(conditions, "p.resource LIKE ?")
-		args = append(args, filter.Resource)
-	}
 	if filter.Action != "" {
 		conditions = append(conditions, "p.action LIKE ?")
 		args = append(args, filter.Action)
@@ -54,8 +50,8 @@ func (pa *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, fi
 
 	whereClause := "WHERE " + strings.Join(conditions, " AND ")
 
-	query := `SELECT id, name, resource, action, description, conditions, is_active
-        FROM permissions p ` + " " + whereClause + " ORDER BY resource ASC, action ASC LIMIT ? OFFSET ?"
+	query := `SELECT id, name, action, description, is_active
+		FROM permissions p ` + " " + whereClause + " ORDER BY action ASC LIMIT ? OFFSET ?"
 
 	listArgs := append([]any{}, args...)
 	offset := (filter.Page - 1) * filter.Limit
@@ -74,8 +70,8 @@ func (pa *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, fi
 	}
 
 	for idx, row := range rows {
-		if len(row) != 7 {
-			logger.Warn("mysql.permission.list_permissions.columns_mismatch", "row_index", idx, "expected", 7, "got", len(row))
+		if len(row) != 5 {
+			logger.Warn("mysql.permission.list_permissions.columns_mismatch", "row_index", idx, "expected", 5, "got", len(row))
 			continue
 		}
 
@@ -89,39 +85,27 @@ func (pa *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, fi
 		case string:
 			entity.Name = nameVal
 		}
-		switch resourceVal := row[2].(type) {
-		case []byte:
-			entity.Resource = string(resourceVal)
-		case string:
-			entity.Resource = resourceVal
-		}
-		switch actionVal := row[3].(type) {
+		switch actionVal := row[2].(type) {
 		case []byte:
 			entity.Action = string(actionVal)
 		case string:
 			entity.Action = actionVal
 		}
-		if row[4] != nil {
-			switch desc := row[4].(type) {
+		if row[3] != nil {
+			switch desc := row[3].(type) {
 			case []byte:
-				entity.Description = string(desc)
+				d := string(desc)
+				entity.Description = &d
 			case string:
-				entity.Description = desc
+				d := desc
+				entity.Description = &d
 			}
 		}
-		if row[5] != nil {
-			switch cond := row[5].(type) {
-			case []byte:
-				condStr := string(cond)
-				entity.Conditions = &condStr
-			case string:
-				condStr := cond
-				entity.Conditions = &condStr
-			}
-		}
-		switch activeVal := row[6].(type) {
+		switch activeVal := row[4].(type) {
 		case int64:
 			entity.IsActive = activeVal == 1
+		case bool:
+			entity.IsActive = activeVal
 		}
 
 		permission, convertErr := permissionconverters.PermissionEntityToDomain(entity)

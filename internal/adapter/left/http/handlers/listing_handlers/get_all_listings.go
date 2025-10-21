@@ -150,6 +150,14 @@ func (lh *ListingHandler) GetAllListings(c *gin.Context) {
 		MinLandSize:  minLand,
 		MaxLandSize:  maxLand,
 	}
+	userInfo, infoErr := coreutils.GetUserInfoFromGinContext(c)
+	if infoErr != nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("User info not found"))
+		return
+	}
+
+	input.RequesterUserID = userInfo.ID
+	input.RequesterRoleSlug = userInfo.RoleSlug
 
 	result, listErr := lh.listingService.ListListings(ctx, input)
 	if listErr != nil {

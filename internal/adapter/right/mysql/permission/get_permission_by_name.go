@@ -22,7 +22,7 @@ func (pa *PermissionAdapter) GetPermissionByName(ctx context.Context, tx *sql.Tx
 	logger = logger.With("permission_name", name)
 
 	query := `
-		SELECT id, name, CONCAT(resource, ':', action) AS slug, resource, action, description, conditions, is_active
+		SELECT id, name, action, description, is_active
 		FROM permissions 
 		WHERE name = ?
 	`
@@ -30,16 +30,13 @@ func (pa *PermissionAdapter) GetPermissionByName(ctx context.Context, tx *sql.Tx
 	var (
 		id          int64
 		nameOut     string
-		slug        string
-		resource    string
 		action      string
-		description string
-		conditions  sql.NullString
+		description sql.NullString
 		isActiveInt int64
 	)
 
 	err = tx.QueryRowContext(ctx, query, name).Scan(
-		&id, &nameOut, &slug, &resource, &action, &description, &conditions, &isActiveInt,
+		&id, &nameOut, &action, &description, &isActiveInt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -52,17 +49,14 @@ func (pa *PermissionAdapter) GetPermissionByName(ctx context.Context, tx *sql.Tx
 	}
 
 	entity := &permissionentities.PermissionEntity{
-		ID:          id,
-		Name:        nameOut,
-		Slug:        slug,
-		Resource:    resource,
-		Action:      action,
-		Description: description,
-		IsActive:    isActiveInt == 1,
+		ID:       id,
+		Name:     nameOut,
+		Action:   action,
+		IsActive: isActiveInt == 1,
 	}
-	if conditions.Valid {
-		v := conditions.String
-		entity.Conditions = &v
+	if description.Valid {
+		desc := description.String
+		entity.Description = &desc
 	}
 
 	permission, convertErr := permissionconverters.PermissionEntityToDomain(entity)

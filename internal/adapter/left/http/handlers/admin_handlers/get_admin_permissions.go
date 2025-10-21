@@ -19,7 +19,6 @@ import (
 //	@Param		page		query	int	false	"Page number" default(1) example(1)
 //	@Param		limit		query	int	false	"Page size" default(20) example(20)
 //	@Param		name		query	string	false	"Filter by name (supports '*' wildcard)"
-//	@Param		resource	query	string	false	"Filter by resource (supports '*' wildcard)"
 //	@Param		action		query	string	false	"Filter by action (supports '*' wildcard)"
 //	@Param		isActive	query	bool	false	"Filter by active flag"
 //	@Success	200	{object}	dto.AdminListPermissionsResponse
@@ -41,7 +40,6 @@ func (h *AdminHandler) GetAdminPermissions(c *gin.Context) {
 		Page:     req.Page,
 		Limit:    req.Limit,
 		Name:     strings.TrimSpace(req.Name),
-		Resource: strings.TrimSpace(req.Resource),
 		Action:   strings.TrimSpace(req.Action),
 		IsActive: req.IsActive,
 	}

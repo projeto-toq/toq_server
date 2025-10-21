@@ -334,7 +334,6 @@ func RegisterAdminRoutes(
 	// Apply security middlewares: Auth and Admin permission check
 	admin.Use(middlewares.AuthMiddleware(activityTracker))
 	admin.Use(middlewares.PermissionMiddleware(permissionService))
-	admin.Use(middlewares.RequireAdminPermission(permissionService))
 
 	{
 		// GET /admin/users/creci/pending

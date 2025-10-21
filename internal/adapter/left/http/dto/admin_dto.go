@@ -236,20 +236,17 @@ type AdminListPermissionsRequest struct {
 	Page     int    `form:"page,default=1" binding:"min=1"`
 	Limit    int    `form:"limit,default=20" binding:"min=1,max=100"`
 	Name     string `form:"name"`
-	Resource string `form:"resource"`
 	Action   string `form:"action"`
 	IsActive *bool  `form:"isActive"`
 }
 
 // AdminPermissionSummary minimal projection for permission
 type AdminPermissionSummary struct {
-	ID          int64          `json:"id"`
-	Name        string         `json:"name"`
-	Resource    string         `json:"resource"`
-	Action      string         `json:"action"`
-	Description string         `json:"description"`
-	Conditions  map[string]any `json:"conditions,omitempty"`
-	IsActive    bool           `json:"isActive"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Action      string `json:"action"`
+	Description string `json:"description"`
+	IsActive    bool   `json:"isActive"`
 }
 
 // AdminListPermissionsResponse wraps permission listing
@@ -260,20 +257,17 @@ type AdminListPermissionsResponse struct {
 
 // AdminCreatePermissionRequest represents POST /admin/permissions payload
 type AdminCreatePermissionRequest struct {
-	Name        string         `json:"name" binding:"required,min=2,max=100"`
-	Resource    string         `json:"resource" binding:"required,min=1,max=50"`
-	Action      string         `json:"action" binding:"required,min=1,max=50"`
-	Description string         `json:"description"`
-	Conditions  map[string]any `json:"conditions"`
+	Name        string `json:"name" binding:"required,min=2,max=100"`
+	Action      string `json:"action" binding:"required,min=1,max=50"`
+	Description string `json:"description"`
 }
 
 // AdminUpdatePermissionRequest represents PUT /admin/permissions payload
 type AdminUpdatePermissionRequest struct {
-	ID          int64          `json:"id" binding:"required,min=1"`
-	Name        string         `json:"name" binding:"required,min=2,max=100"`
-	Description string         `json:"description"`
-	IsActive    *bool          `json:"isActive"`
-	Conditions  map[string]any `json:"conditions"`
+	ID          int64  `json:"id" binding:"required,min=1"`
+	Name        string `json:"name" binding:"required,min=2,max=100"`
+	Description string `json:"description"`
+	IsActive    *bool  `json:"isActive"`
 }
 
 // AdminDeletePermissionRequest represents DELETE /admin/permissions payload

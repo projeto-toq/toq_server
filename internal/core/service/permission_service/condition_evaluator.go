@@ -2,6 +2,7 @@ package permissionservice
 
 import (
 	"context"
+	"strings"
 
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -96,34 +97,49 @@ func (e *ConditionEvaluator) checkOwnerCondition(ctx context.Context, owner inte
 // checkRoleCondition verifica condições de role
 func (e *ConditionEvaluator) checkRoleCondition(ctx context.Context, roles interface{}, permissionCtx *permissionmodel.PermissionContext) bool {
 	logger := utils.LoggerFromContext(ctx)
-	// Com a nova estrutura, verificamos o UserRoleID e RoleStatus diretamente
-	// Esta função pode ser simplificada ou usar lookup de role baseado no UserRoleID
+	if permissionCtx == nil {
+		return false
+	}
 
-	// // Para agora, vamos fazer uma verificação básica se o usuário tem role ativo
-	// if !context.IsActive() {
-	// 	return false
-	// }
+	roleSlug := permissionCtx.GetRoleSlug()
+	if roleSlug == "" {
+		if rawSlug, ok := permissionCtx.Metadata["role_slug"]; ok {
+			if slugStr, okCast := rawSlug.(string); okCast {
+				roleSlug = permissionmodel.RoleSlug(strings.ToLower(slugStr))
+			}
+		}
+	}
 
 	switch roleData := roles.(type) {
 	case string:
-		// Role único - verificar se usuário tem role ativo
-		return e.hasRoleByID(permissionCtx.UserRoleID)
-
+		return compareRoleSlug(roleSlug, roleData)
 	case []interface{}:
-		// Lista de roles (OR lógico)
 		for _, role := range roleData {
-			if _, ok := role.(string); ok {
-				if e.hasRoleByID(permissionCtx.UserRoleID) {
+			if roleStr, ok := role.(string); ok {
+				if compareRoleSlug(roleSlug, roleStr) {
 					return true
 				}
 			}
 		}
 		return false
-
+	case []string:
+		for _, roleStr := range roleData {
+			if compareRoleSlug(roleSlug, roleStr) {
+				return true
+			}
+		}
+		return false
 	default:
 		logger.Warn("permission.condition.role_invalid_format", "roles", roles)
 		return false
 	}
+}
+
+func compareRoleSlug(current permissionmodel.RoleSlug, expected string) bool {
+	if current == "" || expected == "" {
+		return false
+	}
+	return strings.EqualFold(current.String(), expected)
 }
 
 // checkRelatedCondition verifica condições de relacionamento
@@ -147,18 +163,6 @@ func (e *ConditionEvaluator) checkRelatedCondition(ctx context.Context, related 
 		logger.Warn("permission.condition.related_unknown", "condition", relatedStr)
 		return false
 	}
-}
-
-// hasRoleByID verifica se o usuário tem um role específico baseado no UserRoleID
-func (e *ConditionEvaluator) hasRoleByID(userRoleID int64) bool {
-	// Para simplificar por agora, apenas verifica se tem um UserRoleID válido
-	// Esta função deveria fazer lookup do role slug baseado no UserRoleID
-	// Por enquanto, retorna true se o usuário tem role ativo (UserRoleID > 0)
-
-	// TODO: Implementar lookup real do role baseado no UserRoleID
-	// Isso requereria acesso ao repositório ou serviço de role
-
-	return userRoleID > 0
 }
 
 // isOwnerOrRelatedRealtor verifica se é proprietário ou corretor relacionado

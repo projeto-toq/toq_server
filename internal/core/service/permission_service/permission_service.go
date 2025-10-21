@@ -34,9 +34,6 @@ func NewPermissionService(
 }
 
 type PermissionServiceInterface interface {
-	// Verificação principal de permissões
-	HasPermission(ctx context.Context, userID int64, resource, action string, permContext *permissionmodel.PermissionContext) (bool, error)
-
 	// Helper para HTTP
 	HasHTTPPermission(ctx context.Context, userID int64, method, path string) (bool, error)
 

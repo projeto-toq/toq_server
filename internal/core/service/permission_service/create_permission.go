@@ -14,20 +14,17 @@ func (p *permissionServiceImpl) CreatePermission(ctx context.Context, input Crea
 	if err != nil {
 		return nil, utils.InternalError("Failed to generate tracer")
 	}
+
 	defer end()
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	input.Name = strings.TrimSpace(input.Name)
-	input.Resource = strings.TrimSpace(input.Resource)
 	input.Action = strings.TrimSpace(input.Action)
 
 	if input.Name == "" {
 		return nil, utils.ValidationError("name", "permission name cannot be empty")
-	}
-	if input.Resource == "" {
-		return nil, utils.ValidationError("resource", "permission resource cannot be empty")
 	}
 	if input.Action == "" {
 		return nil, utils.ValidationError("action", "permission action cannot be empty")
@@ -53,16 +50,16 @@ func (p *permissionServiceImpl) CreatePermission(ctx context.Context, input Crea
 		return nil, utils.ConflictError("permission name already exists")
 	}
 
-	existingByResource, resourceErr := p.permissionRepository.GetPermissionsByResourceAndAction(ctx, roTx, input.Resource, input.Action)
-	if resourceErr != nil {
-		utils.SetSpanError(ctx, resourceErr)
-		logger.Error("permission.permission.create.get_by_resource_action_failed", "resource", input.Resource, "action", input.Action, "error", resourceErr)
+	existingByAction, actionErr := p.permissionRepository.GetPermissionByAction(ctx, roTx, input.Action)
+	if actionErr != nil {
+		utils.SetSpanError(ctx, actionErr)
+		logger.Error("permission.permission.create.get_by_action_failed", "action", input.Action, "error", actionErr)
 		_ = p.globalService.RollbackTransaction(ctx, roTx)
 		return nil, utils.InternalError("")
 	}
-	if len(existingByResource) > 0 {
+	if existingByAction != nil {
 		_ = p.globalService.RollbackTransaction(ctx, roTx)
-		return nil, utils.ConflictError("permission resource/action already exists")
+		return nil, utils.ConflictError("permission action already exists")
 	}
 
 	if commitErr := p.globalService.CommitTransaction(ctx, roTx); commitErr != nil {
@@ -74,19 +71,15 @@ func (p *permissionServiceImpl) CreatePermission(ctx context.Context, input Crea
 	// Criar domínio
 	permission := permissionmodel.NewPermission()
 	permission.SetName(input.Name)
-	permission.SetResource(input.Resource)
 	permission.SetAction(input.Action)
 	permission.SetDescription(strings.TrimSpace(input.Description))
-	if input.Conditions != nil {
-		permission.SetConditions(input.Conditions)
-	}
 	permission.SetIsActive(true)
 
 	// Transação de escrita
 	tx, werr := p.globalService.StartTransaction(ctx)
 	if werr != nil {
 		utils.SetSpanError(ctx, werr)
-		logger.Error("permission.permission.create.tx_start_failed", "resource", input.Resource, "action", input.Action, "error", werr)
+		logger.Error("permission.permission.create.tx_start_failed", "action", input.Action, "error", werr)
 		return nil, utils.InternalError("")
 	}
 
@@ -95,14 +88,14 @@ func (p *permissionServiceImpl) CreatePermission(ctx context.Context, input Crea
 		if opErr != nil {
 			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("permission.permission.create.tx_rollback_failed", "resource", input.Resource, "action", input.Action, "error", rbErr)
+				logger.Error("permission.permission.create.tx_rollback_failed", "action", input.Action, "error", rbErr)
 			}
 		}
 	}()
 
 	if err = p.permissionRepository.CreatePermission(ctx, tx, permission); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("permission.permission.create.repo_error", "resource", input.Resource, "action", input.Action, "error", err)
+		logger.Error("permission.permission.create.repo_error", "action", input.Action, "error", err)
 		opErr = utils.InternalError("")
 		return nil, opErr
 	}
@@ -113,6 +106,6 @@ func (p *permissionServiceImpl) CreatePermission(ctx context.Context, input Crea
 		return nil, utils.InternalError("")
 	}
 
-	logger.Info("permission.permission.created", "permission_id", permission.GetID(), "resource", input.Resource, "action", input.Action)
+	logger.Info("permission.permission.created", "permission_id", permission.GetID(), "action", input.Action)
 	return permission, nil
 }

@@ -22,8 +22,7 @@ type PermissionRepositoryInterface interface {
 	CreatePermission(ctx context.Context, tx *sql.Tx, permission permissionmodel.PermissionInterface) error
 	GetPermissionByID(ctx context.Context, tx *sql.Tx, permissionID int64) (permissionmodel.PermissionInterface, error)
 	GetPermissionByName(ctx context.Context, tx *sql.Tx, name string) (permissionmodel.PermissionInterface, error)
-	GetPermissionsByResource(ctx context.Context, tx *sql.Tx, resource string) ([]permissionmodel.PermissionInterface, error)
-	GetPermissionsByResourceAndAction(ctx context.Context, tx *sql.Tx, resource, action string) ([]permissionmodel.PermissionInterface, error)
+	GetPermissionByAction(ctx context.Context, tx *sql.Tx, action string) (permissionmodel.PermissionInterface, error)
 	GetAllPermissions(ctx context.Context, tx *sql.Tx) ([]permissionmodel.PermissionInterface, error)
 	ListPermissions(ctx context.Context, tx *sql.Tx, filter PermissionListFilter) (PermissionListResult, error)
 	UpdatePermission(ctx context.Context, tx *sql.Tx, permission permissionmodel.PermissionInterface) error
@@ -58,8 +57,6 @@ type PermissionRepositoryInterface interface {
 
 	// Complex queries for permission checking
 	GetUserPermissions(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
-	HasUserPermission(ctx context.Context, tx *sql.Tx, userID int64, resource, action string) (bool, error)
-	GetUserPermissionsByResource(ctx context.Context, tx *sql.Tx, userID int64, resource string) ([]permissionmodel.PermissionInterface, error)
 }
 
 type RoleListFilter struct {
@@ -83,7 +80,6 @@ type PermissionListFilter struct {
 	Page     int
 	Limit    int
 	Name     string
-	Resource string
 	Action   string
 	IsActive *bool
 }

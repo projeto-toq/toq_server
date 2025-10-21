@@ -22,14 +22,13 @@ type RedisCache struct {
 
 // PermissionCacheEntry representa uma entrada de cache para o sistema de permissões moderno
 type PermissionCacheEntry struct {
-	Allowed   bool                               `json:"allowed"`
-	Valid     bool                               `json:"valid"`
-	CreatedAt time.Time                          `json:"created_at"`
-	UserID    int64                              `json:"user_id"`
-	Resource  permissionmodel.PermissionResource `json:"resource"`
-	Action    permissionmodel.PermissionAction   `json:"action"`
-	RoleSlug  permissionmodel.RoleSlug           `json:"role_slug"`
-	ExpiresAt *time.Time                         `json:"expires_at,omitempty"`
+	Allowed   bool                     `json:"allowed"`
+	Valid     bool                     `json:"valid"`
+	CreatedAt time.Time                `json:"created_at"`
+	UserID    int64                    `json:"user_id"`
+	Action    string                   `json:"action"`
+	RoleSlug  permissionmodel.RoleSlug `json:"role_slug"`
+	ExpiresAt *time.Time               `json:"expires_at,omitempty"`
 }
 
 // RoleCacheEntry representa uma entrada de cache para roles
@@ -84,8 +83,8 @@ func (rc *RedisCache) GetRedisClient() *redis.Client {
 }
 
 // Get recupera uma entrada do cache para o sistema de permissões moderno
-func (rc *RedisCache) Get(ctx context.Context, userID int64, resource permissionmodel.PermissionResource, action permissionmodel.PermissionAction) (allowed bool, valid bool, err error) {
-	key := rc.buildPermissionKey(userID, resource, action)
+func (rc *RedisCache) Get(ctx context.Context, userID int64, action string) (allowed bool, valid bool, err error) {
+	key := rc.buildPermissionKey(userID, action)
 
 	result, err := rc.client.Get(ctx, key).Result()
 	if err != nil {
@@ -115,15 +114,14 @@ func (rc *RedisCache) Get(ctx context.Context, userID int64, resource permission
 }
 
 // Set armazena uma entrada no cache para o sistema de permissões moderno
-func (rc *RedisCache) Set(ctx context.Context, userID int64, resource permissionmodel.PermissionResource, action permissionmodel.PermissionAction, allowed bool, roleSlug permissionmodel.RoleSlug) error {
-	key := rc.buildPermissionKey(userID, resource, action)
+func (rc *RedisCache) Set(ctx context.Context, userID int64, action string, allowed bool, roleSlug permissionmodel.RoleSlug) error {
+	key := rc.buildPermissionKey(userID, action)
 
 	entry := PermissionCacheEntry{
 		Allowed:   allowed,
 		Valid:     true,
 		CreatedAt: time.Now(),
 		UserID:    userID,
-		Resource:  resource,
 		Action:    action,
 		RoleSlug:  roleSlug,
 	}
@@ -232,34 +230,6 @@ func (rc *RedisCache) Clean(ctx context.Context) {
 	}
 }
 
-// CleanByMethod limpa cache específico por recurso e ação
-func (rc *RedisCache) CleanByResource(ctx context.Context, resource permissionmodel.PermissionResource) {
-	pattern := rc.keyPrefix + fmt.Sprintf("permission:*:resource:%s:*", resource)
-
-	slog.Debug("Cleaning cache by resource", "resource", resource, "pattern", pattern)
-
-	iter := rc.client.Scan(ctx, 0, pattern, 0).Iterator()
-
-	var keys []string
-	for iter.Next(ctx) {
-		keys = append(keys, iter.Val())
-	}
-
-	if err := iter.Err(); err != nil {
-		slog.Error("Error scanning cache keys by resource", "resource", resource, "error", err)
-		return
-	}
-
-	if len(keys) > 0 {
-		deleted, err := rc.client.Del(ctx, keys...).Result()
-		if err != nil {
-			slog.Error("Error deleting cache keys by resource", "resource", resource, "error", err)
-			return
-		}
-		slog.Debug("Cache cleaned by resource", "resource", resource, "deleted_keys", deleted)
-	}
-}
-
 // CleanByUser limpa cache específico de um usuário
 func (rc *RedisCache) CleanByUser(ctx context.Context, userID int64) {
 	pattern := rc.keyPrefix + fmt.Sprintf("permission:user:%d:*", userID)
@@ -289,8 +259,8 @@ func (rc *RedisCache) CleanByUser(ctx context.Context, userID int64) {
 }
 
 // buildPermissionKey constrói a chave do cache para permissões
-func (rc *RedisCache) buildPermissionKey(userID int64, resource permissionmodel.PermissionResource, action permissionmodel.PermissionAction) string {
-	return fmt.Sprintf("%spermission:user:%d:resource:%s:action:%s", rc.keyPrefix, userID, resource, action)
+func (rc *RedisCache) buildPermissionKey(userID int64, action string) string {
+	return fmt.Sprintf("%spermission:user:%d:action:%s", rc.keyPrefix, userID, action)
 }
 
 // buildRoleKey constrói a chave do cache para roles

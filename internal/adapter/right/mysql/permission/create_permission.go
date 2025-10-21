@@ -29,22 +29,17 @@ func (pa *PermissionAdapter) CreatePermission(ctx context.Context, tx *sql.Tx, p
 		return nil
 	}
 
-	logger = logger.With(
-		"resource", entity.Resource,
-		"action", entity.Action,
-	)
+	logger = logger.With("action", entity.Action)
 
 	query := `
-		INSERT INTO permissions (name, resource, action, description, conditions, is_active)
-		VALUES (?, ?, ?, ?, ?, ?)
+		INSERT INTO permissions (name, action, description, is_active)
+		VALUES (?, ?, ?, ?)
 	`
 
 	id, err := pa.Create(ctx, tx, query,
 		entity.Name,
-		entity.Resource,
 		entity.Action,
 		entity.Description,
-		entity.Conditions,
 		entity.IsActive,
 	)
 	if err != nil {

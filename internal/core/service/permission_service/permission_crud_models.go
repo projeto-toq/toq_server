@@ -7,7 +7,6 @@ type ListPermissionsInput struct {
 	Page     int
 	Limit    int
 	Name     string
-	Resource string
 	Action   string
 	IsActive *bool
 }
@@ -23,10 +22,8 @@ type ListPermissionsOutput struct {
 // CreatePermissionInput carries data to create a new permission.
 type CreatePermissionInput struct {
 	Name        string
-	Resource    string
 	Action      string
 	Description string
-	Conditions  map[string]any
 }
 
 // UpdatePermissionInput carries data to update an existing permission.
@@ -35,7 +32,6 @@ type UpdatePermissionInput struct {
 	Name        string
 	Description string
 	IsActive    *bool
-	Conditions  map[string]any
 }
 
 // ListRolePermissionsInput aggregates filters for role-permission pagination.

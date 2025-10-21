@@ -23,7 +23,7 @@ func (pa *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx,
 
 	query := `
 		SELECT DISTINCT 
-			p.id, p.name, CONCAT(p.resource, ':', p.action) AS slug, p.resource, p.action, p.description, p.conditions, p.is_active
+			p.id, p.name, p.action, p.description, p.is_active
 		FROM permissions p
 		INNER JOIN role_permissions rp ON p.id = rp.permission_id AND rp.granted = 1
 		INNER JOIN roles r ON rp.role_id = r.id AND r.is_active = 1
@@ -31,7 +31,7 @@ func (pa *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx,
 		WHERE ur.user_id = ? 
 		  AND p.is_active = 1
 		  AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
-		ORDER BY p.resource, p.action
+		ORDER BY p.action
 	`
 
 	results, err := pa.Read(ctx, tx, query, userID)
@@ -43,30 +43,44 @@ func (pa *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx,
 
 	permissions = make([]permissionmodel.PermissionInterface, 0, len(results))
 	for index, row := range results {
-		if len(row) != 8 {
-			errColumns := fmt.Errorf("unexpected number of columns: expected 8, got %d", len(row))
+		if len(row) != 5 {
+			errColumns := fmt.Errorf("unexpected number of columns: expected 5, got %d", len(row))
 			utils.SetSpanError(ctx, errColumns)
 			logger.Error("mysql.permission.get_user_permissions.columns_mismatch", "row_index", index, "error", errColumns)
 			return nil, errColumns
 		}
 
-		entity := &permissionentities.PermissionEntity{
-			ID:       row[0].(int64),
-			Name:     string(row[1].([]byte)),
-			Slug:     string(row[2].([]byte)),
-			Resource: string(row[3].([]byte)),
-			Action:   string(row[4].([]byte)),
-			IsActive: row[7].(int64) == 1,
+		entity := &permissionentities.PermissionEntity{}
+		if val, ok := row[0].(int64); ok {
+			entity.ID = val
 		}
-
-		// description (pode ser NULL)
-		if row[5] != nil {
-			entity.Description = string(row[5].([]byte))
+		switch nameVal := row[1].(type) {
+		case []byte:
+			entity.Name = string(nameVal)
+		case string:
+			entity.Name = nameVal
 		}
-		// conditions (pode ser NULL)
-		if row[6] != nil {
-			conditionsStr := string(row[6].([]byte))
-			entity.Conditions = &conditionsStr
+		switch actionVal := row[2].(type) {
+		case []byte:
+			entity.Action = string(actionVal)
+		case string:
+			entity.Action = actionVal
+		}
+		if row[3] != nil {
+			switch desc := row[3].(type) {
+			case []byte:
+				d := string(desc)
+				entity.Description = &d
+			case string:
+				d := desc
+				entity.Description = &d
+			}
+		}
+		switch activeVal := row[4].(type) {
+		case int64:
+			entity.IsActive = activeVal == 1
+		case bool:
+			entity.IsActive = activeVal
 		}
 
 		permission, convertErr := permissionconverters.PermissionEntityToDomain(entity)

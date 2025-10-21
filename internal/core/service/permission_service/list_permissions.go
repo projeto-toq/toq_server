@@ -40,7 +40,6 @@ func (p *permissionServiceImpl) ListPermissions(ctx context.Context, input ListP
 		Page:     input.Page,
 		Limit:    input.Limit,
 		Name:     utils.NormalizeSearchPattern(strings.TrimSpace(input.Name)),
-		Resource: utils.NormalizeSearchPattern(strings.TrimSpace(input.Resource)),
 		Action:   utils.NormalizeSearchPattern(strings.TrimSpace(input.Action)),
 		IsActive: input.IsActive,
 	}

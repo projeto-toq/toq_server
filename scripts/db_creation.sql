@@ -533,14 +533,11 @@ DROP TABLE IF EXISTS `toq_db`.`permissions` ;
 CREATE TABLE IF NOT EXISTS `toq_db`.`permissions` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
-  `resource` VARCHAR(50) NOT NULL,
   `action` VARCHAR(50) NOT NULL,
   `description` TEXT NULL,
-  `conditions` JSON NULL,
   `is_active` TINYINT NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
-  INDEX `uk_permissions_resource_action` (`resource` ASC, `action` ASC) INVISIBLE,
-  INDEX `idx_permissions_resource` (`resource` ASC) INVISIBLE,
+  INDEX `uk_permissions_resource_action` (`action` ASC) INVISIBLE,
   INDEX `idx_permissions_action` (`action` ASC) INVISIBLE,
   INDEX `idx_permissions_active` (`is_active` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -556,7 +553,6 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`role_permissions` (
   `role_id` INT UNSIGNED NOT NULL,
   `permission_id` INT UNSIGNED NOT NULL,
   `granted` TINYINT NOT NULL DEFAULT 1,
-  `conditions` JSON NULL,
   PRIMARY KEY (`id`),
   INDEX `uk_role_permissions` (`role_id` ASC, `permission_id` ASC) INVISIBLE,
   INDEX `idx_role_permissions_role` (`role_id` ASC) INVISIBLE,
@@ -879,7 +875,7 @@ FIELDS TERMINATED BY ';'
 OPTIONALLY ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
-(id, name, resource, action, description, @conditions, is_active)
+(id, name, action, description, is_active)
 SET conditions = NULLIF(@conditions, 'NULL');
 
 -- Importar role_permissions

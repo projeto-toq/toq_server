@@ -40,7 +40,6 @@ func (h *AdminHandler) PutAdminUpdatePermission(c *gin.Context) {
 		Name:        strings.TrimSpace(req.Name),
 		Description: strings.TrimSpace(req.Description),
 		IsActive:    req.IsActive,
-		Conditions:  req.Conditions,
 	}
 
 	permission, err := h.permissionService.UpdatePermission(ctx, input)

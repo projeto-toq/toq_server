@@ -36,10 +36,8 @@ func (h *AdminHandler) PostAdminCreatePermission(c *gin.Context) {
 
 	input := permissionservice.CreatePermissionInput{
 		Name:        strings.TrimSpace(req.Name),
-		Resource:    strings.TrimSpace(req.Resource),
 		Action:      strings.TrimSpace(req.Action),
 		Description: strings.TrimSpace(req.Description),
-		Conditions:  req.Conditions,
 	}
 
 	permission, err := h.permissionService.CreatePermission(ctx, input)

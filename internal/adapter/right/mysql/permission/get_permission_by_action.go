@@ -11,49 +11,48 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetPermissionByID busca uma permissão pelo ID
-func (pa *PermissionAdapter) GetPermissionByID(ctx context.Context, tx *sql.Tx, permissionID int64) (permission permissionmodel.PermissionInterface, err error) {
+// GetPermissionByAction retrieves a permission using the HTTP action identifier (METHOD:PATH)
+func (pa *PermissionAdapter) GetPermissionByAction(ctx context.Context, tx *sql.Tx, action string) (permissionmodel.PermissionInterface, error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer spanEnd()
 
-	logger = logger.With("permission_id", permissionID)
+	logger = logger.With("action", action)
 
 	query := `
-		SELECT id, name, action, description, is_active
-		FROM permissions 
-		WHERE id = ?
-	`
+        SELECT id, name, action, description, is_active
+        FROM permissions
+        WHERE action = ?
+    `
 
 	var (
 		id          int64
 		name        string
-		action      string
+		actionOut   string
 		description sql.NullString
 		isActiveInt int64
 	)
 
-	err = tx.QueryRowContext(ctx, query, permissionID).Scan(
-		&id, &name, &action, &description, &isActiveInt,
-	)
+	err = tx.QueryRowContext(ctx, query, action).Scan(&id, &name, &actionOut, &description, &isActiveInt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			logger.Debug("mysql.permission.get_permission_by_id.not_found")
+			logger.Debug("mysql.permission.get_permission_by_action.not_found")
 			return nil, nil
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.get_permission_by_id.scan_error", "error", err)
-		return nil, fmt.Errorf("get permission by id scan: %w", err)
+		logger.Error("mysql.permission.get_permission_by_action.scan_error", "error", err)
+		return nil, fmt.Errorf("get permission by action scan: %w", err)
 	}
 
 	entity := &permissionentities.PermissionEntity{
 		ID:       id,
 		Name:     name,
-		Action:   action,
+		Action:   actionOut,
 		IsActive: isActiveInt == 1,
 	}
+
 	if description.Valid {
 		desc := description.String
 		entity.Description = &desc
@@ -62,10 +61,9 @@ func (pa *PermissionAdapter) GetPermissionByID(ctx context.Context, tx *sql.Tx, 
 	permission, convertErr := permissionconverters.PermissionEntityToDomain(entity)
 	if convertErr != nil {
 		utils.SetSpanError(ctx, convertErr)
-		logger.Error("mysql.permission.get_permission_by_id.convert_error", "error", convertErr)
+		logger.Error("mysql.permission.get_permission_by_action.convert_error", "error", convertErr)
 		return nil, fmt.Errorf("convert permission entity to domain: %w", convertErr)
 	}
 
-	logger.Debug("mysql.permission.get_permission_by_id.success")
 	return permission, nil
 }

@@ -98,9 +98,6 @@ func (p *permissionServiceImpl) UpdatePermission(ctx context.Context, input Upda
 	if input.IsActive != nil {
 		existing.SetIsActive(*input.IsActive)
 	}
-	if input.Conditions != nil {
-		existing.SetConditions(input.Conditions)
-	}
 
 	if updateErr := p.permissionRepository.UpdatePermission(ctx, tx, existing); updateErr != nil {
 		utils.SetSpanError(ctx, updateErr)
