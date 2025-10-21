@@ -17,7 +17,7 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.HolidayCalendarDateDeleteRequest	true	"Holiday date delete request"
+// @Param		request	body	dto.HolidayCalendarDateDeleteRequest	true	"Holiday date delete request" Extensions(x-example={"id":1001})
 // @Success	204	"Holiday date deleted"
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

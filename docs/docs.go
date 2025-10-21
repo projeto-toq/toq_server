@@ -1408,42 +1408,49 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "example": "\"STATE\"",
                         "description": "Calendar scope (NATIONAL|STATE|CITY)",
                         "name": "scope",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"SP\"",
                         "description": "State abbreviation",
                         "name": "state",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"3509502\"",
                         "description": "City IBGE code",
                         "name": "cityIbge",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"Christmas\"",
                         "description": "Free text search",
                         "name": "search",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
+                        "example": true,
                         "description": "Filter active calendars",
                         "name": "onlyActive",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 20,
                         "description": "Page size",
                         "name": "limit",
                         "in": "query"
@@ -1501,6 +1508,7 @@ const docTemplate = `{
                 "summary": "Update holiday calendar",
                 "parameters": [
                     {
+                        "x-example": "{\"id\":42,\"name\":\"Calendario Campinas\",\"scope\":\"CITY\",\"state\":\"SP\",\"cityIbge\":\"3509502\",\"isActive\":true}",
                         "description": "Calendar update payload",
                         "name": "request",
                         "in": "body",
@@ -1568,6 +1576,7 @@ const docTemplate = `{
                 "summary": "Create holiday calendar",
                 "parameters": [
                     {
+                        "x-example": "{\"name\":\"Feriados Sao Paulo\",\"scope\":\"STATE\",\"state\":\"SP\",\"cityIbge\":\"\",\"isActive\":true}",
                         "description": "Calendar payload",
                         "name": "request",
                         "in": "body",
@@ -1631,6 +1640,7 @@ const docTemplate = `{
                 "summary": "Get holiday calendar detail",
                 "parameters": [
                     {
+                        "x-example": "{\"id\":42}",
                         "description": "Calendar detail request",
                         "name": "request",
                         "in": "body",
@@ -1701,6 +1711,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 42,
                         "description": "Calendar identifier",
                         "name": "calendarId",
                         "in": "query",
@@ -1708,24 +1719,28 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "example": "\"2025-12-01T00:00:00Z\"",
                         "description": "Start date (RFC3339)",
                         "name": "from",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"2026-01-10T23:59:59Z\"",
                         "description": "End date (RFC3339)",
                         "name": "to",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 50,
                         "description": "Page size",
                         "name": "limit",
                         "in": "query"
@@ -1783,6 +1798,7 @@ const docTemplate = `{
                 "summary": "Create holiday date",
                 "parameters": [
                     {
+                        "x-example": "{\"calendarId\":42,\"holidayDate\":\"2025-12-25T00:00:00Z\",\"label\":\"Christmas\",\"recurrent\":true}",
                         "description": "Holiday date payload",
                         "name": "request",
                         "in": "body",
@@ -1850,6 +1866,7 @@ const docTemplate = `{
                 "summary": "Delete holiday date",
                 "parameters": [
                     {
+                        "x-example": "{\"id\":1001}",
                         "description": "Holiday date delete request",
                         "name": "request",
                         "in": "body",
@@ -5961,6 +5978,7 @@ const docTemplate = `{
                 "summary": "List listing availability",
                 "parameters": [
                     {
+                        "x-example": "{\"listingId\":3241,\"range\":{\"from\":\"2025-06-01T08:00:00Z\",\"to\":\"2025-06-01T18:00:00Z\"},\"slotDurationMinute\":30,\"pagination\":{\"page\":1,\"limit\":50}}",
                         "description": "Availability filter",
                         "name": "request",
                         "in": "body",
@@ -6030,6 +6048,7 @@ const docTemplate = `{
                 "summary": "Update a blocking entry",
                 "parameters": [
                     {
+                        "x-example": "{\"entryId\":5021,\"listingId\":3241,\"entryType\":\"TEMP_BLOCK\",\"startsAt\":\"2025-06-20T09:00:00Z\",\"endsAt\":\"2025-06-20T12:00:00Z\",\"reason\":\"Extended maintenance\"}",
                         "description": "Block entry update payload",
                         "name": "request",
                         "in": "body",
@@ -6103,6 +6122,7 @@ const docTemplate = `{
                 "summary": "Create a blocking entry",
                 "parameters": [
                     {
+                        "x-example": "{\"listingId\":3241,\"entryType\":\"BLOCK\",\"startsAt\":\"2025-06-15T09:00:00Z\",\"endsAt\":\"2025-06-15T11:00:00Z\",\"reason\":\"Maintenance window\"}",
                         "description": "Block entry payload",
                         "name": "request",
                         "in": "body",
@@ -6176,6 +6196,7 @@ const docTemplate = `{
                 "summary": "Delete a blocking entry",
                 "parameters": [
                     {
+                        "x-example": "{\"entryId\":5021,\"listingId\":3241}",
                         "description": "Block entry deletion payload",
                         "name": "request",
                         "in": "body",
@@ -6242,6 +6263,7 @@ const docTemplate = `{
                 "summary": "List agenda entries for a listing",
                 "parameters": [
                     {
+                        "x-example": "{\"listingId\":3241,\"range\":{\"from\":\"2025-05-10T08:00:00Z\",\"to\":\"2025-05-12T18:00:00Z\"},\"pagination\":{\"page\":1,\"limit\":20}}",
                         "description": "Agenda detail filter",
                         "name": "request",
                         "in": "body",
@@ -6311,6 +6333,7 @@ const docTemplate = `{
                 "summary": "List owner agenda summary",
                 "parameters": [
                     {
+                        "x-example": "{\"listingIds\":[3241,3242],\"range\":{\"from\":\"2025-05-01T00:00:00Z\",\"to\":\"2025-05-07T23:59:59Z\"},\"pagination\":{\"page\":1,\"limit\":50}}",
                         "description": "Summary filter",
                         "name": "request",
                         "in": "body",

@@ -19,7 +19,7 @@ import (
 // @Tags		Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.OwnerAgendaSummaryRequest	true	"Summary filter"
+// @Param		request	body	dto.OwnerAgendaSummaryRequest	true	"Summary filter" Extensions(x-example={"listingIds":[3241,3242],"range":{"from":"2025-05-01T00:00:00Z","to":"2025-05-07T23:59:59Z"},"pagination":{"page":1,"limit":50}})
 // @Success	200	{object}	dto.OwnerAgendaSummaryResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

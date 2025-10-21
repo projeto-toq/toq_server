@@ -19,7 +19,7 @@ import (
 // @Tags		Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ScheduleBlockEntryRequest	true	"Block entry payload"
+// @Param		request	body	dto.ScheduleBlockEntryRequest	true	"Block entry payload" Extensions(x-example={"listingId":3241,"entryType":"BLOCK","startsAt":"2025-06-15T09:00:00Z","endsAt":"2025-06-15T11:00:00Z","reason":"Maintenance window"})
 // @Success	200	{object}	dto.ScheduleBlockEntryResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

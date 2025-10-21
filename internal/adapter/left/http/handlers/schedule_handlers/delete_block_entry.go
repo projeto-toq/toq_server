@@ -18,7 +18,7 @@ import (
 // @Tags		Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ScheduleDeleteEntryRequest	true	"Block entry deletion payload"
+// @Param		request	body	dto.ScheduleDeleteEntryRequest	true	"Block entry deletion payload" Extensions(x-example={"entryId":5021,"listingId":3241})
 // @Success	204	"Entry deleted successfully"
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

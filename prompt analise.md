@@ -6,34 +6,7 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 - Tipo: Somente análise e apresentaçao do plano para aprovação (sem implementação).
 
 ## 2) Requisição
-Continuando com a criação do toq_server, precisamos preparar as agendas dos imóveis e a visão do proprietário.
-A regra de negçocio estabelece que:
-- Cada imóvel tem uma única agenda.
-- A agenda do imóvel serve para definir os horários disponíveis para visitas.
-- A agenda terá os seguintes tipos de entradas:
-  - Horários de bloqueio (indisponibilidade para visitas). Por default, na criação da agenda, o imóvel estará com bloqueio de segunda a domingo, das 18:00 às 07:59.
-  - Horários de bloqueio temporário (indisponibilidade temporária para visitas, como férias do proprietário).
-  - Informações de feriados nacionais, estaduais e municipais - não gerando bloqueio na agenda
-    - estas informações virão de calendario de feriados que deve ser criado.
-  - Horários com visitas:
-    - Visitas agendadas por corretores ainda não aceitas - não gerando bloqueio na agenda
-    - Visitas confirmadas (aceitas pelo proprietário) - gerando agenda ocupada
-    - Visitas canceladas deverão sair da agenda. - liberando o horário
-  - Horários com fotografias agendadas - gerando agenda ocupada
-- A agenda deve permitir ao proprietário:
-  - ter uma visão consolidada das agendas de todos os imóveis deste proprietário, permitindo a consulta por período (data inicial e data final) e retornando todas as entradas consolidadas.
-  - consultas por período (data inicial e data final) e retornar todas as entradas da agenda do imóvel.
-  - criar, atualizar e deletar entradas de bloqueio e bloqueio temporário para um imóvel específico.
-- A agenda deve permitir ao corretor:
-  - consultar a disponibilidade do imóvel por período (data inicial e data final), retornando os horários livres sem dizer o motivo do bloqueio.
-- os calendários de feriados devem ter CRUD completo, mas só poderão ser manipulados por usuários com role Admin.
-- A criação da agenda deve ser automática na criação do imóvel, já com os bloqueios padrão definidos.
-- crie as definições das tabelas necessáris para suportar as regras acima. Farei a criação manualmente.
-- crie os endpoints HTTP necessários para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
-- crie os services e repositories necessários para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
-- crie os DTOs necessários para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
-- crie as permissões necessárias para suportar as operações acima, seguindo o padrão arquitetural do toq_server.
-- Alteres base_permissions.csv e base_role_permissions.csv para incluir as novas permissões criadas.
+Para facilitar o time de front-end a criar os clientes, atualiza os comentários swagger nos handlers de holiday e schedule com exemplos de request.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

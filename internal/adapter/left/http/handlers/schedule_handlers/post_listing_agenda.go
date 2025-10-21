@@ -19,7 +19,7 @@ import (
 // @Tags		Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ListingAgendaDetailRequest	true	"Agenda detail filter"
+// @Param		request	body	dto.ListingAgendaDetailRequest	true	"Agenda detail filter" Extensions(x-example={"listingId":3241,"range":{"from":"2025-05-10T08:00:00Z","to":"2025-05-12T18:00:00Z"},"pagination":{"page":1,"limit":20}})
 // @Success	200	{object}	dto.ListingAgendaDetailResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

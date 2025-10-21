@@ -18,7 +18,7 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.HolidayCalendarDetailRequest	true	"Calendar detail request"
+// @Param	request	body	dto.HolidayCalendarDetailRequest	true	"Calendar detail request" Extensions(x-example={"id":42})
 // @Success	200	{object}	dto.HolidayCalendarResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

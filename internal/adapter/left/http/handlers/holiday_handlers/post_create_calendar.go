@@ -19,7 +19,7 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.HolidayCalendarCreateRequest	true	"Calendar payload"
+// @Param		request	body	dto.HolidayCalendarCreateRequest	true	"Calendar payload" Extensions(x-example={"name":"Feriados Sao Paulo","scope":"STATE","state":"SP","cityIbge":"","isActive":true})
 // @Success	201	{object}	dto.HolidayCalendarResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

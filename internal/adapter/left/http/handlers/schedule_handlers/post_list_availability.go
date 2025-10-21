@@ -19,7 +19,7 @@ import (
 // @Tags		Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ScheduleAvailabilityRequest	true	"Availability filter"
+// @Param		request	body	dto.ScheduleAvailabilityRequest	true	"Availability filter" Extensions(x-example={"listingId":3241,"range":{"from":"2025-06-01T08:00:00Z","to":"2025-06-01T18:00:00Z"},"slotDurationMinute":30,"pagination":{"page":1,"limit":50}})
 // @Success	200	{object}	dto.ScheduleAvailabilityResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

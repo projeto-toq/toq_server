@@ -19,7 +19,7 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.HolidayCalendarDateCreateRequest	true	"Holiday date payload"
+// @Param		request	body	dto.HolidayCalendarDateCreateRequest	true	"Holiday date payload" Extensions(x-example={"calendarId":42,"holidayDate":"2025-12-25T00:00:00Z","label":"Christmas","recurrent":true})
 // @Success	201	{object}	dto.HolidayCalendarDateResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
