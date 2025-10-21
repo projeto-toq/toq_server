@@ -147,7 +147,7 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, exec sqlExecu
 	where := strings.Join(conditions, " AND ")
 
 	query := fmt.Sprintf(`
-		SELECT e.id, e.agenda_id, e.entry_type, e.starts_at, e.ends_at, e.blocking, e.reason, e.visit_id, e.photo_booking_id, e.created_by, e.updated_by, a.listing_id
+		SELECT e.id, e.agenda_id, e.entry_type, e.starts_at, e.ends_at, e.blocking, e.reason, e.visit_id, e.photo_booking_id, a.listing_id
 		FROM listing_agenda_entries e
 		INNER JOIN listing_agendas a ON a.id = e.agenda_id
 		WHERE %s
@@ -177,8 +177,6 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, exec sqlExecu
 			&entryEntity.Reason,
 			&entryEntity.VisitID,
 			&entryEntity.PhotoBookingID,
-			&entryEntity.CreatedBy,
-			&entryEntity.UpdatedBy,
 			&listingID,
 		); err != nil {
 			utils.SetSpanError(ctx, err)

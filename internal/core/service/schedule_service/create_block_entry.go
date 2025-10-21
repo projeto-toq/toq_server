@@ -88,8 +88,6 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 	if reason := strings.TrimSpace(input.Reason); reason != "" {
 		domain.SetReason(reason)
 	}
-	domain.SetCreatedBy(input.ActorID)
-	domain.SetUpdatedBy(input.ActorID)
 
 	id, err := s.scheduleRepo.InsertEntry(ctx, tx, domain)
 	if err != nil {

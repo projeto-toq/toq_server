@@ -5,7 +5,9 @@ import (
 	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
+	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/projeto-toq/toq_server/internal/core/factory"
@@ -47,6 +49,8 @@ func SetupRoutes(
 	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
 	adminHandler := handlers.AdminHandler.(*adminhandlers.AdminHandler)
 	complexHandler := handlers.ComplexHandler.(*complexhandlers.ComplexHandler)
+	scheduleHandler := handlers.ScheduleHandler.(*schedulehandlers.ScheduleHandler)
+	holidayHandler := handlers.HolidayHandler.(*holidayhandlers.HolidayHandler)
 	// API base routes (v2)
 	base := "/api/v2"
 	if versionProvider != nil {
@@ -61,10 +65,13 @@ func SetupRoutes(
 	RegisterListingRoutes(v1, listingHandler, activityTracker, permissionService)
 
 	// Register admin routes with dependencies
-	RegisterAdminRoutes(v1, adminHandler, activityTracker, permissionService)
+	RegisterAdminRoutes(v1, adminHandler, holidayHandler, activityTracker, permissionService)
 
 	// Register complex routes (authenticated)
 	RegisterComplexRoutes(v1, complexHandler, activityTracker, permissionService)
+
+	// Register schedule routes (authenticated)
+	RegisterScheduleRoutes(v1, scheduleHandler, activityTracker, permissionService)
 }
 
 // setupGlobalMiddlewares configura middlewares aplicados a todas as rotas
@@ -128,28 +135,13 @@ func RegisterUserRoutes(
 
 		// SignIn
 		auth.POST("/signin", middlewares.RequireDeviceIDMiddleware(), authHandler.SignIn) // SignIn
-
-		// RefreshToken
-		auth.POST("/refresh", authHandler.RefreshToken) // RefreshToken
-
-		// RequestPasswordChange
-		auth.POST("/password/request", authHandler.RequestPasswordChange) // RequestPasswordChange
-
-		// ConfirmPasswordChange
-		auth.POST("/password/confirm", authHandler.ConfirmPasswordChange) // ConfirmPasswordChange
 	}
 
-	// User routes (authenticated - Owner, Realtor, Agency and Admin)
+	// User routes (authenticated)
 	user := router.Group("/user")
-	// Apply security middlewares to authenticated routes
 	user.Use(middlewares.AuthMiddleware(activityTracker))
 	user.Use(middlewares.PermissionMiddleware(permissionService))
 	{
-		// Profile management
-		user.GET("/profile", userHandler.GetProfile)                                                    // GetProfile
-		user.PUT("/profile", userHandler.UpdateProfile)                                                 // UpdateProfile
-		user.DELETE("/account", userHandler.DeleteAccount)                                              // DeleteAccount
-		user.GET("/status", userHandler.GetUserStatus)                                                  // GetUserStatus
 		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetUserRoles
 		user.GET("/home", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GoHome
 		user.PUT("/opt-status", userHandler.UpdateOptStatus)                                            // UpdateOptStatus
@@ -200,6 +192,26 @@ func RegisterUserRoutes(
 		realtor.POST("/invitation/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RejectInvitation
 		realtor.GET("/agency", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })             // GetAgencyOfRealtor
 		realtor.DELETE("/agency", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // DeleteAgencyOfRealtor
+	}
+}
+
+// RegisterScheduleRoutes registers routes related to listing schedules and availability.
+func RegisterScheduleRoutes(
+	router *gin.RouterGroup,
+	scheduleHandler *schedulehandlers.ScheduleHandler,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
+	schedules := router.Group("/schedules")
+	schedules.Use(middlewares.AuthMiddleware(activityTracker))
+	schedules.Use(middlewares.PermissionMiddleware(permissionService))
+	{
+		schedules.POST("/owner/summary", scheduleHandler.PostOwnerSummary)
+		schedules.POST("/listing/detail", scheduleHandler.PostListingAgenda)
+		schedules.POST("/listing/block", scheduleHandler.PostCreateBlockEntry)
+		schedules.PUT("/listing/block", scheduleHandler.PutUpdateBlockEntry)
+		schedules.DELETE("/listing/block", scheduleHandler.DeleteBlockEntry)
+		schedules.POST("/listing/availability", scheduleHandler.PostListAvailability)
 	}
 }
 
@@ -311,6 +323,7 @@ func RegisterListingRoutes(
 func RegisterAdminRoutes(
 	router *gin.RouterGroup,
 	adminHandler *adminhandlers.AdminHandler,
+	holidayHandler *holidayhandlers.HolidayHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
 ) {
@@ -380,6 +393,16 @@ func RegisterAdminRoutes(
 		admin.POST("/users/creci/download-url", adminHandler.PostAdminCreciDownloadURL)
 	}
 
+	holidayGroup := admin.Group("/holidays")
+	{
+		holidayGroup.GET("/calendars", holidayHandler.ListCalendars)
+		holidayGroup.POST("/calendars/detail", holidayHandler.GetCalendarDetail)
+		holidayGroup.POST("/calendars", holidayHandler.CreateCalendar)
+		holidayGroup.PUT("/calendars", holidayHandler.UpdateCalendar)
+		holidayGroup.POST("/dates", holidayHandler.CreateCalendarDate)
+		holidayGroup.GET("/dates", holidayHandler.ListCalendarDates)
+		holidayGroup.DELETE("/dates", holidayHandler.DeleteCalendarDate)
+	}
 }
 
 // RegisterComplexRoutes configura rotas autenticadas relacionadas aos empreendimentos.

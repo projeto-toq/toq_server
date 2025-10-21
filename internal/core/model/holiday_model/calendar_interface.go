@@ -16,11 +16,6 @@ type CalendarInterface interface {
 	ClearCityIBGE()
 	IsActive() bool
 	SetActive(value bool)
-	CreatedBy() int64
-	SetCreatedBy(value int64)
-	UpdatedBy() (int64, bool)
-	SetUpdatedBy(value int64)
-	ClearUpdatedBy()
 }
 
 // NewCalendar builds a new calendar entity.

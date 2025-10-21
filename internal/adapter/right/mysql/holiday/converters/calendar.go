@@ -20,10 +20,6 @@ func ToCalendarModel(e entity.CalendarEntity) holidaymodel.CalendarInterface {
 		calendar.SetCityIBGE(e.CityIBGE.String)
 	}
 	calendar.SetActive(e.IsActive)
-	calendar.SetCreatedBy(e.CreatedBy)
-	if e.UpdatedBy.Valid {
-		calendar.SetUpdatedBy(e.UpdatedBy.Int64)
-	}
 	return calendar
 }
 
@@ -39,19 +35,12 @@ func ToCalendarEntity(model holidaymodel.CalendarInterface) entity.CalendarEntit
 		city = sql.NullString{String: value, Valid: true}
 	}
 
-	var updatedBy sql.NullInt64
-	if value, ok := model.UpdatedBy(); ok {
-		updatedBy = sql.NullInt64{Int64: value, Valid: true}
-	}
-
 	return entity.CalendarEntity{
-		ID:        model.ID(),
-		Name:      model.Name(),
-		Scope:     string(model.Scope()),
-		State:     state,
-		CityIBGE:  city,
-		IsActive:  model.IsActive(),
-		CreatedBy: model.CreatedBy(),
-		UpdatedBy: updatedBy,
+		ID:       model.ID(),
+		Name:     model.Name(),
+		Scope:    string(model.Scope()),
+		State:    state,
+		CityIBGE: city,
+		IsActive: model.IsActive(),
 	}
 }

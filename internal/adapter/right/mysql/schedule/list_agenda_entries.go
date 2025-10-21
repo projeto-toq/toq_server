@@ -53,7 +53,7 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 	limit, offset := defaultPagination(filter.Pagination.Limit, filter.Pagination.Page, agendaDetailMaxPageSize)
 
 	query := fmt.Sprintf(`
-		SELECT e.id, e.agenda_id, e.entry_type, e.starts_at, e.ends_at, e.blocking, e.reason, e.visit_id, e.photo_booking_id, e.created_by, e.updated_by
+		SELECT e.id, e.agenda_id, e.entry_type, e.starts_at, e.ends_at, e.blocking, e.reason, e.visit_id, e.photo_booking_id
 		FROM listing_agenda_entries e
 		INNER JOIN listing_agendas a ON a.id = e.agenda_id
 		WHERE %s
@@ -74,7 +74,7 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 	entries := make([]schedulemodel.AgendaDetailItem, 0)
 	for rows.Next() {
 		var entryEntity entity.EntryEntity
-		if err = rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID, &entryEntity.CreatedBy, &entryEntity.UpdatedBy); err != nil {
+		if err = rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID); err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("mysql.schedule.agenda_detail.scan_error", "listing_id", filter.ListingID, "err", err)
 			return schedulemodel.AgendaDetailResult{}, fmt.Errorf("scan agenda entry: %w", err)

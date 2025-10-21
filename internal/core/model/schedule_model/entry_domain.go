@@ -15,9 +15,6 @@ type agendaEntry struct {
 	visitValid     bool
 	photoBookingID uint64
 	photoValid     bool
-	createdBy      int64
-	updatedBy      int64
-	updatedValid   bool
 }
 
 func (e *agendaEntry) ID() uint64 {
@@ -108,26 +105,4 @@ func (e *agendaEntry) SetPhotoBookingID(value uint64) {
 func (e *agendaEntry) ClearPhotoBookingID() {
 	e.photoBookingID = 0
 	e.photoValid = false
-}
-
-func (e *agendaEntry) CreatedBy() int64 {
-	return e.createdBy
-}
-
-func (e *agendaEntry) SetCreatedBy(value int64) {
-	e.createdBy = value
-}
-
-func (e *agendaEntry) UpdatedBy() (int64, bool) {
-	return e.updatedBy, e.updatedValid
-}
-
-func (e *agendaEntry) SetUpdatedBy(value int64) {
-	e.updatedBy = value
-	e.updatedValid = true
-}
-
-func (e *agendaEntry) ClearUpdatedBy() {
-	e.updatedBy = 0
-	e.updatedValid = false
 }

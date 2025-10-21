@@ -26,10 +26,6 @@ func (r timeRange) isValid() bool {
 	return r.start.Before(r.end)
 }
 
-func (r timeRange) duration() time.Duration {
-	return r.end.Sub(r.start)
-}
-
 func sanitizePagination(limit, page int) (int, int) {
 	if limit <= 0 {
 		limit = availabilityDefaultLimit
@@ -48,7 +44,7 @@ func defaultSlotDuration(minutes uint16) time.Duration {
 	if minutes == 0 || int(minutes) > maxSlotDurationMinutes {
 		return time.Duration(defaultSlotDurationMinutes) * time.Minute
 	}
-	_ = time.Duration(minutes) * time.Minute //somente para elimiar o warning de função sem uso
+
 	return time.Duration(minutes) * time.Minute
 }
 

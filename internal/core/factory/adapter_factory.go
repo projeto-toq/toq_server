@@ -8,8 +8,10 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
@@ -44,6 +46,8 @@ type AdapterFactory interface {
 		globalService globalservice.GlobalServiceInterface,
 		listingService listingservices.ListingServiceInterface,
 		complexService complexservices.ComplexServiceInterface,
+		scheduleService scheduleservices.ScheduleServiceInterface,
+		holidayService holidayservices.HolidayServiceInterface,
 		permissionService permissionservices.PermissionServiceInterface,
 		metricsAdapter *MetricsAdapter,
 		hmacValidator *hmacauth.Validator,

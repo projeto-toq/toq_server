@@ -20,10 +20,6 @@ func (s *holidayService) UpdateCalendar(ctx context.Context, input UpdateCalenda
 	if err := validateScopeInput(input.Scope, input.State, input.CityIBGE); err != nil {
 		return nil, err
 	}
-	if input.UpdatedBy <= 0 {
-		return nil, utils.ValidationError("updatedBy", "updatedBy must be greater than zero")
-	}
-
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("")
@@ -73,8 +69,6 @@ func (s *holidayService) UpdateCalendar(ctx context.Context, input UpdateCalenda
 		existing.ClearCityIBGE()
 	}
 	existing.SetActive(input.IsActive)
-	existing.SetUpdatedBy(input.UpdatedBy)
-
 	if err := s.repo.UpdateCalendar(ctx, tx, existing); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("holiday.update_calendar.repo_error", "id", input.ID, "err", err)

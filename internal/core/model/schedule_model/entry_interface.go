@@ -25,11 +25,6 @@ type AgendaEntryInterface interface {
 	PhotoBookingID() (uint64, bool)
 	SetPhotoBookingID(value uint64)
 	ClearPhotoBookingID()
-	CreatedBy() int64
-	SetCreatedBy(value int64)
-	UpdatedBy() (int64, bool)
-	SetUpdatedBy(value int64)
-	ClearUpdatedBy()
 }
 
 // NewAgendaEntry builds a new agenda entry instance.

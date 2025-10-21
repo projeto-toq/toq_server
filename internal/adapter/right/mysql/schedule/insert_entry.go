@@ -25,8 +25,8 @@ func (a *ScheduleAdapter) InsertEntry(ctx context.Context, tx *sql.Tx, entry sch
 
 	entity := converters.ToEntryEntity(entry)
 
-	query := `INSERT INTO listing_agenda_entries (agenda_id, entry_type, starts_at, ends_at, blocking, reason, visit_id, photo_booking_id, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := exec.ExecContext(ctx, query, entity.AgendaID, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID, entity.CreatedBy, entity.UpdatedBy)
+	query := `INSERT INTO listing_agenda_entries (agenda_id, entry_type, starts_at, ends_at, blocking, reason, visit_id, photo_booking_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	result, err := exec.ExecContext(ctx, query, entity.AgendaID, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.schedule.insert_entry.exec_error", "agenda_id", entity.AgendaID, "err", err)

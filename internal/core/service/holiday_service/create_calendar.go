@@ -15,10 +15,6 @@ func (s *holidayService) CreateCalendar(ctx context.Context, input CreateCalenda
 	if err := validateScopeInput(input.Scope, input.State, input.CityIBGE); err != nil {
 		return nil, err
 	}
-	if input.CreatedBy <= 0 {
-		return nil, utils.ValidationError("createdBy", "createdBy must be greater than zero")
-	}
-
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("")
@@ -55,7 +51,6 @@ func (s *holidayService) CreateCalendar(ctx context.Context, input CreateCalenda
 		domain.SetCityIBGE(city)
 	}
 	domain.SetActive(input.IsActive || input.Scope == holidaymodel.ScopeNational)
-	domain.SetCreatedBy(input.CreatedBy)
 
 	id, err := s.repo.CreateCalendar(ctx, tx, domain)
 	if err != nil {

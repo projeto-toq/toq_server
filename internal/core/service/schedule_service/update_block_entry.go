@@ -112,7 +112,6 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 	} else {
 		existing.ClearReason()
 	}
-	existing.SetUpdatedBy(input.ActorID)
 
 	if err := s.scheduleRepo.UpdateEntry(ctx, tx, existing); err != nil {
 		utils.SetSpanError(ctx, err)

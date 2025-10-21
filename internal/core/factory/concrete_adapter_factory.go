@@ -14,7 +14,9 @@ import (
 	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
+	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 
 	// Metrics adapter
@@ -51,8 +53,10 @@ import (
 	// Core services
 	complexservice "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	holidayservice "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservice "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	scheduleservice "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
@@ -237,6 +241,8 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	globalService globalservice.GlobalServiceInterface,
 	listingService listingservice.ListingServiceInterface,
 	complexService complexservice.ComplexServiceInterface,
+	scheduleService scheduleservice.ScheduleServiceInterface,
+	holidayService holidayservice.HolidayServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
 	metricsAdapter *MetricsAdapter,
 	hmacValidator *hmacauth.Validator,
@@ -265,6 +271,16 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		complexService,
 	)
 
+	// Create schedule handler using the adapter
+	scheduleHandler := schedulehandlers.NewScheduleHandlerAdapter(
+		scheduleService,
+	)
+
+	// Create holiday handler using the adapter
+	holidayHandler := holidayhandlers.NewHolidayHandlerAdapter(
+		holidayService,
+	)
+
 	// Create admin handler using the adapter
 	adminHandler := adminhandlers.NewAdminHandlerAdapter(
 		userService,
@@ -286,11 +302,13 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	slog.Info("Successfully created all HTTP handlers")
 
 	return HTTPHandlers{
-		UserHandler:    userHandler,
-		ListingHandler: listingHandler,
-		AuthHandler:    authHandler,
-		MetricsHandler: metricsHandler,
-		AdminHandler:   adminHandler,
-		ComplexHandler: complexHandler,
+		UserHandler:     userHandler,
+		ListingHandler:  listingHandler,
+		AuthHandler:     authHandler,
+		MetricsHandler:  metricsHandler,
+		AdminHandler:    adminHandler,
+		ComplexHandler:  complexHandler,
+		ScheduleHandler: scheduleHandler,
+		HolidayHandler:  holidayHandler,
 	}
 }

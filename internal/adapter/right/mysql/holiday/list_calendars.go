@@ -71,7 +71,7 @@ func (a *HolidayAdapter) ListCalendars(ctx context.Context, tx *sql.Tx, filter h
 	limit, offset := defaultPagination(filter.Limit, filter.Page, calendarsMaxPageSize)
 
 	query := fmt.Sprintf(`
-		SELECT id, name, scope, state, city_ibge, is_active, created_by, updated_by
+		SELECT id, name, scope, state, city_ibge, is_active
 		FROM holiday_calendars
 		WHERE %s
 		ORDER BY name ASC
@@ -89,7 +89,7 @@ func (a *HolidayAdapter) ListCalendars(ctx context.Context, tx *sql.Tx, filter h
 	calendars := make([]holidaymodel.CalendarInterface, 0)
 	for rows.Next() {
 		var calendarEntity entity.CalendarEntity
-		if err = rows.Scan(&calendarEntity.ID, &calendarEntity.Name, &calendarEntity.Scope, &calendarEntity.State, &calendarEntity.CityIBGE, &calendarEntity.IsActive, &calendarEntity.CreatedBy, &calendarEntity.UpdatedBy); err != nil {
+		if err = rows.Scan(&calendarEntity.ID, &calendarEntity.Name, &calendarEntity.Scope, &calendarEntity.State, &calendarEntity.CityIBGE, &calendarEntity.IsActive); err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("mysql.holiday.list_calendars.scan_error", "err", err)
 			return holidaymodel.CalendarListResult{}, fmt.Errorf("scan holiday calendar: %w", err)

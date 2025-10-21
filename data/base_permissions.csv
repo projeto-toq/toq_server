@@ -106,3 +106,16 @@ id;name;resource;action;description;conditions;is_active
 105;HTTP Admin Get Listing Catalog Detail;http;POST:/api/v2/admin/listing/catalog/detail;Permite consultar detalhes de um valor de catálogo de listing no painel admin;NULL;1
 106;HTTP Admin Get Permissions Detail;http;GET:/api/v2/admin/permissions/detail;Permite consultar detalhes de permissões administrativas no painel admin;NULL;1
 107;HTTP Admin Get Roles Detail;http;POST:/api/v2/admin/roles/detail;Permite consultar detalhes de uma role administrativa no painel admin;NULL;1
+108;HTTP Schedule Owner Summary;http;POST:/api/v2/schedules/owner/summary;Permite consultar visão consolidada das agendas do proprietário;NULL;1
+109;HTTP Schedule Listing Detail;http;POST:/api/v2/schedules/listing/detail;Permite consultar entradas da agenda de um listing;NULL;1
+110;HTTP Schedule Create Block;http;POST:/api/v2/schedules/listing/block;Permite criar bloqueios na agenda de um listing;NULL;1
+111;HTTP Schedule Update Block;http;PUT:/api/v2/schedules/listing/block;Permite atualizar bloqueios na agenda de um listing;NULL;1
+112;HTTP Schedule Delete Block;http;DELETE:/api/v2/schedules/listing/block;Permite remover bloqueios da agenda de um listing;NULL;1
+113;HTTP Schedule Listing Availability;http;POST:/api/v2/schedules/listing/availability;Permite consultar disponibilidade de um listing;NULL;1
+114;HTTP Admin List Holiday Calendars;http;GET:/api/v2/admin/holidays/calendars;Permite listar calendários de feriados;NULL;1
+115;HTTP Admin Get Holiday Calendar Detail;http;POST:/api/v2/admin/holidays/calendars/detail;Permite consultar detalhes de um calendário de feriados;NULL;1
+116;HTTP Admin Create Holiday Calendar;http;POST:/api/v2/admin/holidays/calendars;Permite criar calendários de feriados;NULL;1
+117;HTTP Admin Update Holiday Calendar;http;PUT:/api/v2/admin/holidays/calendars;Permite atualizar calendários de feriados;NULL;1
+118;HTTP Admin Create Holiday Date;http;POST:/api/v2/admin/holidays/dates;Permite criar datas de feriados;NULL;1
+119;HTTP Admin List Holiday Dates;http;GET:/api/v2/admin/holidays/dates;Permite listar datas de feriados;NULL;1
+120;HTTP Admin Delete Holiday Date;http;DELETE:/api/v2/admin/holidays/dates;Permite deletar datas de feriados;NULL;1

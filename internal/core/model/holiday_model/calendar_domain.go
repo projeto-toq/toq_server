@@ -1,17 +1,14 @@
 package holidaymodel
 
 type calendar struct {
-	id           uint64
-	name         string
-	scope        CalendarScope
-	state        string
-	stateValid   bool
-	cityIBGE     string
-	cityValid    bool
-	active       bool
-	createdBy    int64
-	updatedBy    int64
-	updatedValid bool
+	id         uint64
+	name       string
+	scope      CalendarScope
+	state      string
+	stateValid bool
+	cityIBGE   string
+	cityValid  bool
+	active     bool
 }
 
 func (c *calendar) ID() uint64 {
@@ -72,26 +69,4 @@ func (c *calendar) IsActive() bool {
 
 func (c *calendar) SetActive(value bool) {
 	c.active = value
-}
-
-func (c *calendar) CreatedBy() int64 {
-	return c.createdBy
-}
-
-func (c *calendar) SetCreatedBy(value int64) {
-	c.createdBy = value
-}
-
-func (c *calendar) UpdatedBy() (int64, bool) {
-	return c.updatedBy, c.updatedValid
-}
-
-func (c *calendar) SetUpdatedBy(value int64) {
-	c.updatedBy = value
-	c.updatedValid = true
-}
-
-func (c *calendar) ClearUpdatedBy() {
-	c.updatedBy = 0
-	c.updatedValid = false
 }

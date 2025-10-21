@@ -20,10 +20,6 @@ func (s *holidayService) CreateCalendarDate(ctx context.Context, input CreateCal
 	if strings.TrimSpace(input.Label) == "" {
 		return nil, utils.ValidationError("label", "label is required")
 	}
-	if input.CreatedBy <= 0 {
-		return nil, utils.ValidationError("createdBy", "createdBy must be greater than zero")
-	}
-
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("")

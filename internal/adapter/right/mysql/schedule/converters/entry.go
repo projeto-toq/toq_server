@@ -25,10 +25,6 @@ func ToEntryModel(e entity.EntryEntity) schedulemodel.AgendaEntryInterface {
 	if e.PhotoBookingID.Valid {
 		entry.SetPhotoBookingID(uint64(e.PhotoBookingID.Int64))
 	}
-	entry.SetCreatedBy(e.CreatedBy)
-	if e.UpdatedBy.Valid {
-		entry.SetUpdatedBy(e.UpdatedBy.Int64)
-	}
 	return entry
 }
 
@@ -49,11 +45,6 @@ func ToEntryEntity(model schedulemodel.AgendaEntryInterface) entity.EntryEntity 
 		photoID = sql.NullInt64{Int64: int64(value), Valid: true}
 	}
 
-	var updatedBy sql.NullInt64
-	if value, ok := model.UpdatedBy(); ok {
-		updatedBy = sql.NullInt64{Int64: value, Valid: true}
-	}
-
 	return entity.EntryEntity{
 		ID:             model.ID(),
 		AgendaID:       model.AgendaID(),
@@ -64,7 +55,5 @@ func ToEntryEntity(model schedulemodel.AgendaEntryInterface) entity.EntryEntity 
 		Reason:         reason,
 		VisitID:        visitID,
 		PhotoBookingID: photoID,
-		CreatedBy:      model.CreatedBy(),
-		UpdatedBy:      updatedBy,
 	}
 }

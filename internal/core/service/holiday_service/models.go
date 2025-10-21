@@ -8,23 +8,21 @@ import (
 
 // CreateCalendarInput carries the data required to create a holiday calendar.
 type CreateCalendarInput struct {
-	Name      string
-	Scope     holidaymodel.CalendarScope
-	State     string
-	CityIBGE  string
-	IsActive  bool
-	CreatedBy int64
+	Name     string
+	Scope    holidaymodel.CalendarScope
+	State    string
+	CityIBGE string
+	IsActive bool
 }
 
 // UpdateCalendarInput captures the information to update an existing calendar.
 type UpdateCalendarInput struct {
-	ID        uint64
-	Name      string
-	Scope     holidaymodel.CalendarScope
-	State     string
-	CityIBGE  string
-	IsActive  bool
-	UpdatedBy int64
+	ID       uint64
+	Name     string
+	Scope    holidaymodel.CalendarScope
+	State    string
+	CityIBGE string
+	IsActive bool
 }
 
 // CreateCalendarDateInput describes the payload to register a holiday date.
@@ -33,5 +31,4 @@ type CreateCalendarDateInput struct {
 	HolidayDate time.Time
 	Label       string
 	Recurrent   bool
-	CreatedBy   int64
 }

@@ -529,7 +529,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 func (c *config) createHTTPHandlers() error {
 	slog.Debug("Creating HTTP handlers via factory pattern")
 
-	if c.userService == nil || c.globalService == nil || c.listingService == nil || c.complexService == nil {
+	if c.userService == nil || c.globalService == nil || c.listingService == nil || c.complexService == nil || c.scheduleService == nil || c.holidayService == nil {
 		return fmt.Errorf("required services not initialized")
 	}
 
@@ -547,6 +547,8 @@ func (c *config) createHTTPHandlers() error {
 		c.globalService,
 		c.listingService,
 		c.complexService,
+		c.scheduleService,
+		c.holidayService,
 		c.permissionService,
 		c.metricsAdapter,
 		c.hmacValidator,

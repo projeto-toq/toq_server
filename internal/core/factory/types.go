@@ -68,12 +68,14 @@ type RepositoryAdapters struct {
 
 // HTTPHandlers agrupa todos os handlers HTTP
 type HTTPHandlers struct {
-	UserHandler    interface{} // User handler interface
-	ListingHandler interface{} // Listing handler interface
-	AuthHandler    interface{} // Auth handler interface
-	MetricsHandler interface{} // Handler para endpoint /metrics
-	AdminHandler   interface{} // Admin handler interface
-	ComplexHandler interface{} // Complex handler interface
+	UserHandler     interface{} // User handler interface
+	ListingHandler  interface{} // Listing handler interface
+	AuthHandler     interface{} // Auth handler interface
+	MetricsHandler  interface{} // Handler para endpoint /metrics
+	AdminHandler    interface{} // Admin handler interface
+	ComplexHandler  interface{} // Complex handler interface
+	ScheduleHandler interface{} // Schedule handler interface
+	HolidayHandler  interface{} // Holiday handler interface
 }
 
 // MetricsAdapter contém o adapter de métricas

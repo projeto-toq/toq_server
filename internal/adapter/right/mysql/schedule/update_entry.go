@@ -25,8 +25,8 @@ func (a *ScheduleAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry sch
 
 	entity := converters.ToEntryEntity(entry)
 
-	query := `UPDATE listing_agenda_entries SET entry_type = ?, starts_at = ?, ends_at = ?, blocking = ?, reason = ?, visit_id = ?, photo_booking_id = ?, updated_by = ? WHERE id = ?`
-	result, err := exec.ExecContext(ctx, query, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID, entity.UpdatedBy, entity.ID)
+	query := `UPDATE listing_agenda_entries SET entry_type = ?, starts_at = ?, ends_at = ?, blocking = ?, reason = ?, visit_id = ?, photo_booking_id = ? WHERE id = ?`
+	result, err := exec.ExecContext(ctx, query, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID, entity.ID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.schedule.update_entry.exec_error", "entry_id", entity.ID, "err", err)

@@ -25,7 +25,7 @@ func (a *ScheduleAdapter) ListEntriesBetween(ctx context.Context, tx *sql.Tx, ag
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, agenda_id, entry_type, starts_at, ends_at, blocking, reason, visit_id, photo_booking_id, created_by, updated_by FROM listing_agenda_entries WHERE agenda_id = ? AND ends_at > ? AND starts_at < ? ORDER BY starts_at`
+	query := `SELECT id, agenda_id, entry_type, starts_at, ends_at, blocking, reason, visit_id, photo_booking_id FROM listing_agenda_entries WHERE agenda_id = ? AND ends_at > ? AND starts_at < ? ORDER BY starts_at`
 
 	rows, err := exec.QueryContext(ctx, query, agendaID, from, to)
 	if err != nil {
@@ -38,7 +38,7 @@ func (a *ScheduleAdapter) ListEntriesBetween(ctx context.Context, tx *sql.Tx, ag
 	entries := make([]schedulemodel.AgendaEntryInterface, 0)
 	for rows.Next() {
 		var entryEntity entity.EntryEntity
-		if err = rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID, &entryEntity.CreatedBy, &entryEntity.UpdatedBy); err != nil {
+		if err = rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID); err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("mysql.schedule.list_entries_between.scan_error", "agenda_id", agendaID, "err", err)
 			return nil, fmt.Errorf("scan agenda entry between: %w", err)

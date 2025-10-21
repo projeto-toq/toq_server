@@ -16,6 +16,4 @@ type EntryEntity struct {
 	Reason         sql.NullString
 	VisitID        sql.NullInt64
 	PhotoBookingID sql.NullInt64
-	CreatedBy      int64
-	UpdatedBy      sql.NullInt64
 }
