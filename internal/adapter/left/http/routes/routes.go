@@ -178,6 +178,7 @@ func RegisterUserRoutes(
 		// Profile management
 		user.GET("/profile", userHandler.GetProfile)    // GetProfile
 		user.PUT("/profile", userHandler.UpdateProfile) // UpdateProfile
+		user.GET("/status", userHandler.GetUserStatus)  // GetUserStatus
 
 		// Account management
 		user.DELETE("/account", userHandler.DeleteAccount)
