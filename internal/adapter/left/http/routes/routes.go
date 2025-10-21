@@ -135,6 +135,9 @@ func RegisterUserRoutes(
 
 		// SignIn
 		auth.POST("/signin", middlewares.RequireDeviceIDMiddleware(), authHandler.SignIn) // SignIn
+
+		// RefreshToken
+		auth.POST("/refresh", authHandler.RefreshToken) // RefreshToken
 	}
 
 	// User routes (authenticated)

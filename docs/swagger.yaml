@@ -1125,6 +1125,116 @@ definitions:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarCreateRequest:
+    properties:
+      cityIbge:
+        type: string
+      isActive:
+        type: boolean
+      name:
+        type: string
+      scope:
+        type: string
+      state:
+        type: string
+    required:
+    - name
+    - scope
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateCreateRequest:
+    properties:
+      calendarId:
+        type: integer
+      holidayDate:
+        type: string
+      label:
+        type: string
+      recurrent:
+        type: boolean
+    required:
+    - calendarId
+    - holidayDate
+    - label
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateDeleteRequest:
+    properties:
+      id:
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse:
+    properties:
+      calendarId:
+        type: integer
+      holidayDate:
+        type: string
+      id:
+        type: integer
+      label:
+        type: string
+      recurrent:
+        type: boolean
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDatesListResponse:
+    properties:
+      dates:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDetailRequest:
+    properties:
+      id:
+        type: integer
+    required:
+    - id
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarResponse:
+    properties:
+      cityIbge:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      name:
+        type: string
+      scope:
+        type: string
+      state:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarUpdateRequest:
+    properties:
+      cityIbge:
+        type: string
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      name:
+        type: string
+      scope:
+        type: string
+      state:
+        type: string
+    required:
+    - id
+    - name
+    - scope
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarsListResponse:
+    properties:
+      calendars:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse:
     properties:
       data:
@@ -1140,6 +1250,26 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
         type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailRequest:
+    properties:
+      listingId:
+        type: integer
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest'
+      range:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest'
+    required:
+    - listingId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogCreateRequest:
     properties:
@@ -1401,6 +1531,46 @@ definitions:
       zipCode:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse:
+    properties:
+      blocking:
+        type: boolean
+      endsAt:
+        type: string
+      entryType:
+        type: string
+      startsAt:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryItemResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse'
+        type: array
+      listingId:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryRequest:
+    properties:
+      listingIds:
+        items:
+          type: integer
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest'
+      range:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryItemResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse:
     properties:
       limit:
@@ -1522,6 +1692,126 @@ definitions:
       slotId:
         example: 2002
         type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityRequest:
+    properties:
+      listingId:
+        type: integer
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest'
+      range:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest'
+      slotDurationMinute:
+        type: integer
+    required:
+    - listingId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      slots:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilitySlotResponse'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilitySlotResponse:
+    properties:
+      endsAt:
+        type: string
+      startsAt:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryRequest:
+    properties:
+      endsAt:
+        type: string
+      entryType:
+        type: string
+      listingId:
+        type: integer
+      reason:
+        type: string
+      startsAt:
+        type: string
+    required:
+    - endsAt
+    - entryType
+    - listingId
+    - startsAt
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryResponse:
+    properties:
+      entry:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryUpdateRequest:
+    properties:
+      endsAt:
+        type: string
+      entryId:
+        type: integer
+      entryType:
+        type: string
+      listingId:
+        type: integer
+      reason:
+        type: string
+      startsAt:
+        type: string
+    required:
+    - endsAt
+    - entryId
+    - entryType
+    - listingId
+    - startsAt
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleDeleteEntryRequest:
+    properties:
+      entryId:
+        type: integer
+      listingId:
+        type: integer
+    required:
+    - entryId
+    - listingId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse:
+    properties:
+      blocking:
+        type: boolean
+      endsAt:
+        type: string
+      entryType:
+        type: string
+      id:
+        type: integer
+      photoBookingId:
+        type: integer
+      reason:
+        type: string
+      startsAt:
+        type: string
+      visitId:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest:
+    properties:
+      limit:
+        example: 20
+        type: integer
+      page:
+        example: 1
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest:
+    properties:
+      from:
+        example: "2025-01-01T00:00:00Z"
+        type: string
+      to:
+        example: "2025-01-07T23:59:59Z"
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SignInRequest:
     properties:
@@ -2854,6 +3144,333 @@ paths:
       summary: Get complex zip code detail
       tags:
       - Admin
+  /admin/holidays/calendars:
+    get:
+      consumes:
+      - application/json
+      description: Returns holiday calendars with filtering and pagination options.
+      parameters:
+      - description: Calendar scope (NATIONAL|STATE|CITY)
+        in: query
+        name: scope
+        type: string
+      - description: State abbreviation
+        in: query
+        name: state
+        type: string
+      - description: City IBGE code
+        in: query
+        name: cityIbge
+        type: string
+      - description: Free text search
+        in: query
+        name: search
+        type: string
+      - description: Filter active calendars
+        in: query
+        name: onlyActive
+        type: boolean
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarsListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List holiday calendars
+      tags:
+      - Admin Holidays
+    post:
+      consumes:
+      - application/json
+      description: Creates a new holiday calendar available for scheduling operations.
+      parameters:
+      - description: Calendar payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create holiday calendar
+      tags:
+      - Admin Holidays
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing holiday calendar metadata.
+      parameters:
+      - description: Calendar update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update holiday calendar
+      tags:
+      - Admin Holidays
+  /admin/holidays/calendars/detail:
+    post:
+      consumes:
+      - application/json
+      description: Returns the metadata of a specific holiday calendar.
+      parameters:
+      - description: Calendar detail request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get holiday calendar detail
+      tags:
+      - Admin Holidays
+  /admin/holidays/dates:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a holiday date from a calendar.
+      parameters:
+      - description: Holiday date delete request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Holiday date deleted
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete holiday date
+      tags:
+      - Admin Holidays
+    get:
+      consumes:
+      - application/json
+      description: Returns holiday dates for a calendar with optional range filters.
+      parameters:
+      - description: Calendar identifier
+        in: query
+        name: calendarId
+        required: true
+        type: integer
+      - description: Start date (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: End date (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDatesListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List holiday dates
+      tags:
+      - Admin Holidays
+    post:
+      consumes:
+      - application/json
+      description: Registers a new holiday date within a calendar.
+      parameters:
+      - description: Holiday date payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create holiday date
+      tags:
+      - Admin Holidays
   /admin/listing/catalog:
     delete:
       consumes:
@@ -5607,6 +6224,275 @@ paths:
       summary: Verify CRECI documents presence
       tags:
       - Realtor
+  /schedules/listing/availability:
+    post:
+      consumes:
+      - application/json
+      description: Returns the available slots for a listing within the provided time
+        range.
+      parameters:
+      - description: Availability filter
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List listing availability
+      tags:
+      - Schedules
+  /schedules/listing/block:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a blocking or temporary block entry from a listing agenda.
+      parameters:
+      - description: Block entry deletion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleDeleteEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Entry deleted successfully
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a blocking entry
+      tags:
+      - Schedules
+    post:
+      consumes:
+      - application/json
+      description: Creates a blocking or temporary blocking time range for a listing
+        agenda.
+      parameters:
+      - description: Block entry payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a blocking entry
+      tags:
+      - Schedules
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing blocking or temporary block entry for a listing
+        agenda.
+      parameters:
+      - description: Block entry update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a blocking entry
+      tags:
+      - Schedules
+  /schedules/listing/detail:
+    post:
+      consumes:
+      - application/json
+      description: Returns all agenda entries for a specific listing owned by the
+        authenticated user.
+      parameters:
+      - description: Agenda detail filter
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List agenda entries for a listing
+      tags:
+      - Schedules
+  /schedules/owner/summary:
+    post:
+      consumes:
+      - application/json
+      description: Returns a consolidated view of agenda entries for all listings
+        owned by the authenticated user.
+      parameters:
+      - description: Summary filter
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List owner agenda summary
+      tags:
+      - Schedules
   /user/account:
     delete:
       consumes:
