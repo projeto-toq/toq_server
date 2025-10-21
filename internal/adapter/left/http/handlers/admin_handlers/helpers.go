@@ -94,9 +94,5 @@ func toAdminRolePermissionSummary(rolePermission permissionmodel.RolePermissionI
 		Granted:      rolePermission.GetGranted(),
 	}
 
-	if conditions := rolePermission.GetConditions(); conditions != nil {
-		resp.Conditions = conditions
-	}
-
 	return resp
 }

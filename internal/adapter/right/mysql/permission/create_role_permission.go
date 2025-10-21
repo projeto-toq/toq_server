@@ -35,15 +35,14 @@ func (pa *PermissionAdapter) CreateRolePermission(ctx context.Context, tx *sql.T
 	)
 
 	query := `
-		INSERT INTO role_permissions (role_id, permission_id, granted, conditions)
-		VALUES (?, ?, ?, ?)
+		INSERT INTO role_permissions (role_id, permission_id, granted)
+		VALUES (?, ?, ?)
 	`
 
 	id, err := pa.Create(ctx, tx, query,
 		entity.RoleID,
 		entity.PermissionID,
 		entity.Granted,
-		entity.Conditions,
 	)
 	if err != nil {
 		utils.SetSpanError(ctx, err)

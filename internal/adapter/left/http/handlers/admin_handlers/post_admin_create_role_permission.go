@@ -38,7 +38,6 @@ func (h *AdminHandler) PostAdminCreateRolePermission(c *gin.Context) {
 		RoleID:       req.RoleID,
 		PermissionID: req.PermissionID,
 		Granted:      req.Granted,
-		Conditions:   req.Conditions,
 	}
 
 	rolePermission, err := h.permissionService.CreateRolePermission(ctx, input)

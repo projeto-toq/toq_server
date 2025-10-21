@@ -56,12 +56,10 @@ type CreateRolePermissionInput struct {
 	RoleID       int64
 	PermissionID int64
 	Granted      *bool
-	Conditions   map[string]any
 }
 
 // UpdateRolePermissionInput carries data to update a role-permission relation.
 type UpdateRolePermissionInput struct {
-	ID         int64
-	Granted    *bool
-	Conditions map[string]any
+	ID      int64
+	Granted *bool
 }

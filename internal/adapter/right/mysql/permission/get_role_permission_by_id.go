@@ -21,7 +21,7 @@ func (pa *PermissionAdapter) GetRolePermissionByID(ctx context.Context, tx *sql.
 
 	logger = logger.With("role_permission_id", rolePermissionID)
 
-	query := `SELECT id, role_id, permission_id, granted, conditions FROM role_permissions WHERE id = ?`
+	query := `SELECT id, role_id, permission_id, granted FROM role_permissions WHERE id = ?`
 
 	rows, readErr := pa.Read(ctx, tx, query, rolePermissionID)
 	if readErr != nil {
@@ -34,8 +34,8 @@ func (pa *PermissionAdapter) GetRolePermissionByID(ctx context.Context, tx *sql.
 	}
 
 	row := rows[0]
-	if len(row) != 5 {
-		logger.Warn("mysql.permission.get_role_permission_by_id.columns_mismatch", "expected", 5, "got", len(row))
+	if len(row) != 4 {
+		logger.Warn("mysql.permission.get_role_permission_by_id.columns_mismatch", "expected", 4, "got", len(row))
 		return nil, fmt.Errorf("unexpected number of columns")
 	}
 
@@ -54,16 +54,6 @@ func (pa *PermissionAdapter) GetRolePermissionByID(ctx context.Context, tx *sql.
 		entity.Granted = grantedVal == 1
 	case bool:
 		entity.Granted = grantedVal
-	}
-	if row[4] != nil {
-		switch cond := row[4].(type) {
-		case []byte:
-			condStr := string(cond)
-			entity.Conditions = &condStr
-		case string:
-			condStr := cond
-			entity.Conditions = &condStr
-		}
 	}
 
 	rolePermission, convertErr := permissionconverters.RolePermissionEntityToDomain(entity)

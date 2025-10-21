@@ -50,7 +50,7 @@ func (pa *PermissionAdapter) ListRolePermissions(ctx context.Context, tx *sql.Tx
 
 	whereClause := "WHERE " + strings.Join(conditions, " AND ")
 
-	query := `SELECT id, role_id, permission_id, granted, conditions
+	query := `SELECT id, role_id, permission_id, granted
         FROM role_permissions rp ` + " " + whereClause + " ORDER BY id ASC LIMIT ? OFFSET ?"
 
 	listArgs := append([]any{}, args...)
@@ -70,8 +70,8 @@ func (pa *PermissionAdapter) ListRolePermissions(ctx context.Context, tx *sql.Tx
 	}
 
 	for idx, row := range rows {
-		if len(row) != 5 {
-			logger.Warn("mysql.permission.list_role_permissions.columns_mismatch", "row_index", idx, "expected", 5, "got", len(row))
+		if len(row) != 4 {
+			logger.Warn("mysql.permission.list_role_permissions.columns_mismatch", "row_index", idx, "expected", 4, "got", len(row))
 			continue
 		}
 
@@ -90,16 +90,6 @@ func (pa *PermissionAdapter) ListRolePermissions(ctx context.Context, tx *sql.Tx
 			entity.Granted = grantedVal == 1
 		case bool:
 			entity.Granted = grantedVal
-		}
-		if row[4] != nil {
-			switch cond := row[4].(type) {
-			case []byte:
-				condStr := string(cond)
-				entity.Conditions = &condStr
-			case string:
-				condStr := cond
-				entity.Conditions = &condStr
-			}
 		}
 
 		rolePermission, convertErr := permissionconverters.RolePermissionEntityToDomain(entity)

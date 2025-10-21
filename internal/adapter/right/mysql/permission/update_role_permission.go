@@ -37,7 +37,7 @@ func (pa *PermissionAdapter) UpdateRolePermission(ctx context.Context, tx *sql.T
 
 	query := `
 		UPDATE role_permissions 
-		SET role_id = ?, permission_id = ?, granted = ?, conditions = ?
+		SET role_id = ?, permission_id = ?, granted = ?
 		WHERE id = ?
 	`
 
@@ -45,7 +45,6 @@ func (pa *PermissionAdapter) UpdateRolePermission(ctx context.Context, tx *sql.T
 		entity.RoleID,
 		entity.PermissionID,
 		entity.Granted,
-		entity.Conditions,
 		entity.ID,
 	)
 	if err != nil {

@@ -54,9 +54,6 @@ func (p *permissionServiceImpl) UpdateRolePermission(ctx context.Context, input 
 	if input.Granted != nil {
 		existing.SetGranted(*input.Granted)
 	}
-	if input.Conditions != nil {
-		existing.SetConditions(input.Conditions)
-	}
 
 	affectedUsers, usersErr := p.permissionRepository.GetActiveUserIDsByRoleID(ctx, tx, existing.GetRoleID())
 	if usersErr != nil {

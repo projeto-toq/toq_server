@@ -9,10 +9,6 @@ type RolePermissionInterface interface {
 	SetPermissionID(permissionID int64)
 	GetGranted() bool
 	SetGranted(granted bool)
-	GetConditions() map[string]interface{}
-	SetConditions(conditions map[string]interface{})
-	SetConditionsFromJSON(jsonData []byte) error
-	GetConditionsAsJSON() ([]byte, error)
 	GetRole() RoleInterface
 	SetRole(role RoleInterface)
 	GetPermission() PermissionInterface

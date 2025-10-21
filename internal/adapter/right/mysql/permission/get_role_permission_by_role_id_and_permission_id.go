@@ -22,7 +22,7 @@ func (pa *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx contex
 	logger = logger.With("role_id", roleID, "permission_id", permissionID)
 
 	query := `
-		SELECT id, role_id, permission_id, granted, conditions
+		SELECT id, role_id, permission_id, granted
 		FROM role_permissions 
 		WHERE role_id = ? AND permission_id = ?
 		LIMIT 1
@@ -33,11 +33,10 @@ func (pa *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx contex
 		roleIDOut       int64
 		permissionIDOut int64
 		grantedInt      int64
-		conditions      sql.NullString
 	)
 
 	err = tx.QueryRowContext(ctx, query, roleID, permissionID).Scan(
-		&id, &roleIDOut, &permissionIDOut, &grantedInt, &conditions,
+		&id, &roleIDOut, &permissionIDOut, &grantedInt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -54,10 +53,6 @@ func (pa *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx contex
 		RoleID:       roleIDOut,
 		PermissionID: permissionIDOut,
 		Granted:      grantedInt == 1,
-	}
-	if conditions.Valid {
-		v := conditions.String
-		entity.Conditions = &v
 	}
 
 	rolePermission, convertErr := permissionconverters.RolePermissionEntityToDomain(entity)

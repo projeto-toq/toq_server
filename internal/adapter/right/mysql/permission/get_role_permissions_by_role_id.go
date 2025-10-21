@@ -22,7 +22,7 @@ func (pa *PermissionAdapter) GetRolePermissionsByRoleID(ctx context.Context, tx 
 	logger = logger.With("role_id", roleID)
 
 	query := `
-		SELECT id, role_id, permission_id, granted, conditions
+		SELECT id, role_id, permission_id, granted
 		FROM role_permissions 
 		WHERE role_id = ?
 		ORDER BY id
@@ -37,8 +37,8 @@ func (pa *PermissionAdapter) GetRolePermissionsByRoleID(ctx context.Context, tx 
 
 	rolePermissions = make([]permissionmodel.RolePermissionInterface, 0, len(results))
 	for index, row := range results {
-		if len(row) != 5 {
-			errColumns := fmt.Errorf("unexpected number of columns: expected 5, got %d", len(row))
+		if len(row) != 4 {
+			errColumns := fmt.Errorf("unexpected number of columns: expected 4, got %d", len(row))
 			utils.SetSpanError(ctx, errColumns)
 			logger.Error("mysql.permission.get_role_permissions_by_role_id.columns_mismatch", "row_index", index, "error", errColumns)
 			return nil, errColumns
@@ -49,12 +49,6 @@ func (pa *PermissionAdapter) GetRolePermissionsByRoleID(ctx context.Context, tx 
 			RoleID:       row[1].(int64),
 			PermissionID: row[2].(int64),
 			Granted:      row[3].(int64) == 1,
-		}
-
-		// conditions (pode ser NULL)
-		if row[4] != nil {
-			conditionsStr := string(row[4].([]byte))
-			entity.Conditions = &conditionsStr
 		}
 
 		rolePermission, convertErr := permissionconverters.RolePermissionEntityToDomain(entity)

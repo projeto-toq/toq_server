@@ -34,9 +34,8 @@ func (h *AdminHandler) PutAdminUpdateRolePermission(c *gin.Context) {
 	}
 
 	input := permissionservice.UpdateRolePermissionInput{
-		ID:         req.ID,
-		Granted:    req.Granted,
-		Conditions: req.Conditions,
+		ID:      req.ID,
+		Granted: req.Granted,
 	}
 
 	rolePermission, err := h.permissionService.UpdateRolePermission(ctx, input)

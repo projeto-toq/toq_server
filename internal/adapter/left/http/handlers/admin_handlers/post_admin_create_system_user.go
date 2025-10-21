@@ -20,6 +20,7 @@ import (
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminCreateSystemUserRequest  true  "System user payload"
+//	@Description	Create a System User with specified role and details. Not for Owner/Realtor user creation. Email with instruction will be sent to the new user.
 //	@Success      201  {object}  dto.AdminSystemUserResponse
 //	@Failure      400  {object}  map[string]any
 //	@Failure      401  {object}  map[string]any

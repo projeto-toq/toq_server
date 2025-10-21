@@ -1,14 +1,11 @@
 package permissionmodel
 
-import "encoding/json"
-
 // rolePermission representa a associação entre role e permission
 type rolePermission struct {
 	id           int64
 	roleID       int64
 	permissionID int64
 	granted      bool
-	conditions   map[string]interface{}
 	role         RoleInterface
 	permission   PermissionInterface
 }
@@ -49,29 +46,6 @@ func (rp *rolePermission) GetGranted() bool {
 
 func (rp *rolePermission) SetGranted(granted bool) {
 	rp.granted = granted
-}
-
-func (rp *rolePermission) GetConditions() map[string]interface{} {
-	return rp.conditions
-}
-
-func (rp *rolePermission) SetConditions(conditions map[string]interface{}) {
-	rp.conditions = conditions
-}
-
-func (rp *rolePermission) SetConditionsFromJSON(jsonData []byte) error {
-	if len(jsonData) == 0 {
-		rp.conditions = nil
-		return nil
-	}
-	return json.Unmarshal(jsonData, &rp.conditions)
-}
-
-func (rp *rolePermission) GetConditionsAsJSON() ([]byte, error) {
-	if rp.conditions == nil {
-		return nil, nil
-	}
-	return json.Marshal(rp.conditions)
 }
 
 func (rp *rolePermission) GetRole() RoleInterface {

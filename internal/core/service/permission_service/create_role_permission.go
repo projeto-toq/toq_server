@@ -86,9 +86,6 @@ func (p *permissionServiceImpl) CreateRolePermission(ctx context.Context, input 
 	rolePermission.SetRoleID(input.RoleID)
 	rolePermission.SetPermissionID(input.PermissionID)
 	rolePermission.SetGranted(granted)
-	if input.Conditions != nil {
-		rolePermission.SetConditions(input.Conditions)
-	}
 
 	affectedUsers, usersErr := p.permissionRepository.GetActiveUserIDsByRoleID(ctx, tx, input.RoleID)
 	if usersErr != nil {
