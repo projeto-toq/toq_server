@@ -39,7 +39,7 @@ func (a *ScheduleAdapter) InsertRules(ctx context.Context, tx *sql.Tx, rules []s
 	defer stmt.Close()
 
 	for _, rule := range entities {
-		if _, err = stmt.ExecContext(ctx, rule.AgendaID, rule.DayOfWeek, rule.StartMin, rule.EndMin, rule.RuleType, rule.IsActive); err != nil {
+		if _, err = stmt.ExecContext(ctx, rule.AgendaID, rule.DayOfWeek, rule.StartMinute, rule.EndMinute, rule.RuleType, rule.IsActive); err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("mysql.schedule.insert_rules.exec_error", "agenda_id", rule.AgendaID, "err", err)
 			return fmt.Errorf("exec insert agenda rule: %w", err)

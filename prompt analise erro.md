@@ -5,15 +5,15 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-É necessário fazer algumas correçoes nos endpoints de admin:
+É necessário fazer algumas correçoes nos endpoints de schedulles:
 
-- o endpoint PUT /admin/system-users deve passar a PUT /admin/users/system;
-- o endpoint POST /admin/system-users deve passar a POST /admin/users/system;
-- o endpoint DELETE /admin/system-users deve passar a DELETE /admin/users/system;
-- o endpoint POST /admin/user deve passar a POST /admin/users;
-- o endpoint POST /admin/user/approve deve passar a /admin/user/creci/approve;
-- o endpoint POST /admin/user/creci-download-url deve passar a /admin/users/creci/download-url;
-- o endpoint GET /admin/user/pending deve passar a /admin/users/creci/pending;
+- o endpoint POST /schedules/listing/availability deve passar a GET /schedules/listing/availability passando os parâmetros via query string;
+- o endpoint POST /schedules/listing/detail deve passar a GET /schedules/listing/detail passando os parâmetros via query string;
+- o endpoint POST /schedules/owner/summary deve passar a GET /schedules/owner/summary passando os parâmetros via query string;
+- atualize o toq_server_go_guide.md com a direttiva obrigarotia de:
+  - endpoints de listagem devem ser GET e não POST, com os parâmetros de paginação e filtros via query string;
+  - endpoints de criação/atualização/deleção devem ser POST/PUT/DELETE
+  - endpoints de detalhe de item deve ser POST com parametro via body.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 

@@ -37,7 +37,7 @@ func (a *ScheduleAdapter) ListRulesByAgenda(ctx context.Context, tx *sql.Tx, age
 	var results []schedulemodel.AgendaRuleInterface
 	for rows.Next() {
 		var ruleEntity entity.RuleEntity
-		if err = rows.Scan(&ruleEntity.ID, &ruleEntity.AgendaID, &ruleEntity.DayOfWeek, &ruleEntity.StartMin, &ruleEntity.EndMin, &ruleEntity.RuleType, &ruleEntity.IsActive); err != nil {
+		if err = rows.Scan(&ruleEntity.ID, &ruleEntity.AgendaID, &ruleEntity.DayOfWeek, &ruleEntity.StartMinute, &ruleEntity.EndMinute, &ruleEntity.RuleType, &ruleEntity.IsActive); err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("mysql.schedule.list_rules.scan_error", "agenda_id", agendaID, "err", err)
 			return nil, fmt.Errorf("scan agenda rule: %w", err)

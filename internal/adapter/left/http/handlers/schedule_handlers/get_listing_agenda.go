@@ -12,22 +12,26 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PostOwnerSummary handles POST /schedules/owner/summary.
+// GetListingAgenda handles GET /schedules/listing/detail.
 //
-// @Summary		List owner agenda summary
-// @Description	Returns a consolidated view of agenda entries for all listings owned by the authenticated user.
-// @Tags		Schedules
-// @Accept		json
+// @Summary	List agenda entries for a listing
+// @Description	Returns all agenda entries for a specific listing owned by the authenticated user.
+// @Tags	Schedules
 // @Produce	json
-// @Param		request	body	dto.OwnerAgendaSummaryRequest	true	"Summary filter" Extensions(x-example={"listingIds":[3241,3242],"range":{"from":"2025-05-01T00:00:00Z","to":"2025-05-07T23:59:59Z"},"pagination":{"page":1,"limit":50}})
-// @Success	200	{object}	dto.OwnerAgendaSummaryResponse
+// @Param	listingId	query	int64	true	"Listing identifier"
+// @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)"
+// @Param	rangeTo	query	string	false	"End of time range (RFC3339)"
+// @Param	page	query	int	false	"Page number"
+// @Param	limit	query	int	false	"Items per page"
+// @Success	200	{object}	dto.ListingAgendaDetailResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
 // @Failure	403	{object}	dto.ErrorResponse
+// @Failure	404	{object}	dto.ErrorResponse
 // @Failure	500	{object}	dto.ErrorResponse
-// @Router		/schedules/owner/summary [post]
+// @Router	/schedules/listing/detail [get]
 // @Security	BearerAuth
-func (h *ScheduleHandler) PostOwnerSummary(c *gin.Context) {
+func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
@@ -42,36 +46,36 @@ func (h *ScheduleHandler) PostOwnerSummary(c *gin.Context) {
 		return
 	}
 
-	var req dto.OwnerAgendaSummaryRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request payload")
+	var req dto.ListingAgendaDetailQuery
+	if err := c.ShouldBindQuery(&req); err != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_QUERY", "Invalid query parameters")
 		return
 	}
 
-	rangeFilter, err := parseScheduleRange(req.Range)
+	rangeFilter, err := parseScheduleRange(dto.ScheduleRangeRequest{From: req.RangeFrom, To: req.RangeTo})
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	pagination := sanitizeSchedulePagination(req.Pagination)
+	pagination := sanitizeSchedulePagination(dto.SchedulePaginationRequest{Page: req.Page, Limit: req.Limit})
 
-	filter := schedulemodel.OwnerSummaryFilter{
+	filter := schedulemodel.AgendaDetailFilter{
 		OwnerID:    userInfo.ID,
-		ListingIDs: req.ListingIDs,
+		ListingID:  req.ListingID,
 		Range:      rangeFilter,
 		Pagination: pagination,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)
-	result, serviceErr := h.scheduleService.ListOwnerSummary(ctx, filter)
+	result, serviceErr := h.scheduleService.ListAgendaEntries(ctx, filter)
 	if serviceErr != nil {
 		httperrors.SendHTTPErrorObj(c, serviceErr)
 		return
 	}
 
 	page, limit := schedulePaginationValues(pagination)
-	response := converters.ScheduleOwnerSummaryToDTO(result, page, limit)
+	response := converters.ScheduleEntriesToDTO(result.Entries, page, limit, result.Total)
 
 	c.JSON(http.StatusOK, response)
 }

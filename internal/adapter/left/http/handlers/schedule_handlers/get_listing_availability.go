@@ -12,23 +12,27 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PostListAvailability handles POST /schedules/listing/availability.
+// GetListingAvailability handles GET /schedules/listing/availability.
 //
-// @Summary		List listing availability
+// @Summary	List listing availability
 // @Description	Returns the available slots for a listing within the provided time range.
-// @Tags		Schedules
-// @Accept		json
+// @Tags	Schedules
 // @Produce	json
-// @Param		request	body	dto.ScheduleAvailabilityRequest	true	"Availability filter" Extensions(x-example={"listingId":3241,"range":{"from":"2025-06-01T08:00:00Z","to":"2025-06-01T18:00:00Z"},"slotDurationMinute":30,"pagination":{"page":1,"limit":50}})
+// @Param	listingId	query	int64	true	"Listing identifier"
+// @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)"
+// @Param	rangeTo	query	string	false	"End of time range (RFC3339)"
+// @Param	slotDurationMinute	query	int	false	"Desired slot duration in minutes"
+// @Param	page	query	int	false	"Page number"
+// @Param	limit	query	int	false	"Items per page"
 // @Success	200	{object}	dto.ScheduleAvailabilityResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
 // @Failure	403	{object}	dto.ErrorResponse
 // @Failure	404	{object}	dto.ErrorResponse
 // @Failure	500	{object}	dto.ErrorResponse
-// @Router		/schedules/listing/availability [post]
+// @Router	/schedules/listing/availability [get]
 // @Security	BearerAuth
-func (h *ScheduleHandler) PostListAvailability(c *gin.Context) {
+func (h *ScheduleHandler) GetListingAvailability(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
@@ -42,19 +46,19 @@ func (h *ScheduleHandler) PostListAvailability(c *gin.Context) {
 		return
 	}
 
-	var req dto.ScheduleAvailabilityRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request payload")
+	var req dto.ScheduleAvailabilityQuery
+	if err := c.ShouldBindQuery(&req); err != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_QUERY", "Invalid query parameters")
 		return
 	}
 
-	rangeFilter, err := parseScheduleRange(req.Range)
+	rangeFilter, err := parseScheduleRange(dto.ScheduleRangeRequest{From: req.RangeFrom, To: req.RangeTo})
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	pagination := sanitizeSchedulePagination(req.Pagination)
+	pagination := sanitizeSchedulePagination(dto.SchedulePaginationRequest{Page: req.Page, Limit: req.Limit})
 
 	filter := schedulemodel.AvailabilityFilter{
 		ListingID:          req.ListingID,

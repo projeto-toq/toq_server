@@ -12,11 +12,13 @@ type SchedulePaginationRequest struct {
 	Limit int `json:"limit,omitempty" example:"20"`
 }
 
-// OwnerAgendaSummaryRequest is the payload used to retrieve the consolidated owner agenda.
-type OwnerAgendaSummaryRequest struct {
-	ListingIDs []int64                   `json:"listingIds,omitempty"`
-	Range      ScheduleRangeRequest      `json:"range"`
-	Pagination SchedulePaginationRequest `json:"pagination"`
+// OwnerAgendaSummaryQuery captures query string parameters for owner agenda summary.
+type OwnerAgendaSummaryQuery struct {
+	ListingIDs []int64 `form:"listingIds"`
+	RangeFrom  string  `form:"rangeFrom"`
+	RangeTo    string  `form:"rangeTo"`
+	Page       int     `form:"page"`
+	Limit      int     `form:"limit"`
 }
 
 // OwnerAgendaSummaryEntryResponse describes a normalized agenda entry in the summary response.
@@ -39,11 +41,13 @@ type OwnerAgendaSummaryResponse struct {
 	Pagination PaginationResponse               `json:"pagination"`
 }
 
-// ListingAgendaDetailRequest represents the payload to list agenda entries of a specific listing.
-type ListingAgendaDetailRequest struct {
-	ListingID  int64                     `json:"listingId" binding:"required"`
-	Range      ScheduleRangeRequest      `json:"range"`
-	Pagination SchedulePaginationRequest `json:"pagination"`
+// ListingAgendaDetailQuery represents query parameters to list agenda entries of a specific listing.
+type ListingAgendaDetailQuery struct {
+	ListingID int64  `form:"listingId" binding:"required"`
+	RangeFrom string `form:"rangeFrom"`
+	RangeTo   string `form:"rangeTo"`
+	Page      int    `form:"page"`
+	Limit     int    `form:"limit"`
 }
 
 // ScheduleEntryResponse exposes detailed information about a single agenda entry.
@@ -89,12 +93,14 @@ type ScheduleDeleteEntryRequest struct {
 	ListingID int64  `json:"listingId" binding:"required"`
 }
 
-// ScheduleAvailabilityRequest represents the payload to query listing availability slots.
-type ScheduleAvailabilityRequest struct {
-	ListingID          int64                     `json:"listingId" binding:"required"`
-	Range              ScheduleRangeRequest      `json:"range"`
-	SlotDurationMinute uint16                    `json:"slotDurationMinute,omitempty"`
-	Pagination         SchedulePaginationRequest `json:"pagination"`
+// ScheduleAvailabilityQuery represents query parameters to fetch listing availability slots.
+type ScheduleAvailabilityQuery struct {
+	ListingID          int64  `form:"listingId" binding:"required"`
+	RangeFrom          string `form:"rangeFrom"`
+	RangeTo            string `form:"rangeTo"`
+	SlotDurationMinute uint16 `form:"slotDurationMinute"`
+	Page               int    `form:"page"`
+	Limit              int    `form:"limit"`
 }
 
 // ScheduleAvailabilitySlotResponse represents a continuous free window.

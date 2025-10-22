@@ -7,25 +7,8 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 2) Requisição
 
-O sistema de permissionamento foi concebido para gerenciar de forma ampla e com permissões declarativas para o sistema como um todo e nao somente as rotas http.
-Entretanto, na prática, somente as rotas http estao sendo protegidas por esse sistema.
-Assim, é necessário que ajsutemos o permissionamento para que proteja apenas as rotas http.
-Campos como resource e conditions, como atualmente descrito abaixo e presentes na tabela, são desnecessários
-# id, name, resource, action, description, conditions, is_active
-'46', 'HTTP UpdateOptStatus', 'http', 'PUT:/api/v2/user/opt-status', 'Permite atualizar o status de opt-in de notificações', NULL, '1'
-A tabela deveria ter este formato:
-# id, name, action, description, is_active
-'46', 'HTTP UpdateOptStatus', 'PUT:/api/v2/user/opt-status', 'Permite atualizar o status de opt-in de notificações', '1'
-Isto simplificará o permissionamento, uma vez que não haverá mais a necessidade de mapear recursos e condições para cada permissão.
-
-Assim:
-- ajuste o código para refletir essa mudança. incluíndo repositórios, serviços e handlers e a cache de permissões.
-- Não é necessário deixar código depreciado, apenas aplique a mudança diretamente.
--  A tabela permissions eu alterarei manualmente no banco de dados, entao nao é necessário criar migrations para isso.
-- Altere os arquivos base_permissions.csv e base_role_permissions.csv para refletir essa mudança também.
-- Elimine os registros 1 ao 32 da tabela permissions, pois estes registros sao referentes a permissões antigas que nao estao mais em uso.
-- Ajuste /docs/permissionamento.md para refletir essa mudança.
-- Caso haja ajustes a ser feitos no toq_server_go_guide.md por instruções/normativa desatualizadas faça-os também
+é necessário cria um novo endpoint na sessão schedules para confirmar o fim da criação da agenda de um imóvel. 
+POST /schedules/listing/finish, passando o ID do listing, confirma fim da criação da agenda do imóvel alterando o status do listing para StatusPendingPhotoScheduling
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

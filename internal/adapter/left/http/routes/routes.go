@@ -222,12 +222,12 @@ func RegisterScheduleRoutes(
 	schedules.Use(middlewares.AuthMiddleware(activityTracker))
 	schedules.Use(middlewares.PermissionMiddleware(permissionService))
 	{
-		schedules.POST("/owner/summary", scheduleHandler.PostOwnerSummary)
-		schedules.POST("/listing/detail", scheduleHandler.PostListingAgenda)
+		schedules.GET("/owner/summary", scheduleHandler.GetOwnerSummary)
+		schedules.GET("/listing/detail", scheduleHandler.GetListingAgenda)
 		schedules.POST("/listing/block", scheduleHandler.PostCreateBlockEntry)
 		schedules.PUT("/listing/block", scheduleHandler.PutUpdateBlockEntry)
 		schedules.DELETE("/listing/block", scheduleHandler.DeleteBlockEntry)
-		schedules.POST("/listing/availability", scheduleHandler.PostListAvailability)
+		schedules.GET("/listing/availability", scheduleHandler.GetListingAvailability)
 	}
 }
 

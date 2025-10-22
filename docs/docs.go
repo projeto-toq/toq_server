@@ -5954,16 +5954,13 @@ const docTemplate = `{
             }
         },
         "/schedules/listing/availability": {
-            "post": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
                 "description": "Returns the available slots for a listing within the provided time range.",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -5973,14 +5970,41 @@ const docTemplate = `{
                 "summary": "List listing availability",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":3241,\"range\":{\"from\":\"2025-06-01T08:00:00Z\",\"to\":\"2025-06-01T18:00:00Z\"},\"slotDurationMinute\":30,\"pagination\":{\"page\":1,\"limit\":50}}",
-                        "description": "Availability filter",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityRequest"
-                        }
+                        "type": "integer",
+                        "description": "Listing identifier",
+                        "name": "listingId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start of time range (RFC3339)",
+                        "name": "rangeFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End of time range (RFC3339)",
+                        "name": "rangeTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Desired slot duration in minutes",
+                        "name": "slotDurationMinute",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6239,16 +6263,13 @@ const docTemplate = `{
             }
         },
         "/schedules/listing/detail": {
-            "post": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
                 "description": "Returns all agenda entries for a specific listing owned by the authenticated user.",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -6258,14 +6279,35 @@ const docTemplate = `{
                 "summary": "List agenda entries for a listing",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":3241,\"range\":{\"from\":\"2025-05-10T08:00:00Z\",\"to\":\"2025-05-12T18:00:00Z\"},\"pagination\":{\"page\":1,\"limit\":20}}",
-                        "description": "Agenda detail filter",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailRequest"
-                        }
+                        "type": "integer",
+                        "description": "Listing identifier",
+                        "name": "listingId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start of time range (RFC3339)",
+                        "name": "rangeFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End of time range (RFC3339)",
+                        "name": "rangeTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6309,16 +6351,13 @@ const docTemplate = `{
             }
         },
         "/schedules/owner/summary": {
-            "post": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
                 "description": "Returns a consolidated view of agenda entries for all listings owned by the authenticated user.",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -6328,14 +6367,38 @@ const docTemplate = `{
                 "summary": "List owner agenda summary",
                 "parameters": [
                     {
-                        "x-example": "{\"listingIds\":[3241,3242],\"range\":{\"from\":\"2025-05-01T00:00:00Z\",\"to\":\"2025-05-07T23:59:59Z\"},\"pagination\":{\"page\":1,\"limit\":50}}",
-                        "description": "Summary filter",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryRequest"
-                        }
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "multi",
+                        "description": "Listing identifiers",
+                        "name": "listingIds",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start of time range (RFC3339)",
+                        "name": "rangeFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End of time range (RFC3339)",
+                        "name": "rangeTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -9152,23 +9215,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailRequest": {
-            "type": "object",
-            "required": [
-                "listingId"
-            ],
-            "properties": {
-                "listingId": {
-                    "type": "integer"
-                },
-                "pagination": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest"
-                },
-                "range": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse": {
             "type": "object",
             "properties": {
@@ -9607,23 +9653,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryRequest": {
-            "type": "object",
-            "properties": {
-                "listingIds": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "pagination": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest"
-                },
-                "range": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryResponse": {
             "type": "object",
             "properties": {
@@ -9822,26 +9851,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityRequest": {
-            "type": "object",
-            "required": [
-                "listingId"
-            ],
-            "properties": {
-                "listingId": {
-                    "type": "integer"
-                },
-                "pagination": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest"
-                },
-                "range": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest"
-                },
-                "slotDurationMinute": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityResponse": {
             "type": "object",
             "properties": {
@@ -9972,32 +9981,6 @@ const docTemplate = `{
                 },
                 "visitId": {
                     "type": "integer"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer",
-                    "example": 20
-                },
-                "page": {
-                    "type": "integer",
-                    "example": 1
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest": {
-            "type": "object",
-            "properties": {
-                "from": {
-                    "type": "string",
-                    "example": "2025-01-01T00:00:00Z"
-                },
-                "to": {
-                    "type": "string",
-                    "example": "2025-01-07T23:59:59Z"
                 }
             }
         },

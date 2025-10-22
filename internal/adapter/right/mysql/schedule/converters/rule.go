@@ -13,8 +13,8 @@ func ToRuleModel(e entity.RuleEntity) schedulemodel.AgendaRuleInterface {
 	rule.SetID(e.ID)
 	rule.SetAgendaID(e.AgendaID)
 	rule.SetDayOfWeek(time.Weekday(e.DayOfWeek))
-	rule.SetStartMinutes(e.StartMin)
-	rule.SetEndMinutes(e.EndMin)
+	rule.SetStartMinutes(e.StartMinute)
+	rule.SetEndMinutes(e.EndMinute)
 	rule.SetRuleType(schedulemodel.RuleType(e.RuleType))
 	rule.SetActive(e.IsActive)
 	return rule
@@ -25,13 +25,13 @@ func ToRuleEntities(models []schedulemodel.AgendaRuleInterface) []entity.RuleEnt
 	entities := make([]entity.RuleEntity, 0, len(models))
 	for _, model := range models {
 		entities = append(entities, entity.RuleEntity{
-			ID:        model.ID(),
-			AgendaID:  model.AgendaID(),
-			DayOfWeek: uint8(model.DayOfWeek()),
-			StartMin:  model.StartMinutes(),
-			EndMin:    model.EndMinutes(),
-			RuleType:  string(model.RuleType()),
-			IsActive:  model.IsActive(),
+			ID:          model.ID(),
+			AgendaID:    model.AgendaID(),
+			DayOfWeek:   uint8(model.DayOfWeek()),
+			StartMinute: model.StartMinutes(),
+			EndMinute:   model.EndMinutes(),
+			RuleType:    string(model.RuleType()),
+			IsActive:    model.IsActive(),
 		})
 	}
 	return entities

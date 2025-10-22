@@ -229,6 +229,10 @@ Padrão de DTOs e Handlers:
 - Validação de DTO no handler (ou binder), sem regras de negócio; regras ficam no Service.
 - Erros: sempre `http_errors.SendHTTPErrorObj(c, err)`.
 - Swagger: documente via anotações no código do handler/DTO e não diretamente nos arquivos json/yaml.
+- Convenção obrigatória de verbos HTTP:
+  - Endpoints de listagem devem ser `GET` com filtros e paginação via query string.
+  - Endpoints de criação, atualização e deleção devem usar `POST`, `PUT` e `DELETE`, respectivamente.
+  - Endpoints de detalhe de item devem ser `POST`, recebendo identificadores no corpo.
 - Regras para os endpoints admin:
   - Cada rota deve possuir seu handler em arquivo dedicado dentro de `handlers/admin_handlers/`.
   - Somente endpoints GET podem receber filtros via query; demais verbos devem transportar identificadores e dados no corpo JSON (sem path params).

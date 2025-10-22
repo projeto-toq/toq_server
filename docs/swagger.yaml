@@ -1226,17 +1226,6 @@ definitions:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
         type: array
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailRequest:
-    properties:
-      listingId:
-        type: integer
-      pagination:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest'
-      range:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest'
-    required:
-    - listingId
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse:
     properties:
       entries:
@@ -1526,17 +1515,6 @@ definitions:
       listingId:
         type: integer
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryRequest:
-    properties:
-      listingIds:
-        items:
-          type: integer
-        type: array
-      pagination:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest'
-      range:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest'
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryResponse:
     properties:
       items:
@@ -1668,19 +1646,6 @@ definitions:
         example: 2002
         type: integer
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityRequest:
-    properties:
-      listingId:
-        type: integer
-      pagination:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest'
-      range:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest'
-      slotDurationMinute:
-        type: integer
-    required:
-    - listingId
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityResponse:
     properties:
       pagination:
@@ -1769,24 +1734,6 @@ definitions:
         type: string
       visitId:
         type: integer
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SchedulePaginationRequest:
-    properties:
-      limit:
-        example: 20
-        type: integer
-      page:
-        example: 1
-        type: integer
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRangeRequest:
-    properties:
-      from:
-        example: "2025-01-01T00:00:00Z"
-        type: string
-      to:
-        example: "2025-01-07T23:59:59Z"
-        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SignInRequest:
     properties:
@@ -6215,19 +6162,35 @@ paths:
       tags:
       - Realtor
   /schedules/listing/availability:
-    post:
-      consumes:
-      - application/json
+    get:
       description: Returns the available slots for a listing within the provided time
         range.
       parameters:
-      - description: Availability filter
-        in: body
-        name: request
+      - description: Listing identifier
+        in: query
+        name: listingId
         required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityRequest'
-        x-example: '{"listingId":3241,"range":{"from":"2025-06-01T08:00:00Z","to":"2025-06-01T18:00:00Z"},"slotDurationMinute":30,"pagination":{"page":1,"limit":50}}'
+        type: integer
+      - description: Start of time range (RFC3339)
+        in: query
+        name: rangeFrom
+        type: string
+      - description: End of time range (RFC3339)
+        in: query
+        name: rangeTo
+        type: string
+      - description: Desired slot duration in minutes
+        in: query
+        name: slotDurationMinute
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -6404,19 +6367,31 @@ paths:
       tags:
       - Schedules
   /schedules/listing/detail:
-    post:
-      consumes:
-      - application/json
+    get:
       description: Returns all agenda entries for a specific listing owned by the
         authenticated user.
       parameters:
-      - description: Agenda detail filter
-        in: body
-        name: request
+      - description: Listing identifier
+        in: query
+        name: listingId
         required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailRequest'
-        x-example: '{"listingId":3241,"range":{"from":"2025-05-10T08:00:00Z","to":"2025-05-12T18:00:00Z"},"pagination":{"page":1,"limit":20}}'
+        type: integer
+      - description: Start of time range (RFC3339)
+        in: query
+        name: rangeFrom
+        type: string
+      - description: End of time range (RFC3339)
+        in: query
+        name: rangeTo
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -6450,19 +6425,33 @@ paths:
       tags:
       - Schedules
   /schedules/owner/summary:
-    post:
-      consumes:
-      - application/json
+    get:
       description: Returns a consolidated view of agenda entries for all listings
         owned by the authenticated user.
       parameters:
-      - description: Summary filter
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryRequest'
-        x-example: '{"listingIds":[3241,3242],"range":{"from":"2025-05-01T00:00:00Z","to":"2025-05-07T23:59:59Z"},"pagination":{"page":1,"limit":50}}'
+      - collectionFormat: multi
+        description: Listing identifiers
+        in: query
+        items:
+          type: integer
+        name: listingIds
+        type: array
+      - description: Start of time range (RFC3339)
+        in: query
+        name: rangeFrom
+        type: string
+      - description: End of time range (RFC3339)
+        in: query
+        name: rangeTo
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
