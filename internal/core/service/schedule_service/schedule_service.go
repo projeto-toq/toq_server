@@ -21,6 +21,7 @@ type ScheduleServiceInterface interface {
 	UpdateBlockEntry(ctx context.Context, input UpdateBlockEntryInput) (schedulemodel.AgendaEntryInterface, error)
 	DeleteBlockEntry(ctx context.Context, input DeleteEntryInput) error
 	GetAvailability(ctx context.Context, filter schedulemodel.AvailabilityFilter) (AvailabilityResult, error)
+	FinishListingAgenda(ctx context.Context, input FinishListingAgendaInput) error
 }
 
 type scheduleService struct {

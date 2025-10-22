@@ -55,3 +55,10 @@ type AvailabilityResult struct {
 	Slots []AvailabilitySlot
 	Total int
 }
+
+// FinishListingAgendaInput encapsulates data to finish the agenda creation workflow.
+type FinishListingAgendaInput struct {
+	ListingID int64
+	OwnerID   int64
+	ActorID   int64
+}

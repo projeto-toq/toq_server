@@ -228,6 +228,7 @@ func RegisterScheduleRoutes(
 		schedules.PUT("/listing/block", scheduleHandler.PutUpdateBlockEntry)
 		schedules.DELETE("/listing/block", scheduleHandler.DeleteBlockEntry)
 		schedules.GET("/listing/availability", scheduleHandler.GetListingAvailability)
+		schedules.POST("/listing/finish", scheduleHandler.PostFinishListingAgenda)
 	}
 }
 

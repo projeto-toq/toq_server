@@ -12,6 +12,11 @@ type SchedulePaginationRequest struct {
 	Limit int `json:"limit,omitempty" example:"20"`
 }
 
+// ScheduleFinishAgendaRequest represents the payload to finish agenda creation.
+type ScheduleFinishAgendaRequest struct {
+	ListingID int64 `json:"listingId" binding:"required" example:"3241"`
+}
+
 // OwnerAgendaSummaryQuery captures query string parameters for owner agenda summary.
 type OwnerAgendaSummaryQuery struct {
 	ListingIDs []int64 `form:"listingIds"`

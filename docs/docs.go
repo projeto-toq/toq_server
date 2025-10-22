@@ -6350,6 +6350,82 @@ const docTemplate = `{
                 }
             }
         },
+        "/schedules/listing/finish": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Marks the listing agenda as finished and moves listing to pending photo scheduling.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schedules"
+                ],
+                "summary": "Confirm listing agenda creation",
+                "parameters": [
+                    {
+                        "x-example": "{\"listingId\":3241}",
+                        "description": "Finish agenda payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleFinishAgendaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/schedules/owner/summary": {
             "get": {
                 "security": [
@@ -9981,6 +10057,18 @@ const docTemplate = `{
                 },
                 "visitId": {
                     "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleFinishAgendaRequest": {
+            "type": "object",
+            "required": [
+                "listingId"
+            ],
+            "properties": {
+                "listingId": {
+                    "type": "integer",
+                    "example": 3241
                 }
             }
         },

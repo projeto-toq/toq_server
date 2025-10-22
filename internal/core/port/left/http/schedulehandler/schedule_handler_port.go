@@ -10,4 +10,5 @@ type ScheduleHandlerPort interface {
 	PutUpdateBlockEntry(c *gin.Context)
 	DeleteBlockEntry(c *gin.Context)
 	GetListingAvailability(c *gin.Context)
+	PostFinishListingAgenda(c *gin.Context)
 }

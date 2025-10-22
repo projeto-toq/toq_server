@@ -1,0 +1,12 @@
+- ajaustar dashboards do grafana
+    - criar novos para http
+    - criar novos para go
+    - criar novos para mySql
+    - os de log não são uteis
+- como fazer uma junção de traces/logs/metrics
+- ajustar swagger para 3.0 ou example para default
+- Cache redis tem funções na redis_cache.go
+- A consulta ao detalhe do usuário deve trazer todas as roles, além da active
+- Garantir que todos os GET List tenha campos com wildcards (*)
+- User_adapter tem funções de token no arquivo da interface
+- Permission.service está poluindo tracing com startpermission centralizado

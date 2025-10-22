@@ -1735,6 +1735,14 @@ definitions:
       visitId:
         type: integer
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleFinishAgendaRequest:
+    properties:
+      listingId:
+        example: 3241
+        type: integer
+    required:
+    - listingId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SignInRequest:
     properties:
       deviceToken:
@@ -6422,6 +6430,56 @@ paths:
       security:
       - BearerAuth: []
       summary: List agenda entries for a listing
+      tags:
+      - Schedules
+  /schedules/listing/finish:
+    post:
+      consumes:
+      - application/json
+      description: Marks the listing agenda as finished and moves listing to pending
+        photo scheduling.
+      parameters:
+      - description: Finish agenda payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleFinishAgendaRequest'
+        x-example: '{"listingId":3241}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm listing agenda creation
       tags:
       - Schedules
   /schedules/owner/summary:
