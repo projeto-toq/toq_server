@@ -12,6 +12,8 @@ func ToSlotModel(e entity.SlotEntity) photosessionmodel.PhotographerSlotInterfac
 	slot.SetID(e.ID)
 	slot.SetPhotographerUserID(e.PhotographerUserID)
 	slot.SetSlotDate(e.SlotDate)
+	slot.SetSlotStart(e.SlotStart)
+	slot.SetSlotEnd(e.SlotEnd)
 	slot.SetPeriod(photosessionmodel.SlotPeriod(e.Period))
 	slot.SetStatus(photosessionmodel.SlotStatus(e.Status))
 	slot.SetReservationToken(e.ReservationToken)
@@ -29,7 +31,7 @@ func ToBookingModel(e entity.BookingEntity) photosessionmodel.PhotoSessionBookin
 	booking.SetScheduledStart(e.ScheduledStart)
 	booking.SetScheduledEnd(e.ScheduledEnd)
 	booking.SetStatus(photosessionmodel.BookingStatus(e.Status))
-	booking.SetCreatedBy(e.CreatedBy)
+
 	booking.SetNotes(e.Notes)
 	return booking
 }

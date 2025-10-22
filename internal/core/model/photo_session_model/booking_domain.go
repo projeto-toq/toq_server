@@ -9,10 +9,7 @@ type photoSessionBooking struct {
 	scheduledStart time.Time
 	scheduledEnd   time.Time
 	status         BookingStatus
-	createdBy      int64
 	notes          *string
-	createdAt      time.Time
-	updatedAt      time.Time
 }
 
 func (b *photoSessionBooking) ID() uint64 { return b.id }
@@ -39,18 +36,6 @@ func (b *photoSessionBooking) Status() BookingStatus { return b.status }
 
 func (b *photoSessionBooking) SetStatus(status BookingStatus) { b.status = status }
 
-func (b *photoSessionBooking) CreatedBy() int64 { return b.createdBy }
-
-func (b *photoSessionBooking) SetCreatedBy(id int64) { b.createdBy = id }
-
 func (b *photoSessionBooking) Notes() *string { return b.notes }
 
 func (b *photoSessionBooking) SetNotes(notes *string) { b.notes = notes }
-
-func (b *photoSessionBooking) CreatedAt() time.Time { return b.createdAt }
-
-func (b *photoSessionBooking) SetCreatedAt(value time.Time) { b.createdAt = value }
-
-func (b *photoSessionBooking) UpdatedAt() time.Time { return b.updatedAt }
-
-func (b *photoSessionBooking) SetUpdatedAt(value time.Time) { b.updatedAt = value }

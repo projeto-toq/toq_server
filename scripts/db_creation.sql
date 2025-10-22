@@ -599,13 +599,16 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_time_slots` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `photographer_user_id` INT UNSIGNED NOT NULL,
   `slot_date` DATE NOT NULL,
+  `slot_start` DATETIME NOT NULL,
+  `slot_end` DATETIME NOT NULL,
   `period` ENUM('MORNING', 'AFTERNOON') NOT NULL,
   `status` ENUM('AVAILABLE', 'RESERVED', 'BOOKED', 'BLOCKED') NOT NULL DEFAULT 'AVAILABLE',
   `reservation_token` VARCHAR(45) NULL,
   `reserved_until` DATETIME NULL,
   `booked_at` DATETIME NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_slots_photographer_date_period` (`photographer_user_id` ASC, `slot_date` ASC, `period` ASC) VISIBLE,
+  UNIQUE INDEX `uk_slots_photographer_start` (`photographer_user_id` ASC, `slot_start` ASC) VISIBLE,
+  INDEX `idx_slots_date` (`slot_date` ASC) VISIBLE,
   CONSTRAINT `fk_slots_photographer_user`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
@@ -626,12 +629,10 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_slot_bookings` (
   `scheduled_start` DATETIME NOT NULL,
   `scheduled_end` DATETIME NOT NULL,
   `status` ENUM('ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NOT NULL DEFAULT 'ACTIVE',
-  `created_by` INT UNSIGNED NOT NULL,
   `notes` VARCHAR(255) NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_bookings_slot` (`slot_id` ASC) VISIBLE,
   INDEX `fk_bookings_listing_idx` (`listing_id` ASC) VISIBLE,
-  INDEX `fk_bookings_created_by_idx` (`created_by` ASC) VISIBLE,
   CONSTRAINT `fk_bookings_slot`
     FOREIGN KEY (`slot_id`)
     REFERENCES `toq_db`.`photographer_time_slots` (`id`)
@@ -640,11 +641,6 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_slot_bookings` (
   CONSTRAINT `fk_bookings_listing`
     FOREIGN KEY (`listing_id`)
     REFERENCES `toq_db`.`listings` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_bookings_created_by`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `toq_db`.`users` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

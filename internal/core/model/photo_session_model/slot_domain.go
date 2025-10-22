@@ -6,6 +6,8 @@ type photographerSlot struct {
 	id                 uint64
 	photographerUserID uint64
 	slotDate           time.Time
+	slotStart          time.Time
+	slotEnd            time.Time
 	period             SlotPeriod
 	status             SlotStatus
 	reservationToken   *string
@@ -24,6 +26,14 @@ func (s *photographerSlot) SetPhotographerUserID(id uint64) { s.photographerUser
 func (s *photographerSlot) SlotDate() time.Time { return s.slotDate }
 
 func (s *photographerSlot) SetSlotDate(date time.Time) { s.slotDate = date }
+
+func (s *photographerSlot) SlotStart() time.Time { return s.slotStart }
+
+func (s *photographerSlot) SetSlotStart(value time.Time) { s.slotStart = value }
+
+func (s *photographerSlot) SlotEnd() time.Time { return s.slotEnd }
+
+func (s *photographerSlot) SetSlotEnd(value time.Time) { s.slotEnd = value }
 
 func (s *photographerSlot) Period() SlotPeriod { return s.period }
 

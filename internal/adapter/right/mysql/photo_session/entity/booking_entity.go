@@ -10,6 +10,5 @@ type BookingEntity struct {
 	ScheduledStart time.Time
 	ScheduledEnd   time.Time
 	Status         string
-	CreatedBy      int64
 	Notes          *string
 }

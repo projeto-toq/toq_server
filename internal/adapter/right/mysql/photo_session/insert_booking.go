@@ -20,8 +20,8 @@ func (a *PhotoSessionAdapter) InsertBooking(ctx context.Context, tx *sql.Tx, boo
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `
-		INSERT INTO photographer_slot_bookings (slot_id, listing_id, scheduled_start, scheduled_end, status, created_by, notes)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO photographer_slot_bookings (slot_id, listing_id, scheduled_start, scheduled_end, status, notes)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
 	res, err := tx.ExecContext(ctx, query,
@@ -30,7 +30,6 @@ func (a *PhotoSessionAdapter) InsertBooking(ctx context.Context, tx *sql.Tx, boo
 		booking.ScheduledStart(),
 		booking.ScheduledEnd(),
 		string(booking.Status()),
-		booking.CreatedBy(),
 		booking.Notes(),
 	)
 	if err != nil {

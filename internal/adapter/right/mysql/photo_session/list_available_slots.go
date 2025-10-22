@@ -26,12 +26,12 @@ func (a *PhotoSessionAdapter) ListAvailableSlots(ctx context.Context, tx *sql.Tx
 	args := make([]any, 0)
 
 	if params.From != nil {
-		filters = append(filters, "slot_date >= ?")
+		filters = append(filters, "slot_start >= ?")
 		args = append(args, params.From)
 	}
 
 	if params.To != nil {
-		filters = append(filters, "slot_date <= ?")
+		filters = append(filters, "slot_end <= ?")
 		args = append(args, params.To)
 	}
 
@@ -62,20 +62,20 @@ func (a *PhotoSessionAdapter) ListAvailableSlots(ctx context.Context, tx *sql.Tx
 
 	sortColumn := params.SortColumn
 	if sortColumn == "" {
-		sortColumn = "slot_date"
+		sortColumn = "slot_start"
 	}
 	sortDirection := params.SortDirection
 	if sortDirection == "" {
 		sortDirection = "ASC"
 	}
 	orderClause := fmt.Sprintf("%s %s", sortColumn, sortDirection)
-	if sortColumn != "slot_date" {
-		orderClause += ", slot_date ASC"
+	if sortColumn != "slot_start" {
+		orderClause += ", slot_start ASC"
 	}
 	orderClause += ", period ASC"
 
 	query := fmt.Sprintf(`
-		SELECT id, photographer_user_id, slot_date, period, status, reservation_token, reserved_until, booked_at
+		SELECT id, photographer_user_id, slot_date, slot_start, slot_end, period, status, reservation_token, reserved_until, booked_at
 		FROM photographer_time_slots
 		WHERE %s
 		ORDER BY %s
@@ -112,6 +112,8 @@ func (a *PhotoSessionAdapter) ListAvailableSlots(ctx context.Context, tx *sql.Tx
 			&entitySlot.ID,
 			&entitySlot.PhotographerUserID,
 			&entitySlot.SlotDate,
+			&entitySlot.SlotStart,
+			&entitySlot.SlotEnd,
 			&entitySlot.Period,
 			&entitySlot.Status,
 			&reservationToken,

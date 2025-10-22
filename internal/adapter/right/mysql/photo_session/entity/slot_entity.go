@@ -7,6 +7,8 @@ type SlotEntity struct {
 	ID                 uint64
 	PhotographerUserID uint64
 	SlotDate           time.Time
+	SlotStart          time.Time
+	SlotEnd            time.Time
 	Period             string
 	Status             string
 	ReservationToken   *string

@@ -99,7 +99,6 @@ func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input Confirm
 	booking.SetScheduledStart(start)
 	booking.SetScheduledEnd(end)
 	booking.SetStatus(photosessionmodel.BookingStatusActive)
-	booking.SetCreatedBy(userID)
 
 	bookingID, insertErr := ls.photoSessionRepo.InsertBooking(ctx, tx, booking)
 	if insertErr != nil {

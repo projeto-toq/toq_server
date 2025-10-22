@@ -16,14 +16,8 @@ type PhotoSessionBookingInterface interface {
 	SetScheduledEnd(value time.Time)
 	Status() BookingStatus
 	SetStatus(status BookingStatus)
-	CreatedBy() int64
-	SetCreatedBy(id int64)
 	Notes() *string
 	SetNotes(notes *string)
-	CreatedAt() time.Time
-	SetCreatedAt(value time.Time)
-	UpdatedAt() time.Time
-	SetUpdatedAt(value time.Time)
 }
 
 // NewPhotoSessionBooking creates a new mutable booking instance.

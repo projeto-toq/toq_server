@@ -10,6 +10,10 @@ type PhotographerSlotInterface interface {
 	SetPhotographerUserID(id uint64)
 	SlotDate() time.Time
 	SetSlotDate(date time.Time)
+	SlotStart() time.Time
+	SetSlotStart(value time.Time)
+	SlotEnd() time.Time
+	SetSlotEnd(value time.Time)
 	Period() SlotPeriod
 	SetPeriod(period SlotPeriod)
 	Status() SlotStatus

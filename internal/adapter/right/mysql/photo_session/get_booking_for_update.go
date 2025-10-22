@@ -22,7 +22,7 @@ func (a *PhotoSessionAdapter) GetBookingForUpdate(ctx context.Context, tx *sql.T
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `
-		SELECT id, slot_id, listing_id, scheduled_start, scheduled_end, status, created_by, notes
+		SELECT id, slot_id, listing_id, scheduled_start, scheduled_end, status, notes
 		FROM photographer_slot_bookings
 		WHERE id = ?
 		FOR UPDATE
@@ -42,7 +42,6 @@ func (a *PhotoSessionAdapter) GetBookingForUpdate(ctx context.Context, tx *sql.T
 		&entityBooking.ScheduledStart,
 		&entityBooking.ScheduledEnd,
 		&entityBooking.Status,
-		&entityBooking.CreatedBy,
 		&notes,
 	); err != nil {
 		if err == sql.ErrNoRows {

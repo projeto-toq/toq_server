@@ -18,4 +18,11 @@ type PhotoSessionRepositoryInterface interface {
 	InsertBooking(ctx context.Context, tx *sql.Tx, booking photosessionmodel.PhotoSessionBookingInterface) (uint64, error)
 	GetBookingForUpdate(ctx context.Context, tx *sql.Tx, bookingID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
 	UpdateBookingStatus(ctx context.Context, tx *sql.Tx, bookingID uint64, status photosessionmodel.BookingStatus) error
+	BulkUpsertSlots(ctx context.Context, tx *sql.Tx, slots []photosessionmodel.PhotographerSlotInterface) error
+	DeleteSlotsOutsideRange(ctx context.Context, tx *sql.Tx, photographerID uint64, windowStart, windowEnd time.Time) (int64, error)
+	ListSlotsByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerSlotInterface, error)
+	ListSlotsForPeriod(ctx context.Context, tx *sql.Tx, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerSlotInterface, error)
+	CreateTimeOff(ctx context.Context, tx *sql.Tx, timeOff photosessionmodel.PhotographerTimeOffInterface) (uint64, error)
+	DeleteTimeOff(ctx context.Context, tx *sql.Tx, timeOffID uint64) error
+	ListTimeOff(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerTimeOffInterface, error)
 }

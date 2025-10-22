@@ -22,7 +22,7 @@ func (a *PhotoSessionAdapter) GetSlotForUpdate(ctx context.Context, tx *sql.Tx, 
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `
-		SELECT id, photographer_user_id, slot_date, period, status, reservation_token, reserved_until, booked_at
+		SELECT id, photographer_user_id, slot_date, slot_start, slot_end, period, status, reservation_token, reserved_until, booked_at
 		FROM photographer_time_slots
 		WHERE id = ?
 		FOR UPDATE
@@ -41,6 +41,8 @@ func (a *PhotoSessionAdapter) GetSlotForUpdate(ctx context.Context, tx *sql.Tx, 
 		&entSlot.ID,
 		&entSlot.PhotographerUserID,
 		&entSlot.SlotDate,
+		&entSlot.SlotStart,
+		&entSlot.SlotEnd,
 		&entSlot.Period,
 		&entSlot.Status,
 		&reservationToken,
