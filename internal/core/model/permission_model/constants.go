@@ -6,10 +6,15 @@ import "regexp"
 type RoleSlug string
 
 const (
-	RoleSlugRoot    RoleSlug = "root"
-	RoleSlugOwner   RoleSlug = "owner"
-	RoleSlugRealtor RoleSlug = "realtor"
-	RoleSlugAgency  RoleSlug = "agency"
+	RoleSlugRoot             RoleSlug = "root"
+	RoleSlugOwner            RoleSlug = "owner"
+	RoleSlugRealtor          RoleSlug = "realtor"
+	RoleSlugAgency           RoleSlug = "agency"
+	RoleSlugPhotographer     RoleSlug = "photographer"
+	RoleSlugAttendantRealtor RoleSlug = "attendantRealtor"
+	RoleSlugAttendantOwner   RoleSlug = "attendantOwner"
+	RoleSlugAttendant        RoleSlug = "attendant"
+	RoleSlugManager          RoleSlug = "manager"
 )
 
 // String implementa fmt.Stringer
@@ -34,6 +39,11 @@ func GetAllRoleSlugs() []RoleSlug {
 		RoleSlugOwner,
 		RoleSlugRealtor,
 		RoleSlugAgency,
+		RoleSlugPhotographer,
+		RoleSlugAttendantRealtor,
+		RoleSlugAttendantOwner,
+		RoleSlugAttendant,
+		RoleSlugManager,
 	}
 }
 

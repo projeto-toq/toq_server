@@ -140,7 +140,7 @@ type AdminCreateSystemUserRequest struct {
 	Email       string `json:"email" binding:"required,email"`
 	PhoneNumber string `json:"phoneNumber" binding:"required"`
 	CPF         string `json:"cpf" binding:"required"`
-	RoleSlug    string `json:"roleSlug" binding:"required"`
+	RoleSlug    string `json:"roleSlug" binding:"required,oneof=photographer attendantRealtor attendantOwner attendant manager"`
 	BornAt      string `json:"bornAt" binding:"required"`
 }
 

@@ -177,6 +177,12 @@ definitions:
       phoneNumber:
         type: string
       roleSlug:
+        enum:
+        - photographer
+        - attendantRealtor
+        - attendantOwner
+        - attendant
+        - manager
         type: string
     required:
     - bornAt
@@ -4875,8 +4881,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a System User with specified role and details. Not for Owner/Realtor
-        user creation. Email with instruction will be sent to the new user.
+      description: 'Create a System User with roleSlug: (photographer, attendantRealtor,
+        attendantOwner, attendant, manager) and details. Not for Owner/Realtor user
+        creation. Email with instruction will be sent to the new user.'
       parameters:
       - description: System user payload
         in: body

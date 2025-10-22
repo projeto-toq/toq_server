@@ -43,7 +43,9 @@ func SetupRoutes(
 	})
 
 	// Swagger documentation routes
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler)) // Convert handlers to typed handlers
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Convert handlers to typed handlers
 	authHandler := handlers.AuthHandler.(*authhandlers.AuthHandler)
 	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
 	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
@@ -51,6 +53,7 @@ func SetupRoutes(
 	complexHandler := handlers.ComplexHandler.(*complexhandlers.ComplexHandler)
 	scheduleHandler := handlers.ScheduleHandler.(*schedulehandlers.ScheduleHandler)
 	holidayHandler := handlers.HolidayHandler.(*holidayhandlers.HolidayHandler)
+
 	// API base routes (v2)
 	base := "/api/v2"
 	if versionProvider != nil {
@@ -350,63 +353,98 @@ func RegisterAdminRoutes(
 	admin.Use(middlewares.PermissionMiddleware(permissionService))
 
 	{
-		// GET /admin/users/creci/pending
-		admin.GET("/users/creci/pending", adminHandler.GetPendingRealtors)
-		admin.GET("/users", adminHandler.GetAdminUsers)
-		admin.GET("/listing/catalog", adminHandler.ListListingCatalogValues)
-		admin.POST("/listing/catalog/detail", adminHandler.PostAdminGetListingCatalogDetail)
-		admin.POST("/listing/catalog", adminHandler.CreateListingCatalogValue)
-		admin.PUT("/listing/catalog", adminHandler.UpdateListingCatalogValue)
-		admin.POST("/listing/catalog/restore", adminHandler.RestoreListingCatalogValue)
-		admin.DELETE("/listing/catalog", adminHandler.DeleteListingCatalogValue)
-		admin.GET("/complexes", adminHandler.GetAdminComplexes)
-		admin.POST("/complexes", adminHandler.PostAdminCreateComplex)
-		admin.PUT("/complexes", adminHandler.PutAdminUpdateComplex)
-		admin.DELETE("/complexes", adminHandler.DeleteAdminComplex)
-		admin.POST("/complexes/detail", adminHandler.PostAdminGetComplexDetail)
-		admin.GET("/complexes/towers", adminHandler.GetAdminComplexTowers)
-		admin.POST("/complexes/towers", adminHandler.PostAdminCreateComplexTower)
-		admin.PUT("/complexes/towers", adminHandler.PutAdminUpdateComplexTower)
-		admin.DELETE("/complexes/towers", adminHandler.DeleteAdminComplexTower)
-		admin.POST("/complexes/towers/detail", adminHandler.PostAdminGetComplexTowerDetail)
-		admin.GET("/complexes/sizes", adminHandler.GetAdminComplexSizes)
-		admin.POST("/complexes/sizes", adminHandler.PostAdminCreateComplexSize)
-		admin.PUT("/complexes/sizes", adminHandler.PutAdminUpdateComplexSize)
-		admin.DELETE("/complexes/sizes", adminHandler.DeleteAdminComplexSize)
-		admin.POST("/complexes/sizes/detail", adminHandler.PostAdminGetComplexSizeDetail)
-		admin.GET("/complexes/zip-codes", adminHandler.GetAdminComplexZipCodes)
-		admin.POST("/complexes/zip-codes", adminHandler.PostAdminCreateComplexZipCode)
-		admin.PUT("/complexes/zip-codes", adminHandler.PutAdminUpdateComplexZipCode)
-		admin.DELETE("/complexes/zip-codes", adminHandler.DeleteAdminComplexZipCode)
-		admin.POST("/complexes/zip-codes/detail", adminHandler.PostAdminGetComplexZipCodeDetail)
-		admin.POST("/users/system", adminHandler.PostAdminCreateSystemUser)
-		admin.PUT("/users/system", adminHandler.PutAdminUpdateSystemUser)
-		admin.DELETE("/users/system", adminHandler.DeleteAdminSystemUser)
-		admin.GET("/roles", adminHandler.GetAdminRoles)
-		admin.POST("/roles/detail", adminHandler.PostAdminGetRoleDetail)
-		admin.POST("/roles", adminHandler.PostAdminCreateRole)
-		admin.PUT("/roles", adminHandler.PutAdminUpdateRole)
-		admin.POST("/roles/restore", adminHandler.RestoreAdminRole)
-		admin.DELETE("/roles", adminHandler.DeleteAdminRole)
-		admin.GET("/permissions", adminHandler.GetAdminPermissions)
-		admin.POST("/permissions/detail", adminHandler.PostAdminGetPermissionDetail)
-		admin.POST("/permissions", adminHandler.PostAdminCreatePermission)
-		admin.PUT("/permissions", adminHandler.PutAdminUpdatePermission)
-		admin.DELETE("/permissions", adminHandler.DeleteAdminPermission)
-		admin.GET("/role-permissions", adminHandler.GetAdminRolePermissions)
-		admin.POST("/role-permissions/detail", adminHandler.PostAdminGetRolePermissionDetail)
-		admin.POST("/role-permissions", adminHandler.PostAdminCreateRolePermission)
-		admin.PUT("/role-permissions", adminHandler.PutAdminUpdateRolePermission)
-		admin.DELETE("/role-permissions", adminHandler.DeleteAdminRolePermission)
+		usersGroup := admin.Group("/users")
+		{
+			usersGroup.GET("", adminHandler.GetAdminUsers)
+			usersGroup.POST("/detail", adminHandler.PostAdminGetUser)
+			usersGroup.POST("/system", adminHandler.PostAdminCreateSystemUser)
+			usersGroup.PUT("/system", adminHandler.PutAdminUpdateSystemUser)
+			usersGroup.DELETE("/system", adminHandler.DeleteAdminSystemUser)
 
-		// POST /admin/users/detail
-		admin.POST("/users/detail", adminHandler.PostAdminGetUser)
+			creciGroup := usersGroup.Group("/creci")
+			{
+				creciGroup.GET("/pending", adminHandler.GetPendingRealtors)
+				creciGroup.POST("/approve", adminHandler.PostAdminApproveUser)
+				creciGroup.POST("/download-url", adminHandler.PostAdminCreciDownloadURL)
+			}
+		}
 
-		// POST /admin/users/creci/approve
-		admin.POST("/users/creci/approve", adminHandler.PostAdminApproveUser)
+		listingGroup := admin.Group("/listing")
+		{
+			catalogGroup := listingGroup.Group("/catalog")
+			{
+				catalogGroup.GET("", adminHandler.ListListingCatalogValues)
+				catalogGroup.POST("/detail", adminHandler.PostAdminGetListingCatalogDetail)
+				catalogGroup.POST("", adminHandler.CreateListingCatalogValue)
+				catalogGroup.PUT("", adminHandler.UpdateListingCatalogValue)
+				catalogGroup.POST("/restore", adminHandler.RestoreListingCatalogValue)
+				catalogGroup.DELETE("", adminHandler.DeleteListingCatalogValue)
+			}
+		}
 
-		// POST /admin/users/creci/download-url
-		admin.POST("/users/creci/download-url", adminHandler.PostAdminCreciDownloadURL)
+		complexesGroup := admin.Group("/complexes")
+		{
+			complexesGroup.GET("", adminHandler.GetAdminComplexes)
+			complexesGroup.POST("", adminHandler.PostAdminCreateComplex)
+			complexesGroup.PUT("", adminHandler.PutAdminUpdateComplex)
+			complexesGroup.DELETE("", adminHandler.DeleteAdminComplex)
+			complexesGroup.POST("/detail", adminHandler.PostAdminGetComplexDetail)
+
+			towersGroup := complexesGroup.Group("/towers")
+			{
+				towersGroup.GET("", adminHandler.GetAdminComplexTowers)
+				towersGroup.POST("", adminHandler.PostAdminCreateComplexTower)
+				towersGroup.PUT("", adminHandler.PutAdminUpdateComplexTower)
+				towersGroup.DELETE("", adminHandler.DeleteAdminComplexTower)
+				towersGroup.POST("/detail", adminHandler.PostAdminGetComplexTowerDetail)
+			}
+
+			sizesGroup := complexesGroup.Group("/sizes")
+			{
+				sizesGroup.GET("", adminHandler.GetAdminComplexSizes)
+				sizesGroup.POST("", adminHandler.PostAdminCreateComplexSize)
+				sizesGroup.PUT("", adminHandler.PutAdminUpdateComplexSize)
+				sizesGroup.DELETE("", adminHandler.DeleteAdminComplexSize)
+				sizesGroup.POST("/detail", adminHandler.PostAdminGetComplexSizeDetail)
+			}
+
+			zipCodesGroup := complexesGroup.Group("/zip-codes")
+			{
+				zipCodesGroup.GET("", adminHandler.GetAdminComplexZipCodes)
+				zipCodesGroup.POST("", adminHandler.PostAdminCreateComplexZipCode)
+				zipCodesGroup.PUT("", adminHandler.PutAdminUpdateComplexZipCode)
+				zipCodesGroup.DELETE("", adminHandler.DeleteAdminComplexZipCode)
+				zipCodesGroup.POST("/detail", adminHandler.PostAdminGetComplexZipCodeDetail)
+			}
+		}
+
+		rolesGroup := admin.Group("/roles")
+		{
+			rolesGroup.GET("", adminHandler.GetAdminRoles)
+			rolesGroup.POST("/detail", adminHandler.PostAdminGetRoleDetail)
+			rolesGroup.POST("", adminHandler.PostAdminCreateRole)
+			rolesGroup.PUT("", adminHandler.PutAdminUpdateRole)
+			rolesGroup.POST("/restore", adminHandler.RestoreAdminRole)
+			rolesGroup.DELETE("", adminHandler.DeleteAdminRole)
+		}
+
+		permissionsGroup := admin.Group("/permissions")
+		{
+			permissionsGroup.GET("", adminHandler.GetAdminPermissions)
+			permissionsGroup.POST("/detail", adminHandler.PostAdminGetPermissionDetail)
+			permissionsGroup.POST("", adminHandler.PostAdminCreatePermission)
+			permissionsGroup.PUT("", adminHandler.PutAdminUpdatePermission)
+			permissionsGroup.DELETE("", adminHandler.DeleteAdminPermission)
+		}
+
+		rolePermissionsGroup := admin.Group("/role-permissions")
+		{
+			rolePermissionsGroup.GET("", adminHandler.GetAdminRolePermissions)
+			rolePermissionsGroup.POST("/detail", adminHandler.PostAdminGetRolePermissionDetail)
+			rolePermissionsGroup.POST("", adminHandler.PostAdminCreateRolePermission)
+			rolePermissionsGroup.PUT("", adminHandler.PutAdminUpdateRolePermission)
+			rolePermissionsGroup.DELETE("", adminHandler.DeleteAdminRolePermission)
+		}
 	}
 
 	holidayGroup := admin.Group("/holidays")

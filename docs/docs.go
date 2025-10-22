@@ -4030,7 +4030,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a System User with specified role and details. Not for Owner/Realtor user creation. Email with instruction will be sent to the new user.",
+                "description": "Create a System User with roleSlug: (photographer, attendantRealtor, attendantOwner, attendant, manager) and details. Not for Owner/Realtor user creation. Email with instruction will be sent to the new user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7725,7 +7725,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "roleSlug": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "photographer",
+                        "attendantRealtor",
+                        "attendantOwner",
+                        "attendant",
+                        "manager"
+                    ]
                 }
             }
         },
