@@ -5,15 +5,22 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-É necessário fazer algumas correçoes nos endpoints de schedulles:
+É necessário fazer algumas correçoes nos endpoints de Admin.
 
-- o endpoint POST /schedules/listing/availability deve passar a GET /schedules/listing/availability passando os parâmetros via query string;
-- o endpoint POST /schedules/listing/detail deve passar a GET /schedules/listing/detail passando os parâmetros via query string;
-- o endpoint POST /schedules/owner/summary deve passar a GET /schedules/owner/summary passando os parâmetros via query string;
-- atualize o toq_server_go_guide.md com a direttiva obrigarotia de:
-  - endpoints de listagem devem ser GET e não POST, com os parâmetros de paginação e filtros via query string;
-  - endpoints de criação/atualização/deleção devem ser POST/PUT/DELETE
-  - endpoints de detalhe de item deve ser POST com parametro via body.
+- Assim como Admin Holliday tem um grupo específico holidayGroup := admin.Group("/holidays"), os outros grupos de Admin também devem ser organizados de forma semelhante.
+  - Admin Users
+  - Admin Roles
+  - Admin Permissions que inclui /admin/permissions e /admin/role-permissions
+  - Admin Listings
+  - Admin Complexes
+- o endpoint de criação de system user /admin/role-permissions deve ter um enum para roleSlug
+  - photographer
+  - attendantRealtor
+  - attendantOwner
+  - attendant
+  - manager
+
+
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 

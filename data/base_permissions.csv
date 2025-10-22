@@ -74,12 +74,12 @@ id;name;action;description;is_active
 73;"HTTP Admin Get Listing Catalog Detail";"POST:/api/v2/admin/listing/catalog/detail";"Permite consultar detalhes de um valor de catálogo de listing no painel admin";1
 74;"HTTP Admin Get Permissions Detail";"GET:/api/v2/admin/permissions/detail";"Permite consultar detalhes de permissões administrativas no painel admin";1
 75;"HTTP Admin Get Roles Detail";"POST:/api/v2/admin/roles/detail";"Permite consultar detalhes de uma role administrativa no painel admin";1
-76;"HTTP Schedule Owner Summary";"POST:/api/v2/schedules/owner/summary";"Permite consultar visão consolidada das agendas do proprietário";1
-77;"HTTP Schedule Listing Detail";"POST:/api/v2/schedules/listing/detail";"Permite consultar entradas da agenda de um listing";1
+76;"HTTP Schedule Owner Summary";"GET:/api/v2/schedules/owner/summary";"Permite consultar visão consolidada das agendas do proprietário";1
+77;"HTTP Schedule Listing Detail";"GET:/api/v2/schedules/listing/detail";"Permite consultar entradas da agenda de um listing";1
 78;"HTTP Schedule Create Block";"POST:/api/v2/schedules/listing/block";"Permite criar bloqueios na agenda de um listing";1
 79;"HTTP Schedule Update Block";"PUT:/api/v2/schedules/listing/block";"Permite atualizar bloqueios na agenda de um listing";1
 80;"HTTP Schedule Delete Block";"DELETE:/api/v2/schedules/listing/block";"Permite remover bloqueios da agenda de um listing";1
-81;"HTTP Schedule Listing Availability";"POST:/api/v2/schedules/listing/availability";"Permite consultar disponibilidade de um listing";1
+81;"HTTP Schedule Listing Availability";"GET:/api/v2/schedules/listing/availability";"Permite consultar disponibilidade de um listing";1
 82;"HTTP Admin List Holiday Calendars";"GET:/api/v2/admin/holidays/calendars";"Permite listar calendários de feriados";1
 83;"HTTP Admin Get Holiday Calendar Detail";"POST:/api/v2/admin/holidays/calendars/detail";"Permite consultar detalhes de um calendário de feriados";1
 84;"HTTP Admin Create Holiday Calendar";"POST:/api/v2/admin/holidays/calendars";"Permite criar calendários de feriados";1
@@ -88,3 +88,8 @@ id;name;action;description;is_active
 87;"HTTP Admin List Holiday Dates";"GET:/api/v2/admin/holidays/dates";"Permite listar datas de feriados";1
 88;"HTTP Admin Delete Holiday Date";"DELETE:/api/v2/admin/holidays/dates";"Permite deletar datas de feriados";1
 89;"HTTP Get Listings";"GET:/api/v2/listings";"Permite listar listings utilizando regras de escopo";1
+90;"HTTP Schedule Finish Listing Agenda";"POST:/api/v2/schedules/listing/finish";"Permite finalizar o processo de criação da agenda do listing";1
+91;"HTTP Listing Photo Session Slots";"GET:/api/v2/listings/photo-session/slots";"Permite consultar slots de sessão de fotos de um listing";1
+92;"HTTP Listing Request Photo Session";"POST:/api/v2/listings/photo-session/reserve";"Permite solicitar sessão de fotos para um listing";1
+93;"HTTP Listing Confirm Photo Session";"POST:/api/v2/listings/photo-session/confirm";"Permite confirmar sessão de fotos para um listing";1
+94;"HTTP Listing Cancel Photo Session";"POST:/api/v2/listings/photo-session/cancel";"Permite cancelar sessão de fotos para um listing";1
