@@ -63,14 +63,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		conditions = append(conditions, "l.user_id = ?")
 		args = append(args, *filter.UserID)
 	}
-	if filter.CreatedFrom != nil {
-		conditions = append(conditions, "l.created_at >= ?")
-		args = append(args, *filter.CreatedFrom)
-	}
-	if filter.CreatedTo != nil {
-		conditions = append(conditions, "l.created_at <= ?")
-		args = append(args, *filter.CreatedTo)
-	}
+
 	if filter.MinSellPrice != nil {
 		conditions = append(conditions, "COALESCE(l.sell_net, 0) >= ?")
 		args = append(args, *filter.MinSellPrice)
@@ -135,9 +128,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	l.tenant_email,
 	l.tenant_phone,
 	l.accompanying,
-	l.deleted,
-	// l.created_at, // não existe no database
-	// l.updated_at  // não existe no database
+	l.deleted
 	FROM listings l`
 
 	listQuery := baseSelect + " " + whereClause + " ORDER BY l.id DESC LIMIT ? OFFSET ?"

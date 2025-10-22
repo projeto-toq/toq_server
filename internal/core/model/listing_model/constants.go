@@ -5,14 +5,20 @@ type ListingStatus uint8
 const (
 	// StatusDraft: O anúncio está sendo criado pelo proprietário e permanece invisível ao público.
 	StatusDraft ListingStatus = iota + 1
+	// StatusPendingAvailability: Anúncio criado, aguardando criação de agenda de disponibilidades do imóvel
+	StatusPendingAvailability
 	// StatusPendingPhotoScheduling: Anúncio criado e aguardando o agendamento da sessão de fotos.
 	StatusPendingPhotoScheduling
+	// StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. ag confirmação
+	StatusPendingAvailabilityConfirm
 	// StatusPhotosScheduled: Sessão de fotos agendada, aguardando execução.
 	StatusPhotosScheduled
 	// StatusPendingPhotoProcessing: Sessão concluída, aguardando tratamento e upload das fotos.
 	StatusPendingPhotoProcessing
 	// StatusPendingOwnerApproval: Materiais revisados e aguardando aprovação final do proprietário.
 	StatusPendingOwnerApproval
+	// StatusRejectedByOwner: Versão final reprovada pelo proprietário (ex.: não aprovou as fotos).
+	StatusRejectedByOwner
 	// StatusPendingAdminReview: Proprietário aprovou, aguardando revisão do time administrativo antes da publicação.
 	StatusPendingAdminReview
 	// StatusPublished: Anúncio ativo e visível publicamente.
@@ -25,30 +31,32 @@ const (
 	StatusClosed
 	// StatusSuspended: Anúncio pausado temporariamente pelo proprietário ou administrador.
 	StatusSuspended
-	// StatusRejectedByOwner: Versão final reprovada pelo proprietário (ex.: não aprovou as fotos).
-	StatusRejectedByOwner
-	// StatusNeedsRevision: Anúncio reprovado e aguardando ajustes antes de retornar ao fluxo de criação.
-	StatusNeedsRevision
 	// StatusExpired: Prazo de validade do anúncio encerrou sem negociação concluída.
 	StatusExpired
 	// StatusArchived: Anúncio removido do catálogo e mantido apenas para histórico.
 	StatusArchived
-	// StatusPendingAvailability: Anúncio criado, aguardando criação de agenda de disponibilidades.
-	StatusPendingAvailability
+	// StatusNeedsRevision: Anúncio reprovado e aguardando ajustes antes de retornar ao fluxo de criação.
+	StatusNeedsRevision
 )
 
 func (s ListingStatus) String() string {
 	switch s {
 	case StatusDraft:
 		return "DRAFT"
+	case StatusPendingAvailability:
+		return "PENDING_AVAILABILITY"
 	case StatusPendingPhotoScheduling:
 		return "PENDING_PHOTO_SCHEDULING"
+	case StatusPendingAvailabilityConfirm:
+		return "PENDING_AVAILABILITY_CONFIRM"
 	case StatusPhotosScheduled:
 		return "PHOTOS_SCHEDULED"
 	case StatusPendingPhotoProcessing:
 		return "PENDING_PHOTO_PROCESSING"
 	case StatusPendingOwnerApproval:
 		return "PENDING_OWNER_APPROVAL"
+	case StatusRejectedByOwner:
+		return "REJECTED_BY_OWNER"
 	case StatusPendingAdminReview:
 		return "PENDING_ADMIN_REVIEW"
 	case StatusPublished:
@@ -61,16 +69,12 @@ func (s ListingStatus) String() string {
 		return "CLOSED"
 	case StatusSuspended:
 		return "SUSPENDED"
-	case StatusRejectedByOwner:
-		return "REJECTED_BY_OWNER"
-	case StatusNeedsRevision:
-		return "NEEDS_REVISION"
 	case StatusExpired:
 		return "EXPIRED"
 	case StatusArchived:
 		return "ARCHIVED"
-	case StatusPendingAvailability:
-		return "PENDING_AVAILABILITY"
+	case StatusNeedsRevision:
+		return "NEEDS_REVISION"
 	default:
 		return "UNKNOWN"
 	}

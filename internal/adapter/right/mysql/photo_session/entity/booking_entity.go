@@ -12,6 +12,4 @@ type BookingEntity struct {
 	Status         string
 	CreatedBy      int64
 	Notes          *string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
 }

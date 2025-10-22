@@ -31,7 +31,5 @@ func ToBookingModel(e entity.BookingEntity) photosessionmodel.PhotoSessionBookin
 	booking.SetStatus(photosessionmodel.BookingStatus(e.Status))
 	booking.SetCreatedBy(e.CreatedBy)
 	booking.SetNotes(e.Notes)
-	booking.SetCreatedAt(e.CreatedAt)
-	booking.SetUpdatedAt(e.UpdatedAt)
 	return booking
 }
