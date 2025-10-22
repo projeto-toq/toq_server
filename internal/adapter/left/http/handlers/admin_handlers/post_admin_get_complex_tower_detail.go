@@ -13,7 +13,7 @@ import (
 // PostAdminGetComplexTowerDetail handles POST /admin/complexes/towers/detail
 //
 //	@Summary	Get complex tower detail
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminGetComplexTowerDetailRequest	true	"Complex tower detail payload"

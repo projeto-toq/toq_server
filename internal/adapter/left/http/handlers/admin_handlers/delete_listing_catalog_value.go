@@ -12,7 +12,7 @@ import (
 // DeleteListingCatalogValue handles DELETE /admin/listing/catalog.
 //
 //	@Summary	Deactivate a listing catalog value
-//	@Tags		Admin
+//	@Tags		Admin Listings
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.ListingCatalogDeleteRequest	true	"Deactivation payload"

@@ -2199,7 +2199,7 @@ paths:
             type: object
       summary: Delete a complex
       tags:
-      - Admin
+      - Admin Complexes
     get:
       parameters:
       - description: Complex name filter
@@ -2263,7 +2263,7 @@ paths:
             type: object
       summary: List complexes
       tags:
-      - Admin
+      - Admin Complexes
     post:
       consumes:
       - application/json
@@ -2308,7 +2308,7 @@ paths:
             type: object
       summary: Create a complex
       tags:
-      - Admin
+      - Admin Complexes
     put:
       consumes:
       - application/json
@@ -2353,7 +2353,7 @@ paths:
             type: object
       summary: Update a complex
       tags:
-      - Admin
+      - Admin Complexes
   /admin/complexes/detail:
     post:
       consumes:
@@ -2399,7 +2399,7 @@ paths:
             type: object
       summary: Get complex detail
       tags:
-      - Admin
+      - Admin Complexes
   /admin/complexes/sizes:
     delete:
       consumes:
@@ -2443,7 +2443,7 @@ paths:
             type: object
       summary: Delete a complex size
       tags:
-      - Admin
+      - Admin Complexes
     get:
       parameters:
       - description: Complex identifier
@@ -2487,7 +2487,7 @@ paths:
             type: object
       summary: List complex sizes
       tags:
-      - Admin
+      - Admin Complexes
     post:
       consumes:
       - application/json
@@ -2532,7 +2532,7 @@ paths:
             type: object
       summary: Create a complex size
       tags:
-      - Admin
+      - Admin Complexes
     put:
       consumes:
       - application/json
@@ -2577,7 +2577,7 @@ paths:
             type: object
       summary: Update a complex size
       tags:
-      - Admin
+      - Admin Complexes
   /admin/complexes/sizes/detail:
     post:
       consumes:
@@ -2623,7 +2623,7 @@ paths:
             type: object
       summary: Get complex size detail
       tags:
-      - Admin
+      - Admin Complexes
   /admin/complexes/towers:
     delete:
       consumes:
@@ -2667,7 +2667,7 @@ paths:
             type: object
       summary: Delete a complex tower
       tags:
-      - Admin
+      - Admin Complexes
     get:
       parameters:
       - description: Complex identifier
@@ -2715,7 +2715,7 @@ paths:
             type: object
       summary: List complex towers
       tags:
-      - Admin
+      - Admin Complexes
     post:
       consumes:
       - application/json
@@ -2760,7 +2760,7 @@ paths:
             type: object
       summary: Create a complex tower
       tags:
-      - Admin
+      - Admin Complexes
     put:
       consumes:
       - application/json
@@ -2805,7 +2805,7 @@ paths:
             type: object
       summary: Update a complex tower
       tags:
-      - Admin
+      - Admin Complexes
   /admin/complexes/towers/detail:
     post:
       consumes:
@@ -2851,7 +2851,7 @@ paths:
             type: object
       summary: Get complex tower detail
       tags:
-      - Admin
+      - Admin Complexes
   /admin/complexes/zip-codes:
     delete:
       consumes:
@@ -2895,7 +2895,7 @@ paths:
             type: object
       summary: Delete a complex zip code
       tags:
-      - Admin
+      - Admin Complexes
     get:
       parameters:
       - description: Complex identifier
@@ -2943,7 +2943,7 @@ paths:
             type: object
       summary: List complex zip codes
       tags:
-      - Admin
+      - Admin Complexes
     post:
       consumes:
       - application/json
@@ -2988,7 +2988,7 @@ paths:
             type: object
       summary: Create a complex zip code
       tags:
-      - Admin
+      - Admin Complexes
     put:
       consumes:
       - application/json
@@ -3033,7 +3033,7 @@ paths:
             type: object
       summary: Update a complex zip code
       tags:
-      - Admin
+      - Admin Complexes
   /admin/complexes/zip-codes/detail:
     post:
       consumes:
@@ -3079,7 +3079,7 @@ paths:
             type: object
       summary: Get complex zip code detail
       tags:
-      - Admin
+      - Admin Complexes
   /admin/holidays/calendars:
     get:
       consumes:
@@ -3467,7 +3467,7 @@ paths:
             type: object
       summary: Deactivate a listing catalog value
       tags:
-      - Admin
+      - Admin Listings
     get:
       description: 'Available categories: property_owner, property_delivered, who_lives,
         transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type,
@@ -3511,7 +3511,7 @@ paths:
             type: object
       summary: List listing catalog values
       tags:
-      - Admin
+      - Admin Listings
     post:
       consumes:
       - application/json
@@ -3556,7 +3556,7 @@ paths:
             type: object
       summary: Create a listing catalog value
       tags:
-      - Admin
+      - Admin Listings
     put:
       consumes:
       - application/json
@@ -3606,7 +3606,7 @@ paths:
             type: object
       summary: Update a listing catalog value
       tags:
-      - Admin
+      - Admin Listings
   /admin/listing/catalog/detail:
     post:
       consumes:
@@ -3652,7 +3652,7 @@ paths:
             type: object
       summary: Get listing catalog value detail
       tags:
-      - Admin
+      - Admin Listings
   /admin/listing/catalog/restore:
     post:
       consumes:
@@ -3703,7 +3703,7 @@ paths:
             type: object
       summary: Reactivate a listing catalog value
       tags:
-      - Admin
+      - Admin Listings
   /admin/permissions:
     delete:
       consumes:
@@ -3749,7 +3749,7 @@ paths:
             type: object
       summary: Hard delete a permission
       tags:
-      - Admin
+      - Admin Permissions
     get:
       parameters:
       - default: 1
@@ -3805,7 +3805,7 @@ paths:
             type: object
       summary: List permissions with pagination
       tags:
-      - Admin
+      - Admin Permissions
     post:
       consumes:
       - application/json
@@ -3850,7 +3850,7 @@ paths:
             type: object
       summary: Create a new permission
       tags:
-      - Admin
+      - Admin Permissions
     put:
       consumes:
       - application/json
@@ -3900,7 +3900,7 @@ paths:
             type: object
       summary: Update an existing permission
       tags:
-      - Admin
+      - Admin Permissions
   /admin/permissions/detail:
     post:
       consumes:
@@ -3946,7 +3946,7 @@ paths:
             type: object
       summary: Get permission detail
       tags:
-      - Admin
+      - Admin Permissions
   /admin/role-permissions:
     delete:
       consumes:
@@ -3992,7 +3992,7 @@ paths:
             type: object
       summary: Delete a role-permission association
       tags:
-      - Admin
+      - Admin Permissions
     get:
       parameters:
       - default: 1
@@ -4048,7 +4048,7 @@ paths:
             type: object
       summary: List role-permission associations
       tags:
-      - Admin
+      - Admin Permissions
     post:
       consumes:
       - application/json
@@ -4098,7 +4098,7 @@ paths:
             type: object
       summary: Create a role-permission association
       tags:
-      - Admin
+      - Admin Permissions
     put:
       consumes:
       - application/json
@@ -4143,7 +4143,7 @@ paths:
             type: object
       summary: Update a role-permission association
       tags:
-      - Admin
+      - Admin Permissions
   /admin/role-permissions/detail:
     post:
       consumes:
@@ -4189,7 +4189,7 @@ paths:
             type: object
       summary: Get role-permission detail
       tags:
-      - Admin
+      - Admin Permissions
   /admin/roles:
     delete:
       consumes:
@@ -4238,7 +4238,7 @@ paths:
             type: object
       summary: Delete (deactivate) a role
       tags:
-      - Admin
+      - Admin Roles
     get:
       parameters:
       - default: 1
@@ -4317,7 +4317,7 @@ paths:
             type: object
       summary: List roles with pagination
       tags:
-      - Admin
+      - Admin Roles
     post:
       consumes:
       - application/json
@@ -4362,7 +4362,7 @@ paths:
             type: object
       summary: Create a role
       tags:
-      - Admin
+      - Admin Roles
     put:
       consumes:
       - application/json
@@ -4412,7 +4412,7 @@ paths:
             type: object
       summary: Update a role
       tags:
-      - Admin
+      - Admin Roles
   /admin/roles/detail:
     post:
       consumes:
@@ -4458,7 +4458,7 @@ paths:
             type: object
       summary: Get role detail
       tags:
-      - Admin
+      - Admin Roles
   /admin/roles/restore:
     post:
       consumes:
@@ -4509,7 +4509,7 @@ paths:
             type: object
       summary: Reactivate a role
       tags:
-      - Admin
+      - Admin Roles
   /admin/users:
     get:
       parameters:
@@ -4629,7 +4629,7 @@ paths:
             type: object
       summary: List admin-facing users with filters
       tags:
-      - Admin
+      - Admin Users
   /admin/users/creci/approve:
     post:
       consumes:
@@ -4677,7 +4677,7 @@ paths:
             type: object
       summary: Approve or refuse realtor status manually
       tags:
-      - Admin
+      - Admin Users
   /admin/users/creci/download-url:
     post:
       consumes:
@@ -4735,7 +4735,7 @@ paths:
             type: object
       summary: Get signed download URLs for CRECI documents
       tags:
-      - Admin
+      - Admin Users
   /admin/users/creci/pending:
     get:
       description: Returns id, nickname, fullName, nationalID, creciNumber, creciValidity,
@@ -4782,7 +4782,7 @@ paths:
             type: object
       summary: List realtors pending manual validation
       tags:
-      - Admin
+      - Admin Users
   /admin/users/detail:
     post:
       consumes:
@@ -4828,7 +4828,7 @@ paths:
             type: object
       summary: Get full user by ID
       tags:
-      - Admin
+      - Admin Users
   /admin/users/system:
     delete:
       consumes:
@@ -4877,7 +4877,7 @@ paths:
             type: object
       summary: Deactivate a system user
       tags:
-      - Admin
+      - Admin Users
     post:
       consumes:
       - application/json
@@ -4925,7 +4925,7 @@ paths:
             type: object
       summary: Create a new system user
       tags:
-      - Admin
+      - Admin Users
     put:
       consumes:
       - application/json
@@ -4975,7 +4975,7 @@ paths:
             type: object
       summary: Update system user data
       tags:
-      - Admin
+      - Admin Users
   /auth/agency:
     post:
       consumes:

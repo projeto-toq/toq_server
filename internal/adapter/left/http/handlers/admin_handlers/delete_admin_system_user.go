@@ -13,7 +13,7 @@ import (
 // DeleteAdminSystemUser handles DELETE /admin/users/system
 //
 //	@Summary      Deactivate a system user
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminDeleteSystemUserRequest  true  "Deletion payload"

@@ -13,7 +13,7 @@ import (
 // PutAdminUpdateRolePermission handles PUT /admin/role-permissions
 //
 //	@Summary	Update a role-permission association
-//	@Tags		Admin
+//	@Tags		Admin Permissions
 //	@Accept		json
 //	@Produce	json
 //	@Param		payload	body	dto.AdminUpdateRolePermissionRequest	true	"Role-permission payload"

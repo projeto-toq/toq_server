@@ -12,7 +12,7 @@ import (
 // DeleteAdminRolePermission handles DELETE /admin/role-permissions
 //
 //	@Summary	Delete a role-permission association
-//	@Tags		Admin
+//	@Tags		Admin Permissions
 //	@Accept		json
 //	@Produce	json
 //	@Param		payload	body	dto.AdminDeleteRolePermissionRequest	true	"Role-permission payload"

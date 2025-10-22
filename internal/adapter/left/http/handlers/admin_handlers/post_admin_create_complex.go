@@ -16,7 +16,7 @@ import (
 // PostAdminCreateComplex handles POST /admin/complexes
 //
 //	@Summary	Create a complex
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminCreateComplexRequest	true	"Complex payload"

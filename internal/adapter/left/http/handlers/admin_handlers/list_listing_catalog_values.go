@@ -14,7 +14,7 @@ import (
 //
 //	@Summary	List listing catalog values
 //	@Description	Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.
-//	@Tags		Admin
+//	@Tags		Admin Listings
 //	@Produce	json
 //	@Param		category	query	string	true	"Catalog category"
 //	@Param		includeInactive	query	bool	false	"Include inactive values"

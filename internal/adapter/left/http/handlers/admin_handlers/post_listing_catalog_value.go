@@ -14,7 +14,7 @@ import (
 // CreateListingCatalogValue handles POST /admin/listing/catalog.
 //
 //	@Summary	Create a listing catalog value
-//	@Tags		Admin
+//	@Tags		Admin Listings
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.ListingCatalogCreateRequest	true	"Creation payload"

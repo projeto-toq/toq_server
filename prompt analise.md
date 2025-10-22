@@ -7,8 +7,29 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 2) Requisição
 
-é necessário cria um novo endpoint na sessão schedules para confirmar o fim da criação da agenda de um imóvel. 
-POST /schedules/listing/finish, passando o ID do listing, confirma fim da criação da agenda do imóvel alterando o status do listing para StatusPendingPhotoScheduling
+A regra de negocio define que:
+- cada fotografo, podem haver mais de 1, deve ter uma agenda base criada no momento da criação do usuário com role photographer.
+- esta agenda terá como entradas:
+  - bloqueios para sessão de fotos de listings. normalmente estes bloqueios são de periodo (manha ou tarde) mas não é obrigatório.
+  - bloqueios padrão, para criar disponibilidade padrão de segunda a sexta, das 9h às 18h, com intervalo de 1h para almoço (12h às 13h).
+  - bloqueios específicos por indidponibiliadde do fotógrafo (férias, compromissos pessoais, etc).
+  - bloqueios para dias feriados nacionais, estaduais e municipais conforme service/holiday_service/*
+- ao criar um listing, o owner, verifica as disponibiuldades numa visão consolidada de todos as agendas base de todos os fotografos e escolhe uma.
+  - esta seleção se tornará um bloqueio na agenda do fotógrafo escolhido.
+  - este bloqueio ficará pendente de aceite pelo fotografo, ou por um fotografo se houver mais de um disponível.
+  - ao aceitar o bloqueio, isso se tornará uma pendencia de sessão de fotos para o fotografo que o aceitou, bloqueando sua agenda.
+- o endpoint de criação de system user /admin/role-permissions que chama func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemUserInput), caso o roleSlug seja photographer deve ao final da criação do usuário, ainda dentro da transação, criar a agenda base do fotógrafo.
+  - o repositório para agendas de fotografo já existe em photo_session_adapter.go
+  - necessário fazer uma correção no domain BookingEntity pois não existe o campo CreatedBy no banco de dados, logo deve ser removido do model e demais referencias.
+
+Assim, analise os requsitos da regra de negócio e o que já existe implementado no repositório photo_session_adapter.go, e endpoints en /listings/photo-session/* e apresente o plano para implmentar as funcionalidades.
+  - Deverão ser criados endpoints para que o fotografo gerencie sua agenda base (criar/atualizar/remover bloqueios padrão e específicos) e para que ele visualize suas pendências de sessões de fotos a serem realizadas.
+  - integração para que o owner do listing visualize as disponibilidades consolidadas de todos os fotógrafos ao criar um listing.
+  - demais endpoints/services/repos necessários para suportar a regra de negócio.
+  - como creio que o plano seja longo para ser executado de uma só vez, divida-o conforme abaixo para ser executado em etapas separadas:
+    - ajustes/criação nos repositórios. se houver necessidade de criação/alteração
+    - ajustes/criação dos services
+    - ajustes/criação dos handlers/endpoints com wiring geral
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

@@ -14,7 +14,7 @@ import (
 // PostAdminCreateRole handles POST /admin/roles
 //
 //	@Summary      Create a role
-//	@Tags         Admin
+//	@Tags         Admin Roles
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminCreateRoleRequest  true  "Role payload"

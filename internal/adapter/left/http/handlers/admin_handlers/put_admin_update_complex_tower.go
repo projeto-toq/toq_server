@@ -14,7 +14,7 @@ import (
 // PutAdminUpdateComplexTower handles PUT /admin/complexes/towers
 //
 //	@Summary	Update a complex tower
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminUpdateComplexTowerRequest	true	"Complex tower payload"

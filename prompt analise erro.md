@@ -7,18 +7,6 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 **Problemas:**
 É necessário fazer algumas correçoes nos endpoints de Admin.
 
-- Assim como Admin Holliday tem um grupo específico holidayGroup := admin.Group("/holidays"), os outros grupos de Admin também devem ser organizados de forma semelhante.
-  - Admin Users
-  - Admin Roles
-  - Admin Permissions que inclui /admin/permissions e /admin/role-permissions
-  - Admin Listings
-  - Admin Complexes
-- o endpoint de criação de system user /admin/role-permissions deve ter um enum para roleSlug
-  - photographer
-  - attendantRealtor
-  - attendantOwner
-  - attendant
-  - manager
 
 
 

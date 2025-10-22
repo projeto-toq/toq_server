@@ -14,7 +14,7 @@ import (
 // GetAdminComplexZipCodes handles GET /admin/complexes/zip-codes
 //
 //	@Summary	List complex zip codes
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Produce	json
 //	@Param		complexId	query	int	false	"Complex identifier"
 //	@Param		zipCode		query	string	false	"Zip code filter"

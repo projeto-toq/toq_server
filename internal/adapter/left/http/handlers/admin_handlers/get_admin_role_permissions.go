@@ -13,7 +13,7 @@ import (
 // GetAdminRolePermissions handles GET /admin/role-permissions
 //
 //	@Summary	List role-permission associations
-//	@Tags		Admin
+//	@Tags		Admin Permissions
 //	@Produce	json
 //	@Param		page		query	int	false	"Page number" default(1) example(1)
 //	@Param		limit		query	int	false	"Page size" default(20) example(20)

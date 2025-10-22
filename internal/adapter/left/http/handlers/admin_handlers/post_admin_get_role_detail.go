@@ -12,7 +12,7 @@ import (
 // PostAdminGetRoleDetail handles POST /admin/roles/detail
 //
 //	@Summary	Get role detail
-//	@Tags		Admin
+//	@Tags		Admin Roles
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminGetRoleDetailRequest	true	"Role detail payload"

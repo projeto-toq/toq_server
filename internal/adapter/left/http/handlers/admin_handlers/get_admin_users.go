@@ -17,7 +17,7 @@ import (
 // GetAdminUsers handles GET /admin/users
 //
 //	@Summary      List admin-facing users with filters
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Produce      json
 //	@Param        page              query  int    false  "Page number" default(1) example(1)
 //	@Param        limit             query  int    false  "Page size" default(20) example(20)

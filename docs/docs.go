@@ -31,7 +31,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complexes",
                 "parameters": [
@@ -129,7 +129,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex",
                 "parameters": [
@@ -195,7 +195,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex",
                 "parameters": [
@@ -261,7 +261,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex",
                 "parameters": [
@@ -326,7 +326,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex detail",
                 "parameters": [
@@ -391,7 +391,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complex sizes",
                 "parameters": [
@@ -459,7 +459,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex size",
                 "parameters": [
@@ -525,7 +525,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex size",
                 "parameters": [
@@ -591,7 +591,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex size",
                 "parameters": [
@@ -656,7 +656,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex size detail",
                 "parameters": [
@@ -721,7 +721,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complex towers",
                 "parameters": [
@@ -795,7 +795,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex tower",
                 "parameters": [
@@ -861,7 +861,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex tower",
                 "parameters": [
@@ -927,7 +927,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex tower",
                 "parameters": [
@@ -992,7 +992,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex tower detail",
                 "parameters": [
@@ -1057,7 +1057,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complex zip codes",
                 "parameters": [
@@ -1131,7 +1131,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex zip code",
                 "parameters": [
@@ -1197,7 +1197,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex zip code",
                 "parameters": [
@@ -1263,7 +1263,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex zip code",
                 "parameters": [
@@ -1328,7 +1328,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex zip code detail",
                 "parameters": [
@@ -1920,7 +1920,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "List listing catalog values",
                 "parameters": [
@@ -1983,7 +1983,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Update a listing catalog value",
                 "parameters": [
@@ -2056,7 +2056,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Create a listing catalog value",
                 "parameters": [
@@ -2122,7 +2122,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Deactivate a listing catalog value",
                 "parameters": [
@@ -2187,7 +2187,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Get listing catalog value detail",
                 "parameters": [
@@ -2255,7 +2255,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Reactivate a listing catalog value",
                 "parameters": [
@@ -2327,7 +2327,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "List permissions with pagination",
                 "parameters": [
@@ -2411,7 +2411,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Update an existing permission",
                 "parameters": [
@@ -2484,7 +2484,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Create a new permission",
                 "parameters": [
@@ -2550,7 +2550,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Hard delete a permission",
                 "parameters": [
@@ -2618,7 +2618,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Get permission detail",
                 "parameters": [
@@ -2683,7 +2683,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "List role-permission associations",
                 "parameters": [
@@ -2767,7 +2767,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Update a role-permission association",
                 "parameters": [
@@ -2833,7 +2833,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Create a role-permission association",
                 "parameters": [
@@ -2906,7 +2906,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Delete a role-permission association",
                 "parameters": [
@@ -2974,7 +2974,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Get role-permission detail",
                 "parameters": [
@@ -3039,7 +3039,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "List roles with pagination",
                 "parameters": [
@@ -3154,7 +3154,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Update a role",
                 "parameters": [
@@ -3227,7 +3227,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Create a role",
                 "parameters": [
@@ -3293,7 +3293,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Delete (deactivate) a role",
                 "parameters": [
@@ -3365,7 +3365,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Get role detail",
                 "parameters": [
@@ -3433,7 +3433,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Reactivate a role",
                 "parameters": [
@@ -3505,7 +3505,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "List admin-facing users with filters",
                 "parameters": [
@@ -3679,7 +3679,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Approve or refuse realtor status manually",
                 "parameters": [
@@ -3748,7 +3748,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Get signed download URLs for CRECI documents",
                 "parameters": [
@@ -3828,7 +3828,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "List realtors pending manual validation",
                 "parameters": [
@@ -3896,7 +3896,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Get full user by ID",
                 "parameters": [
@@ -3964,7 +3964,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Update system user data",
                 "parameters": [
@@ -4038,7 +4038,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Create a new system user",
                 "parameters": [
@@ -4104,7 +4104,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Deactivate a system user",
                 "parameters": [

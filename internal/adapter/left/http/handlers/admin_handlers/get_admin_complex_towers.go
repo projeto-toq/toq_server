@@ -14,7 +14,7 @@ import (
 // GetAdminComplexTowers handles GET /admin/complexes/towers
 //
 //	@Summary	List complex towers
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Produce	json
 //	@Param		complexId	query	int	false	"Complex identifier"
 //	@Param		tower	query	string	false	"Tower name filter"

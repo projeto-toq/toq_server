@@ -14,7 +14,7 @@ import (
 // PutAdminUpdateSystemUser handles PUT /admin/users/system
 //
 //	@Summary      Update system user data
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminUpdateSystemUserRequest  true  "Update payload"

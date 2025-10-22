@@ -13,7 +13,7 @@ import (
 // PostAdminGetComplexZipCodeDetail handles POST /admin/complexes/zip-codes/detail
 //
 //	@Summary	Get complex zip code detail
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminGetComplexZipCodeDetailRequest	true	"Complex zip code detail payload"

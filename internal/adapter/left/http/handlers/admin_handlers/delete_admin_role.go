@@ -12,7 +12,7 @@ import (
 // DeleteAdminRole handles DELETE /admin/roles
 //
 //	@Summary      Delete (deactivate) a role
-//	@Tags         Admin
+//	@Tags         Admin Roles
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminDeleteRoleRequest  true  "Role deletion payload"

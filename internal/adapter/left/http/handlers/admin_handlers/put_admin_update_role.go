@@ -14,7 +14,7 @@ import (
 // PutAdminUpdateRole handles PUT /admin/roles
 //
 //	@Summary      Update a role
-//	@Tags         Admin
+//	@Tags         Admin Roles
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminUpdateRoleRequest  true  "Role update payload"

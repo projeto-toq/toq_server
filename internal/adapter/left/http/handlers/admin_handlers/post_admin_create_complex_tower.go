@@ -14,7 +14,7 @@ import (
 // PostAdminCreateComplexTower handles POST /admin/complexes/towers
 //
 //	@Summary	Create a complex tower
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminCreateComplexTowerRequest	true	"Complex tower payload"

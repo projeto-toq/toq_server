@@ -14,7 +14,7 @@ import (
 // PostAdminCreateComplexSize handles POST /admin/complexes/sizes
 //
 //	@Summary	Create a complex size
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminCreateComplexSizeRequest	true	"Complex size payload"

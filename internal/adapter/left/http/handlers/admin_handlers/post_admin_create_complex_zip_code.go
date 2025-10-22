@@ -14,7 +14,7 @@ import (
 // PostAdminCreateComplexZipCode handles POST /admin/complexes/zip-codes
 //
 //	@Summary	Create a complex zip code
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminCreateComplexZipCodeRequest	true	"Complex zip code payload"

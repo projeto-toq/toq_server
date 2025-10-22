@@ -12,7 +12,7 @@ import (
 // DeleteAdminComplex handles DELETE /admin/complexes
 //
 //	@Summary	Delete a complex
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminDeleteComplexRequest	true	"Complex deletion payload"

@@ -24,7 +24,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complexes",
                 "parameters": [
@@ -122,7 +122,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex",
                 "parameters": [
@@ -188,7 +188,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex",
                 "parameters": [
@@ -254,7 +254,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex",
                 "parameters": [
@@ -319,7 +319,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex detail",
                 "parameters": [
@@ -384,7 +384,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complex sizes",
                 "parameters": [
@@ -452,7 +452,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex size",
                 "parameters": [
@@ -518,7 +518,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex size",
                 "parameters": [
@@ -584,7 +584,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex size",
                 "parameters": [
@@ -649,7 +649,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex size detail",
                 "parameters": [
@@ -714,7 +714,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complex towers",
                 "parameters": [
@@ -788,7 +788,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex tower",
                 "parameters": [
@@ -854,7 +854,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex tower",
                 "parameters": [
@@ -920,7 +920,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex tower",
                 "parameters": [
@@ -985,7 +985,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex tower detail",
                 "parameters": [
@@ -1050,7 +1050,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "List complex zip codes",
                 "parameters": [
@@ -1124,7 +1124,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Update a complex zip code",
                 "parameters": [
@@ -1190,7 +1190,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Create a complex zip code",
                 "parameters": [
@@ -1256,7 +1256,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Delete a complex zip code",
                 "parameters": [
@@ -1321,7 +1321,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Complexes"
                 ],
                 "summary": "Get complex zip code detail",
                 "parameters": [
@@ -1913,7 +1913,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "List listing catalog values",
                 "parameters": [
@@ -1976,7 +1976,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Update a listing catalog value",
                 "parameters": [
@@ -2049,7 +2049,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Create a listing catalog value",
                 "parameters": [
@@ -2115,7 +2115,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Deactivate a listing catalog value",
                 "parameters": [
@@ -2180,7 +2180,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Get listing catalog value detail",
                 "parameters": [
@@ -2248,7 +2248,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Listings"
                 ],
                 "summary": "Reactivate a listing catalog value",
                 "parameters": [
@@ -2320,7 +2320,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "List permissions with pagination",
                 "parameters": [
@@ -2404,7 +2404,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Update an existing permission",
                 "parameters": [
@@ -2477,7 +2477,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Create a new permission",
                 "parameters": [
@@ -2543,7 +2543,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Hard delete a permission",
                 "parameters": [
@@ -2611,7 +2611,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Get permission detail",
                 "parameters": [
@@ -2676,7 +2676,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "List role-permission associations",
                 "parameters": [
@@ -2760,7 +2760,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Update a role-permission association",
                 "parameters": [
@@ -2826,7 +2826,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Create a role-permission association",
                 "parameters": [
@@ -2899,7 +2899,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Delete a role-permission association",
                 "parameters": [
@@ -2967,7 +2967,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Permissions"
                 ],
                 "summary": "Get role-permission detail",
                 "parameters": [
@@ -3032,7 +3032,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "List roles with pagination",
                 "parameters": [
@@ -3147,7 +3147,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Update a role",
                 "parameters": [
@@ -3220,7 +3220,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Create a role",
                 "parameters": [
@@ -3286,7 +3286,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Delete (deactivate) a role",
                 "parameters": [
@@ -3358,7 +3358,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Get role detail",
                 "parameters": [
@@ -3426,7 +3426,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Roles"
                 ],
                 "summary": "Reactivate a role",
                 "parameters": [
@@ -3498,7 +3498,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "List admin-facing users with filters",
                 "parameters": [
@@ -3672,7 +3672,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Approve or refuse realtor status manually",
                 "parameters": [
@@ -3741,7 +3741,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Get signed download URLs for CRECI documents",
                 "parameters": [
@@ -3821,7 +3821,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "List realtors pending manual validation",
                 "parameters": [
@@ -3889,7 +3889,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Get full user by ID",
                 "parameters": [
@@ -3957,7 +3957,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Update system user data",
                 "parameters": [
@@ -4031,7 +4031,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Create a new system user",
                 "parameters": [
@@ -4097,7 +4097,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "Admin Users"
                 ],
                 "summary": "Deactivate a system user",
                 "parameters": [

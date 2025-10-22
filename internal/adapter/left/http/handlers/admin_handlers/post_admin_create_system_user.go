@@ -16,7 +16,7 @@ import (
 // PostAdminCreateSystemUser handles POST /admin/users/system
 //
 //	@Summary      Create a new system user
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminCreateSystemUserRequest  true  "System user payload"

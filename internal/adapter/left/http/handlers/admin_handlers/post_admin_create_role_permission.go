@@ -13,7 +13,7 @@ import (
 // PostAdminCreateRolePermission handles POST /admin/role-permissions
 //
 //	@Summary	Create a role-permission association
-//	@Tags		Admin
+//	@Tags		Admin Permissions
 //	@Accept		json
 //	@Produce	json
 //	@Param		payload	body	dto.AdminCreateRolePermissionRequest	true	"Role-permission payload"

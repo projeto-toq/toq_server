@@ -14,7 +14,7 @@ import (
 // UpdateListingCatalogValue handles PUT /admin/listing/catalog.
 //
 //	@Summary	Update a listing catalog value
-//	@Tags		Admin
+//	@Tags		Admin Listings
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.ListingCatalogUpdateRequest	true	"Partial update payload"

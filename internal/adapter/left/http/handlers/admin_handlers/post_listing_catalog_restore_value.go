@@ -14,7 +14,7 @@ import (
 // RestoreListingCatalogValue handles POST /admin/listing/catalog/restore.
 //
 //	@Summary    Reactivate a listing catalog value
-//	@Tags       Admin
+//	@Tags       Admin Listings
 //	@Accept     json
 //	@Produce    json
 //	@Param      request body dto.ListingCatalogRestoreRequest true "Reactivation payload"

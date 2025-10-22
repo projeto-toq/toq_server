@@ -12,7 +12,7 @@ import (
 // DeleteAdminPermission handles DELETE /admin/permissions
 //
 //	@Summary	Hard delete a permission
-//	@Tags		Admin
+//	@Tags		Admin Permissions
 //	@Accept		json
 //	@Produce	json
 //	@Param		payload	body	dto.AdminDeletePermissionRequest	true	"Permission identifier"

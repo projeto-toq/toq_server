@@ -13,7 +13,7 @@ import (
 //
 //	@Summary      Approve or refuse realtor status manually
 //	@Description  Status must be one of the allowed enum values. On success, sends FCM notification.
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminApproveUserRequest  true  "User ID and target status (enum: 0=active,10=refused_image,11=refused_document,12=refused_data)"

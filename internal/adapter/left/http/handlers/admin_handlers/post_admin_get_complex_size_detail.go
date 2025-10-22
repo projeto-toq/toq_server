@@ -13,7 +13,7 @@ import (
 // PostAdminGetComplexSizeDetail handles POST /admin/complexes/sizes/detail
 //
 //	@Summary	Get complex size detail
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminGetComplexSizeDetailRequest	true	"Complex size detail payload"

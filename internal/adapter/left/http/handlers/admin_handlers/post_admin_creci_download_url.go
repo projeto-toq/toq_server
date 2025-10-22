@@ -13,7 +13,7 @@ import (
 //
 //	@Summary      Get signed download URLs for CRECI documents
 //	@Description  Returns signed URLs (selfie/front/back) for a realtor user, valid for a limited time
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminCreciDownloadURLRequest  true  "User ID"

@@ -14,7 +14,7 @@ import (
 // PutAdminUpdateComplexZipCode handles PUT /admin/complexes/zip-codes
 //
 //	@Summary	Update a complex zip code
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminUpdateComplexZipCodeRequest	true	"Complex zip code payload"

@@ -12,6 +12,3 @@
 - Permission.service está poluindo tracing com startpermission centralizado
 
 
-- o endpoint de criação de system user /admin/role-permissions que chama func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemUserInput), caso o roleSlug seja photographer deve ao final da criação do usuário, ainda dentro da transação, criar a agenda básica do fotógrafo.
-  - o repositório para agenda de fotografo já existe em photo_session_adapter.go
-- necessário fazer uma correção no domain BookingEntity pois não existe o campo CreatedBy no banco de dados, logo deve ser removido do model e demais referencias.

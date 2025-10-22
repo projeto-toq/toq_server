@@ -14,7 +14,7 @@ import (
 // GetAdminComplexSizes handles GET /admin/complexes/sizes
 //
 //	@Summary	List complex sizes
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Produce	json
 //	@Param		complexId	query	int	false	"Complex identifier"
 //	@Param		page		query	int	false	"Page number"

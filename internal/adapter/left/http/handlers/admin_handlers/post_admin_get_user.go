@@ -13,7 +13,7 @@ import (
 // PostAdminGetUser handles POST /admin/users/detail
 //
 //	@Summary      Get full user by ID
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Accept       json
 //	@Produce      json
 //	@Param        request  body  dto.AdminGetUserRequest  true  "User ID"

@@ -14,7 +14,7 @@ import (
 // PutAdminUpdateComplexSize handles PUT /admin/complexes/sizes
 //
 //	@Summary	Update a complex size
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminUpdateComplexSizeRequest	true	"Complex size payload"

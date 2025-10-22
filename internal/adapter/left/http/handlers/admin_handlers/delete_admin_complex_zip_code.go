@@ -12,7 +12,7 @@ import (
 // DeleteAdminComplexZipCode handles DELETE /admin/complexes/zip-codes
 //
 //	@Summary	Delete a complex zip code
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminDeleteComplexZipCodeRequest	true	"Complex zip code deletion payload"

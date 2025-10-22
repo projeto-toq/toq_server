@@ -14,7 +14,7 @@ import (
 //
 //	@Summary      List realtors pending manual validation
 //	@Description  Returns id, nickname, fullName, nationalID, creciNumber, creciValidity, creciState
-//	@Tags         Admin
+//	@Tags         Admin Users
 //	@Produce      json
 //	@Param        page   query  int  false  "Page number" default(1) example(1)
 //	@Param        limit  query  int  false  "Page size" default(20) example(20)

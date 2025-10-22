@@ -14,7 +14,7 @@ import (
 // PutAdminUpdatePermission handles PUT /admin/permissions
 //
 //	@Summary	Update an existing permission
-//	@Tags		Admin
+//	@Tags		Admin Permissions
 //	@Accept		json
 //	@Produce	json
 //	@Param		payload	body	dto.AdminUpdatePermissionRequest	true	"Permission payload"

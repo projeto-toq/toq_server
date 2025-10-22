@@ -14,7 +14,7 @@ import (
 // GetAdminRoles handles GET /admin/roles
 //
 //	@Summary      List roles with pagination
-//	@Tags         Admin
+//	@Tags         Admin Roles
 //	@Produce      json
 //	@Param        page          query  int    false "Page number" default(1) example(1)
 //	@Param        limit         query  int    false "Page size" default(20) example(20)

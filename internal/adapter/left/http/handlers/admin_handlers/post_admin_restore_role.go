@@ -12,7 +12,7 @@ import (
 // RestoreAdminRole handles POST /admin/roles/restore
 //
 //	@Summary    Reactivate a role
-//	@Tags       Admin
+//	@Tags       Admin Roles
 //	@Accept     json
 //	@Produce    json
 //	@Param      request body dto.AdminRestoreRoleRequest true "Role reactivation payload"

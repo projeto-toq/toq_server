@@ -16,7 +16,7 @@ import (
 // GetAdminComplexes handles GET /admin/complexes
 //
 //	@Summary	List complexes
-//	@Tags		Admin
+//	@Tags		Admin Complexes
 //	@Produce	json
 //	@Param		name	query	string	false	"Complex name filter"
 //	@Param		zipCode	query	string	false	"Complex zip code"

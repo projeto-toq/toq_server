@@ -13,7 +13,7 @@ import (
 // PostAdminGetListingCatalogDetail handles POST /admin/listing/catalog/detail
 //
 //	@Summary	Get listing catalog value detail
-//	@Tags		Admin
+//	@Tags		Admin Listings
 //	@Accept		json
 //	@Produce	json
 //	@Param		request	body	dto.AdminGetListingCatalogDetailRequest	true	"Listing catalog detail payload"

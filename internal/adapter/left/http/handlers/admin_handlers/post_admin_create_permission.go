@@ -14,7 +14,7 @@ import (
 // PostAdminCreatePermission handles POST /admin/permissions
 //
 //	@Summary	Create a new permission
-//	@Tags		Admin
+//	@Tags		Admin Permissions
 //	@Accept		json
 //	@Produce	json
 //	@Param		payload	body	dto.AdminCreatePermissionRequest	true	"Permission payload"
