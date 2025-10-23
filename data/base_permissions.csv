@@ -16,8 +16,8 @@ id;name;action;description;is_active
 15;"HTTP DeleteAccount";"DELETE:/api/v2/user/account";"Permite deletar a própria conta";1
 16;"HTTP GetUserStatus";"GET:/api/v2/user/status";"Permite consultar o status da role ativa do usuário autenticado";1
 17;"HTTP GetUser Detail";"POST:/api/v2/admin/users/detail";"Permite Admin consultar detalhes de um usuário específico";1
-18;"HTTP ApproveUser";"POST:/api/v2/admin/users/creci/approve";"Permite Admin aprovar/reprovar corretor";1
-19;"HTTP GetPending";"GET:/api/v2/admin/users/creci/pending";"Permite Admin listar corretores pendentes de aprovação";1
+18;"HTTP Admin ApproveUser";"POST:/api/v2/admin/users/creci/approve";"Permite Admin aprovar/reprovar corretor";1
+19;"HTTP Admin GetPending";"GET:/api/v2/admin/users/creci/pending";"Permite Admin listar corretores pendentes de aprovação";1
 20;"HTTP Admin GetCreciDownloadURL";"POST:/api/v2/admin/users/creci/download-url";"Permite Admin obter URLs de download dos documentos CRECI";1
 21;"HTTP AddAlternativeUserRole";"POST:/api/v2/user/role/alternative";"Permite solicitar criação de role alternativo (owner↔realtor)";1
 22;"HTTP SwitchUserRole";"POST:/api/v2/user/role/switch";"Permite alternar a role ativa do usuário autenticado";1
@@ -30,10 +30,10 @@ id;name;action;description;is_active
 29;"HTTP Admin Update Listing Catalog";"PUT:/api/v2/admin/listing/catalog";"Permite atualizar valores do catálogo de listings";1
 30;"HTTP Admin Delete Listing Catalog";"DELETE:/api/v2/admin/listing/catalog";"Permite desativar valores do catálogo de listings";1
 31;"HTTP Get Listing Base Features";"GET:/api/v2/listings/features/base";"Permite listar as comodidades";1
-32;"HTTP Get Roles";"GET:/api/v2/admin/roles";"Permite listar roles com filtro e paginação";1
-33;"HTTP Create Role";"POST:/api/v2/admin/roles";"Permite criar nova role";1
-34;"HTTP Update Role";"PUT:/api/v2/admin/roles";"Permite atualizar role existente";1
-35;"HTTP Delete Role";"DELETE:/api/v2/admin/roles";"Permite desativar role existente";1
+32;"HTTP Admin Get Roles";"GET:/api/v2/admin/roles";"Permite listar roles com filtro e paginação";1
+33;"HTTP Admin Create Role";"POST:/api/v2/admin/roles";"Permite criar nova role";1
+34;"HTTP Admin Update Role";"PUT:/api/v2/admin/roles";"Permite atualizar role existente";1
+35;"HTTP Admin Delete Role";"DELETE:/api/v2/admin/roles";"Permite desativar role existente";1
 36;"HTTP Admin Get Users";"GET:/api/v2/admin/users";"Permite listar usuários do sistema com filtro e paginação";1
 37;"HTTP Admin Create System User";"POST:/api/v2/admin/users/system";"Permite criar novo usuário do sistema";1
 38;"HTTP Admin Update System User";"PUT:/api/v2/admin/users/system";"Permite atualizar usuário do sistema";1

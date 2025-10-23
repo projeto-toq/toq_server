@@ -15,6 +15,7 @@ import (
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
 
 // InjectDependencies orquestra a criação de todos os adapters usando Factory Pattern
@@ -94,10 +95,15 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 		lm.AddCleanupFunc(func() { _ = external.CloseFunc() })
 	}
 
-	// 5. Inicializar Services
+	// 5. Inicializar componentes de segurança (HMAC validator)
+	if err := c.initializeSecurityComponents(); err != nil {
+		return fmt.Errorf("failed to initialize security components: %w", err)
+	}
+
+	// 6. Inicializar Services
 	c.initializeServices()
 
-	// 6. Inicializar TempBlockCleanerWorker após permission service estar disponível
+	// 7. Inicializar TempBlockCleanerWorker após permission service estar disponível
 	if err := c.InitializeTempBlockCleaner(); err != nil {
 		return fmt.Errorf("failed to initialize temp block cleaner: %w", err)
 	}
@@ -320,4 +326,28 @@ func (c *config) InitPhotoSessionService() {
 		c.holidayService,
 		c.globalService,
 	)
+}
+
+// initializeSecurityComponents ensures security primitives are available before HTTP handler wiring.
+func (c *config) initializeSecurityComponents() error {
+	if c.hmacValidator != nil {
+		slog.Debug("HMAC validator already initialized")
+		return nil
+	}
+
+	cfg, err := c.GetHMACSecurityConfig()
+	if err != nil {
+		return err
+	}
+
+	validator, err := hmacauth.NewValidator(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to create HMAC validator: %w", err)
+	}
+
+	c.hmacValidator = validator
+
+	// Comentário breve para futuros mantenedores.
+	slog.Info("HMAC validator initialized", "encoding", cfg.Encoding, "skew_seconds", cfg.SkewSeconds)
+	return nil
 }

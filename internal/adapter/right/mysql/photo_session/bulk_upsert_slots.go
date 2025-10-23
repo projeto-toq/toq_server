@@ -80,8 +80,7 @@ func (a *PhotoSessionAdapter) BulkUpsertSlots(ctx context.Context, tx *sql.Tx, s
 				status = VALUES(status),
 				reservation_token = VALUES(reservation_token),
 				reserved_until = VALUES(reserved_until),
-				booked_at = VALUES(booked_at),
-				updated_at = UTC_TIMESTAMP()
+				booked_at = VALUES(booked_at)
 		`, strings.Join(placeholders, ","))
 
 		if _, execErr := tx.ExecContext(ctx, query, args...); execErr != nil {

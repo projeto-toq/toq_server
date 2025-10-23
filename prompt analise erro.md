@@ -5,10 +5,8 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Os novos endpoints criados para fotógrafos gerenciarem suas agendas e aceitarem/recusarem sessões de fotos necessitam:
-- POST /photographer/agenda deveeria ser GET /photographer/agenda com parâmetros de query e paginação
-- POST /photographer/agenda/time-off deve ter exemplo de utilização na documentação Swagger
-- POST /photographer/sessions/{sessionId}/status deve ser passar o paramentro via body e não por param e com exemplo de utilização na documentação Swagger.
+Estou recebendo o erro listado em log.md  ao tentar validar um CEP pelo endpoint /auth/validate/cep.
+Parece que o hmacvalidator não está sendo inicializado.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

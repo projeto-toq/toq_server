@@ -148,8 +148,8 @@ func RegisterUserRoutes(
 		auth.POST("/refresh", authHandler.RefreshToken) // RefreshToken
 
 		// Password reset workflow
-		auth.POST("/password/reset/request", authHandler.RequestPasswordChange)
-		auth.POST("/password/reset/confirm", authHandler.ConfirmPasswordChange)
+		auth.POST("password/request", authHandler.RequestPasswordChange)
+		auth.POST("password/confirm", authHandler.ConfirmPasswordChange)
 		//auth.POST("/password/reset/resend", authHandler.ResendPasswordResetCode)
 	}
 
