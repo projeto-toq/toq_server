@@ -924,7 +924,7 @@ definitions:
         example: 3003
         type: integer
       scheduledEnd:
-        example: "2025-10-24T13:00:00Z"
+        example: "2025-10-24T10:00:00Z"
         type: string
       scheduledStart:
         example: "2025-10-24T09:00:00Z"
@@ -932,6 +932,9 @@ definitions:
       slotId:
         example: 2002
         type: integer
+      status:
+        example: PENDING_APPROVAL
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateAgencyRequest:
     properties:
@@ -1543,21 +1546,21 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerSlotResponse:
     properties:
-      period:
-        example: MORNING
-        type: string
       photographerUserId:
         example: 45
         type: integer
       reservedUntil:
         example: "2025-10-24T12:00:00Z"
         type: string
-      slotDate:
-        example: "2025-10-25"
+      slotEnd:
+        example: "2025-10-25T10:00:00Z"
         type: string
       slotId:
         example: 123
         type: integer
+      slotStart:
+        example: "2025-10-25T09:00:00Z"
+        type: string
       status:
         example: AVAILABLE
         type: string
@@ -1643,14 +1646,20 @@ definitions:
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionResponse:
     properties:
       expiresAt:
-        example: "2025-10-24T14:45:00Z"
+        example: "2025-10-24T08:45:00Z"
         type: string
       reservationToken:
         example: c36b754f-6c37-4c15-8f25-9d77ddf9bb3e
         type: string
+      slotEnd:
+        example: "2025-10-24T10:00:00Z"
+        type: string
       slotId:
         example: 2002
         type: integer
+      slotStart:
+        example: "2025-10-24T09:00:00Z"
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityResponse:
     properties:
@@ -1915,6 +1924,14 @@ definitions:
       message:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest:
+    properties:
+      status:
+        example: ACCEPTED
+        type: string
+    required:
+    - status
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateUserRequest:
     properties:
       bornAt:
@@ -2123,6 +2140,50 @@ definitions:
         example: true
         type: boolean
     type: object
+  github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput:
+    properties:
+      holidayCalendarID:
+        type: integer
+      horizonMonths:
+        type: integer
+      photographerID:
+        type: integer
+      timeOffID:
+        type: integer
+      timezone:
+        type: string
+      workdayEndHour:
+        type: integer
+      workdayStartHour:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListAgendaOutput:
+    properties:
+      slots:
+        items: {}
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput:
+    properties:
+      endDate:
+        type: string
+      holidayCalendarID:
+        type: integer
+      horizonMonths:
+        type: integer
+      photographerID:
+        type: integer
+      reason:
+        type: string
+      startDate:
+        type: string
+      timezone:
+        type: string
+      workdayEndHour:
+        type: integer
+      workdayStartHour:
+        type: integer
+    type: object
   ? github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingExchangePlaceRequest
   : type: object
   ? github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingFeatureRequest
@@ -2138,6 +2199,18 @@ definitions:
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64:
     type: object
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-string:
+    type: object
+  internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest:
+    properties:
+      endDate:
+        example: "2023-10-31T23:59:59Z"
+        type: string
+      startDate:
+        example: "2023-10-01T00:00:00Z"
+        type: string
+    required:
+    - endDate
+    - startDate
     type: object
 externalDocs:
   description: OpenAPI
@@ -6058,11 +6131,11 @@ paths:
         in: query
         name: size
         type: integer
-      - default: date_asc
+      - default: start_asc
         description: Sort order
         enum:
-        - date_asc
-        - date_desc
+        - start_asc
+        - start_desc
         - photographer_asc
         - photographer_desc
         in: query
@@ -6096,6 +6169,164 @@ paths:
       summary: List available photographer slots
       tags:
       - Listings
+  /photographer/agenda:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves the photographer's agenda, including available and blocked
+        slots, within a given date range.
+      parameters:
+      - description: Date range for the agenda
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListAgendaOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: List Photographer Agenda
+      tags:
+      - Photo Session
+  /photographer/agenda/time-off:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an existing time-off period for the authenticated photographer,
+        making slots available again.
+      parameters:
+      - description: Delete Time-Off Input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Delete Photographer Time-Off
+      tags:
+      - Photo Session
+    post:
+      consumes:
+      - application/json
+      description: Registers a new time-off period for the authenticated photographer,
+        blocking their agenda.
+      parameters:
+      - description: Time-Off Input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              message:
+                type: string
+              timeOffId:
+                type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Create Photographer Time-Off
+      tags:
+      - Photo Session
+  /photographer/sessions/{sessionId}/status:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Session ID
+        in: path
+        name: sessionId
+        required: true
+        type: integer
+      - description: Status update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Session not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Session not in pending state
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Invalid status value
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Accept or reject a photo session
+      tags:
+      - Photographer
   /realtor/creci/upload-url:
     post:
       consumes:

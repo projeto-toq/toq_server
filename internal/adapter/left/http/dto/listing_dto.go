@@ -436,15 +436,15 @@ type ListPhotographerSlotsRequest struct {
 	Period string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
 	Page   int    `form:"page,default=1" binding:"min=1"`
 	Size   int    `form:"size,default=20" binding:"min=1,max=100"`
-	Sort   string `form:"sort,default=date_asc" binding:"omitempty,oneof=date_asc date_desc photographer_asc photographer_desc"`
+	Sort   string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc"`
 }
 
 // PhotographerSlotResponse representa um slot disponível na agenda dos fotógrafos.
 type PhotographerSlotResponse struct {
 	SlotID             uint64  `json:"slotId" example:"123"`
 	PhotographerUserID uint64  `json:"photographerUserId" example:"45"`
-	SlotDate           string  `json:"slotDate" example:"2025-10-25"`
-	Period             string  `json:"period" example:"MORNING"`
+	SlotStart          string  `json:"slotStart" example:"2025-10-25T09:00:00Z"`
+	SlotEnd            string  `json:"slotEnd" example:"2025-10-25T10:00:00Z"`
 	Status             string  `json:"status" example:"AVAILABLE"`
 	ReservedUntil      *string `json:"reservedUntil,omitempty" example:"2025-10-24T12:00:00Z"`
 }
@@ -464,8 +464,10 @@ type ReservePhotoSessionRequest struct {
 // ReservePhotoSessionResponse retorna dados da reserva temporária.
 type ReservePhotoSessionResponse struct {
 	SlotID           uint64 `json:"slotId" example:"2002"`
+	SlotStart        string `json:"slotStart" example:"2025-10-24T09:00:00Z"`
+	SlotEnd          string `json:"slotEnd" example:"2025-10-24T10:00:00Z"`
 	ReservationToken string `json:"reservationToken" example:"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"`
-	ExpiresAt        string `json:"expiresAt" example:"2025-10-24T14:45:00Z"`
+	ExpiresAt        string `json:"expiresAt" example:"2025-10-24T08:45:00Z"`
 }
 
 // ConfirmPhotoSessionRequest representa o payload para confirmar a sessão de fotos.
@@ -480,7 +482,8 @@ type ConfirmPhotoSessionResponse struct {
 	PhotoSessionID uint64 `json:"photoSessionId" example:"3003"`
 	SlotID         uint64 `json:"slotId" example:"2002"`
 	ScheduledStart string `json:"scheduledStart" example:"2025-10-24T09:00:00Z"`
-	ScheduledEnd   string `json:"scheduledEnd" example:"2025-10-24T13:00:00Z"`
+	ScheduledEnd   string `json:"scheduledEnd" example:"2025-10-24T10:00:00Z"`
+	Status         string `json:"status" example:"PENDING_APPROVAL"`
 }
 
 // CancelPhotoSessionRequest representa o corpo para cancelamento de sessão de fotos.

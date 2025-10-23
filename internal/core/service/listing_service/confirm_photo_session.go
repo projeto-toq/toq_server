@@ -91,13 +91,11 @@ func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input Confirm
 		return output, derrors.ErrReservationExpired
 	}
 
-	start, end := sessionWindowForPeriod(slot.SlotDate(), slot.Period())
-
 	booking := photosessionmodel.NewPhotoSessionBooking()
 	booking.SetSlotID(slot.ID())
 	booking.SetListingID(input.ListingID)
-	booking.SetScheduledStart(start)
-	booking.SetScheduledEnd(end)
+	booking.SetScheduledStart(slot.SlotStart())
+	booking.SetScheduledEnd(slot.SlotEnd())
 	booking.SetStatus(photosessionmodel.BookingStatusActive)
 
 	bookingID, insertErr := ls.photoSessionRepo.InsertBooking(ctx, tx, booking)
@@ -127,7 +125,7 @@ func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input Confirm
 	return ConfirmPhotoSessionOutput{
 		PhotoSessionID: bookingID,
 		SlotID:         input.SlotID,
-		ScheduledStart: start,
-		ScheduledEnd:   end,
+		ScheduledStart: slot.SlotStart(),
+		ScheduledEnd:   slot.SlotEnd(),
 	}, nil
 }

@@ -5783,13 +5783,13 @@ const docTemplate = `{
                     },
                     {
                         "enum": [
-                            "date_asc",
-                            "date_desc",
+                            "start_asc",
+                            "start_desc",
                             "photographer_asc",
                             "photographer_desc"
                         ],
                         "type": "string",
-                        "default": "date_asc",
+                        "default": "start_asc",
                         "description": "Sort order",
                         "name": "sort",
                         "in": "query"
@@ -5816,6 +5816,245 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/photographer/agenda": {
+            "post": {
+                "description": "Retrieves the photographer's agenda, including available and blocked slots, within a given date range.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Photo Session"
+                ],
+                "summary": "List Photographer Agenda",
+                "parameters": [
+                    {
+                        "description": "Date range for the agenda",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListAgendaOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/photographer/agenda/time-off": {
+            "post": {
+                "description": "Registers a new time-off period for the authenticated photographer, blocking their agenda.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Photo Session"
+                ],
+                "summary": "Create Photographer Time-Off",
+                "parameters": [
+                    {
+                        "description": "Time-Off Input",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                },
+                                "timeOffId": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes an existing time-off period for the authenticated photographer, making slots available again.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Photo Session"
+                ],
+                "summary": "Delete Photographer Time-Off",
+                "parameters": [
+                    {
+                        "description": "Delete Time-Off Input",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/photographer/sessions/{sessionId}/status": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Photographer"
+                ],
+                "summary": "Accept or reject a photo session",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Session ID",
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Session not in pending state",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid status value",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -8830,7 +9069,7 @@ const docTemplate = `{
                 },
                 "scheduledEnd": {
                     "type": "string",
-                    "example": "2025-10-24T13:00:00Z"
+                    "example": "2025-10-24T10:00:00Z"
                 },
                 "scheduledStart": {
                     "type": "string",
@@ -8839,6 +9078,10 @@ const docTemplate = `{
                 "slotId": {
                     "type": "integer",
                     "example": 2002
+                },
+                "status": {
+                    "type": "string",
+                    "example": "PENDING_APPROVAL"
                 }
             }
         },
@@ -9770,10 +10013,6 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerSlotResponse": {
             "type": "object",
             "properties": {
-                "period": {
-                    "type": "string",
-                    "example": "MORNING"
-                },
                 "photographerUserId": {
                     "type": "integer",
                     "example": 45
@@ -9782,13 +10021,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2025-10-24T12:00:00Z"
                 },
-                "slotDate": {
+                "slotEnd": {
                     "type": "string",
-                    "example": "2025-10-25"
+                    "example": "2025-10-25T10:00:00Z"
                 },
                 "slotId": {
                     "type": "integer",
                     "example": 123
+                },
+                "slotStart": {
+                    "type": "string",
+                    "example": "2025-10-25T09:00:00Z"
                 },
                 "status": {
                     "type": "string",
@@ -9922,15 +10165,23 @@ const docTemplate = `{
             "properties": {
                 "expiresAt": {
                     "type": "string",
-                    "example": "2025-10-24T14:45:00Z"
+                    "example": "2025-10-24T08:45:00Z"
                 },
                 "reservationToken": {
                     "type": "string",
                     "example": "c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"
                 },
+                "slotEnd": {
+                    "type": "string",
+                    "example": "2025-10-24T10:00:00Z"
+                },
                 "slotId": {
                     "type": "integer",
                     "example": 2002
+                },
+                "slotStart": {
+                    "type": "string",
+                    "example": "2025-10-24T09:00:00Z"
                 }
             }
         },
@@ -10329,6 +10580,18 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "ACCEPTED"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateUserRequest": {
             "type": "object",
             "properties": {
@@ -10626,6 +10889,73 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput": {
+            "type": "object",
+            "properties": {
+                "holidayCalendarID": {
+                    "type": "integer"
+                },
+                "horizonMonths": {
+                    "type": "integer"
+                },
+                "photographerID": {
+                    "type": "integer"
+                },
+                "timeOffID": {
+                    "type": "integer"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "workdayEndHour": {
+                    "type": "integer"
+                },
+                "workdayStartHour": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListAgendaOutput": {
+            "type": "object",
+            "properties": {
+                "slots": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "holidayCalendarID": {
+                    "type": "integer"
+                },
+                "horizonMonths": {
+                    "type": "integer"
+                },
+                "photographerID": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "workdayEndHour": {
+                    "type": "integer"
+                },
+                "workdayStartHour": {
+                    "type": "integer"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingExchangePlaceRequest": {
             "type": "object"
         },
@@ -10649,6 +10979,23 @@ const docTemplate = `{
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-string": {
             "type": "object"
+        },
+        "internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest": {
+            "type": "object",
+            "required": [
+                "endDate",
+                "startDate"
+            ],
+            "properties": {
+                "endDate": {
+                    "type": "string",
+                    "example": "2023-10-31T23:59:59Z"
+                },
+                "startDate": {
+                    "type": "string",
+                    "example": "2023-10-01T00:00:00Z"
+                }
+            }
         }
     },
     "securityDefinitions": {

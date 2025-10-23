@@ -2,7 +2,6 @@ package listingservices
 
 import (
 	"context"
-	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
@@ -96,10 +95,10 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 
 func normalizeSlotSort(sort string) (slotSortOption, error) {
 	switch sort {
-	case "", "date_asc":
-		return slotSortOption{column: "slot_date", direction: "ASC"}, nil
-	case "date_desc":
-		return slotSortOption{column: "slot_date", direction: "DESC"}, nil
+	case "", "start_asc":
+		return slotSortOption{column: "slot_start", direction: "ASC"}, nil
+	case "start_desc":
+		return slotSortOption{column: "slot_start", direction: "DESC"}, nil
 	case "photographer_asc":
 		return slotSortOption{column: "photographer_user_id", direction: "ASC"}, nil
 	case "photographer_desc":
@@ -107,15 +106,6 @@ func normalizeSlotSort(sort string) (slotSortOption, error) {
 	default:
 		return slotSortOption{}, utils.BadRequest("unsupported sort parameter")
 	}
-}
-
-func sessionWindowForPeriod(date time.Time, period photosessionmodel.SlotPeriod) (time.Time, time.Time) {
-	start := time.Date(date.Year(), date.Month(), date.Day(), 9, 0, 0, 0, time.UTC)
-	if period == photosessionmodel.SlotPeriodAfternoon {
-		start = time.Date(date.Year(), date.Month(), date.Day(), 14, 0, 0, 0, time.UTC)
-	}
-	end := start.Add(4 * time.Hour)
-	return start, end
 }
 
 func listingEligibleForPhotoSession(status listingmodel.ListingStatus) bool {

@@ -40,6 +40,8 @@ type ReservePhotoSessionInput struct {
 // ReservePhotoSessionOutput returns reservation token and expiration timestamp.
 type ReservePhotoSessionOutput struct {
 	SlotID           uint64
+	SlotStart        time.Time
+	SlotEnd          time.Time
 	ReservationToken string
 	ExpiresAt        time.Time
 }

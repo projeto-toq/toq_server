@@ -110,6 +110,8 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 
 	return ReservePhotoSessionOutput{
 		SlotID:           input.SlotID,
+		SlotStart:        slot.SlotStart(),
+		SlotEnd:          slot.SlotEnd(),
 		ReservationToken: reservationToken,
 		ExpiresAt:        expiresAt,
 	}, nil

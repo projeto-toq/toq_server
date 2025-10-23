@@ -29,7 +29,7 @@ const (
 //	@Param     period  query     string false "Slot period" Enums(MORNING,AFTERNOON) example(MORNING)
 //	@Param     page    query     int    false "Page number" default(1)
 //	@Param     size    query     int    false "Page size" default(20)
-//	@Param     sort    query     string false "Sort order" Enums(date_asc,date_desc,photographer_asc,photographer_desc) default(date_asc)
+//	@Param     sort    query     string false "Sort order" Enums(start_asc,start_desc,photographer_asc,photographer_desc) default(start_asc)
 //	@Success   200 {object} dto.ListPhotographerSlotsResponse
 //	@Failure   400 {object} dto.ErrorResponse "Invalid filters"
 //	@Failure   401 {object} dto.ErrorResponse "Unauthorized"
@@ -102,8 +102,6 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 
 	slots := make([]dto.PhotographerSlotResponse, 0, len(output.Slots))
 	for _, slot := range output.Slots {
-		slotDate := slot.SlotDate().Format(isoDateLayout)
-
 		var reservedUntil *string
 		if until := slot.ReservedUntil(); until != nil {
 			formatted := until.UTC().Format(time.RFC3339)
@@ -113,8 +111,8 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 		slots = append(slots, dto.PhotographerSlotResponse{
 			SlotID:             slot.ID(),
 			PhotographerUserID: slot.PhotographerUserID(),
-			SlotDate:           slotDate,
-			Period:             string(slot.Period()),
+			SlotStart:          slot.SlotStart().UTC().Format(time.RFC3339),
+			SlotEnd:            slot.SlotEnd().UTC().Format(time.RFC3339),
 			Status:             string(slot.Status()),
 			ReservedUntil:      reservedUntil,
 		})

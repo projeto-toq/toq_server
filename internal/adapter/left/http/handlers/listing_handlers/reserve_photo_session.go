@@ -66,6 +66,8 @@ func (lh *ListingHandler) ReservePhotoSession(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ReservePhotoSessionResponse{
 		SlotID:           output.SlotID,
+		SlotStart:        output.SlotStart.UTC().Format(time.RFC3339),
+		SlotEnd:          output.SlotEnd.UTC().Format(time.RFC3339),
 		ReservationToken: output.ReservationToken,
 		ExpiresAt:        output.ExpiresAt.UTC().Format(time.RFC3339),
 	})

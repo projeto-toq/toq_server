@@ -9,7 +9,7 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 Leia o plano detalhado para evolução da agenda de fotógrafos em `docs/photographer_agenda_plan.md` e apresente os passos para implementar:
 
-Criar endpoints para fotógrafos tratarem pendências de sessões (aceitar/recusar).
+Ajustar endpoints de owners `/listings/photo-session/*` para trabalhar com slots horários e status revisa
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

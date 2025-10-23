@@ -4,10 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 )
+
+type _ = dto.ErrorResponse
 
 // PhotoSessionHandler handles HTTP requests for photographer agenda management.
 type PhotoSessionHandler struct {

@@ -21,7 +21,7 @@ Este plano descreve a evolução da agenda de fotógrafos em três etapas coorde
 
 - [x] Criar endpoints para fotógrafos gerirem agenda base (listar agenda, criar/remover bloqueios específicos, declarar férias).
 - [x] Criar endpoints para fotógrafos tratarem pendências de sessões (aceitar/recusar).
-- [ ] Ajustar endpoints de owners `/listings/photo-session/*` para trabalhar com slots horários e status revisados.
+- [X] Ajustar endpoints de owners `/listings/photo-session/*` para trabalhar com slots horários e status revisados.
 - [x] Atualizar DTOs, permissões, factories de DI e documentação Swagger para as funcionalidades implementadas.
 - [ ] Documentar fluxos nos guias (`docs/`) e revisar dashboards/metrics quando aplicável.
 

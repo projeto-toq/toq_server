@@ -5,9 +5,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 )
+
+type _ = dto.ErrorResponse
 
 // ListAgendaRequest defines the expected JSON body for the ListAgenda endpoint.
 type ListAgendaRequest struct {
