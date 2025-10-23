@@ -26,3 +26,6 @@
        |- 2
        ...
 - photo_session_service.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
+- photo_session_adapter.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
+- photo_session_handler.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
+- ajustar a regra de arquivos separados no docs/toq_server_go_guide.md

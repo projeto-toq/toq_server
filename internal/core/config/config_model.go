@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"log/slog"
@@ -12,13 +13,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
-	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/routes"
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	"github.com/projeto-toq/toq_server/internal/core/factory"
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	httpport "github.com/projeto-toq/toq_server/internal/core/port/left/http"
 	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
 	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
@@ -31,6 +32,7 @@ import (
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	sessionservice "github.com/projeto-toq/toq_server/internal/core/service/session_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
@@ -61,6 +63,7 @@ type config struct {
 	permissionService      permissionservices.PermissionServiceInterface
 	holidayService         holidayservices.HolidayServiceInterface
 	scheduleService        scheduleservices.ScheduleServiceInterface
+	photoSessionService    photosessionservices.PhotoSessionServiceInterface
 	metricsAdapter         *factory.MetricsAdapter
 	cep                    cepport.CEPPortInterface
 	cpf                    cpfport.CPFPortInterface
@@ -90,6 +93,7 @@ type ConfigInterface interface {
 	InitComplexHandler()
 	InitHolidayService()
 	InitScheduleService()
+	InitPhotoSessionService()
 	InitListingHandler()
 	InitPermissionHandler()
 	InitializeGoRoutines()
@@ -106,6 +110,7 @@ type ConfigInterface interface {
 	GetRuntimeEnvironment() string
 	AreWorkersEnabled() bool
 	SetHealthServing(serving bool)
+	httpport.APIVersionProvider
 }
 
 func NewConfig(ctx context.Context) ConfigInterface {
@@ -240,6 +245,7 @@ func (c *config) initializeServices() {
 	c.InitComplexHandler()
 	c.InitHolidayService()
 	c.InitScheduleService()
+	c.InitPhotoSessionService()
 	c.InitListingHandler()
 	c.InitUserHandler()
 
@@ -406,142 +412,88 @@ func (c *config) InitializeDatabase() {
 	// Abrir conexão MySQL
 	db, err := sql.Open("mysql", c.env.DB.URI)
 	if err != nil {
-		slog.Error("Failed to open database connection", "error", err)
+		slog.Error("Failed to open MySQL connection", "error", err)
 		return
 	}
 
-	// Testar conexão
-	if err := db.Ping(); err != nil {
-		slog.Error("Failed to ping database", "error", err)
-		db.Close()
-		return
-	}
-
-	// Configurar pool de conexões
-	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(25)
-	db.SetConnMaxLifetime(5 * time.Minute)
-
-	// Criar wrapper Database
-	c.database = mysqladapter.NewDB(db)
 	c.db = db
-
-	slog.Info("Database connection initialized", "uri", c.env.DB.URI)
+	c.database = mysqladapter.NewDB(db)
+	slog.Info("Database connection opened successfully")
 }
 
 // VerifyDatabase verifica a conexão com o banco de dados
 func (c *config) VerifyDatabase() {
 	if c.db == nil {
-		slog.Error("Database connection not initialized")
+		slog.Error("Database connection is nil")
 		return
 	}
-
-	// Testar conexão
-	if err := c.db.Ping(); err != nil {
-		slog.Error("Database connection verification failed", "error", err)
-		return
-	}
-
-	slog.Info("Database connection verified successfully")
-}
-
-// InitializeTelemetry inicializa o sistema de telemetria OpenTelemetry
-func (c *config) InitializeTelemetry() (func(), error) {
-	if !c.env.TELEMETRY.Enabled {
-		slog.Info("OpenTelemetry disabled by configuration")
-		return func() {}, nil
-	}
-
-	// Usar o novo TelemetryManager
-	telemetryManager := NewTelemetryManager(c.env, c.runtimeEnvironment)
-
-	shutdownFunc, err := telemetryManager.Initialize(c.context)
+	err := c.db.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize telemetry: %w", err)
+		slog.Error("Failed to ping database", "error", err)
+	} else {
+		slog.Info("Database connection verified")
 	}
-
-	slog.Info("OpenTelemetry initialized successfully")
-	return shutdownFunc, nil
 }
 
-// InitializeHTTP inicializa o servidor HTTP (implementação real)
+// InitializeHTTP inicializa o servidor HTTP e configura o Gin
 func (c *config) InitializeHTTP() {
-	if err := c.SetupHTTPServer(); err != nil {
-		slog.Error("Failed to setup HTTP server", "error", err)
-		return
-	}
-	slog.Info("HTTP server initialization completed")
-}
-func (c *config) SetupHTTPServer() error {
-	if c.ginRouter == nil {
-		c.ginRouter = gin.New() // Usar gin.New() para controle manual dos middlewares
+	// Criar router Gin com modo de debug ou release
+	if c.env.APP.Debug {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
-	c.httpServer = &http.Server{
-		Addr:           c.env.HTTP.Port,
-		Handler:        c.ginRouter,
-		ReadTimeout:    parseDuration(c.env.HTTP.ReadTimeout),
-		WriteTimeout:   parseDuration(c.env.HTTP.WriteTimeout),
-		MaxHeaderBytes: c.env.HTTP.MaxHeaderBytes,
-	}
+	router := gin.New()
 
-	slog.Info("HTTP server initialized", "port", c.env.HTTP.Port, "read_timeout", c.env.HTTP.ReadTimeout, "write_timeout", c.env.HTTP.WriteTimeout)
-	return nil
-}
+	// Middleware de recuperação de pânico
+	router.Use(gin.Recovery())
 
-// parseDuration converte string de duração para time.Duration
-func parseDuration(durationStr string) time.Duration {
-	if durationStr == "" {
-		return 30 * time.Second // default
-	}
-	duration, err := time.ParseDuration(durationStr)
+	// Configurar logger do Gin para usar o logger do sistema
+	router.Use(func(ctx *gin.Context) {
+		coreutils.LoggerFromContext(ctx).Info("Request received",
+			"method", ctx.Request.Method,
+			"path", ctx.Request.URL.Path,
+			"remote_addr", ctx.Request.RemoteAddr,
+		)
+		ctx.Next()
+	})
+
+	c.ginRouter = router
+
+	// Parse timeouts from string to time.Duration
+	readTimeout, err := time.ParseDuration(c.env.HTTP.ReadTimeout)
 	if err != nil {
-		slog.Warn("Invalid duration format, using default", "duration", durationStr, "error", err)
-		return 30 * time.Second
+		slog.Warn("Failed to parse ReadTimeout, using default", "value", c.env.HTTP.ReadTimeout, "error", err)
+		readTimeout = 10 * time.Second
 	}
-	return duration
+	writeTimeout, err := time.ParseDuration(c.env.HTTP.WriteTimeout)
+	if err != nil {
+		slog.Warn("Failed to parse WriteTimeout, using default", "value", c.env.HTTP.WriteTimeout, "error", err)
+		writeTimeout = 10 * time.Second
+	}
+	idleTimeout, err := time.ParseDuration(c.env.HTTP.IdleTimeout)
+	if err != nil {
+		slog.Warn("Failed to parse IdleTimeout, using default", "value", c.env.HTTP.IdleTimeout, "error", err)
+		idleTimeout = 60 * time.Second
+	}
+
+	// Configurar servidor HTTP
+	c.httpServer = &http.Server{
+		Addr:         c.env.HTTP.Port,
+		Handler:      c.ginRouter,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
+		TLSConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
+	}
 }
 
-// SetupHTTPHandlersAndRoutes configura handlers e rotas
+// SetupHTTPHandlersAndRoutes configura os handlers e as rotas HTTP
 func (c *config) SetupHTTPHandlersAndRoutes() {
-	if c.ginRouter == nil {
-		slog.Error("Gin router not initialized")
-		return
-	}
-
-	// 1. Criar handlers via factory pattern
-	if err := c.createHTTPHandlers(); err != nil {
-		slog.Error("Failed to create HTTP handlers", "error", err)
-		return
-	}
-
-	// 2. Registrar todas as rotas (auth, user, listing) via routes package com dependências injetadas
-	// Isso aplicará os middlewares globais primeiro
-	routes.SetupRoutes(c.ginRouter, &c.httpHandlers, c.activityTracker, c.permissionService, c.metricsAdapter, NewStaticAPIVersionProvider())
-
-	// 3. Configurar rotas básicas de health check APÓS middlewares globais serem aplicados
-	c.setupBasicRoutes()
-
-	slog.Info("HTTP handlers and routes configured successfully")
-}
-
-// createHTTPHandlers creates HTTP handlers using the factory pattern
-func (c *config) createHTTPHandlers() error {
-	slog.Debug("Creating HTTP handlers via factory pattern")
-
-	if c.userService == nil || c.globalService == nil || c.listingService == nil || c.complexService == nil || c.scheduleService == nil || c.holidayService == nil {
-		return fmt.Errorf("required services not initialized")
-	}
-
-	if c.hmacValidator == nil {
-		validator, err := hmacauth.NewValidator(c.env.GetHMACSecurityConfig())
-		if err != nil {
-			return fmt.Errorf("failed to initialize HMAC validator: %w", err)
-		}
-		c.hmacValidator = validator
-	}
-
-	// Create handlers using the pre-initialized factory instance
+	// Criar handlers HTTP
 	c.httpHandlers = c.adapterFactory.CreateHTTPHandlers(
 		c.userService,
 		c.globalService,
@@ -550,49 +502,34 @@ func (c *config) createHTTPHandlers() error {
 		c.scheduleService,
 		c.holidayService,
 		c.permissionService,
+		c.photoSessionService,
 		c.metricsAdapter,
 		c.hmacValidator,
 	)
 
-	slog.Info("✅ HTTP handlers created successfully via factory")
-	return nil
+	// Configurar rotas
+	routes.SetupRoutes(
+		c.ginRouter,
+		&c.httpHandlers,
+		c.activityTracker,
+		c.permissionService,
+		c.metricsAdapter,
+		c, // Passa o config como APIVersionProvider
+	)
 }
 
-// setupBasicRoutes configura rotas básicas com middlewares de métricas
-func (c *config) setupBasicRoutes() {
-	// Aplicar middlewares de métricas às rotas básicas
-	var metricsMiddleware gin.HandlerFunc
-	if c.metricsAdapter != nil {
-		metricsMiddleware = middlewares.TelemetryMiddleware(c.metricsAdapter.Prometheus)
-	} else {
-		metricsMiddleware = gin.HandlerFunc(func(ctx *gin.Context) { ctx.Next() })
-	}
+// BasePath retorna o caminho base da API
+func (c *config) BasePath() string {
+	return "/api/v2"
+}
 
-	// Health check endpoints com middleware de métricas
-	c.ginRouter.GET("/healthz", metricsMiddleware, func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{"status": "ok"})
-	})
+// Version retorna a versão da API
+func (c *config) Version() string {
+	return "v2"
+}
 
-	c.ginRouter.GET("/readyz", metricsMiddleware, func(ctx *gin.Context) {
-		if c.readiness {
-			ctx.JSON(200, gin.H{"status": "ready"})
-		} else {
-			ctx.JSON(503, gin.H{"status": "not ready"})
-		}
-	})
-
-	// Metrics endpoint (sem middleware adicional para evitar recursão)
-	if c.metricsAdapter != nil && c.httpHandlers.MetricsHandler != nil {
-		if metricsHandler, ok := c.httpHandlers.MetricsHandler.(interface{ GetMetrics(c *gin.Context) }); ok {
-			c.ginRouter.GET("/metrics", metricsHandler.GetMetrics)
-		}
-	}
-
-	// API base group (v2)
-	v1 := c.ginRouter.Group(NewStaticAPIVersionProvider().BasePath())
-	{
-		v1.GET("/ping", func(ctx *gin.Context) {
-			ctx.JSON(200, gin.H{"message": "pong"})
-		})
-	}
+// InitializeTelemetry inicializa o sistema de telemetria
+func (c *config) InitializeTelemetry() (func(), error) {
+	tm := NewTelemetryManager(c.env, c.runtimeEnvironment)
+	return tm.Initialize(c.context)
 }

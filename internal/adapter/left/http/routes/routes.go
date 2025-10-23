@@ -7,6 +7,7 @@ import (
 	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
 	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
@@ -53,6 +54,7 @@ func SetupRoutes(
 	complexHandler := handlers.ComplexHandler.(*complexhandlers.ComplexHandler)
 	scheduleHandler := handlers.ScheduleHandler.(*schedulehandlers.ScheduleHandler)
 	holidayHandler := handlers.HolidayHandler.(*holidayhandlers.HolidayHandler)
+	photoSessionHandler := handlers.PhotoSessionHandler.(*photosessionhandlers.PhotoSessionHandler)
 
 	// API base routes (v2)
 	base := "/api/v2"
@@ -75,6 +77,9 @@ func SetupRoutes(
 
 	// Register schedule routes (authenticated)
 	RegisterScheduleRoutes(v1, scheduleHandler, activityTracker, permissionService)
+
+	// Register photographer routes (authenticated)
+	RegisterPhotographerRoutes(v1, photoSessionHandler, activityTracker, permissionService)
 }
 
 // setupGlobalMiddlewares configura middlewares aplicados a todas as rotas
@@ -336,6 +341,36 @@ func RegisterListingRoutes(
 	owners.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		owners.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateOwner
+	}
+}
+
+// RegisterPhotographerRoutes registers routes for photographer-specific actions.
+func RegisterPhotographerRoutes(
+	router *gin.RouterGroup,
+	photoSessionHandler *photosessionhandlers.PhotoSessionHandler,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
+	photographer := router.Group("/photographer")
+	photographer.Use(middlewares.AuthMiddleware(activityTracker))
+	photographer.Use(middlewares.PermissionMiddleware(permissionService))
+	{
+		agenda := photographer.Group("/agenda")
+		{
+			// POST /api/v2/photographer/agenda
+			agenda.POST("", photoSessionHandler.ListAgenda)
+
+			// POST /api/v2/photographer/agenda/time-off
+			agenda.POST("/time-off", photoSessionHandler.CreateTimeOff)
+
+			// DELETE /api/v2/photographer/agenda/time-off
+			agenda.DELETE("/time-off", photoSessionHandler.DeleteTimeOff)
+		}
+
+		sessions := photographer.Group("/sessions")
+		{
+			sessions.POST("/:sessionId/status", photoSessionHandler.UpdateSessionStatus)
+		}
 	}
 }
 

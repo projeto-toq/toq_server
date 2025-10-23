@@ -5,8 +5,9 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-É necessário fazer algumas correçoes nos endpoints de Admin.
+Durante a última refatoração, para implementar o item ->Criar endpoints para fotógrafos tratarem pendências de sessões (aceitar/recusar), do plano /docs/photogrpher_agenda_plan.md, o programador desrespeitou várias regras de arquitetura e boas práticas e as regras do toq_dev_go_guide.md, resultando em código que não segue o padrão esperado. adicionalmente parou o implementação no meio deixando erros no código e inconsistências.
 
+Assim, é necessário revisar o código, o manual e o plano de implementação, identificar os problemas, e propor um plano detalhado para corrigir o código e completar a implementação corretamente.
 
 
 

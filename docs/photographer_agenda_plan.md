@@ -17,11 +17,25 @@ Este plano descreve a evolução da agenda de fotógrafos em três etapas coorde
 - Atualizar `listingService` para lidar com reservas pendentes e aceitar/rejeitar via fotógrafos, usando as novas operações dos repositórios.
 - Integrar holiday service para bloquear feriados automaticamente e expor métricas relevantes (slots disponíveis x bloqueados, tempo médio de aceite etc.).
 
-## Etapa 3 — Handlers & Wiring - Em implementação
-- Criar endpoints para fotógrafos gerirem agenda base (listar agenda, criar/remover bloqueios específicos, declarar férias) e tratarem pendências de sessões (aceitar/recusar).
-- Ajustar endpoints de owners `/listings/photo-session/*` para trabalhar com slots horários e status revisados.
-- Atualizar DTOs, permissões, factories de DI e documentação Swagger.
-- Documentar fluxos nos guias (`docs/`) e revisar dashboards/metrics quando aplicável.
+## Etapa 3 — Handlers & Wiring - Parcialmente Implementado
+
+- [x] Criar endpoints para fotógrafos gerirem agenda base (listar agenda, criar/remover bloqueios específicos, declarar férias).
+- [x] Criar endpoints para fotógrafos tratarem pendências de sessões (aceitar/recusar).
+- [ ] Ajustar endpoints de owners `/listings/photo-session/*` para trabalhar com slots horários e status revisados.
+- [x] Atualizar DTOs, permissões, factories de DI e documentação Swagger para as funcionalidades implementadas.
+- [ ] Documentar fluxos nos guias (`docs/`) e revisar dashboards/metrics quando aplicável.
+
+### Detalhes do que Falta Implementar:
+
+1.  **Aceitar/Recusar Sessões de Foto:** (Concluído)
+    *   **Serviço:** Disponibilizado `photoSessionService.UpdateSessionStatus`, com validações de domínio (`ACCEPTED`/`REJECTED`), garantia de posse do slot e transações via `globalService` com tracing/logs.
+    *   **Handler:** Criado `POST /api/v2/photographer/sessions/{sessionId}/status`, realizando bind/normalização do status, documentação Swagger e uso do `http_errors.SendHTTPErrorObj`.
+    *   **Repositório:** Reutilizada a operação `UpdateBookingStatus` no adapter MySQL com tracing e retorno consistente (`sql.ErrNoRows` quando nada é alterado).
+
+2.  **Ajustar Endpoints do Proprietário (Owner):**
+    *   Revisar os endpoints existentes em `listing_routes.go` que lidam com sessões de fotos (`/listings/photo-session/*`).
+    *   Garantir que eles agora considerem os novos status (pendente, aceito, recusado) e a estrutura de slots por hora.
+    *   Isso pode envolver ajustes nos serviços `listingService` e `scheduleService` para que eles leiam a agenda do fotógrafo de forma correta.
 
 ## Premissas Confirmadas
 - Horizonte da agenda base: 3 meses.
@@ -30,5 +44,5 @@ Este plano descreve a evolução da agenda de fotógrafos em três etapas coorde
 - Status devem seguir `internal/core/model/listing_model/constants.go`.
 
 ## Próximos Passos
-- Concluir Etapa 1 (repositórios).
-- Submeter para validação antes de iniciar Etapa 2.
+- Ajustar endpoints de owners para incorporar os novos status e a agenda com granularidade horária.
+- Atualizar a documentação complementar e dashboards após os ajustes de owners.

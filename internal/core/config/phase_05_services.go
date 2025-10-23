@@ -23,9 +23,12 @@ func (b *Bootstrap) Phase05_InitializeServices() error {
 	}{
 		{"GlobalService", b.initializeGlobalService},
 		{"PermissionService", b.initializePermissionService},
-		{"UserService", b.initializeUserService},
+		{"HolidayService", b.initializeHolidayService},
+		{"PhotoSessionService", b.initializePhotoSessionService},
 		{"ComplexService", b.initializeComplexService},
+		{"ScheduleService", b.initializeScheduleService},
 		{"ListingService", b.initializeListingService},
+		{"UserService", b.initializeUserService},
 	}
 
 	for _, service := range services {
@@ -62,6 +65,30 @@ func (b *Bootstrap) initializePermissionService() error {
 	b.config.InitPermissionHandler()
 
 	b.logger.Debug("✅ Permission Service inicializado")
+	return nil
+}
+
+// initializeHolidayService inicializa o Holiday Service
+func (b *Bootstrap) initializeHolidayService() error {
+	b.logger.Debug("Inicializando Holiday Service")
+	b.config.InitHolidayService()
+	b.logger.Debug("✅ Holiday Service inicializado")
+	return nil
+}
+
+// initializeScheduleService inicializa o Schedule Service
+func (b *Bootstrap) initializeScheduleService() error {
+	b.logger.Debug("Inicializando Schedule Service")
+	b.config.InitScheduleService()
+	b.logger.Debug("✅ Schedule Service inicializado")
+	return nil
+}
+
+// initializePhotoSessionService inicializa o Photo Session Service
+func (b *Bootstrap) initializePhotoSessionService() error {
+	b.logger.Debug("Inicializando Photo Session Service")
+	b.config.InitPhotoSessionService()
+	b.logger.Debug("✅ Photo Session Service inicializado")
 	return nil
 }
 

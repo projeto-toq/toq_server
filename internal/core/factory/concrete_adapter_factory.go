@@ -16,6 +16,7 @@ import (
 	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
 	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 
@@ -56,6 +57,7 @@ import (
 	holidayservice "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservice "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	photosessionservice "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservice "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
@@ -244,6 +246,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	scheduleService scheduleservice.ScheduleServiceInterface,
 	holidayService holidayservice.HolidayServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
+	photoSessionService photosessionservice.PhotoSessionServiceInterface,
 	metricsAdapter *MetricsAdapter,
 	hmacValidator *hmacauth.Validator,
 ) HTTPHandlers {
@@ -293,6 +296,11 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		complexService,
 	)
 
+	photoSessionHandler := photosessionhandlers.NewPhotoSessionHandler(
+		photoSessionService,
+		globalService,
+	)
+
 	// Create metrics handler (optional)
 	var metricsHandler interface{}
 	if metricsAdapter != nil {
@@ -302,13 +310,14 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	slog.Info("Successfully created all HTTP handlers")
 
 	return HTTPHandlers{
-		UserHandler:     userHandler,
-		ListingHandler:  listingHandler,
-		AuthHandler:     authHandler,
-		MetricsHandler:  metricsHandler,
-		AdminHandler:    adminHandler,
-		ComplexHandler:  complexHandler,
-		ScheduleHandler: scheduleHandler,
-		HolidayHandler:  holidayHandler,
+		UserHandler:         userHandler,
+		ListingHandler:      listingHandler,
+		AuthHandler:         authHandler,
+		MetricsHandler:      metricsHandler,
+		AdminHandler:        adminHandler,
+		ComplexHandler:      complexHandler,
+		ScheduleHandler:     scheduleHandler,
+		HolidayHandler:      holidayHandler,
+		PhotoSessionHandler: photoSessionHandler,
 	}
 }

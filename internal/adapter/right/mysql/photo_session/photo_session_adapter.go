@@ -1,6 +1,8 @@
 package mysqlphotosessionadapter
 
-import mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+import (
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+)
 
 // PhotoSessionAdapter provides DB access to photographer slots and bookings.
 type PhotoSessionAdapter struct {

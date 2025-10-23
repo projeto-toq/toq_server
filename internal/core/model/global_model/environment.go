@@ -1,11 +1,15 @@
 package globalmodel
 
 type Environment struct {
+	APP struct {
+		Debug bool `yaml:"debug"`
+	} `yaml:"app"`
 	HTTP struct {
 		Port           string `yaml:"port"`
 		Network        string `yaml:"network"`
 		ReadTimeout    string `yaml:"read_timeout"`
 		WriteTimeout   string `yaml:"write_timeout"`
+		IdleTimeout    string `yaml:"idle_timeout"`
 		MaxHeaderBytes int    `yaml:"max_header_bytes"`
 		GinMode        string `yaml:"gin_mode"`
 		TLS            struct {

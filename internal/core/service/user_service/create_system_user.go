@@ -12,6 +12,7 @@ import (
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -189,6 +190,20 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		logger.Error("admin.users.create.audit_failed", "user_id", newUser.GetID(), "error", auditErr)
 		opErr = utils.InternalError("")
 		return SystemUserResult{}, opErr
+	}
+
+	// If the new user is a photographer, create their agenda.
+	if slug == permissionmodel.RoleSlugPhotographer {
+		agendaInput := photosessionservices.EnsureAgendaInput{
+			PhotographerID: uint64(newUser.GetID()),
+			Timezone:       "America/Sao_Paulo", // Or from a config/input
+		}
+		if agendaErr := us.photoSessionService.EnsurePhotographerAgendaWithTx(ctx, tx, agendaInput); agendaErr != nil {
+			utils.SetSpanError(ctx, agendaErr)
+			logger.Error("admin.users.create.photographer_agenda_failed", "user_id", newUser.GetID(), "error", agendaErr)
+			opErr = utils.InternalError("Failed to create photographer agenda")
+			return SystemUserResult{}, opErr
+		}
 	}
 
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {

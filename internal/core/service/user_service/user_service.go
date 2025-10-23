@@ -17,15 +17,17 @@ import (
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 )
 
 type userService struct {
-	repo           userrepoport.UserRepoPortInterface
-	sessionRepo    sessionrepoport.SessionRepoPortInterface
-	globalService  globalservice.GlobalServiceInterface
-	listingService listingservices.ListingServiceInterface
-	cpf            cpfport.CPFPortInterface
-	cnpj           cnpjport.CNPJPortInterface
+	repo                userrepoport.UserRepoPortInterface
+	sessionRepo         sessionrepoport.SessionRepoPortInterface
+	globalService       globalservice.GlobalServiceInterface
+	listingService      listingservices.ListingServiceInterface
+	photoSessionService photosessionservices.PhotoSessionServiceInterface
+	cpf                 cpfport.CPFPortInterface
+	cnpj                cnpjport.CNPJPortInterface
 	// creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
@@ -36,6 +38,7 @@ func NewUserService(
 	sr sessionrepoport.SessionRepoPortInterface,
 	gsi globalservice.GlobalServiceInterface,
 	listingService listingservices.ListingServiceInterface,
+	photoSessionService photosessionservices.PhotoSessionServiceInterface,
 	cpf cpfport.CPFPortInterface,
 	cnpj cnpjport.CNPJPortInterface,
 	// creci creciport.CreciPortInterface, // Pode ser nil temporariamente
@@ -44,12 +47,13 @@ func NewUserService(
 
 ) UserServiceInterface {
 	return &userService{
-		repo:           ur,
-		sessionRepo:    sr,
-		globalService:  gsi,
-		listingService: listingService,
-		cpf:            cpf,
-		cnpj:           cnpj,
+		repo:                ur,
+		sessionRepo:         sr,
+		globalService:       gsi,
+		listingService:      listingService,
+		photoSessionService: photoSessionService,
+		cpf:                 cpf,
+		cnpj:                cnpj,
 		// creci:               creci, // Pode ser nil
 		cloudStorageService: cloudStorage,
 		permissionService:   permissionService, // NOVO

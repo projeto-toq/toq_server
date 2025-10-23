@@ -12,6 +12,7 @@ import (
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 )
@@ -179,6 +180,7 @@ func (c *config) InitUserHandler() {
 		c.repositoryAdapters.Session,
 		c.globalService,
 		c.listingService,
+		c.photoSessionService,
 		c.cpf,
 		c.cnpj,
 		c.cloudStorage,
@@ -293,4 +295,29 @@ func (c *config) createActivityTracker() error {
 
 	slog.Info("✅ ActivityTracker criado com sucesso com Redis client")
 	return nil
+}
+
+func (c *config) InitPhotoSessionService() {
+	slog.Debug("Initializing Photo Session Service")
+
+	if c.repositoryAdapters == nil || c.repositoryAdapters.PhotoSession == nil {
+		slog.Error("repositoryAdapters.PhotoSession is nil")
+		return
+	}
+
+	if c.holidayService == nil {
+		slog.Error("holidayService is nil")
+		return
+	}
+
+	if c.globalService == nil {
+		slog.Error("globalService is nil")
+		return
+	}
+
+	c.photoSessionService = photosessionservices.NewPhotoSessionService(
+		c.repositoryAdapters.PhotoSession,
+		c.holidayService,
+		c.globalService,
+	)
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	holidaymodel "github.com/projeto-toq/toq_server/internal/core/model/holiday_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	photosessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
@@ -34,6 +35,8 @@ type PhotoSessionServiceInterface interface {
 	CreateTimeOffWithTx(ctx context.Context, tx *sql.Tx, input TimeOffInput) (uint64, error)
 	DeleteTimeOff(ctx context.Context, input DeleteTimeOffInput) error
 	DeleteTimeOffWithTx(ctx context.Context, tx *sql.Tx, input DeleteTimeOffInput) error
+	ListAgenda(ctx context.Context, input ListAgendaInput) (ListAgendaOutput, error)
+	UpdateSessionStatus(ctx context.Context, input UpdateSessionStatusInput) error
 }
 
 type photoSessionService struct {
@@ -232,6 +235,134 @@ func (s *photoSessionService) DeleteTimeOffWithTx(ctx context.Context, tx *sql.T
 	return s.ensurePhotographerAgendaWithPrepared(ctx, tx, ensureInput, nil)
 }
 
+// UpdateSessionStatus updates the status of a photo session for a photographer.
+func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input UpdateSessionStatusInput) error {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return derrors.Infra("failed to generate tracer", err)
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	if input.SessionID == 0 {
+		return derrors.Validation("sessionId must be greater than zero", map[string]any{"sessionId": "greater_than_zero"})
+	}
+	if input.PhotographerID == 0 {
+		return derrors.Auth("unauthorized")
+	}
+
+	statusStr := strings.ToUpper(strings.TrimSpace(input.Status))
+	if statusStr == "" {
+		return derrors.Validation("status is required", map[string]any{"status": "required"})
+	}
+
+	if statusStr != string(photosessionmodel.BookingStatusAccepted) && statusStr != string(photosessionmodel.BookingStatusRejected) {
+		return derrors.BadRequest("status must be ACCEPTED or REJECTED")
+	}
+
+	status := photosessionmodel.BookingStatus(statusStr)
+
+	tx, err := s.globalService.StartTransaction(ctx)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.update_status.tx_start_error", "err", err)
+		return derrors.Infra("failed to start transaction", err)
+	}
+
+	committed := false
+	defer func() {
+		if !committed {
+			if rollbackErr := s.globalService.RollbackTransaction(ctx, tx); rollbackErr != nil {
+				utils.SetSpanError(ctx, rollbackErr)
+				logger.Error("photo_session.update_status.tx_rollback_error", "err", rollbackErr)
+			}
+		}
+	}()
+
+	booking, err := s.repo.GetBookingForUpdate(ctx, tx, input.SessionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return derrors.NotFound("session not found")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.update_status.get_booking_error", "err", err, "session_id", input.SessionID)
+		return derrors.Infra("failed to load session booking", err)
+	}
+
+	slot, err := s.repo.GetSlotForUpdate(ctx, tx, booking.SlotID())
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return derrors.NotFound("slot not found")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.update_status.get_slot_error", "err", err, "slot_id", booking.SlotID())
+		return derrors.Infra("failed to load session slot", err)
+	}
+
+	if slot.PhotographerUserID() != input.PhotographerID {
+		return derrors.Forbidden("session does not belong to photographer")
+	}
+
+	if booking.Status() != photosessionmodel.BookingStatusPendingApproval {
+		return derrors.Conflict("session is not pending approval")
+	}
+
+	if err = s.repo.UpdateBookingStatus(ctx, tx, booking.ID(), status); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return derrors.NotFound("session not found")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.update_status.update_error", "err", err, "session_id", booking.ID())
+		return derrors.Infra("failed to update session status", err)
+	}
+
+	if err = s.globalService.CommitTransaction(ctx, tx); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.update_status.tx_commit_error", "err", err)
+		return derrors.Infra("failed to commit transaction", err)
+	}
+	committed = true
+
+	logger.Info("photo_session.status.updated", "session_id", booking.ID(), "slot_id", slot.ID(), "photographer_id", input.PhotographerID, "status", statusStr)
+
+	return nil
+}
+
+// ListAgenda retrieves the photographer's agenda within a specified date range.
+func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaInput) (ListAgendaOutput, error) {
+	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "service.ListAgenda")
+	if err != nil {
+		return ListAgendaOutput{}, derrors.Infra("failed to generate tracer", err)
+	}
+	defer spanEnd()
+
+	if err := validateListAgendaInput(input); err != nil {
+		return ListAgendaOutput{}, err
+	}
+
+	// Use a transaction for a consistent read, although it's a read-only operation.
+	tx, txErr := s.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		utils.LoggerFromContext(ctx).Error("service.list_agenda.tx_start_error", "err", txErr)
+		utils.SetSpanError(ctx, txErr)
+		return ListAgendaOutput{}, derrors.Wrap(txErr, derrors.KindInfra, "failed to start transaction")
+	}
+	defer func() {
+		_ = s.globalService.RollbackTransaction(ctx, tx) // Always rollback a read-only transaction
+	}()
+
+	slots, err := s.repo.ListSlotsByRange(ctx, tx, input.PhotographerID, input.StartDate.UTC(), input.EndDate.UTC())
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("service.list_agenda.repo_error", "err", err, "photographer_id", input.PhotographerID)
+		return ListAgendaOutput{}, derrors.Wrap(err, derrors.KindInfra, "failed to list agenda slots")
+	}
+
+	return ListAgendaOutput{Slots: slots}, nil
+}
+
 func (s *photoSessionService) ensurePhotographerAgendaWithPrepared(ctx context.Context, tx *sql.Tx, input EnsureAgendaInput, prepared *preparedEnsureContext) error {
 	if tx == nil {
 		return utils.InternalError("")
@@ -417,32 +548,29 @@ func (s *photoSessionService) loadHolidayDays(ctx context.Context, input EnsureA
 }
 
 func markDateRange(target map[string]struct{}, start, end time.Time, loc *time.Location) {
-	if end.Before(start) {
-		return
-	}
+	start = start.In(loc)
+	end = end.In(loc)
 
-	current := start.In(loc)
-	last := end.In(loc)
-	for !current.After(last) {
-		target[dateKeyFromTime(current)] = struct{}{}
-		current = current.AddDate(0, 0, 1)
+	for d := start; d.Before(end) || d.Equal(end); d = d.AddDate(0, 0, 1) {
+		target[dateKeyFromTime(d)] = struct{}{}
 	}
-}
-
-func resolveLocation(tz string) (*time.Location, error) {
-	name := strings.TrimSpace(tz)
-	if name == "" {
-		name = defaultTimezone
-	}
-	loc, err := time.LoadLocation(name)
-	if err != nil {
-		return nil, utils.ValidationError("timezone", fmt.Sprintf("invalid timezone: %s", name))
-	}
-	return loc, nil
 }
 
 func dateKeyFromTime(t time.Time) string {
 	return t.Format("2006-01-02")
+}
+
+func resolveLocation(timezone string) (*time.Location, error) {
+	if timezone == "" {
+		timezone = defaultTimezone
+	}
+
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		return nil, utils.ValidationError("timezone", "Invalid timezone")
+	}
+
+	return loc, nil
 }
 
 func periodForHour(hour int) photosessionmodel.SlotPeriod {
@@ -450,6 +578,13 @@ func periodForHour(hour int) photosessionmodel.SlotPeriod {
 		return photosessionmodel.SlotPeriodMorning
 	}
 	return photosessionmodel.SlotPeriodAfternoon
+}
+
+// UpdateSessionStatusInput contains the required data to update a photo session status.
+type UpdateSessionStatusInput struct {
+	SessionID      uint64
+	PhotographerID uint64
+	Status         string
 }
 
 // EnsureAgendaInput controls agenda generation parameters.
@@ -526,6 +661,22 @@ func validateTimeOffInput(input TimeOffInput) error {
 	return nil
 }
 
+func validateListAgendaInput(input ListAgendaInput) error {
+	if input.PhotographerID == 0 {
+		return derrors.Validation("photographerId must be greater than zero", nil)
+	}
+	if input.StartDate.IsZero() {
+		return derrors.Validation("startDate is required", nil)
+	}
+	if input.EndDate.IsZero() {
+		return derrors.Validation("endDate is required", nil)
+	}
+	if input.EndDate.Before(input.StartDate) {
+		return derrors.Validation("endDate must be after or equal to startDate", nil)
+	}
+	return nil
+}
+
 type preparedEnsureContext struct {
 	location         *time.Location
 	windowStartLocal time.Time
@@ -535,4 +686,16 @@ type preparedEnsureContext struct {
 	workdayStartHour int
 	workdayEndHour   int
 	blockedDays      map[string]struct{}
+}
+
+// ListAgendaInput defines the input for listing a photographer's agenda.
+type ListAgendaInput struct {
+	PhotographerID uint64
+	StartDate      time.Time
+	EndDate        time.Time
+}
+
+// ListAgendaOutput defines the output for a photographer's agenda.
+type ListAgendaOutput struct {
+	Slots []photosessionmodel.PhotographerSlotInterface `json:"slots"`
 }

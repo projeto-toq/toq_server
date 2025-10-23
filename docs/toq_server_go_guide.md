@@ -121,6 +121,8 @@ Transações: use o provedor padronizado (global_services/transactions). Service
 - Arquitetura por camadas:
   - Handlers → Services → Repositories (Adapters).
   - Injeção de dependências via factories já existente.
+- Funções pequenas e focadas: cada função/método deve ter responsabilidade única e clara.
+  - Funções que implementam os repositórios/services/handlers/model devem ser separadas dos arquivos de interface/domain.
 - Tracing:
   - Use `utils.GenerateTracer(ctx)` no início de métodos públicos de Services, Repositories e em Workers/Go routines.
   - Em Handlers HTTP, NÃO crie spans: o `TelemetryMiddleware` cuida disso.
