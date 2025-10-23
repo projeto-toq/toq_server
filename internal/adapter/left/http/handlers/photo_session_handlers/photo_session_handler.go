@@ -2,6 +2,7 @@ package photosessionhandlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
@@ -32,15 +33,27 @@ func NewPhotoSessionHandler(service photosessionservices.PhotoSessionServiceInte
 // @Tags         Photo Session
 // @Accept       json
 // @Produce      json
-// @Param        input body photosessionservices.TimeOffInput true "Time-Off Input"
+// @Param        input body dto.CreateTimeOffRequest true "Time-Off payload"
 // @Success      201 {object} object{message=string,timeOffId=int}
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse
 // @Router       /photographer/agenda/time-off [post]
 func (h *PhotoSessionHandler) CreateTimeOff(c *gin.Context) {
-	var input photosessionservices.TimeOffInput
-	if err := c.ShouldBindJSON(&input); err != nil {
+	var req dto.CreateTimeOffRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_json", "Invalid JSON body")
+		return
+	}
+
+	startDate, err := time.Parse(time.RFC3339, req.StartDate)
+	if err != nil {
+		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_start_date", "Invalid startDate format, use RFC3339")
+		return
+	}
+
+	endDate, err := time.Parse(time.RFC3339, req.EndDate)
+	if err != nil {
+		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_end_date", "Invalid endDate format, use RFC3339")
 		return
 	}
 
@@ -49,7 +62,18 @@ func (h *PhotoSessionHandler) CreateTimeOff(c *gin.Context) {
 		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
-	input.PhotographerID = uint64(userID)
+
+	input := photosessionservices.TimeOffInput{
+		PhotographerID:    uint64(userID),
+		StartDate:         startDate,
+		EndDate:           endDate,
+		Reason:            req.Reason,
+		Timezone:          req.Timezone,
+		HolidayCalendarID: req.HolidayCalendarID,
+		HorizonMonths:     req.HorizonMonths,
+		WorkdayStartHour:  req.WorkdayStartHour,
+		WorkdayEndHour:    req.WorkdayEndHour,
+	}
 
 	id, dErr := h.service.CreateTimeOff(c.Request.Context(), input)
 	if dErr != nil {
@@ -66,15 +90,15 @@ func (h *PhotoSessionHandler) CreateTimeOff(c *gin.Context) {
 // @Tags         Photo Session
 // @Accept       json
 // @Produce      json
-// @Param        input body photosessionservices.DeleteTimeOffInput true "Delete Time-Off Input"
+// @Param        input body dto.DeleteTimeOffRequest true "Delete Time-Off payload"
 // @Success      200 {object} object{message=string}
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      404 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse
 // @Router       /photographer/agenda/time-off [delete]
 func (h *PhotoSessionHandler) DeleteTimeOff(c *gin.Context) {
-	var input photosessionservices.DeleteTimeOffInput
-	if err := c.ShouldBindJSON(&input); err != nil {
+	var req dto.DeleteTimeOffRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_json", "Invalid JSON body")
 		return
 	}
@@ -84,7 +108,16 @@ func (h *PhotoSessionHandler) DeleteTimeOff(c *gin.Context) {
 		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
-	input.PhotographerID = uint64(userID)
+
+	input := photosessionservices.DeleteTimeOffInput{
+		TimeOffID:         req.TimeOffID,
+		PhotographerID:    uint64(userID),
+		Timezone:          req.Timezone,
+		HolidayCalendarID: req.HolidayCalendarID,
+		HorizonMonths:     req.HorizonMonths,
+		WorkdayStartHour:  req.WorkdayStartHour,
+		WorkdayEndHour:    req.WorkdayEndHour,
+	}
 
 	dErr := h.service.DeleteTimeOff(c.Request.Context(), input)
 	if dErr != nil {

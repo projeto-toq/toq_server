@@ -23,6 +23,9 @@ const (
 	defaultWorkdayEndHour   = 19
 	defaultTimezone         = "America/Sao_Paulo"
 	maxTimeOffReasonLength  = 255
+	defaultAgendaPage       = 1
+	defaultAgendaSize       = 20
+	maxAgendaPageSize       = 100
 )
 
 // PhotoSessionServiceInterface exposes orchestration helpers around photographer slots.
@@ -342,6 +345,21 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		return ListAgendaOutput{}, err
 	}
 
+	page := input.Page
+	if page <= 0 {
+		page = defaultAgendaPage
+	}
+
+	size := input.Size
+	if size <= 0 {
+		size = defaultAgendaSize
+	}
+	if size > maxAgendaPageSize {
+		size = maxAgendaPageSize
+	}
+
+	offset := (page - 1) * size
+
 	// Use a transaction for a consistent read, although it's a read-only operation.
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
@@ -353,14 +371,14 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		_ = s.globalService.RollbackTransaction(ctx, tx) // Always rollback a read-only transaction
 	}()
 
-	slots, err := s.repo.ListSlotsByRange(ctx, tx, input.PhotographerID, input.StartDate.UTC(), input.EndDate.UTC())
+	slots, total, err := s.repo.ListSlotsByRangePaginated(ctx, tx, input.PhotographerID, input.StartDate.UTC(), input.EndDate.UTC(), size, offset)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("service.list_agenda.repo_error", "err", err, "photographer_id", input.PhotographerID)
 		return ListAgendaOutput{}, derrors.Wrap(err, derrors.KindInfra, "failed to list agenda slots")
 	}
 
-	return ListAgendaOutput{Slots: slots}, nil
+	return ListAgendaOutput{Slots: slots, Total: total, Page: page, Size: size}, nil
 }
 
 func (s *photoSessionService) ensurePhotographerAgendaWithPrepared(ctx context.Context, tx *sql.Tx, input EnsureAgendaInput, prepared *preparedEnsureContext) error {
@@ -674,6 +692,12 @@ func validateListAgendaInput(input ListAgendaInput) error {
 	if input.EndDate.Before(input.StartDate) {
 		return derrors.Validation("endDate must be after or equal to startDate", nil)
 	}
+	if input.Size < 0 {
+		return derrors.Validation("size must be zero or greater", nil)
+	}
+	if input.Page < 0 {
+		return derrors.Validation("page must be zero or greater", nil)
+	}
 	return nil
 }
 
@@ -693,9 +717,14 @@ type ListAgendaInput struct {
 	PhotographerID uint64
 	StartDate      time.Time
 	EndDate        time.Time
+	Page           int
+	Size           int
 }
 
 // ListAgendaOutput defines the output for a photographer's agenda.
 type ListAgendaOutput struct {
 	Slots []photosessionmodel.PhotographerSlotInterface `json:"slots"`
+	Total int64                                         `json:"total"`
+	Page  int                                           `json:"page"`
+	Size  int                                           `json:"size"`
 }

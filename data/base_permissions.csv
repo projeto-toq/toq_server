@@ -93,3 +93,7 @@ id;name;action;description;is_active
 92;"HTTP Listing Request Photo Session";"POST:/api/v2/listings/photo-session/reserve";"Permite solicitar sessão de fotos para um listing";1
 93;"HTTP Listing Confirm Photo Session";"POST:/api/v2/listings/photo-session/confirm";"Permite confirmar sessão de fotos para um listing";1
 94;"HTTP Listing Cancel Photo Session";"POST:/api/v2/listings/photo-session/cancel";"Permite cancelar sessão de fotos para um listing";1
+95;"HTTP Photographer Get Agenda";"GET:/api/v2/photographer/agenda";"Permite fotógrafo consultar sua agenda de sessões e bloqueios";1
+96;"HTTP Photographer Create Time Off";"POST:/api/v2/photographer/agenda/time-off";"Permite fotógrafo criar período de indisponibilidade em sua agenda";1
+97;"HTTP Photographer Delete Time Off";"DELETE:/api/v2/photographer/agenda/time-off";"Permite fotógrafo deletar período de indisponibilidade em sua agenda";1
+98;"HTTP Photographer Update Session Status";"POST:/api/v2/photographer/sessions/status";"Permite fotógrafo atualizar o status de uma sessão de fotos";1

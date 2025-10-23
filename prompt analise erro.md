@@ -5,10 +5,10 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Durante a última refatoração, para implementar o item ->Criar endpoints para fotógrafos tratarem pendências de sessões (aceitar/recusar), do plano /docs/photogrpher_agenda_plan.md, o programador desrespeitou várias regras de arquitetura e boas práticas e as regras do toq_dev_go_guide.md, resultando em código que não segue o padrão esperado. adicionalmente parou o implementação no meio deixando erros no código e inconsistências.
-
-Assim, é necessário revisar o código, o manual e o plano de implementação, identificar os problemas, e propor um plano detalhado para corrigir o código e completar a implementação corretamente.
-
+Os novos endpoints criados para fotógrafos gerenciarem suas agendas e aceitarem/recusarem sessões de fotos necessitam:
+- POST /photographer/agenda deveeria ser GET /photographer/agenda com parâmetros de query e paginação
+- POST /photographer/agenda/time-off deve ter exemplo de utilização na documentação Swagger
+- POST /photographer/sessions/{sessionId}/status deve ser passar o paramentro via body e não por param e com exemplo de utilização na documentação Swagger.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

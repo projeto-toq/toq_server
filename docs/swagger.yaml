@@ -980,12 +980,73 @@ definitions:
       tokens:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateTimeOffRequest:
+    properties:
+      endDate:
+        example: "2023-11-01T18:00:00-03:00"
+        type: string
+      holidayCalendarId:
+        example: 1
+        type: integer
+      horizonMonths:
+        example: 2
+        type: integer
+      reason:
+        example: Attending workshop
+        type: string
+      startDate:
+        example: "2023-11-01T09:00:00-03:00"
+        type: string
+      timezone:
+        example: America/Sao_Paulo
+        type: string
+      workdayEndHour:
+        example: 18
+        type: integer
+      workdayStartHour:
+        example: 9
+        type: integer
+    required:
+    - endDate
+    - horizonMonths
+    - startDate
+    - timezone
+    - workdayEndHour
+    - workdayStartHour
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse:
     properties:
       message:
         type: string
       tokens:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest:
+    properties:
+      holidayCalendarId:
+        example: 1
+        type: integer
+      horizonMonths:
+        example: 2
+        type: integer
+      timeOffId:
+        example: 42
+        type: integer
+      timezone:
+        example: America/Sao_Paulo
+        type: string
+      workdayEndHour:
+        example: 18
+        type: integer
+      workdayStartHour:
+        example: 9
+        type: integer
+    required:
+    - horizonMonths
+    - timeOffId
+    - timezone
+    - workdayEndHour
+    - workdayStartHour
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingRequest:
     properties:
@@ -1926,10 +1987,14 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest:
     properties:
+      sessionId:
+        example: 12345
+        type: integer
       status:
         example: ACCEPTED
         type: string
     required:
+    - sessionId
     - status
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateUserRequest:
@@ -2140,48 +2205,16 @@ definitions:
         example: true
         type: boolean
     type: object
-  github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput:
-    properties:
-      holidayCalendarID:
-        type: integer
-      horizonMonths:
-        type: integer
-      photographerID:
-        type: integer
-      timeOffID:
-        type: integer
-      timezone:
-        type: string
-      workdayEndHour:
-        type: integer
-      workdayStartHour:
-        type: integer
-    type: object
   github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListAgendaOutput:
     properties:
+      page:
+        type: integer
+      size:
+        type: integer
       slots:
         items: {}
         type: array
-    type: object
-  github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput:
-    properties:
-      endDate:
-        type: string
-      holidayCalendarID:
-        type: integer
-      horizonMonths:
-        type: integer
-      photographerID:
-        type: integer
-      reason:
-        type: string
-      startDate:
-        type: string
-      timezone:
-        type: string
-      workdayEndHour:
-        type: integer
-      workdayStartHour:
+      total:
         type: integer
     type: object
   ? github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingExchangePlaceRequest
@@ -2199,18 +2232,6 @@ definitions:
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64:
     type: object
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-string:
-    type: object
-  internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest:
-    properties:
-      endDate:
-        example: "2023-10-31T23:59:59Z"
-        type: string
-      startDate:
-        example: "2023-10-01T00:00:00Z"
-        type: string
-    required:
-    - endDate
-    - startDate
     type: object
 externalDocs:
   description: OpenAPI
@@ -6170,18 +6191,28 @@ paths:
       tags:
       - Listings
   /photographer/agenda:
-    post:
-      consumes:
-      - application/json
+    get:
       description: Retrieves the photographer's agenda, including available and blocked
         slots, within a given date range.
       parameters:
-      - description: Date range for the agenda
-        in: body
-        name: input
+      - description: Start date in RFC3339 format
+        in: query
+        name: startDate
         required: true
-        schema:
-          $ref: '#/definitions/internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest'
+        type: string
+      - description: End date in RFC3339 format
+        in: query
+        name: endDate
+        required: true
+        type: string
+      - description: Page number (defaults to 1)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (defaults to 20, max 100)
+        in: query
+        name: size
+        type: integer
       produces:
       - application/json
       responses:
@@ -6207,12 +6238,12 @@ paths:
       description: Removes an existing time-off period for the authenticated photographer,
         making slots available again.
       parameters:
-      - description: Delete Time-Off Input
+      - description: Delete Time-Off payload
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput'
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest'
       produces:
       - application/json
       responses:
@@ -6244,12 +6275,12 @@ paths:
       description: Registers a new time-off period for the authenticated photographer,
         blocking their agenda.
       parameters:
-      - description: Time-Off Input
+      - description: Time-Off payload
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput'
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateTimeOffRequest'
       produces:
       - application/json
       responses:
@@ -6273,16 +6304,11 @@ paths:
       summary: Create Photographer Time-Off
       tags:
       - Photo Session
-  /photographer/sessions/{sessionId}/status:
+  /photographer/sessions/status:
     post:
       consumes:
       - application/json
       parameters:
-      - description: Session ID
-        in: path
-        name: sessionId
-        required: true
-        type: integer
       - description: Status update request
         in: body
         name: request

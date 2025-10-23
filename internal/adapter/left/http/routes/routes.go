@@ -357,8 +357,8 @@ func RegisterPhotographerRoutes(
 	{
 		agenda := photographer.Group("/agenda")
 		{
-			// POST /api/v2/photographer/agenda
-			agenda.POST("", photoSessionHandler.ListAgenda)
+			// GET /api/v2/photographer/agenda
+			agenda.GET("", photoSessionHandler.ListAgenda)
 
 			// POST /api/v2/photographer/agenda/time-off
 			agenda.POST("/time-off", photoSessionHandler.CreateTimeOff)
@@ -369,7 +369,7 @@ func RegisterPhotographerRoutes(
 
 		sessions := photographer.Group("/sessions")
 		{
-			sessions.POST("/:sessionId/status", photoSessionHandler.UpdateSessionStatus)
+			sessions.POST("/status", photoSessionHandler.UpdateSessionStatus)
 		}
 	}
 }

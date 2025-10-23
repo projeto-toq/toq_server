@@ -5830,11 +5830,8 @@ const docTemplate = `{
             }
         },
         "/photographer/agenda": {
-            "post": {
+            "get": {
                 "description": "Retrieves the photographer's agenda, including available and blocked slots, within a given date range.",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -5844,13 +5841,30 @@ const docTemplate = `{
                 "summary": "List Photographer Agenda",
                 "parameters": [
                     {
-                        "description": "Date range for the agenda",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest"
-                        }
+                        "type": "string",
+                        "description": "Start date in RFC3339 format",
+                        "name": "startDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date in RFC3339 format",
+                        "name": "endDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (defaults to 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (defaults to 20, max 100)",
+                        "name": "size",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -5890,12 +5904,12 @@ const docTemplate = `{
                 "summary": "Create Photographer Time-Off",
                 "parameters": [
                     {
-                        "description": "Time-Off Input",
+                        "description": "Time-Off payload",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateTimeOffRequest"
                         }
                     }
                 ],
@@ -5942,12 +5956,12 @@ const docTemplate = `{
                 "summary": "Delete Photographer Time-Off",
                 "parameters": [
                     {
-                        "description": "Delete Time-Off Input",
+                        "description": "Delete Time-Off payload",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest"
                         }
                     }
                 ],
@@ -5984,7 +5998,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/photographer/sessions/{sessionId}/status": {
+        "/photographer/sessions/status": {
             "post": {
                 "security": [
                     {
@@ -6002,13 +6016,6 @@ const docTemplate = `{
                 ],
                 "summary": "Accept or reject a photo session",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Session ID",
-                        "name": "sessionId",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "Status update request",
                         "name": "request",
@@ -9153,6 +9160,51 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateTimeOffRequest": {
+            "type": "object",
+            "required": [
+                "endDate",
+                "horizonMonths",
+                "startDate",
+                "timezone",
+                "workdayEndHour",
+                "workdayStartHour"
+            ],
+            "properties": {
+                "endDate": {
+                    "type": "string",
+                    "example": "2023-11-01T18:00:00-03:00"
+                },
+                "holidayCalendarId": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "horizonMonths": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "Attending workshop"
+                },
+                "startDate": {
+                    "type": "string",
+                    "example": "2023-11-01T09:00:00-03:00"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
+                },
+                "workdayEndHour": {
+                    "type": "integer",
+                    "example": 18
+                },
+                "workdayStartHour": {
+                    "type": "integer",
+                    "example": 9
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse": {
             "type": "object",
             "properties": {
@@ -9161,6 +9213,42 @@ const docTemplate = `{
                 },
                 "tokens": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest": {
+            "type": "object",
+            "required": [
+                "horizonMonths",
+                "timeOffId",
+                "timezone",
+                "workdayEndHour",
+                "workdayStartHour"
+            ],
+            "properties": {
+                "holidayCalendarId": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "horizonMonths": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "timeOffId": {
+                    "type": "integer",
+                    "example": 42
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
+                },
+                "workdayEndHour": {
+                    "type": "integer",
+                    "example": 18
+                },
+                "workdayStartHour": {
+                    "type": "integer",
+                    "example": 9
                 }
             }
         },
@@ -10583,9 +10671,14 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest": {
             "type": "object",
             "required": [
+                "sessionId",
                 "status"
             ],
             "properties": {
+                "sessionId": {
+                    "type": "integer",
+                    "example": 12345
+                },
                 "status": {
                     "type": "string",
                     "example": "ACCEPTED"
@@ -10889,69 +10982,20 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.DeleteTimeOffInput": {
-            "type": "object",
-            "properties": {
-                "holidayCalendarID": {
-                    "type": "integer"
-                },
-                "horizonMonths": {
-                    "type": "integer"
-                },
-                "photographerID": {
-                    "type": "integer"
-                },
-                "timeOffID": {
-                    "type": "integer"
-                },
-                "timezone": {
-                    "type": "string"
-                },
-                "workdayEndHour": {
-                    "type": "integer"
-                },
-                "workdayStartHour": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListAgendaOutput": {
             "type": "object",
             "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
                 "slots": {
                     "type": "array",
                     "items": {}
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.TimeOffInput": {
-            "type": "object",
-            "properties": {
-                "endDate": {
-                    "type": "string"
                 },
-                "holidayCalendarID": {
-                    "type": "integer"
-                },
-                "horizonMonths": {
-                    "type": "integer"
-                },
-                "photographerID": {
-                    "type": "integer"
-                },
-                "reason": {
-                    "type": "string"
-                },
-                "startDate": {
-                    "type": "string"
-                },
-                "timezone": {
-                    "type": "string"
-                },
-                "workdayEndHour": {
-                    "type": "integer"
-                },
-                "workdayStartHour": {
+                "total": {
                     "type": "integer"
                 }
             }
@@ -10979,23 +11023,6 @@ const docTemplate = `{
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-string": {
             "type": "object"
-        },
-        "internal_adapter_left_http_handlers_photo_session_handlers.ListAgendaRequest": {
-            "type": "object",
-            "required": [
-                "endDate",
-                "startDate"
-            ],
-            "properties": {
-                "endDate": {
-                    "type": "string",
-                    "example": "2023-10-31T23:59:59Z"
-                },
-                "startDate": {
-                    "type": "string",
-                    "example": "2023-10-01T00:00:00Z"
-                }
-            }
         }
     },
     "securityDefinitions": {

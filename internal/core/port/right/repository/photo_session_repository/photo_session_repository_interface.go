@@ -21,6 +21,7 @@ type PhotoSessionRepositoryInterface interface {
 	BulkUpsertSlots(ctx context.Context, tx *sql.Tx, slots []photosessionmodel.PhotographerSlotInterface) error
 	DeleteSlotsOutsideRange(ctx context.Context, tx *sql.Tx, photographerID uint64, windowStart, windowEnd time.Time) (int64, error)
 	ListSlotsByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerSlotInterface, error)
+	ListSlotsByRangePaginated(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time, limit, offset int) ([]photosessionmodel.PhotographerSlotInterface, int64, error)
 	ListSlotsForPeriod(ctx context.Context, tx *sql.Tx, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerSlotInterface, error)
 	CreateTimeOff(ctx context.Context, tx *sql.Tx, timeOff photosessionmodel.PhotographerTimeOffInterface) (uint64, error)
 	DeleteTimeOff(ctx context.Context, tx *sql.Tx, timeOffID uint64) error
