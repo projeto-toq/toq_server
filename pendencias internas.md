@@ -10,5 +10,19 @@
 - Garantir que todos os GET List tenha campos com wildcards (*)
 - User_adapter tem funções de token no arquivo da interface
 - Permission.service está poluindo tracing com startpermission centralizado
-
-
+- o bucket S3 que hoje se chama
+    toq-app-media
+    |- 1
+    |- 2
+    ...
+    deve ser renomeado para:
+    toq-app-medias
+    |- users
+       |- 1
+       |- 2
+       ...
+    |- listings
+       |- 1
+       |- 2
+       ...
+- photo_session_service.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
