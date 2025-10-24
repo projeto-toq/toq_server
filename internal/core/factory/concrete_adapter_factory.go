@@ -253,12 +253,18 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	slog.Info("Creating HTTP handlers")
 
 	// Create user handler using the adapter
-	userHandler := userhandlers.NewUserHandlerAdapter(
+	userHandlerPort := userhandlers.NewUserHandlerAdapter(
 		userService,
 		globalService,
 		complexService,
 		permissionService,
 	)
+
+	userHandler, ok := userHandlerPort.(*userhandlers.UserHandler)
+	if !ok {
+		slog.Error("factory.http_handlers.user_cast_failed")
+		return HTTPHandlers{}
+	}
 
 	// Create auth handler using the adapter
 	authHandler := authhandlers.NewAuthHandlerAdapter(
@@ -268,21 +274,39 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	)
 
 	// Create listing handler using the adapter
-	listingHandler := listinghandlers.NewListingHandlerAdapter(
+	listingHandlerPort := listinghandlers.NewListingHandlerAdapter(
 		listingService,
 		globalService,
 		complexService,
 	)
 
+	listingHandler, ok := listingHandlerPort.(*listinghandlers.ListingHandler)
+	if !ok {
+		slog.Error("factory.http_handlers.listing_cast_failed")
+		return HTTPHandlers{}
+	}
+
 	// Create schedule handler using the adapter
-	scheduleHandler := schedulehandlers.NewScheduleHandlerAdapter(
+	scheduleHandlerPort := schedulehandlers.NewScheduleHandlerAdapter(
 		scheduleService,
 	)
 
+	scheduleHandler, ok := scheduleHandlerPort.(*schedulehandlers.ScheduleHandler)
+	if !ok {
+		slog.Error("factory.http_handlers.schedule_cast_failed")
+		return HTTPHandlers{}
+	}
+
 	// Create holiday handler using the adapter
-	holidayHandler := holidayhandlers.NewHolidayHandlerAdapter(
+	holidayHandlerPort := holidayhandlers.NewHolidayHandlerAdapter(
 		holidayService,
 	)
+
+	holidayHandler, ok := holidayHandlerPort.(*holidayhandlers.HolidayHandler)
+	if !ok {
+		slog.Error("factory.http_handlers.holiday_cast_failed")
+		return HTTPHandlers{}
+	}
 
 	// Create admin handler using the adapter
 	adminHandler := adminhandlers.NewAdminHandlerAdapter(
@@ -292,9 +316,15 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		complexService,
 	)
 
-	complexHandler := complexhandlers.NewComplexHandlerAdapter(
+	complexHandlerPort := complexhandlers.NewComplexHandlerAdapter(
 		complexService,
 	)
+
+	complexHandler, ok := complexHandlerPort.(*complexhandlers.ComplexHandler)
+	if !ok {
+		slog.Error("factory.http_handlers.complex_cast_failed")
+		return HTTPHandlers{}
+	}
 
 	photoSessionHandler := photosessionhandlers.NewPhotoSessionHandler(
 		photoSessionService,

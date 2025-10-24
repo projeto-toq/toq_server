@@ -4,6 +4,14 @@ import (
 	"context"
 
 	metricshandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers"
+	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
+	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
+	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
+	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
+	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
+	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
+	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
@@ -69,15 +77,15 @@ type RepositoryAdapters struct {
 
 // HTTPHandlers agrupa todos os handlers HTTP
 type HTTPHandlers struct {
-	UserHandler         interface{}
-	ListingHandler      interface{}
-	AuthHandler         interface{}
+	UserHandler         *userhandlers.UserHandler
+	ListingHandler      *listinghandlers.ListingHandler
+	AuthHandler         *authhandlers.AuthHandler
 	MetricsHandler      *metricshandlers.MetricsHandler
-	AdminHandler        interface{}
-	ComplexHandler      interface{}
-	ScheduleHandler     interface{}
-	HolidayHandler      interface{}
-	PhotoSessionHandler interface{}
+	AdminHandler        *adminhandlers.AdminHandler
+	ComplexHandler      *complexhandlers.ComplexHandler
+	ScheduleHandler     *schedulehandlers.ScheduleHandler
+	HolidayHandler      *holidayhandlers.HolidayHandler
+	PhotoSessionHandler *photosessionhandlers.PhotoSessionHandler
 }
 
 // MetricsAdapter contém o adapter de métricas

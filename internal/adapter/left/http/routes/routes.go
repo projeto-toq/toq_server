@@ -57,15 +57,15 @@ func SetupRoutes(
 		})
 	}
 
-	// Convert handlers to typed handlers
-	authHandler := handlers.AuthHandler.(*authhandlers.AuthHandler)
-	userHandler := handlers.UserHandler.(*userhandlers.UserHandler)
-	listingHandler := handlers.ListingHandler.(*listinghandlers.ListingHandler)
-	adminHandler := handlers.AdminHandler.(*adminhandlers.AdminHandler)
-	complexHandler := handlers.ComplexHandler.(*complexhandlers.ComplexHandler)
-	scheduleHandler := handlers.ScheduleHandler.(*schedulehandlers.ScheduleHandler)
-	holidayHandler := handlers.HolidayHandler.(*holidayhandlers.HolidayHandler)
-	photoSessionHandler := handlers.PhotoSessionHandler.(*photosessionhandlers.PhotoSessionHandler)
+	// Handlers já tipados pela factory
+	authHandler := handlers.AuthHandler
+	userHandler := handlers.UserHandler
+	listingHandler := handlers.ListingHandler
+	adminHandler := handlers.AdminHandler
+	complexHandler := handlers.ComplexHandler
+	scheduleHandler := handlers.ScheduleHandler
+	holidayHandler := handlers.HolidayHandler
+	photoSessionHandler := handlers.PhotoSessionHandler
 
 	// API base routes (v2)
 	base := "/api/v2"
