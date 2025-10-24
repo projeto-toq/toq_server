@@ -274,8 +274,7 @@ func (c *config) InitializeActivityTracker() error {
 // InitializeGoRoutines inicializa as goroutines do sistema
 func (c *config) InitializeGoRoutines() {
 	if !c.workersEnabled {
-		slog.Info("Workers desabilitados para este ambiente; ignorando inicialização de goroutines",
-			"environment", c.runtimeEnvironment)
+		slog.Info("Workers desabilitados para este ambiente; ignorando inicialização de goroutines")
 		return
 	}
 	baseCtx := coreutils.ContextWithLogger(c.context)
@@ -337,8 +336,7 @@ func (c *config) InitializeGoRoutines() {
 // SetActivityTrackerUserService conecta o activity tracker ao user service
 func (c *config) SetActivityTrackerUserService() {
 	if !c.workersEnabled {
-		slog.Info("Workers desabilitados; link entre ActivityTracker e UserService não será aplicado",
-			"environment", c.runtimeEnvironment)
+		slog.Info("Workers desabilitados; link entre ActivityTracker e UserService não será aplicado")
 		return
 	}
 	if c.activityTracker != nil && c.userService != nil {
@@ -352,8 +350,7 @@ func (c *config) SetActivityTrackerUserService() {
 // InitializeTempBlockCleaner inicializa o worker de limpeza de bloqueios temporários
 func (c *config) InitializeTempBlockCleaner() error {
 	if !c.workersEnabled {
-		slog.Info("Workers desabilitados; TempBlockCleaner não será inicializado",
-			"environment", c.runtimeEnvironment)
+		slog.Info("Workers desabilitados; TempBlockCleaner não será inicializado")
 		return nil
 	}
 	if c.permissionService == nil {

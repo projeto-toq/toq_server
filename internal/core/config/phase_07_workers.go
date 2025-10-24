@@ -23,8 +23,7 @@ func (b *Bootstrap) Phase07_StartBackgroundWorkers() error {
 			return NewBootstrapError("Phase07", "activity_tracker_link", "Failed to link activity tracker to user service", err)
 		}
 	} else {
-		b.logger.Info("Workers desabilitados para o ambiente atual; fase 7 vai pular inicialização",
-			"environment", b.config.GetRuntimeEnvironment())
+		b.logger.Info("Workers desabilitados para o ambiente atual; fase 7 vai pular inicialização")
 	}
 
 	// 3. Verificar schema do banco de dados (executa sempre)

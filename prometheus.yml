@@ -15,6 +15,8 @@ scrape_configs:
 
   - job_name: "toq_server_metrics" # Para obter métricas diretas da aplicação
     static_configs:
-      - targets: ["172.18.0.1:8080"] # Aplicação Go expondo métricas prometheus via /metrics
+      - targets:
+          - "host.docker.internal:8080"
+          - "host.docker.internal:18080" # instância de debug (VS Code)
     metrics_path: "/metrics"
     scrape_interval: 10s

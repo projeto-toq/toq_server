@@ -7,12 +7,14 @@ import (
 
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // PrometheusAdapter implementa MetricsPortInterface usando Prometheus
 type PrometheusAdapter struct {
-	registry *prometheus.Registry
+	registry   *prometheus.Registry
+	registerer prometheus.Registerer
 
 	// Thread-safe counter for requests in flight
 	requestsInFlightCounter int64
@@ -36,14 +38,25 @@ type PrometheusAdapter struct {
 // NewPrometheusAdapter cria uma nova instância do adapter Prometheus
 func NewPrometheusAdapter() metricsport.MetricsPortInterface {
 	registry := prometheus.NewRegistry()
+	labels := prometheus.Labels{
+		"service": "toq_server",
+	}
+	registerer := prometheus.WrapRegistererWith(labels, registry)
+	prometheus.DefaultRegisterer = registerer
+	prometheus.DefaultGatherer = registry
 
 	adapter := &PrometheusAdapter{
 		registry:                registry,
-		requestsInFlightCounter: 0, // Explicitly initialize counter to 0
+		registerer:              registerer,
+		requestsInFlightCounter: 0,
 	}
 
 	adapter.initializeMetrics()
 	adapter.registerMetrics()
+	registerCollectors(registerer,
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+	)
 
 	// Ensure the gauge starts at 0
 	adapter.httpRequestsInFlight.Set(0)
@@ -132,7 +145,7 @@ func (p *PrometheusAdapter) initializeMetrics() {
 
 // registerMetrics registra todas as métricas no registry
 func (p *PrometheusAdapter) registerMetrics() {
-	p.registry.MustRegister(
+	registerCollectors(p.registerer,
 		p.httpRequestsTotal,
 		p.httpRequestDuration,
 		p.httpRequestsInFlight,
@@ -217,4 +230,18 @@ func (p *PrometheusAdapter) GetMetricsHandler() interface{} {
 	return promhttp.HandlerFor(p.registry, promhttp.HandlerOpts{
 		EnableOpenMetrics: true,
 	})
+}
+
+func registerCollectors(reg prometheus.Registerer, collectors ...prometheus.Collector) {
+	for _, collector := range collectors {
+		if collector == nil {
+			continue
+		}
+		if err := reg.Register(collector); err != nil {
+			if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+				reg.Unregister(are.ExistingCollector)
+				_ = reg.Register(collector)
+			}
+		}
+	}
 }

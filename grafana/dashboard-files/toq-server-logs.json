@@ -73,7 +73,7 @@
                         "uid": "loki"
                     },
                     "editorMode": "code",
-                    "expr": "sum by (severity) (count_over_time({service_name=\"toq_server\", environment=~\"$environment\", request_id=~\"$requestId\"}[$__interval]))",
+                    "expr": "sum by (severity) (count_over_time({service_name=\"toq_server\", request_id=~\"$requestId\"}[$__interval]))",
                     "legendFormat": "{{severity}}",
                     "queryType": "range",
                     "refId": "A"
@@ -105,14 +105,6 @@
             "options": {
                 "dedupStrategy": "none",
                 "enableLogDetails": true,
-                "derivedFields": [
-                    {
-                        "matcherRegex": "trace_id=\\\"([^\\\"]+)\\\"",
-                        "name": "TraceID",
-                        "url": "http://localhost:16686/trace/${__value.raw}",
-                        "urlDisplayLabel": "Ver Trace"
-                    }
-                ],
                 "prettifyLogMessage": true,
                 "showCommonLabels": true,
                 "showLabels": true,
@@ -125,7 +117,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "{service_name=\"toq_server\", environment=~\"$environment\", request_id=~\"$requestId\"}",
+                    "expr": "{service_name=\"toq_server\", request_id=~\"$requestId\"}",
                     "queryType": "range",
                     "refId": "A"
                 }
@@ -183,7 +175,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "sum by (service_name, severity, environment, request_id) (count_over_time({service_name=\"toq_server\", environment=~\"$environment\", request_id=~\"$requestId\", severity=\"ERROR\"}[$__interval]))",
+                    "expr": "sum by (service_name, severity, request_id) (count_over_time({service_name=\"toq_server\", request_id=~\"$requestId\", severity=\"ERROR\"}[$__interval]))",
                     "format": "table",
                     "queryType": "range",
                     "refId": "A"
@@ -207,27 +199,7 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\"}, environment)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Ambiente",
-                "multi": false,
-                "name": "environment",
-                "allValue": ".*",
-                "options": [],
-                "query": "label_values({service_name=\"toq_server\"}, environment)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 0,
-                "type": "query"
-            },
-            {
-                "datasource": {
-                    "type": "loki",
-                    "uid": "loki"
-                },
-                "definition": "label_values({service_name=\"toq_server\", environment=~\"$environment\"}, request_id)",
+                "definition": "label_values({service_name=\"toq_server\"}, request_id)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Request ID",
@@ -235,11 +207,11 @@
                 "name": "requestId",
                 "allValue": ".*",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\", environment=~\"$environment\"}, request_id)",
+                "query": "label_values({service_name=\"toq_server\"}, request_id)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
-                "sort": 1,
+                "sort": 0,
                 "type": "query"
             }
         ]

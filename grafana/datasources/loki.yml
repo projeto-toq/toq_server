@@ -9,8 +9,9 @@ datasources:
     jsonData:
       maxLines: 1000
       derivedFields:
-        - name: TraceID
+        - name: trace_id
           matcherRegex: '"trace_id":"([0-9a-f]+)"'
-          url: http://jaeger:16686/trace/$${__value.raw}
+          datasourceUid: jaeger
+          url: /trace/$${__value.raw}
           urlDisplayLabel: Jaeger Trace
     editable: false

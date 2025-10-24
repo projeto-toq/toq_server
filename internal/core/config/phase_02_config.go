@@ -63,23 +63,39 @@ func (b *Bootstrap) applyRuntimeEnvironmentOverrides() error {
 			if port := strings.TrimSpace(profile.HTTP.Port); port != "" {
 				b.env.HTTP.Port = port
 			}
-			if endpoint := strings.TrimSpace(profile.Telemetry.Endpoint); endpoint != "" {
-				b.env.TELEMETRY.OTLP.Endpoint = endpoint
-			}
-			if profile.Telemetry.Insecure != nil {
-				b.env.TELEMETRY.OTLP.Insecure = *profile.Telemetry.Insecure
-			}
 			if profile.Telemetry.Enabled != nil {
 				b.env.TELEMETRY.Enabled = *profile.Telemetry.Enabled
 			}
-			if metricsPort := strings.TrimSpace(profile.Telemetry.MetricsPort); metricsPort != "" {
-				b.env.TELEMETRY.METRICS.Port = metricsPort
+			if profile.Telemetry.Traces != nil && profile.Telemetry.Traces.Enabled != nil {
+				b.env.TELEMETRY.TRACES.Enabled = *profile.Telemetry.Traces.Enabled
+			}
+			if profile.Telemetry.OTLP != nil {
+				if profile.Telemetry.OTLP.Enabled != nil {
+					b.env.TELEMETRY.OTLP.Enabled = *profile.Telemetry.OTLP.Enabled
+				}
+				if endpoint := strings.TrimSpace(profile.Telemetry.OTLP.Endpoint); endpoint != "" {
+					b.env.TELEMETRY.OTLP.Endpoint = endpoint
+				}
+				if profile.Telemetry.OTLP.Insecure != nil {
+					b.env.TELEMETRY.OTLP.Insecure = *profile.Telemetry.OTLP.Insecure
+				}
+			}
+			if profile.Telemetry.Metrics != nil {
+				if profile.Telemetry.Metrics.Enabled != nil {
+					b.env.TELEMETRY.METRICS.Enabled = *profile.Telemetry.Metrics.Enabled
+				}
+				if metricsPort := strings.TrimSpace(profile.Telemetry.Metrics.Port); metricsPort != "" {
+					b.env.TELEMETRY.METRICS.Port = metricsPort
+				}
+			}
+			if profile.Telemetry.Logs != nil && profile.Telemetry.Logs.Export != nil && profile.Telemetry.Logs.Export.Enabled != nil {
+				b.env.TELEMETRY.LOGS.EXPORT.Enabled = *profile.Telemetry.Logs.Export.Enabled
 			}
 			if profile.Workers.Enabled != nil {
 				workersEnabled = *profile.Workers.Enabled
 			}
 		} else {
-			slog.Warn("Nenhum profile override encontrado para o ambiente", "environment", environmentName)
+			slog.Warn("Nenhum profile override encontrado para ambiente configurado")
 		}
 	}
 
@@ -90,15 +106,13 @@ func (b *Bootstrap) applyRuntimeEnvironmentOverrides() error {
 	cfg.runtimeEnvironment = environmentName
 	cfg.workersEnabled = workersEnabled
 
-	if err := os.Setenv("OTEL_RESOURCE_ENVIRONMENT", environmentName); err != nil {
-		slog.Warn("Falha ao propagar OTEL_RESOURCE_ENVIRONMENT", "error", err)
-	}
-
 	slog.Info("Overrides de ambiente aplicados",
-		"environment", environmentName,
 		"http_port", b.env.HTTP.Port,
 		"workers_enabled", workersEnabled,
-		"telemetry_endpoint", b.env.TELEMETRY.OTLP.Endpoint)
+		"telemetry_enabled", b.env.TELEMETRY.Enabled,
+		"telemetry_otlp_enabled", b.env.TELEMETRY.OTLP.Enabled,
+		"telemetry_metrics_enabled", b.env.TELEMETRY.METRICS.Enabled,
+		"telemetry_logs_export_enabled", b.env.TELEMETRY.LOGS.EXPORT.Enabled)
 
 	return nil
 }
@@ -379,8 +393,8 @@ func (b *Bootstrap) validateTelemetryConfig() error {
 		}
 	}
 
-	// Validar porta de métricas se especificada
-	if b.env.TELEMETRY.METRICS.Port != "" {
+	// Validar porta de métricas apenas quando métricas estiverem habilitadas
+	if b.env.TELEMETRY.METRICS.Enabled && b.env.TELEMETRY.METRICS.Port != "" {
 		portStr := b.env.TELEMETRY.METRICS.Port
 		// Remover ":" incondicionalmente
 		portStr = strings.TrimPrefix(portStr, ":")

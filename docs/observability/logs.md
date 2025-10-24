@@ -18,7 +18,6 @@
 ## Variáveis de Ambiente Importantes
 - `LOKI_RETENTION_DAYS`: dias de retenção do Loki. Dev = `7`, sugerido prod = `3`.
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: endpoint do collector (compartilhado por métricas/traces/logs).
-- `OTEL_RESOURCE_ENVIRONMENT`: rótulo do ambiente (`development`, `staging`, `production`).
 - `OTEL_EXPORTER_OTLP_INSECURE`: defina `false` quando houver TLS.
 
 > Altere valores via `.env` para manter os stacks sincronizados. PR-05 não muda defaults, apenas registra expectativas.
@@ -42,15 +41,14 @@ Principais atualizações (PR-05):
 
 ### Painéis
 1. **Eventos por severidade** — Timeseries usando `count_over_time`, segmentado por `severity`.
-2. **Fluxo de logs** — Painel de logs com labels comuns visíveis (`environment`, `request_id`, `trace_id`).
+2. **Fluxo de logs** — Painel de logs com labels comuns visíveis (`request_id`, `trace_id`).
 3. **Erros por serviço** — Tabela agregada filtrável por `request_id` via variável.
 
 ### Variáveis de Template
 ```text
-environment: label_values({service_name="toq_server"}, environment)
-requestId: label_values({service_name="toq_server", environment=~"$environment"}, request_id)
+requestId: label_values({service_name="toq_server"}, request_id)
 ```
-`requestId` permite selecionar um ID específico ou usar `.*` (valor padrão) para mostrar todos.
+Selecione um `request_id` específico ou utilize `.*` (valor padrão) para todos os registros.
 
 ### Derived Fields
 No painel de logs, o campo `trace_id` está configurado como link para o Jaeger (`http://localhost:16686/trace/${__value.raw}` por padrão). Ajuste a URL conforme ambiente.
@@ -63,7 +61,7 @@ No painel de logs, o campo `trace_id` está configurado como link para o Jaeger 
 
 ## Checklist de Smoke
 - Gera logs INFO/ERROR após iniciar o stack.
-- No Grafana Explore, confirma labels `service_name`, `environment`, `severity`, `request_id`, `trace_id`, `client_ip` e `user_agent`.
+- No Grafana Explore, confirma labels `service_name`, `severity`, `request_id`, `trace_id`, `client_ip` e `user_agent`.
 - Valida `request_id` derivado dos middlewares (RequestID + ContextWithLogger).
 - Garante navegação Jaeger pela derived field.
 - Ajusta `LOKI_RETENTION_DAYS` (ex.: `3`) e reinicia Loki para confirmar retenção.

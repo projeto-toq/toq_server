@@ -5,6 +5,16 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu: {}
+      load: {}
+      memory: {}
+      filesystem: {}
+      network: {}
+      process:
+        mute_process_name_error: true
 
 processors:
   batch:
@@ -15,8 +25,8 @@ processors:
     limit_mib: 512
   resource:
     attributes:
-      - key: environment
-        value: ${env:OTEL_RESOURCE_ENVIRONMENT}
+      - key: service.name
+        value: toq_server
         action: upsert
 
 exporters:
@@ -27,7 +37,7 @@ exporters:
     const_labels:
       service: "toq_server"
   otlp:
-    endpoint: toq_server-jaeger-1:4317
+    endpoint: jaeger:4317
     tls:
       insecure: true
   otlphttp/loki:
@@ -49,7 +59,7 @@ service:
       processors: [memory_limiter, batch, resource]
       exporters: [debug, otlp]
     metrics:
-      receivers: [otlp]
+      receivers: [otlp, hostmetrics]
       processors: [memory_limiter, batch, resource]
       exporters: [prometheus, debug]
     logs:

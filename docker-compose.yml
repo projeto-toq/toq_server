@@ -37,6 +37,8 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - toq-network
 
@@ -59,6 +61,8 @@ services:
       - ./grafana/dashboard-files:/var/lib/grafana/dashboards
     depends_on:
       - prometheus
+      - loki
+      - jaeger
     networks:
       - toq-network
 
@@ -84,8 +88,6 @@ services:
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    environment:
-      - OTEL_RESOURCE_ENVIRONMENT=${OTEL_RESOURCE_ENVIRONMENT:-development}
     ports:
       - "127.0.0.1:4317:4317" # OTLP gRPC receiver somente loopback
       - "127.0.0.1:4318:4318" # OTLP HTTP receiver somente loopback
@@ -93,6 +95,7 @@ services:
       - "127.0.0.1:8889:8889" # Exporter metrics loopback
     depends_on:
       - loki
+      - jaeger
     networks:
       - toq-network
 

@@ -7,7 +7,67 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 2) Requisição
 
-no arquivo types.go existe diversas structs que definem campos como interface{}. Ainda que esteja funcionando me parece que como sabemos o tipo de cada campo seria melhor definir o tipo correto ao invés de usar interface{}. Por favor analise o arquivo types.go e proponha um plano detalhado para alterar essas structs definindo os tipos corretos para cada campo atualmente definido como interface{}.
+Com a evolução do sistema Toq Server, é essencial garantir uma estratégia robusta de monitoramento e correlação entre métricas, logs e traces para facilitar a detecção e resolução de problemas.
+
+Abaixo está uma sugestão detalhada para implementar essa estratégia utilizando Grafana, Prometheus, Loki e Jaeger.
+
+É uma sugestão de quem tem uma visão superficial da realidade no nosso projeto. Assim, analise cuidadosamente e prepare um plano para implementação, considerando ajustes conforme necessário para o contexto específico do Toq Server, considerando o código atual, infraestrutura, docker-compose onde definimos todos os serviços exceto o proprio Toq Server, e definições do manual do projeto `docs/toq_server_go_guide.md`.
+
+Os atuais dashboards do Grafana devem ser apagados e recriados com base nesta nova estratégia.
+
+Caso sejam necessário incluir novos pontos de instrumentação no código Go (métricas, logs, traces), inclua isso no plano de implementação.
+
+---
+
+## Estratégia de Monitoramento e Correlação (Grafana + Prometheus + Loki + **Jaeger**)
+
+A estratégia principal se mantém: usar as **Golden Signals** (Prometheus) para *alertar* sobre problemas e os **Traces** (Jaeger) para *diagnosticar* a causa raiz.
+
+### 1. Golden Signals (Indicadores Essenciais de Saúde)
+
+**Origem da Métrica:** Prometheus (coletado do sistema Go via OpenTelemetry/Prometheus client).
+
+| Categoria | Indicador (Métrica) | Por que é relevante / Ação |
+| :--- | :--- | :--- |
+| **Latência** | P95 e P99 de Latência por Endpoint. | Mede a experiência dos piores usuários e identifica gargalos. Use para alertas de lentidão. |
+| **Tráfego** | QPS (Queries Per Second) total e por Endpoint. | Mede volume e demanda, essencial para planejamento de capacidade. |
+| **Erros** | Taxa de Erro 5xx (Server Errors) e Distribuição de Códigos HTTP. | **Indicador de alerta crucial.** Sobe -> ALERTA. |
+| **Saturação** | Utilização da CPU e Uso de Memória/Goroutines do Go Runtime. | Ajuda a identificar problemas de recurso antes que a latência dispare. |
+
+---
+
+### 2. Correlação Métrica-Trace-Log com Jaeger
+
+O coração da observabilidade é a capacidade de "saltar" entre as ferramentas. Como seu sistema Go está instrumentado com OpenTelemetry, ele deve injetar o **Trace ID** e o **Span ID** em tudo:
+
+1.  **Métricas (Prometheus/Grafana):** O Prometheus monitora as Golden Signals.
+2.  **Logs (Loki):** Cada log gerado no sistema Go precisa conter os campos `trace_id` e `span_id`.
+3.  **Traces (Jaeger/OTel):** O Jaeger armazena o caminho completo da requisição.
+
+#### Novo Indicador Crucial para Correlação:
+
+| Indicador | Categoria | Como usar para Correlação |
+| :--- | :--- | :--- |
+| **Latência por Componente/Span** | Tracing (Jaeger) | Qual porcentagem da latência total é gasta no Handler HTTP, na chamada de Banco de Dados, ou em um serviço externo. **Isto é o que você investiga no Jaeger após um alerta.** |
+| **Trace ID em Logs** | Logs (Loki) | Use a `Trace ID` de um *span* no Jaeger para buscar logs no Loki. |
+
+### Fluxo de Análise e Debug com Jaeger 
+
+A adaptação é puramente de *data source* no Grafana. A lógica de investigação se mantém, garantindo a correlação entre as 3 pilares:
+
+| Passo | Ação | Ferramenta | Objetivo |
+| :--- | :--- | :--- | :--- |
+| **1. Alerta** | A **Taxa de Erro 5xx** (Prometheus) ultrapassa o limite. | Grafana (Alerting) | Detectar o problema de saúde geral. |
+| **2. Pivô para Trace (Métrica -> Trace)** | No painel de Erros (Métrica no Grafana), você deve ter um painel mostrando uma amostra dos **Trace IDs** das requisições com erro (isto requer que você exponha o Trace ID como um label nas métricas, ou mais facilmente, no Log). | Grafana + Jaeger/Loki | Obter um *exemplo* de `Trace ID` de uma requisição que falhou. |
+| **3. Investigação Detalhada do Trace** | Copie o `Trace ID` e cole-o na interface do Jaeger ou use o Data Source do Jaeger no Grafana. | **Jaeger** | Ver o caminho completo do serviço. Identificar o **Span** que gerou o erro (ex: `DB Query Error`, `HTTP 500 from ServiceX`). |
+| **4. Pivô para Log (Trace -> Log)** | Dentro do Span que falhou no Jaeger, o Log geralmente contém o `Trace ID` e `Span ID`. Use o `Trace ID` para buscar todos os logs relacionados no Loki. | **Loki** | Ver o *stack trace* exato ou a mensagem de erro que a aplicação Go gerou no momento da falha. |
+
+**Como configurar a correlação no Grafana (Jaeger):**
+
+1.  **DataSource:** No seu Grafana, o Jaeger deve ser configurado como uma fonte de dados de **Tracing**.
+2.  **Links de Campos (Field Links):** No Data Source do Loki, configure um *Field Link* para que o campo `trace_id` (que está nos seus logs) aponte diretamente para o Data Source do **Jaeger**, permitindo o "salto" do Log para o Trace com um clique.
+3.  **Annotations (Opcional):** Você pode usar o Loki ou Jaeger para criar *annotations* (marcas) nos gráficos do Prometheus no Grafana, correlacionando eventos (ex: *deploy*, picos de erro) nos gráficos de métricas.
+
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

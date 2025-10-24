@@ -41,9 +41,18 @@ type Environment struct {
 			Endpoint string `yaml:"endpoint"`
 			Insecure bool   `yaml:"insecure"`
 		} `yaml:"otlp"`
+		TRACES struct {
+			Enabled bool `yaml:"enabled"`
+		} `yaml:"traces"`
 		METRICS struct {
-			Port string `yaml:"port"`
+			Enabled bool   `yaml:"enabled"`
+			Port    string `yaml:"port"`
 		} `yaml:"metrics"`
+		LOGS struct {
+			EXPORT struct {
+				Enabled bool `yaml:"enabled"`
+			} `yaml:"export"`
+		} `yaml:"logs"`
 	}
 	JWT struct {
 		Secret string `yaml:"secret"`
@@ -54,7 +63,6 @@ type Environment struct {
 		MaxSessionRotations              int `yaml:"max_session_rotations"`
 		SessionCleanerIntervalSeconds    int `yaml:"session_cleaner_interval_seconds"`
 		ValidationCleanerIntervalSeconds int `yaml:"validation_cleaner_interval_seconds"`
-		// StatusRulesPath                  string `yaml:"status_rules_path"`
 	}
 	SECURITY struct {
 		HMAC struct {
@@ -132,15 +140,31 @@ type ProfileOverrides struct {
 	HTTP struct {
 		Port string `yaml:"port"`
 	} `yaml:"http"`
-	Telemetry struct {
-		Endpoint    string `yaml:"endpoint"`
-		MetricsPort string `yaml:"metrics_port"`
-		Enabled     *bool  `yaml:"enabled"`
-		Insecure    *bool  `yaml:"insecure"`
-	} `yaml:"telemetry"`
-	Workers struct {
+	Telemetry TelemetryOverrides `yaml:"telemetry"`
+	Workers   struct {
 		Enabled *bool `yaml:"enabled"`
 	} `yaml:"workers"`
+}
+
+type TelemetryOverrides struct {
+	Enabled *bool `yaml:"enabled"`
+	OTLP    *struct {
+		Enabled  *bool  `yaml:"enabled"`
+		Endpoint string `yaml:"endpoint"`
+		Insecure *bool  `yaml:"insecure"`
+	} `yaml:"otlp"`
+	Traces *struct {
+		Enabled *bool `yaml:"enabled"`
+	} `yaml:"traces"`
+	Metrics *struct {
+		Enabled *bool  `yaml:"enabled"`
+		Port    string `yaml:"port"`
+	} `yaml:"metrics"`
+	Logs *struct {
+		Export *struct {
+			Enabled *bool `yaml:"enabled"`
+		} `yaml:"export"`
+	} `yaml:"logs"`
 }
 
 type HMACSecurityConfig struct {

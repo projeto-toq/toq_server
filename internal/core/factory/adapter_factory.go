@@ -39,7 +39,7 @@ type AdapterFactory interface {
 	CreateRepositoryAdapters(database *mysqladapter.Database) (RepositoryAdapters, error)
 
 	// CreateMetricsAdapter cria o adapter de métricas
-	CreateMetricsAdapter() *MetricsAdapter
+	CreateMetricsAdapter(runtimeEnv string) *MetricsAdapter
 
 	// CreateHTTPHandlers cria todos os handlers HTTP
 	CreateHTTPHandlers(

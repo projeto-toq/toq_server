@@ -6,10 +6,28 @@ Developer docs:
 - S3 credentials now depend on the AWS credential chain (instance profile, environment variables). Do not commit static keys; use `TOQ_S3_*` environment variables only for local overrides.
 
 ## Execução em duas instâncias (nohup + F5)
-- **Instância principal (nohup)**: execute `nohup ./bin/toq_server &` sem variáveis extras. O servidor sobe com `ENVIRONMENT=homo`, porta `:8080`, workers em execução e telemetria apontando para o collector de homologação.
-- **Instância de debug (VS Code / F5)**: configure o launch `TOQ Server (Development)` para incluir `ENVIRONMENT=dev` (já presente em `.vscode/launch.json`). Essa instância usa a porta `127.0.0.1:18080`, mantém os workers desativados e envia telemetria marcada como ambiente dev.
+- **Instância principal (nohup)**: execute `nohup ./bin/toq_server &` sem variáveis extras. O servidor sobe com `ENVIRONMENT=homo`, porta `:8080`, workers em execução e telemetria/exporters habilitados (OTLP + Prometheus + Loki).
+- **Instância de debug (VS Code / F5)**: configure o launch `TOQ Server (Development)` para incluir `ENVIRONMENT=dev` (já presente em `.vscode/launch.json`). Essa instância usa a porta `127.0.0.1:18080`, mantém os workers desativados **e não inicializa traces, métricas nem envio para o Loki** — logs permanecem no stdout/arquivo local.
 - **Sobrescrita manual de porta**: defina `TOQ_HTTP_PORT` antes de iniciar o binário para forçar uma porta específica sem alterar o YAML.
-- **Observabilidade**: ambas as instâncias continuam exportando métricas via `/metrics`; utilize o label `deployment.environment` nas consultas para diferenciar `homo` de `dev`.
+- **Observabilidade**: apenas perfis com telemetria habilitada exportam `/metrics`, spans OTLP e logs para Loki; não há mais labels de ambiente nos sinais coletados.
+
+## Observabilidade (Grafana + Prometheus + Loki + Jaeger)
+- Stack local: `docker compose up -d prometheus grafana loki otel-collector jaeger` (o serviço da aplicação roda fora do compose).
+- Endpoints expostos:
+  - Prometheus: `http://localhost:9091`, coleta `/metrics` do servidor e métricas host via collector.
+  - Grafana: `http://localhost:3000` (dashboards provisionados em `grafana/dashboard-files`).
+  - Loki: `http://localhost:3100` (logs estruturados).
+  - Jaeger: `http://localhost:16686` (traces distribuídos via OTLP).
+- Dashboards globais (pasta **TOQ Server**):
+  - `TOQ Server - Golden Signals`: latência p95/p99, taxa de erro 4xx/5xx, tráfego e saturação runtime.
+  - `TOQ Server - Dependencies`: Throughput de banco, cache, erros de infraestrutura e uso de recursos host.
+  - `TOQ Server - Observability Correlation`: visão integrada com alert pivots, logs Loki, traces Jaeger e spans lentos.
+  - `TOQ Server Logs`: exploração dedicada de logs estruturados com filtragem opcional por `request_id`.
+- Correlação rápida:
+  - Logs contêm `trace_id` e `span_id`; clique no campo derivado no painel de logs para abrir o trace no Jaeger.
+  - No Jaeger → Logs: use “View logs” no span para abrir a consulta já filtrada em Loki.
+- Prometheus dentro do compose resolve a aplicação via `host.docker.internal` (mapeado para o host). Se a instância de debug `:18080` não estiver ativa, o alvo correspondente aparecerá como `DOWN` — comportamento esperado.
+- Alertas recomendados (configurar no Grafana/Prometheus): latência p99 > 1s, taxa de erro 5xx > 1%, CPU > 85%, saturação de goroutines.
 
 ## API path conventions
 - Base path: `/api/v2`

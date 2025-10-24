@@ -70,7 +70,7 @@ type ConcreteAdapterFactory struct {
 }
 
 // CreateMetricsAdapter cria o adapter de métricas Prometheus
-func (f *ConcreteAdapterFactory) CreateMetricsAdapter() *MetricsAdapter {
+func (f *ConcreteAdapterFactory) CreateMetricsAdapter(runtimeEnv string) *MetricsAdapter {
 	slog.Info("Creating metrics adapter")
 
 	prometheusAdapter := prometheusadapter.NewPrometheusAdapter()

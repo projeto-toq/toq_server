@@ -104,7 +104,7 @@ func (b *Bootstrap) initializeTelemetry() error {
 		shutdownOtel()
 	})
 
-	b.logger.Info("✅ OpenTelemetry inicializado (tracing + metrics)")
+	b.logger.Info("✅ OpenTelemetry inicialização concluída")
 	return nil
 }
 
@@ -112,11 +112,16 @@ func (b *Bootstrap) initializeTelemetry() error {
 func (b *Bootstrap) initializeMetrics() error {
 	b.logger.Debug("Inicializando adapter de métricas Prometheus")
 
+	if !b.env.TELEMETRY.METRICS.Enabled {
+		b.logger.Info("Métricas Prometheus desabilitadas; adapter não será iniciado")
+		return nil
+	}
+
 	// Criar factory de adapters
 	adapterFactory := factory.NewAdapterFactory(b.lifecycleManager)
 
 	// Criar adapter de métricas
-	metricsAdapter := adapterFactory.CreateMetricsAdapter()
+	metricsAdapter := adapterFactory.CreateMetricsAdapter(b.config.GetRuntimeEnvironment())
 
 	// Inicializar métricas
 	ctx := context.Background()

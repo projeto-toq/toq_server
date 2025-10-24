@@ -32,16 +32,18 @@
                     },
                     "custom": {
                         "drawStyle": "line",
-                        "lineInterpolation": "monotone",
                         "lineWidth": 2,
-                        "showPoints": "never"
+                        "stacking": {
+                            "group": "db",
+                            "mode": "normal"
+                        }
                     },
-                    "unit": "s"
+                    "unit": "req/s"
                 },
                 "overrides": []
             },
             "gridPos": {
-                "h": 9,
+                "h": 8,
                 "w": 12,
                 "x": 0,
                 "y": 0
@@ -53,8 +55,8 @@
                     "placement": "bottom"
                 },
                 "tooltip": {
-                    "mode": "single",
-                    "sort": "none"
+                    "mode": "multi",
+                    "sort": "desc"
                 }
             },
             "targets": [
@@ -63,21 +65,12 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))",
-                    "legendFormat": "p95",
+                    "expr": "sum by (operation, table) (rate(database_queries_total[5m]))",
+                    "legendFormat": "{{operation}} {{table}}",
                     "refId": "A"
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "prometheus"
-                    },
-                    "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))",
-                    "legendFormat": "p99",
-                    "refId": "B"
                 }
             ],
-            "title": "Latency (p95 / p99)",
+            "title": "Database throughput",
             "type": "timeseries"
         },
         {
@@ -92,19 +85,13 @@
                     },
                     "custom": {
                         "drawStyle": "line",
-                        "lineInterpolation": "linear",
-                        "lineWidth": 2,
-                        "stacking": {
-                            "group": "Traffic",
-                            "mode": "none"
-                        }
-                    },
-                    "unit": "req/s"
+                        "lineWidth": 2
+                    }
                 },
                 "overrides": []
             },
             "gridPos": {
-                "h": 9,
+                "h": 8,
                 "w": 12,
                 "x": 12,
                 "y": 0
@@ -126,70 +113,12 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (method) (rate(http_requests_total[5m]))",
-                    "legendFormat": "{{method}}",
+                    "expr": "sum by (component, error_type) (rate(errors_total[5m]))",
+                    "legendFormat": "{{component}} {{error_type}}",
                     "refId": "A"
                 }
             ],
-            "title": "Traffic (QPS)",
-            "type": "timeseries"
-        },
-        {
-            "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "drawStyle": "line",
-                        "lineWidth": 2
-                    },
-                    "unit": "req/s"
-                },
-                "overrides": []
-            },
-            "gridPos": {
-                "h": 9,
-                "w": 12,
-                "x": 0,
-                "y": 9
-            },
-            "id": 3,
-            "options": {
-                "legend": {
-                    "displayMode": "table",
-                    "placement": "bottom"
-                },
-                "tooltip": {
-                    "mode": "single",
-                    "sort": "desc"
-                }
-            },
-            "targets": [
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "prometheus"
-                    },
-                    "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))",
-                    "legendFormat": "5xx error rate",
-                    "refId": "A"
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "prometheus"
-                    },
-                    "expr": "sum(rate(http_requests_total{status=~\"4..\"}[5m]))",
-                    "legendFormat": "4xx rate",
-                    "refId": "B"
-                }
-            ],
-            "title": "Errors per second",
+            "title": "Infra errors",
             "type": "timeseries"
         },
         {
@@ -205,16 +134,67 @@
                     "custom": {
                         "drawStyle": "line",
                         "lineWidth": 2,
-                        "showPoints": "auto"
+                        "stacking": {
+                            "group": "cache",
+                            "mode": "normal"
+                        }
                     }
                 },
                 "overrides": []
             },
             "gridPos": {
-                "h": 9,
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "id": 3,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (operation, result) (rate(cache_operations_total[5m]))",
+                    "legendFormat": "{{operation}} {{result}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Cache operations",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 2
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 9
+                "y": 8
             },
             "id": 4,
             "options": {
@@ -233,8 +213,8 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "avg(process_resident_memory_bytes)",
-                    "legendFormat": "Resident Memory",
+                    "expr": "avg(rate(process_cpu_seconds_total[1m])) * 100",
+                    "legendFormat": "CPU usage %",
                     "refId": "A"
                 },
                 {
@@ -242,12 +222,12 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "avg(go_goroutines)",
-                    "legendFormat": "Goroutines",
+                    "expr": "avg(system_memory_usage{state=\"used\"})",
+                    "legendFormat": "Host memory used",
                     "refId": "B"
                 }
             ],
-            "title": "Saturation (Memory & Goroutines)",
+            "title": "Runtime & host saturation",
             "type": "timeseries"
         }
     ],
@@ -256,7 +236,7 @@
     "style": "dark",
     "tags": [
         "toq-server",
-        "golden-signals"
+        "dependencies"
     ],
     "templating": {
         "list": []
@@ -266,7 +246,7 @@
         "to": "now"
     },
     "timezone": "",
-    "title": "TOQ Server - Golden Signals",
-    "uid": "toq-golden",
-    "version": 2
+    "title": "TOQ Server - Dependencies",
+    "uid": "toq-deps",
+    "version": 1
 }

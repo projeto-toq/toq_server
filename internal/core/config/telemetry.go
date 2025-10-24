@@ -56,28 +56,47 @@ func (tm *TelemetryManager) Initialize(ctx context.Context) (func(), error) {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	// Inicializar tracing
-	if err := tm.initializeTracing(ctx, res); err != nil {
-		return nil, fmt.Errorf("failed to initialize tracing: %w", err)
+	tracingActive := tm.env.TELEMETRY.TRACES.Enabled && tm.env.TELEMETRY.OTLP.Enabled
+	metricsActive := tm.env.TELEMETRY.METRICS.Enabled && tm.env.TELEMETRY.OTLP.Enabled
+	logsActive := tm.env.TELEMETRY.LOGS.EXPORT.Enabled && tm.env.TELEMETRY.OTLP.Enabled
+
+	if tracingActive {
+		if err := tm.initializeTracing(ctx, res); err != nil {
+			return nil, fmt.Errorf("failed to initialize tracing: %w", err)
+		}
+	} else {
+		slog.Info("Tracing pipeline not started (configuration disabled)")
 	}
 
-	// Inicializar métricas
-	if err := tm.initializeMetrics(ctx, res); err != nil {
-		return nil, fmt.Errorf("failed to initialize metrics: %w", err)
+	if metricsActive {
+		if err := tm.initializeMetrics(ctx, res); err != nil {
+			return nil, fmt.Errorf("failed to initialize metrics: %w", err)
+		}
+	} else {
+		slog.Info("Metrics pipeline not started (configuration disabled)")
 	}
 
-	// Inicializar logs
-	if err := tm.initializeLogging(ctx, res); err != nil {
-		return nil, fmt.Errorf("failed to initialize logs: %w", err)
+	if logsActive {
+		if err := tm.initializeLogging(ctx, res); err != nil {
+			return nil, fmt.Errorf("failed to initialize logs: %w", err)
+		}
+	} else {
+		slog.Info("Log export pipeline not started (configuration disabled)")
 	}
 
-	// Configurar propagators
+	if !tracingActive && !metricsActive && !logsActive {
+		slog.Info("OpenTelemetry exporters disabled; no pipeline initialized")
+		return func() {}, nil
+	}
+
+	// Configurar propagators apenas quando há pipeline ativo
 	tm.configurePropagators()
 
-	slog.Info("OpenTelemetry initialized successfully",
-		"tracing_enabled", true,
-		"metrics_enabled", true,
-		"endpoint", tm.env.TELEMETRY.OTLP.Endpoint)
+	slog.Info("OpenTelemetry initialized",
+		"tracing_enabled", tracingActive,
+		"metrics_enabled", metricsActive,
+		"logs_export_enabled", logsActive,
+		"otlp_endpoint", tm.env.TELEMETRY.OTLP.Endpoint)
 
 	// Retornar função de shutdown
 	return tm.shutdown, nil
@@ -85,8 +104,7 @@ func (tm *TelemetryManager) Initialize(ctx context.Context) (func(), error) {
 
 // initializeLogging configura a exportação de logs via OpenTelemetry
 func (tm *TelemetryManager) initializeLogging(ctx context.Context, res *resource.Resource) error {
-	if !tm.env.TELEMETRY.OTLP.Enabled {
-		slog.Info("OTLP logs disabled")
+	if !tm.env.TELEMETRY.LOGS.EXPORT.Enabled || !tm.env.TELEMETRY.OTLP.Enabled {
 		return nil
 	}
 
@@ -149,9 +167,6 @@ func (tm *TelemetryManager) createResource() (*resource.Resource, error) {
 		semconv.ServiceVersion(globalmodel.AppVersion),
 		semconv.ServiceInstanceID(instanceID),
 	}
-	if tm.runtimeEnv != "" {
-		attributes = append(attributes, attribute.String("deployment.environment", tm.runtimeEnv))
-	}
 
 	return resource.Merge(
 		resource.Default(),
@@ -163,8 +178,7 @@ func (tm *TelemetryManager) createResource() (*resource.Resource, error) {
 
 // initializeTracing configura o tracing OpenTelemetry
 func (tm *TelemetryManager) initializeTracing(ctx context.Context, res *resource.Resource) error {
-	if !tm.env.TELEMETRY.OTLP.Enabled {
-		slog.Info("OTLP tracing disabled")
+	if !tm.env.TELEMETRY.TRACES.Enabled || !tm.env.TELEMETRY.OTLP.Enabled {
 		return nil
 	}
 
@@ -205,8 +219,7 @@ func (tm *TelemetryManager) initializeTracing(ctx context.Context, res *resource
 
 // initializeMetrics configura as métricas OpenTelemetry
 func (tm *TelemetryManager) initializeMetrics(ctx context.Context, res *resource.Resource) error {
-	if !tm.env.TELEMETRY.OTLP.Enabled {
-		slog.Info("OTLP metrics disabled")
+	if !tm.env.TELEMETRY.METRICS.Enabled || !tm.env.TELEMETRY.OTLP.Enabled {
 		return nil
 	}
 
