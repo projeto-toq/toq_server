@@ -451,6 +451,10 @@ func (c *config) InitializeHTTP() {
 
 	// Configurar logger do Gin para usar o logger do sistema
 	router.Use(func(ctx *gin.Context) {
+		if ctx.Request.Method == http.MethodGet && ctx.Request.URL.Path == "/metrics" {
+			ctx.Next()
+			return
+		}
 		coreutils.LoggerFromContext(ctx).Info("Request received",
 			"method", ctx.Request.Method,
 			"path", ctx.Request.URL.Path,

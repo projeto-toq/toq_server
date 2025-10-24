@@ -5,8 +5,20 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Estou recebendo o erro listado em log.md  ao tentar validar um CEP pelo endpoint /auth/validate/cep.
-Parece que o hmacvalidator não está sendo inicializado.
+Estou recebendo várias chamadas recorrentes para o endpoint `/metrics`, conforme os logs abaixo:
+
+Creio que isso seja a busca do prometheus (prometheus_adapter.go) para coletar métricas da aplicação.
+  - isto está efetivamente funcionando?
+  - o grafana mostra todos os reports como "No data"
+  - caso esteja tudo funcionando, este alerta do log está poluindo de forma desnecessária os logs da aplicação:
+  - caso não esteja funcionando, qual o problema e como resolver?
+
+"time":"2025-10-23T15:58:28.633913668Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
+{"time":"2025-10-23T15:58:38.633510909Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
+{"time":"2025-10-23T15:58:48.633626967Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
+{"time":"2025-10-23T15:58:58.633523637Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
+{"time":"2025-10-23T15:59:08.633591066Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
+{"time":"2025-10-23T15:59:18.634179107Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

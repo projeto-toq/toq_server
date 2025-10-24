@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
@@ -45,6 +47,15 @@ func SetupRoutes(
 
 	// Swagger documentation routes
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Registrar endpoint de métricas exposto pelo adapter
+	if handlers.MetricsHandler != nil {
+		router.GET("/metrics", handlers.MetricsHandler.GetMetrics)
+	} else {
+		router.GET("/metrics", func(c *gin.Context) {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "metrics adapter not configured"})
+		})
+	}
 
 	// Convert handlers to typed handlers
 	authHandler := handlers.AuthHandler.(*authhandlers.AuthHandler)

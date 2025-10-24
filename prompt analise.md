@@ -7,9 +7,7 @@ Atue como um desenvolvedor GO Senior e faça toda a interação em português.
 
 ## 2) Requisição
 
-Leia o plano detalhado para evolução da agenda de fotógrafos em `docs/photographer_agenda_plan.md` e apresente os passos para implementar:
-
-Ajustar endpoints de owners `/listings/photo-session/*` para trabalhar com slots horários e status revisa
+no arquivo types.go existe diversas structs que definem campos como interface{}. Ainda que esteja funcionando me parece que como sabemos o tipo de cada campo seria melhor definir o tipo correto ao invés de usar interface{}. Por favor analise o arquivo types.go e proponha um plano detalhado para alterar essas structs definindo os tipos corretos para cada campo atualmente definido como interface{}.
 
 - Documentação de referência: `docs/toq_server_go_guide.md`
 

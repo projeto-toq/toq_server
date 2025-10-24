@@ -302,7 +302,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	)
 
 	// Create metrics handler (optional)
-	var metricsHandler interface{}
+	var metricsHandler *handlers.MetricsHandler
 	if metricsAdapter != nil {
 		metricsHandler = handlers.NewMetricsHandler(metricsAdapter.Prometheus)
 	}
