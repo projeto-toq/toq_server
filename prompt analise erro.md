@@ -5,20 +5,23 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Estou recebendo várias chamadas recorrentes para o endpoint `/metrics`, conforme os logs abaixo:
+durante a deleção de uma conta, pelo próprio usuário, o serviço `func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Tokens, err error)` não está funcionando conforme o esperado.
 
-Creio que isso seja a busca do prometheus (prometheus_adapter.go) para coletar métricas da aplicação.
-  - isto está efetivamente funcionando?
-  - o grafana mostra todos os reports como "No data"
-  - caso esteja tudo funcionando, este alerta do log está poluindo de forma desnecessária os logs da aplicação:
-  - caso não esteja funcionando, qual o problema e como resolver?
+- o usuário recebe 200, como se  a deleção tivesse ocorrido com sucesso, mas:
+  - existem warnings
+{"time":"2025-10-24T13:29:38.211212925Z","level":"WARN","msg":"user.delete_account.role_without_details","request_id":"3a8bafd8-e624-48df-a108-7d4306f46010","user_id":6,"user_role_id":10}
+{"time":"2025-10-24T13:29:38.211274718Z","level":"WARN","msg":"user.delete_account.role_without_details","request_id":"3a8bafd8-e624-48df-a108-7d4306f46010","user_id":6,"user_role_id":11}
+  - a conta conta é mascarada
+  # id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt
+'6', 'Apagado por solicitação do usuário', 'Apagado', '00000000000', '000000', ' ', '2025-10-24', '2025-10-24', '+000000000000', '', '', '', '', NULL, '', '', '', '', '1', '2025-10-24 13:29:55.000000', '1', NULL
+  - mas os perfils permancem
+ # id, user_id, role_id, is_active, status, expires_at, blocked_until
+'10', '6', '3', '1', '0', NULL, NULL
+'11', '6', '2', '0', '9', NULL, NULL
 
-"time":"2025-10-23T15:58:28.633913668Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
-{"time":"2025-10-23T15:58:38.633510909Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
-{"time":"2025-10-23T15:58:48.633626967Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
-{"time":"2025-10-23T15:58:58.633523637Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
-{"time":"2025-10-23T15:59:08.633591066Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
-{"time":"2025-10-23T15:59:18.634179107Z","level":"INFO","msg":"Request received","method":"GET","path":"/metrics","remote_addr":"172.18.0.3:43980"}
+- a linha 176 - 197 da função `func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Tokens, err error)` parece ser o ponto onde o problema ocorre, pois é onde os perfis deveriam ser deletados.
+
+A regra de negócio determina que ao deletar uma conta (soft Delete), todos os perfis associados a ela devem ser removidos do sistema (Hard delete). Com exceção dos perfil ativo que deve ser marcado como deletado (soft delete).
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

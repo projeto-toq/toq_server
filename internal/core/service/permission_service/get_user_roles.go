@@ -8,7 +8,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetUserRoles returns all roles of a user, independent of is_active
+// GetUserRoles returns all roles of a user, independent of is_active, including populated role details.
 func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) ([]permissionmodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
@@ -54,7 +54,7 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	return userRoles, nil
 }
 
-// GetUserRolesWithTx returns all roles of a user within a provided transaction (used in flows)
+// GetUserRolesWithTx returns all roles of a user within a provided transaction (used in flows) and includes role details.
 func (p *permissionServiceImpl) GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
