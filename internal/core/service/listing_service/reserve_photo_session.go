@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -96,12 +97,39 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 	reservationToken := uuid.New().String()
 	expiresAt := time.Now().UTC().Add(reservationHoldTTL)
 
+	photographerPhone := ""
+	if slot.PhotographerUserID() != 0 && ls.userRepository != nil {
+		if photographer, photographerErr := ls.userRepository.GetUserByID(ctx, tx, int64(slot.PhotographerUserID())); photographerErr != nil {
+			if !errors.Is(photographerErr, sql.ErrNoRows) {
+				utils.SetSpanError(ctx, photographerErr)
+				logger.Error("listing.photo_session.reserve.get_photographer_error", "err", photographerErr, "photographer_id", slot.PhotographerUserID())
+				return output, utils.InternalError("")
+			}
+		} else if phone := strings.TrimSpace(photographer.GetPhoneNumber()); phone != "" {
+			photographerPhone = phone
+		}
+	}
+
 	if markErr := ls.photoSessionRepo.MarkSlotReserved(ctx, tx, input.SlotID, reservationToken, expiresAt); markErr != nil {
 		if errors.Is(markErr, sql.ErrNoRows) {
 			return output, derrors.ErrSlotUnavailable
 		}
 		utils.SetSpanError(ctx, markErr)
 		logger.Error("listing.photo_session.reserve.update_slot_error", "err", markErr, "slot_id", input.SlotID)
+		return output, utils.InternalError("")
+	}
+
+	booking := photosessionmodel.NewPhotoSessionBooking()
+	booking.SetSlotID(slot.ID())
+	booking.SetListingID(input.ListingID)
+	booking.SetScheduledStart(slot.SlotStart())
+	booking.SetScheduledEnd(slot.SlotEnd())
+	booking.SetStatus(photosessionmodel.BookingStatusPendingApproval)
+
+	bookingID, insertErr := ls.photoSessionRepo.InsertBooking(ctx, tx, booking)
+	if insertErr != nil {
+		utils.SetSpanError(ctx, insertErr)
+		logger.Error("listing.photo_session.reserve.insert_booking_error", "err", insertErr, "slot_id", input.SlotID)
 		return output, utils.InternalError("")
 	}
 
@@ -122,7 +150,9 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		return output, utils.InternalError("")
 	}
 
-	logger.Info("listing.photo_session.reserve.success", "listing_id", input.ListingID, "slot_id", input.SlotID, "user_id", userID)
+	logger.Info("listing.photo_session.reserve.success", "listing_id", input.ListingID, "slot_id", input.SlotID, "booking_id", bookingID, "user_id", userID)
+
+	ls.sendPhotographerReservationSMS(ctx, photographerPhone, slot.SlotStart(), slot.SlotEnd(), listing.Code())
 
 	return ReservePhotoSessionOutput{
 		SlotID:           input.SlotID,
@@ -130,5 +160,6 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		SlotEnd:          slot.SlotEnd(),
 		ReservationToken: reservationToken,
 		ExpiresAt:        expiresAt,
+		PhotoSessionID:   bookingID,
 	}, nil
 }

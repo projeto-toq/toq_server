@@ -44,6 +44,7 @@ type ReservePhotoSessionOutput struct {
 	SlotEnd          time.Time
 	ReservationToken string
 	ExpiresAt        time.Time
+	PhotoSessionID   uint64
 }
 
 // ConfirmPhotoSessionInput encapsulates data to finalize a reservation into a booking.

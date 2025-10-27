@@ -34,6 +34,8 @@ var (
 	ErrReservationExpired        = errors.New("photographer slot reservation expired")
 	ErrListingNotEligible        = errors.New("listing not eligible for photo session")
 	ErrPhotoSessionNotCancelable = errors.New("photo session cannot be cancelled")
+	ErrPhotoSessionPending       = errors.New("photo session awaiting photographer decision")
+	ErrPhotoSessionAlreadyFinal  = errors.New("photo session already finalized")
 
 	ErrRoleNotSystem          = errors.New("role is not marked as system role")
 	ErrAdminRoleProtected     = errors.New("admin role cannot be altered")

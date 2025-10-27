@@ -92,18 +92,33 @@ func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input Confirm
 		return output, derrors.ErrReservationExpired
 	}
 
-	booking := photosessionmodel.NewPhotoSessionBooking()
-	booking.SetSlotID(slot.ID())
-	booking.SetListingID(input.ListingID)
-	booking.SetScheduledStart(slot.SlotStart())
-	booking.SetScheduledEnd(slot.SlotEnd())
-	booking.SetStatus(photosessionmodel.BookingStatusActive)
-
-	bookingID, insertErr := ls.photoSessionRepo.InsertBooking(ctx, tx, booking)
-	if insertErr != nil {
-		utils.SetSpanError(ctx, insertErr)
-		logger.Error("listing.photo_session.confirm.insert_booking_error", "err", insertErr, "slot_id", input.SlotID)
+	booking, bookingErr := ls.photoSessionRepo.GetBookingBySlotIDForUpdate(ctx, tx, input.SlotID)
+	if bookingErr != nil {
+		if errors.Is(bookingErr, sql.ErrNoRows) {
+			return output, utils.NotFoundError("Photo session")
+		}
+		utils.SetSpanError(ctx, bookingErr)
+		logger.Error("listing.photo_session.confirm.get_booking_error", "err", bookingErr, "slot_id", input.SlotID)
 		return output, utils.InternalError("")
+	}
+
+	if booking.ListingID() != input.ListingID {
+		return output, utils.AuthorizationError("photo session does not belong to listing")
+	}
+
+	switch booking.Status() {
+	case photosessionmodel.BookingStatusPendingApproval:
+		return output, derrors.ErrPhotoSessionPending
+	case photosessionmodel.BookingStatusRejected,
+		photosessionmodel.BookingStatusCancelled,
+		photosessionmodel.BookingStatusDone,
+		photosessionmodel.BookingStatusRescheduled,
+		photosessionmodel.BookingStatusActive:
+		return output, derrors.ErrPhotoSessionAlreadyFinal
+	case photosessionmodel.BookingStatusAccepted:
+		// allowed
+	default:
+		return output, derrors.ErrPhotoSessionAlreadyFinal
 	}
 
 	if markErr := ls.photoSessionRepo.MarkSlotBooked(ctx, tx, input.SlotID, time.Now().UTC()); markErr != nil {
@@ -126,16 +141,25 @@ func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input Confirm
 		return output, utils.InternalError("")
 	}
 
+	if updateErr := ls.photoSessionRepo.UpdateBookingStatus(ctx, tx, booking.ID(), photosessionmodel.BookingStatusActive); updateErr != nil {
+		if errors.Is(updateErr, sql.ErrNoRows) {
+			return output, utils.NotFoundError("Photo session")
+		}
+		utils.SetSpanError(ctx, updateErr)
+		logger.Error("listing.photo_session.confirm.update_booking_status_error", "err", updateErr, "booking_id", booking.ID())
+		return output, utils.InternalError("")
+	}
+
 	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
 		logger.Error("listing.photo_session.confirm.commit_error", "err", cmErr)
 		return output, utils.InternalError("")
 	}
 
-	logger.Info("listing.photo_session.confirm.success", "booking_id", bookingID, "slot_id", input.SlotID, "listing_id", input.ListingID, "user_id", userID)
+	logger.Info("listing.photo_session.confirm.success", "booking_id", booking.ID(), "slot_id", input.SlotID, "listing_id", input.ListingID, "user_id", userID)
 
 	return ConfirmPhotoSessionOutput{
-		PhotoSessionID: bookingID,
+		PhotoSessionID: booking.ID(),
 		SlotID:         input.SlotID,
 		ScheduledStart: slot.SlotStart(),
 		ScheduledEnd:   slot.SlotEnd(),

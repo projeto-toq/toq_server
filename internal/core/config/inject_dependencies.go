@@ -245,6 +245,11 @@ func (c *config) InitScheduleService() {
 		return
 	}
 
+	if c.repositoryAdapters.User == nil {
+		slog.Error("repositoryAdapters.User is nil")
+		return
+	}
+
 	if c.globalService == nil {
 		slog.Error("globalService is nil")
 		return
@@ -262,6 +267,7 @@ func (c *config) InitListingHandler() {
 	c.listingService = listingservices.NewListingService(
 		c.repositoryAdapters.Listing,
 		c.repositoryAdapters.PhotoSession,
+		c.repositoryAdapters.User,
 		c.complexService,
 		c.globalService,
 		c.cloudStorage,
@@ -330,6 +336,7 @@ func (c *config) InitPhotoSessionService() {
 
 	c.photoSessionService = photosessionservices.NewPhotoSessionServiceWithConfig(
 		c.repositoryAdapters.PhotoSession,
+		c.repositoryAdapters.Listing,
 		c.holidayService,
 		c.globalService,
 		photoCfg,

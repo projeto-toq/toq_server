@@ -70,5 +70,6 @@ func (lh *ListingHandler) ReservePhotoSession(c *gin.Context) {
 		SlotEnd:          output.SlotEnd.UTC().Format(time.RFC3339),
 		ReservationToken: output.ReservationToken,
 		ExpiresAt:        output.ExpiresAt.UTC().Format(time.RFC3339),
+		PhotoSessionID:   output.PhotoSessionID,
 	})
 }

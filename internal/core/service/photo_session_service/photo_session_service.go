@@ -12,6 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	holidaymodel "github.com/projeto-toq/toq_server/internal/core/model/holiday_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
+	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	photosessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
@@ -54,6 +55,7 @@ type PhotoSessionServiceInterface interface {
 
 type photoSessionService struct {
 	repo           photosessionrepository.PhotoSessionRepositoryInterface
+	listingRepo    listingrepository.ListingRepoPortInterface
 	holidayService holidayservices.HolidayServiceInterface
 	globalService  globalservice.GlobalServiceInterface
 	cfg            Config
@@ -63,21 +65,24 @@ type photoSessionService struct {
 // NewPhotoSessionService wires a photo session service with its dependencies.
 func NewPhotoSessionService(
 	repo photosessionrepository.PhotoSessionRepositoryInterface,
+	listingRepo listingrepository.ListingRepoPortInterface,
 	holidayService holidayservices.HolidayServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 ) PhotoSessionServiceInterface {
-	return NewPhotoSessionServiceWithConfig(repo, holidayService, globalService, Config{})
+	return NewPhotoSessionServiceWithConfig(repo, listingRepo, holidayService, globalService, Config{})
 }
 
 // NewPhotoSessionServiceWithConfig wires a photo session service with explicit config.
 func NewPhotoSessionServiceWithConfig(
 	repo photosessionrepository.PhotoSessionRepositoryInterface,
+	listingRepo listingrepository.ListingRepoPortInterface,
 	holidayService holidayservices.HolidayServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 	cfg Config,
 ) PhotoSessionServiceInterface {
 	return &photoSessionService{
 		repo:           repo,
+		listingRepo:    listingRepo,
 		holidayService: holidayService,
 		globalService:  globalService,
 		cfg:            normalizeConfig(cfg),

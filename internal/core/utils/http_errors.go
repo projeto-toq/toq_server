@@ -209,6 +209,8 @@ var (
 	ErrPhotographerReservationExpired = NewHTTPError(http.StatusGone, "Photographer slot reservation expired")
 	ErrListingNotEligibleForPhoto     = NewHTTPError(http.StatusConflict, "Listing not eligible for photo session")
 	ErrPhotoSessionNotCancelable      = NewHTTPError(http.StatusConflict, "Photo session cannot be cancelled")
+	ErrPhotoSessionPendingApproval    = NewHTTPError(http.StatusConflict, "Photo session awaiting photographer decision")
+	ErrPhotoSessionAlreadyFinalized   = NewHTTPError(http.StatusConflict, "Photo session already finalized")
 )
 
 // ValidationError creates a structured validation error

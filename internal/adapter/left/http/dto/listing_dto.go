@@ -468,6 +468,7 @@ type ReservePhotoSessionResponse struct {
 	SlotEnd          string `json:"slotEnd" example:"2025-10-24T10:00:00Z"`
 	ReservationToken string `json:"reservationToken" example:"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"`
 	ExpiresAt        string `json:"expiresAt" example:"2025-10-24T08:45:00Z"`
+	PhotoSessionID   uint64 `json:"photoSessionId" example:"3003"`
 }
 
 // ConfirmPhotoSessionRequest representa o payload para confirmar a sessão de fotos.

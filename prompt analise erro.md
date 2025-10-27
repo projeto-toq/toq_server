@@ -5,7 +5,55 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após a reserva de uma sessão de fotos, feita em reserve_photo_session.go linhas 94-102, é necessário atualizar o status do listing para StatusPendingAvailabilityConfirm
+A regra de negócio define que:
+- O proprietário ao final da criação do anuncio deve:
+  - consultar a disponibilidade de um fotografo através do endpoint GET /listings/photo-session/slots
+  - escolhe o slot desejado e reserva o fotografo através do endpoint POST /listings/photo-session/reserve
+- Após esta reserva o fotografo, deve ser notificado por push notification e e-mail da reserva realizada.
+- Deve poder consultar sua agenda por GET /photographer/agenda e aceitar ou recusar através de POST /photographer/sessions/status
+
+Entretanto:
+- Atualmente o fotografo não está sendo notificado após a reserva.
+- GET /photographer/agenda responde confirme abaixo:
+```
+{
+  "page": 0,
+  "size": 0,
+  "slots": [
+    {
+      "end": "string",
+      "groupId": "string",
+      "holidayCalendarIds": [
+        0
+      ],
+      "holidayLabels": [
+        "string"
+      ],
+      "isHoliday": true,
+      "isTimeOff": true,
+      "period": "MORNING",
+      "photographerId": 0,
+      "slotId": 0,
+      "source": "SLOT",
+      "start": "string",
+      "status": "AVAILABLE"
+    }
+  ],
+  "total": 0
+}
+```
+-  POST /photographer/sessions/status requer sessionID que não existe na resposta de GET /photographer/agenda, conforme exemplo abaixo:
+```
+{
+  "sessionId": 0,
+  "status": "ACCEPTED"
+}
+```
+Adicionalmente para que os endpoints POST /listings/photo-session/cancel e POST /listings/photo-session/confirm?
+  - quem deveria confirmar? porque o fotógrafo confirma a sessão por POST /photographer/sessions/status.
+  - cancelar faz sentido que o proprietário queira cancelar anes de execução, mas confirmar?
+
+Adicionalemnte, sequencia de eventos e ações necessárias para o fluxo completo de reserva de sessão fotográfica não estão claras. crie um photo_session_flow.md detalhando o fluxo completo, desde a consulta de disponibilidade até a confirmação ou cancelamento da sessão.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.

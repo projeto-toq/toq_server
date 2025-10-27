@@ -79,6 +79,10 @@ func mapErrorToHTTP(err error) (status int, message string, details any) {
 		return http.StatusConflict, "Listing not eligible for photo session", nil
 	case errorsIs(err, derrors.ErrPhotoSessionNotCancelable):
 		return http.StatusConflict, "Photo session cannot be cancelled", nil
+	case errorsIs(err, derrors.ErrPhotoSessionPending):
+		return http.StatusConflict, "Photo session awaiting photographer decision", nil
+	case errorsIs(err, derrors.ErrPhotoSessionAlreadyFinal):
+		return http.StatusConflict, "Photo session already finalized", nil
 	case errorsIs(err, derrors.ErrRoleNotSystem):
 		return http.StatusBadRequest, "Role must be a system role", nil
 	case errorsIs(err, derrors.ErrAdminRoleProtected):
