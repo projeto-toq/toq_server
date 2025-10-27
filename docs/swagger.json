@@ -5858,6 +5858,20 @@
                         "description": "Page size (defaults to 20, max 100)",
                         "name": "size",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "America/Sao_Paulo",
+                        "description": "Timezone identifier",
+                        "name": "timezone",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "1,2,3",
+                        "description": "Comma-separated holiday calendar IDs",
+                        "name": "holidayCalendarIds",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -10975,6 +10989,92 @@
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotPeriod": {
+            "type": "string",
+            "enum": [
+                "MORNING",
+                "AFTERNOON"
+            ],
+            "x-enum-varnames": [
+                "SlotPeriodMorning",
+                "SlotPeriodAfternoon"
+            ]
+        },
+        "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotStatus": {
+            "type": "string",
+            "enum": [
+                "AVAILABLE",
+                "RESERVED",
+                "BOOKED",
+                "BLOCKED"
+            ],
+            "x-enum-varnames": [
+                "SlotStatusAvailable",
+                "SlotStatusReserved",
+                "SlotStatusBooked",
+                "SlotStatusBlocked"
+            ]
+        },
+        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaEntrySource": {
+            "type": "string",
+            "enum": [
+                "SLOT",
+                "HOLIDAY",
+                "TIME_OFF"
+            ],
+            "x-enum-varnames": [
+                "AgendaEntrySourceSlot",
+                "AgendaEntrySourceHoliday",
+                "AgendaEntrySourceTimeOff"
+            ]
+        },
+        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaSlot": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string"
+                },
+                "groupId": {
+                    "type": "string"
+                },
+                "holidayCalendarIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "holidayLabels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "isHoliday": {
+                    "type": "boolean"
+                },
+                "isTimeOff": {
+                    "type": "boolean"
+                },
+                "period": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotPeriod"
+                },
+                "photographerId": {
+                    "type": "integer"
+                },
+                "slotId": {
+                    "type": "integer"
+                },
+                "source": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaEntrySource"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotStatus"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListAgendaOutput": {
             "type": "object",
             "properties": {
@@ -10986,7 +11086,9 @@
                 },
                 "slots": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaSlot"
+                    }
                 },
                 "total": {
                     "type": "integer"

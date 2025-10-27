@@ -607,7 +607,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_time_slots` (
   `reserved_until` DATETIME NULL,
   `booked_at` DATETIME NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_slots_photographer_start` (`photographer_user_id` ASC, `slot_start` ASC) VISIBLE,
+  UNIQUE INDEX `uk_slots_photographer_start` (`photographer_user_id` ASC, `period` ASC, `slot_start` ASC) INVISIBLE,
   INDEX `idx_slots_date` (`slot_date` ASC) VISIBLE,
   CONSTRAINT `fk_slots_photographer_user`
     FOREIGN KEY (`photographer_user_id`)
@@ -794,6 +794,29 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`holiday_calendar_dates` (
     FOREIGN KEY (`calendar_id`)
     REFERENCES `toq_db`.`holiday_calendars` (`id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`photographer_default_availability`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`photographer_default_availability` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_default_availability` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `photographer_user_id` INT UNSIGNED NOT NULL,
+  `weekday` TINYINT NOT NULL,
+  `period` ENUM('MORNING', 'AFTERNOON') NOT NULL,
+  `start_hour` TINYINT NOT NULL,
+  `slots_per_period` TINYINT NOT NULL,
+  `slot_duration_minutes` TINYINT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_default_availability_unique` (`photographer_user_id` ASC, `weekday` ASC, `period` ASC) VISIBLE,
+  CONSTRAINT `fk_default_availability_photographer`
+    FOREIGN KEY (`photographer_user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 

@@ -436,7 +436,7 @@ type ListPhotographerSlotsRequest struct {
 	Period string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
 	Page   int    `form:"page,default=1" binding:"min=1"`
 	Size   int    `form:"size,default=20" binding:"min=1,max=100"`
-	Sort   string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc"`
+	Sort   string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc date_asc date_desc"`
 }
 
 // PhotographerSlotResponse representa um slot disponível na agenda dos fotógrafos.

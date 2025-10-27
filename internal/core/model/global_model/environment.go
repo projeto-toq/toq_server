@@ -106,6 +106,12 @@ type Environment struct {
 		Token   string `yaml:"token"`
 		URLBase string `yaml:"url_base"`
 	}
+	PhotoSession struct {
+		SlotDurationMinutes int `yaml:"slot_duration_minutes"`
+		SlotsPerPeriod      int `yaml:"slots_per_period"`
+		MorningStartHour    int `yaml:"morning_start_hour"`
+		AfternoonStartHour  int `yaml:"afternoon_start_hour"`
+	} `yaml:"photo_session"`
 	FCM struct {
 		CredentialsFile string `yaml:"credentials_file"`
 		ProjectID       string `yaml:"project_id"`

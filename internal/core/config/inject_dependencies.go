@@ -321,10 +321,18 @@ func (c *config) InitPhotoSessionService() {
 		return
 	}
 
-	c.photoSessionService = photosessionservices.NewPhotoSessionService(
+	photoCfg := photosessionservices.Config{
+		SlotDurationMinutes: c.env.PhotoSession.SlotDurationMinutes,
+		SlotsPerPeriod:      c.env.PhotoSession.SlotsPerPeriod,
+		MorningStartHour:    c.env.PhotoSession.MorningStartHour,
+		AfternoonStartHour:  c.env.PhotoSession.AfternoonStartHour,
+	}
+
+	c.photoSessionService = photosessionservices.NewPhotoSessionServiceWithConfig(
 		c.repositoryAdapters.PhotoSession,
 		c.holidayService,
 		c.globalService,
+		photoCfg,
 	)
 }
 

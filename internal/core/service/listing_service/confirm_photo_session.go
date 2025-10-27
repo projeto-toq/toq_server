@@ -7,6 +7,7 @@ import (
 	"time"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -111,6 +112,17 @@ func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input Confirm
 		}
 		utils.SetSpanError(ctx, markErr)
 		logger.Error("listing.photo_session.confirm.update_slot_error", "err", markErr, "slot_id", input.SlotID)
+		return output, utils.InternalError("")
+	}
+
+	if updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, input.ListingID, listingmodel.StatusPhotosScheduled, listingmodel.StatusPendingAvailabilityConfirm); updateErr != nil {
+		if errors.Is(updateErr, sql.ErrNoRows) {
+			utils.SetSpanError(ctx, updateErr)
+			logger.Warn("listing.photo_session.confirm.status_conflict", "err", updateErr, "listing_id", input.ListingID)
+			return output, derrors.ErrListingNotEligible
+		}
+		utils.SetSpanError(ctx, updateErr)
+		logger.Error("listing.photo_session.confirm.update_listing_status_error", "err", updateErr, "listing_id", input.ListingID)
 		return output, utils.InternalError("")
 	}
 

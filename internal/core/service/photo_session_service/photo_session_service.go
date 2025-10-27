@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -28,6 +29,15 @@ const (
 	maxAgendaPageSize       = 100
 )
 
+// AgendaEntrySource identifies the origin of an agenda entry.
+type AgendaEntrySource string
+
+const (
+	AgendaEntrySourceSlot    AgendaEntrySource = "SLOT"
+	AgendaEntrySourceHoliday AgendaEntrySource = "HOLIDAY"
+	AgendaEntrySourceTimeOff AgendaEntrySource = "TIME_OFF"
+)
+
 // PhotoSessionServiceInterface exposes orchestration helpers around photographer slots.
 type PhotoSessionServiceInterface interface {
 	EnsurePhotographerAgenda(ctx context.Context, input EnsureAgendaInput) error
@@ -46,6 +56,7 @@ type photoSessionService struct {
 	repo           photosessionrepository.PhotoSessionRepositoryInterface
 	holidayService holidayservices.HolidayServiceInterface
 	globalService  globalservice.GlobalServiceInterface
+	cfg            Config
 	now            func() time.Time
 }
 
@@ -55,17 +66,28 @@ func NewPhotoSessionService(
 	holidayService holidayservices.HolidayServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 ) PhotoSessionServiceInterface {
+	return NewPhotoSessionServiceWithConfig(repo, holidayService, globalService, Config{})
+}
+
+// NewPhotoSessionServiceWithConfig wires a photo session service with explicit config.
+func NewPhotoSessionServiceWithConfig(
+	repo photosessionrepository.PhotoSessionRepositoryInterface,
+	holidayService holidayservices.HolidayServiceInterface,
+	globalService globalservice.GlobalServiceInterface,
+	cfg Config,
+) PhotoSessionServiceInterface {
 	return &photoSessionService{
 		repo:           repo,
 		holidayService: holidayService,
 		globalService:  globalService,
+		cfg:            normalizeConfig(cfg),
 		now:            time.Now,
 	}
 }
 
 // EnsurePhotographerAgenda provisions and normalizes future slots for a photographer.
 func (s *photoSessionService) EnsurePhotographerAgenda(ctx context.Context, input EnsureAgendaInput) error {
-	prepared, err := s.prepareEnsureContext(ctx, input)
+	prepared, err := s.prepareEnsureContext(input)
 	if err != nil {
 		return err
 	}
@@ -96,7 +118,7 @@ func (s *photoSessionService) EnsurePhotographerAgenda(ctx context.Context, inpu
 
 // EnsurePhotographerAgendaWithTx provisions slots using an existing transaction.
 func (s *photoSessionService) EnsurePhotographerAgendaWithTx(ctx context.Context, tx *sql.Tx, input EnsureAgendaInput) error {
-	prepared, err := s.prepareEnsureContext(ctx, input)
+	prepared, err := s.prepareEnsureContext(input)
 	if err != nil {
 		return err
 	}
@@ -378,7 +400,104 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		return ListAgendaOutput{}, derrors.Wrap(err, derrors.KindInfra, "failed to list agenda slots")
 	}
 
-	return ListAgendaOutput{Slots: slots, Total: total, Page: page, Size: size}, nil
+	loc, locErr := resolveLocation(input.Timezone)
+	if locErr != nil {
+		return ListAgendaOutput{}, locErr
+	}
+
+	holidayInfos, holidayErr := s.fetchHolidayDates(ctx, input.HolidayCalendarIDs, input.StartDate, input.EndDate)
+	if holidayErr != nil {
+		return ListAgendaOutput{}, holidayErr
+	}
+	holidayByDate := make(map[string][]holidayDateInfo, len(holidayInfos))
+	for _, info := range holidayInfos {
+		key := dateKeyFromTime(info.date.In(loc))
+		holidayByDate[key] = append(holidayByDate[key], info)
+	}
+	matchedHolidayDates := make(map[string]struct{})
+
+	timeOffRecords, timeOffErr := s.repo.ListTimeOff(ctx, tx, input.PhotographerID, input.StartDate.UTC(), input.EndDate.UTC())
+	if timeOffErr != nil {
+		utils.SetSpanError(ctx, timeOffErr)
+		utils.LoggerFromContext(ctx).Error("service.list_agenda.time_off_error", "err", timeOffErr, "photographer_id", input.PhotographerID)
+		return ListAgendaOutput{}, derrors.Wrap(timeOffErr, derrors.KindInfra, "failed to list agenda time off")
+	}
+
+	entries := make([]AgendaSlot, 0, len(slots)+len(timeOffRecords)+len(holidayInfos))
+	timeOffIntervals := make([]timeInterval, 0, len(timeOffRecords))
+	for _, record := range timeOffRecords {
+		timeOffIntervals = append(timeOffIntervals, timeInterval{start: record.StartDate(), end: record.EndDate()})
+
+		groupID := buildGroupID(record.StartDate().In(loc), nil, AgendaEntrySourceTimeOff)
+		entries = append(entries, AgendaSlot{
+			PhotographerID: input.PhotographerID,
+			Start:          record.StartDate(),
+			End:            record.EndDate(),
+			Status:         photosessionmodel.SlotStatusBlocked,
+			GroupID:        groupID,
+			Source:         AgendaEntrySourceTimeOff,
+			IsTimeOff:      true,
+		})
+	}
+
+	for _, slot := range slots {
+		period := slot.Period()
+		entryPeriod := period
+		groupID := buildGroupID(slot.SlotStart().In(loc), &entryPeriod, AgendaEntrySourceSlot)
+		agendaSlot := AgendaSlot{
+			SlotID:         slot.ID(),
+			PhotographerID: slot.PhotographerUserID(),
+			Start:          slot.SlotStart(),
+			End:            slot.SlotEnd(),
+			Period:         &entryPeriod,
+			Status:         slot.Status(),
+			GroupID:        groupID,
+			Source:         AgendaEntrySourceSlot,
+		}
+
+		dateKey := dateKeyFromTime(slot.SlotStart().In(loc))
+		if infos, ok := holidayByDate[dateKey]; ok {
+			agendaSlot.Status = photosessionmodel.SlotStatusBlocked
+			agendaSlot.IsHoliday = true
+			agendaSlot.HolidayCalendarIDs = collectHolidayIDs(infos)
+			agendaSlot.HolidayLabels = collectHolidayLabels(infos)
+			matchedHolidayDates[dateKey] = struct{}{}
+		}
+
+		for _, interval := range timeOffIntervals {
+			if intervalsOverlap(slot.SlotStart(), slot.SlotEnd(), interval.start, interval.end) {
+				agendaSlot.Status = photosessionmodel.SlotStatusBlocked
+				agendaSlot.IsTimeOff = true
+				break
+			}
+		}
+
+		entries = append(entries, agendaSlot)
+	}
+
+	for key, infos := range holidayByDate {
+		if _, matched := matchedHolidayDates[key]; matched {
+			continue
+		}
+		info := infos[0]
+		day := info.date.In(loc)
+		start := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, loc).UTC()
+		end := start.Add(24 * time.Hour)
+		groupID := buildGroupID(day, nil, AgendaEntrySourceHoliday)
+		entries = append(entries, AgendaSlot{
+			PhotographerID:     input.PhotographerID,
+			Start:              start,
+			End:                end,
+			Status:             photosessionmodel.SlotStatusBlocked,
+			GroupID:            groupID,
+			Source:             AgendaEntrySourceHoliday,
+			IsHoliday:          true,
+			HolidayCalendarIDs: collectHolidayIDs(infos),
+			HolidayLabels:      collectHolidayLabels(infos),
+		})
+	}
+
+	return ListAgendaOutput{Slots: entries, Total: total, Page: page, Size: size}, nil
 }
 
 func (s *photoSessionService) ensurePhotographerAgendaWithPrepared(ctx context.Context, tx *sql.Tx, input EnsureAgendaInput, prepared *preparedEnsureContext) error {
@@ -387,7 +506,7 @@ func (s *photoSessionService) ensurePhotographerAgendaWithPrepared(ctx context.C
 	}
 	if prepared == nil {
 		var err error
-		prepared, err = s.prepareEnsureContext(ctx, input)
+		prepared, err = s.prepareEnsureContext(input)
 		if err != nil {
 			return err
 		}
@@ -443,6 +562,16 @@ func (s *photoSessionService) ensureSlots(ctx context.Context, tx *sql.Tx, input
 	nowUTC := s.now().UTC()
 	newSlots := make([]photosessionmodel.PhotographerSlotInterface, 0)
 
+	defaults, err := s.resolveDefaultAvailability(ctx, tx, input.PhotographerID)
+	if err != nil {
+		return err
+	}
+
+	defaultsByWeekday := make(map[time.Weekday][]photosessionmodel.PhotographerDefaultAvailabilityInterface, len(defaults))
+	for _, record := range defaults {
+		defaultsByWeekday[record.Weekday()] = append(defaultsByWeekday[record.Weekday()], record)
+	}
+
 	for day := prepared.windowStartLocal; day.Before(prepared.windowEndLocal); day = day.AddDate(0, 0, 1) {
 		if day.Weekday() == time.Saturday || day.Weekday() == time.Sunday {
 			continue
@@ -452,29 +581,55 @@ func (s *photoSessionService) ensureSlots(ctx context.Context, tx *sql.Tx, input
 			continue
 		}
 
-		for hour := prepared.workdayStartHour; hour < prepared.workdayEndHour; hour++ {
-			slotStartLocal := time.Date(day.Year(), day.Month(), day.Day(), hour, 0, 0, 0, prepared.location)
-			slotEndLocal := slotStartLocal.Add(time.Hour)
-			slotStartUTC := slotStartLocal.UTC()
-			slotEndUTC := slotEndLocal.UTC()
+		records := defaultsByWeekday[day.Weekday()]
+		if len(records) == 0 {
+			continue
+		}
 
-			if !slotEndUTC.After(nowUTC) {
-				continue
+		for _, record := range records {
+			slotDuration := record.SlotDurationMinutes()
+			if slotDuration <= 0 {
+				slotDuration = s.cfg.SlotDurationMinutes
+			}
+			periodStart := record.StartHour()
+			if periodStart <= 0 {
+				if record.Period() == photosessionmodel.SlotPeriodAfternoon {
+					periodStart = s.cfg.AfternoonStartHour
+				} else {
+					periodStart = s.cfg.MorningStartHour
+				}
 			}
 
-			if _, exists := existingByStart[slotStartUTC]; exists {
-				continue
+			slotsPerPeriod := record.SlotsPerPeriod()
+			if slotsPerPeriod <= 0 {
+				slotsPerPeriod = s.cfg.SlotsPerPeriod
 			}
 
-			slot := photosessionmodel.NewPhotographerSlot()
-			slot.SetPhotographerUserID(input.PhotographerID)
-			slot.SetSlotDate(slotStartUTC.Truncate(24 * time.Hour))
-			slot.SetSlotStart(slotStartUTC)
-			slot.SetSlotEnd(slotEndUTC)
-			slot.SetStatus(photosessionmodel.SlotStatusAvailable)
-			slot.SetPeriod(periodForHour(hour))
+			for index := 0; index < slotsPerPeriod; index++ {
+				baseStart := time.Date(day.Year(), day.Month(), day.Day(), periodStart, 0, 0, 0, prepared.location)
+				slotStartLocal := baseStart.Add(time.Duration(index*slotDuration) * time.Minute)
+				slotEndLocal := slotStartLocal.Add(time.Duration(slotDuration) * time.Minute)
+				slotStartUTC := slotStartLocal.UTC()
+				slotEndUTC := slotEndLocal.UTC()
 
-			newSlots = append(newSlots, slot)
+				if !slotEndUTC.After(nowUTC) {
+					continue
+				}
+
+				if _, exists := existingByStart[slotStartUTC]; exists {
+					continue
+				}
+
+				slot := photosessionmodel.NewPhotographerSlot()
+				slot.SetPhotographerUserID(input.PhotographerID)
+				slot.SetSlotDate(slotStartUTC.Truncate(24 * time.Hour))
+				slot.SetSlotStart(slotStartUTC)
+				slot.SetSlotEnd(slotEndUTC)
+				slot.SetStatus(photosessionmodel.SlotStatusAvailable)
+				slot.SetPeriod(record.Period())
+
+				newSlots = append(newSlots, slot)
+			}
 		}
 	}
 
@@ -491,7 +646,166 @@ func (s *photoSessionService) ensureSlots(ctx context.Context, tx *sql.Tx, input
 	return nil
 }
 
-func (s *photoSessionService) prepareEnsureContext(ctx context.Context, input EnsureAgendaInput) (*preparedEnsureContext, error) {
+func (s *photoSessionService) resolveDefaultAvailability(ctx context.Context, tx *sql.Tx, photographerID uint64) ([]photosessionmodel.PhotographerDefaultAvailabilityInterface, error) {
+	records, err := s.repo.ListDefaultAvailability(ctx, tx, photographerID)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("photo_session.ensure_agenda.list_default_availability_error", "err", err, "photographer_id", photographerID)
+		return nil, utils.InternalError("")
+	}
+	if len(records) > 0 {
+		return records, nil
+	}
+	fallback := s.buildFallbackAvailability(photographerID)
+	if err = s.repo.ReplaceDefaultAvailability(ctx, tx, photographerID, fallback); err != nil {
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("photo_session.ensure_agenda.persist_default_availability_error", "err", err, "photographer_id", photographerID)
+		return nil, utils.InternalError("")
+	}
+	return fallback, nil
+}
+
+func (s *photoSessionService) buildFallbackAvailability(photographerID uint64) []photosessionmodel.PhotographerDefaultAvailabilityInterface {
+	result := make([]photosessionmodel.PhotographerDefaultAvailabilityInterface, 0, 10)
+	periods := []struct {
+		period photosessionmodel.SlotPeriod
+		start  int
+	}{
+		{photosessionmodel.SlotPeriodMorning, s.cfg.MorningStartHour},
+		{photosessionmodel.SlotPeriodAfternoon, s.cfg.AfternoonStartHour},
+	}
+
+	for weekday := time.Monday; weekday <= time.Friday; weekday++ {
+		for _, p := range periods {
+			record := photosessionmodel.NewPhotographerDefaultAvailability()
+			record.SetPhotographerUserID(photographerID)
+			record.SetWeekday(weekday)
+			record.SetPeriod(p.period)
+			record.SetStartHour(p.start)
+			record.SetSlotsPerPeriod(s.cfg.SlotsPerPeriod)
+			record.SetSlotDurationMinutes(s.cfg.SlotDurationMinutes)
+			result = append(result, record)
+		}
+	}
+
+	return result
+}
+
+type holidayDateInfo struct {
+	calendarID uint64
+	date       time.Time
+	label      string
+}
+
+type timeInterval struct {
+	start time.Time
+	end   time.Time
+}
+
+func (s *photoSessionService) fetchHolidayDates(ctx context.Context, calendarIDs []uint64, from, to time.Time) ([]holidayDateInfo, error) {
+	if len(calendarIDs) == 0 {
+		return nil, nil
+	}
+
+	fromPtr := from
+	toPtr := to
+	if toPtr.Before(fromPtr) {
+		toPtr = fromPtr
+	}
+
+	entries := make([]holidayDateInfo, 0)
+
+	for _, calendarID := range calendarIDs {
+		if calendarID == 0 {
+			continue
+		}
+
+		filter := holidaymodel.CalendarDatesFilter{
+			CalendarID: calendarID,
+			From:       &fromPtr,
+			To:         &toPtr,
+			Limit:      200,
+			Page:       1,
+		}
+
+		for {
+			result, err := s.holidayService.ListCalendarDates(ctx, filter)
+			if err != nil {
+				utils.SetSpanError(ctx, err)
+				utils.LoggerFromContext(ctx).Error("service.list_agenda.holiday_error", "err", err, "calendar_id", calendarID)
+				return nil, derrors.Wrap(err, derrors.KindInfra, "failed to list holiday dates")
+			}
+
+			for _, date := range result.Dates {
+				entries = append(entries, holidayDateInfo{
+					calendarID: calendarID,
+					date:       date.HolidayDate(),
+					label:      date.Label(),
+				})
+			}
+
+			if len(result.Dates) < filter.Limit {
+				break
+			}
+
+			filter.Page++
+		}
+	}
+
+	return entries, nil
+}
+
+func collectHolidayIDs(infos []holidayDateInfo) []uint64 {
+	if len(infos) == 0 {
+		return nil
+	}
+	seen := make(map[uint64]struct{}, len(infos))
+	for _, info := range infos {
+		seen[info.calendarID] = struct{}{}
+	}
+	ids := make([]uint64, 0, len(seen))
+	for id := range seen {
+		ids = append(ids, id)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	return ids
+}
+
+func collectHolidayLabels(infos []holidayDateInfo) []string {
+	if len(infos) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{}, len(infos))
+	labels := make([]string, 0, len(infos))
+	for _, info := range infos {
+		label := strings.TrimSpace(info.label)
+		if label == "" {
+			label = "Holiday"
+		}
+		if _, ok := seen[label]; ok {
+			continue
+		}
+		seen[label] = struct{}{}
+		labels = append(labels, label)
+	}
+	sort.Strings(labels)
+	return labels
+}
+
+func intervalsOverlap(aStart, aEnd, bStart, bEnd time.Time) bool {
+	return aStart.Before(bEnd) && bStart.Before(aEnd)
+}
+
+func buildGroupID(day time.Time, period *photosessionmodel.SlotPeriod, source AgendaEntrySource) string {
+	key := day.Format("2006-01-02")
+	if period != nil {
+		key = fmt.Sprintf("%s-%s", key, string(*period))
+	}
+	return fmt.Sprintf("%s-%s", strings.ToLower(string(source)), key)
+}
+
+// func (s *photoSessionService) prepareEnsureContext(ctx context.Context, input EnsureAgendaInput) (*preparedEnsureContext, error) {
+func (s *photoSessionService) prepareEnsureContext(input EnsureAgendaInput) (*preparedEnsureContext, error) {
 	if input.PhotographerID == 0 {
 		return nil, utils.ValidationError("photographerId", "photographerId must be greater than zero")
 	}
@@ -522,11 +836,6 @@ func (s *photoSessionService) prepareEnsureContext(ctx context.Context, input En
 	windowStartLocal := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
 	windowEndLocal := windowStartLocal.AddDate(0, horizonMonths, 0)
 
-	holidayDays, err := s.loadHolidayDays(ctx, input, windowStartLocal, windowEndLocal)
-	if err != nil {
-		return nil, err
-	}
-
 	return &preparedEnsureContext{
 		location:         loc,
 		windowStartLocal: windowStartLocal,
@@ -535,35 +844,35 @@ func (s *photoSessionService) prepareEnsureContext(ctx context.Context, input En
 		windowEndUTC:     windowEndLocal.UTC(),
 		workdayStartHour: workdayStart,
 		workdayEndHour:   workdayEnd,
-		blockedDays:      holidayDays,
+		blockedDays:      make(map[string]struct{}),
 	}, nil
 }
 
-func (s *photoSessionService) loadHolidayDays(ctx context.Context, input EnsureAgendaInput, from, to time.Time) (map[string]struct{}, error) {
-	blocked := make(map[string]struct{})
-	if input.HolidayCalendarID == nil || *input.HolidayCalendarID == 0 {
-		return blocked, nil
-	}
+// func (s *photoSessionService) loadHolidayDays(ctx context.Context, input EnsureAgendaInput, from, to time.Time) (map[string]struct{}, error) {
+// 	blocked := make(map[string]struct{})
+// 	if input.HolidayCalendarID == nil || *input.HolidayCalendarID == 0 {
+// 		return blocked, nil
+// 	}
 
-	filter := holidaymodel.CalendarDatesFilter{
-		CalendarID: *input.HolidayCalendarID,
-		From:       &from,
-		To:         &to,
-		Limit:      100,
-		Page:       1,
-	}
+// 	filter := holidaymodel.CalendarDatesFilter{
+// 		CalendarID: *input.HolidayCalendarID,
+// 		From:       &from,
+// 		To:         &to,
+// 		Limit:      100,
+// 		Page:       1,
+// 	}
 
-	result, err := s.holidayService.ListCalendarDates(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
+// 	result, err := s.holidayService.ListCalendarDates(ctx, filter)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	for _, date := range result.Dates {
-		blocked[dateKeyFromTime(date.HolidayDate().In(from.Location()))] = struct{}{}
-	}
+// 	for _, date := range result.Dates {
+// 		blocked[dateKeyFromTime(date.HolidayDate().In(from.Location()))] = struct{}{}
+// 	}
 
-	return blocked, nil
-}
+// 	return blocked, nil
+// }
 
 func markDateRange(target map[string]struct{}, start, end time.Time, loc *time.Location) {
 	start = start.In(loc)
@@ -589,13 +898,6 @@ func resolveLocation(timezone string) (*time.Location, error) {
 	}
 
 	return loc, nil
-}
-
-func periodForHour(hour int) photosessionmodel.SlotPeriod {
-	if hour < 12 {
-		return photosessionmodel.SlotPeriodMorning
-	}
-	return photosessionmodel.SlotPeriodAfternoon
 }
 
 // UpdateSessionStatusInput contains the required data to update a photo session status.
@@ -698,6 +1000,11 @@ func validateListAgendaInput(input ListAgendaInput) error {
 	if input.Page < 0 {
 		return derrors.Validation("page must be zero or greater", nil)
 	}
+	if input.Timezone != "" {
+		if _, err := resolveLocation(input.Timezone); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -714,17 +1021,35 @@ type preparedEnsureContext struct {
 
 // ListAgendaInput defines the input for listing a photographer's agenda.
 type ListAgendaInput struct {
-	PhotographerID uint64
-	StartDate      time.Time
-	EndDate        time.Time
-	Page           int
-	Size           int
+	PhotographerID     uint64
+	StartDate          time.Time
+	EndDate            time.Time
+	Page               int
+	Size               int
+	Timezone           string
+	HolidayCalendarIDs []uint64
 }
 
 // ListAgendaOutput defines the output for a photographer's agenda.
 type ListAgendaOutput struct {
-	Slots []photosessionmodel.PhotographerSlotInterface `json:"slots"`
-	Total int64                                         `json:"total"`
-	Page  int                                           `json:"page"`
-	Size  int                                           `json:"size"`
+	Slots []AgendaSlot `json:"slots"`
+	Total int64        `json:"total"`
+	Page  int          `json:"page"`
+	Size  int          `json:"size"`
+}
+
+// AgendaSlot is a DTO representing a consolidated agenda entry.
+type AgendaSlot struct {
+	SlotID             uint64                        `json:"slotId,omitempty"`
+	PhotographerID     uint64                        `json:"photographerId,omitempty"`
+	Start              time.Time                     `json:"start"`
+	End                time.Time                     `json:"end"`
+	Period             *photosessionmodel.SlotPeriod `json:"period,omitempty"`
+	Status             photosessionmodel.SlotStatus  `json:"status"`
+	GroupID            string                        `json:"groupId"`
+	Source             AgendaEntrySource             `json:"source"`
+	IsHoliday          bool                          `json:"isHoliday"`
+	IsTimeOff          bool                          `json:"isTimeOff"`
+	HolidayLabels      []string                      `json:"holidayLabels,omitempty"`
+	HolidayCalendarIDs []uint64                      `json:"holidayCalendarIds,omitempty"`
 }

@@ -95,9 +95,9 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 
 func normalizeSlotSort(sort string) (slotSortOption, error) {
 	switch sort {
-	case "", "start_asc":
+	case "", "start_asc", "date_asc":
 		return slotSortOption{column: "slot_start", direction: "ASC"}, nil
-	case "start_desc":
+	case "start_desc", "date_desc":
 		return slotSortOption{column: "slot_start", direction: "DESC"}, nil
 	case "photographer_asc":
 		return slotSortOption{column: "photographer_user_id", direction: "ASC"}, nil
@@ -113,6 +113,7 @@ func listingEligibleForPhotoSession(status listingmodel.ListingStatus) bool {
 	case
 		// listingmodel.StatusDraft,
 		listingmodel.StatusPendingPhotoScheduling,
+		listingmodel.StatusPendingAvailabilityConfirm,
 		listingmodel.StatusPhotosScheduled: //,
 		// listingmodel.StatusPendingPhotoProcessing,
 		// listingmodel.StatusPendingOwnerApproval		:

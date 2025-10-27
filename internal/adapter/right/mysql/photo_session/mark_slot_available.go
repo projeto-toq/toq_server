@@ -20,7 +20,7 @@ func (a *PhotoSessionAdapter) MarkSlotAvailable(ctx context.Context, tx *sql.Tx,
 
 	query := `
 		UPDATE photographer_time_slots
-		SET status = 'AVAILABLE', reservation_token = NULL, reserved_until = NULL, booked_at = NULL, updated_at = UTC_TIMESTAMP()
+		SET status = 'AVAILABLE', reservation_token = NULL, reserved_until = NULL, booked_at = NULL
 		WHERE id = ?
 	`
 

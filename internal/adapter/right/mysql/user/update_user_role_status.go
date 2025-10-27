@@ -17,7 +17,6 @@ func (ua *UserAdapter) UpdateUserRoleStatusByUserID(ctx context.Context, userID 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	// Coluna updated_at não existe no schema de user_roles; remover do UPDATE.
 	query := `UPDATE user_roles SET status = ? WHERE user_id = ? AND is_active = 1`
 
 	_, err = ua.db.GetDB().ExecContext(ctx, query, status, userID)

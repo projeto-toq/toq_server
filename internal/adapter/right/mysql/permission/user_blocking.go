@@ -20,7 +20,6 @@ func (pa *PermissionAdapter) BlockUserTemporarily(ctx context.Context, tx *sql.T
 
 	logger = logger.With("user_id", userID, "blocked_until", blockedUntil, "reason", reason)
 
-	// O schema de user_roles não contém status_reason nem updated_at; manter apenas campos válidos.
 	query := `
 		UPDATE user_roles 
 		SET status = ?, blocked_until = ?
@@ -47,7 +46,6 @@ func (pa *PermissionAdapter) UnblockUser(ctx context.Context, tx *sql.Tx, userID
 
 	logger = logger.With("user_id", userID)
 
-	// Remover colunas inexistentes no schema (status_reason, updated_at).
 	query := `
 		UPDATE user_roles 
 		SET status = ?, blocked_until = NULL

@@ -21,7 +21,7 @@ func (a *PhotoSessionAdapter) UpdateBookingStatus(ctx context.Context, tx *sql.T
 
 	query := `
 		UPDATE photographer_slot_bookings
-		SET status = ?, updated_at = UTC_TIMESTAMP()
+		SET status = ?
 		WHERE id = ?
 	`
 

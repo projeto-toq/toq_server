@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -65,6 +66,10 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		return output, utils.AuthorizationError("listing does not belong to current user")
 	}
 
+	if listing.Status() == listingmodel.StatusPendingAvailabilityConfirm {
+		return output, derrors.ErrListingNotEligible
+	}
+
 	if !listingEligibleForPhotoSession(listing.Status()) {
 		return output, derrors.ErrListingNotEligible
 	}
@@ -97,6 +102,17 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		}
 		utils.SetSpanError(ctx, markErr)
 		logger.Error("listing.photo_session.reserve.update_slot_error", "err", markErr, "slot_id", input.SlotID)
+		return output, utils.InternalError("")
+	}
+
+	if updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, input.ListingID, listingmodel.StatusPendingAvailabilityConfirm, listing.Status()); updateErr != nil {
+		if errors.Is(updateErr, sql.ErrNoRows) {
+			utils.SetSpanError(ctx, updateErr)
+			logger.Warn("listing.photo_session.reserve.status_conflict", "err", updateErr, "listing_id", input.ListingID, "current_status", listing.Status())
+			return output, derrors.ErrListingNotEligible
+		}
+		utils.SetSpanError(ctx, updateErr)
+		logger.Error("listing.photo_session.reserve.update_listing_status_error", "err", updateErr, "listing_id", input.ListingID)
 		return output, utils.InternalError("")
 	}
 
