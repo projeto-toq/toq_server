@@ -17,8 +17,8 @@ func ToCalendarModel(e entity.CalendarEntity) holidaymodel.CalendarInterface {
 	if e.State.Valid {
 		calendar.SetState(e.State.String)
 	}
-	if e.CityIBGE.Valid {
-		calendar.SetCityIBGE(e.CityIBGE.String)
+	if e.City.Valid {
+		calendar.SetCity(e.City.String)
 	}
 	calendar.SetActive(e.IsActive)
 	return calendar
@@ -32,7 +32,7 @@ func ToCalendarEntity(model holidaymodel.CalendarInterface) entity.CalendarEntit
 	}
 
 	var city sql.NullString
-	if value, ok := model.CityIBGE(); ok {
+	if value, ok := model.City(); ok {
 		city = sql.NullString{String: value, Valid: true}
 	}
 
@@ -41,7 +41,7 @@ func ToCalendarEntity(model holidaymodel.CalendarInterface) entity.CalendarEntit
 		Name:     model.Name(),
 		Scope:    string(model.Scope()),
 		State:    state,
-		CityIBGE: city,
+		City:     city,
 		IsActive: model.IsActive(),
 		Timezone: model.Timezone(),
 	}

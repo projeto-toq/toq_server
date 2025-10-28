@@ -25,8 +25,8 @@ func HolidayCalendarToDTO(calendar holidaymodel.CalendarInterface) dto.HolidayCa
 	if state, ok := calendar.State(); ok {
 		response.State = state
 	}
-	if city, ok := calendar.CityIBGE(); ok {
-		response.CityIBGE = city
+	if city, ok := calendar.City(); ok {
+		response.City = city
 	}
 
 	return response

@@ -11,9 +11,9 @@ type CalendarInterface interface {
 	State() (string, bool)
 	SetState(value string)
 	ClearState()
-	CityIBGE() (string, bool)
-	SetCityIBGE(value string)
-	ClearCityIBGE()
+	City() (string, bool)
+	SetCity(value string)
+	ClearCity()
 	IsActive() bool
 	SetActive(value bool)
 	Timezone() string

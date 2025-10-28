@@ -5,7 +5,7 @@ type HolidayCalendarRequest struct {
 	Name     string `json:"name" binding:"required"`
 	Scope    string `json:"scope" binding:"required"`
 	State    string `json:"state,omitempty"`
-	CityIBGE string `json:"cityIbge,omitempty"`
+	City     string `json:"city,omitempty"`
 	IsActive bool   `json:"isActive"`
 	Timezone string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
@@ -30,7 +30,7 @@ type HolidayCalendarDetailRequest struct {
 type HolidayCalendarsListRequest struct {
 	Scope      string `form:"scope"`
 	State      string `form:"state"`
-	CityIBGE   string `form:"cityIbge"`
+	City       string `form:"city"`
 	SearchTerm string `form:"search"`
 	OnlyActive *bool  `form:"onlyActive"`
 	Page       int    `form:"page,default=1"`
@@ -43,7 +43,7 @@ type HolidayCalendarResponse struct {
 	Name     string `json:"name"`
 	Scope    string `json:"scope"`
 	State    string `json:"state,omitempty"`
-	CityIBGE string `json:"cityIbge,omitempty"`
+	City     string `json:"city,omitempty"`
 	IsActive bool   `json:"isActive"`
 	Timezone string `json:"timezone"`
 }

@@ -43,41 +43,40 @@ import (
 )
 
 type config struct {
-	env                      globalmodel.Environment
-	db                       *sql.DB
-	database                 *mysqladapter.Database
-	httpServer               *http.Server
-	ginRouter                *gin.Engine
-	httpHandlers             factory.HTTPHandlers
-	context                  context.Context
-	cache                    cache.CacheInterface
-	activityTracker          *goroutines.ActivityTracker
-	tempBlockCleaner         *goroutines.TempBlockCleanerWorker
-	photographerAgendaWorker *goroutines.PhotographerAgendaWorker
-	sessionService           sessionservice.Service
-	wg                       *sync.WaitGroup
-	readiness                bool
-	globalService            globalservice.GlobalServiceInterface
-	userService              userservices.UserServiceInterface
-	listingService           listingservices.ListingServiceInterface
-	complexService           complexservices.ComplexServiceInterface
-	permissionService        permissionservices.PermissionServiceInterface
-	holidayService           holidayservices.HolidayServiceInterface
-	scheduleService          scheduleservices.ScheduleServiceInterface
-	photoSessionService      photosessionservices.PhotoSessionServiceInterface
-	metricsAdapter           *factory.MetricsAdapter
-	cep                      cepport.CEPPortInterface
-	cpf                      cpfport.CPFPortInterface
-	cnpj                     cnpjport.CNPJPortInterface
-	email                    emailport.EmailPortInterface
-	sms                      smsport.SMSPortInterface
-	cloudStorage             storageport.CloudStoragePortInterface
-	firebaseCloudMessaging   fcmport.FCMPortInterface
-	repositoryAdapters       *factory.RepositoryAdapters
-	adapterFactory           factory.AdapterFactory
-	hmacValidator            *hmacauth.Validator
-	runtimeEnvironment       string
-	workersEnabled           bool
+	env                    globalmodel.Environment
+	db                     *sql.DB
+	database               *mysqladapter.Database
+	httpServer             *http.Server
+	ginRouter              *gin.Engine
+	httpHandlers           factory.HTTPHandlers
+	context                context.Context
+	cache                  cache.CacheInterface
+	activityTracker        *goroutines.ActivityTracker
+	tempBlockCleaner       *goroutines.TempBlockCleanerWorker
+	sessionService         sessionservice.Service
+	wg                     *sync.WaitGroup
+	readiness              bool
+	globalService          globalservice.GlobalServiceInterface
+	userService            userservices.UserServiceInterface
+	listingService         listingservices.ListingServiceInterface
+	complexService         complexservices.ComplexServiceInterface
+	permissionService      permissionservices.PermissionServiceInterface
+	holidayService         holidayservices.HolidayServiceInterface
+	scheduleService        scheduleservices.ScheduleServiceInterface
+	photoSessionService    photosessionservices.PhotoSessionServiceInterface
+	metricsAdapter         *factory.MetricsAdapter
+	cep                    cepport.CEPPortInterface
+	cpf                    cpfport.CPFPortInterface
+	cnpj                   cnpjport.CNPJPortInterface
+	email                  emailport.EmailPortInterface
+	sms                    smsport.SMSPortInterface
+	cloudStorage           storageport.CloudStoragePortInterface
+	firebaseCloudMessaging fcmport.FCMPortInterface
+	repositoryAdapters     *factory.RepositoryAdapters
+	adapterFactory         factory.AdapterFactory
+	hmacValidator          *hmacauth.Validator
+	runtimeEnvironment     string
+	workersEnabled         bool
 }
 
 type ConfigInterface interface {
@@ -100,7 +99,6 @@ type ConfigInterface interface {
 	InitializeGoRoutines()
 	SetActivityTrackerUserService()
 	InitializeTempBlockCleaner() error
-	InitializePhotographerAgendaWorker() error
 	GetDatabase() *sql.DB
 	GetEnvironment() (*globalmodel.Environment, error)
 	GetHTTPServer() *http.Server
@@ -334,13 +332,6 @@ func (c *config) InitializeGoRoutines() {
 		logger.Warn("Validation cleaner prerequisites not met; skipping start")
 	}
 
-	if c.photographerAgendaWorker != nil && c.wg != nil {
-		c.wg.Add(1)
-		go c.photographerAgendaWorker.Start(c.wg, coreutils.ContextWithLogger(baseCtx))
-		logger.Info("Photographer agenda worker started")
-	} else {
-		logger.Warn("Photographer agenda worker not available for goroutine initialization")
-	}
 }
 
 // SetActivityTrackerUserService conecta o activity tracker ao user service
@@ -375,47 +366,6 @@ func (c *config) InitializeTempBlockCleaner() error {
 
 	c.tempBlockCleaner = goroutines.NewTempBlockCleanerWorker(c.permissionService, c.globalService)
 	slog.Info("✅ TempBlockCleanerWorker initialized")
-	return nil
-}
-
-// InitializePhotographerAgendaWorker configura o worker responsável por manter agendas de fotógrafos.
-func (c *config) InitializePhotographerAgendaWorker() error {
-	if !c.workersEnabled {
-		slog.Info("Workers desabilitados; PhotographerAgendaWorker não será inicializado")
-		return nil
-	}
-	if c.repositoryAdapters == nil || c.repositoryAdapters.User == nil {
-		slog.Error("User repository not available for photographer agenda worker initialization")
-		return fmt.Errorf("user repository not initialized")
-	}
-	if c.photoSessionService == nil {
-		slog.Error("Photo session service not available for photographer agenda worker initialization")
-		return fmt.Errorf("photo session service not initialized")
-	}
-	if c.globalService == nil {
-		slog.Error("Global service not available for photographer agenda worker initialization")
-		return fmt.Errorf("global service not initialized")
-	}
-
-	intervalHours := c.env.PhotoSession.PhotographerAgendaRefreshIntervalH
-	if intervalHours <= 0 {
-		intervalHours = 24
-	}
-	c.photographerAgendaWorker = goroutines.NewPhotographerAgendaWorker(
-		c.repositoryAdapters.User,
-		c.photoSessionService,
-		c.globalService,
-		goroutines.PhotographerAgendaWorkerConfig{
-			Interval:      time.Duration(intervalHours) * time.Hour,
-			HorizonMonths: c.env.PhotoSession.PhotographerHorizonMonths,
-			Timezone:      c.env.PhotoSession.PhotographerTimezone,
-		},
-	)
-	slog.Info("✅ PhotographerAgendaWorker initialized",
-		"interval_hours", intervalHours,
-		"horizon_months", c.env.PhotoSession.PhotographerHorizonMonths,
-		"timezone", c.env.PhotoSession.PhotographerTimezone,
-	)
 	return nil
 }
 

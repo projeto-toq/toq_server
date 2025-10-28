@@ -771,7 +771,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`holiday_calendars` (
   `name` VARCHAR(100) NOT NULL,
   `scope` ENUM('NATIONAL', 'STATE', 'CITY') NOT NULL,
   `state` VARCHAR(2) NULL,
-  `city_ibge` VARCHAR(7) NULL,
+  `city` VARCHAR(100) NULL,
   `is_active` TINYINT NOT NULL DEFAULT 1,
   `timezone` VARCHAR(50) NOT NULL DEFAULT 'America/Sao_Paulo',
   PRIMARY KEY (`id`))

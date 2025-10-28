@@ -12,7 +12,6 @@ O correto seria que:
 - Como o proprietário necessita buscar quais dias e horários teremos um fotografo disponível, via GET /listings/photo-session/slots, e o slot para cada sessão de fotos é de 4 horas, definido por env.yaml, o serviço deveria buscar os fotógrafos que possuem horários livres de 4 horas consecutivas entre seus compromissos agendados e bloqueios.
 - a criação da agenda base do fotografo, efetuada durante a criação do usuário do sistema  (create_system_user.go) com roleSlug photographer, deveria colocar como bloqueio padrão todos os horários fora do expediente, 08:00 - 18:00 como default mas definido por variáveis no env.yaml, e deixar livres os horários dentro do expediente.
 - Dias feriados, nacionais, estaduais e municipais, também deveriam ser bloqueados na criação da agenda padrão.
-- para definir dias de feriados que afetam o fotografo, é necessário que o sistema de calendarios holiday_service na tabela holiday_calendars, ao invés de tratar o campo city_ibge como codigo ibge trate como city, assim como é feito na tabela users. Assim é possével associar o calendário de feriados ao usuário fotografo baseado na cidade do usuário (city + state), ou no estado do usuário (state). Nacional afeta a todos.
 - eventuais alterações no banco de dados serão feitas manualmente, apenas indique as alteraçoes necessárias.
 - eventuais códigos morto ou não utilizados devem ser removidos.
 

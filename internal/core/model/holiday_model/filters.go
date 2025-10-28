@@ -6,7 +6,7 @@ import "time"
 type CalendarListFilter struct {
 	Scope      *CalendarScope
 	State      *string
-	CityIBGE   *string
+	City       *string
 	SearchTerm string
 	OnlyActive *bool
 	Page       int

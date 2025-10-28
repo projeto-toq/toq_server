@@ -20,7 +20,7 @@ func validateScopeInput(scope holidaymodel.CalendarScope, state, city string) er
 			return utils.ValidationError("state", "state is required for city scope")
 		}
 		if strings.TrimSpace(city) == "" {
-			return utils.ValidationError("cityIbge", "cityIbge is required for city scope")
+			return utils.ValidationError("city", "city is required for city scope")
 		}
 	default:
 		return utils.ValidationError("scope", "invalid calendar scope")

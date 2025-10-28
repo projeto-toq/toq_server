@@ -8,7 +8,7 @@ type CalendarEntity struct {
 	Name     string
 	Scope    string
 	State    sql.NullString
-	CityIBGE sql.NullString
+	City     sql.NullString
 	IsActive bool
 	Timezone string
 }

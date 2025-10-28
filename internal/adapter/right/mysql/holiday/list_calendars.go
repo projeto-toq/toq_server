@@ -38,9 +38,9 @@ func (a *HolidayAdapter) ListCalendars(ctx context.Context, tx *sql.Tx, filter h
 		conditions = append(conditions, "state = ?")
 		args = append(args, *filter.State)
 	}
-	if filter.CityIBGE != nil {
-		conditions = append(conditions, "city_ibge = ?")
-		args = append(args, *filter.CityIBGE)
+	if filter.City != nil {
+		conditions = append(conditions, "city = ?")
+		args = append(args, *filter.City)
 	}
 	if filter.OnlyActive != nil {
 		conditions = append(conditions, "is_active = ?")
@@ -71,7 +71,7 @@ func (a *HolidayAdapter) ListCalendars(ctx context.Context, tx *sql.Tx, filter h
 	limit, offset := defaultPagination(filter.Limit, filter.Page, calendarsMaxPageSize)
 
 	query := fmt.Sprintf(`
-		SELECT id, name, scope, state, city_ibge, is_active, timezone
+		SELECT id, name, scope, state, city, is_active, timezone
 		FROM holiday_calendars
 		WHERE %s
 		ORDER BY name ASC
@@ -89,7 +89,7 @@ func (a *HolidayAdapter) ListCalendars(ctx context.Context, tx *sql.Tx, filter h
 	calendars := make([]holidaymodel.CalendarInterface, 0)
 	for rows.Next() {
 		var calendarEntity entity.CalendarEntity
-		if err = rows.Scan(&calendarEntity.ID, &calendarEntity.Name, &calendarEntity.Scope, &calendarEntity.State, &calendarEntity.CityIBGE, &calendarEntity.IsActive, &calendarEntity.Timezone); err != nil {
+		if err = rows.Scan(&calendarEntity.ID, &calendarEntity.Name, &calendarEntity.Scope, &calendarEntity.State, &calendarEntity.City, &calendarEntity.IsActive, &calendarEntity.Timezone); err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("mysql.holiday.list_calendars.scan_error", "err", err)
 			return holidaymodel.CalendarListResult{}, fmt.Errorf("scan holiday calendar: %w", err)

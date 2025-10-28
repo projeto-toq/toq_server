@@ -25,11 +25,11 @@ func (a *HolidayAdapter) GetCalendarByID(ctx context.Context, tx *sql.Tx, id uin
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, name, scope, state, city_ibge, is_active, timezone FROM holiday_calendars WHERE id = ?`
+	query := `SELECT id, name, scope, state, city, is_active, timezone FROM holiday_calendars WHERE id = ?`
 	row := exec.QueryRowContext(ctx, query, id)
 
 	var calendarEntity entity.CalendarEntity
-	if err = row.Scan(&calendarEntity.ID, &calendarEntity.Name, &calendarEntity.Scope, &calendarEntity.State, &calendarEntity.CityIBGE, &calendarEntity.IsActive, &calendarEntity.Timezone); err != nil {
+	if err = row.Scan(&calendarEntity.ID, &calendarEntity.Name, &calendarEntity.Scope, &calendarEntity.State, &calendarEntity.City, &calendarEntity.IsActive, &calendarEntity.Timezone); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}

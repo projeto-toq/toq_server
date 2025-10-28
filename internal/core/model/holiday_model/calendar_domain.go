@@ -6,7 +6,7 @@ type calendar struct {
 	scope      CalendarScope
 	state      string
 	stateValid bool
-	cityIBGE   string
+	city       string
 	cityValid  bool
 	active     bool
 	timezone   string
@@ -50,17 +50,17 @@ func (c *calendar) ClearState() {
 	c.stateValid = false
 }
 
-func (c *calendar) CityIBGE() (string, bool) {
-	return c.cityIBGE, c.cityValid
+func (c *calendar) City() (string, bool) {
+	return c.city, c.cityValid
 }
 
-func (c *calendar) SetCityIBGE(value string) {
-	c.cityIBGE = value
+func (c *calendar) SetCity(value string) {
+	c.city = value
 	c.cityValid = true
 }
 
-func (c *calendar) ClearCityIBGE() {
-	c.cityIBGE = ""
+func (c *calendar) ClearCity() {
+	c.city = ""
 	c.cityValid = false
 }
 

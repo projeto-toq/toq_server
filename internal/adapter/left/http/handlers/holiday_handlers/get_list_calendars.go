@@ -22,7 +22,7 @@ import (
 // @Produce	json
 // @Param		 scope	query	string	false	"Calendar scope (NATIONAL|STATE|CITY)" example("STATE")
 // @Param		 state	query	string	false	"State abbreviation" example("SP")
-// @Param		 cityIbge	query	string	false	"City IBGE code" example("3509502")
+// @Param		 city	query	string	false	"City name" example("Campinas")
 // @Param		 search	query	string	false	"Free text search" example("Christmas")
 // @Param		 onlyActive	query	bool	false	"Filter active calendars" example(true)
 // @Param		 page	query	int	false	"Page number" example(1)
@@ -67,7 +67,7 @@ func (h *HolidayHandler) ListCalendars(c *gin.Context) {
 	}
 
 	state := strings.TrimSpace(req.State)
-	city := strings.TrimSpace(req.CityIBGE)
+	city := strings.TrimSpace(req.City)
 
 	var statePtr *string
 	if state != "" {
@@ -84,7 +84,7 @@ func (h *HolidayHandler) ListCalendars(c *gin.Context) {
 	filter := holidaymodel.CalendarListFilter{
 		Scope:      scopePtr,
 		State:      statePtr,
-		CityIBGE:   cityPtr,
+		City:       cityPtr,
 		SearchTerm: strings.TrimSpace(req.SearchTerm),
 		OnlyActive: req.OnlyActive,
 		Page:       page,

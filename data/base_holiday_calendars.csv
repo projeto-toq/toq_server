@@ -1,6 +1,6 @@
-# id;name;scope;state;city_ibge;is_active;timezone
+# id;name;scope;state;city;is_active;timezone
 1;"Feriados Nacionais";NATIONAL;;;1;"America/Sao_Paulo"
 2;"Feriado Estadual de São Paulo";STATE;SP;;1;"America/Sao_Paulo"
-3;"Feriados Municipais de Santana de Parnaíba";CITY;SP;3545206;1;"America/Sao_Paulo"
-4;"Feriados Municipais de Barueri";CITY;SP;3505708;1;"America/Sao_Paulo"
-5;"Feriados Municipais da Cidade de São Paulo";CITY;SP;3550308;1;"America/Sao_Paulo"
+3;"Feriados Municipais de Santana de Parnaíba";CITY;SP;"Santana de Parnaíba";1;"America/Sao_Paulo"
+4;"Feriados Municipais de Barueri";CITY;SP;"Barueri";1;"America/Sao_Paulo"
+5;"Feriados Municipais da Cidade de São Paulo";CITY;SP;"São Paulo";1;"America/Sao_Paulo"

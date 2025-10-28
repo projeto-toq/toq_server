@@ -10,10 +10,10 @@ type Config struct {
 
 func normalizeConfig(cfg Config) Config {
 	if cfg.SlotDurationMinutes <= 0 {
-		cfg.SlotDurationMinutes = 60
+		cfg.SlotDurationMinutes = 240
 	}
 	if cfg.SlotsPerPeriod <= 0 {
-		cfg.SlotsPerPeriod = 4
+		cfg.SlotsPerPeriod = 1
 	}
 	if cfg.MorningStartHour <= 0 {
 		cfg.MorningStartHour = 8

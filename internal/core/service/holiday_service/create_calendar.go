@@ -12,7 +12,7 @@ func (s *holidayService) CreateCalendar(ctx context.Context, input CreateCalenda
 	if strings.TrimSpace(input.Name) == "" {
 		return nil, utils.ValidationError("name", "name is required")
 	}
-	if err := validateScopeInput(input.Scope, input.State, input.CityIBGE); err != nil {
+	if err := validateScopeInput(input.Scope, input.State, input.City); err != nil {
 		return nil, err
 	}
 	loc, tzErr := utils.ResolveLocation("timezone", input.Timezone)
@@ -51,8 +51,8 @@ func (s *holidayService) CreateCalendar(ctx context.Context, input CreateCalenda
 	if state := cleanState(input.Scope, input.State); state != "" {
 		domain.SetState(state)
 	}
-	if city := strings.TrimSpace(input.CityIBGE); city != "" {
-		domain.SetCityIBGE(city)
+	if city := strings.TrimSpace(input.City); city != "" {
+		domain.SetCity(city)
 	}
 	domain.SetActive(input.IsActive || input.Scope == holidaymodel.ScopeNational)
 	domain.SetTimezone(loc.String())

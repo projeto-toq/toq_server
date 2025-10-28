@@ -109,10 +109,6 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 		return fmt.Errorf("failed to initialize temp block cleaner: %w", err)
 	}
 
-	if err := c.InitializePhotographerAgendaWorker(); err != nil {
-		return fmt.Errorf("failed to initialize photographer agenda worker: %w", err)
-	}
-
 	slog.Info("Dependency injection completed successfully using Factory Pattern")
 
 	return nil

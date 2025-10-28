@@ -17,7 +17,7 @@ func (s *holidayService) UpdateCalendar(ctx context.Context, input UpdateCalenda
 	if strings.TrimSpace(input.Name) == "" {
 		return nil, utils.ValidationError("name", "name is required")
 	}
-	if err := validateScopeInput(input.Scope, input.State, input.CityIBGE); err != nil {
+	if err := validateScopeInput(input.Scope, input.State, input.City); err != nil {
 		return nil, err
 	}
 	loc, tzErr := utils.ResolveLocation("timezone", input.Timezone)
@@ -67,10 +67,10 @@ func (s *holidayService) UpdateCalendar(ctx context.Context, input UpdateCalenda
 	} else {
 		existing.ClearState()
 	}
-	if city := strings.TrimSpace(input.CityIBGE); city != "" {
-		existing.SetCityIBGE(city)
+	if city := strings.TrimSpace(input.City); city != "" {
+		existing.SetCity(city)
 	} else {
-		existing.ClearCityIBGE()
+		existing.ClearCity()
 	}
 	existing.SetActive(input.IsActive)
 	existing.SetTimezone(loc.String())

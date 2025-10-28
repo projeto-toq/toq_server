@@ -24,7 +24,7 @@ curl -X POST "https://api.toq.dev/admin/holidays/calendars" \
     "name": "Feriados Sao Paulo",
     "scope": "STATE",
     "state": "SP",
-    "cityIbge": "",
+    "city": "Sao Paulo",
     "isActive": true,
     "timezone": "America/Sao_Paulo"
   }'
@@ -38,7 +38,7 @@ Resposta (`201 Created`):
   "name": "Feriados Sao Paulo",
   "scope": "STATE",
   "state": "SP",
-  "cityIbge": "",
+  "city": "Sao Paulo",
   "isActive": true,
   "timezone": "America/Sao_Paulo"
 }

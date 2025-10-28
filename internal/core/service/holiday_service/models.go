@@ -11,7 +11,7 @@ type CreateCalendarInput struct {
 	Name     string
 	Scope    holidaymodel.CalendarScope
 	State    string
-	CityIBGE string
+	City     string
 	IsActive bool
 	Timezone string
 }
@@ -22,7 +22,7 @@ type UpdateCalendarInput struct {
 	Name     string
 	Scope    holidaymodel.CalendarScope
 	State    string
-	CityIBGE string
+	City     string
 	IsActive bool
 	Timezone string
 }
