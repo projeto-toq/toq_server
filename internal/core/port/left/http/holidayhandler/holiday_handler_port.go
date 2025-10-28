@@ -9,6 +9,8 @@ type HolidayHandlerPort interface {
 	CreateCalendar(c *gin.Context)
 	UpdateCalendar(c *gin.Context)
 	CreateCalendarDate(c *gin.Context)
+	UpdateCalendarDate(ctx *gin.Context)
+	GetCalendarDateDetail(ctx *gin.Context)
 	ListCalendarDates(c *gin.Context)
 	DeleteCalendarDate(c *gin.Context)
 }

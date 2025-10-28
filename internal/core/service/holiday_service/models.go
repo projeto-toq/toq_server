@@ -34,3 +34,12 @@ type CreateCalendarDateInput struct {
 	Label       string
 	Recurrent   bool
 }
+
+// UpdateCalendarDateInput captures the data to update an existing holiday date.
+type UpdateCalendarDateInput struct {
+	ID          uint64
+	CalendarID  uint64
+	HolidayDate time.Time
+	Label       string
+	Recurrent   bool
+}

@@ -23,7 +23,7 @@ const (
 // ListAgenda handles the retrieval of the photographer's agenda.
 // @Summary      List Photographer Agenda
 // @Description  Retrieves the photographer's agenda, including available and blocked slots, within a given date range.
-// @Tags         Photo Session
+// @Tags         Photographer
 // @Produce      json
 // @Param        startDate query string true "Start date in RFC3339 format"
 // @Param        endDate   query string true "End date in RFC3339 format"

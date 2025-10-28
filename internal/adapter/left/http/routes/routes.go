@@ -371,8 +371,17 @@ func RegisterPhotographerRoutes(
 			// GET /api/v2/photographer/agenda
 			agenda.GET("", photoSessionHandler.ListAgenda)
 
+			// GET /api/v2/photographer/agenda/time-off
+			agenda.GET("/time-off", photoSessionHandler.ListTimeOff)
+
 			// POST /api/v2/photographer/agenda/time-off
 			agenda.POST("/time-off", photoSessionHandler.CreateTimeOff)
+
+			// PUT /api/v2/photographer/agenda/time-off
+			agenda.PUT("/time-off", photoSessionHandler.UpdateTimeOff)
+
+			// POST /api/v2/photographer/agenda/time-off/detail
+			agenda.POST("/time-off/detail", photoSessionHandler.GetTimeOffDetail)
 
 			// DELETE /api/v2/photographer/agenda/time-off
 			agenda.DELETE("/time-off", photoSessionHandler.DeleteTimeOff)
@@ -500,6 +509,8 @@ func RegisterAdminRoutes(
 		holidayGroup.POST("/calendars", holidayHandler.CreateCalendar)
 		holidayGroup.PUT("/calendars", holidayHandler.UpdateCalendar)
 		holidayGroup.POST("/dates", holidayHandler.CreateCalendarDate)
+		holidayGroup.PUT("/dates", holidayHandler.UpdateCalendarDate)
+		holidayGroup.POST("/dates/detail", holidayHandler.GetCalendarDateDetail)
 		holidayGroup.GET("/dates", holidayHandler.ListCalendarDates)
 		holidayGroup.DELETE("/dates", holidayHandler.DeleteCalendarDate)
 	}

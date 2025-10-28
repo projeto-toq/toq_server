@@ -44,9 +44,9 @@ func (la *ListingAdapter) DeleteListingGuarantees(ctx context.Context, tx *sql.T
 
 	if qty == 0 {
 		err = fmt.Errorf("no guarantees rows deleted for listing: %w", sql.ErrNoRows)
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.delete_guarantees.no_rows", "error", err, "listing_id", listingID)
-		return err
+		// utils.SetSpanError(ctx, err)
+		logger.Debug("mysql.listing.delete_guarantees.no_rows", "error", err, "listing_id", listingID)
+		// return err
 	}
 
 	return nil

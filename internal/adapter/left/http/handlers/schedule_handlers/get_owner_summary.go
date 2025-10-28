@@ -16,7 +16,7 @@ import (
 //
 // @Summary	List owner agenda summary
 // @Description	Returns a consolidated view of agenda entries for all listings owned by the authenticated user.
-// @Tags	Schedules
+// @Tags		Listing Schedules
 // @Produce	json
 // @Param	listingIds	query	[]int64	false	"Listing identifiers" collectionFormat(multi)
 // @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)"

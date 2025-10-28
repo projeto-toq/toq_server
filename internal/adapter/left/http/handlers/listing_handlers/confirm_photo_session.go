@@ -15,7 +15,7 @@ import (
 // ConfirmPhotoSession confirma uma reserva previamente criada, gerando agendamento definitivo.
 //
 //	@Summary   Confirm a photo session reservation
-//	@Tags      Listings
+//	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
 //	@Param     request body      dto.ConfirmPhotoSessionRequest true "Confirmation payload" Extensions(x-example={"listingId":1001,"slotId":2002,"reservationToken":"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"})

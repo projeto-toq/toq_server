@@ -62,6 +62,21 @@ type HolidayCalendarDateCreateRequest struct {
 	Recurrent   bool   `json:"recurrent"`
 }
 
+// HolidayCalendarDateUpdateRequest captures data to update a holiday date entry.
+type HolidayCalendarDateUpdateRequest struct {
+	ID          uint64 `json:"id" binding:"required"`
+	CalendarID  uint64 `json:"calendarId" binding:"required"`
+	HolidayDate string `json:"holidayDate" binding:"required"`
+	Label       string `json:"label" binding:"required"`
+	Recurrent   bool   `json:"recurrent"`
+}
+
+// HolidayCalendarDateDetailRequest carries the identifier to fetch a holiday date detail.
+type HolidayCalendarDateDetailRequest struct {
+	ID       uint64 `json:"id" binding:"required"`
+	Timezone string `json:"timezone"`
+}
+
 // HolidayCalendarDatesListRequest contains query parameters to list calendar dates.
 type HolidayCalendarDatesListRequest struct {
 	CalendarID uint64 `form:"calendarId" binding:"required"`

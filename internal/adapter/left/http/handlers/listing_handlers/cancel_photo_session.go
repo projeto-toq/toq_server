@@ -14,7 +14,7 @@ import (
 // CancelPhotoSession cancela uma sessão de fotos previamente agendada.
 //
 //	@Summary   Cancel a booked photo session
-//	@Tags      Listings
+//	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
 //	@Param     request body      dto.CancelPhotoSessionRequest true "Cancel payload" Extensions(x-example={"photoSessionId":3003})

@@ -1212,6 +1212,15 @@ definitions:
     required:
     - id
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateDetailRequest:
+    properties:
+      id:
+        type: integer
+      timezone:
+        type: string
+    required:
+    - id
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse:
     properties:
       calendarId:
@@ -1226,6 +1235,24 @@ definitions:
         type: boolean
       timezone:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateUpdateRequest:
+    properties:
+      calendarId:
+        type: integer
+      holidayDate:
+        type: string
+      id:
+        type: integer
+      label:
+        type: string
+      recurrent:
+        type: boolean
+    required:
+    - calendarId
+    - holidayDate
+    - id
+    - label
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDatesListResponse:
     properties:
@@ -1300,6 +1327,17 @@ definitions:
         type: array
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerTimeOffResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      timeOffs:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse'
+        type: array
+      timezone:
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListSizesByAddressResponse:
     properties:
@@ -1636,6 +1674,19 @@ definitions:
         example: AVAILABLE
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse:
+    properties:
+      endDate:
+        type: string
+      id:
+        type: integer
+      reason:
+        type: string
+      startDate:
+        type: string
+      timezone:
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption:
     properties:
       name:
@@ -1915,6 +1966,17 @@ definitions:
       tokens:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TimeOffDetailRequest:
+    properties:
+      timeOffId:
+        example: 42
+        type: integer
+      timezone:
+        example: America/Sao_Paulo
+        type: string
+    required:
+    - timeOffId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse:
     properties:
       accessToken:
@@ -2023,6 +2085,44 @@ definitions:
     required:
     - sessionId
     - status
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateTimeOffRequest:
+    properties:
+      endDate:
+        example: "2025-07-05T18:00:00-03:00"
+        type: string
+      holidayCalendarId:
+        example: 1
+        type: integer
+      horizonMonths:
+        example: 3
+        type: integer
+      reason:
+        example: Atualizacao de agenda
+        type: string
+      startDate:
+        example: "2025-07-05T09:00:00-03:00"
+        type: string
+      timeOffId:
+        example: 42
+        type: integer
+      timezone:
+        example: America/Sao_Paulo
+        type: string
+      workdayEndHour:
+        example: 19
+        type: integer
+      workdayStartHour:
+        example: 8
+        type: integer
+    required:
+    - endDate
+    - horizonMonths
+    - startDate
+    - timeOffId
+    - timezone
+    - workdayEndHour
+    - workdayStartHour
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateUserRequest:
     properties:
@@ -3609,6 +3709,95 @@ paths:
       security:
       - BearerAuth: []
       summary: Create holiday date
+      tags:
+      - Admin Holidays
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing holiday date within a calendar.
+      parameters:
+      - description: Holiday date payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateUpdateRequest'
+        x-example: '{"id":10,"calendarId":42,"holidayDate":"2025-12-25T00:00:00Z","label":"Natal","recurrent":true}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update holiday date
+      tags:
+      - Admin Holidays
+  /admin/holidays/dates/detail:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves details about a specific holiday date entry.
+      parameters:
+      - description: Holiday date identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateDetailRequest'
+        x-example: '{"id":10,"timezone":"America/Sao_Paulo"}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get holiday date detail
       tags:
       - Admin Holidays
   /admin/listing/catalog:
@@ -6093,7 +6282,7 @@ paths:
       - BearerAuth: []
       summary: Cancel a booked photo session
       tags:
-      - Listings
+      - Listing Photo Sessions
   /listings/photo-session/confirm:
     post:
       consumes:
@@ -6141,7 +6330,7 @@ paths:
       - BearerAuth: []
       summary: Confirm a photo session reservation
       tags:
-      - Listings
+      - Listing Photo Sessions
   /listings/photo-session/reserve:
     post:
       consumes:
@@ -6189,7 +6378,7 @@ paths:
       - BearerAuth: []
       summary: Reserve a photo session slot
       tags:
-      - Listings
+      - Listing Photo Sessions
   /listings/photo-session/slots:
     get:
       consumes:
@@ -6262,7 +6451,7 @@ paths:
       - BearerAuth: []
       summary: List available photographer slots
       tags:
-      - Listings
+      - Listing Photo Sessions
   /photographer/agenda:
     get:
       description: Retrieves the photographer's agenda, including available and blocked
@@ -6313,7 +6502,7 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       summary: List Photographer Agenda
       tags:
-      - Photo Session
+      - Photographer
   /photographer/agenda/time-off:
     delete:
       consumes:
@@ -6327,6 +6516,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest'
+        x-example: '{"timeOffId":42,"timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19}'
       produces:
       - application/json
       responses:
@@ -6351,7 +6541,58 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       summary: Delete Photographer Time-Off
       tags:
-      - Photo Session
+      - Photographer
+    get:
+      description: Lists time-off periods for the authenticated photographer within
+        a date range.
+      parameters:
+      - description: Range start (RFC3339)
+        example: '"2025-07-01T00:00:00Z"'
+        in: query
+        name: rangeFrom
+        required: true
+        type: string
+      - description: Range end (RFC3339)
+        example: '"2025-07-31T23:59:59Z"'
+        in: query
+        name: rangeTo
+        required: true
+        type: string
+      - description: Page number
+        example: 1
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: Items per page
+        example: 20
+        in: query
+        minimum: 1
+        name: size
+        type: integer
+      - description: Preferred timezone
+        example: '"America/Sao_Paulo"'
+        in: query
+        name: timezone
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerTimeOffResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: List photographer time-off
+      tags:
+      - Photographer
     post:
       consumes:
       - application/json
@@ -6364,6 +6605,8 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateTimeOffRequest'
+        x-example: '{"startDate":"2025-07-05T09:00:00-03:00","endDate":"2025-07-05T18:00:00-03:00","reason":"Participação
+          em evento","timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19}'
       produces:
       - application/json
       responses:
@@ -6386,7 +6629,78 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       summary: Create Photographer Time-Off
       tags:
-      - Photo Session
+      - Photographer
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing time-off period for the authenticated photographer
+        and refreshes agenda slots.
+      parameters:
+      - description: Update Time-Off payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateTimeOffRequest'
+        x-example: '{"timeOffId":42,"startDate":"2025-07-05T10:00:00-03:00","endDate":"2025-07-05T12:00:00-03:00","reason":"Consulta
+          médica","timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Update photographer time-off
+      tags:
+      - Photographer
+  /photographer/agenda/time-off/detail:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves a specific time-off entry for the authenticated photographer.
+      parameters:
+      - description: Time-Off detail payload
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TimeOffDetailRequest'
+        x-example: '{"timeOffId":42,"timezone":"America/Sao_Paulo"}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Get photographer time-off detail
+      tags:
+      - Photographer
   /photographer/sessions/status:
     post:
       consumes:
@@ -6435,7 +6749,7 @@ paths:
       - BearerAuth: []
       summary: Accept or reject a photo session
       tags:
-      - Photographer
+      - Listing Schedules
   /realtor/creci/upload-url:
     post:
       consumes:
@@ -6582,7 +6896,7 @@ paths:
       - BearerAuth: []
       summary: List listing availability
       tags:
-      - Schedules
+      - Listing Schedules
   /schedules/listing/block:
     delete:
       consumes:
@@ -6625,7 +6939,7 @@ paths:
       - BearerAuth: []
       summary: Delete a blocking entry
       tags:
-      - Schedules
+      - Listing Schedules
     post:
       consumes:
       - application/json
@@ -6675,7 +6989,7 @@ paths:
       - BearerAuth: []
       summary: Create a blocking entry
       tags:
-      - Schedules
+      - Listing Schedules
     put:
       consumes:
       - application/json
@@ -6725,7 +7039,7 @@ paths:
       - BearerAuth: []
       summary: Update a blocking entry
       tags:
-      - Schedules
+      - Listing Schedules
   /schedules/listing/detail:
     get:
       description: Returns all agenda entries for a specific listing owned by the
@@ -6788,7 +7102,7 @@ paths:
       - BearerAuth: []
       summary: List agenda entries for a listing
       tags:
-      - Schedules
+      - Listing Schedules
   /schedules/listing/finish:
     post:
       consumes:
@@ -6838,7 +7152,7 @@ paths:
       - BearerAuth: []
       summary: Confirm listing agenda creation
       tags:
-      - Schedules
+      - Listing Schedules
   /schedules/owner/summary:
     get:
       description: Returns a consolidated view of agenda entries for all listings
@@ -6894,7 +7208,7 @@ paths:
       - BearerAuth: []
       summary: List owner agenda summary
       tags:
-      - Schedules
+      - Listing Schedules
   /user/account:
     delete:
       consumes:

@@ -15,7 +15,7 @@ import (
 //
 // @Summary	Confirm listing agenda creation
 // @Description	Marks the listing agenda as finished and moves listing to pending photo scheduling.
-// @Tags	Schedules
+// @Tags		Listing Schedules
 // @Accept	json
 // @Produce	json
 // @Param	request	body	dto.ScheduleFinishAgendaRequest	true	"Finish agenda payload" Extensions(x-example={"listingId":3241})

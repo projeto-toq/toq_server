@@ -14,7 +14,7 @@ import (
 // UpdateSessionStatus handles the request to accept or reject a photo session.
 //
 //	@Summary   Accept or reject a photo session
-//	@Tags      Photographer
+//	@Tags      Listing Schedules
 //	@Accept    json
 //	@Produce   json
 //	@Param     request   body      dto.UpdateSessionStatusRequest true "Status update request"

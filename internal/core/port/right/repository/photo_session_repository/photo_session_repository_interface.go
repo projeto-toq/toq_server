@@ -28,6 +28,9 @@ type PhotoSessionRepositoryInterface interface {
 	CreateTimeOff(ctx context.Context, tx *sql.Tx, timeOff photosessionmodel.PhotographerTimeOffInterface) (uint64, error)
 	DeleteTimeOff(ctx context.Context, tx *sql.Tx, timeOffID uint64) error
 	ListTimeOff(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerTimeOffInterface, error)
+	GetTimeOffByID(ctx context.Context, tx *sql.Tx, timeOffID uint64) (photosessionmodel.PhotographerTimeOffInterface, error)
+	GetTimeOffByIDForUpdate(ctx context.Context, tx *sql.Tx, timeOffID uint64) (photosessionmodel.PhotographerTimeOffInterface, error)
+	UpdateTimeOff(ctx context.Context, tx *sql.Tx, timeOff photosessionmodel.PhotographerTimeOffInterface) error
 	ListDefaultAvailability(ctx context.Context, tx *sql.Tx, photographerID uint64) ([]photosessionmodel.PhotographerDefaultAvailabilityInterface, error)
 	ReplaceDefaultAvailability(ctx context.Context, tx *sql.Tx, photographerID uint64, records []photosessionmodel.PhotographerDefaultAvailabilityInterface) error
 	DeleteDefaultAvailability(ctx context.Context, tx *sql.Tx, photographerID uint64, weekday *time.Weekday, period *photosessionmodel.SlotPeriod) error

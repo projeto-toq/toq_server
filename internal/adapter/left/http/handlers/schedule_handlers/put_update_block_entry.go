@@ -16,7 +16,7 @@ import (
 //
 // @Summary		Update a blocking entry
 // @Description	Updates an existing blocking or temporary block entry for a listing agenda.
-// @Tags		Schedules
+// @Tags		Listing Schedules
 // @Accept		json
 // @Produce	json
 // @Param		request	body	dto.ScheduleBlockEntryUpdateRequest	true	"Block entry update payload" Extensions(x-example={"entryId":5021,"listingId":3241,"entryType":"TEMP_BLOCK","startsAt":"2025-06-20T09:00:00-03:00","endsAt":"2025-06-20T12:00:00-03:00","reason":"Janela de manutencao","timezone":"America/Sao_Paulo"})

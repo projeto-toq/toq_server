@@ -15,7 +15,7 @@ import (
 // ReservePhotoSession cria uma reserva temporária de slot para sessão fotográfica.
 //
 //	@Summary   Reserve a photo session slot
-//	@Tags      Listings
+//	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
 //	@Param     request body      dto.ReservePhotoSessionRequest true "Reservation request" Extensions(x-example={"listingId":1001,"slotId":2002})

@@ -44,9 +44,9 @@ func (la *ListingAdapter) DeleteListingFinancingBlockers(ctx context.Context, tx
 
 	if qty == 0 {
 		err = fmt.Errorf("no financing_blockers rows deleted for listing: %w", sql.ErrNoRows)
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.delete_financing_blockers.no_rows", "error", err, "listing_id", listingID)
-		return err
+		// utils.SetSpanError(ctx, err)
+		logger.Debug("mysql.listing.delete_financing_blockers.no_rows", "error", err, "listing_id", listingID)
+		// return err
 	}
 
 	return nil

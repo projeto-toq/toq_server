@@ -15,6 +15,8 @@ type HolidayServiceInterface interface {
 	GetCalendarByID(ctx context.Context, id uint64) (holidaymodel.CalendarInterface, error)
 	ListCalendars(ctx context.Context, filter holidaymodel.CalendarListFilter) (holidaymodel.CalendarListResult, error)
 	CreateCalendarDate(ctx context.Context, input CreateCalendarDateInput) (holidaymodel.CalendarDateInterface, error)
+	UpdateCalendarDate(ctx context.Context, input UpdateCalendarDateInput) (holidaymodel.CalendarDateInterface, error)
+	GetCalendarDateByID(ctx context.Context, id uint64, timezone string) (holidaymodel.CalendarDateInterface, error)
 	DeleteCalendarDate(ctx context.Context, id uint64) error
 	ListCalendarDates(ctx context.Context, filter holidaymodel.CalendarDatesFilter) (holidaymodel.CalendarDatesResult, error)
 }

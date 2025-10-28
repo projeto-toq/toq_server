@@ -1779,6 +1779,74 @@ const docTemplate = `{
                     }
                 }
             },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates an existing holiday date within a calendar.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Holidays"
+                ],
+                "summary": "Update holiday date",
+                "parameters": [
+                    {
+                        "x-example": "{\"id\":10,\"calendarId\":42,\"holidayDate\":\"2025-12-25T00:00:00Z\",\"label\":\"Natal\",\"recurrent\":true}",
+                        "description": "Holiday date payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -1879,6 +1947,76 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "Holiday date deleted"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/holidays/dates/detail": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves details about a specific holiday date entry.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Holidays"
+                ],
+                "summary": "Get holiday date detail",
+                "parameters": [
+                    {
+                        "x-example": "{\"id\":10,\"timezone\":\"America/Sao_Paulo\"}",
+                        "description": "Holiday date identifier",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -5493,7 +5631,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Listings"
+                    "Listing Photo Sessions"
                 ],
                 "summary": "Cancel a booked photo session",
                 "parameters": [
@@ -5562,7 +5700,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Listings"
+                    "Listing Photo Sessions"
                 ],
                 "summary": "Confirm a photo session reservation",
                 "parameters": [
@@ -5637,7 +5775,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Listings"
+                    "Listing Photo Sessions"
                 ],
                 "summary": "Reserve a photo session slot",
                 "parameters": [
@@ -5712,7 +5850,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Listings"
+                    "Listing Photo Sessions"
                 ],
                 "summary": "List available photographer slots",
                 "parameters": [
@@ -5812,7 +5950,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Photo Session"
+                    "Photographer"
                 ],
                 "summary": "List Photographer Agenda",
                 "parameters": [
@@ -5880,6 +6018,128 @@ const docTemplate = `{
             }
         },
         "/photographer/agenda/time-off": {
+            "get": {
+                "description": "Lists time-off periods for the authenticated photographer within a date range.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Photographer"
+                ],
+                "summary": "List photographer time-off",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"2025-07-01T00:00:00Z\"",
+                        "description": "Range start (RFC3339)",
+                        "name": "rangeFrom",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"2025-07-31T23:59:59Z\"",
+                        "description": "Range end (RFC3339)",
+                        "name": "rangeTo",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 20,
+                        "description": "Items per page",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"America/Sao_Paulo\"",
+                        "description": "Preferred timezone",
+                        "name": "timezone",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerTimeOffResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates an existing time-off period for the authenticated photographer and refreshes agenda slots.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Photographer"
+                ],
+                "summary": "Update photographer time-off",
+                "parameters": [
+                    {
+                        "x-example": "{\"timeOffId\":42,\"startDate\":\"2025-07-05T10:00:00-03:00\",\"endDate\":\"2025-07-05T12:00:00-03:00\",\"reason\":\"Consulta médica\",\"timezone\":\"America/Sao_Paulo\",\"holidayCalendarId\":1,\"horizonMonths\":3,\"workdayStartHour\":8,\"workdayEndHour\":19}",
+                        "description": "Update Time-Off payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateTimeOffRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Registers a new time-off period for the authenticated photographer, blocking their agenda.",
                 "consumes": [
@@ -5889,11 +6149,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Photo Session"
+                    "Photographer"
                 ],
                 "summary": "Create Photographer Time-Off",
                 "parameters": [
                     {
+                        "x-example": "{\"startDate\":\"2025-07-05T09:00:00-03:00\",\"endDate\":\"2025-07-05T18:00:00-03:00\",\"reason\":\"Participação em evento\",\"timezone\":\"America/Sao_Paulo\",\"holidayCalendarId\":1,\"horizonMonths\":3,\"workdayStartHour\":8,\"workdayEndHour\":19}",
                         "description": "Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -5941,11 +6202,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Photo Session"
+                    "Photographer"
                 ],
                 "summary": "Delete Photographer Time-Off",
                 "parameters": [
                     {
+                        "x-example": "{\"timeOffId\":42,\"timezone\":\"America/Sao_Paulo\",\"holidayCalendarId\":1,\"horizonMonths\":3,\"workdayStartHour\":8,\"workdayEndHour\":19}",
                         "description": "Delete Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -5988,6 +6250,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/photographer/agenda/time-off/detail": {
+            "post": {
+                "description": "Retrieves a specific time-off entry for the authenticated photographer.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Photographer"
+                ],
+                "summary": "Get photographer time-off detail",
+                "parameters": [
+                    {
+                        "x-example": "{\"timeOffId\":42,\"timezone\":\"America/Sao_Paulo\"}",
+                        "description": "Time-Off detail payload",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TimeOffDetailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/photographer/sessions/status": {
             "post": {
                 "security": [
@@ -6002,7 +6317,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Photographer"
+                    "Listing Schedules"
                 ],
                 "summary": "Accept or reject a photo session",
                 "parameters": [
@@ -6201,7 +6516,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedules"
+                    "Listing Schedules"
                 ],
                 "summary": "List listing availability",
                 "parameters": [
@@ -6305,7 +6620,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedules"
+                    "Listing Schedules"
                 ],
                 "summary": "Update a blocking entry",
                 "parameters": [
@@ -6379,7 +6694,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedules"
+                    "Listing Schedules"
                 ],
                 "summary": "Create a blocking entry",
                 "parameters": [
@@ -6453,7 +6768,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedules"
+                    "Listing Schedules"
                 ],
                 "summary": "Delete a blocking entry",
                 "parameters": [
@@ -6517,7 +6832,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedules"
+                    "Listing Schedules"
                 ],
                 "summary": "List agenda entries for a listing",
                 "parameters": [
@@ -6615,7 +6930,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedules"
+                    "Listing Schedules"
                 ],
                 "summary": "Confirm listing agenda creation",
                 "parameters": [
@@ -6688,7 +7003,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Schedules"
+                    "Listing Schedules"
                 ],
                 "summary": "List owner agenda summary",
                 "parameters": [
@@ -9503,6 +9818,20 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateDetailRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "timezone": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateResponse": {
             "type": "object",
             "properties": {
@@ -9523,6 +9852,32 @@ const docTemplate = `{
                 },
                 "timezone": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarDateUpdateRequest": {
+            "type": "object",
+            "required": [
+                "calendarId",
+                "holidayDate",
+                "id",
+                "label"
+            ],
+            "properties": {
+                "calendarId": {
+                    "type": "integer"
+                },
+                "holidayDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "recurrent": {
+                    "type": "boolean"
                 }
             }
         },
@@ -9635,6 +9990,23 @@ const docTemplate = `{
                 },
                 "pagination": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerTimeOffResponse": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                },
+                "timeOffs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse"
+                    }
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         },
@@ -10144,6 +10516,26 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerTimeOffResponse": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption": {
             "type": "object",
             "properties": {
@@ -10559,6 +10951,22 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TimeOffDetailRequest": {
+            "type": "object",
+            "required": [
+                "timeOffId"
+            ],
+            "properties": {
+                "timeOffId": {
+                    "type": "integer",
+                    "example": 42
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse": {
             "type": "object",
             "properties": {
@@ -10722,6 +11130,56 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "ACCEPTED"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateTimeOffRequest": {
+            "type": "object",
+            "required": [
+                "endDate",
+                "horizonMonths",
+                "startDate",
+                "timeOffId",
+                "timezone",
+                "workdayEndHour",
+                "workdayStartHour"
+            ],
+            "properties": {
+                "endDate": {
+                    "type": "string",
+                    "example": "2025-07-05T18:00:00-03:00"
+                },
+                "holidayCalendarId": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "horizonMonths": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "Atualizacao de agenda"
+                },
+                "startDate": {
+                    "type": "string",
+                    "example": "2025-07-05T09:00:00-03:00"
+                },
+                "timeOffId": {
+                    "type": "integer",
+                    "example": 42
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
+                },
+                "workdayEndHour": {
+                    "type": "integer",
+                    "example": 19
+                },
+                "workdayStartHour": {
+                    "type": "integer",
+                    "example": 8
                 }
             }
         },

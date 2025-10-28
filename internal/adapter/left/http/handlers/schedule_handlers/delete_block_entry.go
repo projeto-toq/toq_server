@@ -15,7 +15,7 @@ import (
 //
 // @Summary		Delete a blocking entry
 // @Description	Removes a blocking or temporary block entry from a listing agenda.
-// @Tags		Schedules
+// @Tags		Listing Schedules
 // @Accept		json
 // @Produce	json
 // @Param		request	body	dto.ScheduleDeleteEntryRequest	true	"Block entry deletion payload" Extensions(x-example={"entryId":5021,"listingId":3241})

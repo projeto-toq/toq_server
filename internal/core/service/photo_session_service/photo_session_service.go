@@ -49,6 +49,9 @@ type PhotoSessionServiceInterface interface {
 	CreateTimeOffWithTx(ctx context.Context, tx *sql.Tx, input TimeOffInput) (uint64, error)
 	DeleteTimeOff(ctx context.Context, input DeleteTimeOffInput) error
 	DeleteTimeOffWithTx(ctx context.Context, tx *sql.Tx, input DeleteTimeOffInput) error
+	ListTimeOff(ctx context.Context, input ListTimeOffInput) (ListTimeOffOutput, error)
+	GetTimeOffDetail(ctx context.Context, input TimeOffDetailInput) (TimeOffDetailResult, error)
+	UpdateTimeOff(ctx context.Context, input UpdateTimeOffInput) (TimeOffDetailResult, error)
 	ListAgenda(ctx context.Context, input ListAgendaInput) (ListAgendaOutput, error)
 	UpdateSessionStatus(ctx context.Context, input UpdateSessionStatusInput) error
 }
@@ -263,6 +266,264 @@ func (s *photoSessionService) DeleteTimeOffWithTx(ctx context.Context, tx *sql.T
 		WorkdayEndHour:    input.WorkdayEndHour,
 	}
 	return s.ensurePhotographerAgendaWithPrepared(ctx, tx, ensureInput, nil)
+}
+
+// ListTimeOff returns paginated time-off entries for the authenticated photographer.
+func (s *photoSessionService) ListTimeOff(ctx context.Context, input ListTimeOffInput) (ListTimeOffOutput, error) {
+	if input.PhotographerID == 0 {
+		return ListTimeOffOutput{}, utils.ValidationError("photographerId", "photographerId must be greater than zero")
+	}
+	if input.RangeFrom.IsZero() {
+		return ListTimeOffOutput{}, utils.ValidationError("rangeFrom", "rangeFrom is required")
+	}
+	if input.RangeTo.IsZero() {
+		return ListTimeOffOutput{}, utils.ValidationError("rangeTo", "rangeTo is required")
+	}
+	if input.RangeTo.Before(input.RangeFrom) {
+		return ListTimeOffOutput{}, utils.ValidationError("rangeTo", "rangeTo must be greater than or equal to rangeFrom")
+	}
+
+	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "service.ListTimeOff")
+	if err != nil {
+		return ListTimeOffOutput{}, utils.InternalError("")
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	loc, tzErr := resolveLocation(input.Timezone)
+	if tzErr != nil {
+		return ListTimeOffOutput{}, tzErr
+	}
+
+	page := input.Page
+	if page <= 0 {
+		page = defaultAgendaPage
+	}
+
+	size := input.Size
+	if size <= 0 {
+		size = defaultAgendaSize
+	}
+	if size > maxAgendaPageSize {
+		size = maxAgendaPageSize
+	}
+
+	tx, txErr := s.globalService.StartReadOnlyTransaction(ctx)
+	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("photo_session.list_time_off.tx_start_error", "err", txErr)
+		return ListTimeOffOutput{}, utils.InternalError("")
+	}
+	defer func() {
+		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+			utils.SetSpanError(ctx, rbErr)
+			logger.Error("photo_session.list_time_off.tx_rollback_error", "err", rbErr)
+		}
+	}()
+
+	entries, err := s.repo.ListTimeOff(ctx, tx, input.PhotographerID, input.RangeFrom.UTC(), input.RangeTo.UTC())
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.list_time_off.repo_error", "err", err)
+		return ListTimeOffOutput{}, utils.InternalError("")
+	}
+
+	for _, entry := range entries {
+		entry.SetStartDate(utils.ConvertToLocation(entry.StartDate(), loc))
+		entry.SetEndDate(utils.ConvertToLocation(entry.EndDate(), loc))
+	}
+
+	total := len(entries)
+	start := (page - 1) * size
+	if start > total {
+		start = total
+	}
+	end := start + size
+	if end > total {
+		end = total
+	}
+	paged := entries[start:end]
+
+	return ListTimeOffOutput{
+		TimeOffs: paged,
+		Total:    int64(total),
+		Page:     page,
+		Size:     size,
+		Timezone: loc.String(),
+	}, nil
+}
+
+// GetTimeOffDetail fetches a specific time-off entry ensuring ownership.
+func (s *photoSessionService) GetTimeOffDetail(ctx context.Context, input TimeOffDetailInput) (TimeOffDetailResult, error) {
+	if input.TimeOffID == 0 {
+		return TimeOffDetailResult{}, utils.ValidationError("timeOffId", "timeOffId must be greater than zero")
+	}
+	if input.PhotographerID == 0 {
+		return TimeOffDetailResult{}, utils.ValidationError("photographerId", "photographerId must be greater than zero")
+	}
+
+	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "service.GetTimeOffDetail")
+	if err != nil {
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	loc, tzErr := resolveLocation(input.Timezone)
+	if tzErr != nil {
+		return TimeOffDetailResult{}, tzErr
+	}
+
+	tx, txErr := s.globalService.StartReadOnlyTransaction(ctx)
+	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("photo_session.get_time_off.tx_start_error", "err", txErr)
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+	defer func() {
+		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+			utils.SetSpanError(ctx, rbErr)
+			logger.Error("photo_session.get_time_off.tx_rollback_error", "err", rbErr)
+		}
+	}()
+
+	entry, err := s.repo.GetTimeOffByID(ctx, tx, input.TimeOffID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return TimeOffDetailResult{}, utils.NotFoundError("Time off")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.get_time_off.repo_error", "time_off_id", input.TimeOffID, "err", err)
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+
+	if entry.PhotographerUserID() != input.PhotographerID {
+		return TimeOffDetailResult{}, utils.NotFoundError("Time off")
+	}
+
+	entry.SetStartDate(utils.ConvertToLocation(entry.StartDate(), loc))
+	entry.SetEndDate(utils.ConvertToLocation(entry.EndDate(), loc))
+
+	return TimeOffDetailResult{TimeOff: entry, Timezone: loc.String()}, nil
+}
+
+// UpdateTimeOff updates a time-off entry and refreshes agenda slots.
+func (s *photoSessionService) UpdateTimeOff(ctx context.Context, input UpdateTimeOffInput) (TimeOffDetailResult, error) {
+	if input.TimeOffID == 0 {
+		return TimeOffDetailResult{}, utils.ValidationError("timeOffId", "timeOffId must be greater than zero")
+	}
+	if err := validateTimeOffInput(TimeOffInput{
+		PhotographerID:    input.PhotographerID,
+		StartDate:         input.StartDate,
+		EndDate:           input.EndDate,
+		Reason:            input.Reason,
+		Timezone:          input.Timezone,
+		HolidayCalendarID: input.HolidayCalendarID,
+		HorizonMonths:     input.HorizonMonths,
+		WorkdayStartHour:  input.WorkdayStartHour,
+		WorkdayEndHour:    input.WorkdayEndHour,
+	}); err != nil {
+		return TimeOffDetailResult{}, err
+	}
+
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	loc, tzErr := resolveLocation(input.Timezone)
+	if tzErr != nil {
+		return TimeOffDetailResult{}, tzErr
+	}
+
+	tx, txErr := s.globalService.StartTransaction(ctx)
+	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("photo_session.update_time_off.tx_start_error", "err", txErr)
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+
+	committed := false
+	defer func() {
+		if !committed {
+			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
+				logger.Error("photo_session.update_time_off.tx_rollback_error", "err", rbErr)
+			}
+		}
+	}()
+
+	existing, err := s.repo.GetTimeOffByIDForUpdate(ctx, tx, input.TimeOffID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return TimeOffDetailResult{}, utils.NotFoundError("Time off")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.update_time_off.get_error", "time_off_id", input.TimeOffID, "err", err)
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+
+	if existing.PhotographerUserID() != input.PhotographerID {
+		return TimeOffDetailResult{}, utils.NotFoundError("Time off")
+	}
+
+	domain := photosessionmodel.NewPhotographerTimeOff()
+	domain.SetID(input.TimeOffID)
+	domain.SetPhotographerUserID(input.PhotographerID)
+	domain.SetStartDate(input.StartDate.UTC())
+	domain.SetEndDate(input.EndDate.UTC())
+	if input.Reason != nil {
+		reason := strings.TrimSpace(*input.Reason)
+		if reason != "" {
+			reasonCopy := reason
+			domain.SetReason(&reasonCopy)
+		} else {
+			domain.SetReason(nil)
+		}
+	} else {
+		domain.SetReason(nil)
+	}
+
+	if err = s.repo.UpdateTimeOff(ctx, tx, domain); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return TimeOffDetailResult{}, utils.NotFoundError("Time off")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("photo_session.update_time_off.repo_error", "time_off_id", input.TimeOffID, "err", err)
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+
+	ensureInput := EnsureAgendaInput{
+		PhotographerID:    input.PhotographerID,
+		Timezone:          input.Timezone,
+		HolidayCalendarID: input.HolidayCalendarID,
+		HorizonMonths:     input.HorizonMonths,
+		WorkdayStartHour:  input.WorkdayStartHour,
+		WorkdayEndHour:    input.WorkdayEndHour,
+	}
+	if err = s.ensurePhotographerAgendaWithPrepared(ctx, tx, ensureInput, nil); err != nil {
+		return TimeOffDetailResult{}, err
+	}
+
+	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
+		logger.Error("photo_session.update_time_off.tx_commit_error", "err", cmErr)
+		return TimeOffDetailResult{}, utils.InternalError("")
+	}
+	committed = true
+
+	domain.SetStartDate(utils.ConvertToLocation(domain.StartDate(), loc))
+	domain.SetEndDate(utils.ConvertToLocation(domain.EndDate(), loc))
+
+	return TimeOffDetailResult{TimeOff: domain, Timezone: loc.String()}, nil
 }
 
 // UpdateSessionStatus updates the status of a photo session for a photographer.
@@ -941,6 +1202,52 @@ type TimeOffInput struct {
 	HorizonMonths     int
 	WorkdayStartHour  int
 	WorkdayEndHour    int
+}
+
+// UpdateTimeOffInput represents the payload to change a photographer time-off.
+type UpdateTimeOffInput struct {
+	TimeOffID         uint64
+	PhotographerID    uint64
+	StartDate         time.Time
+	EndDate           time.Time
+	Reason            *string
+	Timezone          string
+	HolidayCalendarID *uint64
+	HorizonMonths     int
+	WorkdayStartHour  int
+	WorkdayEndHour    int
+}
+
+// ListTimeOffInput captures filters for listing photographer time-off entries.
+type ListTimeOffInput struct {
+	PhotographerID uint64
+	RangeFrom      time.Time
+	RangeTo        time.Time
+	Page           int
+	Size           int
+	Timezone       string
+}
+
+// TimeOffDetailInput carries identifiers to fetch a specific time-off.
+type TimeOffDetailInput struct {
+	TimeOffID      uint64
+	PhotographerID uint64
+	Timezone       string
+}
+
+// ListTimeOffOutput aggregates paginated time-off entries.
+type ListTimeOffOutput struct {
+	TimeOffs []photosessionmodel.PhotographerTimeOffInterface
+	Total    int64
+	Page     int
+	Size     int
+	Timezone string
+}
+
+// TimeOffDetailResult represents a single time-off entry alongside timezone metadata.
+type TimeOffDetailResult struct {
+	TimeOff  photosessionmodel.PhotographerTimeOffInterface
+	Timezone string
 }
 
 func (input TimeOffInput) toModel() photosessionmodel.PhotographerTimeOffInterface {

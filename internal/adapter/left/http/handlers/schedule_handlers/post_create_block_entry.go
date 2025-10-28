@@ -16,7 +16,7 @@ import (
 //
 // @Summary		Create a blocking entry
 // @Description	Creates a blocking or temporary blocking time range for a listing agenda.
-// @Tags		Schedules
+// @Tags		Listing Schedules
 // @Accept		json
 // @Produce	json
 // @Param		request	body	dto.ScheduleBlockEntryRequest	true	"Block entry payload" Extensions(x-example={"listingId":3241,"entryType":"BLOCK","startsAt":"2025-06-15T09:00:00-03:00","endsAt":"2025-06-15T11:00:00-03:00","reason":"Janela de manutencao","timezone":"America/Sao_Paulo"})

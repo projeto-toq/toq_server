@@ -44,9 +44,9 @@ func (la *ListingAdapter) DeleteListingExchangePlaces(ctx context.Context, tx *s
 
 	if qty == 0 {
 		err = fmt.Errorf("no exchange_places rows deleted for listing: %w", sql.ErrNoRows)
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.delete_exchange_places.no_rows", "error", err, "listing_id", listingID)
-		return err
+		// utils.SetSpanError(ctx, err)
+		logger.Debug("mysql.listing.delete_exchange_places.no_rows", "error", err, "listing_id", listingID)
+		// return err
 	}
 
 	return nil

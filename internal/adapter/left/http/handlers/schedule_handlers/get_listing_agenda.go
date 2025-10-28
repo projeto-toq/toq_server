@@ -16,7 +16,7 @@ import (
 //
 // @Summary	List agenda entries for a listing
 // @Description	Returns all agenda entries for a specific listing owned by the authenticated user.
-// @Tags	Schedules
+// @Tags		Listing Schedules
 // @Produce	json
 // @Param	listingId	query	int64	true	"Listing identifier"
 // @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)"

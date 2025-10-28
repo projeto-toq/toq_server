@@ -21,7 +21,7 @@ const (
 // ListPhotographerSlots lista slots disponíveis na agenda de fotógrafos.
 //
 //	@Summary   List available photographer slots
-//	@Tags      Listings
+//	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
 //	@Param     from    query     string false "Start date filter (YYYY-MM-DD)" Format(date) example(2025-10-20)

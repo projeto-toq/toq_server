@@ -16,7 +16,7 @@ import (
 //
 // @Summary	List listing availability
 // @Description	Returns the available slots for a listing within the provided time range.
-// @Tags	Schedules
+// @Tags		Listing Schedules
 // @Produce	json
 // @Param	listingId	query	int64	true	"Listing identifier"
 // @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)"
