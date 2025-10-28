@@ -15,6 +15,8 @@ type listing struct {
 	neighborhood            string
 	city                    string
 	state                   string
+	title                   string
+	titleValid              bool
 	listingType             globalmodel.PropertyType
 	owner                   PropertyOwner
 	ownerValid              bool
@@ -164,6 +166,24 @@ func (l *listing) State() string {
 
 func (l *listing) SetState(state string) {
 	l.state = state
+}
+
+func (l *listing) Title() string {
+	return l.title
+}
+
+func (l *listing) SetTitle(title string) {
+	l.title = title
+	l.titleValid = true
+}
+
+func (l *listing) HasTitle() bool {
+	return l.titleValid
+}
+
+func (l *listing) UnsetTitle() {
+	l.title = ""
+	l.titleValid = false
 }
 
 func (l *listing) ListingType() globalmodel.PropertyType {

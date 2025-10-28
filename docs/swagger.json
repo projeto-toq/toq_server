@@ -4924,20 +4924,6 @@
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "example": "\"2025-01-01\"",
-                        "description": "Filter by creation date from (RFC3339 or YYYY-MM-DD)",
-                        "name": "createdFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"2025-01-31\"",
-                        "description": "Filter by creation date to (RFC3339 or YYYY-MM-DD)",
-                        "name": "createdTo",
-                        "in": "query"
-                    },
-                    {
                         "type": "number",
                         "example": 100000,
                         "description": "Minimum sell price",
@@ -5036,17 +5022,7 @@
                 "summary": "Update a listing",
                 "parameters": [
                     {
-                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+55 11 91234-5678\",\"accompanying\":\"assistant\"}",
-                        "description": "Payload for update (ID must be provided in the body)",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest"
-                        }
-                    },
-                    {
-                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+5511912345678\",\"accompanying\":\"assistant\"}",
+                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+5511912345678\",\"title\":\"Oportunidade\",\"accompanying\":\"assistant\"}",
                         "description": "Payload for update (ID must be provided in the body)",
                         "name": "request",
                         "in": "body",
@@ -9903,6 +9879,9 @@
                 "tenantPhone": {
                     "type": "string"
                 },
+                "title": {
+                    "type": "string"
+                },
                 "transaction": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
                 },
@@ -10008,9 +9987,6 @@
                 "complexId": {
                     "type": "string"
                 },
-                "createdAt": {
-                    "type": "string"
-                },
                 "description": {
                     "type": "string"
                 },
@@ -10030,9 +10006,6 @@
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
                     "type": "string"
                 },
                 "userId": {
@@ -10261,6 +10234,10 @@
                 "expiresAt": {
                     "type": "string",
                     "example": "2025-10-24T08:45:00Z"
+                },
+                "photoSessionId": {
+                    "type": "integer",
+                    "example": 3003
                 },
                 "reservationToken": {
                     "type": "string",
@@ -10616,6 +10593,9 @@
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "tenantPhone": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
+                },
+                "title": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "transaction": {

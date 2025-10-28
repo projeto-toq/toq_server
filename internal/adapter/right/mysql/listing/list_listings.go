@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	// "time"
-
 	listingconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/converters"
 	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -44,8 +42,8 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		args = append(args, int64(*filter.Code))
 	}
 	if filter.Title != "" {
-		conditions = append(conditions, "COALESCE(l.description, '') LIKE ?")
-		args = append(args, filter.Title)
+		conditions = append(conditions, "(COALESCE(l.title, '') LIKE ? OR COALESCE(l.description, '') LIKE ?)")
+		args = append(args, filter.Title, filter.Title)
 	}
 	if filter.ZipCode != "" {
 		conditions = append(conditions, "l.zip_code LIKE ?")
@@ -104,6 +102,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		l.neighborhood,
 		l.city,
 		l.state,
+		l.title,
 		l.type,
 		l.owner,
 		l.land_size,
@@ -161,6 +160,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 			&entity.Neighborhood,
 			&entity.City,
 			&entity.State,
+			&entity.Title,
 			&entity.ListingType,
 			&entity.Owner,
 			&entity.LandSize,
@@ -197,21 +197,8 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 
 		listing := listingconverters.ListingEntityToDomain(entity)
 		if listing != nil {
-			// var createdAt *time.Time
-			// if entity.CreatedAt.Valid {
-			// 	ts := entity.CreatedAt.Time
-			// 	createdAt = &ts
-			// }
-			// var updatedAt *time.Time
-			// if entity.UpdatedAt.Valid {
-			// 	ts := entity.UpdatedAt.Time
-			// 	updatedAt = &ts
-			// }
-
 			result.Records = append(result.Records, listingrepository.ListingRecord{
 				Listing: listing,
-				// CreatedAt: createdAt,
-				// UpdatedAt: updatedAt,
 			})
 		}
 	}

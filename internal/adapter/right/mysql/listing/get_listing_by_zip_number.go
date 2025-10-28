@@ -18,8 +18,47 @@ func (la *ListingAdapter) GetListingByZipNumber(ctx context.Context, tx *sql.Tx,
 
 	ctx = utils.ContextWithLogger(ctx)
 
-	query := `SELECT *	FROM listings 
-				WHERE zip_code = ? AND number = ? AND deleted = 0;`
+	query := `SELECT
+		id,
+		user_id,
+		code,
+		version,
+		status,
+		zip_code,
+		street,
+		number,
+		complement,
+		neighborhood,
+		city,
+		state,
+		title,
+		type,
+		owner,
+		land_size,
+		corner,
+		non_buildable,
+		buildable,
+		delivered,
+		who_lives,
+		description,
+		transaction,
+		sell_net,
+		rent_net,
+		condominium,
+		annual_tax,
+		annual_ground_rent,
+		exchange,
+		exchange_perc,
+		installment,
+		financing,
+		visit,
+		tenant_name,
+		tenant_email,
+		tenant_phone,
+		accompanying,
+		deleted
+	FROM listings
+	WHERE zip_code = ? AND number = ? AND deleted = 0;`
 
 	listing, err = la.GetListingByQuery(ctx, tx, query, zip, number)
 	if err != nil {

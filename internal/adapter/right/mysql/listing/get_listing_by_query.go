@@ -47,6 +47,7 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 		&entityListing.Neighborhood,
 		&entityListing.City,
 		&entityListing.State,
+		&entityListing.Title,
 		&entityListing.ListingType,
 		&entityListing.Owner,
 		&entityListing.LandSize,

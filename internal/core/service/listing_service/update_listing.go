@@ -164,6 +164,21 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		}
 	}
 
+	if input.Title.IsPresent() {
+		if input.Title.IsNull() {
+			existing.UnsetTitle()
+		} else if value, ok := input.Title.Value(); ok {
+			trimmed := strings.TrimSpace(value)
+			if trimmed == "" {
+				return utils.ValidationError("title", "Title must not be empty when provided.")
+			}
+			if len([]rune(trimmed)) > 255 {
+				return utils.ValidationError("title", "Title must not exceed 255 characters.")
+			}
+			existing.SetTitle(trimmed)
+		}
+	}
+
 	if input.Description.IsPresent() {
 		if input.Description.IsNull() {
 			existing.UnsetDescription()

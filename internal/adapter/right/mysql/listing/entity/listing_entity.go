@@ -19,6 +19,7 @@ type ListingEntity struct {
 	Neighborhood       sql.NullString
 	City               sql.NullString
 	State              sql.NullString
+	Title              sql.NullString
 	ListingType        uint8
 	Owner              sql.NullInt16
 	Features           []EntityFeature

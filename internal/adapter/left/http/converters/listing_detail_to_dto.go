@@ -11,6 +11,7 @@ import (
 // ListingDetailToDTO converte o retorno do service para o DTO exposto pelo handler.
 func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingDetailResponse {
 	listing := detail.Listing
+	title := strings.TrimSpace(listing.Title())
 
 	resp := dto.ListingDetailResponse{
 		ID:                 listing.ID(),
@@ -25,6 +26,7 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 		Neighborhood:       listing.Neighborhood(),
 		City:               listing.City(),
 		State:              listing.State(),
+		Title:              title,
 		LandSize:           listing.LandSize(),
 		Corner:             listing.Corner(),
 		NonBuildable:       listing.NonBuildable(),

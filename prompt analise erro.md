@@ -5,56 +5,16 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-A regra de negócio define que:
-- O proprietário ao final da criação do anuncio deve:
-  - consultar a disponibilidade de um fotografo através do endpoint GET /listings/photo-session/slots
-  - escolhe o slot desejado e reserva o fotografo através do endpoint POST /listings/photo-session/reserve
-- Após esta reserva o fotografo, deve ser notificado por push notification e e-mail da reserva realizada.
-- Deve poder consultar sua agenda por GET /photographer/agenda e aceitar ou recusar através de POST /photographer/sessions/status
+A aplicação TOQ server pode ser usada por usuários em diversos timezones simultaneamente. Assim é importante que todas as vezes que horários e datas seja tratados, o timezone do usuário seja considerado. Atualmente, existem diversos pontos na aplicação onde o timezone do usuário não é considerado, o que pode levar a erros de interpretação de horários e datas.
+As agendas do imóvel, do proprietário, do fotografo e de feriados, que foram criadas até agora consideram timezones porem de forma confusa.
 
-Entretanto:
-- Atualmente o fotografo não está sendo notificado após a reserva.
-- GET /photographer/agenda responde confirme abaixo:
-```
-{
-  "page": 0,
-  "size": 0,
-  "slots": [
-    {
-      "end": "string",
-      "groupId": "string",
-      "holidayCalendarIds": [
-        0
-      ],
-      "holidayLabels": [
-        "string"
-      ],
-      "isHoliday": true,
-      "isTimeOff": true,
-      "period": "MORNING",
-      "photographerId": 0,
-      "slotId": 0,
-      "source": "SLOT",
-      "start": "string",
-      "status": "AVAILABLE"
-    }
-  ],
-  "total": 0
-}
-```
--  POST /photographer/sessions/status requer sessionID que não existe na resposta de GET /photographer/agenda, conforme exemplo abaixo:
-```
-{
-  "sessionId": 0,
-  "status": "ACCEPTED"
-}
-```
-Adicionalmente para que os endpoints POST /listings/photo-session/cancel e POST /listings/photo-session/confirm?
-  - quem deveria confirmar? porque o fotógrafo confirma a sessão por POST /photographer/sessions/status.
-  - cancelar faz sentido que o proprietário queira cancelar anes de execução, mas confirmar?
+A criação de agendas, eventos, bloqueios e feriados, deve considerar o timezone do usuário ou de onde é o feriado. As consultas a estes eventos devem também considerar o timezone do usuário que está fazendo a consulta, e as respostas devem ser adequadas a este timezone.
 
-Adicionalemnte, sequencia de eventos e ações necessárias para o fluxo completo de reserva de sessão fotográfica não estão claras. crie um photo_session_flow.md detalhando o fluxo completo, desde a consulta de disponibilidade até a confirmação ou cancelamento da sessão.
+talvez o timezone da consulta definir qual o timezone da resposta seja uma alternativa.
 
+por outro lado, a criação de eventos e bloqueios deve considerar o timezone fornecido na criação do evento.
+
+Verifique se o handlers de /admin/holidays/*, /listings/photo-session/*, /photographer/agenda/*, /photographer/sessions/status, /schedules/*  estão tratando corretamente os timezones, permitindo que pessoas em timezones diferentes possam criar, consultar e gerenciar eventos e agendas sem conflitos ou erros de interpretação de horários.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 

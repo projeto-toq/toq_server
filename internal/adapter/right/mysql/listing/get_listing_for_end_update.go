@@ -24,7 +24,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, user_id, code, version, status, zip_code, street, number, city, state, type, owner,
+	query := `SELECT id, user_id, code, version, status, zip_code, street, number, city, state, title, type, owner,
 		buildable, delivered, who_lives, description, transaction, visit, accompanying, annual_tax, exchange,
 		exchange_perc, sell_net, rent_net, condominium, land_size, corner, tenant_name, tenant_phone, tenant_email,
 		financing FROM listings WHERE id = ?`
@@ -44,6 +44,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		number       sql.NullString
 		city         sql.NullString
 		state        sql.NullString
+		title        sql.NullString
 		owner        sql.NullInt16
 		buildable    sql.NullFloat64
 		delivered    sql.NullInt16
@@ -78,6 +79,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		&number,
 		&city,
 		&state,
+		&title,
 		&listingType,
 		&owner,
 		&buildable,
@@ -115,6 +117,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	data.Number = number
 	data.City = city
 	data.State = state
+	data.Title = title
 	data.Owner = owner
 	data.Buildable = buildable
 	data.Delivered = delivered

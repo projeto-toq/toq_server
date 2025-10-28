@@ -21,7 +21,7 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE listings SET
-				user_id = ?, code = ?, version = ?, status = ?, zip_code = ?, street = ?, number = ?, complement = ?, neighborhood = ?, city = ?, state = ?,
+			user_id = ?, code = ?, version = ?, status = ?, zip_code = ?, street = ?, number = ?, complement = ?, neighborhood = ?, city = ?, state = ?, title = ?,
 				type = ?, owner = ?, land_size = ?, corner = ?, non_buildable = ?, buildable = ?, delivered = ?, who_lives = ?, description = ?,
 				transaction = ?, sell_net = ?, rent_net = ?, condominium = ?, annual_tax = ?, annual_ground_rent = ?, exchange = ?, exchange_perc = ?,
 				installment = ?, financing = ?, visit = ?, tenant_name = ?, tenant_email = ?, tenant_phone = ?, accompanying = ?, deleted = ?
@@ -41,6 +41,10 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 	neighborhood := sql.NullString{String: listing.Neighborhood(), Valid: listing.Neighborhood() != ""}
 	city := sql.NullString{String: listing.City(), Valid: listing.City() != ""}
 	state := sql.NullString{String: listing.State(), Valid: listing.State() != ""}
+	title := sql.NullString{}
+	if listing.HasTitle() {
+		title = sql.NullString{String: listing.Title(), Valid: true}
+	}
 	typeValue := sql.NullInt64{Int64: int64(listing.ListingType()), Valid: true}
 	owner := sql.NullInt64{}
 	if listing.HasOwner() {
@@ -144,6 +148,7 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 		neighborhood,
 		city,
 		state,
+		title,
 		typeValue,
 		owner,
 		landSize,

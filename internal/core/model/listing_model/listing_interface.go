@@ -27,6 +27,10 @@ type ListingInterface interface {
 	SetCity(city string)
 	State() string
 	SetState(state string)
+	Title() string
+	SetTitle(title string)
+	HasTitle() bool
+	UnsetTitle()
 	ListingType() globalmodel.PropertyType
 	SetListingType(listingType globalmodel.PropertyType)
 	Owner() PropertyOwner

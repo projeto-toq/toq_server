@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
@@ -30,8 +29,6 @@ import (
 //	@Param        zipCode        query  string  false  "Filter by zip code (digits only; supports '*' wildcard)" example("06543*")
 //	@Param        city           query  string  false  "Filter by city (supports '*' wildcard)" example("*Paulista*")
 //	@Param        neighborhood   query  string  false  "Filter by neighborhood (supports '*' wildcard)" example("*Centro*")
-//	@Param        createdFrom    query  string  false  "Filter by creation date from (RFC3339 or YYYY-MM-DD)" example("2025-01-01")
-//	@Param        createdTo      query  string  false  "Filter by creation date to (RFC3339 or YYYY-MM-DD)" example("2025-01-31")
 //	@Param        minSell        query  number  false  "Minimum sell price" example(100000)
 //	@Param        maxSell        query  number  false  "Maximum sell price" example(900000)
 //	@Param        minRent        query  number  false  "Minimum rent price" example(1500)
@@ -68,21 +65,6 @@ func (lh *ListingHandler) GetAllListings(c *gin.Context) {
 	userIDPtr, err := parseOptionalInt64(req.UserID)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("userId", err.Error()))
-		return
-	}
-
-	createdFrom, err := parseOptionalTime(req.CreatedFrom)
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("createdFrom", err.Error()))
-		return
-	}
-	createdTo, err := parseOptionalTime(req.CreatedTo)
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("createdTo", err.Error()))
-		return
-	}
-	if createdFrom != nil && createdTo != nil && createdFrom.After(*createdTo) {
-		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("createdFrom", "from date cannot be greater than to date"))
 		return
 	}
 
@@ -141,8 +123,6 @@ func (lh *ListingHandler) GetAllListings(c *gin.Context) {
 		City:         strings.TrimSpace(req.City),
 		Neighborhood: strings.TrimSpace(req.Neighborhood),
 		UserID:       userIDPtr,
-		CreatedFrom:  createdFrom,
-		CreatedTo:    createdTo,
 		MinSellPrice: minSell,
 		MaxSellPrice: maxSell,
 		MinRentPrice: minRent,
@@ -262,22 +242,6 @@ func parseOptionalFloat64(raw string) (*float64, error) {
 	return &value, nil
 }
 
-func parseOptionalTime(raw string) (*time.Time, error) {
-	trimmed := strings.TrimSpace(raw)
-	if trimmed == "" {
-		return nil, nil
-	}
-
-	layouts := []string{time.RFC3339Nano, time.RFC3339, "2006-01-02"}
-	for _, layout := range layouts {
-		if t, err := time.Parse(layout, trimmed); err == nil {
-			return &t, nil
-		}
-	}
-
-	return nil, fmt.Errorf("invalid datetime format")
-}
-
 func toListingResponse(item listingservices.ListListingsItem) dto.ListingResponse {
 	listing := item.Listing
 
@@ -288,7 +252,7 @@ func toListingResponse(item listingservices.ListListingsItem) dto.ListingRespons
 
 	return dto.ListingResponse{
 		ID:           listing.ID(),
-		Title:        deriveListingTitle(listing),
+		Title:        strings.TrimSpace(listing.Title()),
 		Description:  strings.TrimSpace(listing.Description()),
 		Price:        price,
 		Status:       listing.Status().String(),
@@ -296,36 +260,7 @@ func toListingResponse(item listingservices.ListListingsItem) dto.ListingRespons
 		ZipCode:      listing.ZipCode(),
 		Number:       listing.Number(),
 		UserID:       listing.UserID(),
-		CreatedAt:    formatTime(item.CreatedAt),
-		UpdatedAt:    formatTime(item.UpdatedAt),
 	}
-}
-
-func deriveListingTitle(listing listingmodel.ListingInterface) string {
-	description := strings.TrimSpace(listing.Description())
-	if description != "" {
-		if len(description) > 120 {
-			description = description[:120]
-		}
-		return description
-	}
-
-	if listing.Code() != 0 {
-		return fmt.Sprintf("Listing %d", listing.Code())
-	}
-
-	if listing.ID() != 0 {
-		return fmt.Sprintf("Listing %d", listing.ID())
-	}
-
-	return "Listing"
-}
-
-func formatTime(ts *time.Time) string {
-	if ts == nil {
-		return ""
-	}
-	return ts.UTC().Format(time.RFC3339)
 }
 
 func computeTotalPages(total int64, limit int) int {

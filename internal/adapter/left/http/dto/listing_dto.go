@@ -17,8 +17,6 @@ type GetAllListingsRequest struct {
 	ZipCode      string `form:"zipCode,omitempty"`
 	City         string `form:"city,omitempty"`
 	Neighborhood string `form:"neighborhood,omitempty"`
-	CreatedFrom  string `form:"createdFrom,omitempty"`
-	CreatedTo    string `form:"createdTo,omitempty"`
 	MinSellPrice string `form:"minSell,omitempty"`
 	MaxSellPrice string `form:"maxSell,omitempty"`
 	MinRentPrice string `form:"minRent,omitempty"`
@@ -114,6 +112,7 @@ type ListingDetailResponse struct {
 	Neighborhood       string                            `json:"neighborhood"`
 	City               string                            `json:"city"`
 	State              string                            `json:"state"`
+	Title              string                            `json:"title"`
 	PropertyType       *ListingPropertyTypeResponse      `json:"propertyType,omitempty"`
 	Owner              *CatalogItemResponse              `json:"owner,omitempty"`
 	Features           []ListingFeatureResponse          `json:"features,omitempty"`
@@ -198,6 +197,7 @@ type UpdateListingRequest struct {
 	Buildable          coreutils.Optional[float64]                             `json:"buildable"`
 	Delivered          coreutils.Optional[string]                              `json:"delivered"`
 	WhoLives           coreutils.Optional[string]                              `json:"whoLives"`
+	Title              coreutils.Optional[string]                              `json:"title"`
 	Description        coreutils.Optional[string]                              `json:"description"`
 	Transaction        coreutils.Optional[string]                              `json:"transaction"`
 	SellNet            coreutils.Optional[float64]                             `json:"sellNet"`
@@ -295,8 +295,6 @@ type ListingResponse struct {
 	Number       string  `json:"number"`
 	UserID       int64   `json:"userId"`
 	ComplexID    string  `json:"complexId,omitempty"`
-	CreatedAt    string  `json:"createdAt"`
-	UpdatedAt    string  `json:"updatedAt"`
 }
 
 // AddListingPhotosRequest represents request for adding photos to a listing

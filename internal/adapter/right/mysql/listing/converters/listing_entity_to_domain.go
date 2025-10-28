@@ -22,6 +22,11 @@ func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.
 	listing.SetNeighborhood(e.ToString(e.Neighborhood))
 	listing.SetCity(e.ToString(e.City))
 	listing.SetState(e.ToString(e.State))
+	if e.Title.Valid {
+		listing.SetTitle(e.Title.String)
+	} else {
+		listing.UnsetTitle()
+	}
 	listing.SetListingType(globalmodel.PropertyType(e.ListingType))
 	if e.Owner.Valid {
 		listing.SetOwner(listingmodel.PropertyOwner(uint8(e.Owner.Int16)))

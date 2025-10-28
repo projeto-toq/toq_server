@@ -3,6 +3,7 @@ package listinghandlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
@@ -51,19 +52,21 @@ func (lh *ListingHandler) GetListingByUserId(c *gin.Context) {
 	// Convert to response DTOs
 	listingResponses := make([]dto.ListingResponse, 0, len(listings))
 	for _, listing := range listings {
+		price := listing.SellNet()
+		if price == 0 {
+			price = listing.RentNet()
+		}
 		listingResponses = append(listingResponses, dto.ListingResponse{
 			ID:           listing.ID(),
-			Title:        "", // Title not available in basic listing model
+			Title:        strings.TrimSpace(listing.Title()),
 			Description:  listing.Description(),
-			Price:        0, // Price not available in basic listing model
+			Price:        price,
 			Status:       string(listing.Status()),
 			PropertyType: int(listing.ListingType()),
 			ZipCode:      listing.ZipCode(),
 			Number:       listing.Number(),
 			UserID:       listing.UserID(),
 			ComplexID:    "", // ComplexID not easily accessible
-			CreatedAt:    "", // CreatedAt not available in basic model
-			UpdatedAt:    "", // UpdatedAt not available in basic model
 		})
 	}
 

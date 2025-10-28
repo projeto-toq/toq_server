@@ -3,7 +3,6 @@ package listingrepository
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -58,8 +57,6 @@ type ListListingsFilter struct {
 	City         string
 	Neighborhood string
 	UserID       *int64
-	CreatedFrom  *time.Time
-	CreatedTo    *time.Time
 	MinSellPrice *float64
 	MaxSellPrice *float64
 	MinRentPrice *float64
@@ -74,9 +71,7 @@ type ListListingsResult struct {
 }
 
 type ListingRecord struct {
-	Listing   listingmodel.ListingInterface
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+	Listing listingmodel.ListingInterface
 }
 
 // ListingEndUpdateData aggregates the raw values needed to validate the end-update flow.
@@ -91,6 +86,7 @@ type ListingEndUpdateData struct {
 	Number                 sql.NullString
 	City                   sql.NullString
 	State                  sql.NullString
+	Title                  sql.NullString
 	ListingType            globalmodel.PropertyType
 	Owner                  sql.NullInt16
 	Buildable              sql.NullFloat64

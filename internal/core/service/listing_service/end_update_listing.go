@@ -160,6 +160,9 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 	if !data.State.Valid || strings.TrimSpace(data.State.String) == "" {
 		return utils.BadRequest("State is required")
 	}
+	if !data.Title.Valid || strings.TrimSpace(data.Title.String) == "" {
+		return utils.BadRequest("Title is required")
+	}
 	if data.ListingType == 0 {
 		return utils.BadRequest("Property type is required")
 	}

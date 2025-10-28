@@ -3,7 +3,6 @@ package listingservices
 import (
 	"context"
 	"strings"
-	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
@@ -22,8 +21,6 @@ type ListListingsInput struct {
 	City              string
 	Neighborhood      string
 	UserID            *int64
-	CreatedFrom       *time.Time
-	CreatedTo         *time.Time
 	MinSellPrice      *float64
 	MaxSellPrice      *float64
 	MinRentPrice      *float64
@@ -44,9 +41,7 @@ type ListListingsOutput struct {
 
 // ListListingsItem traz a entidade de listing e metadados úteis para montagem da resposta.
 type ListListingsItem struct {
-	Listing   listingmodel.ListingInterface
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+	Listing listingmodel.ListingInterface
 }
 
 // ListListings returns listings filtered with pagination for admin panel consumption.
@@ -95,8 +90,6 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		City:         utils.NormalizeSearchPattern(input.City),
 		Neighborhood: utils.NormalizeSearchPattern(input.Neighborhood),
 		UserID:       input.UserID,
-		CreatedFrom:  input.CreatedFrom,
-		CreatedTo:    input.CreatedTo,
 		MinSellPrice: input.MinSellPrice,
 		MaxSellPrice: input.MaxSellPrice,
 		MinRentPrice: input.MinRentPrice,
@@ -115,9 +108,7 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 	items := make([]ListListingsItem, 0, len(result.Records))
 	for _, record := range result.Records {
 		items = append(items, ListListingsItem{
-			Listing:   record.Listing,
-			CreatedAt: record.CreatedAt,
-			UpdatedAt: record.UpdatedAt,
+			Listing: record.Listing,
 		})
 	}
 

@@ -18,6 +18,7 @@ type UpdateListingInput struct {
 	Buildable          coreutils.Optional[float64]
 	Delivered          coreutils.Optional[CatalogSelection]
 	WhoLives           coreutils.Optional[CatalogSelection]
+	Title              coreutils.Optional[string]
 	Description        coreutils.Optional[string]
 	Transaction        coreutils.Optional[CatalogSelection]
 	SellNet            coreutils.Optional[float64]
