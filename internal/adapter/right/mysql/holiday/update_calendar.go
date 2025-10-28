@@ -25,8 +25,8 @@ func (a *HolidayAdapter) UpdateCalendar(ctx context.Context, tx *sql.Tx, calenda
 
 	entity := converters.ToCalendarEntity(calendar)
 
-	query := `UPDATE holiday_calendars SET name = ?, scope = ?, state = ?, city_ibge = ?, is_active = ? WHERE id = ?`
-	result, err := exec.ExecContext(ctx, query, entity.Name, entity.Scope, entity.State, entity.CityIBGE, entity.IsActive, entity.ID)
+	query := `UPDATE holiday_calendars SET name = ?, scope = ?, state = ?, city_ibge = ?, is_active = ?, timezone = ? WHERE id = ?`
+	result, err := exec.ExecContext(ctx, query, entity.Name, entity.Scope, entity.State, entity.CityIBGE, entity.IsActive, entity.Timezone, entity.ID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.holiday.update_calendar.exec_error", "calendar_id", entity.ID, "err", err)

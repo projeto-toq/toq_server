@@ -19,6 +19,7 @@ func HolidayCalendarToDTO(calendar holidaymodel.CalendarInterface) dto.HolidayCa
 		Name:     calendar.Name(),
 		Scope:    string(calendar.Scope()),
 		IsActive: calendar.IsActive(),
+		Timezone: calendar.Timezone(),
 	}
 
 	if state, ok := calendar.State(); ok {
@@ -56,6 +57,7 @@ func HolidayCalendarDateToDTO(date holidaymodel.CalendarDateInterface) dto.Holid
 		HolidayDate: formatHolidayDate(date.HolidayDate()),
 		Label:       date.Label(),
 		Recurrent:   date.IsRecurrent(),
+		Timezone:    date.Timezone(),
 	}
 }
 

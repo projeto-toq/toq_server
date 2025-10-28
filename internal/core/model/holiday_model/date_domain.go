@@ -8,6 +8,7 @@ type calendarDate struct {
 	holidayDate time.Time
 	label       string
 	recurrent   bool
+	timezone    string
 }
 
 func (d *calendarDate) ID() uint64 {
@@ -48,4 +49,12 @@ func (d *calendarDate) IsRecurrent() bool {
 
 func (d *calendarDate) SetRecurrent(value bool) {
 	d.recurrent = value
+}
+
+func (d *calendarDate) Timezone() string {
+	return d.timezone
+}
+
+func (d *calendarDate) SetTimezone(value string) {
+	d.timezone = value
 }

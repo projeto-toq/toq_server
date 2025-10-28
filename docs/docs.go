@@ -1508,7 +1508,7 @@ const docTemplate = `{
                 "summary": "Update holiday calendar",
                 "parameters": [
                     {
-                        "x-example": "{\"id\":42,\"name\":\"Calendario Campinas\",\"scope\":\"CITY\",\"state\":\"SP\",\"cityIbge\":\"3509502\",\"isActive\":true}",
+                        "x-example": "{\"id\":42,\"name\":\"Calendario Campinas\",\"scope\":\"CITY\",\"state\":\"SP\",\"cityIbge\":\"3509502\",\"isActive\":true,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Calendar update payload",
                         "name": "request",
                         "in": "body",
@@ -1576,7 +1576,7 @@ const docTemplate = `{
                 "summary": "Create holiday calendar",
                 "parameters": [
                     {
-                        "x-example": "{\"name\":\"Feriados Sao Paulo\",\"scope\":\"STATE\",\"state\":\"SP\",\"cityIbge\":\"\",\"isActive\":true}",
+                        "x-example": "{\"name\":\"Feriados Sao Paulo\",\"scope\":\"STATE\",\"state\":\"SP\",\"cityIbge\":\"\",\"isActive\":true,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Calendar payload",
                         "name": "request",
                         "in": "body",
@@ -6241,6 +6241,13 @@ const docTemplate = `{
                         "description": "Items per page",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "America/Sao_Paulo",
+                        "description": "Timezone identifier (IANA)",
+                        "name": "timezone",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6303,7 +6310,7 @@ const docTemplate = `{
                 "summary": "Update a blocking entry",
                 "parameters": [
                     {
-                        "x-example": "{\"entryId\":5021,\"listingId\":3241,\"entryType\":\"TEMP_BLOCK\",\"startsAt\":\"2025-06-20T09:00:00Z\",\"endsAt\":\"2025-06-20T12:00:00Z\",\"reason\":\"Extended maintenance\"}",
+                        "x-example": "{\"entryId\":5021,\"listingId\":3241,\"entryType\":\"TEMP_BLOCK\",\"startsAt\":\"2025-06-20T09:00:00-03:00\",\"endsAt\":\"2025-06-20T12:00:00-03:00\",\"reason\":\"Janela de manutencao\",\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Block entry update payload",
                         "name": "request",
                         "in": "body",
@@ -6377,7 +6384,7 @@ const docTemplate = `{
                 "summary": "Create a blocking entry",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":3241,\"entryType\":\"BLOCK\",\"startsAt\":\"2025-06-15T09:00:00Z\",\"endsAt\":\"2025-06-15T11:00:00Z\",\"reason\":\"Maintenance window\"}",
+                        "x-example": "{\"listingId\":3241,\"entryType\":\"BLOCK\",\"startsAt\":\"2025-06-15T09:00:00-03:00\",\"endsAt\":\"2025-06-15T11:00:00-03:00\",\"reason\":\"Janela de manutencao\",\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Block entry payload",
                         "name": "request",
                         "in": "body",
@@ -6543,6 +6550,13 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Items per page",
                         "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "America/Sao_Paulo",
+                        "description": "Timezone identifier (IANA)",
+                        "name": "timezone",
                         "in": "query"
                     }
                 ],
@@ -9431,7 +9445,8 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "name",
-                "scope"
+                "scope",
+                "timezone"
             ],
             "properties": {
                 "cityIbge": {
@@ -9448,6 +9463,10 @@ const docTemplate = `{
                 },
                 "state": {
                     "type": "string"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
                 }
             }
         },
@@ -9501,6 +9520,9 @@ const docTemplate = `{
                 },
                 "recurrent": {
                     "type": "boolean"
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         },
@@ -9549,6 +9571,9 @@ const docTemplate = `{
                 },
                 "state": {
                     "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         },
@@ -9557,7 +9582,8 @@ const docTemplate = `{
             "required": [
                 "id",
                 "name",
-                "scope"
+                "scope",
+                "timezone"
             ],
             "properties": {
                 "cityIbge": {
@@ -9577,6 +9603,10 @@ const docTemplate = `{
                 },
                 "state": {
                     "type": "string"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
                 }
             }
         },
@@ -10275,6 +10305,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilitySlotResponse"
                     }
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         },
@@ -10295,7 +10328,8 @@ const docTemplate = `{
                 "endsAt",
                 "entryType",
                 "listingId",
-                "startsAt"
+                "startsAt",
+                "timezone"
             ],
             "properties": {
                 "endsAt": {
@@ -10312,6 +10346,10 @@ const docTemplate = `{
                 },
                 "startsAt": {
                     "type": "string"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
                 }
             }
         },
@@ -10330,7 +10368,8 @@ const docTemplate = `{
                 "entryId",
                 "entryType",
                 "listingId",
-                "startsAt"
+                "startsAt",
+                "timezone"
             ],
             "properties": {
                 "endsAt": {
@@ -10350,6 +10389,10 @@ const docTemplate = `{
                 },
                 "startsAt": {
                     "type": "string"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
                 }
             }
         },
@@ -10390,6 +10433,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startsAt": {
+                    "type": "string"
+                },
+                "timezone": {
                     "type": "string"
                 },
                 "visitId": {
@@ -11059,6 +11105,9 @@ const docTemplate = `{
                 },
                 "status": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotStatus"
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         },
@@ -11076,6 +11125,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaSlot"
                     }
+                },
+                "timezone": {
+                    "type": "string"
                 },
                 "total": {
                     "type": "integer"

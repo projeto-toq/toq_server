@@ -420,6 +420,7 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		holidayByDate[key] = append(holidayByDate[key], info)
 	}
 	matchedHolidayDates := make(map[string]struct{})
+	resultTimezone := loc.String()
 
 	timeOffRecords, timeOffErr := s.repo.ListTimeOff(ctx, tx, input.PhotographerID, input.StartDate.UTC(), input.EndDate.UTC())
 	if timeOffErr != nil {
@@ -431,36 +432,42 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 	entries := make([]AgendaSlot, 0, len(slots)+len(timeOffRecords)+len(holidayInfos))
 	timeOffIntervals := make([]timeInterval, 0, len(timeOffRecords))
 	for _, record := range timeOffRecords {
-		timeOffIntervals = append(timeOffIntervals, timeInterval{start: record.StartDate(), end: record.EndDate()})
+		startLocal := record.StartDate().In(loc)
+		endLocal := record.EndDate().In(loc)
+		timeOffIntervals = append(timeOffIntervals, timeInterval{start: startLocal.UTC(), end: endLocal.UTC()})
 
-		groupID := buildGroupID(record.StartDate().In(loc), nil, AgendaEntrySourceTimeOff)
+		groupID := buildGroupID(startLocal, nil, AgendaEntrySourceTimeOff)
 		entries = append(entries, AgendaSlot{
 			PhotographerID: input.PhotographerID,
-			Start:          record.StartDate(),
-			End:            record.EndDate(),
+			Start:          startLocal,
+			End:            endLocal,
 			Status:         photosessionmodel.SlotStatusBlocked,
 			GroupID:        groupID,
 			Source:         AgendaEntrySourceTimeOff,
 			IsTimeOff:      true,
+			Timezone:       resultTimezone,
 		})
 	}
 
 	for _, slot := range slots {
 		period := slot.Period()
 		entryPeriod := period
-		groupID := buildGroupID(slot.SlotStart().In(loc), &entryPeriod, AgendaEntrySourceSlot)
+		startLocal := slot.SlotStart().In(loc)
+		endLocal := slot.SlotEnd().In(loc)
+		groupID := buildGroupID(startLocal, &entryPeriod, AgendaEntrySourceSlot)
 		agendaSlot := AgendaSlot{
 			SlotID:         slot.ID(),
 			PhotographerID: slot.PhotographerUserID(),
-			Start:          slot.SlotStart(),
-			End:            slot.SlotEnd(),
+			Start:          startLocal,
+			End:            endLocal,
 			Period:         &entryPeriod,
 			Status:         slot.Status(),
 			GroupID:        groupID,
 			Source:         AgendaEntrySourceSlot,
+			Timezone:       resultTimezone,
 		}
 
-		dateKey := dateKeyFromTime(slot.SlotStart().In(loc))
+		dateKey := dateKeyFromTime(startLocal)
 		if infos, ok := holidayByDate[dateKey]; ok {
 			agendaSlot.Status = photosessionmodel.SlotStatusBlocked
 			agendaSlot.IsHoliday = true
@@ -486,23 +493,24 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		}
 		info := infos[0]
 		day := info.date.In(loc)
-		start := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, loc).UTC()
-		end := start.Add(24 * time.Hour)
+		startLocal := time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, loc)
+		endLocal := startLocal.Add(24 * time.Hour)
 		groupID := buildGroupID(day, nil, AgendaEntrySourceHoliday)
 		entries = append(entries, AgendaSlot{
 			PhotographerID:     input.PhotographerID,
-			Start:              start,
-			End:                end,
+			Start:              startLocal,
+			End:                endLocal,
 			Status:             photosessionmodel.SlotStatusBlocked,
 			GroupID:            groupID,
 			Source:             AgendaEntrySourceHoliday,
 			IsHoliday:          true,
 			HolidayCalendarIDs: collectHolidayIDs(infos),
 			HolidayLabels:      collectHolidayLabels(infos),
+			Timezone:           resultTimezone,
 		})
 	}
 
-	return ListAgendaOutput{Slots: entries, Total: total, Page: page, Size: size}, nil
+	return ListAgendaOutput{Slots: entries, Total: total, Page: page, Size: size, Timezone: resultTimezone}, nil
 }
 
 func (s *photoSessionService) ensurePhotographerAgendaWithPrepared(ctx context.Context, tx *sql.Tx, input EnsureAgendaInput, prepared *preparedEnsureContext) error {
@@ -1037,10 +1045,11 @@ type ListAgendaInput struct {
 
 // ListAgendaOutput defines the output for a photographer's agenda.
 type ListAgendaOutput struct {
-	Slots []AgendaSlot `json:"slots"`
-	Total int64        `json:"total"`
-	Page  int          `json:"page"`
-	Size  int          `json:"size"`
+	Slots    []AgendaSlot `json:"slots"`
+	Total    int64        `json:"total"`
+	Page     int          `json:"page"`
+	Size     int          `json:"size"`
+	Timezone string       `json:"timezone"`
 }
 
 // AgendaSlot is a DTO representing a consolidated agenda entry.
@@ -1057,4 +1066,5 @@ type AgendaSlot struct {
 	IsTimeOff          bool                          `json:"isTimeOff"`
 	HolidayLabels      []string                      `json:"holidayLabels,omitempty"`
 	HolidayCalendarIDs []uint64                      `json:"holidayCalendarIds,omitempty"`
+	Timezone           string                        `json:"timezone"`
 }

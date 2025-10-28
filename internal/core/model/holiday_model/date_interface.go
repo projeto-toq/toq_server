@@ -14,6 +14,8 @@ type CalendarDateInterface interface {
 	SetLabel(value string)
 	IsRecurrent() bool
 	SetRecurrent(value bool)
+	Timezone() string
+	SetTimezone(value string)
 }
 
 // NewCalendarDate builds an empty calendar date entity.

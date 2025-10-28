@@ -102,7 +102,11 @@ func (s *scheduleService) createDefaultAgendaTx(ctx context.Context, tx *sql.Tx,
 	agenda := schedulemodel.NewAgenda()
 	agenda.SetListingID(input.ListingID)
 	agenda.SetOwnerID(input.OwnerID)
-	agenda.SetTimezone(strings.TrimSpace(input.Timezone))
+	if loc, _ := utils.ResolveLocation("timezone", input.Timezone); loc != nil {
+		agenda.SetTimezone(loc.String())
+	} else {
+		agenda.SetTimezone(strings.TrimSpace(input.Timezone))
+	}
 
 	id, err := s.scheduleRepo.InsertAgenda(ctx, tx, agenda)
 	if err != nil {
@@ -133,6 +137,9 @@ func validateDefaultAgendaInput(input CreateDefaultAgendaInput) *utils.HTTPError
 	}
 	if strings.TrimSpace(input.Timezone) == "" {
 		return utils.ValidationError("timezone", "timezone is required")
+	}
+	if _, err := utils.ResolveLocation("timezone", input.Timezone); err != nil {
+		return err
 	}
 	if input.ActorID <= 0 {
 		return utils.ValidationError("actorId", "actorId must be greater than zero")

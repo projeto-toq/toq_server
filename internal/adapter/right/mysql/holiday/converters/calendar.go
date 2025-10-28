@@ -13,6 +13,7 @@ func ToCalendarModel(e entity.CalendarEntity) holidaymodel.CalendarInterface {
 	calendar.SetID(e.ID)
 	calendar.SetName(e.Name)
 	calendar.SetScope(holidaymodel.CalendarScope(e.Scope))
+	calendar.SetTimezone(e.Timezone)
 	if e.State.Valid {
 		calendar.SetState(e.State.String)
 	}
@@ -42,5 +43,6 @@ func ToCalendarEntity(model holidaymodel.CalendarInterface) entity.CalendarEntit
 		State:    state,
 		CityIBGE: city,
 		IsActive: model.IsActive(),
+		Timezone: model.Timezone(),
 	}
 }

@@ -24,6 +24,7 @@ type CalendarDatesFilter struct {
 	CalendarID uint64
 	From       *time.Time
 	To         *time.Time
+	Timezone   string
 	Page       int
 	Limit      int
 }

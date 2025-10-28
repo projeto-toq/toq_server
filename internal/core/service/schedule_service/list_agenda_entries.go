@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -56,11 +57,37 @@ func (s *scheduleService) ListAgendaEntries(ctx context.Context, filter schedule
 		return schedulemodel.AgendaDetailResult{}, utils.AuthorizationError("Owner does not match listing agenda")
 	}
 
-	result, err := s.scheduleRepo.ListAgendaEntries(ctx, tx, filter)
+	tzName := strings.TrimSpace(filter.Timezone)
+	if tzName == "" {
+		tzName = agenda.Timezone()
+	}
+	loc, tzErr := utils.ResolveLocation("timezone", tzName)
+	if tzErr != nil {
+		return schedulemodel.AgendaDetailResult{}, tzErr
+	}
+
+	repoFilter := filter
+	if !filter.Range.From.IsZero() {
+		repoFilter.Range.From = utils.ConvertToUTC(filter.Range.From.In(loc))
+	}
+	if !filter.Range.To.IsZero() {
+		repoFilter.Range.To = utils.ConvertToUTC(filter.Range.To.In(loc))
+	}
+
+	result, err := s.scheduleRepo.ListAgendaEntries(ctx, tx, repoFilter)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("schedule.list_agenda_entries.repo_error", "listing_id", filter.ListingID, "err", err)
 		return schedulemodel.AgendaDetailResult{}, utils.InternalError("")
+	}
+
+	for idx := range result.Entries {
+		if result.Entries[idx].Entry == nil {
+			continue
+		}
+		entry := result.Entries[idx].Entry
+		entry.SetStartsAt(utils.ConvertToLocation(entry.StartsAt(), loc))
+		entry.SetEndsAt(utils.ConvertToLocation(entry.EndsAt(), loc))
 	}
 
 	return result, nil

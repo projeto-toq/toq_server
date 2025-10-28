@@ -20,6 +20,10 @@ func (s *holidayService) UpdateCalendar(ctx context.Context, input UpdateCalenda
 	if err := validateScopeInput(input.Scope, input.State, input.CityIBGE); err != nil {
 		return nil, err
 	}
+	loc, tzErr := utils.ResolveLocation("timezone", input.Timezone)
+	if tzErr != nil {
+		return nil, tzErr
+	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("")
@@ -69,6 +73,7 @@ func (s *holidayService) UpdateCalendar(ctx context.Context, input UpdateCalenda
 		existing.ClearCityIBGE()
 	}
 	existing.SetActive(input.IsActive)
+	existing.SetTimezone(loc.String())
 	if err := s.repo.UpdateCalendar(ctx, tx, existing); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("holiday.update_calendar.repo_error", "id", input.ID, "err", err)

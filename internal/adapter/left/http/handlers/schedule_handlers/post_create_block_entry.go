@@ -19,7 +19,7 @@ import (
 // @Tags		Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ScheduleBlockEntryRequest	true	"Block entry payload" Extensions(x-example={"listingId":3241,"entryType":"BLOCK","startsAt":"2025-06-15T09:00:00Z","endsAt":"2025-06-15T11:00:00Z","reason":"Maintenance window"})
+// @Param		request	body	dto.ScheduleBlockEntryRequest	true	"Block entry payload" Extensions(x-example={"listingId":3241,"entryType":"BLOCK","startsAt":"2025-06-15T09:00:00-03:00","endsAt":"2025-06-15T11:00:00-03:00","reason":"Janela de manutencao","timezone":"America/Sao_Paulo"})
 // @Success	200	{object}	dto.ScheduleBlockEntryResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
@@ -76,6 +76,7 @@ func (h *ScheduleHandler) PostCreateBlockEntry(c *gin.Context) {
 		EndsAt:    endsAt,
 		Reason:    req.Reason,
 		ActorID:   userInfo.ID,
+		Timezone:  req.Timezone,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

@@ -46,7 +46,8 @@ func (s *holidayService) CreateCalendarDate(ctx context.Context, input CreateCal
 		}
 	}()
 
-	if _, err := s.repo.GetCalendarByID(ctx, tx, input.CalendarID); err != nil {
+	calendar, err := s.repo.GetCalendarByID(ctx, tx, input.CalendarID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.NotFoundError("Holiday calendar")
 		}
@@ -55,9 +56,16 @@ func (s *holidayService) CreateCalendarDate(ctx context.Context, input CreateCal
 		return nil, utils.InternalError("")
 	}
 
+	loc, tzErr := utils.ResolveLocation("timezone", calendar.Timezone())
+	if tzErr != nil {
+		return nil, tzErr
+	}
+
 	domain := holidaymodel.NewCalendarDate()
 	domain.SetCalendarID(input.CalendarID)
-	domain.SetHolidayDate(input.HolidayDate)
+	holidayAtLoc := utils.NormalizeDateToLocationMidnight(input.HolidayDate, loc)
+	domain.SetHolidayDate(holidayAtLoc)
+	domain.SetTimezone(loc.String())
 	domain.SetLabel(strings.TrimSpace(input.Label))
 	domain.SetRecurrent(input.Recurrent)
 
@@ -68,6 +76,7 @@ func (s *holidayService) CreateCalendarDate(ctx context.Context, input CreateCal
 		return nil, utils.InternalError("")
 	}
 	domain.SetID(id)
+	domain.SetHolidayDate(utils.ConvertToLocation(domain.HolidayDate(), loc))
 
 	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)

@@ -64,6 +64,10 @@ func ScheduleEntryToDTO(entry schedulemodel.AgendaEntryInterface) dto.ScheduleEn
 		Blocking:  entry.Blocking(),
 	}
 
+	if loc := entry.StartsAt().Location(); loc != nil {
+		response.Timezone = loc.String()
+	}
+
 	if reason, ok := entry.Reason(); ok {
 		response.Reason = reason
 	}
@@ -92,6 +96,7 @@ func ScheduleAvailabilityToDTO(result scheduleservices.AvailabilityResult, page,
 	return dto.ScheduleAvailabilityResponse{
 		Slots:      slots,
 		Pagination: buildSchedulePagination(page, limit, int64(result.Total)),
+		Timezone:   result.Timezone,
 	}
 }
 

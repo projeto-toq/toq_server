@@ -19,7 +19,7 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.HolidayCalendarUpdateRequest	true	"Calendar update payload" Extensions(x-example={"id":42,"name":"Calendario Campinas","scope":"CITY","state":"SP","cityIbge":"3509502","isActive":true})
+// @Param		request	body	dto.HolidayCalendarUpdateRequest	true	"Calendar update payload" Extensions(x-example={"id":42,"name":"Calendario Campinas","scope":"CITY","state":"SP","cityIbge":"3509502","isActive":true,"timezone":"America/Sao_Paulo"})
 // @Success	200	{object}	dto.HolidayCalendarResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
@@ -61,6 +61,7 @@ func (h *HolidayHandler) UpdateCalendar(c *gin.Context) {
 		State:    req.State,
 		CityIBGE: req.CityIBGE,
 		IsActive: req.IsActive,
+		Timezone: req.Timezone,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

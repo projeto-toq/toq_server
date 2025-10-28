@@ -5,16 +5,18 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-A aplicação TOQ server pode ser usada por usuários em diversos timezones simultaneamente. Assim é importante que todas as vezes que horários e datas seja tratados, o timezone do usuário seja considerado. Atualmente, existem diversos pontos na aplicação onde o timezone do usuário não é considerado, o que pode levar a erros de interpretação de horários e datas.
-As agendas do imóvel, do proprietário, do fotografo e de feriados, que foram criadas até agora consideram timezones porem de forma confusa.
-
-A criação de agendas, eventos, bloqueios e feriados, deve considerar o timezone do usuário ou de onde é o feriado. As consultas a estes eventos devem também considerar o timezone do usuário que está fazendo a consulta, e as respostas devem ser adequadas a este timezone.
-
-talvez o timezone da consulta definir qual o timezone da resposta seja uma alternativa.
-
-por outro lado, a criação de eventos e bloqueios deve considerar o timezone fornecido na criação do evento.
-
-Verifique se o handlers de /admin/holidays/*, /listings/photo-session/*, /photographer/agenda/*, /photographer/sessions/status, /schedules/*  estão tratando corretamente os timezones, permitindo que pessoas em timezones diferentes possam criar, consultar e gerenciar eventos e agendas sem conflitos ou erros de interpretação de horários.
+Após a última atualização do sistema de gerenciamento de fusos horários, foi identificado uma inconsistencia em:
+- falta o endpoint para atualização dos feriados, o que é necessário para corrigir datas ou rótulos incorretos.
+  - PUT /admin/holidays/dates
+- falta o endpoint para obter detalhes de feriado específico.
+  - POST /admin/holidays/dates/detail com o id no body para retornar o detalhe do feriado.
+- Falta endpoint para listar os time-offs de um fotógrafo em um determinado intervalo de datas.
+  - GET /photographer/agenda/time-offs
+- Falta o endpoint para atualização dos time-offs criados.
+  - PUT /photographer/agenda/time-off
+- Falta o endpoint para obter detalhes de um time-off específico.
+  - POST /photographer/agenda/time-off/detail com o id no body para retornar o detalhe do time-off.
+- a tag para Schedules deve ser alterada para Listing Schedules.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
 

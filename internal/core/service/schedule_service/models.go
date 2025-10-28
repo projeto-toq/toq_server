@@ -23,6 +23,7 @@ type CreateBlockEntryInput struct {
 	EndsAt    time.Time
 	Reason    string
 	ActorID   int64
+	Timezone  string
 }
 
 // UpdateBlockEntryInput represents the payload to update an existing blocking entry.
@@ -35,6 +36,7 @@ type UpdateBlockEntryInput struct {
 	EndsAt    time.Time
 	Reason    string
 	ActorID   int64
+	Timezone  string
 }
 
 // DeleteEntryInput carries the identifiers required to remove an entry.
@@ -52,8 +54,9 @@ type AvailabilitySlot struct {
 
 // AvailabilityResult wraps paginated availability slots.
 type AvailabilityResult struct {
-	Slots []AvailabilitySlot
-	Total int
+	Slots    []AvailabilitySlot
+	Total    int
+	Timezone string
 }
 
 // FinishListingAgendaInput encapsulates data to finish the agenda creation workflow.

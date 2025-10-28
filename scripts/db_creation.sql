@@ -196,6 +196,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listings` (
   `code` MEDIUMINT UNSIGNED NOT NULL,
   `version` TINYINT UNSIGNED NOT NULL,
   `status` TINYINT UNSIGNED NOT NULL,
+  `title` VARCHAR(255) NULL,
   `zip_code` VARCHAR(15) NOT NULL,
   `street` VARCHAR(150) NULL,
   `number` VARCHAR(15) NOT NULL,
@@ -654,9 +655,9 @@ DROP TABLE IF EXISTS `toq_db`.`photographer_time_off` ;
 CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_time_off` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `photographer_user_id` INT UNSIGNED NOT NULL,
-  `start_date` DATE NOT NULL,
-  `end_date` DATE NOT NULL,
-  `reason` VARCHAR(150) NULL,
+  `start_date` DATETIME(6) NOT NULL,
+  `end_date` DATETIME(6) NOT NULL,
+  `reason` VARCHAR(255) NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_time_off_photographer_user_idx` (`photographer_user_id` ASC) VISIBLE,
   CONSTRAINT `fk_time_off_photographer_user`
@@ -772,6 +773,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`holiday_calendars` (
   `state` VARCHAR(2) NULL,
   `city_ibge` VARCHAR(7) NULL,
   `is_active` TINYINT NOT NULL DEFAULT 1,
+  `timezone` VARCHAR(50) NOT NULL DEFAULT 'America/Sao_Paulo',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -837,6 +839,8 @@ START TRANSACTION;
 -- TRUNCATE TABLE roles;
 -- TRUNCATE TABLE user_roles;
 -- TRUNCATE TABLE listing_catalog_values;
+-- TRUNCATE TABLE holiday_calendars;
+-- TRUNCATE TABLE holiday_calendar_dates;
 
 LOAD DATA INFILE '/var/lib/mysql-files/base_features.csv'
 INTO TABLE base_features
@@ -915,6 +919,20 @@ SET expires_at = NULLIF(@expires_at, 'NULL');
 
 LOAD DATA INFILE '/var/lib/mysql-files/listing_catalog_values.csv'
 INTO TABLE listing_catalog_values
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+LOAD DATA INFILE '/var/lib/mysql-files/base_holiday_calendars.csv'
+INTO TABLE holiday_calendars
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+LOAD DATA INFILE '/var/lib/mysql-files/base_holiday_calendar_dates.csv'
+INTO TABLE holiday_calendar_dates
 FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'

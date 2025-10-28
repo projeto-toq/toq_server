@@ -19,7 +19,7 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.HolidayCalendarCreateRequest	true	"Calendar payload" Extensions(x-example={"name":"Feriados Sao Paulo","scope":"STATE","state":"SP","cityIbge":"","isActive":true})
+// @Param		request	body	dto.HolidayCalendarCreateRequest	true	"Calendar payload" Extensions(x-example={"name":"Feriados Sao Paulo","scope":"STATE","state":"SP","cityIbge":"","isActive":true,"timezone":"America/Sao_Paulo"})
 // @Success	201	{object}	dto.HolidayCalendarResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
@@ -59,6 +59,7 @@ func (h *HolidayHandler) CreateCalendar(c *gin.Context) {
 		State:    req.State,
 		CityIBGE: req.CityIBGE,
 		IsActive: req.IsActive,
+		Timezone: req.Timezone,
 	}
 	ctx = coreutils.ContextWithLogger(ctx)
 	calendar, serviceErr := h.holidayService.CreateCalendar(ctx, input)

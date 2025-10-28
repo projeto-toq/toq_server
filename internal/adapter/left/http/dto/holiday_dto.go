@@ -7,6 +7,7 @@ type HolidayCalendarRequest struct {
 	State    string `json:"state,omitempty"`
 	CityIBGE string `json:"cityIbge,omitempty"`
 	IsActive bool   `json:"isActive"`
+	Timezone string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // HolidayCalendarCreateRequest extends the calendar request for creation.
@@ -44,6 +45,7 @@ type HolidayCalendarResponse struct {
 	State    string `json:"state,omitempty"`
 	CityIBGE string `json:"cityIbge,omitempty"`
 	IsActive bool   `json:"isActive"`
+	Timezone string `json:"timezone"`
 }
 
 // HolidayCalendarsListResponse aggregates calendars with pagination metadata.
@@ -65,6 +67,7 @@ type HolidayCalendarDatesListRequest struct {
 	CalendarID uint64 `form:"calendarId" binding:"required"`
 	From       string `form:"from"`
 	To         string `form:"to"`
+	Timezone   string `form:"timezone"`
 	Page       int    `form:"page,default=1"`
 	Limit      int    `form:"limit,default=20"`
 }
@@ -76,6 +79,7 @@ type HolidayCalendarDateResponse struct {
 	HolidayDate string `json:"holidayDate"`
 	Label       string `json:"label"`
 	Recurrent   bool   `json:"recurrent"`
+	Timezone    string `json:"timezone"`
 }
 
 // HolidayCalendarDatesListResponse aggregates holiday dates with pagination metadata.

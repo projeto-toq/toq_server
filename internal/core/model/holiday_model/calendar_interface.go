@@ -16,6 +16,8 @@ type CalendarInterface interface {
 	ClearCityIBGE()
 	IsActive() bool
 	SetActive(value bool)
+	Timezone() string
+	SetTimezone(value string)
 }
 
 // NewCalendar builds a new calendar entity.

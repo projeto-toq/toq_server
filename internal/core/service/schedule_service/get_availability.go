@@ -2,6 +2,7 @@ package scheduleservices
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
@@ -46,19 +47,52 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 		}
 	}()
 
-	data, err := s.scheduleRepo.GetAvailabilityData(ctx, tx, filter)
+	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, filter.ListingID)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("schedule.get_availability.get_agenda_error", "listing_id", filter.ListingID, "err", err)
+		return AvailabilityResult{}, utils.InternalError("")
+	}
+
+	tzName := strings.TrimSpace(filter.Timezone)
+	if tzName == "" {
+		tzName = agenda.Timezone()
+	}
+	loc, tzErr := utils.ResolveLocation("timezone", tzName)
+	if tzErr != nil {
+		return AvailabilityResult{}, tzErr
+	}
+
+	repoFilter := filter
+	fromLocal := filter.Range.From
+	if !filter.Range.From.IsZero() {
+		fromLocal = filter.Range.From.In(loc)
+		repoFilter.Range.From = utils.ConvertToUTC(fromLocal)
+	}
+	toLocal := filter.Range.To
+	if !filter.Range.To.IsZero() {
+		toLocal = filter.Range.To.In(loc)
+		repoFilter.Range.To = utils.ConvertToUTC(toLocal)
+	}
+
+	data, err := s.scheduleRepo.GetAvailabilityData(ctx, tx, repoFilter)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("schedule.get_availability.repo_error", "listing_id", filter.ListingID, "err", err)
 		return AvailabilityResult{}, utils.InternalError("")
 	}
 
-	days := buildInitialAvailability(filter.Range.From, filter.Range.To)
-	applyRules(days, data.Rules, filter.Range.From, filter.Range.To)
-	applyEntries(days, data.Entries, filter.Range.From, filter.Range.To)
+	for _, entry := range data.Entries {
+		entry.SetStartsAt(utils.ConvertToLocation(entry.StartsAt(), loc))
+		entry.SetEndsAt(utils.ConvertToLocation(entry.EndsAt(), loc))
+	}
+
+	days := buildInitialAvailability(fromLocal, toLocal)
+	applyRules(days, data.Rules, fromLocal, toLocal)
+	applyEntries(days, data.Entries, fromLocal, toLocal)
 
 	slotDuration := defaultSlotDuration(filter.SlotDurationMinute)
-	allSlots := collectSlots(days, filter.Range.From, filter.Range.To, slotDuration)
+	allSlots := collectSlots(days, fromLocal, toLocal, slotDuration)
 	total := len(allSlots)
 
 	limit, offset := sanitizePagination(filter.Pagination.Limit, filter.Pagination.Page)
@@ -71,7 +105,7 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 		end = total
 	}
 
-	return AvailabilityResult{Slots: allSlots[offset:end], Total: total}, nil
+	return AvailabilityResult{Slots: allSlots[offset:end], Total: total, Timezone: loc.String()}, nil
 }
 
 func buildInitialAvailability(from, to time.Time) []*dailyAvailability {

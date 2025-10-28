@@ -69,6 +69,7 @@ func (h *HolidayHandler) ListCalendarDates(c *gin.Context) {
 		CalendarID: req.CalendarID,
 		From:       from,
 		To:         to,
+		Timezone:   req.Timezone,
 		Page:       page,
 		Limit:      limit,
 	}

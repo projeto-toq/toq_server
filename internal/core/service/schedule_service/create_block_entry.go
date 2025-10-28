@@ -23,7 +23,14 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 	if !isBlockEntryType(input.EntryType) {
 		return nil, utils.ValidationError("entryType", "entry type must be BLOCK or TEMP_BLOCK")
 	}
-	if !input.StartsAt.Before(input.EndsAt) {
+	reqLoc, tzErr := utils.ResolveLocation("timezone", input.Timezone)
+	if tzErr != nil {
+		return nil, tzErr
+	}
+
+	startsAtLocal := input.StartsAt.In(reqLoc)
+	endsAtLocal := input.EndsAt.In(reqLoc)
+	if !startsAtLocal.Before(endsAtLocal) {
 		return nil, utils.ValidationError("range", "startsAt must be before endsAt")
 	}
 
@@ -67,7 +74,17 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 		return nil, utils.AuthorizationError("Owner does not match listing agenda")
 	}
 
-	existing, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), input.StartsAt, input.EndsAt)
+	agendaLoc, agendaTzErr := utils.ResolveLocation("timezone", agenda.Timezone())
+	if agendaTzErr != nil {
+		return nil, agendaTzErr
+	}
+
+	startsAtAgenda := startsAtLocal.In(agendaLoc)
+	endsAtAgenda := endsAtLocal.In(agendaLoc)
+	startsAtUTC := startsAtAgenda.UTC()
+	endsAtUTC := endsAtAgenda.UTC()
+
+	existing, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), startsAtUTC, endsAtUTC)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("schedule.create_block_entry.list_entries_error", "listing_id", input.ListingID, "err", err)
@@ -82,8 +99,8 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 	domain := schedulemodel.NewAgendaEntry()
 	domain.SetAgendaID(agenda.ID())
 	domain.SetEntryType(input.EntryType)
-	domain.SetStartsAt(input.StartsAt)
-	domain.SetEndsAt(input.EndsAt)
+	domain.SetStartsAt(startsAtUTC)
+	domain.SetEndsAt(endsAtUTC)
 	domain.SetBlocking(true)
 	if reason := strings.TrimSpace(input.Reason); reason != "" {
 		domain.SetReason(reason)
@@ -104,6 +121,8 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 	}
 
 	committed = true
+	domain.SetStartsAt(startsAtLocal)
+	domain.SetEndsAt(endsAtLocal)
 
 	return domain, nil
 }

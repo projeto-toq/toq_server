@@ -9,6 +9,7 @@ type calendar struct {
 	cityIBGE   string
 	cityValid  bool
 	active     bool
+	timezone   string
 }
 
 func (c *calendar) ID() uint64 {
@@ -69,4 +70,12 @@ func (c *calendar) IsActive() bool {
 
 func (c *calendar) SetActive(value bool) {
 	c.active = value
+}
+
+func (c *calendar) Timezone() string {
+	return c.timezone
+}
+
+func (c *calendar) SetTimezone(value string) {
+	c.timezone = value
 }

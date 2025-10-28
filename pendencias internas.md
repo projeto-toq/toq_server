@@ -31,7 +31,13 @@
 - Ajustar a roleSlug em geral
 - criação de system user deve checar cpf e habilitar opt status
 - Criação de system user deve pedir apelido
-- porque:
-2025-10-27T17:50:20.115383322Z","level":"ERROR","msg":"mysql.listing.delete_exchange_places.no_rows","request_id":"27b45ac2-ee26-497a-adbb-bddfa95468a3","error":"no exchange_places rows deleted for listing: sql: no rows in result set","listing_id":7}
-{"time":"2025-10-27T17:50:20.120336573Z","level":"ERROR","msg":"mysql.listing.delete_guarantees.no_rows","request_id":"27b45ac2-ee26-497a-adbb-bddfa95468a3","error":"no guarantees rows deleted for listing: sql: no rows in result set","listing_id":7}
-{"time":"2025-10-27T17:50:20.1212784Z","level":"ERROR","msg":"mysql.listing.delete_financing_blockers.no_rows","request_id":"27b45ac2-ee26-497a-adbb-bddfa95468a3","error":"no financing_blockers rows deleted for listing: sql: no rows in result set","listing_id":7}
+- eliminar mensagem de erro de:
+    - mysql.listing.delete_exchange_places.no_rows
+    - mysql.listing.delete_features.no_rows
+    - mysql.listing.delete_guarantees.no_rows
+    - mysql.listing.delete_financing_blockers.no_rows
+- Ao deletar usuáario, deletar (hard delete):
+    - anuncios em draft
+    - visitas pendentes
+    - propostas pendentes
+    - histórico de chats

@@ -15,6 +15,10 @@ func (s *holidayService) CreateCalendar(ctx context.Context, input CreateCalenda
 	if err := validateScopeInput(input.Scope, input.State, input.CityIBGE); err != nil {
 		return nil, err
 	}
+	loc, tzErr := utils.ResolveLocation("timezone", input.Timezone)
+	if tzErr != nil {
+		return nil, tzErr
+	}
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, utils.InternalError("")
@@ -51,6 +55,7 @@ func (s *holidayService) CreateCalendar(ctx context.Context, input CreateCalenda
 		domain.SetCityIBGE(city)
 	}
 	domain.SetActive(input.IsActive || input.Scope == holidaymodel.ScopeNational)
+	domain.SetTimezone(loc.String())
 
 	id, err := s.repo.CreateCalendar(ctx, tx, domain)
 	if err != nil {

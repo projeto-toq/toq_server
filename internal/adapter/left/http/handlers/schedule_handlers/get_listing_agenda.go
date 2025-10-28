@@ -23,6 +23,7 @@ import (
 // @Param	rangeTo	query	string	false	"End of time range (RFC3339)"
 // @Param	page	query	int	false	"Page number"
 // @Param	limit	query	int	false	"Items per page"
+// @Param	timezone	query	string	false	"Timezone identifier (IANA)" default(America/Sao_Paulo)
 // @Success	200	{object}	dto.ListingAgendaDetailResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
@@ -65,6 +66,7 @@ func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 		ListingID:  req.ListingID,
 		Range:      rangeFilter,
 		Pagination: pagination,
+		Timezone:   req.Timezone,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

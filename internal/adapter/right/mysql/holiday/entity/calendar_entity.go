@@ -10,4 +10,5 @@ type CalendarEntity struct {
 	State    sql.NullString
 	CityIBGE sql.NullString
 	IsActive bool
+	Timezone string
 }

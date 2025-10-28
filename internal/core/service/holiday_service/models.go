@@ -13,6 +13,7 @@ type CreateCalendarInput struct {
 	State    string
 	CityIBGE string
 	IsActive bool
+	Timezone string
 }
 
 // UpdateCalendarInput captures the information to update an existing calendar.
@@ -23,6 +24,7 @@ type UpdateCalendarInput struct {
 	State    string
 	CityIBGE string
 	IsActive bool
+	Timezone string
 }
 
 // CreateCalendarDateInput describes the payload to register a holiday date.

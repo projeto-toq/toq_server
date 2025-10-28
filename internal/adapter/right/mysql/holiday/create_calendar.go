@@ -25,8 +25,8 @@ func (a *HolidayAdapter) CreateCalendar(ctx context.Context, tx *sql.Tx, calenda
 
 	entity := converters.ToCalendarEntity(calendar)
 
-	query := `INSERT INTO holiday_calendars (name, scope, state, city_ibge, is_active) VALUES (?, ?, ?, ?, ?)`
-	result, err := exec.ExecContext(ctx, query, entity.Name, entity.Scope, entity.State, entity.CityIBGE, entity.IsActive)
+	query := `INSERT INTO holiday_calendars (name, scope, state, city_ibge, is_active, timezone) VALUES (?, ?, ?, ?, ?, ?)`
+	result, err := exec.ExecContext(ctx, query, entity.Name, entity.Scope, entity.State, entity.CityIBGE, entity.IsActive, entity.Timezone)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.holiday.create_calendar.exec_error", "name", entity.Name, "err", err)

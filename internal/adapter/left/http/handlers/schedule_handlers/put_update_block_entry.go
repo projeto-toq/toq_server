@@ -19,7 +19,7 @@ import (
 // @Tags		Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ScheduleBlockEntryUpdateRequest	true	"Block entry update payload" Extensions(x-example={"entryId":5021,"listingId":3241,"entryType":"TEMP_BLOCK","startsAt":"2025-06-20T09:00:00Z","endsAt":"2025-06-20T12:00:00Z","reason":"Extended maintenance"})
+// @Param		request	body	dto.ScheduleBlockEntryUpdateRequest	true	"Block entry update payload" Extensions(x-example={"entryId":5021,"listingId":3241,"entryType":"TEMP_BLOCK","startsAt":"2025-06-20T09:00:00-03:00","endsAt":"2025-06-20T12:00:00-03:00","reason":"Janela de manutencao","timezone":"America/Sao_Paulo"})
 // @Success	200	{object}	dto.ScheduleBlockEntryResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
@@ -77,6 +77,7 @@ func (h *ScheduleHandler) PutUpdateBlockEntry(c *gin.Context) {
 		EndsAt:    endsAt,
 		Reason:    req.Reason,
 		ActorID:   userInfo.ID,
+		Timezone:  req.Timezone,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

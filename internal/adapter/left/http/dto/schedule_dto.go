@@ -51,6 +51,7 @@ type ListingAgendaDetailQuery struct {
 	ListingID int64  `form:"listingId" binding:"required"`
 	RangeFrom string `form:"rangeFrom"`
 	RangeTo   string `form:"rangeTo"`
+	Timezone  string `form:"timezone"`
 	Page      int    `form:"page"`
 	Limit     int    `form:"limit"`
 }
@@ -65,6 +66,7 @@ type ScheduleEntryResponse struct {
 	Reason         string `json:"reason,omitempty"`
 	VisitID        uint64 `json:"visitId,omitempty"`
 	PhotoBookingID uint64 `json:"photoBookingId,omitempty"`
+	Timezone       string `json:"timezone"`
 }
 
 // ListingAgendaDetailResponse wraps agenda entries for a listing.
@@ -80,6 +82,7 @@ type ScheduleBlockEntryRequest struct {
 	StartsAt  string `json:"startsAt" binding:"required"`
 	EndsAt    string `json:"endsAt" binding:"required"`
 	Reason    string `json:"reason,omitempty"`
+	Timezone  string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // ScheduleBlockEntryUpdateRequest carries data to update a blocking entry.
@@ -90,6 +93,7 @@ type ScheduleBlockEntryUpdateRequest struct {
 	StartsAt  string `json:"startsAt" binding:"required"`
 	EndsAt    string `json:"endsAt" binding:"required"`
 	Reason    string `json:"reason,omitempty"`
+	Timezone  string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // ScheduleDeleteEntryRequest carries identifiers required to delete an agenda entry.
@@ -106,6 +110,7 @@ type ScheduleAvailabilityQuery struct {
 	SlotDurationMinute uint16 `form:"slotDurationMinute"`
 	Page               int    `form:"page"`
 	Limit              int    `form:"limit"`
+	Timezone           string `form:"timezone"`
 }
 
 // ScheduleAvailabilitySlotResponse represents a continuous free window.
@@ -118,6 +123,7 @@ type ScheduleAvailabilitySlotResponse struct {
 type ScheduleAvailabilityResponse struct {
 	Slots      []ScheduleAvailabilitySlotResponse `json:"slots"`
 	Pagination PaginationResponse                 `json:"pagination"`
+	Timezone   string                             `json:"timezone"`
 }
 
 // ScheduleBlockEntryResponse represents a blocking entry returned by create/update operations.

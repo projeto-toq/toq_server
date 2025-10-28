@@ -26,7 +26,14 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 	if !isBlockEntryType(input.EntryType) {
 		return nil, utils.ValidationError("entryType", "entry type must be BLOCK or TEMP_BLOCK")
 	}
-	if !input.StartsAt.Before(input.EndsAt) {
+	reqLoc, tzErr := utils.ResolveLocation("timezone", input.Timezone)
+	if tzErr != nil {
+		return nil, tzErr
+	}
+
+	startsAtLocal := input.StartsAt.In(reqLoc)
+	endsAtLocal := input.EndsAt.In(reqLoc)
+	if !startsAtLocal.Before(endsAtLocal) {
 		return nil, utils.ValidationError("range", "startsAt must be before endsAt")
 	}
 
@@ -70,6 +77,16 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 		return nil, utils.AuthorizationError("Owner does not match listing agenda")
 	}
 
+	agendaLoc, agendaTzErr := utils.ResolveLocation("timezone", agenda.Timezone())
+	if agendaTzErr != nil {
+		return nil, agendaTzErr
+	}
+
+	startsAtAgenda := startsAtLocal.In(agendaLoc)
+	endsAtAgenda := endsAtLocal.In(agendaLoc)
+	startsAtUTC := startsAtAgenda.UTC()
+	endsAtUTC := endsAtAgenda.UTC()
+
 	existing, err := s.scheduleRepo.GetEntryByID(ctx, tx, input.EntryID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -88,7 +105,7 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 		return nil, utils.ConflictError("Only blocking entries can be updated through this operation")
 	}
 
-	overlaps, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), input.StartsAt, input.EndsAt)
+	overlaps, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), startsAtUTC, endsAtUTC)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("schedule.update_block_entry.list_entries_error", "entry_id", input.EntryID, "err", err)
@@ -104,8 +121,8 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 	}
 
 	existing.SetEntryType(input.EntryType)
-	existing.SetStartsAt(input.StartsAt)
-	existing.SetEndsAt(input.EndsAt)
+	existing.SetStartsAt(startsAtUTC)
+	existing.SetEndsAt(endsAtUTC)
 	existing.SetBlocking(true)
 	if reason := strings.TrimSpace(input.Reason); reason != "" {
 		existing.SetReason(reason)
@@ -126,6 +143,8 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 	}
 
 	committed = true
+	existing.SetStartsAt(startsAtLocal)
+	existing.SetEndsAt(endsAtLocal)
 
 	return existing, nil
 }
