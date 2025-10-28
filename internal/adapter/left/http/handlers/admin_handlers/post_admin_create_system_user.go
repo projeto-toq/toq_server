@@ -43,7 +43,7 @@ func (h *AdminHandler) PostAdminCreateSystemUser(c *gin.Context) {
 	}
 
 	input := userservices.CreateSystemUserInput{
-		FullName:    strings.TrimSpace(req.FullName),
+		NickName:    strings.TrimSpace(req.NickName),
 		Email:       strings.TrimSpace(req.Email),
 		PhoneNumber: strings.TrimSpace(req.PhoneNumber),
 		CPF:         strings.TrimSpace(req.CPF),

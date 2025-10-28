@@ -136,7 +136,7 @@ type AdminUserRoleResume struct {
 
 // AdminCreateSystemUserRequest represents POST /admin/users/system request
 type AdminCreateSystemUserRequest struct {
-	FullName    string `json:"fullName" binding:"required,min=2,max=150"`
+	NickName    string `json:"nickName" binding:"required,min=2,max=60"`
 	Email       string `json:"email" binding:"required,email"`
 	PhoneNumber string `json:"phoneNumber" binding:"required"`
 	CPF         string `json:"cpf" binding:"required"`

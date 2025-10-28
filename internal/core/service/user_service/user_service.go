@@ -31,6 +31,8 @@ type userService struct {
 	// creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
+	cfg                 Config
+	emailRenderer       *systemUserWelcomeEmailRenderer
 }
 
 func NewUserService(
@@ -44,8 +46,10 @@ func NewUserService(
 	// creci creciport.CreciPortInterface, // Pode ser nil temporariamente
 	cloudStorage storageport.CloudStoragePortInterface,
 	permissionService permissionservices.PermissionServiceInterface, // NOVO
+	cfg Config,
 
 ) UserServiceInterface {
+	config := normalizeConfig(cfg)
 	return &userService{
 		repo:                ur,
 		sessionRepo:         sr,
@@ -57,6 +61,8 @@ func NewUserService(
 		// creci:               creci, // Pode ser nil
 		cloudStorageService: cloudStorage,
 		permissionService:   permissionService, // NOVO
+		cfg:                 config,
+		emailRenderer:       newSystemUserWelcomeEmailRenderer(),
 	}
 }
 

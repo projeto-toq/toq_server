@@ -107,15 +107,21 @@ type Environment struct {
 		URLBase string `yaml:"url_base"`
 	}
 	PhotoSession struct {
-		SlotDurationMinutes int `yaml:"slot_duration_minutes"`
-		SlotsPerPeriod      int `yaml:"slots_per_period"`
-		MorningStartHour    int `yaml:"morning_start_hour"`
-		AfternoonStartHour  int `yaml:"afternoon_start_hour"`
+		SlotDurationMinutes                int    `yaml:"slot_duration_minutes"`
+		SlotsPerPeriod                     int    `yaml:"slots_per_period"`
+		MorningStartHour                   int    `yaml:"morning_start_hour"`
+		AfternoonStartHour                 int    `yaml:"afternoon_start_hour"`
+		PhotographerHorizonMonths          int    `yaml:"photographer_horizon_months"`
+		PhotographerTimezone               string `yaml:"photographer_timezone"`
+		PhotographerAgendaRefreshIntervalH int    `yaml:"photographer_agenda_refresh_interval_hours"`
 	} `yaml:"photo_session"`
 	FCM struct {
 		CredentialsFile string `yaml:"credentials_file"`
 		ProjectID       string `yaml:"project_id"`
 	}
+	SystemUser struct {
+		ResetPasswordURL string `yaml:"reset_password_url"`
+	} `yaml:"system_user"`
 	S3 struct {
 		Region     string `yaml:"region"`
 		BucketName string `yaml:"bucket_name"`

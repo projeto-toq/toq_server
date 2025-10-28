@@ -5,20 +5,18 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após a última atualização do sistema de gerenciamento de fusos horários, foi identificado uma inconsistencia em:
-- falta o endpoint para atualização dos feriados, o que é necessário para corrigir datas ou rótulos incorretos.
-  - PUT /admin/holidays/dates
-- falta o endpoint para obter detalhes de feriado específico.
-  - POST /admin/holidays/dates/detail com o id no body para retornar o detalhe do feriado.
-- Falta endpoint para listar os time-offs de um fotógrafo em um determinado intervalo de datas.
-  - GET /photographer/agenda/time-offs
-- Falta o endpoint para atualização dos time-offs criados.
-  - PUT /photographer/agenda/time-off
-- Falta o endpoint para obter detalhes de um time-off específico.
-  - POST /photographer/agenda/time-off/detail com o id no body para retornar o detalhe do time-off.
-- a tag para Schedules deve ser alterada para Listing Schedules.
+A agenda dos fotografos foi implementada com uma lógica muito complicada.
+Existe uma tabela, com horizonte de 3 meses com todas as disponibilidades de horários dos fotografos. photographer_default_availability. Processo contrário ao processo de uma agenda normal de compromissos, todas os slots estão livres exceto quanto existe um bloqueio ou uma sessão agendada.
+O correto seria que:
+- cada fotografo tivesse uma agenda com todos os compromissos agendados e bloqueios, e a disponibilidade fosse calculada a partir disso. Sem bloqueios ou sessões agendadas, o fotografo estaria disponível.
+- Como o proprietário necessita buscar quais dias e horários teremos um fotografo disponível, via GET /listings/photo-session/slots, e o slot para cada sessão de fotos é de 4 horas, definido por env.yaml, o serviço deveria buscar os fotógrafos que possuem horários livres de 4 horas consecutivas entre seus compromissos agendados e bloqueios.
+- a criação da agenda base do fotografo, efetuada durante a criação do usuário do sistema  (create_system_user.go) com roleSlug photographer, deveria colocar como bloqueio padrão todos os horários fora do expediente, 08:00 - 18:00 como default mas definido por variáveis no env.yaml, e deixar livres os horários dentro do expediente.
+- Dias feriados, nacionais, estaduais e municipais, também deveriam ser bloqueados na criação da agenda padrão.
+- para definir dias de feriados que afetam o fotografo, é necessário que o sistema de calendarios holiday_service na tabela holiday_calendars, ao invés de tratar o campo city_ibge como codigo ibge trate como city, assim como é feito na tabela users. Assim é possével associar o calendário de feriados ao usuário fotografo baseado na cidade do usuário (city + state), ou no estado do usuário (state). Nacional afeta a todos.
+- eventuais alterações no banco de dados serão feitas manualmente, apenas indique as alteraçoes necessárias.
+- eventuais códigos morto ou não utilizados devem ser removidos.
 
-**Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução.
+**Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 
 ### **Instruções para a Proposição do Plano**
 
@@ -28,8 +26,8 @@ Após a última atualização do sistema de gerenciamento de fusos horários, fo
 - **Qualidade do Plano 1:** O plano deve ser completo, sem o uso de _mocks_ ou soluções temporárias. Caso seja extenso, deve ser dividido em etapas implementáveis.
 - **Acompanhamento:** As etapas já planejadas e as próximas a serem analisadas devem ser sempre informadas para acompanhamento.
 - **Ambiente:** O plano deve considerar que estamos em ambiente de desvolvimento, portanto não deve haver back compatibility, migração de dados, preocupação com janela de manutenção ou _downtime_.
-- **Testes:** O plano **NÃO**deve incluir a criação/alteração de testes unitários e de integração para garantir a qualidade do código.
-- **Documentação:** A documentação Swagger/docs deve ser criada por comentários em DTO/Handler e execuçÃo de make swagger. Sem alterações manuais no swagger.yaml/json.
+- **Testes:** O plano **NÃO** deve incluir a criação/alteração de testes unitários e de integração para garantir a qualidade do código.
+- **Documentação:** A documentação Swagger/docs deve ser criada por comentários em DTO/Handler e execução de make swagger. Sem alterações manuais no swagger.yaml/json.
 ---
 
 ### **Regras Obrigatórias de Análise e Planejamento**

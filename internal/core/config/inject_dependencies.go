@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/factory"
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
@@ -108,6 +109,10 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 		return fmt.Errorf("failed to initialize temp block cleaner: %w", err)
 	}
 
+	if err := c.InitializePhotographerAgendaWorker(); err != nil {
+		return fmt.Errorf("failed to initialize photographer agenda worker: %w", err)
+	}
+
 	slog.Info("Dependency injection completed successfully using Factory Pattern")
 
 	return nil
@@ -181,6 +186,16 @@ func (c *config) InitGlobalService() {
 
 func (c *config) InitUserHandler() {
 	slog.Debug("Initializing User Handler")
+	refreshInterval := time.Duration(c.env.PhotoSession.PhotographerAgendaRefreshIntervalH)
+	if refreshInterval <= 0 {
+		refreshInterval = 24
+	}
+	userCfg := userservices.Config{
+		SystemUserResetPasswordURL:        c.env.SystemUser.ResetPasswordURL,
+		PhotographerTimezone:              c.env.PhotoSession.PhotographerTimezone,
+		PhotographerAgendaHorizonMonths:   c.env.PhotoSession.PhotographerHorizonMonths,
+		PhotographerAgendaRefreshInterval: refreshInterval * time.Hour,
+	}
 	c.userService = userservices.NewUserService(
 		c.repositoryAdapters.User,
 		c.repositoryAdapters.Session,
@@ -191,6 +206,7 @@ func (c *config) InitUserHandler() {
 		c.cnpj,
 		c.cloudStorage,
 		c.permissionService,
+		userCfg,
 	)
 	// HTTP handler initialization is done during HTTP server setup
 }

@@ -28,9 +28,9 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	fullName := strings.TrimSpace(input.FullName)
-	if fullName == "" {
-		return SystemUserResult{}, utils.ValidationError("fullName", "Full name is required")
+	nickName := strings.TrimSpace(input.NickName)
+	if nickName == "" {
+		return SystemUserResult{}, utils.ValidationError("nickName", "Nickname is required")
 	}
 
 	email := strings.TrimSpace(strings.ToLower(input.Email))
@@ -142,19 +142,14 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		return SystemUserResult{}, opErr
 	}
 
-	now := time.Now().UTC()
+	passwordSeed := uuid.NewString() + "!Aa1"
 	newUser := usermodel.NewUser()
-	newUser.SetFullName(fullName)
-	newUser.SetNickName(firstToken(fullName))
+	newUser.SetNickName(nickName)
+	newUser.SetEmail(email)
+	newUser.SetPhoneNumber(normalizedPhone)
 	newUser.SetNationalID(cpfDigits)
 	newUser.SetBornAt(input.BornAt)
-	newUser.SetPhoneNumber(normalizedPhone)
-	newUser.SetEmail(email)
-	newUser.SetOptStatus(false)
-	newUser.SetDeleted(false)
-	newUser.SetLastActivityAt(now)
-	newUser.SetLastSignInAttempt(time.Time{})
-
+	newUser.SetPassword(passwordSeed)
 	newUser.SetZipCode(templateUser.GetZipCode())
 	newUser.SetStreet(templateUser.GetStreet())
 	newUser.SetNumber(templateUser.GetNumber())
@@ -163,8 +158,14 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 	newUser.SetCity(templateUser.GetCity())
 	newUser.SetState(templateUser.GetState())
 
-	passwordSeed := uuid.NewString() + "!Aa1"
-	newUser.SetPassword(us.encryptPassword(passwordSeed))
+	if err = us.ValidateUserData(ctx, tx, newUser, slug); err != nil {
+		opErr = err
+		return SystemUserResult{}, opErr
+	}
+
+	newUser.SetOptStatus(true)
+	newUser.SetNickName(nickName)
+	newUser.SetLastSignInAttempt(time.Time{})
 
 	if err = us.repo.CreateUser(ctx, tx, newUser); err != nil {
 		utils.SetSpanError(ctx, err)
@@ -185,6 +186,13 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 	}
 	newUser.SetActiveRole(userRole)
 
+	if err := us.cloudStorageService.CreateUserFolder(ctx, newUser.GetID()); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("admin.users.create.storage_failed", "user_id", newUser.GetID(), "error", err)
+		opErr = utils.InternalError("Failed to prepare user storage")
+		return SystemUserResult{}, opErr
+	}
+
 	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Criado usuário do sistema via painel admin", newUser.GetID()); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
 		logger.Error("admin.users.create.audit_failed", "user_id", newUser.GetID(), "error", auditErr)
@@ -196,7 +204,8 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 	if slug == permissionmodel.RoleSlugPhotographer {
 		agendaInput := photosessionservices.EnsureAgendaInput{
 			PhotographerID: uint64(newUser.GetID()),
-			Timezone:       "America/Sao_Paulo", // Or from a config/input
+			Timezone:       us.cfg.PhotographerTimezone,
+			HorizonMonths:  us.cfg.PhotographerAgendaHorizonMonths,
 		}
 		if agendaErr := us.photoSessionService.EnsurePhotographerAgendaWithTx(ctx, tx, agendaInput); agendaErr != nil {
 			utils.SetSpanError(ctx, agendaErr)
@@ -212,7 +221,12 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		return SystemUserResult{}, utils.InternalError("")
 	}
 
-	logger.Info("admin.users.create.success", "user_id", newUser.GetID(), "role_slug", role.GetSlug())
+	if emailErr := us.sendSystemUserWelcomeEmail(ctx, newUser, slug); emailErr != nil {
+		utils.SetSpanError(ctx, emailErr)
+		logger.Error("admin.users.create.welcome_email_failed", "user_id", newUser.GetID(), "error", emailErr)
+	}
+
+	logger.Info("admin.users.create.success", "user_id", newUser.GetID(), "role_slug", role.GetSlug(), "nick_name", newUser.GetNickName())
 	return SystemUserResult{
 		UserID:   newUser.GetID(),
 		RoleID:   role.GetID(),

@@ -29,10 +29,10 @@
 - photo_session_adapter.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
 - photo_session_handler.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
 - Ajustar a roleSlug em geral
-- criação de system user deve checar cpf e habilitar opt status
-- Criação de system user deve pedir apelido
+
 - Ao deletar usuáario, deletar (hard delete):
     - anuncios em draft
     - visitas pendentes
     - propostas pendentes
     - histórico de chats
+- criar os 2 campos mensais adicionais e a regra de validação será que IPTU tem que ter ao menos 1 dos campos, pois se colocar ambos dará conflito, voce decide no frontend qual mandar. No Laudemio, nem sempre existe, entõ ficará opcional ambos, mas nunca os 2 preenchidos.

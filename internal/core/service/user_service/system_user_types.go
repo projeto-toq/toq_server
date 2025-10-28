@@ -48,7 +48,7 @@ type ListPendingRealtorsOutput struct {
 
 // CreateSystemUserInput representa o payload necessário para criar um usuário de sistema.
 type CreateSystemUserInput struct {
-	FullName    string
+	NickName    string
 	Email       string
 	PhoneNumber string
 	CPF         string
