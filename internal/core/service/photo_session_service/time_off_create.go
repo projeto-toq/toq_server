@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/projeto-toq/toq_server/internal/core/utils"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // CreateTimeOff registers a new time-off entry.

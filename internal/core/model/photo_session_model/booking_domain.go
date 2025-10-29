@@ -3,14 +3,14 @@ package photosessionmodel
 import "time"
 
 type photoSessionBooking struct {
-	id               uint64
-	agendaEntryID    uint64
-	photographerID   uint64
-	listingID        int64
-	startsAt         time.Time
-	endsAt           time.Time
-	status           BookingStatus
-	reason           *string
+	id             uint64
+	agendaEntryID  uint64
+	photographerID uint64
+	listingID      int64
+	startsAt       time.Time
+	endsAt         time.Time
+	status         BookingStatus
+	reason         *string
 }
 
 func (b *photoSessionBooking) ID() uint64 { return b.id }

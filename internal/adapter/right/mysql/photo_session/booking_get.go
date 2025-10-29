@@ -45,7 +45,7 @@ func (a *PhotoSessionAdapter) FindBookingByAgendaEntry(ctx context.Context, tx *
 		&row.EndsAt,
 		&row.Status,
 		&row.Reason,
-)
+	)
 	if scanErr != nil {
 		if scanErr == sql.ErrNoRows {
 			return nil, scanErr
@@ -87,7 +87,7 @@ func (a *PhotoSessionAdapter) getBooking(ctx context.Context, tx *sql.Tx, bookin
 		&row.EndsAt,
 		&row.Status,
 		&row.Reason,
-)
+	)
 	if scanErr != nil {
 		if scanErr == sql.ErrNoRows {
 			return nil, scanErr

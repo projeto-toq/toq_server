@@ -50,7 +50,7 @@ func (a *PhotoSessionAdapter) getEntry(ctx context.Context, tx *sql.Tx, entryID 
 		&row.Blocking,
 		&row.Reason,
 		&row.Timezone,
-)
+	)
 	if scanErr != nil {
 		if scanErr == sql.ErrNoRows {
 			return nil, scanErr
