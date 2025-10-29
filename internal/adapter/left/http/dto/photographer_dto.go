@@ -30,12 +30,8 @@ type CreateTimeOffRequest struct {
 
 // DeleteTimeOffRequest represents the payload to unblock a photographer agenda.
 type DeleteTimeOffRequest struct {
-	TimeOffID         uint64  `json:"timeOffId" binding:"required" example:"42"`
-	Timezone          string  `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
-	HolidayCalendarID *uint64 `json:"holidayCalendarId,omitempty" example:"1"`
-	HorizonMonths     int     `json:"horizonMonths" binding:"required" example:"2"`
-	WorkdayStartHour  int     `json:"workdayStartHour" binding:"required" example:"9"`
-	WorkdayEndHour    int     `json:"workdayEndHour" binding:"required" example:"18"`
+	TimeOffID uint64 `json:"timeOffId" binding:"required" example:"42"`
+	Timezone  string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // ListTimeOffQuery captures filters to list photographer time-offs.

@@ -5,13 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
-	"time"
-
-	"github.com/google/uuid"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
-	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -34,17 +31,17 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		return output, userErr
 	}
 
-	tx, txErr := ls.gsi.StartTransaction(ctx)
+	tx, txErr := ls.gsi.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("listing.photo_session.reserve.start_tx_error", "err", txErr)
+		logger.Error("listing.photo_session.reserve.start_ro_tx_error", "err", txErr)
 		return output, utils.InternalError("")
 	}
 	defer func() {
-		if err != nil {
+		if err != nil && tx != nil {
 			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("listing.photo_session.reserve.rollback_error", "err", rbErr)
+				logger.Error("listing.photo_session.reserve.ro_rollback_error", "err", rbErr)
 			}
 		}
 	}()
@@ -75,91 +72,68 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		return output, derrors.ErrListingNotEligible
 	}
 
-	slot, slotErr := ls.photoSessionRepo.GetSlotForUpdate(ctx, tx, input.SlotID)
-	if slotErr != nil {
-		if errors.Is(slotErr, sql.ErrNoRows) {
-			return output, derrors.ErrSlotUnavailable
-		}
-		utils.SetSpanError(ctx, slotErr)
-		logger.Error("listing.photo_session.reserve.get_slot_error", "err", slotErr, "slot_id", input.SlotID)
-		return output, utils.InternalError("")
-	}
-
-	if slot.Status() != photosessionmodel.SlotStatusAvailable {
-		return output, derrors.ErrSlotUnavailable
-	}
-
-	today := time.Now().UTC().Truncate(24 * time.Hour)
-	if slot.SlotDate().Before(today) {
-		return output, derrors.ErrSlotUnavailable
-	}
-
-	reservationToken := uuid.New().String()
-	expiresAt := time.Now().UTC().Add(reservationHoldTTL)
-
-	photographerPhone := ""
-	if slot.PhotographerUserID() != 0 && ls.userRepository != nil {
-		if photographer, photographerErr := ls.userRepository.GetUserByID(ctx, tx, int64(slot.PhotographerUserID())); photographerErr != nil {
-			if !errors.Is(photographerErr, sql.ErrNoRows) {
-				utils.SetSpanError(ctx, photographerErr)
-				logger.Error("listing.photo_session.reserve.get_photographer_error", "err", photographerErr, "photographer_id", slot.PhotographerUserID())
-				return output, utils.InternalError("")
-			}
-		} else if phone := strings.TrimSpace(photographer.GetPhoneNumber()); phone != "" {
-			photographerPhone = phone
-		}
-	}
-
-	if markErr := ls.photoSessionRepo.MarkSlotReserved(ctx, tx, input.SlotID, reservationToken, expiresAt); markErr != nil {
-		if errors.Is(markErr, sql.ErrNoRows) {
-			return output, derrors.ErrSlotUnavailable
-		}
-		utils.SetSpanError(ctx, markErr)
-		logger.Error("listing.photo_session.reserve.update_slot_error", "err", markErr, "slot_id", input.SlotID)
-		return output, utils.InternalError("")
-	}
-
-	booking := photosessionmodel.NewPhotoSessionBooking()
-	booking.SetSlotID(slot.ID())
-	booking.SetListingID(input.ListingID)
-	booking.SetScheduledStart(slot.SlotStart())
-	booking.SetScheduledEnd(slot.SlotEnd())
-	booking.SetStatus(photosessionmodel.BookingStatusPendingApproval)
-
-	bookingID, insertErr := ls.photoSessionRepo.InsertBooking(ctx, tx, booking)
-	if insertErr != nil {
-		utils.SetSpanError(ctx, insertErr)
-		logger.Error("listing.photo_session.reserve.insert_booking_error", "err", insertErr, "slot_id", input.SlotID)
-		return output, utils.InternalError("")
-	}
-
-	if updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, input.ListingID, listingmodel.StatusPendingAvailabilityConfirm, listing.Status()); updateErr != nil {
-		if errors.Is(updateErr, sql.ErrNoRows) {
-			utils.SetSpanError(ctx, updateErr)
-			logger.Warn("listing.photo_session.reserve.status_conflict", "err", updateErr, "listing_id", input.ListingID, "current_status", listing.Status())
-			return output, derrors.ErrListingNotEligible
-		}
-		utils.SetSpanError(ctx, updateErr)
-		logger.Error("listing.photo_session.reserve.update_listing_status_error", "err", updateErr, "listing_id", input.ListingID)
-		return output, utils.InternalError("")
-	}
-
 	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		logger.Error("listing.photo_session.reserve.commit_error", "err", cmErr)
+		logger.Error("listing.photo_session.reserve.ro_commit_error", "err", cmErr)
 		return output, utils.InternalError("")
 	}
+	tx = nil
 
-	logger.Info("listing.photo_session.reserve.success", "listing_id", input.ListingID, "slot_id", input.SlotID, "booking_id", bookingID, "user_id", userID)
+	reserveOutput, reserveErr := ls.photoSessionSvc.ReservePhotoSession(ctx, photosessionservices.ReserveSessionInput{
+		ListingID: input.ListingID,
+		SlotID:    input.SlotID,
+		UserID:    userID,
+	})
+	if reserveErr != nil {
+		return output, reserveErr
+	}
 
-	ls.sendPhotographerReservationSMS(ctx, photographerPhone, slot.SlotStart(), slot.SlotEnd(), listing.Code())
+	photographerPhone := ""
+	if reserveOutput.PhotographerID != 0 && ls.userRepository != nil {
+		tx, txErr = ls.gsi.StartReadOnlyTransaction(ctx)
+		if txErr != nil {
+			utils.SetSpanError(ctx, txErr)
+			logger.Error("listing.photo_session.reserve.photographer_ro_tx_error", "err", txErr)
+			return output, utils.InternalError("")
+		}
+		phone, fetchErr := ls.fetchPhotographerPhone(ctx, tx, reserveOutput.PhotographerID)
+		if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+			utils.SetSpanError(ctx, rbErr)
+			logger.Error("listing.photo_session.reserve.photographer_ro_rollback_error", "err", rbErr)
+		}
+		if fetchErr != nil {
+			utils.SetSpanError(ctx, fetchErr)
+			logger.Error("listing.photo_session.reserve.get_photographer_error", "err", fetchErr, "photographer_id", reserveOutput.PhotographerID)
+			return output, utils.InternalError("")
+		}
+		photographerPhone = phone
+	}
+
+	logger.Info("listing.photo_session.reserve.success", "listing_id", input.ListingID, "slot_id", input.SlotID, "booking_id", reserveOutput.PhotoSessionID, "user_id", userID)
+
+	ls.sendPhotographerReservationSMS(ctx, photographerPhone, reserveOutput.SlotStart, reserveOutput.SlotEnd, listing.Code())
 
 	return ReservePhotoSessionOutput{
-		SlotID:           input.SlotID,
-		SlotStart:        slot.SlotStart(),
-		SlotEnd:          slot.SlotEnd(),
-		ReservationToken: reservationToken,
-		ExpiresAt:        expiresAt,
-		PhotoSessionID:   bookingID,
+		SlotID:         reserveOutput.SlotID,
+		SlotStart:      reserveOutput.SlotStart,
+		SlotEnd:        reserveOutput.SlotEnd,
+		PhotoSessionID: reserveOutput.PhotoSessionID,
+		PhotographerID: reserveOutput.PhotographerID,
 	}, nil
+}
+
+func (ls *listingService) fetchPhotographerPhone(ctx context.Context, tx *sql.Tx, photographerID uint64) (string, error) {
+	if photographerID == 0 || ls.userRepository == nil {
+		return "", nil
+	}
+
+	photographer, err := ls.userRepository.GetUserByID(ctx, tx, int64(photographerID))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return strings.TrimSpace(photographer.GetPhoneNumber()), nil
 }

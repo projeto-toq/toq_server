@@ -19,7 +19,7 @@ import (
 //	@Accept    json
 //	@Produce   json
 //	@Param     request body      dto.ReservePhotoSessionRequest true "Reservation request" Extensions(x-example={"listingId":1001,"slotId":2002})
-//	@Success   200     {object} dto.ReservePhotoSessionResponse
+//	@Success   200     {object} dto.ReservePhotoSessionResponse "Reservation created"
 //	@Failure   400     {object} dto.ErrorResponse "Invalid payload"
 //	@Failure   401     {object} dto.ErrorResponse "Unauthorized"
 //	@Failure   403     {object} dto.ErrorResponse "Forbidden"
@@ -65,11 +65,9 @@ func (lh *ListingHandler) ReservePhotoSession(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ReservePhotoSessionResponse{
-		SlotID:           output.SlotID,
-		SlotStart:        output.SlotStart.UTC().Format(time.RFC3339),
-		SlotEnd:          output.SlotEnd.UTC().Format(time.RFC3339),
-		ReservationToken: output.ReservationToken,
-		ExpiresAt:        output.ExpiresAt.UTC().Format(time.RFC3339),
-		PhotoSessionID:   output.PhotoSessionID,
+		SlotID:         output.SlotID,
+		SlotStart:      output.SlotStart.UTC().Format(time.RFC3339),
+		SlotEnd:        output.SlotEnd.UTC().Format(time.RFC3339),
+		PhotoSessionID: output.PhotoSessionID,
 	})
 }

@@ -10,7 +10,7 @@ const (
 	defaultSlotsPage     = 1
 	defaultSlotsPageSize = 20
 	maxSlotsPageSize     = 100
-	reservationHoldTTL   = 15 * time.Minute
+	// reservationHoldTTL   = 15 * time.Minute
 )
 
 // ListPhotographerSlotsInput carries filtering and pagination data for slot listing.
@@ -37,29 +37,27 @@ type ReservePhotoSessionInput struct {
 	SlotID    uint64
 }
 
-// ReservePhotoSessionOutput returns reservation token and expiration timestamp.
+// ReservePhotoSessionOutput returns metadata about the reserved slot.
 type ReservePhotoSessionOutput struct {
-	SlotID           uint64
-	SlotStart        time.Time
-	SlotEnd          time.Time
-	ReservationToken string
-	ExpiresAt        time.Time
-	PhotoSessionID   uint64
+	SlotID         uint64
+	SlotStart      time.Time
+	SlotEnd        time.Time
+	PhotoSessionID uint64
+	PhotographerID uint64
 }
 
 // ConfirmPhotoSessionInput encapsulates data to finalize a reservation into a booking.
 type ConfirmPhotoSessionInput struct {
-	ListingID        int64
-	SlotID           uint64
-	ReservationToken string
+	ListingID      int64
+	PhotoSessionID uint64
 }
 
 // ConfirmPhotoSessionOutput returns booking metadata after confirmation.
 type ConfirmPhotoSessionOutput struct {
 	PhotoSessionID uint64
-	SlotID         uint64
 	ScheduledStart time.Time
 	ScheduledEnd   time.Time
+	Status         string
 }
 
 // CancelPhotoSessionInput identifies a scheduled photo session to cancel.

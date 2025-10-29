@@ -170,8 +170,8 @@ definitions:
         type: string
       email:
         type: string
-      fullName:
-        maxLength: 150
+      nickName:
+        maxLength: 60
         minLength: 2
         type: string
       phoneNumber:
@@ -188,7 +188,7 @@ definitions:
     - bornAt
     - cpf
     - email
-    - fullName
+    - nickName
     - phoneNumber
     - roleSlug
     type: object
@@ -907,16 +907,12 @@ definitions:
       listingId:
         example: 1001
         type: integer
-      reservationToken:
-        example: c36b754f-6c37-4c15-8f25-9d77ddf9bb3e
-        type: string
-      slotId:
-        example: 2002
+      photoSessionId:
+        example: 3003
         type: integer
     required:
     - listingId
-    - reservationToken
-    - slotId
+    - photoSessionId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse:
     properties:
@@ -929,11 +925,8 @@ definitions:
       scheduledStart:
         example: "2025-10-24T09:00:00Z"
         type: string
-      slotId:
-        example: 2002
-        type: integer
       status:
-        example: PENDING_APPROVAL
+        example: ACTIVE
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateAgencyRequest:
@@ -1023,30 +1016,15 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest:
     properties:
-      holidayCalendarId:
-        example: 1
-        type: integer
-      horizonMonths:
-        example: 2
-        type: integer
       timeOffId:
         example: 42
         type: integer
       timezone:
         example: America/Sao_Paulo
         type: string
-      workdayEndHour:
-        example: 18
-        type: integer
-      workdayStartHour:
-        example: 9
-        type: integer
     required:
-    - horizonMonths
     - timeOffId
     - timezone
-    - workdayEndHour
-    - workdayStartHour
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingRequest:
     properties:
@@ -1172,7 +1150,7 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarCreateRequest:
     properties:
-      cityIbge:
+      city:
         type: string
       isActive:
         type: boolean
@@ -1272,7 +1250,7 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarResponse:
     properties:
-      cityIbge:
+      city:
         type: string
       id:
         type: integer
@@ -1289,7 +1267,7 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarUpdateRequest:
     properties:
-      cityIbge:
+      city:
         type: string
       id:
         type: integer
@@ -1767,15 +1745,9 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionResponse:
     properties:
-      expiresAt:
-        example: "2025-10-24T08:45:00Z"
-        type: string
       photoSessionId:
         example: 3003
         type: integer
-      reservationToken:
-        example: c36b754f-6c37-4c15-8f25-9d77ddf9bb3e
-        type: string
       slotEnd:
         example: "2025-10-24T10:00:00Z"
         type: string
@@ -2332,14 +2304,30 @@ definitions:
         example: true
         type: boolean
     type: object
-  github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotPeriod:
+  github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource:
     enum:
-    - MORNING
-    - AFTERNOON
+    - BOOKING
+    - MANUAL
+    - ONBOARDING
+    - HOLIDAY_SYNC
     type: string
     x-enum-varnames:
-    - SlotPeriodMorning
-    - SlotPeriodAfternoon
+    - AgendaEntrySourceBooking
+    - AgendaEntrySourceManual
+    - AgendaEntrySourceOnboarding
+    - AgendaEntrySourceHoliday
+  github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntryType:
+    enum:
+    - PHOTO_SESSION
+    - BLOCK
+    - TIME_OFF
+    - HOLIDAY
+    type: string
+    x-enum-varnames:
+    - AgendaEntryTypePhotoSession
+    - AgendaEntryTypeBlock
+    - AgendaEntryTypeTimeOff
+    - AgendaEntryTypeHoliday
   github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotStatus:
     enum:
     - AVAILABLE
@@ -2352,20 +2340,14 @@ definitions:
     - SlotStatusReserved
     - SlotStatusBooked
     - SlotStatusBlocked
-  github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaEntrySource:
-    enum:
-    - SLOT
-    - HOLIDAY
-    - TIME_OFF
-    type: string
-    x-enum-varnames:
-    - AgendaEntrySourceSlot
-    - AgendaEntrySourceHoliday
-    - AgendaEntrySourceTimeOff
   github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaSlot:
     properties:
       end:
         type: string
+      entryId:
+        type: integer
+      entryType:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntryType'
       groupId:
         type: string
       holidayCalendarIds:
@@ -2380,14 +2362,14 @@ definitions:
         type: boolean
       isTimeOff:
         type: boolean
-      period:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotPeriod'
       photographerId:
         type: integer
-      slotId:
-        type: integer
+      reason:
+        type: string
       source:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaEntrySource'
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource'
+      sourceId:
+        type: integer
       start:
         type: string
       status:
@@ -3383,10 +3365,10 @@ paths:
         in: query
         name: state
         type: string
-      - description: City IBGE code
-        example: '"3509502"'
+      - description: City name
+        example: '"Campinas"'
         in: query
-        name: cityIbge
+        name: city
         type: string
       - description: Free text search
         example: '"Christmas"'
@@ -3447,7 +3429,8 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarCreateRequest'
-        x-example: '{"name":"Feriados Sao Paulo","scope":"STATE","state":"SP","cityIbge":"","isActive":true,"timezone":"America/Sao_Paulo"}'
+        x-example: '{"name":"Feriados Sao Paulo","scope":"STATE","state":"SP","city":"Sao
+          Paulo","isActive":true,"timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:
@@ -3487,7 +3470,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarUpdateRequest'
-        x-example: '{"id":42,"name":"Calendario Campinas","scope":"CITY","state":"SP","cityIbge":"3509502","isActive":true,"timezone":"America/Sao_Paulo"}'
+        x-example: '{"id":42,"name":"Calendario Campinas","scope":"CITY","state":"SP","city":"Campinas","isActive":true,"timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:
@@ -6255,7 +6238,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Session cancelled
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse'
         "400":
@@ -6272,6 +6255,10 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "404":
           description: Photo session not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Photo session not cancellable
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
@@ -6294,12 +6281,12 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionRequest'
-        x-example: '{"listingId":1001,"slotId":2002,"reservationToken":"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"}'
+        x-example: '{"listingId":1001,"photoSessionId":3003}'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Session confirmed
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse'
         "400":
@@ -6315,11 +6302,11 @@ paths:
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "404":
-          description: Reservation not found
+          description: Photo session not found
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "409":
-          description: Slot unavailable
+          description: Listing not eligible
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
@@ -6347,7 +6334,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Reservation created
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionResponse'
         "400":
@@ -6516,7 +6503,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest'
-        x-example: '{"timeOffId":42,"timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19}'
+        x-example: '{"timeOffId":42,"timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:

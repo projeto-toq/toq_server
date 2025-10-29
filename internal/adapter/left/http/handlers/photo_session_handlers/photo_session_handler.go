@@ -91,7 +91,7 @@ func (h *PhotoSessionHandler) CreateTimeOff(c *gin.Context) {
 // @Tags         Photographer
 // @Accept       json
 // @Produce      json
-// @Param        input body dto.DeleteTimeOffRequest true "Delete Time-Off payload" Extensions(x-example={"timeOffId":42,"timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19})
+// @Param        input body dto.DeleteTimeOffRequest true "Delete Time-Off payload" Extensions(x-example={"timeOffId":42,"timezone":"America/Sao_Paulo"})
 // @Success      200 {object} object{message=string}
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      404 {object} dto.ErrorResponse
@@ -111,13 +111,9 @@ func (h *PhotoSessionHandler) DeleteTimeOff(c *gin.Context) {
 	}
 
 	input := photosessionservices.DeleteTimeOffInput{
-		TimeOffID:         req.TimeOffID,
-		PhotographerID:    uint64(userID),
-		Timezone:          req.Timezone,
-		HolidayCalendarID: req.HolidayCalendarID,
-		HorizonMonths:     req.HorizonMonths,
-		WorkdayStartHour:  req.WorkdayStartHour,
-		WorkdayEndHour:    req.WorkdayEndHour,
+		TimeOffID:      req.TimeOffID,
+		PhotographerID: uint64(userID),
+		Timezone:       req.Timezone,
 	}
 
 	dErr := h.service.DeleteTimeOff(c.Request.Context(), input)

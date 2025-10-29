@@ -2,16 +2,13 @@ package listingservices
 
 import (
 	"context"
+	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
-
-type slotSortOption struct {
-	column    string
-	direction string
-}
 
 func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListPhotographerSlotsInput) (output ListPhotographerSlotsOutput, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -21,7 +18,6 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 	defer spanEnd()
 
 	ctx = utils.ContextWithLogger(ctx)
-	logger := utils.LoggerFromContext(ctx)
 
 	page := input.Page
 	if page <= 0 {
@@ -40,52 +36,33 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		return output, utils.BadRequest("from must be before to")
 	}
 
-	sortOpt, sortErr := normalizeSlotSort(input.Sort)
+	sortKey, sortErr := normalizeSlotSort(input.Sort)
 	if sortErr != nil {
 		return output, sortErr
 	}
 
-	params := photosessionmodel.SlotListParams{
-		From:          input.From,
-		To:            input.To,
-		Period:        input.Period,
-		Limit:         size,
-		Offset:        (page - 1) * size,
-		SortColumn:    sortOpt.column,
-		SortDirection: sortOpt.direction,
+	availabilityInput := photosessionservices.ListAvailabilityInput{
+		From:   input.From,
+		To:     input.To,
+		Period: input.Period,
+		Page:   page,
+		Size:   size,
+		Sort:   sortKey,
 	}
 
-	tx, txErr := ls.gsi.StartReadOnlyTransaction(ctx)
-	if txErr != nil {
-		utils.SetSpanError(ctx, txErr)
-		logger.Error("listing.photo_session.list.start_tx_error", "err", txErr)
-		return output, utils.InternalError("")
-	}
-	defer func() {
-		if err != nil {
-			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
-				utils.SetSpanError(ctx, rbErr)
-				logger.Error("listing.photo_session.list.rollback_error", "err", rbErr)
-			}
-		}
-	}()
-
-	slots, total, repoErr := ls.photoSessionRepo.ListAvailableSlots(ctx, tx, params)
-	if repoErr != nil {
-		utils.SetSpanError(ctx, repoErr)
-		logger.Error("listing.photo_session.list.query_error", "err", repoErr)
-		return output, utils.InternalError("")
+	availability, svcErr := ls.photoSessionSvc.ListAvailability(ctx, availabilityInput)
+	if svcErr != nil {
+		return output, svcErr
 	}
 
-	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
-		utils.SetSpanError(ctx, cmErr)
-		logger.Error("listing.photo_session.list.commit_error", "err", cmErr)
-		return output, utils.InternalError("")
+	slots := make([]photosessionmodel.PhotographerSlotInterface, 0, len(availability.Slots))
+	for _, slot := range availability.Slots {
+		slots = append(slots, availabilitySlotToPhotographerSlot(slot))
 	}
 
 	output = ListPhotographerSlotsOutput{
 		Slots: slots,
-		Total: total,
+		Total: availability.Total,
 		Page:  page,
 		Size:  size,
 	}
@@ -93,18 +70,18 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 	return output, nil
 }
 
-func normalizeSlotSort(sort string) (slotSortOption, error) {
+func normalizeSlotSort(sort string) (string, error) {
 	switch sort {
 	case "", "start_asc", "date_asc":
-		return slotSortOption{column: "slot_start", direction: "ASC"}, nil
+		return "start_asc", nil
 	case "start_desc", "date_desc":
-		return slotSortOption{column: "slot_start", direction: "DESC"}, nil
+		return "start_desc", nil
 	case "photographer_asc":
-		return slotSortOption{column: "photographer_user_id", direction: "ASC"}, nil
+		return "photographer_asc", nil
 	case "photographer_desc":
-		return slotSortOption{column: "photographer_user_id", direction: "DESC"}, nil
+		return "photographer_desc", nil
 	default:
-		return slotSortOption{}, utils.BadRequest("unsupported sort parameter")
+		return "", utils.BadRequest("unsupported sort parameter")
 	}
 }
 
@@ -121,4 +98,16 @@ func listingEligibleForPhotoSession(status listingmodel.ListingStatus) bool {
 	default:
 		return false
 	}
+}
+
+func availabilitySlotToPhotographerSlot(slot photosessionservices.AvailabilitySlot) photosessionmodel.PhotographerSlotInterface {
+	ps := photosessionmodel.NewPhotographerSlot()
+	ps.SetID(slot.SlotID)
+	ps.SetPhotographerUserID(slot.PhotographerID)
+	ps.SetSlotStart(slot.Start)
+	ps.SetSlotEnd(slot.End)
+	ps.SetSlotDate(time.Date(slot.Start.Year(), slot.Start.Month(), slot.Start.Day(), 0, 0, 0, 0, slot.Start.Location()))
+	ps.SetStatus(photosessionmodel.SlotStatusAvailable)
+	ps.SetPeriod(slot.Period)
+	return ps
 }

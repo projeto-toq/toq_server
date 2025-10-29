@@ -461,28 +461,24 @@ type ReservePhotoSessionRequest struct {
 
 // ReservePhotoSessionResponse retorna dados da reserva temporária.
 type ReservePhotoSessionResponse struct {
-	SlotID           uint64 `json:"slotId" example:"2002"`
-	SlotStart        string `json:"slotStart" example:"2025-10-24T09:00:00Z"`
-	SlotEnd          string `json:"slotEnd" example:"2025-10-24T10:00:00Z"`
-	ReservationToken string `json:"reservationToken" example:"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"`
-	ExpiresAt        string `json:"expiresAt" example:"2025-10-24T08:45:00Z"`
-	PhotoSessionID   uint64 `json:"photoSessionId" example:"3003"`
+	SlotID         uint64 `json:"slotId" example:"2002"`
+	SlotStart      string `json:"slotStart" example:"2025-10-24T09:00:00Z"`
+	SlotEnd        string `json:"slotEnd" example:"2025-10-24T10:00:00Z"`
+	PhotoSessionID uint64 `json:"photoSessionId" example:"3003"`
 }
 
 // ConfirmPhotoSessionRequest representa o payload para confirmar a sessão de fotos.
 type ConfirmPhotoSessionRequest struct {
-	ListingID        int64  `json:"listingId" binding:"required" example:"1001"`
-	SlotID           uint64 `json:"slotId" binding:"required" example:"2002"`
-	ReservationToken string `json:"reservationToken" binding:"required" example:"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"`
+	ListingID      int64  `json:"listingId" binding:"required" example:"1001"`
+	PhotoSessionID uint64 `json:"photoSessionId" binding:"required" example:"3003"`
 }
 
 // ConfirmPhotoSessionResponse retorna dados da sessão confirmada.
 type ConfirmPhotoSessionResponse struct {
 	PhotoSessionID uint64 `json:"photoSessionId" example:"3003"`
-	SlotID         uint64 `json:"slotId" example:"2002"`
 	ScheduledStart string `json:"scheduledStart" example:"2025-10-24T09:00:00Z"`
 	ScheduledEnd   string `json:"scheduledEnd" example:"2025-10-24T10:00:00Z"`
-	Status         string `json:"status" example:"PENDING_APPROVAL"`
+	Status         string `json:"status" example:"ACTIVE"`
 }
 
 // CancelPhotoSessionRequest representa o corpo para cancelamento de sessão de fotos.

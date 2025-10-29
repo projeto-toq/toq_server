@@ -6,18 +6,24 @@ import "time"
 type PhotoSessionBookingInterface interface {
 	ID() uint64
 	SetID(id uint64)
-	SlotID() uint64
-	SetSlotID(id uint64)
+	AgendaEntryID() uint64
+	SetAgendaEntryID(id uint64)
+	PhotographerUserID() uint64
+	SetPhotographerUserID(id uint64)
 	ListingID() int64
 	SetListingID(id int64)
-	ScheduledStart() time.Time
-	SetScheduledStart(value time.Time)
-	ScheduledEnd() time.Time
-	SetScheduledEnd(value time.Time)
+	StartsAt() time.Time
+	SetStartsAt(value time.Time)
+	EndsAt() time.Time
+	SetEndsAt(value time.Time)
 	Status() BookingStatus
 	SetStatus(status BookingStatus)
-	Notes() *string
-	SetNotes(notes *string)
+	Reason() *string
+	SetReason(reason *string)
+	CreatedAt() (time.Time, bool)
+	SetCreatedAt(t time.Time)
+	UpdatedAt() (time.Time, bool)
+	SetUpdatedAt(t time.Time)
 }
 
 // NewPhotoSessionBooking creates a new mutable booking instance.

@@ -18,13 +18,13 @@ import (
 //	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
-//	@Param     request body      dto.ConfirmPhotoSessionRequest true "Confirmation payload" Extensions(x-example={"listingId":1001,"slotId":2002,"reservationToken":"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"})
-//	@Success   200     {object} dto.ConfirmPhotoSessionResponse
+//	@Param     request body      dto.ConfirmPhotoSessionRequest true "Confirmation payload" Extensions(x-example={"listingId":1001,"photoSessionId":3003})
+//	@Success   200     {object} dto.ConfirmPhotoSessionResponse "Session confirmed"
 //	@Failure   400     {object} dto.ErrorResponse "Invalid payload"
 //	@Failure   401     {object} dto.ErrorResponse "Unauthorized"
 //	@Failure   403     {object} dto.ErrorResponse "Forbidden"
-//	@Failure   404     {object} dto.ErrorResponse "Reservation not found"
-//	@Failure   409     {object} dto.ErrorResponse "Slot unavailable"
+//	@Failure   404     {object} dto.ErrorResponse "Photo session not found"
+//	@Failure   409     {object} dto.ErrorResponse "Listing not eligible"
 //	@Failure   500     {object} dto.ErrorResponse "Internal error"
 //	@Router    /listings/photo-session/confirm [post]
 //	@Security  BearerAuth
@@ -48,15 +48,14 @@ func (lh *ListingHandler) ConfirmPhotoSession(c *gin.Context) {
 		return
 	}
 
-	if request.ListingID <= 0 || request.SlotID == 0 || request.ReservationToken == "" {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "listingId, slotId and reservationToken are required")
+	if request.ListingID <= 0 || request.PhotoSessionID == 0 {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "listingId and photoSessionId are required")
 		return
 	}
 
 	input := listingservices.ConfirmPhotoSessionInput{
-		ListingID:        request.ListingID,
-		SlotID:           request.SlotID,
-		ReservationToken: request.ReservationToken,
+		ListingID:      request.ListingID,
+		PhotoSessionID: request.PhotoSessionID,
 	}
 
 	output, err := lh.listingService.ConfirmPhotoSession(ctx, input)
@@ -67,8 +66,8 @@ func (lh *ListingHandler) ConfirmPhotoSession(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ConfirmPhotoSessionResponse{
 		PhotoSessionID: output.PhotoSessionID,
-		SlotID:         output.SlotID,
 		ScheduledStart: output.ScheduledStart.UTC().Format(time.RFC3339),
 		ScheduledEnd:   output.ScheduledEnd.UTC().Format(time.RFC3339),
+		Status:         output.Status,
 	})
 }

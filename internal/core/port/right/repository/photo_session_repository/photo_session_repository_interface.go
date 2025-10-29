@@ -8,30 +8,29 @@ import (
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 )
 
-// PhotoSessionRepositoryInterface defines persistence operations for photographer slots and bookings.
+// PhotoSessionRepositoryInterface defines persistence operations for photographer agenda entries and bookings.
 type PhotoSessionRepositoryInterface interface {
-	ListAvailableSlots(ctx context.Context, tx *sql.Tx, params photosessionmodel.SlotListParams) ([]photosessionmodel.PhotographerSlotInterface, int64, error)
-	GetSlotForUpdate(ctx context.Context, tx *sql.Tx, slotID uint64) (photosessionmodel.PhotographerSlotInterface, error)
-	MarkSlotReserved(ctx context.Context, tx *sql.Tx, slotID uint64, token string, reservedUntil time.Time) error
-	MarkSlotBooked(ctx context.Context, tx *sql.Tx, slotID uint64, bookedAt time.Time) error
-	MarkSlotAvailable(ctx context.Context, tx *sql.Tx, slotID uint64) error
-	InsertBooking(ctx context.Context, tx *sql.Tx, booking photosessionmodel.PhotoSessionBookingInterface) (uint64, error)
-	GetBookingForUpdate(ctx context.Context, tx *sql.Tx, bookingID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
-	GetBookingBySlotIDForUpdate(ctx context.Context, tx *sql.Tx, slotID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
+	CreateEntries(ctx context.Context, tx *sql.Tx, entries []photosessionmodel.AgendaEntryInterface) ([]uint64, error)
+	ListEntriesByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.AgendaEntryInterface, error)
+	ListPhotographerIDs(ctx context.Context, tx *sql.Tx) ([]uint64, error)
+	FindBlockingEntries(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.AgendaEntryInterface, error)
+	DeleteEntriesBySource(ctx context.Context, tx *sql.Tx, photographerID uint64, entryType photosessionmodel.AgendaEntryType, source photosessionmodel.AgendaEntrySource, sourceID *uint64) (int64, error)
+	GetEntryByID(ctx context.Context, tx *sql.Tx, entryID uint64) (photosessionmodel.AgendaEntryInterface, error)
+	GetEntryByIDForUpdate(ctx context.Context, tx *sql.Tx, entryID uint64) (photosessionmodel.AgendaEntryInterface, error)
+	DeleteEntryByID(ctx context.Context, tx *sql.Tx, entryID uint64) error
+	UpdateEntrySourceID(ctx context.Context, tx *sql.Tx, entryID uint64, sourceID uint64) error
+	UpdateEntry(ctx context.Context, tx *sql.Tx, entry photosessionmodel.AgendaEntryInterface) error
+
+	CreateBooking(ctx context.Context, tx *sql.Tx, booking photosessionmodel.PhotoSessionBookingInterface) (uint64, error)
+	UpdateBooking(ctx context.Context, tx *sql.Tx, booking photosessionmodel.PhotoSessionBookingInterface) error
 	UpdateBookingStatus(ctx context.Context, tx *sql.Tx, bookingID uint64, status photosessionmodel.BookingStatus) error
-	ListBookingsBySlotIDs(ctx context.Context, tx *sql.Tx, slotIDs []uint64) ([]photosessionmodel.PhotoSessionBookingInterface, error)
-	BulkUpsertSlots(ctx context.Context, tx *sql.Tx, slots []photosessionmodel.PhotographerSlotInterface) error
-	DeleteSlotsOutsideRange(ctx context.Context, tx *sql.Tx, photographerID uint64, windowStart, windowEnd time.Time) (int64, error)
-	ListSlotsByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerSlotInterface, error)
-	ListSlotsByRangePaginated(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time, limit, offset int) ([]photosessionmodel.PhotographerSlotInterface, int64, error)
-	ListSlotsForPeriod(ctx context.Context, tx *sql.Tx, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerSlotInterface, error)
-	CreateTimeOff(ctx context.Context, tx *sql.Tx, timeOff photosessionmodel.PhotographerTimeOffInterface) (uint64, error)
-	DeleteTimeOff(ctx context.Context, tx *sql.Tx, timeOffID uint64) error
-	ListTimeOff(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.PhotographerTimeOffInterface, error)
-	GetTimeOffByID(ctx context.Context, tx *sql.Tx, timeOffID uint64) (photosessionmodel.PhotographerTimeOffInterface, error)
-	GetTimeOffByIDForUpdate(ctx context.Context, tx *sql.Tx, timeOffID uint64) (photosessionmodel.PhotographerTimeOffInterface, error)
-	UpdateTimeOff(ctx context.Context, tx *sql.Tx, timeOff photosessionmodel.PhotographerTimeOffInterface) error
-	ListDefaultAvailability(ctx context.Context, tx *sql.Tx, photographerID uint64) ([]photosessionmodel.PhotographerDefaultAvailabilityInterface, error)
-	ReplaceDefaultAvailability(ctx context.Context, tx *sql.Tx, photographerID uint64, records []photosessionmodel.PhotographerDefaultAvailabilityInterface) error
-	DeleteDefaultAvailability(ctx context.Context, tx *sql.Tx, photographerID uint64, weekday *time.Weekday, period *photosessionmodel.SlotPeriod) error
+	GetBookingByID(ctx context.Context, tx *sql.Tx, bookingID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
+	GetBookingByIDForUpdate(ctx context.Context, tx *sql.Tx, bookingID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
+	FindBookingByAgendaEntry(ctx context.Context, tx *sql.Tx, agendaEntryID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
+}
+
+// PhotographerHolidayCalendarRepository defines the contract to manage photographer holiday calendar associations.
+type PhotographerHolidayCalendarRepository interface {
+	ListAssociations(ctx context.Context, tx *sql.Tx, photographerID uint64) ([]photosessionmodel.HolidayCalendarAssociationInterface, error)
+	ReplaceAssociations(ctx context.Context, tx *sql.Tx, photographerID uint64, calendarIDs []uint64) error
 }

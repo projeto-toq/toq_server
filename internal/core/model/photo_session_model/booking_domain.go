@@ -3,39 +3,72 @@ package photosessionmodel
 import "time"
 
 type photoSessionBooking struct {
-	id             uint64
-	slotID         uint64
-	listingID      int64
-	scheduledStart time.Time
-	scheduledEnd   time.Time
-	status         BookingStatus
-	notes          *string
+	id               uint64
+	agendaEntryID    uint64
+	photographerID   uint64
+	listingID        int64
+	startsAt         time.Time
+	endsAt           time.Time
+	status           BookingStatus
+	reason           *string
+	createdAt        time.Time
+	createdAtDefined bool
+	updatedAt        time.Time
+	updatedAtDefined bool
 }
 
 func (b *photoSessionBooking) ID() uint64 { return b.id }
 
 func (b *photoSessionBooking) SetID(id uint64) { b.id = id }
 
-func (b *photoSessionBooking) SlotID() uint64 { return b.slotID }
+func (b *photoSessionBooking) AgendaEntryID() uint64 { return b.agendaEntryID }
 
-func (b *photoSessionBooking) SetSlotID(id uint64) { b.slotID = id }
+func (b *photoSessionBooking) SetAgendaEntryID(id uint64) { b.agendaEntryID = id }
+
+func (b *photoSessionBooking) PhotographerUserID() uint64 { return b.photographerID }
+
+func (b *photoSessionBooking) SetPhotographerUserID(id uint64) { b.photographerID = id }
 
 func (b *photoSessionBooking) ListingID() int64 { return b.listingID }
 
 func (b *photoSessionBooking) SetListingID(id int64) { b.listingID = id }
 
-func (b *photoSessionBooking) ScheduledStart() time.Time { return b.scheduledStart }
+func (b *photoSessionBooking) StartsAt() time.Time { return b.startsAt }
 
-func (b *photoSessionBooking) SetScheduledStart(value time.Time) { b.scheduledStart = value }
+func (b *photoSessionBooking) SetStartsAt(value time.Time) { b.startsAt = value }
 
-func (b *photoSessionBooking) ScheduledEnd() time.Time { return b.scheduledEnd }
+func (b *photoSessionBooking) EndsAt() time.Time { return b.endsAt }
 
-func (b *photoSessionBooking) SetScheduledEnd(value time.Time) { b.scheduledEnd = value }
+func (b *photoSessionBooking) SetEndsAt(value time.Time) { b.endsAt = value }
 
 func (b *photoSessionBooking) Status() BookingStatus { return b.status }
 
 func (b *photoSessionBooking) SetStatus(status BookingStatus) { b.status = status }
 
-func (b *photoSessionBooking) Notes() *string { return b.notes }
+func (b *photoSessionBooking) Reason() *string { return b.reason }
 
-func (b *photoSessionBooking) SetNotes(notes *string) { b.notes = notes }
+func (b *photoSessionBooking) SetReason(reason *string) { b.reason = reason }
+
+func (b *photoSessionBooking) CreatedAt() (time.Time, bool) {
+	if !b.createdAtDefined {
+		return time.Time{}, false
+	}
+	return b.createdAt, true
+}
+
+func (b *photoSessionBooking) SetCreatedAt(t time.Time) {
+	b.createdAt = t
+	b.createdAtDefined = true
+}
+
+func (b *photoSessionBooking) UpdatedAt() (time.Time, bool) {
+	if !b.updatedAtDefined {
+		return time.Time{}, false
+	}
+	return b.updatedAt, true
+}
+
+func (b *photoSessionBooking) SetUpdatedAt(t time.Time) {
+	b.updatedAt = t
+	b.updatedAtDefined = true
+}

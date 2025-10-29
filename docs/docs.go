@@ -1422,9 +1422,9 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "example": "\"3509502\"",
-                        "description": "City IBGE code",
-                        "name": "cityIbge",
+                        "example": "\"Campinas\"",
+                        "description": "City name",
+                        "name": "city",
                         "in": "query"
                     },
                     {
@@ -1508,7 +1508,7 @@ const docTemplate = `{
                 "summary": "Update holiday calendar",
                 "parameters": [
                     {
-                        "x-example": "{\"id\":42,\"name\":\"Calendario Campinas\",\"scope\":\"CITY\",\"state\":\"SP\",\"cityIbge\":\"3509502\",\"isActive\":true,\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"id\":42,\"name\":\"Calendario Campinas\",\"scope\":\"CITY\",\"state\":\"SP\",\"city\":\"Campinas\",\"isActive\":true,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Calendar update payload",
                         "name": "request",
                         "in": "body",
@@ -1576,7 +1576,7 @@ const docTemplate = `{
                 "summary": "Create holiday calendar",
                 "parameters": [
                     {
-                        "x-example": "{\"name\":\"Feriados Sao Paulo\",\"scope\":\"STATE\",\"state\":\"SP\",\"cityIbge\":\"\",\"isActive\":true,\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"name\":\"Feriados Sao Paulo\",\"scope\":\"STATE\",\"state\":\"SP\",\"city\":\"Sao Paulo\",\"isActive\":true,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Calendar payload",
                         "name": "request",
                         "in": "body",
@@ -5648,7 +5648,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Session cancelled",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse"
                         }
@@ -5673,6 +5673,12 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Photo session not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Photo session not cancellable",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -5705,7 +5711,7 @@ const docTemplate = `{
                 "summary": "Confirm a photo session reservation",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":1001,\"slotId\":2002,\"reservationToken\":\"c36b754f-6c37-4c15-8f25-9d77ddf9bb3e\"}",
+                        "x-example": "{\"listingId\":1001,\"photoSessionId\":3003}",
                         "description": "Confirmation payload",
                         "name": "request",
                         "in": "body",
@@ -5717,7 +5723,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Session confirmed",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse"
                         }
@@ -5741,13 +5747,13 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Reservation not found",
+                        "description": "Photo session not found",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "409": {
-                        "description": "Slot unavailable",
+                        "description": "Listing not eligible",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -5792,7 +5798,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Reservation created",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionResponse"
                         }
@@ -6207,7 +6213,7 @@ const docTemplate = `{
                 "summary": "Delete Photographer Time-Off",
                 "parameters": [
                     {
-                        "x-example": "{\"timeOffId\":42,\"timezone\":\"America/Sao_Paulo\",\"holidayCalendarId\":1,\"horizonMonths\":3,\"workdayStartHour\":8,\"workdayEndHour\":19}",
+                        "x-example": "{\"timeOffId\":42,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Delete Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -8267,7 +8273,7 @@ const docTemplate = `{
                 "bornAt",
                 "cpf",
                 "email",
-                "fullName",
+                "nickName",
                 "phoneNumber",
                 "roleSlug"
             ],
@@ -8281,9 +8287,9 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "fullName": {
+                "nickName": {
                     "type": "string",
-                    "maxLength": 150,
+                    "maxLength": 60,
                     "minLength": 2
                 },
                 "phoneNumber": {
@@ -9368,21 +9374,16 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "listingId",
-                "reservationToken",
-                "slotId"
+                "photoSessionId"
             ],
             "properties": {
                 "listingId": {
                     "type": "integer",
                     "example": 1001
                 },
-                "reservationToken": {
-                    "type": "string",
-                    "example": "c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"
-                },
-                "slotId": {
+                "photoSessionId": {
                     "type": "integer",
-                    "example": 2002
+                    "example": 3003
                 }
             }
         },
@@ -9401,13 +9402,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2025-10-24T09:00:00Z"
                 },
-                "slotId": {
-                    "type": "integer",
-                    "example": 2002
-                },
                 "status": {
                     "type": "string",
-                    "example": "PENDING_APPROVAL"
+                    "example": "ACTIVE"
                 }
             }
         },
@@ -9538,21 +9535,10 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest": {
             "type": "object",
             "required": [
-                "horizonMonths",
                 "timeOffId",
-                "timezone",
-                "workdayEndHour",
-                "workdayStartHour"
+                "timezone"
             ],
             "properties": {
-                "holidayCalendarId": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "horizonMonths": {
-                    "type": "integer",
-                    "example": 2
-                },
                 "timeOffId": {
                     "type": "integer",
                     "example": 42
@@ -9560,14 +9546,6 @@ const docTemplate = `{
                 "timezone": {
                     "type": "string",
                     "example": "America/Sao_Paulo"
-                },
-                "workdayEndHour": {
-                    "type": "integer",
-                    "example": 18
-                },
-                "workdayStartHour": {
-                    "type": "integer",
-                    "example": 9
                 }
             }
         },
@@ -9764,7 +9742,7 @@ const docTemplate = `{
                 "timezone"
             ],
             "properties": {
-                "cityIbge": {
+                "city": {
                     "type": "string"
                 },
                 "isActive": {
@@ -9909,7 +9887,7 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarResponse": {
             "type": "object",
             "properties": {
-                "cityIbge": {
+                "city": {
                     "type": "string"
                 },
                 "id": {
@@ -9941,7 +9919,7 @@ const docTemplate = `{
                 "timezone"
             ],
             "properties": {
-                "cityIbge": {
+                "city": {
                     "type": "string"
                 },
                 "id": {
@@ -10660,17 +10638,9 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionResponse": {
             "type": "object",
             "properties": {
-                "expiresAt": {
-                    "type": "string",
-                    "example": "2025-10-24T08:45:00Z"
-                },
                 "photoSessionId": {
                     "type": "integer",
                     "example": 3003
-                },
-                "reservationToken": {
-                    "type": "string",
-                    "example": "c36b754f-6c37-4c15-8f25-9d77ddf9bb3e"
                 },
                 "slotEnd": {
                     "type": "string",
@@ -11480,15 +11450,34 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotPeriod": {
+        "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource": {
             "type": "string",
             "enum": [
-                "MORNING",
-                "AFTERNOON"
+                "BOOKING",
+                "MANUAL",
+                "ONBOARDING",
+                "HOLIDAY_SYNC"
             ],
             "x-enum-varnames": [
-                "SlotPeriodMorning",
-                "SlotPeriodAfternoon"
+                "AgendaEntrySourceBooking",
+                "AgendaEntrySourceManual",
+                "AgendaEntrySourceOnboarding",
+                "AgendaEntrySourceHoliday"
+            ]
+        },
+        "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntryType": {
+            "type": "string",
+            "enum": [
+                "PHOTO_SESSION",
+                "BLOCK",
+                "TIME_OFF",
+                "HOLIDAY"
+            ],
+            "x-enum-varnames": [
+                "AgendaEntryTypePhotoSession",
+                "AgendaEntryTypeBlock",
+                "AgendaEntryTypeTimeOff",
+                "AgendaEntryTypeHoliday"
             ]
         },
         "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotStatus": {
@@ -11506,24 +11495,17 @@ const docTemplate = `{
                 "SlotStatusBlocked"
             ]
         },
-        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaEntrySource": {
-            "type": "string",
-            "enum": [
-                "SLOT",
-                "HOLIDAY",
-                "TIME_OFF"
-            ],
-            "x-enum-varnames": [
-                "AgendaEntrySourceSlot",
-                "AgendaEntrySourceHoliday",
-                "AgendaEntrySourceTimeOff"
-            ]
-        },
         "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaSlot": {
             "type": "object",
             "properties": {
                 "end": {
                     "type": "string"
+                },
+                "entryId": {
+                    "type": "integer"
+                },
+                "entryType": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntryType"
                 },
                 "groupId": {
                     "type": "string"
@@ -11546,17 +11528,17 @@ const docTemplate = `{
                 "isTimeOff": {
                     "type": "boolean"
                 },
-                "period": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotPeriod"
-                },
                 "photographerId": {
                     "type": "integer"
                 },
-                "slotId": {
-                    "type": "integer"
+                "reason": {
+                    "type": "string"
                 },
                 "source": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaEntrySource"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource"
+                },
+                "sourceId": {
+                    "type": "integer"
                 },
                 "start": {
                     "type": "string"

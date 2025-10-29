@@ -18,11 +18,12 @@ import (
 //	@Accept    json
 //	@Produce   json
 //	@Param     request body      dto.CancelPhotoSessionRequest true "Cancel payload" Extensions(x-example={"photoSessionId":3003})
-//	@Success   200     {object} dto.APIResponse
+//	@Success   200     {object} dto.APIResponse "Session cancelled"
 //	@Failure   400     {object} dto.ErrorResponse "Invalid payload"
 //	@Failure   401     {object} dto.ErrorResponse "Unauthorized"
 //	@Failure   403     {object} dto.ErrorResponse "Forbidden"
 //	@Failure   404     {object} dto.ErrorResponse "Photo session not found"
+//	@Failure   409     {object} dto.ErrorResponse "Photo session not cancellable"
 //	@Failure   500     {object} dto.ErrorResponse "Internal error"
 //	@Router    /listings/photo-session/cancel [post]
 //	@Security  BearerAuth

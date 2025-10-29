@@ -36,3 +36,6 @@
     - propostas pendentes
     - histórico de chats
 - criar os 2 campos mensais adicionais e a regra de validação será que IPTU tem que ter ao menos 1 dos campos, pois se colocar ambos dará conflito, voce decide no frontend qual mandar. No Laudemio, nem sempre existe, entõ ficará opcional ambos, mas nunca os 2 preenchidos.
+- alterar /healthz para retornar a versão da build. Criando um build generator automático
+- validar informações de exchange place para estado válido ao menos
+- colocar em env.yaml se o fotografo trabalha sabado e domingo

@@ -2,7 +2,27 @@ package photosessionmodel
 
 import "fmt"
 
-// SlotStatus represents the current state of a photographer time slot.
+// AgendaEntryType represents the semantic meaning of an agenda entry row.
+type AgendaEntryType string
+
+const (
+	AgendaEntryTypePhotoSession AgendaEntryType = "PHOTO_SESSION"
+	AgendaEntryTypeBlock        AgendaEntryType = "BLOCK"
+	AgendaEntryTypeTimeOff      AgendaEntryType = "TIME_OFF"
+	AgendaEntryTypeHoliday      AgendaEntryType = "HOLIDAY"
+)
+
+// AgendaEntrySource tracks which pipeline originated a given entry.
+type AgendaEntrySource string
+
+const (
+	AgendaEntrySourceBooking    AgendaEntrySource = "BOOKING"
+	AgendaEntrySourceManual     AgendaEntrySource = "MANUAL"
+	AgendaEntrySourceOnboarding AgendaEntrySource = "ONBOARDING"
+	AgendaEntrySourceHoliday    AgendaEntrySource = "HOLIDAY_SYNC"
+)
+
+// SlotStatus captures the availability state of an agenda slot exposed to clients.
 type SlotStatus string
 
 const (
@@ -12,7 +32,7 @@ const (
 	SlotStatusBlocked   SlotStatus = "BLOCKED"
 )
 
-// SlotPeriod represents the predefined period windows for photo sessions.
+// SlotPeriod represents the day period categorisation used by legacy slot consumers.
 type SlotPeriod string
 
 const (

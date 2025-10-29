@@ -5,17 +5,17 @@ import (
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
-	photosessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 )
 
 type listingService struct {
 	listingRepository listingrepository.ListingRepoPortInterface
-	photoSessionRepo  photosessionrepository.PhotoSessionRepositoryInterface
+	photoSessionSvc   photosessionservices.PhotoSessionServiceInterface
 	userRepository    userrepository.UserRepoPortInterface
 	csi               complexservices.ComplexServiceInterface
 	gsi               globalservice.GlobalServiceInterface
@@ -25,7 +25,7 @@ type listingService struct {
 
 func NewListingService(
 	lr listingrepository.ListingRepoPortInterface,
-	ps photosessionrepository.PhotoSessionRepositoryInterface,
+	ps photosessionservices.PhotoSessionServiceInterface,
 	ur userrepository.UserRepoPortInterface,
 	csi complexservices.ComplexServiceInterface,
 	gsi globalservice.GlobalServiceInterface,
@@ -35,7 +35,7 @@ func NewListingService(
 ) ListingServiceInterface {
 	return &listingService{
 		listingRepository: lr,
-		photoSessionRepo:  ps,
+		photoSessionSvc:   ps,
 		userRepository:    ur,
 		csi:               csi,
 		gsi:               gsi,

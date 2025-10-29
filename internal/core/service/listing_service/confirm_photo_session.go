@@ -2,19 +2,14 @@ package listingservices
 
 import (
 	"context"
-	"database/sql"
-	"errors"
-	"time"
 
-	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
-	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
-	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
+	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input ConfirmPhotoSessionInput) (output ConfirmPhotoSessionOutput, err error) {
-	if input.ListingID <= 0 || input.SlotID == 0 || input.ReservationToken == "" {
-		return output, utils.BadRequest("listingId, slotId and reservationToken are required")
+	if input.ListingID <= 0 || input.PhotoSessionID == 0 {
+		return output, utils.BadRequest("listingId and photoSessionId are required")
 	}
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -31,137 +26,21 @@ func (ls *listingService) ConfirmPhotoSession(ctx context.Context, input Confirm
 		return output, userErr
 	}
 
-	tx, txErr := ls.gsi.StartTransaction(ctx)
-	if txErr != nil {
-		utils.SetSpanError(ctx, txErr)
-		logger.Error("listing.photo_session.confirm.start_tx_error", "err", txErr)
-		return output, utils.InternalError("")
-	}
-	defer func() {
-		if err != nil {
-			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
-				utils.SetSpanError(ctx, rbErr)
-				logger.Error("listing.photo_session.confirm.rollback_error", "err", rbErr)
-			}
-		}
-	}()
-
-	listing, repoErr := ls.listingRepository.GetListingByID(ctx, tx, input.ListingID)
-	if repoErr != nil {
-		if errors.Is(repoErr, sql.ErrNoRows) {
-			return output, utils.NotFoundError("Listing")
-		}
-		utils.SetSpanError(ctx, repoErr)
-		logger.Error("listing.photo_session.confirm.get_listing_error", "err", repoErr, "listing_id", input.ListingID)
-		return output, utils.InternalError("")
+	confirmOutput, confirmErr := ls.photoSessionSvc.ConfirmPhotoSession(ctx, photosessionservices.ConfirmSessionInput{
+		ListingID:      input.ListingID,
+		PhotoSessionID: input.PhotoSessionID,
+		UserID:         userID,
+	})
+	if confirmErr != nil {
+		return output, confirmErr
 	}
 
-	if listing.Deleted() {
-		return output, utils.BadRequest("listing is not available")
-	}
-
-	if listing.UserID() != userID {
-		return output, utils.AuthorizationError("listing does not belong to current user")
-	}
-
-	if !listingEligibleForPhotoSession(listing.Status()) {
-		return output, derrors.ErrListingNotEligible
-	}
-
-	slot, slotErr := ls.photoSessionRepo.GetSlotForUpdate(ctx, tx, input.SlotID)
-	if slotErr != nil {
-		if errors.Is(slotErr, sql.ErrNoRows) {
-			return output, derrors.ErrSlotUnavailable
-		}
-		utils.SetSpanError(ctx, slotErr)
-		logger.Error("listing.photo_session.confirm.get_slot_error", "err", slotErr, "slot_id", input.SlotID)
-		return output, utils.InternalError("")
-	}
-
-	if slot.Status() != photosessionmodel.SlotStatusReserved {
-		return output, derrors.ErrSlotUnavailable
-	}
-
-	token := slot.ReservationToken()
-	if token == nil || *token != input.ReservationToken {
-		return output, derrors.ErrSlotUnavailable
-	}
-
-	expiresAt := slot.ReservedUntil()
-	if expiresAt == nil || time.Now().UTC().After(*expiresAt) {
-		return output, derrors.ErrReservationExpired
-	}
-
-	booking, bookingErr := ls.photoSessionRepo.GetBookingBySlotIDForUpdate(ctx, tx, input.SlotID)
-	if bookingErr != nil {
-		if errors.Is(bookingErr, sql.ErrNoRows) {
-			return output, utils.NotFoundError("Photo session")
-		}
-		utils.SetSpanError(ctx, bookingErr)
-		logger.Error("listing.photo_session.confirm.get_booking_error", "err", bookingErr, "slot_id", input.SlotID)
-		return output, utils.InternalError("")
-	}
-
-	if booking.ListingID() != input.ListingID {
-		return output, utils.AuthorizationError("photo session does not belong to listing")
-	}
-
-	switch booking.Status() {
-	case photosessionmodel.BookingStatusPendingApproval:
-		return output, derrors.ErrPhotoSessionPending
-	case photosessionmodel.BookingStatusRejected,
-		photosessionmodel.BookingStatusCancelled,
-		photosessionmodel.BookingStatusDone,
-		photosessionmodel.BookingStatusRescheduled,
-		photosessionmodel.BookingStatusActive:
-		return output, derrors.ErrPhotoSessionAlreadyFinal
-	case photosessionmodel.BookingStatusAccepted:
-		// allowed
-	default:
-		return output, derrors.ErrPhotoSessionAlreadyFinal
-	}
-
-	if markErr := ls.photoSessionRepo.MarkSlotBooked(ctx, tx, input.SlotID, time.Now().UTC()); markErr != nil {
-		if errors.Is(markErr, sql.ErrNoRows) {
-			return output, derrors.ErrSlotUnavailable
-		}
-		utils.SetSpanError(ctx, markErr)
-		logger.Error("listing.photo_session.confirm.update_slot_error", "err", markErr, "slot_id", input.SlotID)
-		return output, utils.InternalError("")
-	}
-
-	if updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, input.ListingID, listingmodel.StatusPhotosScheduled, listingmodel.StatusPendingAvailabilityConfirm); updateErr != nil {
-		if errors.Is(updateErr, sql.ErrNoRows) {
-			utils.SetSpanError(ctx, updateErr)
-			logger.Warn("listing.photo_session.confirm.status_conflict", "err", updateErr, "listing_id", input.ListingID)
-			return output, derrors.ErrListingNotEligible
-		}
-		utils.SetSpanError(ctx, updateErr)
-		logger.Error("listing.photo_session.confirm.update_listing_status_error", "err", updateErr, "listing_id", input.ListingID)
-		return output, utils.InternalError("")
-	}
-
-	if updateErr := ls.photoSessionRepo.UpdateBookingStatus(ctx, tx, booking.ID(), photosessionmodel.BookingStatusActive); updateErr != nil {
-		if errors.Is(updateErr, sql.ErrNoRows) {
-			return output, utils.NotFoundError("Photo session")
-		}
-		utils.SetSpanError(ctx, updateErr)
-		logger.Error("listing.photo_session.confirm.update_booking_status_error", "err", updateErr, "booking_id", booking.ID())
-		return output, utils.InternalError("")
-	}
-
-	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
-		utils.SetSpanError(ctx, cmErr)
-		logger.Error("listing.photo_session.confirm.commit_error", "err", cmErr)
-		return output, utils.InternalError("")
-	}
-
-	logger.Info("listing.photo_session.confirm.success", "booking_id", booking.ID(), "slot_id", input.SlotID, "listing_id", input.ListingID, "user_id", userID)
+	logger.Info("listing.photo_session.confirm.success", "photo_session_id", confirmOutput.PhotoSessionID, "listing_id", confirmOutput.ListingID, "user_id", userID)
 
 	return ConfirmPhotoSessionOutput{
-		PhotoSessionID: booking.ID(),
-		SlotID:         input.SlotID,
-		ScheduledStart: slot.SlotStart(),
-		ScheduledEnd:   slot.SlotEnd(),
+		PhotoSessionID: confirmOutput.PhotoSessionID,
+		ScheduledStart: confirmOutput.SlotStart,
+		ScheduledEnd:   confirmOutput.SlotEnd,
+		Status:         string(confirmOutput.Status),
 	}, nil
 }

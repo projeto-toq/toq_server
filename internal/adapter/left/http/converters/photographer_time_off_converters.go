@@ -2,6 +2,7 @@ package converters
 
 import (
 	"math"
+	"strings"
 	"time"
 
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
@@ -10,20 +11,32 @@ import (
 )
 
 // PhotographerTimeOffToDTO converts a time-off domain entity into a response DTO.
-func PhotographerTimeOffToDTO(timeOff photosessionmodel.PhotographerTimeOffInterface, timezone string) dto.PhotographerTimeOffResponse {
+func PhotographerTimeOffToDTO(timeOff photosessionmodel.AgendaEntryInterface, timezone string) dto.PhotographerTimeOffResponse {
 	if timeOff == nil {
 		return dto.PhotographerTimeOffResponse{}
 	}
 
+	start := timeOff.StartsAt()
+	end := timeOff.EndsAt()
+	if tz := strings.TrimSpace(timezone); tz != "" {
+		if loc, err := time.LoadLocation(tz); err == nil {
+			start = start.In(loc)
+			end = end.In(loc)
+		}
+	}
+
 	resp := dto.PhotographerTimeOffResponse{
 		ID:        timeOff.ID(),
-		StartDate: formatTimeOff(timeOff.StartDate()),
-		EndDate:   formatTimeOff(timeOff.EndDate()),
+		StartDate: formatTimeOff(start),
+		EndDate:   formatTimeOff(end),
 		Timezone:  timezone,
 	}
 
-	if reason := timeOff.Reason(); reason != nil {
-		resp.Reason = reason
+	if reason, ok := timeOff.Reason(); ok {
+		trimmed := strings.TrimSpace(reason)
+		if trimmed != "" {
+			resp.Reason = &trimmed
+		}
 	}
 
 	return resp
