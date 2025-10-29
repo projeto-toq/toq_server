@@ -8,12 +8,14 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 A agenda dos fotografos foi implementada com uma lógica muito complicada.
 Existe uma tabela, com horizonte de 3 meses com todas as disponibilidades de horários dos fotografos. photographer_default_availability. Processo contrário ao processo de uma agenda normal de compromissos, todas os slots estão livres exceto quanto existe um bloqueio ou uma sessão agendada.
 O correto seria que:
-- cada fotografo tivesse uma agenda com todos os compromissos agendados e bloqueios, e a disponibilidade fosse calculada a partir disso. Sem bloqueios ou sessões agendadas, o fotografo estaria disponível.
-- Como o proprietário necessita buscar quais dias e horários teremos um fotografo disponível, via GET /listings/photo-session/slots, e o slot para cada sessão de fotos é de 4 horas, definido por env.yaml, o serviço deveria buscar os fotógrafos que possuem horários livres de 4 horas consecutivas entre seus compromissos agendados e bloqueios.
-- a criação da agenda base do fotografo, efetuada durante a criação do usuário do sistema  (create_system_user.go) com roleSlug photographer, deveria colocar como bloqueio padrão todos os horários fora do expediente, 08:00 - 18:00 como default mas definido por variáveis no env.yaml, e deixar livres os horários dentro do expediente.
+- cada fotografo tivesse uma agenda com todos os compromissos agendados e bloqueios, e a disponibilidade fosse calculada a partir disso. Não havendo bloqueios ou sessões agendadas, o fotografo estaria com o horário disponível.
+- Como o proprietário necessita buscar quais dias e horários teremos um fotografo disponível, via GET /listings/photo-session/slots, e o slot para cada sessão de fotos é de 4 horas, definido por env.yaml, o serviço deveria buscar os fotógrafos que possuem horários livres de 4 horas consecutivas entre seus compromissos agendados e bloqueios, apresentaando-os em ordem crescente de data e hora.
+- a criação da agenda base do fotografo, efetuada durante a criação do usuário do sistema  (create_system_user.go) com roleSlug photographer, deveria colocar como bloqueio padrão todos os horários fora do expediente, 08:00 - 18:00 como default, mas definido por variáveis no env.yaml, e deixar livres os horários dentro do expediente.
 - Dias feriados, nacionais, estaduais e municipais, também deveriam ser bloqueados na criação da agenda padrão.
-- eventuais alterações no banco de dados serão feitas manualmente, apenas indique as alteraçoes necessárias.
-- eventuais códigos morto ou não utilizados devem ser removidos.
+  - Os feriados são tratados pelo holiday_service, e a associação de feriados estaduais e municipais ao fotógrafo é feita via state e city do endereço do fotógrafo.
+  - Feriados nacionais sempre se aplicam a todos os fotógrafos.
+- eventuais alterações no banco de dados serão feitas manualmente, portanto apenas indique as alteraçoes necessárias.
+- eventuais códigos morto ou não utilizados devem ser removidos. Caso o arquivo inteiro tenha que ser removido, apague o conteúdo e informe que farei a remoção do arquivo.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 
