@@ -17,16 +17,6 @@ func ToAgendaEntryEntity(entry photosessionmodel.AgendaEntryInterface) entity.Ag
 	reasonStr, reasonValid := entry.Reason()
 	reason := sql.NullString{String: reasonStr, Valid: reasonValid}
 
-	createdAt := sql.NullTime{}
-	if t, ok := entry.CreatedAt(); ok {
-		createdAt = sql.NullTime{Time: t, Valid: true}
-	}
-
-	updatedAt := sql.NullTime{}
-	if t, ok := entry.UpdatedAt(); ok {
-		updatedAt = sql.NullTime{Time: t, Valid: true}
-	}
-
 	tz := entry.Timezone()
 	if tz == "" {
 		tz = "America/Sao_Paulo"
@@ -43,8 +33,6 @@ func ToAgendaEntryEntity(entry photosessionmodel.AgendaEntryInterface) entity.Ag
 		Blocking:           entry.Blocking(),
 		Reason:             reason,
 		Timezone:           tz,
-		CreatedAt:          createdAt,
-		UpdatedAt:          updatedAt,
 	}
 }
 
@@ -69,11 +57,5 @@ func ToAgendaEntryModel(entity entity.AgendaEntry) photosessionmodel.AgendaEntry
 		model.ClearReason()
 	}
 	model.SetTimezone(entity.Timezone)
-	if entity.CreatedAt.Valid {
-		model.SetCreatedAt(entity.CreatedAt.Time)
-	}
-	if entity.UpdatedAt.Valid {
-		model.SetUpdatedAt(entity.UpdatedAt.Time)
-	}
 	return model
 }

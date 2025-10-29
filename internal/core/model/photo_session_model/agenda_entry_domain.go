@@ -15,10 +15,6 @@ type agendaEntry struct {
 	reason             string
 	reasonValid        bool
 	timezone           string
-	createdAt          time.Time
-	createdAtValid     bool
-	updatedAt          time.Time
-	updatedAtValid     bool
 }
 
 func (e *agendaEntry) ID() uint64 {
@@ -117,28 +113,4 @@ func (e *agendaEntry) Timezone() string {
 
 func (e *agendaEntry) SetTimezone(tz string) {
 	e.timezone = tz
-}
-
-func (e *agendaEntry) CreatedAt() (time.Time, bool) {
-	if !e.createdAtValid {
-		return time.Time{}, false
-	}
-	return e.createdAt, true
-}
-
-func (e *agendaEntry) SetCreatedAt(t time.Time) {
-	e.createdAt = t
-	e.createdAtValid = true
-}
-
-func (e *agendaEntry) UpdatedAt() (time.Time, bool) {
-	if !e.updatedAtValid {
-		return time.Time{}, false
-	}
-	return e.updatedAt, true
-}
-
-func (e *agendaEntry) SetUpdatedAt(t time.Time) {
-	e.updatedAt = t
-	e.updatedAtValid = true
 }

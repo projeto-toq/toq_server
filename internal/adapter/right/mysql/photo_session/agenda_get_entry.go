@@ -32,7 +32,7 @@ func (a *PhotoSessionAdapter) getEntry(ctx context.Context, tx *sql.Tx, entryID 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, photographer_user_id, entry_type, source, source_id, starts_at, ends_at, blocking, reason, timezone, created_at, updated_at
+	query := `SELECT id, photographer_user_id, entry_type, source, source_id, starts_at, ends_at, blocking, reason, timezone
 		FROM photographer_agenda_entries WHERE id = ?`
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -50,9 +50,7 @@ func (a *PhotoSessionAdapter) getEntry(ctx context.Context, tx *sql.Tx, entryID 
 		&row.Blocking,
 		&row.Reason,
 		&row.Timezone,
-		&row.CreatedAt,
-		&row.UpdatedAt,
-	)
+)
 	if scanErr != nil {
 		if scanErr == sql.ErrNoRows {
 			return nil, scanErr

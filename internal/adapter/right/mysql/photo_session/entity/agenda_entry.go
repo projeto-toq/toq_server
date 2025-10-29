@@ -17,6 +17,4 @@ type AgendaEntry struct {
 	Blocking           bool
 	Reason             sql.NullString
 	Timezone           string
-	CreatedAt          sql.NullTime
-	UpdatedAt          sql.NullTime
 }

@@ -25,7 +25,7 @@ func (a *PhotoSessionAdapter) FindBlockingEntries(ctx context.Context, tx *sql.T
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, photographer_user_id, entry_type, source, source_id, starts_at, ends_at, blocking, reason, timezone, created_at, updated_at
+	query := `SELECT id, photographer_user_id, entry_type, source, source_id, starts_at, ends_at, blocking, reason, timezone
 		FROM photographer_agenda_entries
 		WHERE photographer_user_id = ? AND blocking = 1 AND ends_at > ? AND starts_at < ?
 		ORDER BY starts_at ASC`
@@ -52,8 +52,6 @@ func (a *PhotoSessionAdapter) FindBlockingEntries(ctx context.Context, tx *sql.T
 			&row.Blocking,
 			&row.Reason,
 			&row.Timezone,
-			&row.CreatedAt,
-			&row.UpdatedAt,
 		); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.photo_session.find_blocking.scan_error", "photographer_id", photographerID, "err", scanErr)

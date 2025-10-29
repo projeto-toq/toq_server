@@ -1,7 +1,5 @@
 package photosessionmodel
 
-import "time"
-
 // HolidayCalendarAssociationInterface models the photographer_holiday_calendars table.
 type HolidayCalendarAssociationInterface interface {
 	ID() uint64
@@ -10,8 +8,6 @@ type HolidayCalendarAssociationInterface interface {
 	SetPhotographerUserID(id uint64)
 	HolidayCalendarID() uint64
 	SetHolidayCalendarID(id uint64)
-	CreatedAt() (time.Time, bool)
-	SetCreatedAt(t time.Time)
 }
 
 // NewHolidayCalendarAssociation returns a mutable association instance.
@@ -23,8 +19,6 @@ type holidayCalendarAssociation struct {
 	id                 uint64
 	photographerUserID uint64
 	holidayCalendarID  uint64
-	createdAt          time.Time
-	createdAtDefined   bool
 }
 
 func (a *holidayCalendarAssociation) ID() uint64 {
@@ -49,16 +43,4 @@ func (a *holidayCalendarAssociation) HolidayCalendarID() uint64 {
 
 func (a *holidayCalendarAssociation) SetHolidayCalendarID(id uint64) {
 	a.holidayCalendarID = id
-}
-
-func (a *holidayCalendarAssociation) CreatedAt() (time.Time, bool) {
-	if !a.createdAtDefined {
-		return time.Time{}, false
-	}
-	return a.createdAt, true
-}
-
-func (a *holidayCalendarAssociation) SetCreatedAt(t time.Time) {
-	a.createdAt = t
-	a.createdAtDefined = true
 }

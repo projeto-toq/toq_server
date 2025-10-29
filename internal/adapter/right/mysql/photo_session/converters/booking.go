@@ -14,16 +14,6 @@ func ToBookingEntity(booking photosessionmodel.PhotoSessionBookingInterface) ent
 		reason = sql.NullString{String: *val, Valid: true}
 	}
 
-	createdAt := sql.NullTime{}
-	if t, ok := booking.CreatedAt(); ok {
-		createdAt = sql.NullTime{Time: t, Valid: true}
-	}
-
-	updatedAt := sql.NullTime{}
-	if t, ok := booking.UpdatedAt(); ok {
-		updatedAt = sql.NullTime{Time: t, Valid: true}
-	}
-
 	return entity.Booking{
 		ID:             booking.ID(),
 		AgendaEntryID:  booking.AgendaEntryID(),
@@ -33,8 +23,6 @@ func ToBookingEntity(booking photosessionmodel.PhotoSessionBookingInterface) ent
 		EndsAt:         booking.EndsAt(),
 		Status:         string(booking.Status()),
 		Reason:         reason,
-		CreatedAt:      createdAt,
-		UpdatedAt:      updatedAt,
 	}
 }
 
@@ -53,12 +41,6 @@ func ToBookingModel(entity entity.Booking) photosessionmodel.PhotoSessionBooking
 		model.SetReason(&reason)
 	} else {
 		model.SetReason(nil)
-	}
-	if entity.CreatedAt.Valid {
-		model.SetCreatedAt(entity.CreatedAt.Time)
-	}
-	if entity.UpdatedAt.Valid {
-		model.SetUpdatedAt(entity.UpdatedAt.Time)
 	}
 	return model
 }

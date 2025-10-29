@@ -11,8 +11,5 @@ func ToHolidayAssociationModel(row entity.HolidayAssociation) photosessionmodel.
 	model.SetID(row.ID)
 	model.SetPhotographerUserID(row.PhotographerUserID)
 	model.SetHolidayCalendarID(row.HolidayCalendarID)
-	if row.CreatedAt.Valid {
-		model.SetCreatedAt(row.CreatedAt.Time)
-	}
 	return model
 }

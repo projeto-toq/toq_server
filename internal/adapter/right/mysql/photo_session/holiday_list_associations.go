@@ -24,7 +24,7 @@ func (a *PhotoSessionAdapter) ListAssociations(ctx context.Context, tx *sql.Tx, 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, photographer_user_id, holiday_calendar_id, created_at FROM photographer_holiday_calendars WHERE photographer_user_id = ?`
+	query := `SELECT id, photographer_user_id, holiday_calendar_id FROM photographer_holiday_calendars WHERE photographer_user_id = ?`
 
 	rows, err := exec.QueryContext(ctx, query, photographerID)
 	if err != nil {
@@ -37,7 +37,7 @@ func (a *PhotoSessionAdapter) ListAssociations(ctx context.Context, tx *sql.Tx, 
 	associations := make([]photosessionmodel.HolidayCalendarAssociationInterface, 0)
 	for rows.Next() {
 		row := entity.HolidayAssociation{}
-		if scanErr := rows.Scan(&row.ID, &row.PhotographerUserID, &row.HolidayCalendarID, &row.CreatedAt); scanErr != nil {
+		if scanErr := rows.Scan(&row.ID, &row.PhotographerUserID, &row.HolidayCalendarID); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.photo_session.list_associations.scan_error", "photographer_id", photographerID, "err", scanErr)
 			return nil, fmt.Errorf("scan holiday association: %w", scanErr)

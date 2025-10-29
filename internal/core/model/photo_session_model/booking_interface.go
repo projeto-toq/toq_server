@@ -20,10 +20,6 @@ type PhotoSessionBookingInterface interface {
 	SetStatus(status BookingStatus)
 	Reason() *string
 	SetReason(reason *string)
-	CreatedAt() (time.Time, bool)
-	SetCreatedAt(t time.Time)
-	UpdatedAt() (time.Time, bool)
-	SetUpdatedAt(t time.Time)
 }
 
 // NewPhotoSessionBooking creates a new mutable booking instance.

@@ -15,6 +15,4 @@ type Booking struct {
 	EndsAt         time.Time
 	Status         string
 	Reason         sql.NullString
-	CreatedAt      sql.NullTime
-	UpdatedAt      sql.NullTime
 }

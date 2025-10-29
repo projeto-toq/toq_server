@@ -592,83 +592,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`photographer_time_slots`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`photographer_time_slots` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_time_slots` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `photographer_user_id` INT UNSIGNED NOT NULL,
-  `slot_date` DATE NOT NULL,
-  `slot_start` DATETIME NOT NULL,
-  `slot_end` DATETIME NOT NULL,
-  `period` ENUM('MORNING', 'AFTERNOON') NOT NULL,
-  `status` ENUM('AVAILABLE', 'RESERVED', 'BOOKED', 'BLOCKED') NOT NULL DEFAULT 'AVAILABLE',
-  `reservation_token` VARCHAR(45) NULL,
-  `reserved_until` DATETIME NULL,
-  `booked_at` DATETIME NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_slots_photographer_start` (`photographer_user_id` ASC, `period` ASC, `slot_start` ASC) INVISIBLE,
-  INDEX `idx_slots_date` (`slot_date` ASC) VISIBLE,
-  CONSTRAINT `fk_slots_photographer_user`
-    FOREIGN KEY (`photographer_user_id`)
-    REFERENCES `toq_db`.`users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `toq_db`.`photographer_slot_bookings`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`photographer_slot_bookings` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_slot_bookings` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `slot_id` INT UNSIGNED NOT NULL,
-  `listing_id` INT UNSIGNED NOT NULL,
-  `scheduled_start` DATETIME NOT NULL,
-  `scheduled_end` DATETIME NOT NULL,
-  `status` ENUM('ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NOT NULL DEFAULT 'ACTIVE',
-  `notes` VARCHAR(255) NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_bookings_slot` (`slot_id` ASC) VISIBLE,
-  INDEX `fk_bookings_listing_idx` (`listing_id` ASC) VISIBLE,
-  CONSTRAINT `fk_bookings_slot`
-    FOREIGN KEY (`slot_id`)
-    REFERENCES `toq_db`.`photographer_time_slots` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_bookings_listing`
-    FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `toq_db`.`photographer_time_off`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`photographer_time_off` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_time_off` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `photographer_user_id` INT UNSIGNED NOT NULL,
-  `start_date` DATETIME(6) NOT NULL,
-  `end_date` DATETIME(6) NOT NULL,
-  `reason` VARCHAR(255) NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_time_off_photographer_user_idx` (`photographer_user_id` ASC) VISIBLE,
-  CONSTRAINT `fk_time_off_photographer_user`
-    FOREIGN KEY (`photographer_user_id`)
-    REFERENCES `toq_db`.`users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `toq_db`.`listing_agendas`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `toq_db`.`listing_agendas` ;
@@ -771,7 +694,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`holiday_calendars` (
   `name` VARCHAR(100) NOT NULL,
   `scope` ENUM('NATIONAL', 'STATE', 'CITY') NOT NULL,
   `state` VARCHAR(2) NULL,
-  `city` VARCHAR(100) NULL,
+  `city` VARCHAR(150) NULL,
   `is_active` TINYINT NOT NULL DEFAULT 1,
   `timezone` VARCHAR(50) NOT NULL DEFAULT 'America/Sao_Paulo',
   PRIMARY KEY (`id`))
@@ -801,23 +724,88 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`photographer_default_availability`
+-- Table `toq_db`.`photographer_agenda_entries`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`photographer_default_availability` ;
+DROP TABLE IF EXISTS `toq_db`.`photographer_agenda_entries` ;
 
-CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_default_availability` (
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_agenda_entries` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `photographer_user_id` INT UNSIGNED NOT NULL,
-  `weekday` TINYINT NOT NULL,
-  `period` ENUM('MORNING', 'AFTERNOON') NOT NULL,
-  `start_hour` TINYINT NOT NULL,
-  `slots_per_period` TINYINT NOT NULL,
-  `slot_duration_minutes` TINYINT NOT NULL,
+  `entry_type` ENUM('PHOTO_SESSION', 'BLOCK', 'TIME_OFF', 'HOLIDAY') NOT NULL,
+  `source` ENUM('BOOKING', 'MANUAL', 'ONBOARDING', 'HOLIDAY_SYNC') NULL,
+  `source_id` INT NULL,
+  `starts_at` DATETIME(6) NULL,
+  `ends_at` DATETIME(6) NULL,
+  `blocking` TINYINT NULL DEFAULT 1,
+  `reason` VARCHAR(255) NULL,
+  `timezone` VARCHAR(50) NULL DEFAULT 'America/Sao_Paulo',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_default_availability_unique` (`photographer_user_id` ASC, `weekday` ASC, `period` ASC) VISIBLE,
-  CONSTRAINT `fk_default_availability_photographer`
+  INDEX `idx_agenda_range` (`photographer_user_id` ASC, `starts_at` ASC, `ends_at` ASC) INVISIBLE,
+  INDEX `idx_source` (`source` ASC, `source_id` ASC) VISIBLE,
+  CONSTRAINT `fk_photographer_user_id_user_id`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`photo_session_bookings`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`photo_session_bookings` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`photo_session_bookings` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `photographer_user_id` INT UNSIGNED NOT NULL,
+  `listing_id` INT UNSIGNED NOT NULL,
+  `agenda_entry_id` INT UNSIGNED NOT NULL,
+  `status` ENUM('PENDING_APPROVAL', 'ACCEPTED,REJECTED', 'ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NULL,
+  `reservation_token` CHAR(36) NULL,
+  `reserved_until` DATETIME(6) NULL,
+  `notes` VARCHAR(255) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_booking_entry` (`agenda_entry_id` ASC) VISIBLE,
+  INDEX `ix_photographer_user_id_idx` (`photographer_user_id` ASC) VISIBLE,
+  INDEX `ix_listing_id_idx` (`listing_id` ASC) VISIBLE,
+  CONSTRAINT `fk_photographer_user_id`
+    FOREIGN KEY (`photographer_user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_listing_id`
+    FOREIGN KEY (`listing_id`)
+    REFERENCES `toq_db`.`listings` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_agenda_entry_id `
+    FOREIGN KEY (`agenda_entry_id`)
+    REFERENCES `toq_db`.`photographer_agenda_entries` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`photographer_holiday_calendars`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`photographer_holiday_calendars` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_holiday_calendars` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `photographer_user_id` INT UNSIGNED NOT NULL,
+  `holiday_calendar_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_photographer_calendar` (`photographer_user_id` ASC, `holiday_calendar_id` ASC) INVISIBLE,
+  INDEX `fk_holiday_calendar_id_idx` (`holiday_calendar_id` ASC) VISIBLE,
+  CONSTRAINT `fk_photographer_user_id_holiday`
+    FOREIGN KEY (`photographer_user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_holiday_calendar_id`
+    FOREIGN KEY (`holiday_calendar_id`)
+    REFERENCES `toq_db`.`holiday_calendars` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

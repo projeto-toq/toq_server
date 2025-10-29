@@ -11,10 +11,6 @@ type photoSessionBooking struct {
 	endsAt           time.Time
 	status           BookingStatus
 	reason           *string
-	createdAt        time.Time
-	createdAtDefined bool
-	updatedAt        time.Time
-	updatedAtDefined bool
 }
 
 func (b *photoSessionBooking) ID() uint64 { return b.id }
@@ -48,27 +44,3 @@ func (b *photoSessionBooking) SetStatus(status BookingStatus) { b.status = statu
 func (b *photoSessionBooking) Reason() *string { return b.reason }
 
 func (b *photoSessionBooking) SetReason(reason *string) { b.reason = reason }
-
-func (b *photoSessionBooking) CreatedAt() (time.Time, bool) {
-	if !b.createdAtDefined {
-		return time.Time{}, false
-	}
-	return b.createdAt, true
-}
-
-func (b *photoSessionBooking) SetCreatedAt(t time.Time) {
-	b.createdAt = t
-	b.createdAtDefined = true
-}
-
-func (b *photoSessionBooking) UpdatedAt() (time.Time, bool) {
-	if !b.updatedAtDefined {
-		return time.Time{}, false
-	}
-	return b.updatedAt, true
-}
-
-func (b *photoSessionBooking) SetUpdatedAt(t time.Time) {
-	b.updatedAt = t
-	b.updatedAtDefined = true
-}

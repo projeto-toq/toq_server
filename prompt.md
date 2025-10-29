@@ -5,17 +5,13 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-A agenda dos fotografos foi implementada com uma lógica muito complicada.
-Existe uma tabela, com horizonte de 3 meses com todas as disponibilidades de horários dos fotografos. photographer_default_availability. Processo contrário ao processo de uma agenda normal de compromissos, todas os slots estão livres exceto quanto existe um bloqueio ou uma sessão agendada.
-O correto seria que:
-- cada fotografo tivesse uma agenda com todos os compromissos agendados e bloqueios, e a disponibilidade fosse calculada a partir disso. Não havendo bloqueios ou sessões agendadas, o fotografo estaria com o horário disponível.
-- Como o proprietário necessita buscar quais dias e horários teremos um fotografo disponível, via GET /listings/photo-session/slots, e o slot para cada sessão de fotos é de 4 horas, definido por env.yaml, o serviço deveria buscar os fotógrafos que possuem horários livres de 4 horas consecutivas entre seus compromissos agendados e bloqueios, apresentaando-os em ordem crescente de data e hora.
-- a criação da agenda base do fotografo, efetuada durante a criação do usuário do sistema  (create_system_user.go) com roleSlug photographer, deveria colocar como bloqueio padrão todos os horários fora do expediente, 08:00 - 18:00 como default, mas definido por variáveis no env.yaml, e deixar livres os horários dentro do expediente.
-- Dias feriados, nacionais, estaduais e municipais, também deveriam ser bloqueados na criação da agenda padrão.
-  - Os feriados são tratados pelo holiday_service, e a associação de feriados estaduais e municipais ao fotógrafo é feita via state e city do endereço do fotógrafo.
-  - Feriados nacionais sempre se aplicam a todos os fotógrafos.
-- eventuais alterações no banco de dados serão feitas manualmente, portanto apenas indique as alteraçoes necessárias.
-- eventuais códigos morto ou não utilizados devem ser removidos. Caso o arquivo inteiro tenha que ser removido, apague o conteúdo e informe que farei a remoção do arquivo.
+Durante a recente refatoreação, alguns pontos foram deixados incompletos ou inconsistentes com o toq_server-go_guide.md:
+- os dominios utilizam campos created_at e updated_at nas tabelas photographer_agenda_entries e photo_session_bookings, e não deveriam, pois não estão no banco de dados;
+- os dominios utilizam created_at DATETIME(6) para photographer_holiday_calendars e não deveriam, pois não existem no banco de dados;
+- photo_session_service.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por implementação das funções das assinaturas. No arquivo de interface devem existir apenas a struct, a func New, e as assinturas das funções;
+- photo_session_adapter.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por implementação das funções das assinaturas. No arquivo de interface devem existir apenas a struct, a func New, e as assinturas das funções;
+- photo_session_handler.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por implementação das funções das assinaturas. No arquivo de interface devem existir apenas a struct, a func New, e as assinturas das funções;
+- photo_session_handler.go tem todas os endpoints comentados e com exemplos?
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

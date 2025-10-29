@@ -26,10 +26,6 @@ type AgendaEntryInterface interface {
 	ClearReason()
 	Timezone() string
 	SetTimezone(tz string)
-	CreatedAt() (time.Time, bool)
-	SetCreatedAt(t time.Time)
-	UpdatedAt() (time.Time, bool)
-	SetUpdatedAt(t time.Time)
 }
 
 // NewAgendaEntry builds a new mutable agenda entry.
