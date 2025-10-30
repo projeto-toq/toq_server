@@ -142,6 +142,8 @@ type AdminCreateSystemUserRequest struct {
 	CPF         string `json:"cpf" binding:"required"`
 	RoleSlug    string `json:"roleSlug" binding:"required,oneof=photographer attendantRealtor attendantOwner attendant manager"`
 	BornAt      string `json:"bornAt" binding:"required"`
+	ZipCode     string `json:"zipCode,omitempty" example:"06543001" description:"Optional zip code without separators (8 digits). When provided, address number must also be present."`
+	Number      string `json:"number,omitempty" example:"123" description:"Optional address number. Required when zipCode is provided."`
 }
 
 // AdminUpdateSystemUserRequest represents PUT /admin/users/system request body

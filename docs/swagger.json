@@ -6316,7 +6316,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Listing Schedules"
+                    "Photographer"
                 ],
                 "summary": "Accept or reject a photo session",
                 "parameters": [
@@ -8285,6 +8285,10 @@
                     "maxLength": 60,
                     "minLength": 2
                 },
+                "number": {
+                    "type": "string",
+                    "example": "123"
+                },
                 "phoneNumber": {
                     "type": "string"
                 },
@@ -8297,6 +8301,10 @@
                         "attendant",
                         "manager"
                     ]
+                },
+                "zipCode": {
+                    "type": "string",
+                    "example": "06543001"
                 }
             }
         },

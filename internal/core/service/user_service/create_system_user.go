@@ -63,6 +63,15 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		return SystemUserResult{}, utils.ValidationError("roleSlug", "Invalid role slug")
 	}
 
+	customZipCode := strings.TrimSpace(input.ZipCode)
+	customNumber := strings.TrimSpace(input.Number)
+	if customZipCode != "" && customNumber == "" {
+		return SystemUserResult{}, utils.ValidationError("number", "Address number is required when zip code is provided")
+	}
+	if customZipCode == "" && customNumber != "" {
+		return SystemUserResult{}, utils.ValidationError("zipCode", "Zip code must be provided when address number is informed")
+	}
+
 	tx, txErr := us.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
@@ -130,18 +139,6 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		return SystemUserResult{}, opErr
 	}
 
-	templateUser, templateErr := us.repo.GetUserByID(ctx, tx, systemUserTemplateID)
-	if templateErr != nil {
-		utils.SetSpanError(ctx, templateErr)
-		logger.Error("admin.users.create.template_fetch_failed", "template_id", systemUserTemplateID, "error", templateErr)
-		if errorsIsNoRows(templateErr) {
-			opErr = utils.InternalError("System template user not found")
-		} else {
-			opErr = utils.InternalError("")
-		}
-		return SystemUserResult{}, opErr
-	}
-
 	passwordSeed := uuid.NewString() + "!Aa1"
 	newUser := usermodel.NewUser()
 	newUser.SetNickName(nickName)
@@ -150,13 +147,36 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 	newUser.SetNationalID(cpfDigits)
 	newUser.SetBornAt(input.BornAt)
 	newUser.SetPassword(passwordSeed)
-	newUser.SetZipCode(templateUser.GetZipCode())
-	newUser.SetStreet(templateUser.GetStreet())
-	newUser.SetNumber(templateUser.GetNumber())
-	newUser.SetComplement(templateUser.GetComplement())
-	newUser.SetNeighborhood(templateUser.GetNeighborhood())
-	newUser.SetCity(templateUser.GetCity())
-	newUser.SetState(templateUser.GetState())
+
+	if customZipCode == "" {
+		templateUser, templateErr := us.repo.GetUserByID(ctx, tx, systemUserTemplateID)
+		if templateErr != nil {
+			utils.SetSpanError(ctx, templateErr)
+			logger.Error("admin.users.create.template_fetch_failed", "template_id", systemUserTemplateID, "error", templateErr)
+			if errorsIsNoRows(templateErr) {
+				opErr = utils.InternalError("System template user not found")
+			} else {
+				opErr = utils.InternalError("")
+			}
+			return SystemUserResult{}, opErr
+		}
+
+		newUser.SetZipCode(templateUser.GetZipCode())
+		newUser.SetStreet(templateUser.GetStreet())
+		newUser.SetNumber(templateUser.GetNumber())
+		newUser.SetComplement(templateUser.GetComplement())
+		newUser.SetNeighborhood(templateUser.GetNeighborhood())
+		newUser.SetCity(templateUser.GetCity())
+		newUser.SetState(templateUser.GetState())
+	} else {
+		newUser.SetZipCode(customZipCode)
+		newUser.SetStreet("")
+		newUser.SetNumber(customNumber)
+		newUser.SetComplement("")
+		newUser.SetNeighborhood("")
+		newUser.SetCity("")
+		newUser.SetState("")
+	}
 
 	if err = us.ValidateUserData(ctx, tx, newUser, slug); err != nil {
 		opErr = err

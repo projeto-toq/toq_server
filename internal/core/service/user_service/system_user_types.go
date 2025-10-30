@@ -54,6 +54,8 @@ type CreateSystemUserInput struct {
 	CPF         string
 	BornAt      time.Time
 	RoleSlug    permissionmodel.RoleSlug
+	ZipCode     string
+	Number      string
 }
 
 // UpdateSystemUserInput representa os dados editáveis de um usuário de sistema.

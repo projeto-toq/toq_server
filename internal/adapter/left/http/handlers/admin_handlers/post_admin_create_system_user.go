@@ -42,6 +42,17 @@ func (h *AdminHandler) PostAdminCreateSystemUser(c *gin.Context) {
 		return
 	}
 
+	zipCode := strings.TrimSpace(req.ZipCode)
+	number := strings.TrimSpace(req.Number)
+	if zipCode != "" && number == "" {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("number", "Address number is required when zip code is provided"))
+		return
+	}
+	if zipCode == "" && number != "" {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("zipCode", "Zip code must be provided when address number is informed"))
+		return
+	}
+
 	input := userservices.CreateSystemUserInput{
 		NickName:    strings.TrimSpace(req.NickName),
 		Email:       strings.TrimSpace(req.Email),
@@ -49,6 +60,8 @@ func (h *AdminHandler) PostAdminCreateSystemUser(c *gin.Context) {
 		CPF:         strings.TrimSpace(req.CPF),
 		BornAt:      bornAt,
 		RoleSlug:    permissionmodel.RoleSlug(strings.TrimSpace(req.RoleSlug)),
+		ZipCode:     zipCode,
+		Number:      number,
 	}
 
 	result, svcErr := h.userService.CreateSystemUser(ctx, input)

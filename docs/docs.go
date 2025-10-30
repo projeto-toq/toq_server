@@ -6323,7 +6323,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Listing Schedules"
+                    "Photographer"
                 ],
                 "summary": "Accept or reject a photo session",
                 "parameters": [
@@ -8292,6 +8292,10 @@ const docTemplate = `{
                     "maxLength": 60,
                     "minLength": 2
                 },
+                "number": {
+                    "type": "string",
+                    "example": "123"
+                },
                 "phoneNumber": {
                     "type": "string"
                 },
@@ -8304,6 +8308,10 @@ const docTemplate = `{
                         "attendant",
                         "manager"
                     ]
+                },
+                "zipCode": {
+                    "type": "string",
+                    "example": "06543001"
                 }
             }
         },

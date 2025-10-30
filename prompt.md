@@ -5,13 +5,13 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Durante a recente refatoreação, alguns pontos foram deixados incompletos ou inconsistentes com o toq_server-go_guide.md:
-- os dominios utilizam campos created_at e updated_at nas tabelas photographer_agenda_entries e photo_session_bookings, e não deveriam, pois não estão no banco de dados;
-- os dominios utilizam created_at DATETIME(6) para photographer_holiday_calendars e não deveriam, pois não existem no banco de dados;
-- photo_session_service.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por implementação das funções das assinaturas. No arquivo de interface devem existir apenas a struct, a func New, e as assinturas das funções;
-- photo_session_adapter.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por implementação das funções das assinaturas. No arquivo de interface devem existir apenas a struct, a func New, e as assinturas das funções;
-- photo_session_handler.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por implementação das funções das assinaturas. No arquivo de interface devem existir apenas a struct, a func New, e as assinturas das funções;
-- photo_session_handler.go tem todas os endpoints comentados e com exemplos?
+Durante a criação de usuário de sistema, através do POST /admin/users/system, no handler admin_handler/post_admin_create_system_user.go e do serviço user_service/create_system_user.go de forma equivocada, não é solicitado o cep e numero do endereço e assume-se o endereço da TOQ que é o endereço do admin do sistema que é o userId 1.
+Entretanto isto está errado, visto que podemos ter vários usuários de sistema, cada um com seu endereço diferente.
+Assim, é necessário:
+- modificar a implementação para que o cep e o número do endereço sejam parte do body da requisição de criação do usuário de sistema.
+- estes campos devem ser opcionais e se não existirem, o comportamento deve ser o mesmo atual, ou seja, assumir o endereço do usuário admin do sistema (userId 1).
+- a criação de usuário de sistema deve ter os mesmo comportamento de verificação de dados da criação de usuário owner.
+- caso a alteração deixe algum código inutilizado, este deve ser removido.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 
