@@ -742,7 +742,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_agenda_entries` (
   PRIMARY KEY (`id`),
   INDEX `idx_agenda_range` (`photographer_user_id` ASC, `starts_at` ASC, `ends_at` ASC) INVISIBLE,
   INDEX `idx_source` (`source` ASC, `source_id` ASC) VISIBLE,
-  CONSTRAINT `fk_photographer_user_id_user_id`
+  CONSTRAINT `fk_photographer_user_id_user_1`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
     ON DELETE CASCADE
@@ -768,7 +768,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photo_session_bookings` (
   UNIQUE INDEX `uk_booking_entry` (`agenda_entry_id` ASC) VISIBLE,
   INDEX `ix_photographer_user_id_idx` (`photographer_user_id` ASC) VISIBLE,
   INDEX `ix_listing_id_idx` (`listing_id` ASC) VISIBLE,
-  CONSTRAINT `fk_photographer_user_id`
+  CONSTRAINT `fk_photographer_user_id_user_2`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
     ON DELETE CASCADE
@@ -781,31 +781,6 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photo_session_bookings` (
   CONSTRAINT `fk_agenda_entry_id `
     FOREIGN KEY (`agenda_entry_id`)
     REFERENCES `toq_db`.`photographer_agenda_entries` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `toq_db`.`photographer_holiday_calendars`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`photographer_holiday_calendars` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_holiday_calendars` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `photographer_user_id` INT UNSIGNED NOT NULL,
-  `holiday_calendar_id` INT UNSIGNED NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_photographer_calendar` (`photographer_user_id` ASC, `holiday_calendar_id` ASC) INVISIBLE,
-  INDEX `fk_holiday_calendar_id_idx` (`holiday_calendar_id` ASC) VISIBLE,
-  CONSTRAINT `fk_photographer_user_id_holiday`
-    FOREIGN KEY (`photographer_user_id`)
-    REFERENCES `toq_db`.`users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_holiday_calendar_id`
-    FOREIGN KEY (`holiday_calendar_id`)
-    REFERENCES `toq_db`.`holiday_calendars` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

@@ -16,7 +16,7 @@ import (
 // @Tags         Photographer
 // @Accept       json
 // @Produce      json
-// @Param        input body dto.CreateTimeOffRequest true "Time-Off payload" Extensions(x-example={"startDate":"2025-07-05T09:00:00-03:00","endDate":"2025-07-05T18:00:00-03:00","reason":"Participação em evento","timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19})
+// @Param        input body dto.CreateTimeOffRequest true "Time-Off payload" Extensions(x-example={"startDate":"2025-07-05T09:00:00-03:00","endDate":"2025-07-05T18:00:00-03:00","reason":"Participação em evento","timezone":"America/Sao_Paulo"})
 // @Success      201 {object} object{message=string,timeOffId=int}
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse
@@ -47,15 +47,11 @@ func (h *PhotoSessionHandler) CreateTimeOff(c *gin.Context) {
 	}
 
 	input := photosessionservices.TimeOffInput{
-		PhotographerID:    uint64(userID),
-		StartDate:         startDate,
-		EndDate:           endDate,
-		Reason:            req.Reason,
-		Timezone:          req.Timezone,
-		HolidayCalendarID: req.HolidayCalendarID,
-		HorizonMonths:     req.HorizonMonths,
-		WorkdayStartHour:  req.WorkdayStartHour,
-		WorkdayEndHour:    req.WorkdayEndHour,
+		PhotographerID: uint64(userID),
+		StartDate:      startDate,
+		EndDate:        endDate,
+		Reason:         req.Reason,
+		Timezone:       req.Timezone,
 	}
 
 	id, dErr := h.service.CreateTimeOff(c.Request.Context(), input)

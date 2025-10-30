@@ -35,6 +35,18 @@ func validateTimeOffInput(input TimeOffInput) error {
 	return nil
 }
 
+func validateEnsureAgendaInput(input EnsureAgendaInput) error {
+	if input.PhotographerID == 0 {
+		return utils.ValidationError("photographerId", "photographerId must be greater than zero")
+	}
+	if input.Timezone != "" {
+		if _, err := resolveLocation(input.Timezone); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func validateListAgendaInput(input ListAgendaInput) error {
 	if input.PhotographerID == 0 {
 		return derrors.Validation("photographerId must be greater than zero", nil)

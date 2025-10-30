@@ -16,15 +16,11 @@ func (s *photoSessionService) UpdateTimeOff(ctx context.Context, input UpdateTim
 		return TimeOffDetailResult{}, utils.ValidationError("timeOffId", "timeOffId must be greater than zero")
 	}
 	if err := validateTimeOffInput(TimeOffInput{
-		PhotographerID:    input.PhotographerID,
-		StartDate:         input.StartDate,
-		EndDate:           input.EndDate,
-		Reason:            input.Reason,
-		Timezone:          input.Timezone,
-		HolidayCalendarID: input.HolidayCalendarID,
-		HorizonMonths:     input.HorizonMonths,
-		WorkdayStartHour:  input.WorkdayStartHour,
-		WorkdayEndHour:    input.WorkdayEndHour,
+		PhotographerID: input.PhotographerID,
+		StartDate:      input.StartDate,
+		EndDate:        input.EndDate,
+		Reason:         input.Reason,
+		Timezone:       input.Timezone,
 	}); err != nil {
 		return TimeOffDetailResult{}, err
 	}

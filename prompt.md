@@ -5,13 +5,39 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Durante a criação de usuário de sistema, através do POST /admin/users/system, no handler admin_handler/post_admin_create_system_user.go e do serviço user_service/create_system_user.go de forma equivocada, não é solicitado o cep e numero do endereço e assume-se o endereço da TOQ que é o endereço do admin do sistema que é o userId 1.
-Entretanto isto está errado, visto que podemos ter vários usuários de sistema, cada um com seu endereço diferente.
-Assim, é necessário:
-- modificar a implementação para que o cep e o número do endereço sejam parte do body da requisição de criação do usuário de sistema.
-- estes campos devem ser opcionais e se não existirem, o comportamento deve ser o mesmo atual, ou seja, assumir o endereço do usuário admin do sistema (userId 1).
-- a criação de usuário de sistema deve ter os mesmo comportamento de verificação de dados da criação de usuário owner.
-- caso a alteração deixe algum código inutilizado, este deve ser removido.
+A agenda dos fotografos, gerenciadas pelos serviço service/photo_session_service/*.go tem como logica criar entradas de bloqueio para horários fora dos horários de trabalho conforme definidi em env.yaml:
+```env.yaml
+photo_session:
+  slot_duration_minutes: 240
+  slots_per_period: 1
+  business_start_hour: 8
+  business_end_hour: 18
+  morning_start_hour: 8
+  afternoon_start_hour: 14
+  photographer_horizon_months: 3
+  photographer_timezone: "America/Sao_Paulo"
+  photographer_agenda_refresh_interval_hours: 24
+```
+Entretanto esta logica é ineficiente, pois gera muitas entradas de bloqueio desnecessárias, e exige serviços de criação para manter horizontes de bloqueios.
+O correto é que não haja entradas de bloqueios para horários fora do horário de trabalho, e que a consulta da agenda do fotografo leve em consideração os horários de trabalho definidos no env.yaml.
+Adicionalmente, os feriados, gerenciados pelo serviço service/holiday_service/*.go, não são considerados nas consultas as agendas do fotografo via GET /photographer/agenda, mesmo a reposta do endpoint estar preparada para os feriados.
+```
+{
+            "entryId": 8,
+            "photographerId": 5,
+            "entryType": "BLOCK",
+            "source": "ONBOARDING",
+            "start": "2025-11-02T00:00:00-03:00",
+            "end": "2025-11-03T00:00:00-03:00",
+            "status": "BLOCKED",
+            "groupId": "onboarding-2025-11-02",
+            "isHoliday": false,
+            "isTimeOff": false,
+            "timezone": "America/Sao_Paulo"
+        }
+```
+A tabela toq_db.photographer_holiday_calendars que deveria ter o link estre o usuário fotografo e os feriados, através do endereço city/state do usuário e city/state da tabela de feriados não está sendo populada. Por consequencia o GET /photographer/agenda tem como filtro o campo holidayCalendarIds que não deveria existir. Esta logica de tabela de link de feriados com ids previamente polupados é ineficiente.por cidade/estado é desnecessária, O correto é que o ao consultar a agenda do fotografo exista uma consulta trazendo os feriados nacionais, do estado e da cidade do fotógrafo, segundo seu endereço. isso em tempo de consulta e não persistido em tabela específica.
+
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

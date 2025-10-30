@@ -5992,13 +5992,6 @@ const docTemplate = `{
                         "description": "Timezone identifier",
                         "name": "timezone",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "1,2,3",
-                        "description": "Comma-separated holiday calendar IDs",
-                        "name": "holidayCalendarIds",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6109,7 +6102,7 @@ const docTemplate = `{
                 "summary": "Update photographer time-off",
                 "parameters": [
                     {
-                        "x-example": "{\"timeOffId\":42,\"startDate\":\"2025-07-05T10:00:00-03:00\",\"endDate\":\"2025-07-05T12:00:00-03:00\",\"reason\":\"Consulta médica\",\"timezone\":\"America/Sao_Paulo\",\"holidayCalendarId\":1,\"horizonMonths\":3,\"workdayStartHour\":8,\"workdayEndHour\":19}",
+                        "x-example": "{\"timeOffId\":42,\"startDate\":\"2025-07-05T10:00:00-03:00\",\"endDate\":\"2025-07-05T12:00:00-03:00\",\"reason\":\"Consulta médica\",\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Update Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -6160,7 +6153,7 @@ const docTemplate = `{
                 "summary": "Create Photographer Time-Off",
                 "parameters": [
                     {
-                        "x-example": "{\"startDate\":\"2025-07-05T09:00:00-03:00\",\"endDate\":\"2025-07-05T18:00:00-03:00\",\"reason\":\"Participação em evento\",\"timezone\":\"America/Sao_Paulo\",\"holidayCalendarId\":1,\"horizonMonths\":3,\"workdayStartHour\":8,\"workdayEndHour\":19}",
+                        "x-example": "{\"startDate\":\"2025-07-05T09:00:00-03:00\",\"endDate\":\"2025-07-05T18:00:00-03:00\",\"reason\":\"Participação em evento\",\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -9488,24 +9481,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "endDate",
-                "horizonMonths",
                 "startDate",
-                "timezone",
-                "workdayEndHour",
-                "workdayStartHour"
+                "timezone"
             ],
             "properties": {
                 "endDate": {
                     "type": "string",
                     "example": "2023-11-01T18:00:00-03:00"
-                },
-                "holidayCalendarId": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "horizonMonths": {
-                    "type": "integer",
-                    "example": 2
                 },
                 "reason": {
                     "type": "string",
@@ -9518,14 +9500,6 @@ const docTemplate = `{
                 "timezone": {
                     "type": "string",
                     "example": "America/Sao_Paulo"
-                },
-                "workdayEndHour": {
-                    "type": "integer",
-                    "example": 18
-                },
-                "workdayStartHour": {
-                    "type": "integer",
-                    "example": 9
                 }
             }
         },
@@ -11115,29 +11089,18 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "endDate",
-                "horizonMonths",
                 "startDate",
                 "timeOffId",
-                "timezone",
-                "workdayEndHour",
-                "workdayStartHour"
+                "timezone"
             ],
             "properties": {
                 "endDate": {
                     "type": "string",
                     "example": "2025-07-05T18:00:00-03:00"
                 },
-                "holidayCalendarId": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "horizonMonths": {
-                    "type": "integer",
-                    "example": 3
-                },
                 "reason": {
                     "type": "string",
-                    "example": "Atualizacao de agenda"
+                    "example": "Agenda adjustment"
                 },
                 "startDate": {
                     "type": "string",
@@ -11150,14 +11113,6 @@ const docTemplate = `{
                 "timezone": {
                     "type": "string",
                     "example": "America/Sao_Paulo"
-                },
-                "workdayEndHour": {
-                    "type": "integer",
-                    "example": 19
-                },
-                "workdayStartHour": {
-                    "type": "integer",
-                    "example": 8
                 }
             }
         },

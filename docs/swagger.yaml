@@ -984,12 +984,6 @@ definitions:
       endDate:
         example: "2023-11-01T18:00:00-03:00"
         type: string
-      holidayCalendarId:
-        example: 1
-        type: integer
-      horizonMonths:
-        example: 2
-        type: integer
       reason:
         example: Attending workshop
         type: string
@@ -999,19 +993,10 @@ definitions:
       timezone:
         example: America/Sao_Paulo
         type: string
-      workdayEndHour:
-        example: 18
-        type: integer
-      workdayStartHour:
-        example: 9
-        type: integer
     required:
     - endDate
-    - horizonMonths
     - startDate
     - timezone
-    - workdayEndHour
-    - workdayStartHour
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse:
     properties:
@@ -2069,14 +2054,8 @@ definitions:
       endDate:
         example: "2025-07-05T18:00:00-03:00"
         type: string
-      holidayCalendarId:
-        example: 1
-        type: integer
-      horizonMonths:
-        example: 3
-        type: integer
       reason:
-        example: Atualizacao de agenda
+        example: Agenda adjustment
         type: string
       startDate:
         example: "2025-07-05T09:00:00-03:00"
@@ -2087,20 +2066,11 @@ definitions:
       timezone:
         example: America/Sao_Paulo
         type: string
-      workdayEndHour:
-        example: 19
-        type: integer
-      workdayStartHour:
-        example: 8
-        type: integer
     required:
     - endDate
-    - horizonMonths
     - startDate
     - timeOffId
     - timezone
-    - workdayEndHour
-    - workdayStartHour
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateUserRequest:
     properties:
@@ -6473,11 +6443,6 @@ paths:
         in: query
         name: timezone
         type: string
-      - description: Comma-separated holiday calendar IDs
-        example: 1,2,3
-        in: query
-        name: holidayCalendarIds
-        type: string
       produces:
       - application/json
       responses:
@@ -6599,7 +6564,7 @@ paths:
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateTimeOffRequest'
         x-example: '{"startDate":"2025-07-05T09:00:00-03:00","endDate":"2025-07-05T18:00:00-03:00","reason":"Participação
-          em evento","timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19}'
+          em evento","timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:
@@ -6636,7 +6601,7 @@ paths:
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateTimeOffRequest'
         x-example: '{"timeOffId":42,"startDate":"2025-07-05T10:00:00-03:00","endDate":"2025-07-05T12:00:00-03:00","reason":"Consulta
-          médica","timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19}'
+          médica","timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:

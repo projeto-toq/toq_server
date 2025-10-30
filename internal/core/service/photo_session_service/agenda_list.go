@@ -20,6 +20,9 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	if err := validateListAgendaInput(input); err != nil {
 		return ListAgendaOutput{}, err
 	}
@@ -45,34 +48,55 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 	tx, err := s.globalService.StartReadOnlyTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		utils.LoggerFromContext(ctx).Error("service.list_agenda.tx_start_error", "err", err)
+		logger.Error("service.list_agenda.tx_start_error", "err", err)
 		return ListAgendaOutput{}, derrors.Wrap(err, derrors.KindInfra, "failed to start transaction")
 	}
 	defer func() {
 		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
-			utils.LoggerFromContext(ctx).Error("service.list_agenda.tx_rollback_error", "err", rbErr)
+			logger.Error("service.list_agenda.tx_rollback_error", "err", rbErr)
 		}
 	}()
+
+	profile, profileErr := s.loadPhotographerLocation(ctx, tx, input.PhotographerID)
+	if profileErr != nil {
+		return ListAgendaOutput{}, profileErr
+	}
 
 	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, input.StartDate.UTC(), input.EndDate.UTC())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		utils.LoggerFromContext(ctx).Error("service.list_agenda.repo_error", "photographer_id", input.PhotographerID, "err", err)
+		logger.Error("service.list_agenda.repo_error", "photographer_id", input.PhotographerID, "err", err)
 		return ListAgendaOutput{}, derrors.Wrap(err, derrors.KindInfra, "failed to list agenda entries")
 	}
 
-	sort.Slice(entries, func(i, j int) bool {
-		if entries[i].StartsAt().Equal(entries[j].StartsAt()) {
-			return entries[i].ID() < entries[j].ID()
-		}
-		return entries[i].StartsAt().Before(entries[j].StartsAt())
-	})
-
+	occupied := make(map[string]struct{}, len(entries))
 	slots := make([]AgendaSlot, 0, len(entries))
 	for _, entry := range entries {
+		startLocal := entry.StartsAt().In(loc)
+		endLocal := entry.EndsAt().In(loc)
+		occupied[agendaSlotKey(entry.EntryType(), entry.Source(), startLocal, endLocal)] = struct{}{}
 		slots = append(slots, s.buildAgendaSlot(entry, loc))
 	}
+
+	holidaySlots, holidayErr := s.fetchHolidaySlots(ctx, input.PhotographerID, loc, profile, input.StartDate, input.EndDate, occupied)
+	if holidayErr != nil {
+		return ListAgendaOutput{}, holidayErr
+	}
+	slots = append(slots, holidaySlots...)
+
+	nonWorkingSlots := s.buildNonWorkingSlots(input.PhotographerID, loc, input.StartDate, input.EndDate, occupied)
+	slots = append(slots, nonWorkingSlots...)
+
+	sort.Slice(slots, func(i, j int) bool {
+		if slots[i].Start.Equal(slots[j].Start) {
+			if slots[i].End.Equal(slots[j].End) {
+				return slots[i].EntryID < slots[j].EntryID
+			}
+			return slots[i].End.Before(slots[j].End)
+		}
+		return slots[i].Start.Before(slots[j].Start)
+	})
 
 	total := len(slots)
 	start := (page - 1) * size

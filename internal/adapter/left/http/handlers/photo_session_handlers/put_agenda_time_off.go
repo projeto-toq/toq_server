@@ -18,7 +18,7 @@ import (
 // @Tags         Photographer
 // @Accept       json
 // @Produce      json
-// @Param        input body dto.UpdateTimeOffRequest true "Update Time-Off payload" Extensions(x-example={"timeOffId":42,"startDate":"2025-07-05T10:00:00-03:00","endDate":"2025-07-05T12:00:00-03:00","reason":"Consulta médica","timezone":"America/Sao_Paulo","holidayCalendarId":1,"horizonMonths":3,"workdayStartHour":8,"workdayEndHour":19})
+// @Param        input body dto.UpdateTimeOffRequest true "Update Time-Off payload" Extensions(x-example={"timeOffId":42,"startDate":"2025-07-05T10:00:00-03:00","endDate":"2025-07-05T12:00:00-03:00","reason":"Consulta médica","timezone":"America/Sao_Paulo"})
 // @Success      200 {object} dto.PhotographerTimeOffResponse
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      404 {object} dto.ErrorResponse
@@ -50,16 +50,12 @@ func (h *PhotoSessionHandler) UpdateTimeOff(c *gin.Context) {
 	}
 
 	result, serviceErr := h.service.UpdateTimeOff(c.Request.Context(), photosessionservices.UpdateTimeOffInput{
-		TimeOffID:         req.TimeOffID,
-		PhotographerID:    uint64(userID),
-		StartDate:         startDate,
-		EndDate:           endDate,
-		Reason:            req.Reason,
-		Timezone:          req.Timezone,
-		HolidayCalendarID: req.HolidayCalendarID,
-		HorizonMonths:     req.HorizonMonths,
-		WorkdayStartHour:  req.WorkdayStartHour,
-		WorkdayEndHour:    req.WorkdayEndHour,
+		TimeOffID:      req.TimeOffID,
+		PhotographerID: uint64(userID),
+		StartDate:      startDate,
+		EndDate:        endDate,
+		Reason:         req.Reason,
+		Timezone:       req.Timezone,
 	})
 	if serviceErr != nil {
 		http_errors.SendHTTPErrorObj(c, serviceErr)

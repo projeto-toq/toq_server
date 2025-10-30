@@ -37,16 +37,10 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 		size = maxAgendaPageSize
 	}
 
-	workdayStart := input.WorkdayStartHour
-	if workdayStart <= 0 {
-		workdayStart = defaultWorkdayStartHour
-	}
-	workdayEnd := input.WorkdayEndHour
-	if workdayEnd <= 0 {
-		workdayEnd = defaultWorkdayEndHour
-	}
+	workdayStart := s.cfg.BusinessStartHour
+	workdayEnd := s.cfg.BusinessEndHour
 	if workdayEnd <= workdayStart {
-		return ListAvailabilityOutput{}, derrors.Validation("workdayEndHour must be greater than workdayStartHour", nil)
+		return ListAvailabilityOutput{}, derrors.Validation("invalid business window", nil)
 	}
 
 	now := s.now().In(loc)
@@ -60,7 +54,7 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 	if input.To != nil {
 		rangeEnd = input.To.In(loc)
 	} else {
-		rangeEnd = rangeStart.AddDate(0, defaultHorizonMonths, 0)
+		rangeEnd = rangeStart.AddDate(0, s.cfg.AgendaHorizonMonths, 0)
 	}
 	if rangeEnd.Before(rangeStart) {
 		return ListAvailabilityOutput{}, derrors.Validation("to must be after from", nil)

@@ -28,9 +28,3 @@ type PhotoSessionRepositoryInterface interface {
 	GetBookingByIDForUpdate(ctx context.Context, tx *sql.Tx, bookingID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
 	FindBookingByAgendaEntry(ctx context.Context, tx *sql.Tx, agendaEntryID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
 }
-
-// PhotographerHolidayCalendarRepository defines the contract to manage photographer holiday calendar associations.
-type PhotographerHolidayCalendarRepository interface {
-	ListAssociations(ctx context.Context, tx *sql.Tx, photographerID uint64) ([]photosessionmodel.HolidayCalendarAssociationInterface, error)
-	ReplaceAssociations(ctx context.Context, tx *sql.Tx, photographerID uint64, calendarIDs []uint64) error
-}

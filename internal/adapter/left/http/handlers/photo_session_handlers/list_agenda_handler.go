@@ -2,8 +2,6 @@ package photosessionhandlers
 
 import (
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +28,6 @@ const (
 // @Param        page      query int    false "Page number (defaults to 1)"
 // @Param        size      query int    false "Page size (defaults to 20, max 100)"
 // @Param        timezone  query string false "Timezone identifier" default(America/Sao_Paulo)
-// @Param        holidayCalendarIds query string false "Comma-separated holiday calendar IDs" example(1,2,3)
 // @Success      200 {object} photosessionservices.ListAgendaOutput
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse
@@ -54,23 +51,6 @@ func (h *PhotoSessionHandler) ListAgenda(c *gin.Context) {
 		return
 	}
 
-	holidayIDs := make([]uint64, 0)
-	if trimmed := strings.TrimSpace(query.HolidayCalendarIDs); trimmed != "" {
-		parts := strings.Split(trimmed, ",")
-		for _, part := range parts {
-			value := strings.TrimSpace(part)
-			if value == "" {
-				continue
-			}
-			parsed, parseErr := strconv.ParseUint(value, 10, 64)
-			if parseErr != nil {
-				http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_holiday_calendar_id", "holidayCalendarIds must be a comma-separated list of integers")
-				return
-			}
-			holidayIDs = append(holidayIDs, parsed)
-		}
-	}
-
 	page := query.Page
 	if page <= 0 {
 		page = defaultAgendaPage
@@ -91,13 +71,12 @@ func (h *PhotoSessionHandler) ListAgenda(c *gin.Context) {
 	}
 
 	input := photosessionservices.ListAgendaInput{
-		PhotographerID:     uint64(userID),
-		StartDate:          startDate,
-		EndDate:            endDate,
-		Page:               page,
-		Size:               size,
-		Timezone:           query.Timezone,
-		HolidayCalendarIDs: holidayIDs,
+		PhotographerID: uint64(userID),
+		StartDate:      startDate,
+		EndDate:        endDate,
+		Page:           page,
+		Size:           size,
+		Timezone:       query.Timezone,
 	}
 
 	output, dErr := h.service.ListAgenda(c.Request.Context(), input)

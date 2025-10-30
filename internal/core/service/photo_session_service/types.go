@@ -15,25 +15,17 @@ type UpdateSessionStatusInput struct {
 
 // EnsureAgendaInput controls agenda bootstrap parameters.
 type EnsureAgendaInput struct {
-	PhotographerID    uint64
-	Timezone          string
-	HolidayCalendarID *uint64
-	HorizonMonths     int
-	WorkdayStartHour  int
-	WorkdayEndHour    int
+	PhotographerID uint64
+	Timezone       string
 }
 
 // TimeOffInput represents the payload to create a time-off entry.
 type TimeOffInput struct {
-	PhotographerID    uint64
-	StartDate         time.Time
-	EndDate           time.Time
-	Reason            *string
-	Timezone          string
-	HolidayCalendarID *uint64
-	HorizonMonths     int
-	WorkdayStartHour  int
-	WorkdayEndHour    int
+	PhotographerID uint64
+	StartDate      time.Time
+	EndDate        time.Time
+	Reason         *string
+	Timezone       string
 }
 
 // DeleteTimeOffInput represents the payload to remove a time-off entry.
@@ -45,16 +37,12 @@ type DeleteTimeOffInput struct {
 
 // UpdateTimeOffInput represents the payload to update a time-off entry.
 type UpdateTimeOffInput struct {
-	TimeOffID         uint64
-	PhotographerID    uint64
-	StartDate         time.Time
-	EndDate           time.Time
-	Reason            *string
-	Timezone          string
-	HolidayCalendarID *uint64
-	HorizonMonths     int
-	WorkdayStartHour  int
-	WorkdayEndHour    int
+	TimeOffID      uint64
+	PhotographerID uint64
+	StartDate      time.Time
+	EndDate        time.Time
+	Reason         *string
+	Timezone       string
 }
 
 // ListTimeOffInput captures filters for time-off listing.
@@ -91,13 +79,12 @@ type TimeOffDetailResult struct {
 
 // ListAgendaInput defines the input for listing agenda entries.
 type ListAgendaInput struct {
-	PhotographerID     uint64
-	StartDate          time.Time
-	EndDate            time.Time
-	Page               int
-	Size               int
-	Timezone           string
-	HolidayCalendarIDs []uint64
+	PhotographerID uint64
+	StartDate      time.Time
+	EndDate        time.Time
+	Page           int
+	Size           int
+	Timezone       string
 }
 
 // ListAgendaOutput describes the agenda listing result.
@@ -130,15 +117,13 @@ type AgendaSlot struct {
 
 // ListAvailabilityInput encapsulates range and pagination data for availability listing.
 type ListAvailabilityInput struct {
-	From             *time.Time
-	To               *time.Time
-	Page             int
-	Size             int
-	Sort             string
-	Period           *photosessionmodel.SlotPeriod
-	Timezone         string
-	WorkdayStartHour int
-	WorkdayEndHour   int
+	From     *time.Time
+	To       *time.Time
+	Page     int
+	Size     int
+	Sort     string
+	Period   *photosessionmodel.SlotPeriod
+	Timezone string
 }
 
 // ListAvailabilityOutput aggregates computed availability slots.

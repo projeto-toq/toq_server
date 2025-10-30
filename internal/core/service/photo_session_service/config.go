@@ -6,6 +6,9 @@ type Config struct {
 	SlotsPerPeriod      int
 	MorningStartHour    int
 	AfternoonStartHour  int
+	BusinessStartHour   int
+	BusinessEndHour     int
+	AgendaHorizonMonths int
 }
 
 func normalizeConfig(cfg Config) Config {
@@ -20,6 +23,15 @@ func normalizeConfig(cfg Config) Config {
 	}
 	if cfg.AfternoonStartHour <= 0 {
 		cfg.AfternoonStartHour = 14
+	}
+	if cfg.BusinessStartHour <= 0 {
+		cfg.BusinessStartHour = defaultWorkdayStartHour
+	}
+	if cfg.BusinessEndHour <= cfg.BusinessStartHour {
+		cfg.BusinessEndHour = defaultWorkdayEndHour
+	}
+	if cfg.AgendaHorizonMonths <= 0 {
+		cfg.AgendaHorizonMonths = defaultHorizonMonths
 	}
 	return cfg
 }

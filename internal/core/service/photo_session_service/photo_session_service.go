@@ -7,16 +7,14 @@ import (
 
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	photosessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
+	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 )
 
 // PhotoSessionServiceInterface exposes orchestration helpers around photographer agenda entries.
 type PhotoSessionServiceInterface interface {
-	EnsurePhotographerAgenda(ctx context.Context, input EnsureAgendaInput) error
 	EnsurePhotographerAgendaWithTx(ctx context.Context, tx *sql.Tx, input EnsureAgendaInput) error
-	RefreshPhotographerAgenda(ctx context.Context, input EnsureAgendaInput) error
-	RefreshPhotographerAgendaWithTx(ctx context.Context, tx *sql.Tx, input EnsureAgendaInput) error
 	CreateTimeOff(ctx context.Context, input TimeOffInput) (uint64, error)
 	CreateTimeOffWithTx(ctx context.Context, tx *sql.Tx, input TimeOffInput) (uint64, error)
 	DeleteTimeOff(ctx context.Context, input DeleteTimeOffInput) error
@@ -34,8 +32,8 @@ type PhotoSessionServiceInterface interface {
 
 type photoSessionService struct {
 	repo           photosessionrepository.PhotoSessionRepositoryInterface
-	holidayRepo    photosessionrepository.PhotographerHolidayCalendarRepository
 	listingRepo    listingrepository.ListingRepoPortInterface
+	userRepo       userrepository.UserRepoPortInterface
 	holidayService holidayservices.HolidayServiceInterface
 	globalService  globalservice.GlobalServiceInterface
 	cfg            Config
@@ -46,29 +44,26 @@ type photoSessionService struct {
 func NewPhotoSessionService(
 	repo photosessionrepository.PhotoSessionRepositoryInterface,
 	listingRepo listingrepository.ListingRepoPortInterface,
+	userRepo userrepository.UserRepoPortInterface,
 	holidayService holidayservices.HolidayServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 ) PhotoSessionServiceInterface {
-	return NewPhotoSessionServiceWithConfig(repo, listingRepo, holidayService, globalService, Config{})
+	return NewPhotoSessionServiceWithConfig(repo, listingRepo, userRepo, holidayService, globalService, Config{})
 }
 
 // NewPhotoSessionServiceWithConfig wires a photo session service with explicit config.
 func NewPhotoSessionServiceWithConfig(
 	repo photosessionrepository.PhotoSessionRepositoryInterface,
 	listingRepo listingrepository.ListingRepoPortInterface,
+	userRepo userrepository.UserRepoPortInterface,
 	holidayService holidayservices.HolidayServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 	cfg Config,
 ) PhotoSessionServiceInterface {
-	var holidayRepo photosessionrepository.PhotographerHolidayCalendarRepository
-	if value, ok := repo.(photosessionrepository.PhotographerHolidayCalendarRepository); ok {
-		holidayRepo = value
-	}
-
 	return &photoSessionService{
 		repo:           repo,
-		holidayRepo:    holidayRepo,
 		listingRepo:    listingRepo,
+		userRepo:       userRepo,
 		holidayService: holidayService,
 		globalService:  globalService,
 		cfg:            normalizeConfig(cfg),

@@ -111,6 +111,8 @@ type Environment struct {
 		SlotsPerPeriod                     int    `yaml:"slots_per_period"`
 		MorningStartHour                   int    `yaml:"morning_start_hour"`
 		AfternoonStartHour                 int    `yaml:"afternoon_start_hour"`
+		BusinessStartHour                  int    `yaml:"business_start_hour"`
+		BusinessEndHour                    int    `yaml:"business_end_hour"`
 		PhotographerHorizonMonths          int    `yaml:"photographer_horizon_months"`
 		PhotographerTimezone               string `yaml:"photographer_timezone"`
 		PhotographerAgendaRefreshIntervalH int    `yaml:"photographer_agenda_refresh_interval_hours"`

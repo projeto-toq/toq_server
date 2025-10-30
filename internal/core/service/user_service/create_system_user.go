@@ -225,7 +225,6 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		agendaInput := photosessionservices.EnsureAgendaInput{
 			PhotographerID: uint64(newUser.GetID()),
 			Timezone:       us.cfg.PhotographerTimezone,
-			HorizonMonths:  us.cfg.PhotographerAgendaHorizonMonths,
 		}
 		if agendaErr := us.photoSessionService.EnsurePhotographerAgendaWithTx(ctx, tx, agendaInput); agendaErr != nil {
 			utils.SetSpanError(ctx, agendaErr)
