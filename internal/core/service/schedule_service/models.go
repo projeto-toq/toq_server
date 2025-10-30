@@ -14,6 +14,43 @@ type CreateDefaultAgendaInput struct {
 	ActorID   int64
 }
 
+// RuleTimeRange represents a window in minutes for recurring rules.
+type RuleTimeRange struct {
+	StartMinute uint16
+	EndMinute   uint16
+}
+
+// CreateRuleInput captures data required to persist new recurring rules.
+type CreateRuleInput struct {
+	ListingID int64
+	OwnerID   int64
+	Weekdays  []time.Weekday
+	Range     RuleTimeRange
+	Active    bool
+	Timezone  string
+	ActorID   int64
+}
+
+// UpdateRuleInput carries information to update an existing recurring rule.
+type UpdateRuleInput struct {
+	RuleID    uint64
+	ListingID int64
+	OwnerID   int64
+	Weekday   time.Weekday
+	Range     RuleTimeRange
+	Active    bool
+	Timezone  string
+	ActorID   int64
+}
+
+// DeleteRuleInput captures identifiers required to remove a recurring rule.
+type DeleteRuleInput struct {
+	RuleID    uint64
+	ListingID int64
+	OwnerID   int64
+	ActorID   int64
+}
+
 // CreateBlockEntryInput captures the information to create a blocking entry.
 type CreateBlockEntryInput struct {
 	ListingID int64
@@ -57,6 +94,13 @@ type AvailabilityResult struct {
 	Slots    []AvailabilitySlot
 	Total    int
 	Timezone string
+}
+
+// RuleMutationResult aggregates results after creating or updating rules.
+type RuleMutationResult struct {
+	ListingID int64
+	Timezone  string
+	Rules     []schedulemodel.AgendaRuleInterface
 }
 
 // FinishListingAgendaInput encapsulates data to finish the agenda creation workflow.

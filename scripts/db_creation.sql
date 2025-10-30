@@ -626,6 +626,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_agenda_rules` (
   `is_active` TINYINT NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   INDEX `fk_rules_agenda_idx` (`agenda_id` ASC) VISIBLE,
+  UNIQUE INDEX `uk_rules_agenda` (`agenda_id` ASC, `day_of_week` ASC, `start_minute` ASC, `end_minute` ASC) VISIBLE,
   CONSTRAINT `fk_rules_agenda`
     FOREIGN KEY (`agenda_id`)
     REFERENCES `toq_db`.`listing_agendas` (`id`)
@@ -647,8 +648,8 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_agenda_entries` (
   `ends_at` DATETIME NOT NULL,
   `blocking` TINYINT NOT NULL,
   `reason` VARCHAR(120) NULL,
-  `visit_id` INT UNSIGNED NOT NULL,
-  `photo_booking_id` INT UNSIGNED NOT NULL,
+  `visit_id` INT UNSIGNED NULL,
+  `photo_booking_id` INT UNSIGNED NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_entries_agenda_idx` (`agenda_id` ASC) VISIBLE,
   CONSTRAINT `fk_entries_agenda`

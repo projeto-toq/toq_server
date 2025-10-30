@@ -60,15 +60,36 @@ type OwnerSummaryResult struct {
 	Total int64
 }
 
-// AgendaDetailItem carries full entry data for detailed agendas.
-type AgendaDetailItem struct {
-	Entry AgendaEntryInterface
+// AgendaEntriesPage represents a paginated collection retrieved from storage.
+type AgendaEntriesPage struct {
+	Entries []AgendaEntryInterface
+	Total   int64
 }
 
-// AgendaDetailResult contains paginated detail results.
+// AgendaTimelineItem groups concrete timeline windows for agenda visualisation.
+type AgendaTimelineItem struct {
+	Source    TimelineSource
+	Entry     AgendaEntryInterface
+	Rule      AgendaRuleInterface
+	StartsAt  time.Time
+	EndsAt    time.Time
+	Weekday   time.Weekday
+	Recurring bool
+	Blocking  bool
+}
+
+// AgendaDetailResult contains paginated detail results already enriched for the handler.
 type AgendaDetailResult struct {
-	Entries []AgendaDetailItem
-	Total   int64
+	Items    []AgendaTimelineItem
+	Total    int64
+	Timezone string
+}
+
+// RuleListResult captures all rules configured for an agenda.
+type RuleListResult struct {
+	ListingID int64
+	Timezone  string
+	Rules     []AgendaRuleInterface
 }
 
 // AvailabilityData groups raw entries and rules so services can compute free slots.

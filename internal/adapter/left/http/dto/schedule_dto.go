@@ -12,6 +12,49 @@ type SchedulePaginationRequest struct {
 	Limit int `json:"limit,omitempty" example:"20"`
 }
 
+// ScheduleRuleRequest represents the payload to create recurring unavailability rules.
+type ScheduleRuleRequest struct {
+	ListingID  int64    `json:"listingId" binding:"required" example:"3241"`
+	WeekDays   []string `json:"weekDays" binding:"required" example:"[\"MONDAY\",\"TUESDAY\"]"`
+	RangeStart string   `json:"rangeStart" binding:"required" example:"09:00"`
+	RangeEnd   string   `json:"rangeEnd" binding:"required" example:"18:00"`
+	Active     bool     `json:"active"`
+	Timezone   string   `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
+}
+
+// ScheduleRuleUpdateRequest represents the payload to update an existing rule.
+type ScheduleRuleUpdateRequest struct {
+	RuleID     uint64   `json:"ruleId" binding:"required" example:"9801"`
+	ListingID  int64    `json:"listingId" binding:"required" example:"3241"`
+	WeekDays   []string `json:"weekDays" binding:"required" example:"[\"MONDAY\"]"`
+	RangeStart string   `json:"rangeStart" binding:"required" example:"10:00"`
+	RangeEnd   string   `json:"rangeEnd" binding:"required" example:"22:00"`
+	Active     bool     `json:"active"`
+	Timezone   string   `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
+}
+
+// ScheduleRuleDeleteRequest represents the payload to delete a recurring rule.
+type ScheduleRuleDeleteRequest struct {
+	RuleID    uint64 `json:"ruleId" binding:"required" example:"9801"`
+	ListingID int64  `json:"listingId" binding:"required" example:"3241"`
+}
+
+// ScheduleRuleResponse exposes a recurring rule definition.
+type ScheduleRuleResponse struct {
+	RuleID    uint64 `json:"ruleId"`
+	Weekday   string `json:"weekday"`
+	StartTime string `json:"startTime"`
+	EndTime   string `json:"endTime"`
+	Active    bool   `json:"active"`
+}
+
+// ScheduleRulesResponse wraps a listing rule collection.
+type ScheduleRulesResponse struct {
+	ListingID int64                  `json:"listingId"`
+	Rules     []ScheduleRuleResponse `json:"rules"`
+	Timezone  string                 `json:"timezone"`
+}
+
 // ScheduleFinishAgendaRequest represents the payload to finish agenda creation.
 type ScheduleFinishAgendaRequest struct {
 	ListingID int64 `json:"listingId" binding:"required" example:"3241"`
@@ -58,8 +101,12 @@ type ListingAgendaDetailQuery struct {
 
 // ScheduleEntryResponse exposes detailed information about a single agenda entry.
 type ScheduleEntryResponse struct {
-	ID             uint64 `json:"id"`
-	EntryType      string `json:"entryType"`
+	ID             uint64 `json:"id,omitempty"`
+	RuleID         uint64 `json:"ruleId,omitempty"`
+	SourceType     string `json:"sourceType"`
+	Recurring      bool   `json:"recurring"`
+	Weekday        string `json:"weekday,omitempty"`
+	EntryType      string `json:"entryType,omitempty"`
 	StartsAt       string `json:"startsAt"`
 	EndsAt         string `json:"endsAt"`
 	Blocking       bool   `json:"blocking"`
@@ -73,33 +120,7 @@ type ScheduleEntryResponse struct {
 type ListingAgendaDetailResponse struct {
 	Entries    []ScheduleEntryResponse `json:"entries"`
 	Pagination PaginationResponse      `json:"pagination"`
-}
-
-// ScheduleBlockEntryRequest carries data to create a blocking entry.
-type ScheduleBlockEntryRequest struct {
-	ListingID int64  `json:"listingId" binding:"required"`
-	EntryType string `json:"entryType" binding:"required"`
-	StartsAt  string `json:"startsAt" binding:"required"`
-	EndsAt    string `json:"endsAt" binding:"required"`
-	Reason    string `json:"reason,omitempty"`
-	Timezone  string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
-}
-
-// ScheduleBlockEntryUpdateRequest carries data to update a blocking entry.
-type ScheduleBlockEntryUpdateRequest struct {
-	EntryID   uint64 `json:"entryId" binding:"required"`
-	ListingID int64  `json:"listingId" binding:"required"`
-	EntryType string `json:"entryType" binding:"required"`
-	StartsAt  string `json:"startsAt" binding:"required"`
-	EndsAt    string `json:"endsAt" binding:"required"`
-	Reason    string `json:"reason,omitempty"`
-	Timezone  string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
-}
-
-// ScheduleDeleteEntryRequest carries identifiers required to delete an agenda entry.
-type ScheduleDeleteEntryRequest struct {
-	EntryID   uint64 `json:"entryId" binding:"required"`
-	ListingID int64  `json:"listingId" binding:"required"`
+	Timezone   string                  `json:"timezone"`
 }
 
 // ScheduleAvailabilityQuery represents query parameters to fetch listing availability slots.
@@ -124,9 +145,4 @@ type ScheduleAvailabilityResponse struct {
 	Slots      []ScheduleAvailabilitySlotResponse `json:"slots"`
 	Pagination PaginationResponse                 `json:"pagination"`
 	Timezone   string                             `json:"timezone"`
-}
-
-// ScheduleBlockEntryResponse represents a blocking entry returned by create/update operations.
-type ScheduleBlockEntryResponse struct {
-	Entry ScheduleEntryResponse `json:"entry"`
 }

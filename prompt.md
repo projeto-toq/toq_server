@@ -5,11 +5,25 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após a última refatoração alguns desvios do padrão de projeto foram deixados, assim:
-- UpdateServiceArea deve ser PUT com id no body
-- DeleteServiceArea deve ser DELETE com id no body
-- GetServiceArea deve ser POST com id no body
-- cada func de handler de /photographer/service-area deve estar no seu arquivo go conforme padrão do projeto
+O processo de gestão da agenda do imóvel, feitas pelos endpoints handlers/schedule_handlers/schedules/listing/* está construído de forma equivocada, frente a regra de negócio.
+A regra de negócio diz:
+1) Cada imóvel tem uma agenda específica.
+2) Esta agenda registra os horarios de visitas feitas pelos Realtors.
+3) O proprietário define regras de INdisponibilidade para visitas, na criação de imóvel, ou na edição do imóvel.
+  3.1) Estas regras tem horizonte semanal e se repetem indeterminadamente.
+    Exemplos:
+    - De segunda a sexta após das 19:00 as 23:59.
+    - De segunda a sexta antes das 00:00 as 09:00.
+    - Sábados das 14:00 as 19:00.
+    - Domingos o dia todo.
+    - Tercas das 12:00 as 14:00.
+4) assim, estas regras não devem gerar entradas de bloqueios na agenda, mas sim são regras que definem quando as visitas NÃO PODEM ser agendadas.
+5) O proprietário tem uma visão consolidada na sua agenda, com os horários de visitas agendadas de todos os seus imóveis.
+Assim:
+- confirme se as tabelas atuais atendem a construção da lógica prevista na regra de negócio.
+- refatore o código para que a lógica de bloqueio de horários na agenda seja feita conforme a regra de negócio.
+- garanta que o endpoint de listagem de agenda retorne os horários corretamente bloqueados, conforme as regras de indisponibilidade definidas pelo proprietário.
+- caso necessite mudanças no banco de dados, proponha as migrações necessárias, que passarei ao time de DBA para execução. Não adianta alterar o scripts/db_creation.sql que ele existe aqui apenas para referência. informe detalhadamente as mudanças necessárias.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

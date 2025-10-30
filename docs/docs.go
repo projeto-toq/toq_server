@@ -6908,7 +6908,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Updates an existing blocking or temporary block entry for a listing agenda.",
+                "description": "Updates an existing recurring blocking rule for a listing agenda.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6918,16 +6918,16 @@ const docTemplate = `{
                 "tags": [
                     "Listing Schedules"
                 ],
-                "summary": "Update a blocking entry",
+                "summary": "Update a recurring blocking rule",
                 "parameters": [
                     {
-                        "x-example": "{\"entryId\":5021,\"listingId\":3241,\"entryType\":\"TEMP_BLOCK\",\"startsAt\":\"2025-06-20T09:00:00-03:00\",\"endsAt\":\"2025-06-20T12:00:00-03:00\",\"reason\":\"Janela de manutencao\",\"timezone\":\"America/Sao_Paulo\"}",
-                        "description": "Block entry update payload",
+                        "x-example": "{\"ruleId\":5021,\"listingId\":3241,\"weekDays\":[\"MONDAY\"],\"rangeStart\":\"10:00\",\"rangeEnd\":\"18:00\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
+                        "description": "Rule update payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryUpdateRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleUpdateRequest"
                         }
                     }
                 ],
@@ -6935,7 +6935,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRulesResponse"
                         }
                     },
                     "400": {
@@ -6982,7 +6982,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Creates a blocking or temporary blocking time range for a listing agenda.",
+                "description": "Creates recurring blocking rules for a listing agenda.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6992,16 +6992,16 @@ const docTemplate = `{
                 "tags": [
                     "Listing Schedules"
                 ],
-                "summary": "Create a blocking entry",
+                "summary": "Create recurring blocking rules",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":3241,\"entryType\":\"BLOCK\",\"startsAt\":\"2025-06-15T09:00:00-03:00\",\"endsAt\":\"2025-06-15T11:00:00-03:00\",\"reason\":\"Janela de manutencao\",\"timezone\":\"America/Sao_Paulo\"}",
-                        "description": "Block entry payload",
+                        "x-example": "{\"listingId\":3241,\"weekDays\":[\"MONDAY\",\"TUESDAY\"],\"rangeStart\":\"09:00\",\"rangeEnd\":\"18:00\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
+                        "description": "Rule creation payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleRequest"
                         }
                     }
                 ],
@@ -7009,7 +7009,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRulesResponse"
                         }
                     },
                     "400": {
@@ -7056,7 +7056,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Removes a blocking or temporary block entry from a listing agenda.",
+                "description": "Removes a recurring blocking rule from a listing agenda.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7066,16 +7066,16 @@ const docTemplate = `{
                 "tags": [
                     "Listing Schedules"
                 ],
-                "summary": "Delete a blocking entry",
+                "summary": "Delete a recurring blocking rule",
                 "parameters": [
                     {
-                        "x-example": "{\"entryId\":5021,\"listingId\":3241}",
-                        "description": "Block entry deletion payload",
+                        "x-example": "{\"ruleId\":5021,\"listingId\":3241}",
+                        "description": "Rule deletion payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleDeleteEntryRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleDeleteRequest"
                         }
                     }
                 ],
@@ -10289,6 +10289,9 @@ const docTemplate = `{
                 },
                 "pagination": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         },
@@ -11057,95 +11060,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryRequest": {
-            "type": "object",
-            "required": [
-                "endsAt",
-                "entryType",
-                "listingId",
-                "startsAt",
-                "timezone"
-            ],
-            "properties": {
-                "endsAt": {
-                    "type": "string"
-                },
-                "entryType": {
-                    "type": "string"
-                },
-                "listingId": {
-                    "type": "integer"
-                },
-                "reason": {
-                    "type": "string"
-                },
-                "startsAt": {
-                    "type": "string"
-                },
-                "timezone": {
-                    "type": "string",
-                    "example": "America/Sao_Paulo"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryResponse": {
-            "type": "object",
-            "properties": {
-                "entry": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleBlockEntryUpdateRequest": {
-            "type": "object",
-            "required": [
-                "endsAt",
-                "entryId",
-                "entryType",
-                "listingId",
-                "startsAt",
-                "timezone"
-            ],
-            "properties": {
-                "endsAt": {
-                    "type": "string"
-                },
-                "entryId": {
-                    "type": "integer"
-                },
-                "entryType": {
-                    "type": "string"
-                },
-                "listingId": {
-                    "type": "integer"
-                },
-                "reason": {
-                    "type": "string"
-                },
-                "startsAt": {
-                    "type": "string"
-                },
-                "timezone": {
-                    "type": "string",
-                    "example": "America/Sao_Paulo"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleDeleteEntryRequest": {
-            "type": "object",
-            "required": [
-                "entryId",
-                "listingId"
-            ],
-            "properties": {
-                "entryId": {
-                    "type": "integer"
-                },
-                "listingId": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse": {
             "type": "object",
             "properties": {
@@ -11167,6 +11081,15 @@ const docTemplate = `{
                 "reason": {
                     "type": "string"
                 },
+                "recurring": {
+                    "type": "boolean"
+                },
+                "ruleId": {
+                    "type": "integer"
+                },
+                "sourceType": {
+                    "type": "string"
+                },
                 "startsAt": {
                     "type": "string"
                 },
@@ -11175,6 +11098,9 @@ const docTemplate = `{
                 },
                 "visitId": {
                     "type": "integer"
+                },
+                "weekday": {
+                    "type": "string"
                 }
             }
         },
@@ -11187,6 +11113,146 @@ const docTemplate = `{
                 "listingId": {
                     "type": "integer",
                     "example": 3241
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleDeleteRequest": {
+            "type": "object",
+            "required": [
+                "listingId",
+                "ruleId"
+            ],
+            "properties": {
+                "listingId": {
+                    "type": "integer",
+                    "example": 3241
+                },
+                "ruleId": {
+                    "type": "integer",
+                    "example": 9801
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleRequest": {
+            "type": "object",
+            "required": [
+                "listingId",
+                "rangeEnd",
+                "rangeStart",
+                "timezone",
+                "weekDays"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "listingId": {
+                    "type": "integer",
+                    "example": 3241
+                },
+                "rangeEnd": {
+                    "type": "string",
+                    "example": "18:00"
+                },
+                "rangeStart": {
+                    "type": "string",
+                    "example": "09:00"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
+                },
+                "weekDays": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"MONDAY\"",
+                        "\"TUESDAY\"]"
+                    ]
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "endTime": {
+                    "type": "string"
+                },
+                "ruleId": {
+                    "type": "integer"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "weekday": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleUpdateRequest": {
+            "type": "object",
+            "required": [
+                "listingId",
+                "rangeEnd",
+                "rangeStart",
+                "ruleId",
+                "timezone",
+                "weekDays"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "listingId": {
+                    "type": "integer",
+                    "example": 3241
+                },
+                "rangeEnd": {
+                    "type": "string",
+                    "example": "22:00"
+                },
+                "rangeStart": {
+                    "type": "string",
+                    "example": "10:00"
+                },
+                "ruleId": {
+                    "type": "integer",
+                    "example": 9801
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "America/Sao_Paulo"
+                },
+                "weekDays": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"MONDAY\"]"
+                    ]
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRulesResponse": {
+            "type": "object",
+            "properties": {
+                "listingId": {
+                    "type": "integer"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleResponse"
+                    }
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         },

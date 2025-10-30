@@ -14,13 +14,13 @@ import (
 
 // PutUpdateBlockEntry handles PUT /schedules/listing/block.
 //
-// @Summary		Update a blocking entry
-// @Description	Updates an existing blocking or temporary block entry for a listing agenda.
+// @Summary		Update a recurring blocking rule
+// @Description	Updates an existing recurring blocking rule for a listing agenda.
 // @Tags		Listing Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ScheduleBlockEntryUpdateRequest	true	"Block entry update payload" Extensions(x-example={"entryId":5021,"listingId":3241,"entryType":"TEMP_BLOCK","startsAt":"2025-06-20T09:00:00-03:00","endsAt":"2025-06-20T12:00:00-03:00","reason":"Janela de manutencao","timezone":"America/Sao_Paulo"})
-// @Success	200	{object}	dto.ScheduleBlockEntryResponse
+// @Param		request	body	dto.ScheduleRuleUpdateRequest	true	"Rule update payload" Extensions(x-example={"ruleId":5021,"listingId":3241,"weekDays":["MONDAY"],"rangeStart":"10:00","rangeEnd":"18:00","active":true,"timezone":"America/Sao_Paulo"})
+// @Success	200	{object}	dto.ScheduleRulesResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
 // @Failure	403	{object}	dto.ErrorResponse
@@ -44,49 +44,55 @@ func (h *ScheduleHandler) PutUpdateBlockEntry(c *gin.Context) {
 		return
 	}
 
-	var req dto.ScheduleBlockEntryUpdateRequest
+	var req dto.ScheduleRuleUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request payload")
 		return
 	}
 
-	typeValue, err := parseScheduleEntryType(req.EntryType)
+	weekday, err := parseSingleScheduleWeekday(req.WeekDays)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	startsAt, err := parseScheduleTimestamp("startsAt", req.StartsAt)
+	startMinute, err := parseScheduleRuleMinutes("rangeStart", req.RangeStart)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	endsAt, err := parseScheduleTimestamp("endsAt", req.EndsAt)
+	endMinute, err := parseScheduleRuleMinutes("rangeEnd", req.RangeEnd)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	input := scheduleservices.UpdateBlockEntryInput{
-		EntryID:   req.EntryID,
+	input := scheduleservices.UpdateRuleInput{
+		RuleID:    req.RuleID,
 		ListingID: req.ListingID,
 		OwnerID:   userInfo.ID,
-		EntryType: typeValue,
-		StartsAt:  startsAt,
-		EndsAt:    endsAt,
-		Reason:    req.Reason,
-		ActorID:   userInfo.ID,
-		Timezone:  req.Timezone,
+		Weekday:   weekday,
+		Range: scheduleservices.RuleTimeRange{
+			StartMinute: startMinute,
+			EndMinute:   endMinute,
+		},
+		Active:   req.Active,
+		Timezone: req.Timezone,
+		ActorID:  userInfo.ID,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)
-	entry, serviceErr := h.scheduleService.UpdateBlockEntry(ctx, input)
+	rule, serviceErr := h.scheduleService.UpdateRule(ctx, input)
 	if serviceErr != nil {
 		httperrors.SendHTTPErrorObj(c, serviceErr)
 		return
 	}
 
-	response := dto.ScheduleBlockEntryResponse{Entry: converters.ScheduleEntryToDTO(entry)}
+	response := dto.ScheduleRulesResponse{
+		ListingID: req.ListingID,
+		Timezone:  req.Timezone,
+		Rules:     []dto.ScheduleRuleResponse{converters.ScheduleRuleToDTO(rule)},
+	}
 	c.JSON(http.StatusOK, response)
 }

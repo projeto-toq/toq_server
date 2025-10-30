@@ -77,7 +77,7 @@ func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 	}
 
 	page, limit := schedulePaginationValues(pagination)
-	response := converters.ScheduleEntriesToDTO(result.Entries, page, limit, result.Total)
+	response := converters.ScheduleEntriesToDTO(result, page, limit)
 
 	c.JSON(http.StatusOK, response)
 }

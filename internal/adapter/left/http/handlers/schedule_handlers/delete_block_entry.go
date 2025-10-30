@@ -13,12 +13,12 @@ import (
 
 // DeleteBlockEntry handles DELETE /schedules/listing/block.
 //
-// @Summary		Delete a blocking entry
-// @Description	Removes a blocking or temporary block entry from a listing agenda.
+// @Summary		Delete a recurring blocking rule
+// @Description	Removes a recurring blocking rule from a listing agenda.
 // @Tags		Listing Schedules
 // @Accept		json
 // @Produce	json
-// @Param		request	body	dto.ScheduleDeleteEntryRequest	true	"Block entry deletion payload" Extensions(x-example={"entryId":5021,"listingId":3241})
+// @Param		request	body	dto.ScheduleRuleDeleteRequest	true	"Rule deletion payload" Extensions(x-example={"ruleId":5021,"listingId":3241})
 // @Success	204	"Entry deleted successfully"
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
@@ -42,20 +42,21 @@ func (h *ScheduleHandler) DeleteBlockEntry(c *gin.Context) {
 		return
 	}
 
-	var req dto.ScheduleDeleteEntryRequest
+	var req dto.ScheduleRuleDeleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request payload")
 		return
 	}
 
-	input := scheduleservices.DeleteEntryInput{
-		EntryID:   req.EntryID,
+	input := scheduleservices.DeleteRuleInput{
+		RuleID:    req.RuleID,
 		ListingID: req.ListingID,
 		OwnerID:   userInfo.ID,
+		ActorID:   userInfo.ID,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)
-	if err := h.scheduleService.DeleteBlockEntry(ctx, input); err != nil {
+	if err := h.scheduleService.DeleteRule(ctx, input); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

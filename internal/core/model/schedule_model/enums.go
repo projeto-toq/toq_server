@@ -21,3 +21,13 @@ const (
 	EntryTypePhotoSession   EntryType = "PHOTO_SESSION"
 	EntryTypeHolidayInfo    EntryType = "HOLIDAY_INFO"
 )
+
+// TimelineSource identifies the origin of a timeline window.
+type TimelineSource string
+
+const (
+	// TimelineSourceEntry indicates the window comes from a persisted agenda entry.
+	TimelineSourceEntry TimelineSource = "ENTRY"
+	// TimelineSourceRule indicates the window was generated from a recurring rule.
+	TimelineSourceRule TimelineSource = "RULE"
+)
