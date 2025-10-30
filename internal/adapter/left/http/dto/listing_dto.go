@@ -429,12 +429,14 @@ type ListingCatalogRestoreRequest struct {
 
 // ListPhotographerSlotsRequest define filtros e paginação para consulta de slots.
 type ListPhotographerSlotsRequest struct {
-	From   string `form:"from" binding:"omitempty" example:"2025-10-20"`
-	To     string `form:"to" binding:"omitempty" example:"2025-10-31"`
-	Period string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
-	Page   int    `form:"page,default=1" binding:"min=1"`
-	Size   int    `form:"size,default=20" binding:"min=1,max=100"`
-	Sort   string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc date_asc date_desc"`
+	From      string `form:"from" binding:"omitempty" example:"2025-10-20"`
+	To        string `form:"to" binding:"omitempty" example:"2025-10-31"`
+	Period    string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
+	Page      int    `form:"page,default=1" binding:"min=1"`
+	Size      int    `form:"size,default=20" binding:"min=1,max=100"`
+	Sort      string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc date_asc date_desc"`
+	ListingID int64  `form:"listingId" binding:"required,min=1" example:"1001"`
+	Timezone  string `form:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // PhotographerSlotResponse representa um slot disponível na agenda dos fotógrafos.

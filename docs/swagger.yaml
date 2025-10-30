@@ -1622,6 +1622,71 @@ definitions:
       totalPages:
         type: integer
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaDeleteRequest:
+    properties:
+      serviceAreaId:
+        example: 42
+        type: integer
+    required:
+    - serviceAreaId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaDetailRequest:
+    properties:
+      serviceAreaId:
+        example: 42
+        type: integer
+    required:
+    - serviceAreaId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaListResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      serviceAreas:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaResponse'
+        type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaRequest:
+    properties:
+      city:
+        example: São Paulo
+        type: string
+      state:
+        example: SP
+        type: string
+    required:
+    - city
+    - state
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaResponse:
+    properties:
+      city:
+        example: São Paulo
+        type: string
+      id:
+        example: 42
+        type: integer
+      state:
+        example: SP
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaUpdateRequest:
+    properties:
+      city:
+        example: São Paulo
+        type: string
+      serviceAreaId:
+        example: 42
+        type: integer
+      state:
+        example: SP
+        type: string
+    required:
+    - city
+    - serviceAreaId
+    - state
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerSlotResponse:
     properties:
       photographerUserId:
@@ -6387,6 +6452,18 @@ paths:
         in: query
         name: sort
         type: string
+      - description: Listing identifier
+        example: 1001
+        in: query
+        name: listingId
+        required: true
+        type: integer
+      - description: Listing timezone
+        example: America/Sao_Paulo
+        in: query
+        name: timezone
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -6657,6 +6734,192 @@ paths:
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       summary: Get photographer time-off detail
+      tags:
+      - Photographer
+  /photographer/service-area:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a service area owned by the authenticated photographer.
+      parameters:
+      - description: Service area identifier
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Delete Photographer Service Area
+      tags:
+      - Photographer
+    get:
+      description: Lists the service areas configured by the authenticated photographer
+        with optional filters.
+      parameters:
+      - description: City filter
+        in: query
+        name: city
+        type: string
+      - description: State filter
+        in: query
+        name: state
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: List Photographer Service Areas
+      tags:
+      - Photographer
+    post:
+      consumes:
+      - application/json
+      description: Creates a new service area for the authenticated photographer.
+      parameters:
+      - description: Service area payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Create Photographer Service Area
+      tags:
+      - Photographer
+    put:
+      consumes:
+      - application/json
+      description: Updates the city and state of an existing service area.
+      parameters:
+      - description: Service area payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Update Photographer Service Area
+      tags:
+      - Photographer
+  /photographer/service-area/detail:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves a service area owned by the authenticated photographer.
+      parameters:
+      - description: Service area identifier
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Get Photographer Service Area
       tags:
       - Photographer
   /photographer/sessions/status:

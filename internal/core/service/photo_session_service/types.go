@@ -117,13 +117,14 @@ type AgendaSlot struct {
 
 // ListAvailabilityInput encapsulates range and pagination data for availability listing.
 type ListAvailabilityInput struct {
-	From     *time.Time
-	To       *time.Time
-	Page     int
-	Size     int
-	Sort     string
-	Period   *photosessionmodel.SlotPeriod
-	Timezone string
+	From      *time.Time
+	To        *time.Time
+	Page      int
+	Size      int
+	Sort      string
+	Period    *photosessionmodel.SlotPeriod
+	Timezone  string
+	ListingID int64
 }
 
 // ListAvailabilityOutput aggregates computed availability slots.
@@ -193,4 +194,53 @@ type CancelSessionOutput struct {
 	PhotographerID uint64
 	ListingID      int64
 	ListingCode    uint32
+}
+
+// ListServiceAreasInput captures filters and pagination options when listing service areas.
+type ListServiceAreasInput struct {
+	PhotographerID uint64
+	City           *string
+	State          *string
+	Page           int
+	Size           int
+}
+
+// ListServiceAreasOutput bundles paginated service area entries.
+type ListServiceAreasOutput struct {
+	Areas []photosessionmodel.PhotographerServiceAreaInterface
+	Total int64
+	Page  int
+	Size  int
+}
+
+// CreateServiceAreaInput represents the payload to create a new service area.
+type CreateServiceAreaInput struct {
+	PhotographerID uint64
+	City           string
+	State          string
+}
+
+// UpdateServiceAreaInput represents the payload to update an existing service area.
+type UpdateServiceAreaInput struct {
+	PhotographerID uint64
+	ServiceAreaID  uint64
+	City           string
+	State          string
+}
+
+// DeleteServiceAreaInput carries identifiers to delete a service area.
+type DeleteServiceAreaInput struct {
+	PhotographerID uint64
+	ServiceAreaID  uint64
+}
+
+// ServiceAreaDetailInput carries identifiers to retrieve a service area.
+type ServiceAreaDetailInput struct {
+	PhotographerID uint64
+	ServiceAreaID  uint64
+}
+
+// ServiceAreaResult wraps a service area domain entity.
+type ServiceAreaResult struct {
+	Area photosessionmodel.PhotographerServiceAreaInterface
 }

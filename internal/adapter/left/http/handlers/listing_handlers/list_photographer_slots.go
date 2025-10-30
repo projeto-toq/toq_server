@@ -2,6 +2,7 @@ package listinghandlers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,12 +25,14 @@ const (
 //	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
-//	@Param     from    query     string false "Start date filter (YYYY-MM-DD)" Format(date) example(2025-10-20)
-//	@Param     to      query     string false "End date filter (YYYY-MM-DD)" Format(date) example(2025-10-31)
-//	@Param     period  query     string false "Slot period" Enums(MORNING,AFTERNOON) example(MORNING)
-//	@Param     page    query     int    false "Page number" default(1)
-//	@Param     size    query     int    false "Page size" default(20)
-//	@Param     sort    query     string false "Sort order" Enums(start_asc,start_desc,photographer_asc,photographer_desc) default(start_asc)
+//	@Param     from      query    string false "Start date filter (YYYY-MM-DD)" Format(date) example(2025-10-20)
+//	@Param     to        query    string false "End date filter (YYYY-MM-DD)" Format(date) example(2025-10-31)
+//	@Param     period    query    string false "Slot period" Enums(MORNING,AFTERNOON) example(MORNING)
+//	@Param     page      query    int    false "Page number" default(1)
+//	@Param     size      query    int    false "Page size" default(20)
+//	@Param     sort      query    string false "Sort order" Enums(start_asc,start_desc,photographer_asc,photographer_desc) default(start_asc)
+//	@Param     listingId query    int    true  "Listing identifier" example(1001)
+//	@Param     timezone  query    string true  "Listing timezone" example(America/Sao_Paulo)
 //	@Success   200 {object} dto.ListPhotographerSlotsResponse
 //	@Failure   400 {object} dto.ErrorResponse "Invalid filters"
 //	@Failure   401 {object} dto.ErrorResponse "Unauthorized"
@@ -85,13 +88,26 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 		periodPtr = &period
 	}
 
+	timezone := strings.TrimSpace(request.Timezone)
+	if timezone == "" {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_TIMEZONE", "timezone is required")
+		return
+	}
+
+	if _, tzErr := time.LoadLocation(timezone); tzErr != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_TIMEZONE", "timezone must be a valid IANA identifier")
+		return
+	}
+
 	input := listingservices.ListPhotographerSlotsInput{
-		From:   fromPtr,
-		To:     toPtr,
-		Period: periodPtr,
-		Page:   request.Page,
-		Size:   request.Size,
-		Sort:   request.Sort,
+		From:      fromPtr,
+		To:        toPtr,
+		Period:    periodPtr,
+		Page:      request.Page,
+		Size:      request.Size,
+		Sort:      strings.TrimSpace(request.Sort),
+		ListingID: request.ListingID,
+		Timezone:  timezone,
 	}
 
 	output, err := lh.listingService.ListPhotographerSlots(ctx, input)

@@ -9,4 +9,7 @@ const (
 	defaultAgendaPage       = 1
 	defaultAgendaSize       = 20
 	maxAgendaPageSize       = 100
+	defaultServiceAreaPage  = 1
+	defaultServiceAreaSize  = 20
+	maxServiceAreaPageSize  = 100
 )

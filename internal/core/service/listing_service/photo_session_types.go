@@ -15,12 +15,14 @@ const (
 
 // ListPhotographerSlotsInput carries filtering and pagination data for slot listing.
 type ListPhotographerSlotsInput struct {
-	From   *time.Time
-	To     *time.Time
-	Period *photosessionmodel.SlotPeriod
-	Page   int
-	Size   int
-	Sort   string
+	From      *time.Time
+	To        *time.Time
+	Period    *photosessionmodel.SlotPeriod
+	Page      int
+	Size      int
+	Sort      string
+	ListingID int64
+	Timezone  string
 }
 
 // ListPhotographerSlotsOutput bundles slots and pagination metadata.

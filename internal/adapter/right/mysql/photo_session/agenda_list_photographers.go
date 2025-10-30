@@ -8,7 +8,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// ListPhotographerIDs returns distinct photographer IDs that have agenda entries.
+// ListPhotographerIDs returns distinct photographer IDs that are registered with the photographer role.
 func (a *PhotoSessionAdapter) ListPhotographerIDs(ctx context.Context, tx *sql.Tx) ([]uint64, error) {
 	ctx, spanEnd, err := withTracer(ctx)
 	if err != nil {
@@ -22,7 +22,16 @@ func (a *PhotoSessionAdapter) ListPhotographerIDs(ctx context.Context, tx *sql.T
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT DISTINCT photographer_user_id FROM photographer_agenda_entries`
+	query := `
+		SELECT DISTINCT u.id
+		FROM users u
+		JOIN user_roles ur ON ur.user_id = u.id
+		JOIN roles r ON r.id = ur.role_id
+		WHERE r.slug = 'photographer'
+		  AND r.is_active = 1
+		  AND ur.is_active = 1
+		  AND u.deleted = 0
+	`
 
 	rows, err := exec.QueryContext(ctx, query)
 	if err != nil {

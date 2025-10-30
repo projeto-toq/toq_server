@@ -2,6 +2,9 @@ package photosessionservices
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
@@ -19,7 +22,16 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	loc, tzErr := resolveLocation(input.Timezone)
+	if input.ListingID <= 0 {
+		return ListAvailabilityOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "greater_than_zero"})
+	}
+
+	trimmedTimezone := strings.TrimSpace(input.Timezone)
+	if trimmedTimezone == "" {
+		return ListAvailabilityOutput{}, derrors.Validation("timezone is required", map[string]any{"timezone": "required"})
+	}
+
+	loc, tzErr := resolveLocation(trimmedTimezone)
 	if tzErr != nil {
 		return ListAvailabilityOutput{}, tzErr
 	}
@@ -80,11 +92,45 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 		}
 	}()
 
-	photographerIDs, repoErr := s.repo.ListPhotographerIDs(ctx, tx)
+	listing, listingErr := s.listingRepo.GetListingByID(ctx, tx, input.ListingID)
+	if listingErr != nil {
+		if errors.Is(listingErr, sql.ErrNoRows) {
+			return ListAvailabilityOutput{}, utils.NotFoundError("Listing")
+		}
+		utils.SetSpanError(ctx, listingErr)
+		logger.Error("photo_session.list_availability.get_listing_error", "listing_id", input.ListingID, "err", listingErr)
+		return ListAvailabilityOutput{}, derrors.Infra("failed to load listing", listingErr)
+	}
+
+	if listing.Deleted() {
+		return ListAvailabilityOutput{}, utils.BadRequest("listing is not available")
+	}
+
+	if !listingAllowsPhotoSession(listing.Status()) {
+		return ListAvailabilityOutput{}, derrors.ErrListingNotEligible
+	}
+
+	city := strings.TrimSpace(listing.City())
+	state := strings.TrimSpace(listing.State())
+	if city == "" || state == "" {
+		return ListAvailabilityOutput{}, derrors.Validation("listing address must contain city and state", map[string]any{"listing": "missing_city_state"})
+	}
+
+	photographerIDs, repoErr := s.repo.ListPhotographerIDsByLocation(ctx, tx, city, state)
 	if repoErr != nil {
 		utils.SetSpanError(ctx, repoErr)
-		logger.Error("photo_session.list_availability.list_photographers_error", "err", repoErr)
+		logger.Error("photo_session.list_availability.list_photographers_error", "city", city, "state", state, "err", repoErr)
 		return ListAvailabilityOutput{}, derrors.Infra("failed to list photographers", repoErr)
+	}
+
+	if len(photographerIDs) == 0 {
+		return ListAvailabilityOutput{
+			Slots:    []AvailabilitySlot{},
+			Total:    0,
+			Page:     page,
+			Size:     size,
+			Timezone: loc.String(),
+		}, nil
 	}
 
 	availability := make([]AvailabilitySlot, 0)

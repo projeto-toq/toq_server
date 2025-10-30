@@ -2,8 +2,12 @@ package listingservices
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"strings"
 	"time"
 
+	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
@@ -18,6 +22,69 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 	defer spanEnd()
 
 	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	userID, userErr := ls.gsi.GetUserIDFromContext(ctx)
+	if userErr != nil {
+		return output, userErr
+	}
+
+	if input.ListingID <= 0 {
+		return output, utils.BadRequest("listingId must be greater than zero")
+	}
+
+	timezone := strings.TrimSpace(input.Timezone)
+	if timezone == "" {
+		return output, utils.BadRequest("timezone is required")
+	}
+
+	if _, tzErr := time.LoadLocation(timezone); tzErr != nil {
+		return output, utils.BadRequest("invalid timezone")
+	}
+
+	tx, txErr := ls.gsi.StartReadOnlyTransaction(ctx)
+	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("listing.photo_session.list_slots.start_ro_tx_error", "err", txErr)
+		return output, utils.InternalError("")
+	}
+	defer func() {
+		if tx != nil {
+			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
+				utils.SetSpanError(ctx, rbErr)
+				logger.Error("listing.photo_session.list_slots.ro_rollback_error", "err", rbErr)
+			}
+		}
+	}()
+
+	listing, repoErr := ls.listingRepository.GetListingByID(ctx, tx, input.ListingID)
+	if repoErr != nil {
+		if errors.Is(repoErr, sql.ErrNoRows) {
+			return output, utils.NotFoundError("Listing")
+		}
+		utils.SetSpanError(ctx, repoErr)
+		logger.Error("listing.photo_session.list_slots.get_listing_error", "err", repoErr, "listing_id", input.ListingID)
+		return output, utils.InternalError("")
+	}
+
+	if listing.Deleted() {
+		return output, utils.BadRequest("listing is not available")
+	}
+
+	if listing.UserID() != userID {
+		return output, utils.AuthorizationError("listing does not belong to current user")
+	}
+
+	if !listingEligibleForPhotoSession(listing.Status()) {
+		return output, derrors.ErrListingNotEligible
+	}
+
+	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
+		utils.SetSpanError(ctx, cmErr)
+		logger.Error("listing.photo_session.list_slots.ro_commit_error", "err", cmErr)
+		return output, utils.InternalError("")
+	}
+	tx = nil
 
 	page := input.Page
 	if page <= 0 {
@@ -42,12 +109,14 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 	}
 
 	availabilityInput := photosessionservices.ListAvailabilityInput{
-		From:   input.From,
-		To:     input.To,
-		Period: input.Period,
-		Page:   page,
-		Size:   size,
-		Sort:   sortKey,
+		From:      input.From,
+		To:        input.To,
+		Period:    input.Period,
+		Page:      page,
+		Size:      size,
+		Sort:      sortKey,
+		Timezone:  timezone,
+		ListingID: input.ListingID,
 	}
 
 	availability, svcErr := ls.photoSessionSvc.ListAvailability(ctx, availabilityInput)

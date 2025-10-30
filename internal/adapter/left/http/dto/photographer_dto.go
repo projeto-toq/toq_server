@@ -68,3 +68,47 @@ type ListPhotographerTimeOffResponse struct {
 	Pagination PaginationResponse            `json:"pagination"`
 	Timezone   string                        `json:"timezone"`
 }
+
+// PhotographerServiceAreaListQuery captures filters for listing service areas.
+type PhotographerServiceAreaListQuery struct {
+	City  string `form:"city" binding:"omitempty" example:"São Paulo"`
+	State string `form:"state" binding:"omitempty" example:"SP"`
+	Page  int    `form:"page" binding:"omitempty,min=1" example:"1"`
+	Size  int    `form:"size" binding:"omitempty,min=1" example:"20"`
+}
+
+// PhotographerServiceAreaRequest represents the payload to create or update a service area.
+type PhotographerServiceAreaRequest struct {
+	City  string `json:"city" binding:"required" example:"São Paulo"`
+	State string `json:"state" binding:"required" example:"SP"`
+}
+
+// PhotographerServiceAreaDetailRequest carries the identifier to retrieve a service area.
+type PhotographerServiceAreaDetailRequest struct {
+	ServiceAreaID uint64 `json:"serviceAreaId" binding:"required" example:"42"`
+}
+
+// PhotographerServiceAreaUpdateRequest represents the payload to update a service area.
+type PhotographerServiceAreaUpdateRequest struct {
+	ServiceAreaID uint64 `json:"serviceAreaId" binding:"required" example:"42"`
+	City          string `json:"city" binding:"required" example:"São Paulo"`
+	State         string `json:"state" binding:"required" example:"SP"`
+}
+
+// PhotographerServiceAreaDeleteRequest carries the identifier to delete a service area.
+type PhotographerServiceAreaDeleteRequest struct {
+	ServiceAreaID uint64 `json:"serviceAreaId" binding:"required" example:"42"`
+}
+
+// PhotographerServiceAreaResponse represents a service area entry owned by the photographer.
+type PhotographerServiceAreaResponse struct {
+	ID    uint64 `json:"id" example:"42"`
+	City  string `json:"city" example:"São Paulo"`
+	State string `json:"state" example:"SP"`
+}
+
+// PhotographerServiceAreaListResponse aggregates service areas with pagination metadata.
+type PhotographerServiceAreaListResponse struct {
+	ServiceAreas []PhotographerServiceAreaResponse `json:"serviceAreas"`
+	Pagination   PaginationResponse                `json:"pagination"`
+}

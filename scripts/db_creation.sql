@@ -785,6 +785,27 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photo_session_bookings` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`photographer_service_areas`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`photographer_service_areas` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_service_areas` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `photographer_user_id` INT UNSIGNED NOT NULL,
+  `city` VARCHAR(255) NOT NULL,
+  `state` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_photographer_user_id_user_3_idx` (`photographer_user_id` ASC) VISIBLE,
+  UNIQUE INDEX `uk_photographer_city_state` (`photographer_user_id` ASC, `city` ASC, `state` ASC) VISIBLE,
+  CONSTRAINT `fk_photographer_user_id_user_3`
+    FOREIGN KEY (`photographer_user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 -- begin attached script 'script'
 -- Desabilitar verificação de foreign keys durante o LOAD DATA
 SET FOREIGN_KEY_CHECKS = 0;

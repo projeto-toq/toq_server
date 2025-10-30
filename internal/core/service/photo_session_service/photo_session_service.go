@@ -28,6 +28,11 @@ type PhotoSessionServiceInterface interface {
 	ReservePhotoSession(ctx context.Context, input ReserveSessionInput) (ReserveSessionOutput, error)
 	ConfirmPhotoSession(ctx context.Context, input ConfirmSessionInput) (ConfirmSessionOutput, error)
 	CancelPhotoSession(ctx context.Context, input CancelSessionInput) (CancelSessionOutput, error)
+	ListServiceAreas(ctx context.Context, input ListServiceAreasInput) (ListServiceAreasOutput, error)
+	CreateServiceArea(ctx context.Context, input CreateServiceAreaInput) (ServiceAreaResult, error)
+	GetServiceArea(ctx context.Context, input ServiceAreaDetailInput) (ServiceAreaResult, error)
+	UpdateServiceArea(ctx context.Context, input UpdateServiceAreaInput) (ServiceAreaResult, error)
+	DeleteServiceArea(ctx context.Context, input DeleteServiceAreaInput) error
 }
 
 type photoSessionService struct {

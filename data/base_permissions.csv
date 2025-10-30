@@ -97,3 +97,12 @@ id;name;action;description;is_active
 96;"HTTP Photographer Create Time Off";"POST:/api/v2/photographer/agenda/time-off";"Permite fotógrafo criar período de indisponibilidade em sua agenda";1
 97;"HTTP Photographer Delete Time Off";"DELETE:/api/v2/photographer/agenda/time-off";"Permite fotógrafo deletar período de indisponibilidade em sua agenda";1
 98;"HTTP Photographer Update Session Status";"POST:/api/v2/photographer/sessions/status";"Permite fotógrafo atualizar o status de uma sessão de fotos";1
+99;"HTTP Photographer List Service Areas";"GET:/api/v2/photographer/service-area";"Permite fotógrafo listar suas áreas de atendimento";1
+100;"HTTP Photographer Create Service Area";"POST:/api/v2/photographer/service-area";"Permite fotógrafo criar nova área de atendimento";1
+101;"HTTP Photographer Get Service Area";"POST:/api/v2/photographer/service-area/detail";"Permite fotógrafo consultar detalhes de uma área de atendimento";1
+102;"HTTP Photographer Update Service Area";"PUT:/api/v2/photographer/service-area";"Permite fotógrafo atualizar uma área de atendimento";1
+103;"HTTP Photographer Delete Service Area";"DELETE:/api/v2/photographer/service-area";"Permite fotógrafo deletar uma área de atendimento";1
+104;"HTTP Photographer List Photographers Time Off";"GET:/api/v2/photographer/agenda/time-off";"Permite listar períodos de indisponibilidade de um fotógrafo";1
+105;"HTTP Photographer Get Photographer Time Off Detail";"POST:/api/v2/photographer/agenda/time-off/detail";"Permite consultar detalhes de um período de indisponibilidade de um fotógrafo";1
+106;"HTTP Photographer Update Photographer Time Off";"PUT:/api/v2/photographer/agenda/time-off";"Permite atualizar um período de indisponibilidade de um fotógrafo";1
+107;"HTTP Photographer Create Photographer Time Off";"POST:/api/v2/photographer/agenda/time-off";"Permite criar um período de indisponibilidade para um fotógrafo";1

@@ -391,6 +391,15 @@ func RegisterPhotographerRoutes(
 		{
 			sessions.POST("/status", photoSessionHandler.UpdateSessionStatus)
 		}
+
+		serviceAreas := photographer.Group("/service-area")
+		{
+			serviceAreas.GET("", photoSessionHandler.ListServiceAreas)
+			serviceAreas.POST("", photoSessionHandler.CreateServiceArea)
+			serviceAreas.POST("/detail", photoSessionHandler.GetServiceArea)
+			serviceAreas.PUT("", photoSessionHandler.UpdateServiceArea)
+			serviceAreas.DELETE("", photoSessionHandler.DeleteServiceArea)
+		}
 	}
 }
 
