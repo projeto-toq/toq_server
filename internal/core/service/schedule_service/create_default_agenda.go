@@ -11,12 +11,6 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-const (
-	defaultMorningBlockEnd   = 480  // 08:00
-	defaultEveningBlockStart = 1080 // 18:00
-	minutesPerDay            = 1440
-)
-
 func (s *scheduleService) CreateDefaultAgenda(ctx context.Context, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error) {
 	if err := validateDefaultAgendaInput(input); err != nil {
 		return nil, err
@@ -116,7 +110,7 @@ func (s *scheduleService) createDefaultAgendaTx(ctx context.Context, tx *sql.Tx,
 	}
 	agenda.SetID(id)
 
-	rules := buildDefaultBlockRules(agenda.ID())
+	rules := s.buildDefaultBlockRules(agenda.ID())
 	if len(rules) > 0 {
 		if err := s.scheduleRepo.InsertRules(ctx, tx, rules); err != nil {
 			utils.SetSpanError(ctx, err)
@@ -147,26 +141,23 @@ func validateDefaultAgendaInput(input CreateDefaultAgendaInput) *utils.HTTPError
 	return nil
 }
 
-func buildDefaultBlockRules(agendaID uint64) []schedulemodel.AgendaRuleInterface {
-	rules := make([]schedulemodel.AgendaRuleInterface, 0, 14)
+func (s *scheduleService) buildDefaultBlockRules(agendaID uint64) []schedulemodel.AgendaRuleInterface {
+	ranges := s.defaultBlockRuleRanges
+	if len(ranges) == 0 {
+		ranges = DefaultConfig().DefaultBlockRuleRanges
+	}
+	rules := make([]schedulemodel.AgendaRuleInterface, 0, len(ranges)*7)
 	for weekday := time.Sunday; weekday <= time.Saturday; weekday++ {
-		morning := schedulemodel.NewAgendaRule()
-		morning.SetAgendaID(agendaID)
-		morning.SetDayOfWeek(weekday)
-		morning.SetStartMinutes(0)
-		morning.SetEndMinutes(defaultMorningBlockEnd)
-		morning.SetRuleType(schedulemodel.RuleTypeBlock)
-		morning.SetActive(true)
-		rules = append(rules, morning)
-
-		evening := schedulemodel.NewAgendaRule()
-		evening.SetAgendaID(agendaID)
-		evening.SetDayOfWeek(weekday)
-		evening.SetStartMinutes(defaultEveningBlockStart)
-		evening.SetEndMinutes(minutesPerDay)
-		evening.SetRuleType(schedulemodel.RuleTypeBlock)
-		evening.SetActive(true)
-		rules = append(rules, evening)
+		for _, rng := range ranges {
+			rule := schedulemodel.NewAgendaRule()
+			rule.SetAgendaID(agendaID)
+			rule.SetDayOfWeek(weekday)
+			rule.SetStartMinutes(rng.StartMinute)
+			rule.SetEndMinutes(rng.EndMinute)
+			rule.SetRuleType(schedulemodel.RuleTypeBlock)
+			rule.SetActive(true)
+			rules = append(rules, rule)
+		}
 	}
 	return rules
 }

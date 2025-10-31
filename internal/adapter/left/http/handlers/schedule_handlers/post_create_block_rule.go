@@ -12,31 +12,25 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// PostCreateBlockEntry handles POST /schedules/listing/block.
+// PostCreateBlockRule handles POST /schedules/listing/block.
 //
-// @Summary		Create recurring blocking rules
-// @Description	Creates recurring blocking rules for a listing agenda.
-// @Tags		Listing Schedules
-// @Accept		json
-// @Produce	json
-// @Param		request	body	dto.ScheduleRuleRequest	true	"Rule creation payload" Extensions(x-example={"listingId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"09:00","rangeEnd":"18:00","active":true,"timezone":"America/Sao_Paulo"})
-// @Success	200	{object}	dto.ScheduleRulesResponse
-// @Failure	400	{object}	dto.ErrorResponse
-// @Failure	401	{object}	dto.ErrorResponse
-// @Failure	403	{object}	dto.ErrorResponse
-// @Failure	404	{object}	dto.ErrorResponse
-// @Failure	409	{object}	dto.ErrorResponse
-// @Failure	500	{object}	dto.ErrorResponse
-// @Router		/schedules/listing/block [post]
-// @Security	BearerAuth
-func (h *ScheduleHandler) PostCreateBlockEntry(c *gin.Context) {
+// @Summary     Create recurring block rules
+// @Description Creates recurring blocking rules for a listing agenda.
+// @Tags        Listing Schedules
+// @Accept      json
+// @Produce     json
+// @Param       request body dto.ScheduleRuleRequest true "Rule creation payload" Extensions(x-example={"listingId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"00:00","rangeEnd":"07:59","active":true,"timezone":"America/Sao_Paulo"})
+// @Success     200 {object} dto.ScheduleRulesResponse
+// @Failure     400 {object} dto.ErrorResponse
+// @Failure     401 {object} dto.ErrorResponse
+// @Failure     403 {object} dto.ErrorResponse
+// @Failure     404 {object} dto.ErrorResponse
+// @Failure     409 {object} dto.ErrorResponse
+// @Failure     500 {object} dto.ErrorResponse
+// @Router      /schedules/listing/block [post]
+// @Security    BearerAuth
+func (h *ScheduleHandler) PostCreateBlockRule(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
-	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
-		return
-	}
-	defer spanEnd()
 
 	userInfo, ok := middlewares.GetUserInfoFromContext(c)
 	if !ok {
@@ -81,7 +75,7 @@ func (h *ScheduleHandler) PostCreateBlockEntry(c *gin.Context) {
 		ActorID:  userInfo.ID,
 	}
 
-	ctx = coreutils.ContextWithLogger(ctx)
+	ctx := coreutils.ContextWithLogger(baseCtx)
 	result, serviceErr := h.scheduleService.CreateRules(ctx, input)
 	if serviceErr != nil {
 		httperrors.SendHTTPErrorObj(c, serviceErr)

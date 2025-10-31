@@ -122,20 +122,10 @@ type ListingAgendaDetailResponse struct {
 	Timezone   string                  `json:"timezone"`
 }
 
-// ListingBlockEntriesQuery represents query parameters to list blocking entries for a listing agenda.
-type ListingBlockEntriesQuery struct {
-	ListingID int64  `form:"listingId" binding:"required"`
-	RangeFrom string `form:"rangeFrom"`
-	RangeTo   string `form:"rangeTo"`
-	Page      int    `form:"page"`
-	Limit     int    `form:"limit"`
-}
-
-// ListingBlockEntriesResponse wraps blocking agenda entries for a listing.
-type ListingBlockEntriesResponse struct {
-	Entries    []ScheduleEntryResponse `json:"entries"`
-	Pagination PaginationResponse      `json:"pagination"`
-	Timezone   string                  `json:"timezone"`
+// ListingBlockRulesQuery represents query parameters to list recurring block rules for a listing agenda.
+type ListingBlockRulesQuery struct {
+	ListingID int64    `form:"listingId" binding:"required"`
+	WeekDays  []string `form:"weekDays"`
 }
 
 // ScheduleAvailabilityQuery represents query parameters to fetch listing availability slots.

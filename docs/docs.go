@@ -6994,14 +6994,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns blocking agenda entries for a listing owned by the authenticated user.",
+                "description": "Returns the recurring blocking rules configured for a listing owned by the authenticated user.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Listing Schedules"
                 ],
-                "summary": "List blocking entries for a listing agenda",
+                "summary": "List recurring block rules for a listing agenda",
                 "parameters": [
                     {
                         "type": "integer",
@@ -7012,31 +7012,14 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "example": "2025-01-01T00:00:00Z",
-                        "description": "Start of time range (RFC3339)",
-                        "name": "rangeFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "2025-01-07T23:59:59Z",
-                        "description": "End of time range (RFC3339)",
-                        "name": "rangeTo",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "example": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "example": 20,
-                        "description": "Items per page",
-                        "name": "limit",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi",
+                        "example": "MONDAY",
+                        "description": "Weekdays filter",
+                        "name": "weekDays",
                         "in": "query"
                     }
                 ],
@@ -7044,7 +7027,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRulesResponse"
                         }
                     },
                     "400": {
@@ -7095,7 +7078,7 @@ const docTemplate = `{
                 "tags": [
                     "Listing Schedules"
                 ],
-                "summary": "Update a recurring blocking rule",
+                "summary": "Update a recurring block rule",
                 "parameters": [
                     {
                         "x-example": "{\"ruleId\":5021,\"listingId\":3241,\"weekDays\":[\"MONDAY\"],\"rangeStart\":\"10:00\",\"rangeEnd\":\"18:00\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
@@ -7169,10 +7152,10 @@ const docTemplate = `{
                 "tags": [
                     "Listing Schedules"
                 ],
-                "summary": "Create recurring blocking rules",
+                "summary": "Create recurring block rules",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":3241,\"weekDays\":[\"MONDAY\",\"TUESDAY\"],\"rangeStart\":\"09:00\",\"rangeEnd\":\"18:00\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"listingId\":3241,\"weekDays\":[\"MONDAY\",\"TUESDAY\"],\"rangeStart\":\"00:00\",\"rangeEnd\":\"07:59\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Rule creation payload",
                         "name": "request",
                         "in": "body",
@@ -7243,7 +7226,7 @@ const docTemplate = `{
                 "tags": [
                     "Listing Schedules"
                 ],
-                "summary": "Delete a recurring blocking rule",
+                "summary": "Delete a recurring block rule",
                 "parameters": [
                     {
                         "x-example": "{\"ruleId\":5021,\"listingId\":3241}",
@@ -7258,7 +7241,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "Entry deleted successfully"
+                        "description": "Rule deleted successfully"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -10351,23 +10334,6 @@ const docTemplate = `{
             }
         },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse": {
-            "type": "object",
-            "properties": {
-                "entries": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse"
-                    }
-                },
-                "pagination": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
-                },
-                "timezone": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse": {
             "type": "object",
             "properties": {
                 "entries": {

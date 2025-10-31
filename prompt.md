@@ -5,16 +5,15 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-APós a última refatoração, alguns pontos ficaram divergentes:
-1) GET /schedules/listing/detail está com o endpoint errado.
-  1.1) Altere para GET /schedules/listing
-2) falta o endepoint GET /schedules/listing/block com paramentros de paginação e filtro por data
-  2.1) crie o endpoint que estará sob a tag Listing Schedules
-3) Ajuste o toq_server_go_guide.md para definir:
-  3.1) todo endpoint de listar itens com filtros e paginação de ser por GET
-  3.2) todo endpoint de consultar um único item deve ser com POST com id no body
-  3.3) todos os handlers deve ter comentários com exemplos de utilização para gerar a documentação swagger automaticamente
-
+O endpoint GET /schedules/listing/block que deveria listar os bloqueios recorrentes de agenda, que estão persistidos na tabela listing_agenda_rules, não está implementado corretamente. Eles estão confundindo entradas de agenda (block entries) com regras de bloqueio de agenda (block rules).
+Além disso, se são regras recorrentes semanalmente de bloqueio, não faz sentido que o endpoint aceite filtros de data (rangeFrom, rangeTo) como datas. Deveriam ser dias da semana.
+1) corrija o endpoint, alterando service and repositories conforme necessário.
+2) Os nomes dos arquivos de handlers como post_create_block_entry.go, put_update_block_entry.go e delete_block_entry.go estão com nomes antigos e gerando confusão. Renomeie-os para refletir a funcionalidade de regras de bloqueio de agenda (block rules). Assim, post_create_block_rule.go, put_update_block_rule.go e delete_block_rule.go.
+3) Atualize a documentação Swagger para refletir as mudanças nos endpoints e parâmetros.
+4) em service/schedule_service também existem arquivos com nomes antigos relacionados a block_entry. verifique se são entradas na agenda ou regras de bloqueio de agenda e renomeie-os conforme necessário.
+5) faça a mesma verificação e renomeação nos repositórios e modelos se necessário.
+6) Ao criar uma nova agenda para imóvel, que é executado por CreateDefaultAgenda no arquivo service/schedule_service/create_default_agenda.go, devem ser criadas regras de bloqueio padrão (block rules) para todos os dias da semana das 19:00 as 23:59 e das 00:00 as 07:59.
+  6.1) estes horários devem estar em configuração no arquivo config.yaml, para fácil alteração futura.
 
 
 

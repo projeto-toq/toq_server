@@ -50,23 +50,6 @@ func ScheduleEntriesToDTO(result schedulemodel.AgendaDetailResult, page, limit i
 	}
 }
 
-// ScheduleBlockEntriesToDTO converts blocking agenda entries into a response DTO.
-func ScheduleBlockEntriesToDTO(result schedulemodel.BlockEntriesResult, page, limit int) dto.ListingBlockEntriesResponse {
-	entries := make([]dto.ScheduleEntryResponse, 0, len(result.Items))
-	for _, entry := range result.Items {
-		if entry == nil {
-			continue
-		}
-		entries = append(entries, ScheduleEntryToDTO(entry, result.Timezone))
-	}
-
-	return dto.ListingBlockEntriesResponse{
-		Entries:    entries,
-		Pagination: buildSchedulePagination(page, limit, result.Total),
-		Timezone:   result.Timezone,
-	}
-}
-
 // ScheduleEntryToDTO converts a domain agenda entry into a DTO representation.
 func ScheduleEntryToDTO(entry schedulemodel.AgendaEntryInterface, fallbackTimezone string) dto.ScheduleEntryResponse {
 	if entry == nil {

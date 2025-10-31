@@ -243,10 +243,10 @@ func RegisterScheduleRoutes(
 	{
 		schedules.GET("/owner/summary", scheduleHandler.GetOwnerSummary)
 		schedules.GET("/listing", scheduleHandler.GetListingAgenda)
-		schedules.GET("/listing/block", scheduleHandler.GetListingBlockEntries)
-		schedules.POST("/listing/block", scheduleHandler.PostCreateBlockEntry)
-		schedules.PUT("/listing/block", scheduleHandler.PutUpdateBlockEntry)
-		schedules.DELETE("/listing/block", scheduleHandler.DeleteBlockEntry)
+		schedules.GET("/listing/block", scheduleHandler.GetListingBlockRules)
+		schedules.POST("/listing/block", scheduleHandler.PostCreateBlockRule)
+		schedules.PUT("/listing/block", scheduleHandler.PutUpdateBlockRule)
+		schedules.DELETE("/listing/block", scheduleHandler.DeleteBlockRule)
 		schedules.GET("/listing/availability", scheduleHandler.GetListingAvailability)
 		schedules.POST("/listing/finish", scheduleHandler.PostFinishListingAgenda)
 	}

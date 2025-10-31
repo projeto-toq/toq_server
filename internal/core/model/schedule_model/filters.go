@@ -31,12 +31,11 @@ type AgendaDetailFilter struct {
 	Pagination PaginationConfig
 }
 
-// BlockEntriesFilter constrains blocking entry lookups for a single listing.
-type BlockEntriesFilter struct {
-	OwnerID    int64
-	ListingID  int64
-	Range      ScheduleRange
-	Pagination PaginationConfig
+// BlockRulesFilter constrains block rule lookups for a single listing.
+type BlockRulesFilter struct {
+	OwnerID   int64
+	ListingID int64
+	Weekdays  []time.Weekday
 }
 
 // AvailabilityFilter describes the parameters required to list free slots.
@@ -88,13 +87,6 @@ type AgendaTimelineItem struct {
 // AgendaDetailResult contains paginated detail results already enriched for the handler.
 type AgendaDetailResult struct {
 	Items    []AgendaTimelineItem
-	Total    int64
-	Timezone string
-}
-
-// BlockEntriesResult contains blocking entries retrieved for a listing.
-type BlockEntriesResult struct {
-	Items    []AgendaEntryInterface
 	Total    int64
 	Timezone string
 }

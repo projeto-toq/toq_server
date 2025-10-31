@@ -267,10 +267,17 @@ func (c *config) InitScheduleService() {
 		return
 	}
 
+	serviceConfig, err := scheduleservices.ConfigFromEnvironment(&c.env)
+	if err != nil {
+		slog.Error("failed to parse schedule configuration", "err", err)
+		serviceConfig = scheduleservices.DefaultConfig()
+	}
+
 	c.scheduleService = scheduleservices.NewScheduleService(
 		c.repositoryAdapters.Schedule,
 		c.repositoryAdapters.Listing,
 		c.globalService,
+		serviceConfig,
 	)
 }
 
@@ -349,7 +356,7 @@ func (c *config) InitPhotoSessionService() {
 		AgendaHorizonMonths: c.env.PhotoSession.PhotographerHorizonMonths,
 	}
 
-	c.photoSessionService = photosessionservices.NewPhotoSessionServiceWithConfig(
+	c.photoSessionService = photosessionservices.NewPhotoSessionService(
 		c.repositoryAdapters.PhotoSession,
 		c.repositoryAdapters.Listing,
 		c.repositoryAdapters.User,

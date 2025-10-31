@@ -106,3 +106,5 @@ id;name;action;description;is_active
 105;"HTTP Photographer Get Photographer Time Off Detail";"POST:/api/v2/photographer/agenda/time-off/detail";"Permite consultar detalhes de um período de indisponibilidade de um fotógrafo";1
 106;"HTTP Photographer Update Photographer Time Off";"PUT:/api/v2/photographer/agenda/time-off";"Permite atualizar um período de indisponibilidade de um fotógrafo";1
 107;"HTTP Photographer Create Photographer Time Off";"POST:/api/v2/photographer/agenda/time-off";"Permite criar um período de indisponibilidade para um fotógrafo";1
+108;"HTTP Schedule Listing";"GET:/api/v2/schedules/listing";"Permite consultar entradas da agenda de um listing";1
+109;"HTTP Schedule Listing Block";"GET:/api/v2/schedules/listing/block";"Permite listar bloqueios na agenda de um listing";1

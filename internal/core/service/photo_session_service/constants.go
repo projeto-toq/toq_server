@@ -1,15 +1,15 @@
 package photosessionservices
 
 const (
-	defaultHorizonMonths    = 3
-	defaultWorkdayStartHour = 8
-	defaultWorkdayEndHour   = 19
-	defaultTimezone         = "America/Sao_Paulo"
-	maxTimeOffReasonLength  = 255
-	defaultAgendaPage       = 1
-	defaultAgendaSize       = 20
-	maxAgendaPageSize       = 100
-	defaultServiceAreaPage  = 1
-	defaultServiceAreaSize  = 20
-	maxServiceAreaPageSize  = 100
+	// defaultHorizonMonths    = 3
+	// defaultWorkdayStartHour = 8
+	// defaultWorkdayEndHour   = 19
+	defaultTimezone        = "America/Sao_Paulo"
+	maxTimeOffReasonLength = 255
+	defaultAgendaPage      = 1
+	defaultAgendaSize      = 20
+	maxAgendaPageSize      = 100
+	defaultServiceAreaPage = 1
+	defaultServiceAreaSize = 20
+	maxServiceAreaPageSize = 100
 )

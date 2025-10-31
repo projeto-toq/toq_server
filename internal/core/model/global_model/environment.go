@@ -145,6 +145,12 @@ type Environment struct {
 		WriterCreds   string `yaml:"writer_creds_path"`
 		ReaderCreds   string `yaml:"reader_creds_path"`
 	}
+	Schedule struct {
+		DefaultBlockRules []struct {
+			Start string `yaml:"start"`
+			End   string `yaml:"end"`
+		} `yaml:"default_block_rules"`
+	} `yaml:"schedule"`
 	Profiles map[string]ProfileOverrides `yaml:"profiles"`
 	// Health endpoints are now integrated into the main HTTP server
 	// No separate health configuration needed

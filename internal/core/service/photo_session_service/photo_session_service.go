@@ -45,19 +45,8 @@ type photoSessionService struct {
 	now            func() time.Time
 }
 
-// NewPhotoSessionService wires a photo session service with its dependencies.
+// NewPhotoSessionService wires a photo session service with explicit config.
 func NewPhotoSessionService(
-	repo photosessionrepository.PhotoSessionRepositoryInterface,
-	listingRepo listingrepository.ListingRepoPortInterface,
-	userRepo userrepository.UserRepoPortInterface,
-	holidayService holidayservices.HolidayServiceInterface,
-	globalService globalservice.GlobalServiceInterface,
-) PhotoSessionServiceInterface {
-	return NewPhotoSessionServiceWithConfig(repo, listingRepo, userRepo, holidayService, globalService, Config{})
-}
-
-// NewPhotoSessionServiceWithConfig wires a photo session service with explicit config.
-func NewPhotoSessionServiceWithConfig(
 	repo photosessionrepository.PhotoSessionRepositoryInterface,
 	listingRepo listingrepository.ListingRepoPortInterface,
 	userRepo userrepository.UserRepoPortInterface,
@@ -71,7 +60,7 @@ func NewPhotoSessionServiceWithConfig(
 		userRepo:       userRepo,
 		holidayService: holidayService,
 		globalService:  globalService,
-		cfg:            normalizeConfig(cfg),
+		cfg:            cfg,
 		now:            time.Now,
 	}
 }

@@ -81,6 +81,13 @@ func parseScheduleWeekdays(values []string) ([]time.Weekday, error) {
 	return result, nil
 }
 
+func parseScheduleWeekdaysAllowEmpty(values []string) ([]time.Weekday, error) {
+	if len(values) == 0 {
+		return nil, nil
+	}
+	return parseScheduleWeekdays(values)
+}
+
 func parseSingleScheduleWeekday(values []string) (time.Weekday, error) {
 	weekdays, err := parseScheduleWeekdays(values)
 	if err != nil {

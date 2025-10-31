@@ -11,27 +11,27 @@ type Config struct {
 	AgendaHorizonMonths int
 }
 
-func normalizeConfig(cfg Config) Config {
-	if cfg.SlotDurationMinutes <= 0 {
-		cfg.SlotDurationMinutes = 240
-	}
-	if cfg.SlotsPerPeriod <= 0 {
-		cfg.SlotsPerPeriod = 1
-	}
-	if cfg.MorningStartHour <= 0 {
-		cfg.MorningStartHour = 8
-	}
-	if cfg.AfternoonStartHour <= 0 {
-		cfg.AfternoonStartHour = 14
-	}
-	if cfg.BusinessStartHour <= 0 {
-		cfg.BusinessStartHour = defaultWorkdayStartHour
-	}
-	if cfg.BusinessEndHour <= cfg.BusinessStartHour {
-		cfg.BusinessEndHour = defaultWorkdayEndHour
-	}
-	if cfg.AgendaHorizonMonths <= 0 {
-		cfg.AgendaHorizonMonths = defaultHorizonMonths
-	}
-	return cfg
-}
+// func normalizeConfig(cfg Config) Config {
+// 	if cfg.SlotDurationMinutes <= 0 {
+// 		cfg.SlotDurationMinutes = 240
+// 	}
+// 	if cfg.SlotsPerPeriod <= 0 {
+// 		cfg.SlotsPerPeriod = 1
+// 	}
+// 	if cfg.MorningStartHour <= 0 {
+// 		cfg.MorningStartHour = 8
+// 	}
+// 	if cfg.AfternoonStartHour <= 0 {
+// 		cfg.AfternoonStartHour = 14
+// 	}
+// 	if cfg.BusinessStartHour <= 0 {
+// 		cfg.BusinessStartHour = defaultWorkdayStartHour
+// 	}
+// 	if cfg.BusinessEndHour <= cfg.BusinessStartHour {
+// 		cfg.BusinessEndHour = defaultWorkdayEndHour
+// 	}
+// 	if cfg.AgendaHorizonMonths <= 0 {
+// 		cfg.AgendaHorizonMonths = defaultHorizonMonths
+// 	}
+// 	return cfg
+// }

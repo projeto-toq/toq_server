@@ -1318,17 +1318,6 @@ definitions:
       timezone:
         type: string
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse:
-    properties:
-      entries:
-        items:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse'
-        type: array
-      pagination:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
-      timezone:
-        type: string
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogCreateRequest:
     properties:
       category:
@@ -7239,7 +7228,7 @@ paths:
       - application/json
       responses:
         "204":
-          description: Entry deleted successfully
+          description: Rule deleted successfully
         "400":
           description: Bad Request
           schema:
@@ -7262,12 +7251,12 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Delete a recurring blocking rule
+      summary: Delete a recurring block rule
       tags:
       - Listing Schedules
     get:
-      description: Returns blocking agenda entries for a listing owned by the authenticated
-        user.
+      description: Returns the recurring blocking rules configured for a listing owned
+        by the authenticated user.
       parameters:
       - description: Listing identifier
         example: 3241
@@ -7275,33 +7264,21 @@ paths:
         name: listingId
         required: true
         type: integer
-      - description: Start of time range (RFC3339)
-        example: "2025-01-01T00:00:00Z"
+      - collectionFormat: multi
+        description: Weekdays filter
+        example: MONDAY
         in: query
-        name: rangeFrom
-        type: string
-      - description: End of time range (RFC3339)
-        example: "2025-01-07T23:59:59Z"
-        in: query
-        name: rangeTo
-        type: string
-      - description: Page number
-        example: 1
-        in: query
-        name: page
-        type: integer
-      - description: Items per page
-        example: 20
-        in: query
-        name: limit
-        type: integer
+        items:
+          type: string
+        name: weekDays
+        type: array
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse'
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRulesResponse'
         "400":
           description: Bad Request
           schema:
@@ -7324,7 +7301,7 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: List blocking entries for a listing agenda
+      summary: List recurring block rules for a listing agenda
       tags:
       - Listing Schedules
     post:
@@ -7338,7 +7315,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleRequest'
-        x-example: '{"listingId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"09:00","rangeEnd":"18:00","active":true,"timezone":"America/Sao_Paulo"}'
+        x-example: '{"listingId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"00:00","rangeEnd":"07:59","active":true,"timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:
@@ -7372,7 +7349,7 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Create recurring blocking rules
+      summary: Create recurring block rules
       tags:
       - Listing Schedules
     put:
@@ -7420,7 +7397,7 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Update a recurring blocking rule
+      summary: Update a recurring block rule
       tags:
       - Listing Schedules
   /schedules/listing/finish:
