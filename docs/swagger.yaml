@@ -990,13 +990,9 @@ definitions:
       startDate:
         example: "2023-11-01T09:00:00-03:00"
         type: string
-      timezone:
-        example: America/Sao_Paulo
-        type: string
     required:
     - endDate
     - startDate
-    - timezone
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse:
     properties:
@@ -1010,12 +1006,8 @@ definitions:
       timeOffId:
         example: 42
         type: integer
-      timezone:
-        example: America/Sao_Paulo
-        type: string
     required:
     - timeOffId
-    - timezone
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingRequest:
     properties:
@@ -1316,6 +1308,17 @@ definitions:
         type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse:
+    properties:
+      entries:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      timezone:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse:
     properties:
       entries:
         items:
@@ -2175,14 +2178,10 @@ definitions:
       timeOffId:
         example: 42
         type: integer
-      timezone:
-        example: America/Sao_Paulo
-        type: string
     required:
     - endDate
     - startDate
     - timeOffId
-    - timezone
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateUserRequest:
     properties:
@@ -6598,7 +6597,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest'
-        x-example: '{"timeOffId":42,"timezone":"America/Sao_Paulo"}'
+        x-example: '{"timeOffId":42}'
       produces:
       - application/json
       responses:
@@ -6652,11 +6651,6 @@ paths:
         minimum: 1
         name: size
         type: integer
-      - description: Preferred timezone
-        example: '"America/Sao_Paulo"'
-        in: query
-        name: timezone
-        type: string
       produces:
       - application/json
       responses:
@@ -6688,7 +6682,7 @@ paths:
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateTimeOffRequest'
         x-example: '{"startDate":"2025-07-05T09:00:00-03:00","endDate":"2025-07-05T18:00:00-03:00","reason":"Participação
-          em evento","timezone":"America/Sao_Paulo"}'
+          em evento"}'
       produces:
       - application/json
       responses:
@@ -6725,7 +6719,7 @@ paths:
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateTimeOffRequest'
         x-example: '{"timeOffId":42,"startDate":"2025-07-05T10:00:00-03:00","endDate":"2025-07-05T12:00:00-03:00","reason":"Consulta
-          médica","timezone":"America/Sao_Paulo"}'
+          médica"}'
       produces:
       - application/json
       responses:
@@ -7098,6 +7092,74 @@ paths:
       summary: Verify CRECI documents presence
       tags:
       - Realtor
+  /schedules/listing:
+    get:
+      description: Returns all agenda entries for a specific listing owned by the
+        authenticated user.
+      parameters:
+      - description: Listing identifier
+        example: 3241
+        in: query
+        name: listingId
+        required: true
+        type: integer
+      - description: Start of time range (RFC3339)
+        example: "2025-01-01T00:00:00Z"
+        in: query
+        name: rangeFrom
+        type: string
+      - description: End of time range (RFC3339)
+        example: "2025-01-07T23:59:59Z"
+        in: query
+        name: rangeTo
+        type: string
+      - description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      - default: America/Sao_Paulo
+        description: Timezone identifier (IANA)
+        in: query
+        name: timezone
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List agenda entries for a listing
+      tags:
+      - Listing Schedules
   /schedules/listing/availability:
     get:
       description: Returns the available slots for a listing within the provided time
@@ -7128,11 +7190,6 @@ paths:
         in: query
         name: limit
         type: integer
-      - default: America/Sao_Paulo
-        description: Timezone identifier (IANA)
-        in: query
-        name: timezone
-        type: string
       produces:
       - application/json
       responses:
@@ -7206,6 +7263,68 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete a recurring blocking rule
+      tags:
+      - Listing Schedules
+    get:
+      description: Returns blocking agenda entries for a listing owned by the authenticated
+        user.
+      parameters:
+      - description: Listing identifier
+        example: 3241
+        in: query
+        name: listingId
+        required: true
+        type: integer
+      - description: Start of time range (RFC3339)
+        example: "2025-01-01T00:00:00Z"
+        in: query
+        name: rangeFrom
+        type: string
+      - description: End of time range (RFC3339)
+        example: "2025-01-07T23:59:59Z"
+        in: query
+        name: rangeTo
+        type: string
+      - description: Page number
+        example: 1
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        example: 20
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List blocking entries for a listing agenda
       tags:
       - Listing Schedules
     post:
@@ -7302,69 +7421,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a recurring blocking rule
-      tags:
-      - Listing Schedules
-  /schedules/listing/detail:
-    get:
-      description: Returns all agenda entries for a specific listing owned by the
-        authenticated user.
-      parameters:
-      - description: Listing identifier
-        in: query
-        name: listingId
-        required: true
-        type: integer
-      - description: Start of time range (RFC3339)
-        in: query
-        name: rangeFrom
-        type: string
-      - description: End of time range (RFC3339)
-        in: query
-        name: rangeTo
-        type: string
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Items per page
-        in: query
-        name: limit
-        type: integer
-      - default: America/Sao_Paulo
-        description: Timezone identifier (IANA)
-        in: query
-        name: timezone
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: List agenda entries for a listing
       tags:
       - Listing Schedules
   /schedules/listing/finish:

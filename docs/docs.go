@@ -6074,13 +6074,6 @@ const docTemplate = `{
                         "description": "Items per page",
                         "name": "size",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "\"America/Sao_Paulo\"",
-                        "description": "Preferred timezone",
-                        "name": "timezone",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6118,7 +6111,7 @@ const docTemplate = `{
                 "summary": "Update photographer time-off",
                 "parameters": [
                     {
-                        "x-example": "{\"timeOffId\":42,\"startDate\":\"2025-07-05T10:00:00-03:00\",\"endDate\":\"2025-07-05T12:00:00-03:00\",\"reason\":\"Consulta médica\",\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"timeOffId\":42,\"startDate\":\"2025-07-05T10:00:00-03:00\",\"endDate\":\"2025-07-05T12:00:00-03:00\",\"reason\":\"Consulta médica\"}",
                         "description": "Update Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -6169,7 +6162,7 @@ const docTemplate = `{
                 "summary": "Create Photographer Time-Off",
                 "parameters": [
                     {
-                        "x-example": "{\"startDate\":\"2025-07-05T09:00:00-03:00\",\"endDate\":\"2025-07-05T18:00:00-03:00\",\"reason\":\"Participação em evento\",\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"startDate\":\"2025-07-05T09:00:00-03:00\",\"endDate\":\"2025-07-05T18:00:00-03:00\",\"reason\":\"Participação em evento\"}",
                         "description": "Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -6222,7 +6215,7 @@ const docTemplate = `{
                 "summary": "Delete Photographer Time-Off",
                 "parameters": [
                     {
-                        "x-example": "{\"timeOffId\":42,\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"timeOffId\":42}",
                         "description": "Delete Time-Off payload",
                         "name": "input",
                         "in": "body",
@@ -6800,6 +6793,106 @@ const docTemplate = `{
                 }
             }
         },
+        "/schedules/listing": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all agenda entries for a specific listing owned by the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listing Schedules"
+                ],
+                "summary": "List agenda entries for a listing",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 3241,
+                        "description": "Listing identifier",
+                        "name": "listingId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "2025-01-01T00:00:00Z",
+                        "description": "Start of time range (RFC3339)",
+                        "name": "rangeFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "2025-01-07T23:59:59Z",
+                        "description": "End of time range (RFC3339)",
+                        "name": "rangeTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 20,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "America/Sao_Paulo",
+                        "description": "Timezone identifier (IANA)",
+                        "name": "timezone",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/schedules/listing/availability": {
             "get": {
                 "security": [
@@ -6852,13 +6945,6 @@ const docTemplate = `{
                         "description": "Items per page",
                         "name": "limit",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "default": "America/Sao_Paulo",
-                        "description": "Timezone identifier (IANA)",
-                        "name": "timezone",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6902,6 +6988,97 @@ const docTemplate = `{
             }
         },
         "/schedules/listing/block": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns blocking agenda entries for a listing owned by the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listing Schedules"
+                ],
+                "summary": "List blocking entries for a listing agenda",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 3241,
+                        "description": "Listing identifier",
+                        "name": "listingId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "2025-01-01T00:00:00Z",
+                        "description": "Start of time range (RFC3339)",
+                        "name": "rangeFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "2025-01-07T23:59:59Z",
+                        "description": "End of time range (RFC3339)",
+                        "name": "rangeTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 20,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -7082,101 +7259,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "Entry deleted successfully"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/schedules/listing/detail": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns all agenda entries for a specific listing owned by the authenticated user.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listing Schedules"
-                ],
-                "summary": "List agenda entries for a listing",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Listing identifier",
-                        "name": "listingId",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Start of time range (RFC3339)",
-                        "name": "rangeFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "End of time range (RFC3339)",
-                        "name": "rangeTo",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "default": "America/Sao_Paulo",
-                        "description": "Timezone identifier (IANA)",
-                        "name": "timezone",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse"
-                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -9778,8 +9860,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "endDate",
-                "startDate",
-                "timezone"
+                "startDate"
             ],
             "properties": {
                 "endDate": {
@@ -9793,10 +9874,6 @@ const docTemplate = `{
                 "startDate": {
                     "type": "string",
                     "example": "2023-11-01T09:00:00-03:00"
-                },
-                "timezone": {
-                    "type": "string",
-                    "example": "America/Sao_Paulo"
                 }
             }
         },
@@ -9814,17 +9891,12 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteTimeOffRequest": {
             "type": "object",
             "required": [
-                "timeOffId",
-                "timezone"
+                "timeOffId"
             ],
             "properties": {
                 "timeOffId": {
                     "type": "integer",
                     "example": 42
-                },
-                "timezone": {
-                    "type": "string",
-                    "example": "America/Sao_Paulo"
                 }
             }
         },
@@ -10279,6 +10351,23 @@ const docTemplate = `{
             }
         },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleEntryResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                },
+                "timezone": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingBlockEntriesResponse": {
             "type": "object",
             "properties": {
                 "entries": {
@@ -11547,8 +11636,7 @@ const docTemplate = `{
             "required": [
                 "endDate",
                 "startDate",
-                "timeOffId",
-                "timezone"
+                "timeOffId"
             ],
             "properties": {
                 "endDate": {
@@ -11566,10 +11654,6 @@ const docTemplate = `{
                 "timeOffId": {
                     "type": "integer",
                     "example": 42
-                },
-                "timezone": {
-                    "type": "string",
-                    "example": "America/Sao_Paulo"
                 }
             }
         },

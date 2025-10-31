@@ -21,6 +21,7 @@ type ScheduleServiceInterface interface {
 	ListRules(ctx context.Context, listingID, ownerID int64) (schedulemodel.RuleListResult, error)
 	ListOwnerSummary(ctx context.Context, filter schedulemodel.OwnerSummaryFilter) (schedulemodel.OwnerSummaryResult, error)
 	ListAgendaEntries(ctx context.Context, filter schedulemodel.AgendaDetailFilter) (schedulemodel.AgendaDetailResult, error)
+	ListBlockEntries(ctx context.Context, filter schedulemodel.BlockEntriesFilter) (schedulemodel.BlockEntriesResult, error)
 	CreateBlockEntry(ctx context.Context, input CreateBlockEntryInput) (schedulemodel.AgendaEntryInterface, error)
 	UpdateBlockEntry(ctx context.Context, input UpdateBlockEntryInput) (schedulemodel.AgendaEntryInterface, error)
 	DeleteBlockEntry(ctx context.Context, input DeleteEntryInput) error

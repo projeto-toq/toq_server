@@ -239,6 +239,12 @@ Padrão de DTOs e Handlers:
   - Cada rota deve possuir seu handler em arquivo dedicado dentro de `handlers/admin_handlers/`.
   - Somente endpoints GET podem receber filtros via query; demais verbos devem transportar identificadores e dados no corpo JSON (sem path params).
 
+#### Regras adicionais obrigatórias para handlers
+
+- Todo endpoint que listar itens com filtros ou paginação deve obrigatoriamente usar o verbo `GET` e receber os filtros na query string.
+- Toda consulta de detalhe de um único item deve ser exposta com `POST`, levando o identificador no corpo da requisição.
+- Todo handler público precisa possuir comentários em inglês com exemplos de utilização (incluindo parâmetros e payloads), garantindo a geração automática da documentação Swagger.
+
 ### 7.5 Workers/Go routines
 
 - Inicie tracer com `utils.GenerateTracer(ctx)` e `defer spanEnd()`.
@@ -279,8 +285,12 @@ utils.SetSpanError(ctx, err)
 
 - Ports (interfaces) ficam em `internal/core/port/...` e são separadas por contexto (left/right) e por módulo (authhandler, userhandler, repositories, etc.).
 - Interface em arquivo distinto dos domínios: não misture a definição de interface com os modelos de domínio; mantenha os modelos em `internal/core/model` e interfaces em `internal/core/port`.
-- Cada função exposta relevante deve ter seu próprio arquivo no Service para granularidade e histórico limpo (ex.: `confirm_email_change.go`, `confirm_phone_change.go`). Isso facilita teste, revisão e rastreabilidade.
-- Em adapters/handlers, prefira também quebrar por caso de uso quando crescer (ex.: `update_user_role_status_tx.go`).
+- Services estarão no diretório service e possuem um diretório por módulo (ex.: user_service, permission_service, listing_service).
+- Cada service terá seu arquivo de interface com o nome de seu módulo (ex.: user_service.go) apenas com struct, interface e func New e cada método público estará em um arquivo separado (ex.: create_user.go, update_user.go).
+- Cada função exposta relevante deve ter seu próprio arquivo no Service para granularidade e histórico limpo (ex.: `confirm_email_change.go`, `confirm_phone_change.go`).
+- Handlers estarão no diretório http/handlers e possuirão um diretório por módulo (ex.: user_handlers, admin_handlers, auth_handlers).
+- Cada handler estará em um arquivo separado (ex.: create_user_handler.go, update_user_handler.go) apenas com struct, interface e func New e cada método público estará em um arquivo separado.
+- Em adapters/handlers, mantenha cada endpoint em arquivo separado (ex.: `update_user_role_status.go`).
 
 ## 12. Padrão para análise/refatoração
 

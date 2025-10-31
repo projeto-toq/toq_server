@@ -24,7 +24,6 @@ import (
 // @Param	slotDurationMinute	query	int	false	"Desired slot duration in minutes"
 // @Param	page	query	int	false	"Page number"
 // @Param	limit	query	int	false	"Items per page"
-// @Param	timezone	query	string	false	"Timezone identifier (IANA)" default(America/Sao_Paulo)
 // @Success	200	{object}	dto.ScheduleAvailabilityResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

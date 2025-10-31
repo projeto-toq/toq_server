@@ -12,10 +12,10 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetListingAgenda handles GET /schedules/listing.
+// GetListingBlockEntries handles GET /schedules/listing/block.
 //
-// @Summary	List agenda entries for a listing
-// @Description	Returns all agenda entries for a specific listing owned by the authenticated user.
+// @Summary	List blocking entries for a listing agenda
+// @Description	Returns blocking agenda entries for a listing owned by the authenticated user.
 // @Tags		Listing Schedules
 // @Produce	json
 // @Param	listingId	query	int64	true	"Listing identifier" example(3241)
@@ -23,16 +23,15 @@ import (
 // @Param	rangeTo	query	string	false	"End of time range (RFC3339)" example(2025-01-07T23:59:59Z)
 // @Param	page	query	int	false	"Page number" example(1)
 // @Param	limit	query	int	false	"Items per page" example(20)
-// @Param	timezone	query	string	false	"Timezone identifier (IANA)" default(America/Sao_Paulo)
-// @Success	200	{object}	dto.ListingAgendaDetailResponse
+// @Success	200	{object}	dto.ListingBlockEntriesResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
 // @Failure	403	{object}	dto.ErrorResponse
 // @Failure	404	{object}	dto.ErrorResponse
 // @Failure	500	{object}	dto.ErrorResponse
-// @Router	/schedules/listing [get]
+// @Router	/schedules/listing/block [get]
 // @Security	BearerAuth
-func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
+func (h *ScheduleHandler) GetListingBlockEntries(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
@@ -47,7 +46,7 @@ func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 		return
 	}
 
-	var req dto.ListingAgendaDetailQuery
+	var req dto.ListingBlockEntriesQuery
 	if err := c.ShouldBindQuery(&req); err != nil {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_QUERY", "Invalid query parameters")
 		return
@@ -61,7 +60,7 @@ func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 
 	pagination := sanitizeSchedulePagination(dto.SchedulePaginationRequest{Page: req.Page, Limit: req.Limit})
 
-	filter := schedulemodel.AgendaDetailFilter{
+	filter := schedulemodel.BlockEntriesFilter{
 		OwnerID:    userInfo.ID,
 		ListingID:  req.ListingID,
 		Range:      rangeFilter,
@@ -69,14 +68,14 @@ func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)
-	result, serviceErr := h.scheduleService.ListAgendaEntries(ctx, filter)
+	result, serviceErr := h.scheduleService.ListBlockEntries(ctx, filter)
 	if serviceErr != nil {
 		httperrors.SendHTTPErrorObj(c, serviceErr)
 		return
 	}
 
 	page, limit := schedulePaginationValues(pagination)
-	response := converters.ScheduleEntriesToDTO(result, page, limit)
+	response := converters.ScheduleBlockEntriesToDTO(result, page, limit)
 
 	c.JSON(http.StatusOK, response)
 }

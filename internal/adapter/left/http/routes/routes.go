@@ -242,7 +242,8 @@ func RegisterScheduleRoutes(
 	schedules.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		schedules.GET("/owner/summary", scheduleHandler.GetOwnerSummary)
-		schedules.GET("/listing/detail", scheduleHandler.GetListingAgenda)
+		schedules.GET("/listing", scheduleHandler.GetListingAgenda)
+		schedules.GET("/listing/block", scheduleHandler.GetListingBlockEntries)
 		schedules.POST("/listing/block", scheduleHandler.PostCreateBlockEntry)
 		schedules.PUT("/listing/block", scheduleHandler.PutUpdateBlockEntry)
 		schedules.DELETE("/listing/block", scheduleHandler.DeleteBlockEntry)

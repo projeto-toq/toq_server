@@ -20,6 +20,7 @@ type ScheduleRepositoryInterface interface {
 	DeleteRule(ctx context.Context, tx *sql.Tx, ruleID uint64) error
 	ListOwnerSummary(ctx context.Context, tx *sql.Tx, filter schedulemodel.OwnerSummaryFilter) (schedulemodel.OwnerSummaryResult, error)
 	ListAgendaEntries(ctx context.Context, tx *sql.Tx, filter schedulemodel.AgendaDetailFilter) (schedulemodel.AgendaEntriesPage, error)
+	ListBlockEntries(ctx context.Context, tx *sql.Tx, filter schedulemodel.BlockEntriesFilter) (schedulemodel.AgendaEntriesPage, error)
 	GetEntryByID(ctx context.Context, tx *sql.Tx, entryID uint64) (schedulemodel.AgendaEntryInterface, error)
 	InsertEntry(ctx context.Context, tx *sql.Tx, entry schedulemodel.AgendaEntryInterface) (uint64, error)
 	UpdateEntry(ctx context.Context, tx *sql.Tx, entry schedulemodel.AgendaEntryInterface) error

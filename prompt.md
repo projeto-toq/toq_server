@@ -5,24 +5,17 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Diversos endpoint que aceitam datas no formato RFC3339 estão falhando em receber datas como o endpoint /schedules/listing/availability?listingId=3&rangeFrom=2025-10-31T08:00:00+03:00&rangeTo=2025-11-02T19:00:00+03:00&slotDurationMinute=60&page=1&limit=50&timezone=America/Sao_Paulo
+APós a última refatoração, alguns pontos ficaram divergentes:
+1) GET /schedules/listing/detail está com o endpoint errado.
+  1.1) Altere para GET /schedules/listing
+2) falta o endepoint GET /schedules/listing/block com paramentros de paginação e filtro por data
+  2.1) crie o endpoint que estará sob a tag Listing Schedules
+3) Ajuste o toq_server_go_guide.md para definir:
+  3.1) todo endpoint de listar itens com filtros e paginação de ser por GET
+  3.2) todo endpoint de consultar um único item deve ser com POST com id no body
+  3.3) todos os handlers deve ter comentários com exemplos de utilização para gerar a documentação swagger automaticamente
 
-A linha 56-60 do get_listing_availability.go está com erro de parsing de data.
 
-Além disso, como está sendo passado o timezone na query string, está ficando confuso qual timezone deve ser considerado para o rangeFrom e rangeTo.
-
-Assim:
-- faça uma lista de todos os endpoints que aceitam datas no formato RFC3339 e apresente-a.
-- faça uma lista de todos os endpoints que aceitam apenas datas no formato YYYY-MM-DD e apresente-a.
-- proponha um plano para que:
-  - altere todos os os endpoints que aceitam datas no formato RFC3339 para remover timezone na query string ou no body, e que o timezone seja extraído diretamente da data enviada no formato RFC3339.
-    - esta alteração deve ser propagada, de forma que o service receba o timezone no propio location do time enviado na data.
-    - internamente o time é tratado como UTC, então garanta que essa conversão seja feita corretamente.
-  - altere todos o endpoint GET /listings/photo-session/slots, que aceitam datas no formato YYYY-MM-DD, para que necessariamente passe timezone na query string ou no body, para evitar ambiguidades.
-    - esta alteração deve ser propagada, de forma que o service receba o timezone no propio location do time enviado na data.
-    - internamente o time é tratado como UTC, então garanta que essa conversão seja feita corretamente.
-    - os demais endpoints que aceitam datas no formato YYYY-MM-DD devem continuar como estão, sem necessidade de alteração, visto que as datas informadas são datas de nascimento, que não possuem timezone. confirme isso no código.
-  - garanta que o parsing de datas em RFC3339 seja corrigido em todos os endpoints que aceitam esse formato, pois hoje existe um erro de parsing.
 
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
