@@ -9,7 +9,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// ListServiceAreas returns paginated service areas filtered by city and state.
+// ListServiceAreas returns paginated service areas owned by the photographer.
 func (s *photoSessionService) ListServiceAreas(ctx context.Context, input ListServiceAreasInput) (ListServiceAreasOutput, error) {
 	if input.PhotographerID == 0 {
 		return ListServiceAreasOutput{}, utils.ValidationError("photographerId", "photographerId must be greater than zero")
@@ -57,10 +57,9 @@ func (s *photoSessionService) ListServiceAreas(ctx context.Context, input ListSe
 		return ListServiceAreasOutput{}, utils.InternalError("")
 	}
 
-	filtered := filterServiceAreas(areas, input.City, input.State)
-	sortServiceAreas(filtered)
+	sortServiceAreas(areas)
 
-	total := len(filtered)
+	total := len(areas)
 	start := (page - 1) * size
 	if start > total {
 		start = total
@@ -71,44 +70,11 @@ func (s *photoSessionService) ListServiceAreas(ctx context.Context, input ListSe
 	}
 
 	return ListServiceAreasOutput{
-		Areas: filtered[start:end],
+		Areas: areas[start:end],
 		Total: int64(total),
 		Page:  page,
 		Size:  size,
 	}, nil
-}
-
-func filterServiceAreas(source []photosessionmodel.PhotographerServiceAreaInterface, cityFilter, stateFilter *string) []photosessionmodel.PhotographerServiceAreaInterface {
-	if len(source) == 0 {
-		return source
-	}
-
-	normalizedCity := ""
-	if cityFilter != nil {
-		normalizedCity = strings.TrimSpace(*cityFilter)
-	}
-
-	normalizedState := ""
-	if stateFilter != nil {
-		normalizedState = strings.TrimSpace(*stateFilter)
-	}
-
-	if normalizedCity == "" && normalizedState == "" {
-		return source
-	}
-
-	result := make([]photosessionmodel.PhotographerServiceAreaInterface, 0, len(source))
-	for _, area := range source {
-		if normalizedCity != "" && !strings.EqualFold(area.City(), normalizedCity) {
-			continue
-		}
-		if normalizedState != "" && !strings.EqualFold(area.State(), normalizedState) {
-			continue
-		}
-		result = append(result, area)
-	}
-
-	return result
 }
 
 func sortServiceAreas(areas []photosessionmodel.PhotographerServiceAreaInterface) {

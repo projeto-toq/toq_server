@@ -5,17 +5,56 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O endpoint GET /schedules/listing/block que deveria listar os bloqueios recorrentes de agenda, que estão persistidos na tabela listing_agenda_rules, não está implementado corretamente. Eles estão confundindo entradas de agenda (block entries) com regras de bloqueio de agenda (block rules).
-Além disso, se são regras recorrentes semanalmente de bloqueio, não faz sentido que o endpoint aceite filtros de data (rangeFrom, rangeTo) como datas. Deveriam ser dias da semana.
-1) corrija o endpoint, alterando service and repositories conforme necessário.
-2) Os nomes dos arquivos de handlers como post_create_block_entry.go, put_update_block_entry.go e delete_block_entry.go estão com nomes antigos e gerando confusão. Renomeie-os para refletir a funcionalidade de regras de bloqueio de agenda (block rules). Assim, post_create_block_rule.go, put_update_block_rule.go e delete_block_rule.go.
-3) Atualize a documentação Swagger para refletir as mudanças nos endpoints e parâmetros.
-4) em service/schedule_service também existem arquivos com nomes antigos relacionados a block_entry. verifique se são entradas na agenda ou regras de bloqueio de agenda e renomeie-os conforme necessário.
-5) faça a mesma verificação e renomeação nos repositórios e modelos se necessário.
-6) Ao criar uma nova agenda para imóvel, que é executado por CreateDefaultAgenda no arquivo service/schedule_service/create_default_agenda.go, devem ser criadas regras de bloqueio padrão (block rules) para todos os dias da semana das 19:00 as 23:59 e das 00:00 as 07:59.
-  6.1) estes horários devem estar em configuração no arquivo config.yaml, para fácil alteração futura.
+Após confirmar a disponibilidade de slots para o fotografo através de GET /listings/photo-session/slots?from=2025-11-01&to=2025-11-04&period=MORNING&page=1&size=20&sort=start_asc&listingId=3&timezone=America/Sao_Paulo e receber como reposta:
+{
+    "data": [
+        {
+            "slotId": 23236831280,
+            "photographerUserId": 5,
+            "slotStart": "2025-11-01T11:00:00Z",
+            "slotEnd": "2025-11-01T15:00:00Z",
+            "status": "AVAILABLE"
+        },
+        {
+            "slotId": 23236917680,
+            "photographerUserId": 5,
+            "slotStart": "2025-11-02T11:00:00Z",
+            "slotEnd": "2025-11-02T15:00:00Z",
+            "status": "AVAILABLE"
+        },
+        {
+            "slotId": 23237004080,
+            "photographerUserId": 5,
+            "slotStart": "2025-11-03T11:00:00Z",
+            "slotEnd": "2025-11-03T15:00:00Z",
+            "status": "AVAILABLE"
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 3,
+        "totalPages": 1
+    }
+}
 
+chamei o endpoint POST /listings/photo-session/reserve com o seguinte payload:
+{
+  "listingId": 3,
+  "slotId": 23236917680
+}
+para reservar o slot.
 
+Recebi como resposta:
+{
+    "code": 500,
+    "details": null,
+    "message": "failed to create booking"
+}
+e a mensagem de erro no log está em logs/log_example.json.
+
+1) analise a causa raiz do problema e verifique se os outros endpoints relacionados ao CRUD de reservas de sessões fotográficas estão funcionando corretamente, em especiao repositórios e serviços.
+  1.1)o script usado para a criação das tabelas do banco de dados está em scripts/db_creation.sql
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

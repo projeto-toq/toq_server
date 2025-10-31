@@ -198,8 +198,6 @@ type CancelSessionOutput struct {
 // ListServiceAreasInput captures filters and pagination options when listing service areas.
 type ListServiceAreasInput struct {
 	PhotographerID uint64
-	City           *string
-	State          *string
 	Page           int
 	Size           int
 }

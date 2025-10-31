@@ -6313,7 +6313,7 @@ const docTemplate = `{
         },
         "/photographer/service-area": {
             "get": {
-                "description": "Lists the service areas configured by the authenticated photographer with optional filters.",
+                "description": "Lists the service areas configured by the authenticated photographer.",
                 "produces": [
                     "application/json"
                 ],
@@ -6322,18 +6322,6 @@ const docTemplate = `{
                 ],
                 "summary": "List Photographer Service Areas",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "City filter",
-                        "name": "city",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "State filter",
-                        "name": "state",
-                        "in": "query"
-                    },
                     {
                         "type": "integer",
                         "description": "Page number",

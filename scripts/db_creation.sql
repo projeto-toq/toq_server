@@ -752,19 +752,21 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`photo_session_bookings`
+-- Table `toq_db`.`photographer_photo_session_bookings`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`photo_session_bookings` ;
+DROP TABLE IF EXISTS `toq_db`.`photographer_photo_session_bookings` ;
 
-CREATE TABLE IF NOT EXISTS `toq_db`.`photo_session_bookings` (
+CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_photo_session_bookings` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `photographer_user_id` INT UNSIGNED NOT NULL,
   `listing_id` INT UNSIGNED NOT NULL,
   `agenda_entry_id` INT UNSIGNED NOT NULL,
-  `status` ENUM('PENDING_APPROVAL', 'ACCEPTED,REJECTED', 'ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NULL,
-  `reservation_token` CHAR(36) NULL,
-  `reserved_until` DATETIME(6) NULL,
-  `notes` VARCHAR(255) NULL,
+  `starts_at` DATETIME(6) NOT NULL,
+  `ends_at` DATETIME(6) NOT NULL,
+  `status` ENUM('PENDING_APPROVAL', 'ACCEPTED,REJECTED', 'ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NOT NULL,
+  `reason` VARCHAR(255) NULL,
+  `reservation_token` VARCHAR(36) NULL,
+  `reserved_until` DATETIME(6) NOT NULL DEFAULT (DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL 3 DAY)),
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_booking_entry` (`agenda_entry_id` ASC) VISIBLE,
   INDEX `ix_photographer_user_id_idx` (`photographer_user_id` ASC) VISIBLE,

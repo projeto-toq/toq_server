@@ -66,10 +66,8 @@ type ListPhotographerTimeOffResponse struct {
 
 // PhotographerServiceAreaListQuery captures filters for listing service areas.
 type PhotographerServiceAreaListQuery struct {
-	City  string `form:"city" binding:"omitempty" example:"São Paulo"`
-	State string `form:"state" binding:"omitempty" example:"SP"`
-	Page  int    `form:"page" binding:"omitempty,min=1" example:"1"`
-	Size  int    `form:"size" binding:"omitempty,min=1" example:"20"`
+	Page int `form:"page" binding:"omitempty,min=1" example:"1"`
+	Size int `form:"size" binding:"omitempty,min=1" example:"20"`
 }
 
 // PhotographerServiceAreaRequest represents the payload to create or update a service area.

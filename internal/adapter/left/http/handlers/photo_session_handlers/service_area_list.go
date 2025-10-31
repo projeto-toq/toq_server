@@ -3,7 +3,6 @@ package photosessionhandlers
 import (
 	"math"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
@@ -19,11 +18,9 @@ const (
 
 // ListServiceAreas handles the retrieval of service areas for the authenticated photographer.
 // @Summary      List Photographer Service Areas
-// @Description  Lists the service areas configured by the authenticated photographer with optional filters.
+// @Description  Lists the service areas configured by the authenticated photographer.
 // @Tags         Photographer
 // @Produce      json
-// @Param        city  query string false "City filter"
-// @Param        state query string false "State filter"
 // @Param        page  query int    false "Page number"
 // @Param        size  query int    false "Page size"
 // @Success      200 {object} dto.PhotographerServiceAreaListResponse
@@ -57,20 +54,8 @@ func (h *PhotoSessionHandler) ListServiceAreas(c *gin.Context) {
 		return
 	}
 
-	var cityFilter *string
-	if trimmed := strings.TrimSpace(query.City); trimmed != "" {
-		cityFilter = &trimmed
-	}
-
-	var stateFilter *string
-	if trimmed := strings.TrimSpace(query.State); trimmed != "" {
-		stateFilter = &trimmed
-	}
-
 	input := photosessionservices.ListServiceAreasInput{
 		PhotographerID: uint64(userID),
-		City:           cityFilter,
-		State:          stateFilter,
 		Page:           page,
 		Size:           size,
 	}

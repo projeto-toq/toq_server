@@ -6803,17 +6803,8 @@ paths:
       tags:
       - Photographer
     get:
-      description: Lists the service areas configured by the authenticated photographer
-        with optional filters.
+      description: Lists the service areas configured by the authenticated photographer.
       parameters:
-      - description: City filter
-        in: query
-        name: city
-        type: string
-      - description: State filter
-        in: query
-        name: state
-        type: string
       - description: Page number
         in: query
         name: page
