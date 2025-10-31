@@ -3,6 +3,7 @@ APP_MAIN := cmd/toq_server.go
 BIN_DIR := bin
 BINARY := $(BIN_DIR)/toq_server
 COMPOSE := docker compose -f docker-compose.yml
+GOLANGCI_LINT := $(GOPATH_BIN)/golangci-lint
 
 .PHONY: all tidy build build-bin run run-race test fmt vet lint clean swagger docker-build infra-up infra-down infra-logs infra-restart
 
@@ -34,7 +35,10 @@ fmt:
 vet:
 	go vet ./...
 
-lint: fmt vet
+ci-lint: 
+	golangci-lint run
+
+lint: fmt vet ci-lint
 
 clean:
 	rm -rf $(BIN_DIR)

@@ -20,11 +20,13 @@ func validateTimeOffInput(input TimeOffInput) error {
 	if input.EndDate.IsZero() {
 		return utils.ValidationError("endDate", "endDate is required")
 	}
-	if input.EndDate.Before(input.StartDate) {
-		return utils.ValidationError("endDate", "endDate must be greater than or equal to startDate")
+	if input.Location == nil {
+		return utils.ValidationError("timezone", "timezone is required")
 	}
-	if _, err := resolveLocation(input.Timezone); err != nil {
-		return err
+	start := utils.ConvertToLocation(input.StartDate, input.Location)
+	end := utils.ConvertToLocation(input.EndDate, input.Location)
+	if end.Before(start) {
+		return utils.ValidationError("endDate", "endDate must be greater than or equal to startDate")
 	}
 	if input.Reason != nil {
 		reason := strings.TrimSpace(*input.Reason)
@@ -65,11 +67,6 @@ func validateListAgendaInput(input ListAgendaInput) error {
 	}
 	if input.Page < 0 {
 		return derrors.Validation("page must be zero or greater", nil)
-	}
-	if input.Timezone != "" {
-		if _, err := resolveLocation(input.Timezone); err != nil {
-			return err
-		}
 	}
 	return nil
 }

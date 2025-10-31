@@ -6,6 +6,7 @@ import "time"
 type ScheduleRange struct {
 	From time.Time
 	To   time.Time
+	Loc  *time.Location
 }
 
 // PaginationConfig groups pagination parameters shared by queries.
@@ -28,7 +29,6 @@ type AgendaDetailFilter struct {
 	ListingID  int64
 	Range      ScheduleRange
 	Pagination PaginationConfig
-	Timezone   string
 }
 
 // AvailabilityFilter describes the parameters required to list free slots.
@@ -37,7 +37,6 @@ type AvailabilityFilter struct {
 	Range              ScheduleRange
 	SlotDurationMinute uint16
 	Pagination         PaginationConfig
-	Timezone           string
 }
 
 // SummaryEntry represents a normalized entry shape for consolidated outputs.

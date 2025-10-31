@@ -16,6 +16,11 @@ func (s *scheduleService) ListOwnerSummary(ctx context.Context, filter schedulem
 		return schedulemodel.OwnerSummaryResult{}, err
 	}
 
+	loc := utils.DetermineRangeLocation(filter.Range.From, filter.Range.To, nil)
+	repoFilter := filter
+	repoFilter.Range.From, repoFilter.Range.To = utils.NormalizeRangeToUTC(filter.Range.From, filter.Range.To, loc)
+	repoFilter.Range.Loc = time.UTC
+
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return schedulemodel.OwnerSummaryResult{}, utils.InternalError("")
@@ -38,11 +43,24 @@ func (s *scheduleService) ListOwnerSummary(ctx context.Context, filter schedulem
 		}
 	}()
 
-	result, err := s.scheduleRepo.ListOwnerSummary(ctx, tx, filter)
+	result, err := s.scheduleRepo.ListOwnerSummary(ctx, tx, repoFilter)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("schedule.list_owner_summary.repo_error", "owner_id", filter.OwnerID, "err", err)
 		return schedulemodel.OwnerSummaryResult{}, utils.InternalError("")
+	}
+
+	for i, item := range result.Items {
+		entries := make([]schedulemodel.SummaryEntry, 0, len(item.Entries))
+		for _, entry := range item.Entries {
+			entries = append(entries, schedulemodel.SummaryEntry{
+				EntryType: entry.EntryType,
+				StartsAt:  utils.ConvertToLocation(entry.StartsAt, loc),
+				EndsAt:    utils.ConvertToLocation(entry.EndsAt, loc),
+				Blocking:  entry.Blocking,
+			})
+		}
+		result.Items[i].Entries = entries
 	}
 
 	return result, nil

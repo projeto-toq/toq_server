@@ -66,7 +66,6 @@ func (h *ScheduleHandler) GetListingAvailability(c *gin.Context) {
 		Range:              rangeFilter,
 		SlotDurationMinute: req.SlotDurationMinute,
 		Pagination:         pagination,
-		Timezone:           req.Timezone,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

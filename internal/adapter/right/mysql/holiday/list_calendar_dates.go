@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday/converters"
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday/entity"
@@ -12,7 +13,10 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-const calendarDatesMaxPageSize = 100
+const (
+	calendarDatesMaxPageSize = 100
+	dateOnlyLayout           = "2006-01-02"
+)
 
 func (a *HolidayAdapter) ListCalendarDates(ctx context.Context, tx *sql.Tx, filter holidaymodel.CalendarDatesFilter) (holidaymodel.CalendarDatesResult, error) {
 	ctx, spanEnd, err := withTracer(ctx)
@@ -31,12 +35,14 @@ func (a *HolidayAdapter) ListCalendarDates(ctx context.Context, tx *sql.Tx, filt
 	args := []any{filter.CalendarID}
 
 	if filter.From != nil {
+		fromDate := filter.From.In(time.UTC).Format(dateOnlyLayout)
 		conditions = append(conditions, "holiday_date >= ?")
-		args = append(args, *filter.From)
+		args = append(args, fromDate)
 	}
 	if filter.To != nil {
+		toDate := filter.To.In(time.UTC).Format(dateOnlyLayout)
 		conditions = append(conditions, "holiday_date <= ?")
-		args = append(args, *filter.To)
+		args = append(args, toDate)
 	}
 
 	where := strings.Join(conditions, " AND ")

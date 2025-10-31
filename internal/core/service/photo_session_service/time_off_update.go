@@ -20,7 +20,7 @@ func (s *photoSessionService) UpdateTimeOff(ctx context.Context, input UpdateTim
 		StartDate:      input.StartDate,
 		EndDate:        input.EndDate,
 		Reason:         input.Reason,
-		Timezone:       input.Timezone,
+		Location:       input.Location,
 	}); err != nil {
 		return TimeOffDetailResult{}, err
 	}
@@ -34,10 +34,7 @@ func (s *photoSessionService) UpdateTimeOff(ctx context.Context, input UpdateTim
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	loc, tzErr := resolveLocation(input.Timezone)
-	if tzErr != nil {
-		return TimeOffDetailResult{}, tzErr
-	}
+	loc := input.Location
 
 	tx, err := s.globalService.StartTransaction(ctx)
 	if err != nil {
@@ -70,8 +67,11 @@ func (s *photoSessionService) UpdateTimeOff(ctx context.Context, input UpdateTim
 		return TimeOffDetailResult{}, utils.NotFoundError("Time off")
 	}
 
-	entry.SetStartsAt(input.StartDate.UTC())
-	entry.SetEndsAt(input.EndDate.UTC())
+	start := utils.ConvertToLocation(input.StartDate, loc)
+	end := utils.ConvertToLocation(input.EndDate, loc)
+
+	entry.SetStartsAt(utils.ConvertToUTC(start))
+	entry.SetEndsAt(utils.ConvertToUTC(end))
 	entry.SetTimezone(loc.String())
 	entry.SetSource(photosessionmodel.AgendaEntrySourceManual)
 	entry.SetBlocking(true)

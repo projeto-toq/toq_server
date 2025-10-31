@@ -5,27 +5,27 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O processo de gestão da agenda do imóvel, feitas pelos endpoints handlers/schedule_handlers/schedules/listing/* está construído de forma equivocada, frente a regra de negócio.
-A regra de negócio diz:
-1) Cada imóvel tem uma agenda específica.
-2) Esta agenda registra os horarios de visitas feitas pelos Realtors.
-3) O proprietário define regras de INdisponibilidade para visitas, na criação de imóvel, ou na edição do imóvel.
-  3.1) Estas regras tem horizonte semanal e se repetem indeterminadamente.
-    Exemplos:
-    - De segunda a sexta após das 19:00 as 23:59.
-    - De segunda a sexta antes das 00:00 as 09:00.
-    - Sábados das 14:00 as 19:00.
-    - Domingos o dia todo.
-    - Tercas das 12:00 as 14:00.
-4) assim, estas regras não devem gerar entradas de bloqueios na agenda, mas sim são regras que definem quando as visitas NÃO PODEM ser agendadas.
-5) O proprietário tem uma visão consolidada na sua agenda, com os horários de visitas agendadas de todos os seus imóveis.
-Assim:
-- confirme se as tabelas atuais atendem a construção da lógica prevista na regra de negócio.
-- refatore o código para que a lógica de bloqueio de horários na agenda seja feita conforme a regra de negócio.
-- garanta que o endpoint de listagem de agenda retorne os horários corretamente bloqueados, conforme as regras de indisponibilidade definidas pelo proprietário.
-- caso necessite mudanças no banco de dados, proponha as migrações necessárias, que passarei ao time de DBA para execução. Não adianta alterar o scripts/db_creation.sql que ele existe aqui apenas para referência. informe detalhadamente as mudanças necessárias.
+Diversos endpoint que aceitam datas no formato RFC3339 estão falhando em receber datas como o endpoint /schedules/listing/availability?listingId=3&rangeFrom=2025-10-31T08:00:00+03:00&rangeTo=2025-11-02T19:00:00+03:00&slotDurationMinute=60&page=1&limit=50&timezone=America/Sao_Paulo
 
-**Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
+A linha 56-60 do get_listing_availability.go está com erro de parsing de data.
+
+Além disso, como está sendo passado o timezone na query string, está ficando confuso qual timezone deve ser considerado para o rangeFrom e rangeTo.
+
+Assim:
+- faça uma lista de todos os endpoints que aceitam datas no formato RFC3339 e apresente-a.
+- faça uma lista de todos os endpoints que aceitam apenas datas no formato YYYY-MM-DD e apresente-a.
+- proponha um plano para que:
+  - altere todos os os endpoints que aceitam datas no formato RFC3339 para remover timezone na query string ou no body, e que o timezone seja extraído diretamente da data enviada no formato RFC3339.
+    - esta alteração deve ser propagada, de forma que o service receba o timezone no propio location do time enviado na data.
+    - internamente o time é tratado como UTC, então garanta que essa conversão seja feita corretamente.
+  - altere todos o endpoint GET /listings/photo-session/slots, que aceitam datas no formato YYYY-MM-DD, para que necessariamente passe timezone na query string ou no body, para evitar ambiguidades.
+    - esta alteração deve ser propagada, de forma que o service receba o timezone no propio location do time enviado na data.
+    - internamente o time é tratado como UTC, então garanta que essa conversão seja feita corretamente.
+    - os demais endpoints que aceitam datas no formato YYYY-MM-DD devem continuar como estão, sem necessidade de alteração, visto que as datas informadas são datas de nascimento, que não possuem timezone. confirme isso no código.
+  - garanta que o parsing de datas em RFC3339 seja corrigido em todos os endpoints que aceitam esse formato, pois hoje existe um erro de parsing.
+
+
+**Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 
 ### **Instruções para a Proposição do Plano**
 

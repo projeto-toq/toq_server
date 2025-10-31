@@ -15,7 +15,7 @@ import (
 // @Tags         Photographer
 // @Accept       json
 // @Produce      json
-// @Param        input body dto.DeleteTimeOffRequest true "Delete Time-Off payload" Extensions(x-example={"timeOffId":42,"timezone":"America/Sao_Paulo"})
+// @Param        input body dto.DeleteTimeOffRequest true "Delete Time-Off payload" Extensions(x-example={"timeOffId":42})
 // @Success      200 {object} object{message=string}
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      404 {object} dto.ErrorResponse
@@ -37,7 +37,6 @@ func (h *PhotoSessionHandler) DeleteTimeOff(c *gin.Context) {
 	input := photosessionservices.DeleteTimeOffInput{
 		TimeOffID:      req.TimeOffID,
 		PhotographerID: uint64(userID),
-		Timezone:       req.Timezone,
 	}
 
 	dErr := h.service.DeleteTimeOff(c.Request.Context(), input)

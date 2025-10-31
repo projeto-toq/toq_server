@@ -25,14 +25,13 @@ type TimeOffInput struct {
 	StartDate      time.Time
 	EndDate        time.Time
 	Reason         *string
-	Timezone       string
+	Location       *time.Location
 }
 
 // DeleteTimeOffInput represents the payload to remove a time-off entry.
 type DeleteTimeOffInput struct {
 	TimeOffID      uint64
 	PhotographerID uint64
-	Timezone       string
 }
 
 // UpdateTimeOffInput represents the payload to update a time-off entry.
@@ -42,7 +41,7 @@ type UpdateTimeOffInput struct {
 	StartDate      time.Time
 	EndDate        time.Time
 	Reason         *string
-	Timezone       string
+	Location       *time.Location
 }
 
 // ListTimeOffInput captures filters for time-off listing.
@@ -52,7 +51,7 @@ type ListTimeOffInput struct {
 	RangeTo        time.Time
 	Page           int
 	Size           int
-	Timezone       string
+	Location       *time.Location
 }
 
 // TimeOffDetailInput carries identifiers to fetch a time-off entry.
@@ -84,7 +83,7 @@ type ListAgendaInput struct {
 	EndDate        time.Time
 	Page           int
 	Size           int
-	Timezone       string
+	Location       *time.Location
 }
 
 // ListAgendaOutput describes the agenda listing result.
@@ -123,7 +122,7 @@ type ListAvailabilityInput struct {
 	Size      int
 	Sort      string
 	Period    *photosessionmodel.SlotPeriod
-	Timezone  string
+	Location  *time.Location
 	ListingID int64
 }
 

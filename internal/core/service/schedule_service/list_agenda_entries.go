@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"sort"
-	"strings"
 	"time"
 
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
@@ -59,18 +58,18 @@ func (s *scheduleService) ListAgendaEntries(ctx context.Context, filter schedule
 		return schedulemodel.AgendaDetailResult{}, utils.AuthorizationError("Owner does not match listing agenda")
 	}
 
-	tzName := strings.TrimSpace(filter.Timezone)
-	if tzName == "" {
-		tzName = agenda.Timezone()
-	}
-	loc, tzErr := utils.ResolveLocation("timezone", tzName)
+	agendaLoc, tzErr := utils.ResolveLocation("timezone", agenda.Timezone())
 	if tzErr != nil {
 		return schedulemodel.AgendaDetailResult{}, tzErr
 	}
+	loc := filter.Range.Loc
+	if loc == nil {
+		loc = agendaLoc
+	}
 
-	fromLocal, toLocal := resolveTimelineRange(filter.Range, loc)
-	fromUTC := utils.ConvertToUTC(fromLocal)
-	toUTC := utils.ConvertToUTC(toLocal)
+	fromUTC, toUTC := utils.NormalizeRangeToUTC(filter.Range.From, filter.Range.To, loc)
+	localRange := schedulemodel.ScheduleRange{From: utils.ConvertToLocation(filter.Range.From, loc), To: utils.ConvertToLocation(filter.Range.To, loc)}
+	fromLocal, toLocal := resolveTimelineRange(localRange, loc)
 
 	entries, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), fromUTC, toUTC)
 	if err != nil {
@@ -109,9 +108,7 @@ func (s *scheduleService) ListAgendaEntries(ctx context.Context, filter schedule
 		end = total
 	}
 	items := make([]schedulemodel.AgendaTimelineItem, 0, end-offset)
-	for _, item := range timeline[offset:end] {
-		items = append(items, item)
-	}
+	items = append(items, timeline[offset:end]...)
 
 	return schedulemodel.AgendaDetailResult{Items: items, Total: int64(total), Timezone: loc.String()}, nil
 }

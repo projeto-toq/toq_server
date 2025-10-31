@@ -2,12 +2,12 @@ package photosessionhandlers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 type _ = dto.ErrorResponse
@@ -39,17 +39,21 @@ func (h *PhotoSessionHandler) ListAgenda(c *gin.Context) {
 		return
 	}
 
-	startDate, err := time.Parse(time.RFC3339, query.StartDate)
+	startDate, err := coreutils.ParseRFC3339Relaxed("startDate", query.StartDate)
 	if err != nil {
-		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_start_date", "Invalid startDate format, use RFC3339")
+		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	endDate, err := time.Parse(time.RFC3339, query.EndDate)
+	endDate, err := coreutils.ParseRFC3339Relaxed("endDate", query.EndDate)
 	if err != nil {
-		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_end_date", "Invalid endDate format, use RFC3339")
+		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
+
+	loc := coreutils.DetermineRangeLocation(startDate, endDate, nil)
+	startDate = coreutils.ConvertToLocation(startDate, loc)
+	endDate = coreutils.ConvertToLocation(endDate, loc)
 
 	page := query.Page
 	if page <= 0 {
@@ -76,7 +80,7 @@ func (h *PhotoSessionHandler) ListAgenda(c *gin.Context) {
 		EndDate:        endDate,
 		Page:           page,
 		Size:           size,
-		Timezone:       query.Timezone,
+		Location:       loc,
 	}
 
 	output, dErr := h.service.ListAgenda(c.Request.Context(), input)

@@ -2,13 +2,13 @@ package photosessionhandlers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // UpdateTimeOff handles PUT /photographer/agenda/time-off.
@@ -18,7 +18,7 @@ import (
 // @Tags         Photographer
 // @Accept       json
 // @Produce      json
-// @Param        input body dto.UpdateTimeOffRequest true "Update Time-Off payload" Extensions(x-example={"timeOffId":42,"startDate":"2025-07-05T10:00:00-03:00","endDate":"2025-07-05T12:00:00-03:00","reason":"Consulta médica","timezone":"America/Sao_Paulo"})
+// @Param        input body dto.UpdateTimeOffRequest true "Update Time-Off payload" Extensions(x-example={"timeOffId":42,"startDate":"2025-07-05T10:00:00-03:00","endDate":"2025-07-05T12:00:00-03:00","reason":"Consulta médica"})
 // @Success      200 {object} dto.PhotographerTimeOffResponse
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      404 {object} dto.ErrorResponse
@@ -31,17 +31,21 @@ func (h *PhotoSessionHandler) UpdateTimeOff(c *gin.Context) {
 		return
 	}
 
-	startDate, err := time.Parse(time.RFC3339, req.StartDate)
+	startDate, err := coreutils.ParseRFC3339Relaxed("startDate", req.StartDate)
 	if err != nil {
-		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_start_date", "Invalid startDate format, use RFC3339")
+		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	endDate, err := time.Parse(time.RFC3339, req.EndDate)
+	endDate, err := coreutils.ParseRFC3339Relaxed("endDate", req.EndDate)
 	if err != nil {
-		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_end_date", "Invalid endDate format, use RFC3339")
+		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
+
+	loc := coreutils.DetermineRangeLocation(startDate, endDate, nil)
+	startDate = coreutils.ConvertToLocation(startDate, loc)
+	endDate = coreutils.ConvertToLocation(endDate, loc)
 
 	userID, err := h.globalService.GetUserIDFromContext(c.Request.Context())
 	if err != nil {
@@ -55,7 +59,7 @@ func (h *PhotoSessionHandler) UpdateTimeOff(c *gin.Context) {
 		StartDate:      startDate,
 		EndDate:        endDate,
 		Reason:         req.Reason,
-		Timezone:       req.Timezone,
+		Location:       loc,
 	})
 	if serviceErr != nil {
 		http_errors.SendHTTPErrorObj(c, serviceErr)

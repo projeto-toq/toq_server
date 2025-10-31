@@ -2,12 +2,12 @@ package photosessionhandlers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // CreateTimeOff handles the creation of a new time-off entry for a photographer.
@@ -16,7 +16,7 @@ import (
 // @Tags         Photographer
 // @Accept       json
 // @Produce      json
-// @Param        input body dto.CreateTimeOffRequest true "Time-Off payload" Extensions(x-example={"startDate":"2025-07-05T09:00:00-03:00","endDate":"2025-07-05T18:00:00-03:00","reason":"Participação em evento","timezone":"America/Sao_Paulo"})
+// @Param        input body dto.CreateTimeOffRequest true "Time-Off payload" Extensions(x-example={"startDate":"2025-07-05T09:00:00-03:00","endDate":"2025-07-05T18:00:00-03:00","reason":"Participação em evento"})
 // @Success      201 {object} object{message=string,timeOffId=int}
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse
@@ -28,17 +28,21 @@ func (h *PhotoSessionHandler) CreateTimeOff(c *gin.Context) {
 		return
 	}
 
-	startDate, err := time.Parse(time.RFC3339, req.StartDate)
+	startDate, err := coreutils.ParseRFC3339Relaxed("startDate", req.StartDate)
 	if err != nil {
-		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_start_date", "Invalid startDate format, use RFC3339")
+		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	endDate, err := time.Parse(time.RFC3339, req.EndDate)
+	endDate, err := coreutils.ParseRFC3339Relaxed("endDate", req.EndDate)
 	if err != nil {
-		http_errors.SendHTTPError(c, http.StatusBadRequest, "invalid_end_date", "Invalid endDate format, use RFC3339")
+		http_errors.SendHTTPErrorObj(c, err)
 		return
 	}
+
+	loc := coreutils.DetermineRangeLocation(startDate, endDate, nil)
+	startDate = coreutils.ConvertToLocation(startDate, loc)
+	endDate = coreutils.ConvertToLocation(endDate, loc)
 
 	userID, err := h.globalService.GetUserIDFromContext(c.Request.Context())
 	if err != nil {
@@ -51,7 +55,7 @@ func (h *PhotoSessionHandler) CreateTimeOff(c *gin.Context) {
 		StartDate:      startDate,
 		EndDate:        endDate,
 		Reason:         req.Reason,
-		Timezone:       req.Timezone,
+		Location:       loc,
 	}
 
 	id, dErr := h.service.CreateTimeOff(c.Request.Context(), input)

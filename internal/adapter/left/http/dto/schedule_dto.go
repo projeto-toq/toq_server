@@ -94,7 +94,6 @@ type ListingAgendaDetailQuery struct {
 	ListingID int64  `form:"listingId" binding:"required"`
 	RangeFrom string `form:"rangeFrom"`
 	RangeTo   string `form:"rangeTo"`
-	Timezone  string `form:"timezone"`
 	Page      int    `form:"page"`
 	Limit     int    `form:"limit"`
 }
@@ -131,7 +130,6 @@ type ScheduleAvailabilityQuery struct {
 	SlotDurationMinute uint16 `form:"slotDurationMinute"`
 	Page               int    `form:"page"`
 	Limit              int    `form:"limit"`
-	Timezone           string `form:"timezone"`
 }
 
 // ScheduleAvailabilitySlotResponse represents a continuous free window.

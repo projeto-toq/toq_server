@@ -6,7 +6,6 @@ type ListAgendaQuery struct {
 	EndDate   string `form:"endDate" binding:"required" example:"2023-10-31T23:59:59Z"`
 	Page      int    `form:"page" binding:"omitempty,min=1" example:"1"`
 	Size      int    `form:"size" binding:"omitempty,min=1" example:"20"`
-	Timezone  string `form:"timezone" binding:"omitempty" example:"America/Sao_Paulo"`
 }
 
 // UpdateSessionStatusRequest defines the payload for updating a session's status.
@@ -20,13 +19,11 @@ type CreateTimeOffRequest struct {
 	StartDate string  `json:"startDate" binding:"required" example:"2023-11-01T09:00:00-03:00"`
 	EndDate   string  `json:"endDate" binding:"required" example:"2023-11-01T18:00:00-03:00"`
 	Reason    *string `json:"reason,omitempty" example:"Attending workshop"`
-	Timezone  string  `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // DeleteTimeOffRequest represents the payload to unblock a photographer agenda.
 type DeleteTimeOffRequest struct {
 	TimeOffID uint64 `json:"timeOffId" binding:"required" example:"42"`
-	Timezone  string `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // ListTimeOffQuery captures filters to list photographer time-offs.
@@ -35,7 +32,6 @@ type ListTimeOffQuery struct {
 	RangeTo   string `form:"rangeTo" binding:"required" example:"2025-07-31T23:59:59Z"`
 	Page      int    `form:"page" binding:"omitempty,min=1" example:"1"`
 	Size      int    `form:"size" binding:"omitempty,min=1" example:"20"`
-	Timezone  string `form:"timezone" binding:"omitempty" example:"America/Sao_Paulo"`
 }
 
 // UpdateTimeOffRequest represents the payload to update a photographer time-off.
@@ -44,7 +40,6 @@ type UpdateTimeOffRequest struct {
 	StartDate string  `json:"startDate" binding:"required" example:"2025-07-05T09:00:00-03:00"`
 	EndDate   string  `json:"endDate" binding:"required" example:"2025-07-05T18:00:00-03:00"`
 	Reason    *string `json:"reason,omitempty" example:"Agenda adjustment"`
-	Timezone  string  `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // TimeOffDetailRequest carries identifiers to fetch a specific time-off.

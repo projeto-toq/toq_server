@@ -27,10 +27,13 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		return ListAgendaOutput{}, err
 	}
 
-	loc, tzErr := resolveLocation(input.Timezone)
-	if tzErr != nil {
-		return ListAgendaOutput{}, tzErr
+	loc := input.Location
+	if loc == nil {
+		loc = time.UTC
 	}
+
+	startLocal := utils.ConvertToLocation(input.StartDate, loc)
+	endLocal := utils.ConvertToLocation(input.EndDate, loc)
 
 	page := input.Page
 	if page <= 0 {
@@ -63,7 +66,7 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		return ListAgendaOutput{}, profileErr
 	}
 
-	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, input.StartDate.UTC(), input.EndDate.UTC())
+	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, utils.ConvertToUTC(startLocal), utils.ConvertToUTC(endLocal))
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("service.list_agenda.repo_error", "photographer_id", input.PhotographerID, "err", err)
@@ -79,13 +82,13 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		slots = append(slots, s.buildAgendaSlot(entry, loc))
 	}
 
-	holidaySlots, holidayErr := s.fetchHolidaySlots(ctx, input.PhotographerID, loc, profile, input.StartDate, input.EndDate, occupied)
+	holidaySlots, holidayErr := s.fetchHolidaySlots(ctx, input.PhotographerID, loc, profile, startLocal, endLocal, occupied)
 	if holidayErr != nil {
 		return ListAgendaOutput{}, holidayErr
 	}
 	slots = append(slots, holidaySlots...)
 
-	nonWorkingSlots := s.buildNonWorkingSlots(input.PhotographerID, loc, input.StartDate, input.EndDate, occupied)
+	nonWorkingSlots := s.buildNonWorkingSlots(input.PhotographerID, loc, startLocal, endLocal, occupied)
 	slots = append(slots, nonWorkingSlots...)
 
 	sort.Slice(slots, func(i, j int) bool {

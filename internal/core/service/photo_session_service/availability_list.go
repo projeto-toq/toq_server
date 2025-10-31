@@ -26,14 +26,9 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 		return ListAvailabilityOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "greater_than_zero"})
 	}
 
-	trimmedTimezone := strings.TrimSpace(input.Timezone)
-	if trimmedTimezone == "" {
-		return ListAvailabilityOutput{}, derrors.Validation("timezone is required", map[string]any{"timezone": "required"})
-	}
-
-	loc, tzErr := resolveLocation(trimmedTimezone)
-	if tzErr != nil {
-		return ListAvailabilityOutput{}, tzErr
+	loc := input.Location
+	if loc == nil {
+		loc = time.UTC
 	}
 
 	page := input.Page

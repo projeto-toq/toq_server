@@ -66,7 +66,6 @@ func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 		ListingID:  req.ListingID,
 		Range:      rangeFilter,
 		Pagination: pagination,
-		Timezone:   req.Timezone,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

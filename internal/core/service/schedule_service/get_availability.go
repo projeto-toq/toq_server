@@ -2,7 +2,6 @@ package scheduleservices
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
@@ -54,26 +53,18 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 		return AvailabilityResult{}, utils.InternalError("")
 	}
 
-	tzName := strings.TrimSpace(filter.Timezone)
-	if tzName == "" {
-		tzName = agenda.Timezone()
-	}
-	loc, tzErr := utils.ResolveLocation("timezone", tzName)
+	agendaLoc, tzErr := utils.ResolveLocation("timezone", agenda.Timezone())
 	if tzErr != nil {
 		return AvailabilityResult{}, tzErr
 	}
+	loc := filter.Range.Loc
+	if loc == nil {
+		loc = agendaLoc
+	}
 
 	repoFilter := filter
-	fromLocal := filter.Range.From
-	if !filter.Range.From.IsZero() {
-		fromLocal = filter.Range.From.In(loc)
-		repoFilter.Range.From = utils.ConvertToUTC(fromLocal)
-	}
-	toLocal := filter.Range.To
-	if !filter.Range.To.IsZero() {
-		toLocal = filter.Range.To.In(loc)
-		repoFilter.Range.To = utils.ConvertToUTC(toLocal)
-	}
+	repoFilter.Range.From, repoFilter.Range.To = utils.NormalizeRangeToUTC(filter.Range.From, filter.Range.To, loc)
+	repoFilter.Range.Loc = time.UTC
 
 	data, err := s.scheduleRepo.GetAvailabilityData(ctx, tx, repoFilter)
 	if err != nil {
@@ -81,6 +72,9 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 		logger.Error("schedule.get_availability.repo_error", "listing_id", filter.ListingID, "err", err)
 		return AvailabilityResult{}, utils.InternalError("")
 	}
+
+	fromLocal := utils.ConvertToLocation(filter.Range.From, loc)
+	toLocal := utils.ConvertToLocation(filter.Range.To, loc)
 
 	for _, entry := range data.Entries {
 		entry.SetStartsAt(utils.ConvertToLocation(entry.StartsAt(), loc))
@@ -97,7 +91,7 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 
 	limit, offset := sanitizePagination(filter.Pagination.Limit, filter.Pagination.Page)
 	if offset >= total {
-		return AvailabilityResult{Slots: []AvailabilitySlot{}, Total: total}, nil
+		return AvailabilityResult{Slots: []AvailabilitySlot{}, Total: total, Timezone: loc.String()}, nil
 	}
 
 	end := offset + limit

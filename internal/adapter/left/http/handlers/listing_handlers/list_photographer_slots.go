@@ -60,6 +60,18 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 		return
 	}
 
+	timezone := strings.TrimSpace(request.Timezone)
+	if timezone == "" {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_TIMEZONE", "timezone is required")
+		return
+	}
+
+	loc, tzErr := time.LoadLocation(timezone)
+	if tzErr != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_TIMEZONE", "timezone must be a valid IANA identifier")
+		return
+	}
+
 	var fromPtr *time.Time
 	if request.From != "" {
 		parsed, parseErr := time.Parse(isoDateLayout, request.From)
@@ -67,8 +79,8 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 			httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_FROM_DATE", "from must be in YYYY-MM-DD format")
 			return
 		}
-		parsed = parsed.UTC()
-		fromPtr = &parsed
+		local := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, loc)
+		fromPtr = &local
 	}
 
 	var toPtr *time.Time
@@ -78,25 +90,14 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 			httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_TO_DATE", "to must be in YYYY-MM-DD format")
 			return
 		}
-		parsed = parsed.UTC()
-		toPtr = &parsed
+		local := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, loc)
+		toPtr = &local
 	}
 
 	var periodPtr *photosessionmodel.SlotPeriod
 	if request.Period != "" {
 		period := photosessionmodel.SlotPeriod(request.Period)
 		periodPtr = &period
-	}
-
-	timezone := strings.TrimSpace(request.Timezone)
-	if timezone == "" {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_TIMEZONE", "timezone is required")
-		return
-	}
-
-	if _, tzErr := time.LoadLocation(timezone); tzErr != nil {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_TIMEZONE", "timezone must be a valid IANA identifier")
-		return
 	}
 
 	input := listingservices.ListPhotographerSlotsInput{
@@ -107,7 +108,7 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 		Size:      request.Size,
 		Sort:      strings.TrimSpace(request.Sort),
 		ListingID: request.ListingID,
-		Timezone:  timezone,
+		Location:  loc,
 	}
 
 	output, err := lh.listingService.ListPhotographerSlots(ctx, input)

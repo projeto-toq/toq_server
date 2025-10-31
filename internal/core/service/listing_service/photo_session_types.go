@@ -22,7 +22,7 @@ type ListPhotographerSlotsInput struct {
 	Size      int
 	Sort      string
 	ListingID int64
-	Timezone  string
+	Location  *time.Location
 }
 
 // ListPhotographerSlotsOutput bundles slots and pagination metadata.

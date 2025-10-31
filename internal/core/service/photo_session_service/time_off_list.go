@@ -3,6 +3,7 @@ package photosessionservices
 import (
 	"context"
 	"sort"
+	"time"
 
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -32,10 +33,13 @@ func (s *photoSessionService) ListTimeOff(ctx context.Context, input ListTimeOff
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	loc, tzErr := resolveLocation(input.Timezone)
-	if tzErr != nil {
-		return ListTimeOffOutput{}, tzErr
+	loc := input.Location
+	if loc == nil {
+		loc = time.UTC
 	}
+
+	fromLocal := utils.ConvertToLocation(input.RangeFrom, loc)
+	toLocal := utils.ConvertToLocation(input.RangeTo, loc)
 
 	page := input.Page
 	if page <= 0 {
@@ -63,7 +67,7 @@ func (s *photoSessionService) ListTimeOff(ctx context.Context, input ListTimeOff
 		}
 	}()
 
-	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, input.RangeFrom.UTC(), input.RangeTo.UTC())
+	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, utils.ConvertToUTC(fromLocal), utils.ConvertToUTC(toLocal))
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("photo_session.list_time_off.repo_error", "photographer_id", input.PhotographerID, "err", err)

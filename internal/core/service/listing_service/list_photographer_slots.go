@@ -33,13 +33,9 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		return output, utils.BadRequest("listingId must be greater than zero")
 	}
 
-	timezone := strings.TrimSpace(input.Timezone)
-	if timezone == "" {
+	loc := input.Location
+	if loc == nil {
 		return output, utils.BadRequest("timezone is required")
-	}
-
-	if _, tzErr := time.LoadLocation(timezone); tzErr != nil {
-		return output, utils.BadRequest("invalid timezone")
 	}
 
 	tx, txErr := ls.gsi.StartReadOnlyTransaction(ctx)
@@ -103,7 +99,7 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		return output, utils.BadRequest("from must be before to")
 	}
 
-	sortKey, sortErr := normalizeSlotSort(input.Sort)
+	sortKey, sortErr := normalizeSlotSort(strings.TrimSpace(input.Sort))
 	if sortErr != nil {
 		return output, sortErr
 	}
@@ -115,7 +111,7 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		Page:      page,
 		Size:      size,
 		Sort:      sortKey,
-		Timezone:  timezone,
+		Location:  loc,
 		ListingID: input.ListingID,
 	}
 

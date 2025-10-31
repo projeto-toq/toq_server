@@ -73,17 +73,16 @@ func (s *photoSessionService) createTimeOffInternal(ctx context.Context, tx *sql
 		return 0, err
 	}
 
-	loc, tzErr := resolveLocation(input.Timezone)
-	if tzErr != nil {
-		return 0, tzErr
-	}
+	loc := input.Location
+	start := utils.ConvertToLocation(input.StartDate, loc)
+	end := utils.ConvertToLocation(input.EndDate, loc)
 
 	entry := photosessionmodel.NewAgendaEntry()
 	entry.SetPhotographerUserID(input.PhotographerID)
 	entry.SetEntryType(photosessionmodel.AgendaEntryTypeTimeOff)
 	entry.SetSource(photosessionmodel.AgendaEntrySourceManual)
-	entry.SetStartsAt(input.StartDate.UTC())
-	entry.SetEndsAt(input.EndDate.UTC())
+	entry.SetStartsAt(utils.ConvertToUTC(start))
+	entry.SetEndsAt(utils.ConvertToUTC(end))
 	entry.SetBlocking(true)
 	entry.SetTimezone(loc.String())
 	if input.Reason != nil {

@@ -57,7 +57,7 @@ func (s *holidayService) ListCalendarDates(ctx context.Context, filter holidaymo
 	}
 
 	repoFilter := filter
-	repoFilter.From, repoFilter.To = utils.NormalizeRangeToUTC(filter.From, filter.To, loc)
+	repoFilter.From, repoFilter.To = utils.NormalizePointerRangeToUTC(filter.From, filter.To, loc)
 
 	result, err := s.repo.ListCalendarDates(ctx, tx, repoFilter)
 	if err != nil {
