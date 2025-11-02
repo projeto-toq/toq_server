@@ -9,30 +9,27 @@ import (
 )
 
 func (a *PhotoSessionAdapter) UpdateEntrySourceID(ctx context.Context, tx *sql.Tx, entryID uint64, sourceID uint64) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	result, err := exec.ExecContext(ctx, `UPDATE photographer_agenda_entries SET source_id = ? WHERE id = ?`, sourceID, entryID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.update_entry_source.exec_error", "entry_id", entryID, "err", err)
-		return fmt.Errorf("update agenda entry source id: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "update", `UPDATE photographer_agenda_entries SET source_id = ? WHERE id = ?`, sourceID, entryID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.update_entry_source.exec_error", "entry_id", entryID, "err", execErr)
+		return fmt.Errorf("update agenda entry source id: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.update_entry_source.rows_error", "entry_id", entryID, "err", err)
-		return fmt.Errorf("rows affected agenda entry source id: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.update_entry_source.rows_error", "entry_id", entryID, "err", rowsErr)
+		return fmt.Errorf("rows affected agenda entry source id: %w", rowsErr)
 	}
 
 	if affected == 0 {

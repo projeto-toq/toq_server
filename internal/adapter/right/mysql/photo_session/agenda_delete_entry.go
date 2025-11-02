@@ -9,30 +9,26 @@ import (
 )
 
 func (a *PhotoSessionAdapter) DeleteEntryByID(ctx context.Context, tx *sql.Tx, entryID uint64) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	result, err := exec.ExecContext(ctx, `DELETE FROM photographer_agenda_entries WHERE id = ?`, entryID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.delete_entry.exec_error", "entry_id", entryID, "err", err)
-		return fmt.Errorf("delete agenda entry: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "delete", `DELETE FROM photographer_agenda_entries WHERE id = ?`, entryID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.delete_entry.exec_error", "entry_id", entryID, "err", execErr)
+		return fmt.Errorf("delete agenda entry: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.delete_entry.rows_error", "entry_id", entryID, "err", err)
-		return fmt.Errorf("rows affected agenda entry: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.delete_entry.rows_error", "entry_id", entryID, "err", rowsErr)
+		return fmt.Errorf("rows affected agenda entry: %w", rowsErr)
 	}
 
 	if affected == 0 {

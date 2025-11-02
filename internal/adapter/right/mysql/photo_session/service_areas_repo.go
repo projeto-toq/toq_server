@@ -14,15 +14,11 @@ import (
 
 // ListPhotographerIDsByLocation returns photographer IDs that cover the given city/state.
 func (a *PhotoSessionAdapter) ListPhotographerIDsByLocation(ctx context.Context, tx *sql.Tx, city string, state string) ([]uint64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -43,11 +39,11 @@ func (a *PhotoSessionAdapter) ListPhotographerIDsByLocation(ctx context.Context,
 		  AND psa.state = ?
 	`
 
-	rows, err := exec.QueryContext(ctx, query, trimmedCity, trimmedState)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.list_ids_location.query_error", "city", trimmedCity, "state", trimmedState, "err", err)
-		return nil, fmt.Errorf("list photographer ids by location: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, trimmedCity, trimmedState)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.photo_session.service_area.list_ids_location.query_error", "city", trimmedCity, "state", trimmedState, "err", queryErr)
+		return nil, fmt.Errorf("list photographer ids by location: %w", queryErr)
 	}
 	defer rows.Close()
 
@@ -73,25 +69,21 @@ func (a *PhotoSessionAdapter) ListPhotographerIDsByLocation(ctx context.Context,
 
 // ListServiceAreasByPhotographer lists service areas for a single photographer.
 func (a *PhotoSessionAdapter) ListServiceAreasByPhotographer(ctx context.Context, tx *sql.Tx, photographerID uint64) ([]photosessionmodel.PhotographerServiceAreaInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, photographer_user_id, city, state FROM photographer_service_areas WHERE photographer_user_id = ? ORDER BY city ASC, state ASC, id ASC`
 
-	rows, err := exec.QueryContext(ctx, query, photographerID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.list_by_photographer.query_error", "photographer_id", photographerID, "err", err)
-		return nil, fmt.Errorf("list service areas by photographer: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, photographerID)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.photo_session.service_area.list_by_photographer.query_error", "photographer_id", photographerID, "err", queryErr)
+		return nil, fmt.Errorf("list service areas by photographer: %w", queryErr)
 	}
 	defer rows.Close()
 
@@ -117,21 +109,17 @@ func (a *PhotoSessionAdapter) ListServiceAreasByPhotographer(ctx context.Context
 
 // GetServiceAreaByID fetches a single service area.
 func (a *PhotoSessionAdapter) GetServiceAreaByID(ctx context.Context, tx *sql.Tx, areaID uint64) (photosessionmodel.PhotographerServiceAreaInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, photographer_user_id, city, state FROM photographer_service_areas WHERE id = ?`
 
-	row := exec.QueryRowContext(ctx, query, areaID)
+	row := a.QueryRowContext(ctx, tx, "select", query, areaID)
 
 	var entityRow entity.ServiceArea
 	if scanErr := row.Scan(&entityRow.ID, &entityRow.PhotographerUserID, &entityRow.City, &entityRow.State); scanErr != nil {
@@ -148,15 +136,11 @@ func (a *PhotoSessionAdapter) GetServiceAreaByID(ctx context.Context, tx *sql.Tx
 
 // ListAllServiceAreas lists service areas with optional filters.
 func (a *PhotoSessionAdapter) ListAllServiceAreas(ctx context.Context, tx *sql.Tx, filter photosessionmodel.ServiceAreaFilter) ([]photosessionmodel.PhotographerServiceAreaInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -191,11 +175,11 @@ func (a *PhotoSessionAdapter) ListAllServiceAreas(ctx context.Context, tx *sql.T
 		params = append(params, filter.Offset)
 	}
 
-	rows, err := exec.QueryContext(ctx, baseQuery.String(), params...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.list_all.query_error", "err", err)
-		return nil, fmt.Errorf("list service areas: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", baseQuery.String(), params...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.photo_session.service_area.list_all.query_error", "err", queryErr)
+		return nil, fmt.Errorf("list service areas: %w", queryErr)
 	}
 	defer rows.Close()
 
@@ -221,15 +205,11 @@ func (a *PhotoSessionAdapter) ListAllServiceAreas(ctx context.Context, tx *sql.T
 
 // CreateServiceArea creates a new service area entry.
 func (a *PhotoSessionAdapter) CreateServiceArea(ctx context.Context, tx *sql.Tx, area photosessionmodel.PhotographerServiceAreaInterface) (uint64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return 0, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -239,11 +219,11 @@ func (a *PhotoSessionAdapter) CreateServiceArea(ctx context.Context, tx *sql.Tx,
 	execCity := strings.TrimSpace(row.City)
 	execState := strings.TrimSpace(row.State)
 
-	result, err := exec.ExecContext(ctx, query, row.PhotographerUserID, execCity, execState)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.create.exec_error", "photographer_id", row.PhotographerUserID, "err", err)
-		return 0, fmt.Errorf("create service area: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "insert", query, row.PhotographerUserID, execCity, execState)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.service_area.create.exec_error", "photographer_id", row.PhotographerUserID, "err", execErr)
+		return 0, fmt.Errorf("create service area: %w", execErr)
 	}
 
 	insertedID, err := result.LastInsertId()
@@ -258,33 +238,29 @@ func (a *PhotoSessionAdapter) CreateServiceArea(ctx context.Context, tx *sql.Tx,
 
 // UpdateServiceArea updates city and state of an existing service area.
 func (a *PhotoSessionAdapter) UpdateServiceArea(ctx context.Context, tx *sql.Tx, area photosessionmodel.PhotographerServiceAreaInterface) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	row := converters.ServiceAreaModelToRow(area)
 	query := `UPDATE photographer_service_areas SET city = ?, state = ? WHERE id = ?`
 
-	result, err := exec.ExecContext(ctx, query, strings.TrimSpace(row.City), strings.TrimSpace(row.State), row.ID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.update.exec_error", "area_id", row.ID, "err", err)
-		return fmt.Errorf("update service area: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "update", query, strings.TrimSpace(row.City), strings.TrimSpace(row.State), row.ID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.service_area.update.exec_error", "area_id", row.ID, "err", execErr)
+		return fmt.Errorf("update service area: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.update.rows_affected_error", "area_id", row.ID, "err", err)
-		return fmt.Errorf("update service area rows affected: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.service_area.update.rows_affected_error", "area_id", row.ID, "err", rowsErr)
+		return fmt.Errorf("update service area rows affected: %w", rowsErr)
 	}
 
 	if affected == 0 {
@@ -296,32 +272,28 @@ func (a *PhotoSessionAdapter) UpdateServiceArea(ctx context.Context, tx *sql.Tx,
 
 // DeleteServiceArea removes a service area entry.
 func (a *PhotoSessionAdapter) DeleteServiceArea(ctx context.Context, tx *sql.Tx, areaID uint64) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM photographer_service_areas WHERE id = ?`
 
-	result, err := exec.ExecContext(ctx, query, areaID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.delete.exec_error", "area_id", areaID, "err", err)
-		return fmt.Errorf("delete service area: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "delete", query, areaID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.service_area.delete.exec_error", "area_id", areaID, "err", execErr)
+		return fmt.Errorf("delete service area: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.service_area.delete.rows_affected_error", "area_id", areaID, "err", err)
-		return fmt.Errorf("delete service area rows affected: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.service_area.delete.rows_affected_error", "area_id", areaID, "err", rowsErr)
+		return fmt.Errorf("delete service area rows affected: %w", rowsErr)
 	}
 
 	if affected == 0 {

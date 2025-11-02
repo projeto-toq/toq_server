@@ -11,15 +11,12 @@ import (
 )
 
 func (a *PhotoSessionAdapter) UpdateBooking(ctx context.Context, tx *sql.Tx, booking photosessionmodel.PhotoSessionBookingInterface) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -31,10 +28,14 @@ func (a *PhotoSessionAdapter) UpdateBooking(ctx context.Context, tx *sql.Tx, boo
 	}
 
 	query := `UPDATE photographer_photo_session_bookings
-		SET agenda_entry_id = ?, photographer_user_id = ?, listing_id = ?, starts_at = ?, ends_at = ?, status = ?, reason = ?
+		SET agenda_entry_id = ?, photographer_user_id = ?, listing_id = ?, starts_at = ?, ends_at = ?, status = ?, reason = ?, updated_at = NOW()
 		WHERE id = ?`
 
-	result, err := exec.ExecContext(ctx, query,
+	result, execErr := a.ExecContext(
+		ctx,
+		tx,
+		"update",
+		query,
 		entity.AgendaEntryID,
 		entity.PhotographerID,
 		entity.ListingID,
@@ -44,17 +45,17 @@ func (a *PhotoSessionAdapter) UpdateBooking(ctx context.Context, tx *sql.Tx, boo
 		reason,
 		entity.ID,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.update_booking.exec_error", "booking_id", entity.ID, "err", err)
-		return fmt.Errorf("update photographer booking: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.update_booking.exec_error", "booking_id", entity.ID, "err", execErr)
+		return fmt.Errorf("update photographer booking: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.update_booking.rows_error", "booking_id", entity.ID, "err", err)
-		return fmt.Errorf("rows affected photographer booking: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.update_booking.rows_error", "booking_id", entity.ID, "err", rowsErr)
+		return fmt.Errorf("rows affected photographer booking: %w", rowsErr)
 	}
 
 	if affected == 0 {

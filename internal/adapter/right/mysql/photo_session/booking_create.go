@@ -11,15 +11,11 @@ import (
 )
 
 func (a *PhotoSessionAdapter) CreateBooking(ctx context.Context, tx *sql.Tx, booking photosessionmodel.PhotoSessionBookingInterface) (uint64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return 0, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -34,8 +30,10 @@ func (a *PhotoSessionAdapter) CreateBooking(ctx context.Context, tx *sql.Tx, boo
 		agenda_entry_id, photographer_user_id, listing_id, starts_at, ends_at, status, reason
 	) VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-	result, err := exec.ExecContext(
+	result, execErr := a.ExecContext(
 		ctx,
+		tx,
+		"insert",
 		query,
 		entity.AgendaEntryID,
 		entity.PhotographerID,
@@ -45,10 +43,10 @@ func (a *PhotoSessionAdapter) CreateBooking(ctx context.Context, tx *sql.Tx, boo
 		entity.Status,
 		reason,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.create_booking.exec_error", "agenda_entry_id", entity.AgendaEntryID, "err", err)
-		return 0, fmt.Errorf("insert photographer booking: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.create_booking.exec_error", "agenda_entry_id", entity.AgendaEntryID, "err", execErr)
+		return 0, fmt.Errorf("insert photographer booking: %w", execErr)
 	}
 
 	id, err := result.LastInsertId()

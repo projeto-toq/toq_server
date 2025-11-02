@@ -20,15 +20,12 @@ func (a *PhotoSessionAdapter) GetBookingByIDForUpdate(ctx context.Context, tx *s
 }
 
 func (a *PhotoSessionAdapter) FindBookingByAgendaEntry(ctx context.Context, tx *sql.Tx, agendaEntryID uint64) (photosessionmodel.PhotoSessionBookingInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -36,7 +33,7 @@ func (a *PhotoSessionAdapter) FindBookingByAgendaEntry(ctx context.Context, tx *
 		FROM photographer_photo_session_bookings WHERE agenda_entry_id = ?`
 
 	row := entity.Booking{}
-	scanErr := exec.QueryRowContext(ctx, query, agendaEntryID).Scan(
+	scanErr := a.QueryRowContext(ctx, tx, "select", query, agendaEntryID).Scan(
 		&row.ID,
 		&row.AgendaEntryID,
 		&row.PhotographerID,
@@ -59,15 +56,11 @@ func (a *PhotoSessionAdapter) FindBookingByAgendaEntry(ctx context.Context, tx *
 }
 
 func (a *PhotoSessionAdapter) getBooking(ctx context.Context, tx *sql.Tx, bookingID uint64, forUpdate bool) (photosessionmodel.PhotoSessionBookingInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -78,7 +71,7 @@ func (a *PhotoSessionAdapter) getBooking(ctx context.Context, tx *sql.Tx, bookin
 	}
 
 	row := entity.Booking{}
-	scanErr := exec.QueryRowContext(ctx, query, bookingID).Scan(
+	scanErr := a.QueryRowContext(ctx, tx, "select", query, bookingID).Scan(
 		&row.ID,
 		&row.AgendaEntryID,
 		&row.PhotographerID,

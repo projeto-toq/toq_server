@@ -12,15 +12,11 @@ import (
 
 // UpdateEntry persists changes applied to an agenda entry.
 func (a *PhotoSessionAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry photosessionmodel.AgendaEntryInterface) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -40,8 +36,10 @@ func (a *PhotoSessionAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry
 		reason = entity.Reason.String
 	}
 
-	if _, err := exec.ExecContext(
+	_, execErr := a.ExecContext(
 		ctx,
+		tx,
+		"update",
 		query,
 		entity.EntryType,
 		entity.Source,
@@ -52,10 +50,11 @@ func (a *PhotoSessionAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry
 		reason,
 		entity.Timezone,
 		entity.ID,
-	); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.update_entry.exec_error", "entry_id", entity.ID, "err", err)
-		return fmt.Errorf("update agenda entry: %w", err)
+	)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.update_entry.exec_error", "entry_id", entity.ID, "err", execErr)
+		return fmt.Errorf("update agenda entry: %w", execErr)
 	}
 
 	return nil

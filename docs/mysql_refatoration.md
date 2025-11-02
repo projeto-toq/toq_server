@@ -273,6 +273,8 @@ result, err := ha.ExecContext(ctx, tx, "insert", insertCalendarQuery,
 ---
 
 ## 11. Fase 8 — Domínio Photo Session
+**Status:** Concluída em 2025-11-03.
+
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/photo_session/*.go`
 - Remover helpers customizados que manipulavam executor próprio.
@@ -290,6 +292,7 @@ result, err := psa.ExecContext(ctx, tx, "update", updateBookingStatusQuery, stat
 ### Critérios
 - Executor único utilizado em todo o módulo.
 - Remoção do tipo `sqlExecutor` local.
+- `helpers.go` removido do pacote.
 
 ---
 

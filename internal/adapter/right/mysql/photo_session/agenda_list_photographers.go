@@ -10,15 +10,11 @@ import (
 
 // ListPhotographerIDs returns distinct photographer IDs that are registered with the photographer role.
 func (a *PhotoSessionAdapter) ListPhotographerIDs(ctx context.Context, tx *sql.Tx) ([]uint64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -33,11 +29,11 @@ func (a *PhotoSessionAdapter) ListPhotographerIDs(ctx context.Context, tx *sql.T
 		  AND u.deleted = 0
 	`
 
-	rows, err := exec.QueryContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.list_photographers.query_error", "err", err)
-		return nil, fmt.Errorf("list photographer ids: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.photo_session.list_photographers.query_error", "err", queryErr)
+		return nil, fmt.Errorf("list photographer ids: %w", queryErr)
 	}
 	defer rows.Close()
 

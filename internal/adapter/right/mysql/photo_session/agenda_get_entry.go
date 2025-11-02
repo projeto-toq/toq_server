@@ -20,15 +20,12 @@ func (a *PhotoSessionAdapter) GetEntryByIDForUpdate(ctx context.Context, tx *sql
 }
 
 func (a *PhotoSessionAdapter) getEntry(ctx context.Context, tx *sql.Tx, entryID uint64, forUpdate bool) (photosessionmodel.AgendaEntryInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -39,7 +36,7 @@ func (a *PhotoSessionAdapter) getEntry(ctx context.Context, tx *sql.Tx, entryID 
 	}
 
 	row := entity.AgendaEntry{}
-	scanErr := exec.QueryRowContext(ctx, query, entryID).Scan(
+	scanErr := a.QueryRowContext(ctx, tx, "select", query, entryID).Scan(
 		&row.ID,
 		&row.PhotographerUserID,
 		&row.EntryType,

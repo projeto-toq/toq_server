@@ -13,15 +13,11 @@ import (
 )
 
 func (a *PhotoSessionAdapter) FindBlockingEntries(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.AgendaEntryInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -30,11 +26,11 @@ func (a *PhotoSessionAdapter) FindBlockingEntries(ctx context.Context, tx *sql.T
 		WHERE photographer_user_id = ? AND blocking = 1 AND ends_at > ? AND starts_at < ?
 		ORDER BY starts_at ASC`
 
-	rows, err := exec.QueryContext(ctx, query, photographerID, rangeStart, rangeEnd)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.find_blocking.query_error", "photographer_id", photographerID, "err", err)
-		return nil, fmt.Errorf("find blocking agenda entries: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, photographerID, rangeStart, rangeEnd)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.photo_session.find_blocking.query_error", "photographer_id", photographerID, "err", queryErr)
+		return nil, fmt.Errorf("find blocking agenda entries: %w", queryErr)
 	}
 	defer rows.Close()
 

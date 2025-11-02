@@ -223,9 +223,11 @@ if err != nil {
 - Nunca use pacotes HTTP nesta camada; não mapeie para domínio.
 - Sucesso: no máximo `slog.Debug` quando necessário.
 
-Padrão de repositórios com Converters:
+Padrão de repositórios:
+- Cada função deve ter seu próprio arquivo.
 - Conversões entre linhas/DTOs DB ↔ entidades de domínio não devem ser feitas inline na função do repositório.
-- Centralize conversões em pacotes utilitários ou helpers por domínio (ex.: `internal/core/utils/converters` ou `internal/adapter/right/mysql/<entity>/converters.go`).
+- Crie entidades de DB que representam ROWs em `internal/adapter/right/mysql/<repo_name>/entity/*.go`.
+- Centralize conversões em pacotes utilitários por domínio em `internal/adapter/right/mysql/<repo_name>/converters/*.go`.
 - Repositório foca em: construir query, executar, checar `RowsAffected`, lidar com `sql.ErrNoRows`, e retornar entidades/domínio já convertidas.
 - Em `RowsAffected == 0`, retorne `sql.ErrNoRows`. O mapeamento para “não encontrado/sem pendência” é feito no Service.
 

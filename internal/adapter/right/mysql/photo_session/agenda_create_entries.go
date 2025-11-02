@@ -15,15 +15,11 @@ func (a *PhotoSessionAdapter) CreateEntries(ctx context.Context, tx *sql.Tx, ent
 		return nil, nil
 	}
 
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -45,8 +41,10 @@ func (a *PhotoSessionAdapter) CreateEntries(ctx context.Context, tx *sql.Tx, ent
 			reason = entity.Reason.String
 		}
 
-		result, err := exec.ExecContext(
+		result, execErr := a.ExecContext(
 			ctx,
+			tx,
+			"insert",
 			query,
 			entity.PhotographerUserID,
 			entity.EntryType,
@@ -58,17 +56,17 @@ func (a *PhotoSessionAdapter) CreateEntries(ctx context.Context, tx *sql.Tx, ent
 			reason,
 			entity.Timezone,
 		)
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.photo_session.create_entries.exec_error", "photographer_id", entity.PhotographerUserID, "err", err)
-			return nil, fmt.Errorf("insert photographer agenda entry: %w", err)
+		if execErr != nil {
+			utils.SetSpanError(ctx, execErr)
+			logger.Error("mysql.photo_session.create_entries.exec_error", "photographer_id", entity.PhotographerUserID, "err", execErr)
+			return nil, fmt.Errorf("insert photographer agenda entry: %w", execErr)
 		}
 
-		id, err := result.LastInsertId()
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.photo_session.create_entries.last_id_error", "photographer_id", entity.PhotographerUserID, "err", err)
-			return nil, fmt.Errorf("agenda entry last insert id: %w", err)
+		id, lastErr := result.LastInsertId()
+		if lastErr != nil {
+			utils.SetSpanError(ctx, lastErr)
+			logger.Error("mysql.photo_session.create_entries.last_id_error", "photographer_id", entity.PhotographerUserID, "err", lastErr)
+			return nil, fmt.Errorf("agenda entry last insert id: %w", lastErr)
 		}
 
 		entry.SetID(uint64(id))

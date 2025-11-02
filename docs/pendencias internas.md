@@ -40,5 +40,6 @@
 - Last_signin_attemp tÃo está sendo populado e Wrong_usersign não funciona
 - get_listing_for_end_update.go listi_liting não está utilizando converters e está fazendo a conversão diretaenteme no arquivo, sem entity
 - listing_catalog.go tem vários funs no mesmo arquivo
-- lrespositori de listing está totalmente dofora dao prã de listing, sem converters, sem entity, func chamando func no próprio repositorio
+- o repositório de listing está totalmente dofora dao prã de listing, sem converters, sem entity, func chamando func no próprio repositorio
 - incluir no toq_server_go_guide.md o padrão de repositorio sempre com converter no /converter e entity no /entity
+- service_areas_repo está com várias funcs no mesmo arquivo

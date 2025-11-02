@@ -10,15 +10,11 @@ import (
 )
 
 func (a *PhotoSessionAdapter) DeleteEntriesBySource(ctx context.Context, tx *sql.Tx, photographerID uint64, entryType photosessionmodel.AgendaEntryType, source photosessionmodel.AgendaEntrySource, sourceID *uint64) (int64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return 0, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -32,18 +28,18 @@ func (a *PhotoSessionAdapter) DeleteEntriesBySource(ctx context.Context, tx *sql
 		query += ` AND source_id IS NULL`
 	}
 
-	result, err := exec.ExecContext(ctx, query, args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.delete_entries.exec_error", "photographer_id", photographerID, "err", err)
-		return 0, fmt.Errorf("delete agenda entries by source: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "delete", query, args...)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.delete_entries.exec_error", "photographer_id", photographerID, "err", execErr)
+		return 0, fmt.Errorf("delete agenda entries by source: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.delete_entries.rows_error", "photographer_id", photographerID, "err", err)
-		return 0, fmt.Errorf("rows affected agenda entries: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.delete_entries.rows_error", "photographer_id", photographerID, "err", rowsErr)
+		return 0, fmt.Errorf("rows affected agenda entries: %w", rowsErr)
 	}
 
 	return affected, nil

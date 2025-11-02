@@ -10,32 +10,28 @@ import (
 )
 
 func (a *PhotoSessionAdapter) UpdateBookingStatus(ctx context.Context, tx *sql.Tx, bookingID uint64, status photosessionmodel.BookingStatus) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE photographer_photo_session_bookings SET status = ? WHERE id = ?`
 
-	result, err := exec.ExecContext(ctx, query, string(status), bookingID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.update_booking_status.exec_error", "booking_id", bookingID, "err", err)
-		return fmt.Errorf("update photographer booking status: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "update", query, string(status), bookingID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.photo_session.update_booking_status.exec_error", "booking_id", bookingID, "err", execErr)
+		return fmt.Errorf("update photographer booking status: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.photo_session.update_booking_status.rows_error", "booking_id", bookingID, "err", err)
-		return fmt.Errorf("rows affected photographer booking status: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.update_booking_status.rows_error", "booking_id", bookingID, "err", rowsErr)
+		return fmt.Errorf("rows affected photographer booking status: %w", rowsErr)
 	}
 
 	if affected == 0 {
