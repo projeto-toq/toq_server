@@ -17,7 +17,7 @@ func (ua *UserAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err er
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	tx, err = ua.db.DB.BeginTx(ctx, nil)
+	tx, err = ua.DB().GetDB().BeginTx(ctx, nil)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.user.transaction.begin_error", "error", err)

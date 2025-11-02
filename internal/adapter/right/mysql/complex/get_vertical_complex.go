@@ -23,28 +23,36 @@ func (ca *ComplexAdapter) GetVerticalComplex(ctx context.Context, tx *sql.Tx, zi
 
 	query := `SELECT * FROM complex WHERE zip_code = ? AND number = ?;`
 
-	entity, err := ca.Read(ctx, tx, query, zipCode, number)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, zipCode, number)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_vertical.read_error", "error", err, "zip_code", zipCode, "number", number)
-		return nil, fmt.Errorf("get vertical complex read: %w", err)
+		return nil, fmt.Errorf("get vertical complex query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.get_vertical.scan_error", "error", err, "zip_code", zipCode, "number", number)
+		return nil, fmt.Errorf("scan vertical complex rows: %w", err)
 	}
 
-	if len(entity) == 0 {
+	if len(entities) == 0 {
 		err = sql.ErrNoRows
 		utils.SetSpanError(ctx, err)
 		logger.Warn("mysql.complex.get_vertical.not_found", "zip_code", zipCode, "number", number)
 		return nil, err
 	}
 
-	if len(entity) > 1 {
+	if len(entities) > 1 {
 		err = errors.New("multiple vertical complex rows found")
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_vertical.multiple_rows", "error", err, "zip_code", zipCode, "number", number)
 		return nil, err
 	}
 
-	complex, err = complexrepoconverters.ComplexEntityToDomain(entity[0])
+	complex, err = complexrepoconverters.ComplexEntityToDomain(entities[0])
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_vertical.convert_error", "error", err, "zip_code", zipCode, "number", number)

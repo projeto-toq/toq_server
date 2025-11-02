@@ -6,6 +6,7 @@ import (
 
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
@@ -36,7 +37,7 @@ type AdapterFactory interface {
 	CreateStorageAdapters(ctx context.Context, env *globalmodel.Environment, db *sql.DB) (StorageAdapters, error)
 
 	// CreateRepositoryAdapters cria todos os repositórios MySQL
-	CreateRepositoryAdapters(database *mysqladapter.Database) (RepositoryAdapters, error)
+	CreateRepositoryAdapters(database *mysqladapter.Database, metrics metricsport.MetricsPortInterface) (RepositoryAdapters, error)
 
 	// CreateMetricsAdapter cria o adapter de métricas
 	CreateMetricsAdapter(runtimeEnv string) *MetricsAdapter

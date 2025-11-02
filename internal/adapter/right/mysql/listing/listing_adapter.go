@@ -1,15 +1,14 @@
 package mysqllistingadapter
 
 import (
-	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 )
 
 type ListingAdapter struct {
-	db *mysqllistingadapter.Database
+	mysqladapter.InstrumentedAdapter
 }
 
-func NewListingAdapter(db *mysqllistingadapter.Database) *ListingAdapter {
-	return &ListingAdapter{
-		db: db,
-	}
+func NewListingAdapter(db *mysqladapter.Database, metrics metricsport.MetricsPortInterface) *ListingAdapter {
+	return &ListingAdapter{InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics)}
 }

@@ -16,6 +16,8 @@ func (pa *PermissionAdapter) Update(ctx context.Context, tx *sql.Tx, query strin
 	}
 	defer spanEnd()
 
+	defer pa.ObserveOnComplete("update", query)()
+
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 

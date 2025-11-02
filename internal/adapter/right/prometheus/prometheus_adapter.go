@@ -26,9 +26,10 @@ type PrometheusAdapter struct {
 	httpResponseSize     *prometheus.HistogramVec
 
 	// Business Metrics (kept)
-	activeSessions       prometheus.Gauge
-	databaseQueriesTotal *prometheus.CounterVec
-	cacheOperationsTotal *prometheus.CounterVec
+	activeSessions        prometheus.Gauge
+	databaseQueriesTotal  *prometheus.CounterVec
+	databaseQueryDuration *prometheus.HistogramVec
+	cacheOperationsTotal  *prometheus.CounterVec
 
 	// System Metrics
 	systemUptime prometheus.Gauge
@@ -116,6 +117,15 @@ func (p *PrometheusAdapter) initializeMetrics() {
 		[]string{"operation", "table"},
 	)
 
+	p.databaseQueryDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "database_query_duration_seconds",
+			Help:    "Database query latency distribution",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"operation", "table"},
+	)
+
 	p.cacheOperationsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cache_operations_total",
@@ -152,6 +162,7 @@ func (p *PrometheusAdapter) registerMetrics() {
 		p.httpResponseSize,
 		p.activeSessions,
 		p.databaseQueriesTotal,
+		p.databaseQueryDuration,
 		p.cacheOperationsTotal,
 		p.systemUptime,
 		p.errorsTotal,
@@ -198,6 +209,10 @@ func (p *PrometheusAdapter) SetActiveSessions(count int64) {
 
 func (p *PrometheusAdapter) IncrementDatabaseQueries(operation, table string) {
 	p.databaseQueriesTotal.WithLabelValues(operation, table).Inc()
+}
+
+func (p *PrometheusAdapter) ObserveDatabaseQueryDuration(operation, table string, duration time.Duration) {
+	p.databaseQueryDuration.WithLabelValues(operation, table).Observe(duration.Seconds())
 }
 
 func (p *PrometheusAdapter) IncrementCacheOperations(operation, result string) {

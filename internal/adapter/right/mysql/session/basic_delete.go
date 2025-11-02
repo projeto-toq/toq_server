@@ -14,6 +14,8 @@ func (sa *SessionAdapter) Delete(ctx context.Context, tx *sql.Tx, query string, 
 	}
 	defer spanEnd()
 
+	defer sa.ObserveOnComplete("delete", query)()
+
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 

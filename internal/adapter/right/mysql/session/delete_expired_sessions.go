@@ -26,15 +26,17 @@ func (sa *SessionAdapter) DeleteExpiredSessions(ctx context.Context, tx *sql.Tx,
 	// Execute within provided transaction when available; fallback to direct DB exec otherwise
 	execer := interface {
 		ExecContext(context.Context, string, ...any) (sql.Result, error)
-	}(sa.db.DB)
+	}(sa.DB().GetDB())
 	if tx != nil {
 		execer = tx
 	}
 
-	res, err := execer.ExecContext(ctx, `DELETE FROM sessions 
-					WHERE ((expires_at IS NOT NULL AND expires_at < UTC_TIMESTAMP()) 
-						OR (absolute_expires_at IS NOT NULL AND absolute_expires_at < UTC_TIMESTAMP())) 
-					LIMIT ?`, limit)
+	query := `DELETE FROM sessions 
+		WHERE ((expires_at IS NOT NULL AND expires_at < UTC_TIMESTAMP()) 
+			OR (absolute_expires_at IS NOT NULL AND absolute_expires_at < UTC_TIMESTAMP())) 
+		LIMIT ?`
+	defer sa.ObserveOnComplete("delete", query)()
+	res, err := execer.ExecContext(ctx, query, limit)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.session.delete_expired_sessions.exec_error", "limit", limit, "error", err)

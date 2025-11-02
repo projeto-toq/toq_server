@@ -26,6 +26,7 @@ func (a *HolidayAdapter) CreateCalendar(ctx context.Context, tx *sql.Tx, calenda
 	entity := converters.ToCalendarEntity(calendar)
 
 	query := `INSERT INTO holiday_calendars (name, scope, state, city, is_active, timezone) VALUES (?, ?, ?, ?, ?, ?)`
+	defer a.ObserveOnComplete("insert", query)()
 	result, err := exec.ExecContext(ctx, query, entity.Name, entity.Scope, entity.State, entity.City, entity.IsActive, entity.Timezone)
 	if err != nil {
 		utils.SetSpanError(ctx, err)

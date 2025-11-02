@@ -70,11 +70,19 @@ func (ca *ComplexAdapter) ListComplexes(ctx context.Context, tx *sql.Tx, params 
 
 	query := builder.String()
 
-	entities, err := ca.Read(ctx, tx, query, args...)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, args...)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.list.read_error", "error", err, "params", params)
-		return nil, fmt.Errorf("list complexes read: %w", err)
+		return nil, fmt.Errorf("list complexes query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.list.scan_error", "error", err, "params", params)
+		return nil, fmt.Errorf("scan complexes rows: %w", err)
 	}
 
 	complexes := make([]complexmodel.ComplexInterface, 0, len(entities))

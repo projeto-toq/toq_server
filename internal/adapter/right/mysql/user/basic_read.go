@@ -3,6 +3,7 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -13,6 +14,11 @@ func (ua *UserAdapter) Read(ctx context.Context, tx *sql.Tx, query string, args 
 		return nil, err
 	}
 	defer spanEnd()
+
+	startedAt := time.Now()
+	defer func() {
+		ua.Observe("select", query, time.Since(startedAt))
+	}()
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)

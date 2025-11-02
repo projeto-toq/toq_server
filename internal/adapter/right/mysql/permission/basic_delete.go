@@ -16,6 +16,8 @@ func (pa *PermissionAdapter) Delete(ctx context.Context, tx *sql.Tx, query strin
 	}
 	defer spanEnd()
 
+	defer pa.ObserveOnComplete("delete", query)()
+
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 

@@ -19,6 +19,7 @@ func (la *ListingAdapter) DeleteListingFinancingBlockers(ctx context.Context, tx
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM financing_blockers WHERE listing_id = ?`
+	defer la.ObserveOnComplete("delete", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

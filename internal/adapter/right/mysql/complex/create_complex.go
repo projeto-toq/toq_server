@@ -3,11 +3,22 @@ package mysqlcomplexadapter
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (ca *ComplexAdapter) CreateComplex(ctx context.Context, tx *sql.Tx, complex complexmodel.ComplexInterface) (int64, error) {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return 0, err
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
 	query := `INSERT INTO complex (
 		name,
 		zip_code,
@@ -22,9 +33,10 @@ func (ca *ComplexAdapter) CreateComplex(ctx context.Context, tx *sql.Tx, complex
 		type
 	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
-	return ca.Create(
+	result, err := ca.ExecContext(
 		ctx,
 		tx,
+		"insert",
 		query,
 		complex.Name(),
 		complex.ZipCode(),
@@ -38,4 +50,18 @@ func (ca *ComplexAdapter) CreateComplex(ctx context.Context, tx *sql.Tx, complex
 		nullableStringValue(complex.MainRegistration()),
 		complex.GetPropertyType(),
 	)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.create.exec_error", "error", err)
+		return 0, fmt.Errorf("insert complex: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.create.last_insert_id_error", "error", err)
+		return 0, fmt.Errorf("complex last insert id: %w", err)
+	}
+
+	return id, nil
 }

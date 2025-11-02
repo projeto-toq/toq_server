@@ -19,6 +19,7 @@ type MetricsPortInterface interface {
 	// Business/System Metrics (kept)
 	SetActiveSessions(count int64)
 	IncrementDatabaseQueries(operation, table string)
+	ObserveDatabaseQueryDuration(operation, table string, duration time.Duration)
 	IncrementCacheOperations(operation, result string)
 
 	// System Metrics

@@ -2,6 +2,7 @@ package sessionmysqladapter
 
 import (
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	sessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 )
 
@@ -9,11 +10,11 @@ import (
 var _ sessionrepository.SessionRepoPortInterface = (*SessionAdapter)(nil)
 
 type SessionAdapter struct {
-	db *mysqladapter.Database
+	mysqladapter.InstrumentedAdapter
 }
 
-func NewSessionAdapter(db *mysqladapter.Database) sessionrepository.SessionRepoPortInterface {
+func NewSessionAdapter(db *mysqladapter.Database, metrics metricsport.MetricsPortInterface) sessionrepository.SessionRepoPortInterface {
 	return &SessionAdapter{
-		db: db,
+		InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics),
 	}
 }

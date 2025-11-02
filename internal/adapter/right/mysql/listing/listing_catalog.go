@@ -24,6 +24,7 @@ func (la *ListingAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, cat
 		query += ` AND is_active = 1`
 	}
 	query += ` ORDER BY numeric_value`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -72,6 +73,7 @@ func (la *ListingAdapter) GetCatalogValueByID(ctx context.Context, tx *sql.Tx, c
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, category, numeric_value, slug, label, description, is_active FROM listing_catalog_values WHERE category = ? AND id = ?`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -104,6 +106,7 @@ func (la *ListingAdapter) GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx,
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, category, numeric_value, slug, label, description, is_active FROM listing_catalog_values WHERE category = ? AND slug = ?`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -136,6 +139,7 @@ func (la *ListingAdapter) GetCatalogValueByNumeric(ctx context.Context, tx *sql.
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, category, numeric_value, slug, label, description, is_active FROM listing_catalog_values WHERE category = ? AND numeric_value = ?`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -168,6 +172,7 @@ func (la *ListingAdapter) GetNextCatalogValueID(ctx context.Context, tx *sql.Tx,
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT IFNULL(MAX(id), 0) + 1 FROM listing_catalog_values WHERE category = ?`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -197,6 +202,7 @@ func (la *ListingAdapter) GetNextCatalogNumericValue(ctx context.Context, tx *sq
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT IFNULL(MAX(numeric_value), 0) + 1 FROM listing_catalog_values WHERE category = ?`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -227,6 +233,7 @@ func (la *ListingAdapter) CreateCatalogValue(ctx context.Context, tx *sql.Tx, va
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `INSERT INTO listing_catalog_values (category, id, numeric_value, slug, label, description, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	defer la.ObserveOnComplete("insert", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -262,6 +269,7 @@ func (la *ListingAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, va
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE listing_catalog_values SET slug = ?, label = ?, description = ?, is_active = ? WHERE category = ? AND id = ?`
+	defer la.ObserveOnComplete("update", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -309,6 +317,7 @@ func (la *ListingAdapter) SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE listing_catalog_values SET is_active = 0 WHERE category = ? AND id = ?`
+	defer la.ObserveOnComplete("update", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

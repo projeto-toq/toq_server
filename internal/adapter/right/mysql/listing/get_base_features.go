@@ -21,9 +21,10 @@ func (la *ListingAdapter) GetBaseFeatures(ctx context.Context, tx *sql.Tx) (feat
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	sql := `SELECT * FROM base_features ORDER BY priority ASC;`
+	query := `SELECT * FROM base_features ORDER BY priority ASC;`
+	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, sql)
+	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.get_base_features.prepare_error", "error", err)

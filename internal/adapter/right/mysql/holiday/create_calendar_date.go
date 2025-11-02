@@ -26,6 +26,7 @@ func (a *HolidayAdapter) CreateCalendarDate(ctx context.Context, tx *sql.Tx, dat
 	entity := converters.ToDateEntity(date)
 
 	query := `INSERT INTO holiday_calendar_dates (calendar_id, holiday_date, label, is_recurrent) VALUES (?, ?, ?, ?)`
+	defer a.ObserveOnComplete("insert", query)()
 	result, err := exec.ExecContext(ctx, query, entity.CalendarID, entity.Holiday, entity.Label, entity.Recurrent)
 	if err != nil {
 		utils.SetSpanError(ctx, err)

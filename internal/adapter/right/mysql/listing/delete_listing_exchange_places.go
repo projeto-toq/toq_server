@@ -19,6 +19,7 @@ func (la *ListingAdapter) DeleteListingExchangePlaces(ctx context.Context, tx *s
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM exchange_places WHERE listing_id = ?`
+	defer la.ObserveOnComplete("delete", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

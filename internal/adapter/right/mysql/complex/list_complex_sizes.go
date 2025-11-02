@@ -45,11 +45,19 @@ func (ca *ComplexAdapter) ListComplexSizes(ctx context.Context, tx *sql.Tx, para
 
 	query := builder.String()
 
-	entities, err := ca.Read(ctx, tx, query, args...)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, args...)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.list_sizes.read_error", "error", err, "params", params)
-		return nil, fmt.Errorf("list complex sizes read: %w", err)
+		return nil, fmt.Errorf("list complex sizes query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.list_sizes.scan_error", "error", err, "params", params)
+		return nil, fmt.Errorf("scan complex sizes rows: %w", err)
 	}
 
 	sizes := make([]complexmodel.ComplexSizeInterface, 0, len(entities))

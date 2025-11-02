@@ -1,15 +1,16 @@
 package mysqlglobaladapter
 
 import (
-	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 )
 
 type GlobalAdapter struct {
-	db *mysqlglobaladapter.Database
+	mysqladapter.InstrumentedAdapter
 }
 
-func NewGlobalAdapter(db *mysqlglobaladapter.Database) *GlobalAdapter {
+func NewGlobalAdapter(db *mysqladapter.Database, metrics metricsport.MetricsPortInterface) *GlobalAdapter {
 	return &GlobalAdapter{
-		db: db,
+		InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics),
 	}
 }

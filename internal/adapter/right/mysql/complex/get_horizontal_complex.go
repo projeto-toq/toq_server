@@ -25,11 +25,19 @@ func (ca *ComplexAdapter) GetHorizontalComplex(ctx context.Context, tx *sql.Tx, 
 				JOIN complex_zip_codes z on z.complex_id = c.id
 				WHERE z.zip_code = ?;`
 
-	entities, err := ca.Read(ctx, tx, query, zipCode)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, zipCode)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_horizontal.read_error", "error", err, "zip_code", zipCode)
-		return nil, fmt.Errorf("get horizontal complex read: %w", err)
+		return nil, fmt.Errorf("get horizontal complex query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.get_horizontal.scan_error", "error", err, "zip_code", zipCode)
+		return nil, fmt.Errorf("scan horizontal complex rows: %w", err)
 	}
 
 	if len(entities) == 0 {

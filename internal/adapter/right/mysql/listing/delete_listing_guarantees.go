@@ -19,6 +19,7 @@ func (la *ListingAdapter) DeleteListingGuarantees(ctx context.Context, tx *sql.T
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM guarantees WHERE listing_id = ?`
+	defer la.ObserveOnComplete("delete", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

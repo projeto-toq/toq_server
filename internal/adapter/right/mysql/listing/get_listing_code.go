@@ -18,9 +18,10 @@ func (la *ListingAdapter) GetListingCode(ctx context.Context, tx *sql.Tx) (code 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	sql := `UPDATE listing_sequence SET id=LAST_INSERT_ID(id+1);`
+	query := `UPDATE listing_sequence SET id=LAST_INSERT_ID(id+1);`
+	defer la.ObserveOnComplete("update", query)()
 
-	stmt, err := tx.PrepareContext(ctx, sql)
+	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.get_listing_code.prepare_error", "error", err)

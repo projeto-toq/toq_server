@@ -26,6 +26,7 @@ func (a *HolidayAdapter) UpdateCalendar(ctx context.Context, tx *sql.Tx, calenda
 	entity := converters.ToCalendarEntity(calendar)
 
 	query := `UPDATE holiday_calendars SET name = ?, scope = ?, state = ?, city = ?, is_active = ?, timezone = ? WHERE id = ?`
+	defer a.ObserveOnComplete("update", query)()
 	result, err := exec.ExecContext(ctx, query, entity.Name, entity.Scope, entity.State, entity.City, entity.IsActive, entity.Timezone, entity.ID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)

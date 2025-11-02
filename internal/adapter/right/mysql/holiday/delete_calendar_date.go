@@ -22,6 +22,7 @@ func (a *HolidayAdapter) DeleteCalendarDate(ctx context.Context, tx *sql.Tx, id 
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM holiday_calendar_dates WHERE id = ?`
+	defer a.ObserveOnComplete("delete", query)()
 	result, err := exec.ExecContext(ctx, query, id)
 	if err != nil {
 		utils.SetSpanError(ctx, err)

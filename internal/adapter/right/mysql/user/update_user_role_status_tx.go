@@ -34,7 +34,7 @@ func (ua *UserAdapter) UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, use
 	if tx != nil {
 		execer = tx
 	} else {
-		execer = ua.db.GetDB()
+		execer = ua.DB().GetDB()
 	}
 
 	res, err := execer.ExecContext(ctx, q, int(status), userID, role)

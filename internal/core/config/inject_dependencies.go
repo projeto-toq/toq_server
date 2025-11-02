@@ -71,7 +71,12 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 
 	// 2. Criar Repository Adapters
 
-	repositories, err := c.adapterFactory.CreateRepositoryAdapters(storage.Database)
+	var metrics metricsport.MetricsPortInterface
+	if c.metricsAdapter != nil {
+		metrics = c.metricsAdapter.Prometheus
+	}
+
+	repositories, err := c.adapterFactory.CreateRepositoryAdapters(storage.Database, metrics)
 	if err != nil {
 		return fmt.Errorf("failed to create repository adapters: %w", err)
 	}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 
 	// HTTP handlers
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers"
@@ -184,41 +185,41 @@ func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env 
 
 // CreateRepositoryAdapters cria todos os repositórios MySQL
 // Agrupa repositórios por domínio (User, Global, Complex, Listing, Session, Permission)
-func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter.Database) (RepositoryAdapters, error) {
+func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter.Database, metrics metricsport.MetricsPortInterface) (RepositoryAdapters, error) {
 	slog.Info("Creating repository adapters")
 
 	// User Repository
-	userRepo := mysqluseradapter.NewUserAdapter(database)
+	userRepo := mysqluseradapter.NewUserAdapter(database, metrics)
 
 	// Device Token Repository (access through User Repository)
 	deviceTokenRepo := userRepo.GetDeviceTokenRepository()
 
 	// Global Repository
-	globalRepo := mysqlglobaladapter.NewGlobalAdapter(database)
+	globalRepo := mysqlglobaladapter.NewGlobalAdapter(database, metrics)
 
 	// Complex Repository
-	complexRepo := mysqlcomplexadapter.NewComplexAdapter(database)
+	complexRepo := mysqlcomplexadapter.NewComplexAdapter(database, metrics)
 
 	// Listing Repository
-	listingRepo := mysqllistingadapter.NewListingAdapter(database)
+	listingRepo := mysqllistingadapter.NewListingAdapter(database, metrics)
 
 	// Holiday Repository
-	holidayRepo := mysqlholidayadapter.NewHolidayAdapter(database)
+	holidayRepo := mysqlholidayadapter.NewHolidayAdapter(database, metrics)
 
 	// Schedule Repository
-	scheduleRepo := mysqlscheduleadapter.NewScheduleAdapter(database)
+	scheduleRepo := mysqlscheduleadapter.NewScheduleAdapter(database, metrics)
 
 	// Visit Repository
-	visitRepo := mysqlvisitadapter.NewVisitAdapter(database)
+	visitRepo := mysqlvisitadapter.NewVisitAdapter(database, metrics)
 
 	// Photo Session Repository
-	photoSessionRepo := mysqlphotosessionadapter.NewPhotoSessionAdapter(database)
+	photoSessionRepo := mysqlphotosessionadapter.NewPhotoSessionAdapter(database, metrics)
 
 	// Session Repository
-	sessionRepo := sessionmysqladapter.NewSessionAdapter(database)
+	sessionRepo := sessionmysqladapter.NewSessionAdapter(database, metrics)
 
 	// Permission Repository
-	permissionRepo := mysqlpermissionadapter.NewPermissionAdapter(database)
+	permissionRepo := mysqlpermissionadapter.NewPermissionAdapter(database, metrics)
 
 	slog.Info("Successfully created all repository adapters")
 

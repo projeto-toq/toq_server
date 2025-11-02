@@ -22,11 +22,19 @@ func (ca *ComplexAdapter) GetComplexZipCodes(ctx context.Context, tx *sql.Tx, co
 
 	query := `SELECT * FROM complex_zip_codes WHERE complex_id = ?;`
 
-	entities, err := ca.Read(ctx, tx, query, complexID)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, complexID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_zip_codes.read_error", "error", err, "complex_id", complexID)
-		return nil, fmt.Errorf("get complex zip codes read: %w", err)
+		return nil, fmt.Errorf("get complex zip codes query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.get_zip_codes.scan_error", "error", err, "complex_id", complexID)
+		return nil, fmt.Errorf("scan complex zip codes rows: %w", err)
 	}
 
 	if len(entities) == 0 {

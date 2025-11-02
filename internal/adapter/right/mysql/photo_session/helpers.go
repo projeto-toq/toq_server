@@ -18,7 +18,7 @@ func (a *PhotoSessionAdapter) executor(tx *sql.Tx) sqlExecutor {
 	if tx != nil {
 		return tx
 	}
-	return a.db.GetDB()
+	return a.DB().GetDB()
 }
 
 func withTracer(ctx context.Context) (context.Context, func(), error) {

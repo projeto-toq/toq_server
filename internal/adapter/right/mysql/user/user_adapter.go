@@ -4,18 +4,19 @@ import (
 	"context"
 	"database/sql"
 
-	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 
 	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
 )
 
 type UserAdapter struct {
-	db *mysqluseradapter.Database
+	mysqladapter.InstrumentedAdapter
 }
 
-func NewUserAdapter(db *mysqluseradapter.Database) *UserAdapter {
+func NewUserAdapter(db *mysqladapter.Database, metrics metricsport.MetricsPortInterface) *UserAdapter {
 	return &UserAdapter{
-		db: db,
+		InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics),
 	}
 }
 
@@ -24,7 +25,7 @@ func NewUserAdapter(db *mysqluseradapter.Database) *UserAdapter {
 // GetDeviceTokenRepository returns a repository bound to the underlying *sql.DB
 // Avoids leaking *sql.DB outside adapter layer.
 func (ua *UserAdapter) GetDeviceTokenRepository() *DeviceTokenRepository {
-	return NewDeviceTokenRepository(ua.db.GetDB())
+	return NewDeviceTokenRepository(ua.DB().GetDB())
 }
 
 // AddDeviceToken adds a device token for a user (satisfies UserRepoPortInterface extension)

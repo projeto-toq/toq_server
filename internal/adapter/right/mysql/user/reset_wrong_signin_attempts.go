@@ -19,7 +19,7 @@ func (ua *UserAdapter) ResetUserWrongSigninAttempts(ctx context.Context, userID 
 
 	query := `DELETE FROM temp_wrong_signin WHERE user_id = ?`
 
-	_, err = ua.db.GetDB().ExecContext(ctx, query, userID)
+	_, err = ua.DB().GetDB().ExecContext(ctx, query, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.user.reset_wrong_signin_attempts.delete_error", "user_id", userID, "error", err)

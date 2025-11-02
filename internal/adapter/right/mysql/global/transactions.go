@@ -17,7 +17,7 @@ func (ga *GlobalAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err 
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	tx, err = ga.db.DB.BeginTx(ctx, nil)
+	tx, err = ga.DB().GetDB().BeginTx(ctx, nil)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.common.transaction.begin_error", "error", err)
@@ -36,7 +36,7 @@ func (ga *GlobalAdapter) StartReadOnlyTransaction(ctx context.Context) (tx *sql.
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	tx, err = ga.db.DB.BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
+	tx, err = ga.DB().GetDB().BeginTx(ctx, &sql.TxOptions{ReadOnly: true})
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.common.transaction.begin_readonly_error", "error", err)

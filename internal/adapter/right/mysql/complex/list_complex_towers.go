@@ -50,11 +50,19 @@ func (ca *ComplexAdapter) ListComplexTowers(ctx context.Context, tx *sql.Tx, par
 
 	query := builder.String()
 
-	entities, err := ca.Read(ctx, tx, query, args...)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, args...)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.list_towers.read_error", "error", err, "params", params)
-		return nil, fmt.Errorf("list complex towers read: %w", err)
+		return nil, fmt.Errorf("list complex towers query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.list_towers.scan_error", "error", err, "params", params)
+		return nil, fmt.Errorf("scan complex towers rows: %w", err)
 	}
 
 	towers := make([]complexmodel.ComplexTowerInterface, 0, len(entities))

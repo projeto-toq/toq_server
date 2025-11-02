@@ -18,7 +18,7 @@ func (a *ScheduleAdapter) executor(tx *sql.Tx) sqlExecutor {
 	if tx != nil {
 		return tx
 	}
-	return a.db.GetDB()
+	return a.DB().GetDB()
 }
 
 func defaultPagination(limit, page int, max int) (int, int) {

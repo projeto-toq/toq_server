@@ -17,7 +17,7 @@ func (sa *SessionAdapter) StartTransaction(ctx context.Context) (tx *sql.Tx, err
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	tx, err = sa.db.DB.BeginTx(ctx, nil)
+	tx, err = sa.DB().GetDB().BeginTx(ctx, nil)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.session.transaction.begin_error", "error", err)

@@ -20,9 +20,10 @@ func (la *ListingAdapter) CreateGuarantee(ctx context.Context, tx *sql.Tx, guara
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	sql := `INSERT INTO guarantees (listing_id, priority, guarantee) VALUES (?, ?, ?);`
+	statement := `INSERT INTO guarantees (listing_id, priority, guarantee) VALUES (?, ?, ?);`
+	defer la.ObserveOnComplete("insert", statement)()
 
-	stmt, err := tx.PrepareContext(ctx, sql)
+	stmt, err := tx.PrepareContext(ctx, statement)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.create_guarantee.prepare_error", "error", err)

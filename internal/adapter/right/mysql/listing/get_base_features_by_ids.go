@@ -42,6 +42,7 @@ func (la *ListingAdapter) GetBaseFeaturesByIDs(
 		"SELECT id, feature, description, priority FROM base_features WHERE id IN (%s)",
 		strings.Join(placeholders, ","),
 	)
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

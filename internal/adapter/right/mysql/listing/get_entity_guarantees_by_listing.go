@@ -22,6 +22,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT * FROM guarantees WHERE listing_id = ?;`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

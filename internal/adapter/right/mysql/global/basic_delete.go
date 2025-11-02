@@ -3,6 +3,7 @@ package mysqlglobaladapter
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -13,6 +14,11 @@ func (ga *GlobalAdapter) Delete(ctx context.Context, tx *sql.Tx, query string, a
 		return 0, err
 	}
 	defer spanEnd()
+
+	startedAt := time.Now()
+	defer func() {
+		ga.Observe("delete", query, time.Since(startedAt))
+	}()
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)

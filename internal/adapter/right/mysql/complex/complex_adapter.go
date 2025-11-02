@@ -1,15 +1,14 @@
 package mysqlcomplexadapter
 
 import (
-	mysqlcomplexadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 )
 
 type ComplexAdapter struct {
-	db *mysqlcomplexadapter.Database
+	mysqladapter.InstrumentedAdapter
 }
 
-func NewComplexAdapter(db *mysqlcomplexadapter.Database) *ComplexAdapter {
-	return &ComplexAdapter{
-		db: db,
-	}
+func NewComplexAdapter(db *mysqladapter.Database, metrics metricsport.MetricsPortInterface) *ComplexAdapter {
+	return &ComplexAdapter{InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics)}
 }

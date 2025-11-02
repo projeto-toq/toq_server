@@ -22,6 +22,7 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT * FROM exchange_places WHERE listing_id = ?;`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

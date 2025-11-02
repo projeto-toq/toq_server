@@ -50,11 +50,19 @@ func (ca *ComplexAdapter) ListComplexZipCodes(ctx context.Context, tx *sql.Tx, p
 
 	query := builder.String()
 
-	entities, err := ca.Read(ctx, tx, query, args...)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, args...)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.list_zip_codes.read_error", "error", err, "params", params)
-		return nil, fmt.Errorf("list complex zip codes read: %w", err)
+		return nil, fmt.Errorf("list complex zip codes query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.list_zip_codes.scan_error", "error", err, "params", params)
+		return nil, fmt.Errorf("scan complex zip codes rows: %w", err)
 	}
 
 	zipCodes := make([]complexmodel.ComplexZipCodeInterface, 0, len(entities))

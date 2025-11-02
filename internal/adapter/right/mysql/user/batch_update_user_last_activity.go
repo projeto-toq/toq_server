@@ -55,7 +55,7 @@ func (ua *UserAdapter) BatchUpdateUserLastActivity(ctx context.Context, userIDs 
 	query := queryBuilder.String()
 
 	// Execute batch update
-	stmt, err := ua.db.DB.PrepareContext(ctx, query)
+	stmt, err := ua.DB().GetDB().PrepareContext(ctx, query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.user.batch_update_last_activity.prepare_error", "error", err)

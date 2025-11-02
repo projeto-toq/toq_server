@@ -32,7 +32,8 @@ func (sa *SessionAdapter) DeleteSessionsByUserID(ctx context.Context, tx *sql.Tx
 	}
 
 	// Fallback if no transaction (should rarely happen in our flows)
-	res, err := sa.db.DB.ExecContext(ctx, query, userID)
+	defer sa.ObserveOnComplete("delete", query)()
+	res, err := sa.DB().GetDB().ExecContext(ctx, query, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.session.delete_sessions_by_user_id.exec_error", "user_id", userID, "error", err)

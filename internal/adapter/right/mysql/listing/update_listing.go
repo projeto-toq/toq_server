@@ -26,6 +26,7 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 				transaction = ?, sell_net = ?, rent_net = ?, condominium = ?, annual_tax = ?, annual_ground_rent = ?, exchange = ?, exchange_perc = ?,
 				installment = ?, financing = ?, visit = ?, tenant_name = ?, tenant_email = ?, tenant_phone = ?, accompanying = ?, deleted = ?
 			WHERE id = ?`
+	defer la.ObserveOnComplete("update", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

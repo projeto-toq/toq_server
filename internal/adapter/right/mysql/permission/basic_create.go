@@ -16,6 +16,8 @@ func (pa *PermissionAdapter) Create(ctx context.Context, tx *sql.Tx, query strin
 	}
 	defer spanEnd()
 
+	defer pa.ObserveOnComplete("insert", query)()
+
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 

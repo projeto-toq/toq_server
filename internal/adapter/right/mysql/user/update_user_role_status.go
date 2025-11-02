@@ -19,7 +19,7 @@ func (ua *UserAdapter) UpdateUserRoleStatusByUserID(ctx context.Context, userID 
 
 	query := `UPDATE user_roles SET status = ? WHERE user_id = ? AND is_active = 1`
 
-	_, err = ua.db.GetDB().ExecContext(ctx, query, status, userID)
+	_, err = ua.DB().GetDB().ExecContext(ctx, query, status, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.user.update_user_role_status.update_error", "user_id", userID, "status", status, "error", err)

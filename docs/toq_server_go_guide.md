@@ -198,11 +198,25 @@ Notas:
 
 ### 7.3 Repositórios (adapters MySQL, Redis, etc.)
 
+- MySQL utiliza obrigatoriamente o executor compartilhado `SQLExecutor` exposto por `InstrumentedAdapter`. Sempre chame `a.ExecContext`, `a.QueryContext`, `a.QueryRowContext` ou `a.PrepareContext`; nunca invoque `db.ExecContext`/`tx.ExecContext` diretamente.
+- O executor gera métricas (via `metricsport.MetricsPortInterface`), logging contextual (`utils.LoggerFromContext`) e tracing automático. Métodos auxiliares `basic_*` foram removidos; não recrie utilitários semelhantes.
 - Inicie tracer no início do método (adapters têm tracing mínimo):
 
 ```go
 ctx, end, _ := utils.GenerateTracer(ctx)
  defer end()
+```
+
+- Utilize o executor para executar as queries e delegue o tratamento de span/log dentro do helper:
+
+```go
+logger := utils.LoggerFromContext(ctx)
+result, err := a.ExecContext(ctx, tx, "insert", insertQuery, args...)
+if err != nil {
+  utils.SetSpanError(ctx, err)
+  logger.Error("mysql.entity.insert.exec_error", "err", err)
+  return 0, fmt.Errorf("insert entity: %w", err)
+}
 ```
 
 - Em falhas, `slog.Error` com contexto enxuto (ids, chave da operação) e retorne erro puro (`error`).
@@ -304,6 +318,7 @@ utils.SetSpanError(ctx, err)
 Checklist rápido de refatoração:
 - [ ] Mantém arquitetura hexagonal e fluxo Handlers → Services → Repos.
 - [ ] Repositórios usam Converters; retornam `sql.ErrNoRows` quando aplicável.
+- [ ] Adapters MySQL utilizam `InstrumentedAdapter` (`ExecContext`/`QueryContext`/`QueryRowContext`/`PrepareContext`) sem recriar helpers `basic_*`.
 - [ ] Services mapeiam erros de infra para domínio; marcam span e logam infra.
 - [ ] Handlers usam DTOs e `SendHTTPErrorObj`; Swagger atualizado.
 - [ ] Transações via serviço/infra padrão; commit/rollback corretos.

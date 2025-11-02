@@ -21,6 +21,7 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+	defer la.ObserveOnComplete("select", query)()
 
 	entityListing := listingentity.ListingEntity{}
 

@@ -5,17 +5,18 @@ import (
 	"log/slog"
 
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 type PermissionAdapter struct {
-	db *mysqladapter.Database
+	mysqladapter.InstrumentedAdapter
 }
 
-func NewPermissionAdapter(db *mysqladapter.Database) permissionrepository.PermissionRepositoryInterface {
+func NewPermissionAdapter(db *mysqladapter.Database, metrics metricsport.MetricsPortInterface) permissionrepository.PermissionRepositoryInterface {
 	return &PermissionAdapter{
-		db: db,
+		InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics),
 	}
 }
 

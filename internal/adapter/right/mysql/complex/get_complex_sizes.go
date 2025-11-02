@@ -22,11 +22,19 @@ func (ca *ComplexAdapter) GetComplexSizes(ctx context.Context, tx *sql.Tx, compl
 
 	query := `SELECT * FROM complex_sizes WHERE complex_id = ?;`
 
-	entities, err := ca.Read(ctx, tx, query, complexID)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, complexID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_sizes.read_error", "error", err, "complex_id", complexID)
-		return nil, fmt.Errorf("get complex sizes read: %w", err)
+		return nil, fmt.Errorf("get complex sizes query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.get_sizes.scan_error", "error", err, "complex_id", complexID)
+		return nil, fmt.Errorf("scan complex sizes rows: %w", err)
 	}
 
 	if len(entities) == 0 {

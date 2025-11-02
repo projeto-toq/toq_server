@@ -22,6 +22,7 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT * FROM features WHERE listing_id = ?;`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

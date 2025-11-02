@@ -5,56 +5,15 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após confirmar a disponibilidade de slots para o fotografo através de GET /listings/photo-session/slots?from=2025-11-01&to=2025-11-04&period=MORNING&page=1&size=20&sort=start_asc&listingId=3&timezone=America/Sao_Paulo e receber como reposta:
-{
-    "data": [
-        {
-            "slotId": 23236831280,
-            "photographerUserId": 5,
-            "slotStart": "2025-11-01T11:00:00Z",
-            "slotEnd": "2025-11-01T15:00:00Z",
-            "status": "AVAILABLE"
-        },
-        {
-            "slotId": 23236917680,
-            "photographerUserId": 5,
-            "slotStart": "2025-11-02T11:00:00Z",
-            "slotEnd": "2025-11-02T15:00:00Z",
-            "status": "AVAILABLE"
-        },
-        {
-            "slotId": 23237004080,
-            "photographerUserId": 5,
-            "slotStart": "2025-11-03T11:00:00Z",
-            "slotEnd": "2025-11-03T15:00:00Z",
-            "status": "AVAILABLE"
-        }
-    ],
-    "pagination": {
-        "page": 1,
-        "limit": 20,
-        "total": 3,
-        "totalPages": 1
-    }
-}
+Após varias reafatorações no código, foi identificado que a instrumentação de telemetria para monitoramento de queries SQL não está sendo aplicada corretamente em diversos repositórios MySQL. Isso está dificultando o rastreamento de performance e a identificação de gargalos no sistema.
+Adicionalmente, não existe um padrão entre todos os repositório em internal/adapter/right/mysql/**.
+  - Alguns tem funções básicas de CRUD (basic-create, basic-read, basic-update, basic-delete) e outros fazem as chamadas em cada função.
+  - Alguns tem telemetria somente nas funções básicas e outros nas funções separadas.
 
-chamei o endpoint POST /listings/photo-session/reserve com o seguinte payload:
-{
-  "listingId": 3,
-  "slotId": 23236917680
-}
-para reservar o slot.
-
-Recebi como resposta:
-{
-    "code": 500,
-    "details": null,
-    "message": "failed to create booking"
-}
-e a mensagem de erro no log está em logs/log_example.json.
-
-1) analise a causa raiz do problema e verifique se os outros endpoints relacionados ao CRUD de reservas de sessões fotográficas estão funcionando corretamente, em especiao repositórios e serviços.
-  1.1)o script usado para a criação das tabelas do banco de dados está em scripts/db_creation.sql
+Assim:
+1) Qual a melhor prática para implementar a telemetria de queries SQL em todos os repositórios MySQL, garantindo consistência e facilidade de manutenção?
+2) Como refatorar os repositórios MySQL para seguir um padrão unificado, mantendo a clareza e a eficiência do código?
+3) Sugira uma padronização para a instrumentação de telemetria e a estrutura dos repositórios MySQL, considerando as melhores práticas de desenvolvimento em Go e a arquitetura hexagonal.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

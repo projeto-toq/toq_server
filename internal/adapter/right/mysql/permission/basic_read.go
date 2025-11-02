@@ -16,6 +16,8 @@ func (pa *PermissionAdapter) Read(ctx context.Context, tx *sql.Tx, query string,
 	}
 	defer spanEnd()
 
+	defer pa.ObserveOnComplete("select", query)()
+
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 

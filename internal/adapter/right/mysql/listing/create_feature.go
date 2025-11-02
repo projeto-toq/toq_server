@@ -20,9 +20,10 @@ func (la *ListingAdapter) CreateFeature(ctx context.Context, tx *sql.Tx, feature
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	sql := `INSERT INTO features (listing_id, feature_id, qty) VALUES (?, ?, ?);`
+	statement := `INSERT INTO features (listing_id, feature_id, qty) VALUES (?, ?, ?);`
+	defer la.ObserveOnComplete("insert", statement)()
 
-	stmt, err := tx.PrepareContext(ctx, sql)
+	stmt, err := tx.PrepareContext(ctx, statement)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.create_feature.prepare_error", "error", err)

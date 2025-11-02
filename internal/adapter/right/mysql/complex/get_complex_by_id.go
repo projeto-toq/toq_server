@@ -23,11 +23,19 @@ func (ca *ComplexAdapter) GetComplexByID(ctx context.Context, tx *sql.Tx, id int
 	query := `SELECT id, name, zip_code, street, number, neighborhood, city, state, reception_phone, sector, main_registration, type
 	FROM complex WHERE id = ? LIMIT 1;`
 
-	entities, err := ca.Read(ctx, tx, query, id)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, id)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_by_id.read_error", "error", err, "id", id)
-		return nil, fmt.Errorf("get complex by id read: %w", err)
+		return nil, fmt.Errorf("get complex by id query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.get_by_id.scan_error", "error", err, "id", id)
+		return nil, fmt.Errorf("scan complex by id rows: %w", err)
 	}
 
 	if len(entities) == 0 {

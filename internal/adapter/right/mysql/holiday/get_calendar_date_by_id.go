@@ -27,10 +27,12 @@ func (a *HolidayAdapter) GetCalendarDateByID(ctx context.Context, tx *sql.Tx, id
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, calendar_id, holiday_date, label, is_recurrent FROM holiday_calendar_dates WHERE id = ?`
+	observe := a.ObserveOnComplete("select", query)
 	row := exec.QueryRowContext(ctx, query, id)
 
 	var dateEntity entity.DateEntity
 	if err = row.Scan(&dateEntity.ID, &dateEntity.CalendarID, &dateEntity.Holiday, &dateEntity.Label, &dateEntity.Recurrent); err != nil {
+		observe()
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
@@ -39,5 +41,6 @@ func (a *HolidayAdapter) GetCalendarDateByID(ctx context.Context, tx *sql.Tx, id
 		return nil, fmt.Errorf("scan holiday calendar date: %w", err)
 	}
 
+	observe()
 	return converters.ToDateModel(dateEntity), nil
 }

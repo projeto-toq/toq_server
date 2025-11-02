@@ -22,6 +22,7 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT * FROM financing_blockers WHERE listing_id = ?;`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

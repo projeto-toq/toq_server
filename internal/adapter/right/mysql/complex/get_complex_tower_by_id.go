@@ -22,11 +22,19 @@ func (ca *ComplexAdapter) GetComplexTowerByID(ctx context.Context, tx *sql.Tx, i
 
 	query := `SELECT id, complex_id, tower, floors, total_units, units_per_floor FROM complex_towers WHERE id = ? LIMIT 1;`
 
-	entities, err := ca.Read(ctx, tx, query, id)
+	rows, err := ca.QueryContext(ctx, tx, "select", query, id)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.complex.get_tower_by_id.read_error", "error", err, "id", id)
-		return nil, fmt.Errorf("get complex tower by id read: %w", err)
+		return nil, fmt.Errorf("get complex tower by id query: %w", err)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.complex.get_tower_by_id.scan_error", "error", err, "id", id)
+		return nil, fmt.Errorf("scan complex tower rows: %w", err)
 	}
 
 	if len(entities) == 0 {

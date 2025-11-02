@@ -28,6 +28,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		buildable, delivered, who_lives, description, transaction, visit, accompanying, annual_tax, exchange,
 		exchange_perc, sell_net, rent_net, condominium, land_size, corner, tenant_name, tenant_phone, tenant_email,
 		financing FROM listings WHERE id = ?`
+	defer la.ObserveOnComplete("select", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

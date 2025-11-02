@@ -19,6 +19,7 @@ func (la *ListingAdapter) DeleteListingFeatures(ctx context.Context, tx *sql.Tx,
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM features WHERE listing_id = ?`
+	defer la.ObserveOnComplete("delete", query)()
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

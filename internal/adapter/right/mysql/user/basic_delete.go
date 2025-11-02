@@ -3,6 +3,7 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -13,6 +14,11 @@ func (ua *UserAdapter) Delete(ctx context.Context, tx *sql.Tx, query string, arg
 		return
 	}
 	defer spanEnd()
+
+	startedAt := time.Now()
+	defer func() {
+		ua.Observe("delete", query, time.Since(startedAt))
+	}()
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
