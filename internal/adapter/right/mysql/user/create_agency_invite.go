@@ -22,11 +22,18 @@ func (ua *UserAdapter) CreateAgencyInvite(ctx context.Context, tx *sql.Tx, agenc
 
 	sql := `INSERT INTO agency_invites (agency_id, phone_number) VALUES (?, ?);`
 
-	id, err := ua.Create(ctx, tx, sql, agency.GetID(), phoneNumber)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.create_agency_invite.create_error", "error", err)
-		return fmt.Errorf("create agency invite: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "insert", sql, agency.GetID(), phoneNumber)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.create_agency_invite.exec_error", "error", execErr)
+		return fmt.Errorf("create agency invite: %w", execErr)
+	}
+
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.user.create_agency_invite.last_insert_id_error", "error", lastErr)
+		return fmt.Errorf("agency invite last insert id: %w", lastErr)
 	}
 
 	agency.SetID(id)

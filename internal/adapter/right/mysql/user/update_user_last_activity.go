@@ -21,14 +21,20 @@ func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, i
 
 	query := `UPDATE users SET last_activity_at = ? WHERE id = ?;`
 
-	_, err = ua.Update(ctx, tx, query,
+	result, execErr := ua.ExecContext(ctx, tx, "update", query,
 		time.Now().UTC(),
 		id,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.update_user_last_activity.update_error", "error", err)
-		return fmt.Errorf("update user last_activity: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.update_user_last_activity.exec_error", "error", execErr)
+		return fmt.Errorf("update user last_activity: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.update_user_last_activity.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("user last activity update rows affected: %w", rowsErr)
 	}
 
 	return

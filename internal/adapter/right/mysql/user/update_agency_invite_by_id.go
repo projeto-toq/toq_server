@@ -25,15 +25,21 @@ func (ua *UserAdapter) UpdateAgencyInviteByID(ctx context.Context, tx *sql.Tx, i
 
 	entity := userconverters.AgencyInviteDomainToEntity(invite)
 
-	_, err = ua.Update(ctx, tx, query,
+	result, execErr := ua.ExecContext(ctx, tx, "update", query,
 		entity.PhoneNumber,
 		entity.AgencyID,
 		entity.ID,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.update_agency_invite.update_error", "error", err)
-		return fmt.Errorf("update agency invite: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.update_agency_invite.exec_error", "error", execErr)
+		return fmt.Errorf("update agency invite: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.update_agency_invite.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("agency invite update rows affected: %w", rowsErr)
 	}
 
 	return

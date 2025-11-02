@@ -28,16 +28,7 @@ func (ua *UserAdapter) UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, use
 		SET ur.status = ?
 		WHERE ur.user_id = ? AND ur.is_active = 1 AND r.slug = ?`
 
-	var execer interface {
-		ExecContext(context.Context, string, ...any) (sql.Result, error)
-	}
-	if tx != nil {
-		execer = tx
-	} else {
-		execer = ua.DB().GetDB()
-	}
-
-	res, err := execer.ExecContext(ctx, q, int(status), userID, role)
+	res, err := ua.ExecContext(ctx, tx, "update", q, int(status), userID, role)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.user.update_user_role_status_tx.update_error", "user_id", userID, "role", role, "status", status, "error", err)

@@ -22,11 +22,21 @@ func (ua *UserAdapter) GetUserByNationalID(ctx context.Context, tx *sql.Tx, nati
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	entities, err := ua.Read(ctx, tx, "SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE national_id = ?", nationalID)
+	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE national_id = ?`
+
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, nationalID)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.get_user_by_national_id.query_error", "error", queryErr)
+		return nil, fmt.Errorf("get user by national_id query: %w", queryErr)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_user_by_national_id.read_error", "error", err)
-		return nil, fmt.Errorf("get user by national_id read: %w", err)
+		logger.Error("mysql.user.get_user_by_national_id.rows_to_entities_error", "error", err)
+		return nil, fmt.Errorf("scan user by national id rows: %w", err)
 	}
 
 	if len(entities) == 0 {

@@ -32,11 +32,19 @@ func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, 
           JOIN roles r ON r.id = ur.role_id AND r.slug = ?
          WHERE u.deleted = 0`
 
-	entities, qerr := ua.Read(ctx, tx, query, int(status), role)
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, int(status), role)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.get_users_by_role.query_error", "error", queryErr, "role", role, "status", status)
+		return nil, fmt.Errorf("get users by role and status query: %w", queryErr)
+	}
+	defer rows.Close()
+
+	entities, qerr := rowsToEntities(rows)
 	if qerr != nil {
 		utils.SetSpanError(ctx, qerr)
-		logger.Error("mysql.user.get_users_by_role.read_error", "error", qerr, "role", role, "status", status)
-		return nil, fmt.Errorf("get users by role and status read: %w", qerr)
+		logger.Error("mysql.user.get_users_by_role.rows_to_entities_error", "error", qerr)
+		return nil, fmt.Errorf("scan users by role rows: %w", qerr)
 	}
 
 	if len(entities) == 0 {

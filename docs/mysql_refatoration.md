@@ -187,6 +187,7 @@ if err != nil {
 ---
 
 ## 8. Fase 5 — Domínio User
+**Status:** Concluída em 2025-11-02.
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/user/*.go`
 - Remover: `basic_create.go`, `basic_read.go`, `basic_update.go`, `basic_delete.go`

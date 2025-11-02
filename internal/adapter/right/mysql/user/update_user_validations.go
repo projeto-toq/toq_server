@@ -44,7 +44,7 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 
 	entity := userconverters.UserValidationDomainToEntity(validation)
 
-	id, err := ua.Update(ctx, tx, sql,
+	result, execErr := ua.ExecContext(ctx, tx, "insert", sql,
 		entity.UserID,
 		entity.NewEmail,
 		entity.EmailCode,
@@ -55,13 +55,19 @@ func (ua *UserAdapter) UpdateUserValidations(ctx context.Context, tx *sql.Tx, va
 		entity.PasswordCode,
 		entity.PasswordCodeExp,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.update_user_validations.update_error", "error", err)
-		return fmt.Errorf("update user validations: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.update_user_validations.exec_error", "error", execErr)
+		return fmt.Errorf("update user validations: %w", execErr)
 	}
 
-	validation.SetUserID(id)
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.update_user_validations.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("user validations update rows affected: %w", rowsErr)
+	}
+
+	validation.SetUserID(entity.UserID)
 
 	return
 }

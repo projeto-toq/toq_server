@@ -21,19 +21,26 @@ func (ua *UserAdapter) DeleteUserRolesByUserID(ctx context.Context, tx *sql.Tx, 
 
 	query := `DELETE FROM user_roles WHERE user_id = ?;`
 
-	deleted, err = ua.Delete(ctx, tx, query, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.delete_user_roles.delete_error", "error", err)
-		return 0, fmt.Errorf("delete user_roles by user_id: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "delete", query, userID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.delete_user_roles.exec_error", "error", execErr)
+		return 0, fmt.Errorf("delete user_roles by user_id: %w", execErr)
 	}
 
-	if deleted == 0 {
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.delete_user_roles.rows_affected_error", "error", rowsErr)
+		return 0, fmt.Errorf("delete user_roles rows affected: %w", rowsErr)
+	}
+
+	if rowsAffected == 0 {
 		errNoRows := errors.New("no user_roles rows deleted")
 		utils.SetSpanError(ctx, errNoRows)
 		logger.Error("mysql.user.delete_user_roles.no_rows_deleted", "user_id", userID, "error", errNoRows)
 		return 0, errNoRows
 	}
 
-	return
+	return rowsAffected, nil
 }

@@ -22,11 +22,18 @@ func (ua *UserAdapter) CreateAgencyRelationship(ctx context.Context, tx *sql.Tx,
 
 	sql := `INSERT INTO realtors_agency (agency_id, realtor_id) VALUES (?, ?);`
 
-	id, err = ua.Create(ctx, tx, sql, agency.GetID(), realtor.GetID())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.create_agency_relationship.create_error", "error", err)
-		return 0, fmt.Errorf("create agency relationship: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "insert", sql, agency.GetID(), realtor.GetID())
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.create_agency_relationship.exec_error", "error", execErr)
+		return 0, fmt.Errorf("create agency relationship: %w", execErr)
+	}
+
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.user.create_agency_relationship.last_insert_id_error", "error", lastErr)
+		return 0, fmt.Errorf("agency relationship last insert id: %w", lastErr)
 	}
 
 	return id, nil

@@ -43,13 +43,25 @@ func (ua *UserAdapter) RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID
 	if token == "" {
 		return nil
 	}
-	_, err := tx.ExecContext(ctx, `DELETE FROM device_tokens WHERE user_id = ? AND device_token = ?`, userID, token)
-	return err
+	result, execErr := ua.ExecContext(ctx, tx, "delete", `DELETE FROM device_tokens WHERE user_id = ? AND device_token = ?`, userID, token)
+	if execErr != nil {
+		return execErr
+	}
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		return rowsErr
+	}
+	return nil
 }
 
 func (ua *UserAdapter) RemoveAllDeviceTokens(ctx context.Context, tx *sql.Tx, userID int64) error {
-	_, err := tx.ExecContext(ctx, `DELETE FROM device_tokens WHERE user_id = ?`, userID)
-	return err
+	result, execErr := ua.ExecContext(ctx, tx, "delete", `DELETE FROM device_tokens WHERE user_id = ?`, userID)
+	if execErr != nil {
+		return execErr
+	}
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		return rowsErr
+	}
+	return nil
 }
 
 // AddTokenForDevice stores a token associated to a device when schema supports it; fallback to user-only.
@@ -67,6 +79,12 @@ func (ua *UserAdapter) RemoveTokensByDeviceID(ctx context.Context, tx *sql.Tx, u
 	if deviceID == "" {
 		return nil
 	}
-	_, err := tx.ExecContext(ctx, `DELETE FROM device_tokens WHERE user_id = ? AND device_id = ?`, userID, deviceID)
-	return err
+	result, execErr := ua.ExecContext(ctx, tx, "delete", `DELETE FROM device_tokens WHERE user_id = ? AND device_id = ?`, userID, deviceID)
+	if execErr != nil {
+		return execErr
+	}
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		return rowsErr
+	}
+	return nil
 }

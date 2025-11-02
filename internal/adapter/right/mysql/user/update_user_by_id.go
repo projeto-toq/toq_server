@@ -29,7 +29,7 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 
 	entity := userconverters.UserDomainToEntity(user)
 
-	_, err = ua.Update(ctx, tx, query,
+	result, execErr := ua.ExecContext(ctx, tx, "update", query,
 		entity.FullName,
 		entity.NickName,
 		entity.NationalID,
@@ -51,10 +51,16 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 		entity.LastSignInAttempt,
 		entity.ID,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.update_user_by_id.update_error", "error", err)
-		return fmt.Errorf("update user by id: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.update_user_by_id.exec_error", "error", execErr)
+		return fmt.Errorf("update user by id: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.update_user_by_id.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("user update rows affected: %w", rowsErr)
 	}
 
 	// Note: User role updates are now handled by permission service

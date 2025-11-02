@@ -22,14 +22,20 @@ func (ua *UserAdapter) UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, u
 
 	query := `UPDATE users SET password = ? WHERE id = ?;`
 
-	_, err = ua.Update(ctx, tx, query,
+	result, execErr := ua.ExecContext(ctx, tx, "update", query,
 		user.GetPassword(),
 		user.GetID(),
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.update_user_password.update_error", "error", err)
-		return fmt.Errorf("update user password: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.update_user_password.exec_error", "error", execErr)
+		return fmt.Errorf("update user password: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.update_user_password.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("user password update rows affected: %w", rowsErr)
 	}
 
 	return

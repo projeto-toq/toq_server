@@ -29,7 +29,7 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 
 	entity := userconverters.UserDomainToEntity(user)
 
-	id, err := ua.Create(ctx, tx, sql,
+	result, execErr := ua.ExecContext(ctx, tx, "insert", sql,
 		entity.FullName,
 		entity.NickName,
 		entity.NationalID,
@@ -52,10 +52,17 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 		entity.Deleted,
 		entity.LastSignInAttempt,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.create_user.create_error", "error", err)
-		return fmt.Errorf("create user: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.create_user.exec_error", "error", execErr)
+		return fmt.Errorf("create user: %w", execErr)
+	}
+
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.user.create_user.last_insert_id_error", "error", lastErr)
+		return fmt.Errorf("user last insert id: %w", lastErr)
 	}
 
 	user.SetID(id)

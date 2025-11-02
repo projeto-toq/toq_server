@@ -28,11 +28,19 @@ func (ua *UserAdapter) DeleteExpiredValidations(ctx context.Context, tx *sql.Tx,
 			AND (password_code IS NULL OR password_code = '' OR password_code_exp < NOW()) )
 		LIMIT ?;`
 
-	deleted, err := ua.Delete(ctx, tx, query, limit)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.delete_expired_validations.delete_error", "error", err)
-		return 0, fmt.Errorf("delete expired validations: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "delete", query, limit)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.delete_expired_validations.exec_error", "error", execErr)
+		return 0, fmt.Errorf("delete expired validations: %w", execErr)
 	}
-	return deleted, nil
+
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.delete_expired_validations.rows_affected_error", "error", rowsErr)
+		return 0, fmt.Errorf("delete expired validations rows affected: %w", rowsErr)
+	}
+
+	return rowsAffected, nil
 }

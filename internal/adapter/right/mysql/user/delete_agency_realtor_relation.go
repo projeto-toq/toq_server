@@ -20,16 +20,23 @@ func (ua *UserAdapter) DeleteAgencyRealtorRelation(ctx context.Context, tx *sql.
 
 	query := `DELETE FROM realtors_agency WHERE realtor_id = ? AND agency_id = ?;`
 
-	deleted, err = ua.Delete(ctx, tx, query, realtorID, agencyID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.delete_agency_realtor_relation.delete_error", "error", err)
-		return 0, fmt.Errorf("delete realtor-agency relation: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "delete", query, realtorID, agencyID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.delete_agency_realtor_relation.exec_error", "error", execErr)
+		return 0, fmt.Errorf("delete realtor-agency relation: %w", execErr)
 	}
 
-	if deleted == 0 {
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.delete_agency_realtor_relation.rows_affected_error", "error", rowsErr)
+		return 0, fmt.Errorf("delete realtor-agency relation rows affected: %w", rowsErr)
+	}
+
+	if rowsAffected == 0 {
 		return 0, sql.ErrNoRows
 	}
 
-	return
+	return rowsAffected, nil
 }

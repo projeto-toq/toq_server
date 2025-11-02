@@ -54,20 +54,11 @@ func (ua *UserAdapter) BatchUpdateUserLastActivity(ctx context.Context, userIDs 
 
 	query := queryBuilder.String()
 
-	// Execute batch update
-	stmt, err := ua.DB().GetDB().PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.batch_update_last_activity.prepare_error", "error", err)
-		return fmt.Errorf("prepare batch update: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.batch_update_last_activity.exec_error", "error", err)
-		return fmt.Errorf("exec batch update: %w", err)
+	result, execErr := ua.ExecContext(ctx, nil, "update", query, args...)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.batch_update_last_activity.exec_error", "error", execErr)
+		return fmt.Errorf("exec batch update: %w", execErr)
 	}
 
 	affected, err := result.RowsAffected()

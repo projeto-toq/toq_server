@@ -22,12 +22,20 @@ func (ua *UserAdapter) GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (u
 
 	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE id = ? AND deleted = 0;`
 
-	entities, err := ua.Read(ctx, tx, query, id)
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, id)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.get_user_by_id.query_error", "error", queryErr)
+		// Propagate low-level error for service to translate
+		return nil, queryErr
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_user_by_id.read_error", "error", err)
-		// Propagate low-level error for service to translate
-		return nil, err
+		logger.Error("mysql.user.get_user_by_id.rows_to_entities_error", "error", err)
+		return nil, fmt.Errorf("scan user rows: %w", err)
 	}
 
 	if len(entities) == 0 {

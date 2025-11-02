@@ -20,13 +20,20 @@ func (ua *UserAdapter) DeleteValidation(ctx context.Context, tx *sql.Tx, id int6
 
 	query := `DELETE FROM temp_user_validations WHERE user_id = ?;`
 
-	deleted, err = ua.Delete(ctx, tx, query, id)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.delete_validation.delete_error", "error", err)
-		return 0, fmt.Errorf("delete validation: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "delete", query, id)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.delete_validation.exec_error", "error", execErr)
+		return 0, fmt.Errorf("delete validation: %w", execErr)
+	}
+
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.delete_validation.rows_affected_error", "error", rowsErr)
+		return 0, fmt.Errorf("delete validation rows affected: %w", rowsErr)
 	}
 
 	// Idempotent: if no rows were deleted, that's fine (nothing to clean up)
-	return deleted, nil
+	return rowsAffected, nil
 }

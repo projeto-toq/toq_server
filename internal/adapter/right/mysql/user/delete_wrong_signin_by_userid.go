@@ -20,16 +20,23 @@ func (ua *UserAdapter) DeleteWrongSignInByUserID(ctx context.Context, tx *sql.Tx
 
 	query := `DELETE FROM temp_wrong_signin WHERE user_id = ?;`
 
-	deleted, err = ua.Delete(ctx, tx, query, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.delete_wrong_signin.delete_error", "error", err)
-		return 0, fmt.Errorf("delete temp_wrong_signin: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "delete", query, userID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.delete_wrong_signin.exec_error", "error", execErr)
+		return 0, fmt.Errorf("delete temp_wrong_signin: %w", execErr)
 	}
 
-	if deleted == 0 {
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.delete_wrong_signin.rows_affected_error", "error", rowsErr)
+		return 0, fmt.Errorf("delete temp_wrong_signin rows affected: %w", rowsErr)
+	}
+
+	if rowsAffected == 0 {
 		return 0, sql.ErrNoRows
 	}
 
-	return
+	return rowsAffected, nil
 }

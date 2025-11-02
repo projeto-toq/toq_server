@@ -24,11 +24,19 @@ func (ua *UserAdapter) GetUserValidations(ctx context.Context, tx *sql.Tx, id in
 
 	query := `SELECT * FROM temp_user_validations WHERE user_id = ?;`
 
-	entities, err := ua.Read(ctx, tx, query, id)
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, id)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.get_user_validations.query_error", "error", queryErr)
+		return nil, queryErr
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_user_validations.read_error", "error", err)
-		return nil, err
+		logger.Error("mysql.user.get_user_validations.rows_to_entities_error", "error", err)
+		return nil, fmt.Errorf("scan user validations rows: %w", err)
 	}
 
 	if len(entities) == 0 {

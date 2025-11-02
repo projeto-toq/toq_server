@@ -23,11 +23,19 @@ func (ua *UserAdapter) GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agen
 
 	query := `SELECT realtor_id from realtors_agency WHERE agency_id = ?;`
 
-	entities, err := ua.Read(ctx, tx, query, agencyID)
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, agencyID)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.get_realtors_by_agency.query_error", "error", queryErr)
+		return nil, fmt.Errorf("get realtors by agency query: %w", queryErr)
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_realtors_by_agency.read_error", "error", err)
-		return nil, fmt.Errorf("get realtors by agency read: %w", err)
+		logger.Error("mysql.user.get_realtors_by_agency.rows_to_entities_error", "error", err)
+		return nil, fmt.Errorf("scan realtors by agency rows: %w", err)
 	}
 
 	if len(entities) == 0 {

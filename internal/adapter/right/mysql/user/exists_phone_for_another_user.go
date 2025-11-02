@@ -20,21 +20,14 @@ func (ua *UserAdapter) ExistsPhoneForAnotherUser(ctx context.Context, tx *sql.Tx
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT COUNT(id) as cnt FROM users WHERE phone_number = ? AND id <> ? AND deleted = 0;`
-	entities, err := ua.Read(ctx, tx, query, phone, excludeUserID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.exists_phone_for_another.read_error", "error", err)
-		return false, fmt.Errorf("exists phone for another user read: %w", err)
+	row := ua.QueryRowContext(ctx, tx, "select", query, phone, excludeUserID)
+
+	var cnt int64
+	if scanErr := row.Scan(&cnt); scanErr != nil {
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.user.exists_phone_for_another.scan_error", "error", scanErr)
+		return false, fmt.Errorf("exists phone for another user scan: %w", scanErr)
 	}
-	if len(entities) == 0 || len(entities[0]) == 0 {
-		return false, nil
-	}
-	cnt, ok := entities[0][0].(int64)
-	if !ok {
-		errInvalid := fmt.Errorf("exists phone for another user: invalid count type %T", entities[0][0])
-		utils.SetSpanError(ctx, errInvalid)
-		logger.Error("mysql.user.exists_phone_for_another.invalid_count_type", "value", entities[0][0], "error", errInvalid)
-		return false, errInvalid
-	}
+
 	return cnt > 0, nil
 }

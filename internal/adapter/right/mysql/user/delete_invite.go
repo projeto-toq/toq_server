@@ -21,19 +21,26 @@ func (ua *UserAdapter) DeleteInviteByID(ctx context.Context, tx *sql.Tx, id int6
 
 	query := `DELETE FROM agency_invites WHERE id = ?;`
 
-	deleted, err = ua.Delete(ctx, tx, query, id)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.delete_invite.delete_error", "error", err)
-		return 0, fmt.Errorf("delete invite by id: %w", err)
+	result, execErr := ua.ExecContext(ctx, tx, "delete", query, id)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.delete_invite.exec_error", "error", execErr)
+		return 0, fmt.Errorf("delete invite by id: %w", execErr)
 	}
 
-	if deleted == 0 {
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.delete_invite.rows_affected_error", "error", rowsErr)
+		return 0, fmt.Errorf("delete invite rows affected: %w", rowsErr)
+	}
+
+	if rowsAffected == 0 {
 		errNoRows := errors.New("no agency_invites rows deleted")
 		utils.SetSpanError(ctx, errNoRows)
 		logger.Error("mysql.user.delete_invite.no_rows_deleted", "invite_id", id, "error", errNoRows)
 		return 0, errNoRows
 	}
 
-	return
+	return rowsAffected, nil
 }

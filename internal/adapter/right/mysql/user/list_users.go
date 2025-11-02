@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 	"strings"
 
 	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
@@ -131,11 +130,19 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 	offset := (filter.Page - 1) * filter.Limit
 	listArgs = append(listArgs, filter.Limit, offset)
 
-	entities, readErr := ua.Read(ctx, tx, listQuery, listArgs...)
-	if readErr != nil {
-		utils.SetSpanError(ctx, readErr)
-		logger.Error("mysql.user.list_admin.read_error", "error", readErr)
-		return result, fmt.Errorf("list admin users read: %w", readErr)
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", listQuery, listArgs...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.list_admin.query_error", "error", queryErr)
+		return result, fmt.Errorf("list admin users query: %w", queryErr)
+	}
+	defer rows.Close()
+
+	entities, rowsErr := rowsToEntities(rows)
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.list_admin.rows_to_entities_error", "error", rowsErr)
+		return result, fmt.Errorf("list admin users rows to entities: %w", rowsErr)
 	}
 
 	if len(entities) > 0 {
@@ -227,22 +234,15 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 	}
 
 	countArgs := append([]any{}, args...)
-	countRows, countErr := ua.Read(ctx, tx, countQuery, countArgs...)
-	if countErr != nil {
-		utils.SetSpanError(ctx, countErr)
-		logger.Error("mysql.user.list_admin.count_error", "error", countErr)
-		return result, fmt.Errorf("list admin users count: %w", countErr)
+	row := ua.QueryRowContext(ctx, tx, "select", countQuery, countArgs...)
+
+	var total int64
+	if scanErr := row.Scan(&total); scanErr != nil {
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.user.list_admin.count_scan_error", "error", scanErr)
+		return result, fmt.Errorf("list admin users count scan: %w", scanErr)
 	}
-	if len(countRows) > 0 && len(countRows[0]) > 0 {
-		switch total := countRows[0][0].(type) {
-		case int64:
-			result.Total = total
-		case []byte:
-			if val, convErr := strconv.ParseInt(string(total), 10, 64); convErr == nil {
-				result.Total = val
-			}
-		}
-	}
+	result.Total = total
 
 	return result, nil
 }

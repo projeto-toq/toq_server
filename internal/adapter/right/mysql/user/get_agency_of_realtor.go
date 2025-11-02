@@ -28,11 +28,19 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 				 JOIN realtors_agency ra ON u.id = ra.agency_id
 				 WHERE ra.realtor_id = ?`
 
-	entities, err := ua.Read(ctx, tx, query, realtorID)
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, realtorID)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.get_agency_of_realtor.query_error", "error", queryErr)
+		return nil, queryErr
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_agency_of_realtor.read_error", "error", err)
-		return nil, err
+		logger.Error("mysql.user.get_agency_of_realtor.rows_to_entities_error", "error", err)
+		return nil, fmt.Errorf("scan agency rows: %w", err)
 	}
 
 	if len(entities) == 0 {

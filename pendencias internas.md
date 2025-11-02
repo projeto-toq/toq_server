@@ -25,10 +25,6 @@
        |- 1
        |- 2
        ...
-- photo_session_service.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
-- photo_session_adapter.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
-- photo_session_handler.go está com todas as funcs no mesmo arquivo. Dividir em arquivos menores por funcionalidade
-- Ajustar a roleSlug em geral
 
 - Ao deletar usuáario, deletar (hard delete):
     - anuncios em draft
@@ -39,3 +35,5 @@
 - alterar /healthz para retornar a versão da build. Criando um build generator automático
 - validar informações de exchange place para estado válido ao menos
 - colocar em env.yaml se o fotografo trabalha sabado e domingo
+- garantir que seja possível alterar listing ainda antes da publicaçao, garantindo a verificação de agenda e fotos
+- deviceTokenRepository está no repositório de users

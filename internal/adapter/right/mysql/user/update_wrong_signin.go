@@ -29,15 +29,21 @@ func (ua *UserAdapter) UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongS
 
 	entity := userconverters.WrongSignInDomainToEntity(wrongSigin)
 
-	_, err = ua.Update(ctx, tx, query,
+	result, execErr := ua.ExecContext(ctx, tx, "insert", query,
 		entity.UserID,
 		entity.FailedAttempts,
 		entity.LastAttemptAT,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.update_wrong_signin.update_error", "error", err)
-		return fmt.Errorf("update wrong_signin: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.user.update_wrong_signin.exec_error", "error", execErr)
+		return fmt.Errorf("update wrong_signin: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.user.update_wrong_signin.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("wrong_signin update rows affected: %w", rowsErr)
 	}
 
 	return
