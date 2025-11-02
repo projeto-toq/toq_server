@@ -24,21 +24,12 @@ func (la *ListingAdapter) ListCatalogValues(ctx context.Context, tx *sql.Tx, cat
 		query += ` AND is_active = 1`
 	}
 	query += ` ORDER BY numeric_value`
-	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.list.prepare_error", "error", err, "category", category)
-		return nil, err
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryContext(ctx, args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.list.query_error", "error", err, "category", category)
-		return nil, err
+	rows, queryErr := la.QueryContext(ctx, tx, "select", query, args...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.listing.catalog.list.query_error", "error", queryErr, "category", category)
+		return nil, queryErr
 	}
 	defer rows.Close()
 
@@ -73,17 +64,8 @@ func (la *ListingAdapter) GetCatalogValueByID(ctx context.Context, tx *sql.Tx, c
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, category, numeric_value, slug, label, description, is_active FROM listing_catalog_values WHERE category = ? AND id = ?`
-	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.get_by_id.prepare_error", "error", err, "category", category, "id", id)
-		return nil, err
-	}
-	defer stmt.Close()
-
-	row := stmt.QueryRowContext(ctx, category, id)
+	row := la.QueryRowContext(ctx, tx, "select", query, category, id)
 	value, scanErr := scanCatalogValueRow(row)
 	if scanErr != nil {
 		if scanErr != sql.ErrNoRows {
@@ -106,17 +88,8 @@ func (la *ListingAdapter) GetCatalogValueBySlug(ctx context.Context, tx *sql.Tx,
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, category, numeric_value, slug, label, description, is_active FROM listing_catalog_values WHERE category = ? AND slug = ?`
-	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.get_by_slug.prepare_error", "error", err, "category", category, "slug", slug)
-		return nil, err
-	}
-	defer stmt.Close()
-
-	row := stmt.QueryRowContext(ctx, category, slug)
+	row := la.QueryRowContext(ctx, tx, "select", query, category, slug)
 	value, scanErr := scanCatalogValueRow(row)
 	if scanErr != nil {
 		if scanErr != sql.ErrNoRows {
@@ -139,17 +112,8 @@ func (la *ListingAdapter) GetCatalogValueByNumeric(ctx context.Context, tx *sql.
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, category, numeric_value, slug, label, description, is_active FROM listing_catalog_values WHERE category = ? AND numeric_value = ?`
-	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.get_by_numeric.prepare_error", "error", err, "category", category, "numeric_value", numericValue)
-		return nil, err
-	}
-	defer stmt.Close()
-
-	row := stmt.QueryRowContext(ctx, category, numericValue)
+	row := la.QueryRowContext(ctx, tx, "select", query, category, numericValue)
 	value, scanErr := scanCatalogValueRow(row)
 	if scanErr != nil {
 		if scanErr != sql.ErrNoRows {
@@ -172,18 +136,11 @@ func (la *ListingAdapter) GetNextCatalogValueID(ctx context.Context, tx *sql.Tx,
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT IFNULL(MAX(id), 0) + 1 FROM listing_catalog_values WHERE category = ?`
-	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.next_id.prepare_error", "error", err, "category", category)
-		return 0, err
-	}
-	defer stmt.Close()
+	row := la.QueryRowContext(ctx, tx, "select", query, category)
 
 	var nextID uint8
-	if err := stmt.QueryRowContext(ctx, category).Scan(&nextID); err != nil {
+	if err := row.Scan(&nextID); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.catalog.next_id.scan_error", "error", err, "category", category)
 		return 0, err
@@ -202,18 +159,11 @@ func (la *ListingAdapter) GetNextCatalogNumericValue(ctx context.Context, tx *sq
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT IFNULL(MAX(numeric_value), 0) + 1 FROM listing_catalog_values WHERE category = ?`
-	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.next_numeric.prepare_error", "error", err, "category", category)
-		return 0, err
-	}
-	defer stmt.Close()
+	row := la.QueryRowContext(ctx, tx, "select", query, category)
 
 	var nextNumeric uint8
-	if err := stmt.QueryRowContext(ctx, category).Scan(&nextNumeric); err != nil {
+	if err := row.Scan(&nextNumeric); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.listing.catalog.next_numeric.scan_error", "error", err, "category", category)
 		return 0, err
@@ -233,15 +183,6 @@ func (la *ListingAdapter) CreateCatalogValue(ctx context.Context, tx *sql.Tx, va
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `INSERT INTO listing_catalog_values (category, id, numeric_value, slug, label, description, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)`
-	defer la.ObserveOnComplete("insert", query)()
-
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.create.prepare_error", "error", err, "category", value.Category(), "id", value.ID())
-		return err
-	}
-	defer stmt.Close()
 
 	var description sql.NullString
 	if desc := value.Description(); desc != nil {
@@ -249,10 +190,11 @@ func (la *ListingAdapter) CreateCatalogValue(ctx context.Context, tx *sql.Tx, va
 		description.String = *desc
 	}
 
-	if _, err := stmt.ExecContext(ctx, value.Category(), value.ID(), value.NumericValue(), value.Slug(), value.Label(), description, value.IsActive()); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.create.exec_error", "error", err, "category", value.Category(), "id", value.ID())
-		return err
+	_, execErr := la.ExecContext(ctx, tx, "insert", query, value.Category(), value.ID(), value.NumericValue(), value.Slug(), value.Label(), description, value.IsActive())
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.catalog.create.exec_error", "error", execErr, "category", value.Category(), "id", value.ID())
+		return execErr
 	}
 
 	return nil
@@ -269,15 +211,6 @@ func (la *ListingAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, va
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE listing_catalog_values SET slug = ?, label = ?, description = ?, is_active = ? WHERE category = ? AND id = ?`
-	defer la.ObserveOnComplete("update", query)()
-
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.update.prepare_error", "error", err, "category", value.Category(), "id", value.ID())
-		return err
-	}
-	defer stmt.Close()
 
 	var description sql.NullString
 	if desc := value.Description(); desc != nil {
@@ -285,18 +218,18 @@ func (la *ListingAdapter) UpdateCatalogValue(ctx context.Context, tx *sql.Tx, va
 		description.String = *desc
 	}
 
-	result, err := stmt.ExecContext(ctx, value.Slug(), value.Label(), description, value.IsActive(), value.Category(), value.ID())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.update.exec_error", "error", err, "category", value.Category(), "id", value.ID())
-		return err
+	result, execErr := la.ExecContext(ctx, tx, "update", query, value.Slug(), value.Label(), description, value.IsActive(), value.Category(), value.ID())
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.catalog.update.exec_error", "error", execErr, "category", value.Category(), "id", value.ID())
+		return execErr
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.update.rows_affected_error", "error", err, "category", value.Category(), "id", value.ID())
-		return err
+	rows, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.listing.catalog.update.rows_affected_error", "error", rowsErr, "category", value.Category(), "id", value.ID())
+		return rowsErr
 	}
 
 	if rows == 0 {
@@ -317,28 +250,19 @@ func (la *ListingAdapter) SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE listing_catalog_values SET is_active = 0 WHERE category = ? AND id = ?`
-	defer la.ObserveOnComplete("update", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.delete.prepare_error", "error", err, "category", category, "id", id)
-		return err
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, category, id)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.delete.exec_error", "error", err, "category", category, "id", id)
-		return err
+	result, execErr := la.ExecContext(ctx, tx, "update", query, category, id)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.catalog.delete.exec_error", "error", execErr, "category", category, "id", id)
+		return execErr
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.catalog.delete.rows_affected_error", "error", err, "category", category, "id", id)
-		return err
+	rows, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.listing.catalog.delete.rows_affected_error", "error", rowsErr, "category", category, "id", id)
+		return rowsErr
 	}
 
 	if rows == 0 {

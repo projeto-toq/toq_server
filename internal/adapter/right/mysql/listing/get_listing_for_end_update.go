@@ -28,15 +28,6 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		buildable, delivered, who_lives, description, transaction, visit, accompanying, annual_tax, exchange,
 		exchange_perc, sell_net, rent_net, condominium, land_size, corner, tenant_name, tenant_phone, tenant_email,
 		financing FROM listings WHERE id = ?`
-	defer la.ObserveOnComplete("select", query)()
-
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.get_listing_for_end_update.prepare_error", "error", err, "listing_id", listingID)
-		return data, fmt.Errorf("prepare get listing for end update: %w", err)
-	}
-	defer stmt.Close()
 
 	var (
 		status       uint8
@@ -68,7 +59,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		financing    sql.NullInt16
 	)
 
-	row := stmt.QueryRowContext(ctx, listingID)
+	row := la.QueryRowContext(ctx, tx, "select", query, listingID)
 	err = row.Scan(
 		&data.ListingID,
 		&data.UserID,

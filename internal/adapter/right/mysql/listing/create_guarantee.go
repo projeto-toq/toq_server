@@ -21,28 +21,19 @@ func (la *ListingAdapter) CreateGuarantee(ctx context.Context, tx *sql.Tx, guara
 	logger := utils.LoggerFromContext(ctx)
 
 	statement := `INSERT INTO guarantees (listing_id, priority, guarantee) VALUES (?, ?, ?);`
-	defer la.ObserveOnComplete("insert", statement)()
 
-	stmt, err := tx.PrepareContext(ctx, statement)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_guarantee.prepare_error", "error", err)
-		return fmt.Errorf("prepare create guarantee: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, guarantee.ListingID(), guarantee.Priority(), guarantee.Guarantee())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_guarantee.exec_error", "error", err)
-		return fmt.Errorf("exec create guarantee: %w", err)
+	result, execErr := la.ExecContext(ctx, tx, "insert", statement, guarantee.ListingID(), guarantee.Priority(), guarantee.Guarantee())
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.create_guarantee.exec_error", "error", execErr)
+		return fmt.Errorf("exec create guarantee: %w", execErr)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_guarantee.last_insert_error", "error", err)
-		return fmt.Errorf("last insert id for guarantee: %w", err)
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.listing.create_guarantee.last_insert_error", "error", lastErr)
+		return fmt.Errorf("last insert id for guarantee: %w", lastErr)
 	}
 
 	guarantee.SetID(id)

@@ -8,7 +8,6 @@ import (
 	listingconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/converters"
 	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
-
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -21,21 +20,12 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	defer la.ObserveOnComplete("select", query)()
 
 	entityListing := listingentity.ListingEntity{}
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.get_listing_by_query.prepare_error", "error", err)
-		return nil, fmt.Errorf("prepare get listing by query: %w", err)
-	}
-	defer stmt.Close()
+	row := la.QueryRowContext(ctx, tx, "select", query, args...)
 
-	row := stmt.QueryRowContext(ctx, args...)
-
-	err = row.Scan(
+	if err = row.Scan(
 		&entityListing.ID,
 		&entityListing.UserID,
 		&entityListing.Code,
@@ -74,16 +64,13 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 		&entityListing.TenantPhone,
 		&entityListing.Accompanying,
 		&entityListing.Deleted,
-	)
-	if err != nil {
+	); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
-		} else {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.listing.get_listing_by_query.scan_error", "error", err)
-			return nil, fmt.Errorf("scan listing by query: %w", err)
 		}
-
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.get_listing_by_query.scan_error", "error", err)
+		return nil, fmt.Errorf("scan listing by query: %w", err)
 	}
 
 	entityExchangePlaces, err := la.GetEntityExchangePlacesByListing(ctx, tx, entityListing.ID)

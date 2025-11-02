@@ -21,28 +21,19 @@ func (la *ListingAdapter) CreateFeature(ctx context.Context, tx *sql.Tx, feature
 	logger := utils.LoggerFromContext(ctx)
 
 	statement := `INSERT INTO features (listing_id, feature_id, qty) VALUES (?, ?, ?);`
-	defer la.ObserveOnComplete("insert", statement)()
 
-	stmt, err := tx.PrepareContext(ctx, statement)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_feature.prepare_error", "error", err)
-		return fmt.Errorf("prepare create feature: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, feature.ListingID(), feature.FeatureID(), feature.Quantity())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_feature.exec_error", "error", err)
-		return fmt.Errorf("exec create feature: %w", err)
+	result, execErr := la.ExecContext(ctx, tx, "insert", statement, feature.ListingID(), feature.FeatureID(), feature.Quantity())
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.create_feature.exec_error", "error", execErr)
+		return fmt.Errorf("exec create feature: %w", execErr)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_feature.last_insert_error", "error", err)
-		return fmt.Errorf("last insert id for feature: %w", err)
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.listing.create_feature.last_insert_error", "error", lastErr)
+		return fmt.Errorf("last insert id for feature: %w", lastErr)
 	}
 
 	feature.SetID(id)

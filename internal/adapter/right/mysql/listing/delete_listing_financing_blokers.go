@@ -19,28 +19,19 @@ func (la *ListingAdapter) DeleteListingFinancingBlockers(ctx context.Context, tx
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM financing_blockers WHERE listing_id = ?`
-	defer la.ObserveOnComplete("delete", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.delete_financing_blockers.prepare_error", "error", err, "listing_id", listingID)
-		return fmt.Errorf("prepare delete financing blockers: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, listingID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.delete_financing_blockers.exec_error", "error", err, "listing_id", listingID)
-		return fmt.Errorf("exec delete financing blockers: %w", err)
+	result, execErr := la.ExecContext(ctx, tx, "delete", query, listingID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.delete_financing_blockers.exec_error", "error", execErr, "listing_id", listingID)
+		return fmt.Errorf("exec delete financing blockers: %w", execErr)
 	}
 
-	qty, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.delete_financing_blockers.rows_affected_error", "error", err, "listing_id", listingID)
-		return fmt.Errorf("rows affected for delete financing blockers: %w", err)
+	qty, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.listing.delete_financing_blockers.rows_affected_error", "error", rowsErr, "listing_id", listingID)
+		return fmt.Errorf("rows affected for delete financing blockers: %w", rowsErr)
 	}
 
 	if qty == 0 {

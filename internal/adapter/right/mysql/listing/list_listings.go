@@ -135,16 +135,13 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	offset := (filter.Page - 1) * filter.Limit
 	listArgs = append(listArgs, filter.Limit, offset)
 
-	observeList := la.ObserveOnComplete("select", listQuery)
-	rows, readErr := tx.QueryContext(ctx, listQuery, listArgs...)
-	if readErr != nil {
-		observeList()
-		utils.SetSpanError(ctx, readErr)
-		logger.Error("mysql.listing.list.read_error", "error", readErr)
-		return listingrepository.ListListingsResult{}, fmt.Errorf("list listings read: %w", readErr)
+	rows, queryErr := la.QueryContext(ctx, tx, "select", listQuery, listArgs...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.listing.list.query_error", "error", queryErr)
+		return listingrepository.ListListingsResult{}, fmt.Errorf("list listings query: %w", queryErr)
 	}
 	defer rows.Close()
-	defer observeList()
 
 	result := listingrepository.ListListingsResult{}
 
@@ -214,10 +211,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 
 	countQuery := "SELECT COUNT(*) FROM listings l " + whereClause
 	var total int64
-	observeCount := la.ObserveOnComplete("select", countQuery)
-	countErr := tx.QueryRowContext(ctx, countQuery, args...).Scan(&total)
-	observeCount()
-	if countErr != nil {
+	if countErr := la.QueryRowContext(ctx, tx, "select", countQuery, args...).Scan(&total); countErr != nil {
 		utils.SetSpanError(ctx, countErr)
 		logger.Error("mysql.listing.list.count_error", "error", countErr)
 		return listingrepository.ListListingsResult{}, fmt.Errorf("count listings: %w", countErr)

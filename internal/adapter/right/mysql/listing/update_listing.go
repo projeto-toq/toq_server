@@ -26,15 +26,6 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 				transaction = ?, sell_net = ?, rent_net = ?, condominium = ?, annual_tax = ?, annual_ground_rent = ?, exchange = ?, exchange_perc = ?,
 				installment = ?, financing = ?, visit = ?, tenant_name = ?, tenant_email = ?, tenant_phone = ?, accompanying = ?, deleted = ?
 			WHERE id = ?`
-	defer la.ObserveOnComplete("update", query)()
-
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.update_listing.prepare_error", "error", err, "listing_id", listing.ID())
-		return fmt.Errorf("prepare update listing: %w", err)
-	}
-	defer stmt.Close()
 
 	street := sql.NullString{String: listing.Street(), Valid: listing.Street() != ""}
 	number := sql.NullString{String: listing.Number(), Valid: true}
@@ -141,7 +132,7 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 	}
 	deletedValue := listing.Deleted()
 
-	_, err = stmt.ExecContext(ctx,
+	if _, execErr := la.ExecContext(ctx, tx, "update", query,
 		listing.UserID(), listing.Code(), listing.Version(), listing.Status(), listing.ZipCode(),
 		street,
 		number,
@@ -175,11 +166,10 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 		tenantPhone,
 		accompanying,
 		deletedValue,
-		listing.ID())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.update_listing.exec_error", "error", err, "listing_id", listing.ID())
-		return fmt.Errorf("exec update listing: %w", err)
+		listing.ID()); execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.update_listing.exec_error", "error", execErr, "listing_id", listing.ID())
+		return fmt.Errorf("exec update listing: %w", execErr)
 	}
 
 	err = la.UpdateExchangePlaces(ctx, tx, listing.ID(), listing.ExchangePlaces())

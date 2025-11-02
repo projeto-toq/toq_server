@@ -21,28 +21,19 @@ func (la *ListingAdapter) CreateExchangePlace(ctx context.Context, tx *sql.Tx, p
 	logger := utils.LoggerFromContext(ctx)
 
 	statement := `INSERT INTO exchange_places (listing_id, neighborhood, city, state) VALUES (?, ?, ?, ?);`
-	defer la.ObserveOnComplete("insert", statement)()
 
-	stmt, err := tx.PrepareContext(ctx, statement)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_exchange_place.prepare_error", "error", err)
-		return fmt.Errorf("prepare create exchange place: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, place.ListingID(), place.Neighborhood(), place.City(), place.State())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_exchange_place.exec_error", "error", err)
-		return fmt.Errorf("exec create exchange place: %w", err)
+	result, execErr := la.ExecContext(ctx, tx, "insert", statement, place.ListingID(), place.Neighborhood(), place.City(), place.State())
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.create_exchange_place.exec_error", "error", execErr)
+		return fmt.Errorf("exec create exchange place: %w", execErr)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_exchange_place.last_insert_error", "error", err)
-		return fmt.Errorf("last insert id for exchange place: %w", err)
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.listing.create_exchange_place.last_insert_error", "error", lastErr)
+		return fmt.Errorf("last insert id for exchange place: %w", lastErr)
 	}
 
 	place.SetID(id)

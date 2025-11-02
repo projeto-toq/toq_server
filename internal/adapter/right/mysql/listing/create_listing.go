@@ -26,15 +26,6 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 				transaction, sell_net, rent_net, condominium, annual_tax, annual_ground_rent, exchange, exchange_perc,
 				installment, financing, visit, tenant_name, tenant_email, tenant_phone, accompanying, deleted)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	defer la.ObserveOnComplete("insert", query)()
-
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_listing.prepare_error", "error", err)
-		return fmt.Errorf("prepare create listing: %w", err)
-	}
-	defer stmt.Close()
 
 	street := sql.NullString{String: listing.Street(), Valid: listing.Street() != ""}
 	number := sql.NullString{String: listing.Number(), Valid: true}
@@ -141,7 +132,7 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 	}
 	deletedValue := listing.Deleted()
 
-	result, err := stmt.ExecContext(ctx,
+	result, execErr := la.ExecContext(ctx, tx, "insert", query,
 		listing.UserID(), listing.Code(), listing.Version(), listing.Status(), listing.ZipCode(),
 		street,
 		number,
@@ -175,17 +166,17 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 		tenantPhone,
 		accompanying,
 		deletedValue)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_listing.exec_error", "error", err)
-		return fmt.Errorf("exec create listing: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.create_listing.exec_error", "error", execErr)
+		return fmt.Errorf("exec create listing: %w", execErr)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_listing.last_insert_error", "error", err)
-		return fmt.Errorf("last insert id for create listing: %w", err)
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.listing.create_listing.last_insert_error", "error", lastErr)
+		return fmt.Errorf("last insert id for create listing: %w", lastErr)
 	}
 
 	listing.SetID(id)

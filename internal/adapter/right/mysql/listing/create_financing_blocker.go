@@ -21,28 +21,19 @@ func (la *ListingAdapter) CreateFinancingBlocker(ctx context.Context, tx *sql.Tx
 	logger := utils.LoggerFromContext(ctx)
 
 	statement := `INSERT INTO financing_blockers (listing_id, blocker) VALUES (?, ?);`
-	defer la.ObserveOnComplete("insert", statement)()
 
-	stmt, err := tx.PrepareContext(ctx, statement)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_financing_blocker.prepare_error", "error", err)
-		return fmt.Errorf("prepare create financing blocker: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, blocker.ListingID(), blocker.Blocker())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_financing_blocker.exec_error", "error", err)
-		return fmt.Errorf("exec create financing blocker: %w", err)
+	result, execErr := la.ExecContext(ctx, tx, "insert", statement, blocker.ListingID(), blocker.Blocker())
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.listing.create_financing_blocker.exec_error", "error", execErr)
+		return fmt.Errorf("exec create financing blocker: %w", execErr)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.create_financing_blocker.last_insert_error", "error", err)
-		return fmt.Errorf("last insert id for financing blocker: %w", err)
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.listing.create_financing_blocker.last_insert_error", "error", lastErr)
+		return fmt.Errorf("last insert id for financing blocker: %w", lastErr)
 	}
 
 	blocker.SetID(id)

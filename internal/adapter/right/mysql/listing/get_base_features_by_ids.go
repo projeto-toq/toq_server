@@ -42,21 +42,12 @@ func (la *ListingAdapter) GetBaseFeaturesByIDs(
 		"SELECT id, feature, description, priority FROM base_features WHERE id IN (%s)",
 		strings.Join(placeholders, ","),
 	)
-	defer la.ObserveOnComplete("select", query)()
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.get_base_features_by_ids.prepare_error", "error", err)
-		return nil, fmt.Errorf("prepare get base features by ids: %w", err)
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.QueryContext(ctx, args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.get_base_features_by_ids.query_error", "error", err)
-		return nil, fmt.Errorf("query get base features by ids: %w", err)
+	rows, queryErr := la.QueryContext(ctx, tx, "select", query, args...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.listing.get_base_features_by_ids.query_error", "error", queryErr)
+		return nil, fmt.Errorf("query get base features by ids: %w", queryErr)
 	}
 	defer rows.Close()
 
