@@ -215,6 +215,7 @@ if err != nil {
 ---
 
 ## 9. Fase 6 — Domínio Listing
+**Status:** Concluída em 2025-11-02.
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/listing/*.go`
 
@@ -248,6 +249,7 @@ if err = row.Scan(&entityListing.ID, &entityListing.UserID, ...); err != nil {
 ---
 
 ## 10. Fase 7 — Domínio Holiday
+**Status:** Concluída em 2025-11-02.
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/holiday/*.go`
 - Remover helpers antigos (`helpers.go`), substituindo por executor.

@@ -13,25 +13,19 @@ import (
 )
 
 func (a *HolidayAdapter) GetCalendarByID(ctx context.Context, tx *sql.Tx, id uint64) (holidaymodel.CalendarInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, name, scope, state, city, is_active, timezone FROM holiday_calendars WHERE id = ?`
-	observe := a.ObserveOnComplete("select", query)
-	row := exec.QueryRowContext(ctx, query, id)
+	row := a.QueryRowContext(ctx, tx, "select", query, id)
 
 	var calendarEntity entity.CalendarEntity
 	if err = row.Scan(&calendarEntity.ID, &calendarEntity.Name, &calendarEntity.Scope, &calendarEntity.State, &calendarEntity.City, &calendarEntity.IsActive, &calendarEntity.Timezone); err != nil {
-		observe()
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
@@ -40,6 +34,5 @@ func (a *HolidayAdapter) GetCalendarByID(ctx context.Context, tx *sql.Tx, id uin
 		return nil, fmt.Errorf("scan holiday calendar: %w", err)
 	}
 
-	observe()
 	return converters.ToCalendarModel(calendarEntity), nil
 }

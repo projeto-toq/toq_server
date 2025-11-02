@@ -11,27 +11,22 @@ import (
 )
 
 func (a *HolidayAdapter) CreateCalendarDate(ctx context.Context, tx *sql.Tx, date holidaymodel.CalendarDateInterface) (uint64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return 0, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	entity := converters.ToDateEntity(date)
 
 	query := `INSERT INTO holiday_calendar_dates (calendar_id, holiday_date, label, is_recurrent) VALUES (?, ?, ?, ?)`
-	defer a.ObserveOnComplete("insert", query)()
-	result, err := exec.ExecContext(ctx, query, entity.CalendarID, entity.Holiday, entity.Label, entity.Recurrent)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.holiday.create_date.exec_error", "calendar_id", entity.CalendarID, "err", err)
-		return 0, fmt.Errorf("insert holiday calendar date: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "insert", query, entity.CalendarID, entity.Holiday, entity.Label, entity.Recurrent)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.holiday.create_date.exec_error", "calendar_id", entity.CalendarID, "err", execErr)
+		return 0, fmt.Errorf("insert holiday calendar date: %w", execErr)
 	}
 
 	id, err := result.LastInsertId()

@@ -14,25 +14,19 @@ import (
 
 // GetCalendarDateByID fetches a holiday calendar date by its identifier.
 func (a *HolidayAdapter) GetCalendarDateByID(ctx context.Context, tx *sql.Tx, id uint64) (holidaymodel.CalendarDateInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, calendar_id, holiday_date, label, is_recurrent FROM holiday_calendar_dates WHERE id = ?`
-	observe := a.ObserveOnComplete("select", query)
-	row := exec.QueryRowContext(ctx, query, id)
+	row := a.QueryRowContext(ctx, tx, "select", query, id)
 
 	var dateEntity entity.DateEntity
 	if err = row.Scan(&dateEntity.ID, &dateEntity.CalendarID, &dateEntity.Holiday, &dateEntity.Label, &dateEntity.Recurrent); err != nil {
-		observe()
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
@@ -41,6 +35,5 @@ func (a *HolidayAdapter) GetCalendarDateByID(ctx context.Context, tx *sql.Tx, id
 		return nil, fmt.Errorf("scan holiday calendar date: %w", err)
 	}
 
-	observe()
 	return converters.ToDateModel(dateEntity), nil
 }

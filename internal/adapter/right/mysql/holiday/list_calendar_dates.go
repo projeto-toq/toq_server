@@ -19,15 +19,11 @@ const (
 )
 
 func (a *HolidayAdapter) ListCalendarDates(ctx context.Context, tx *sql.Tx, filter holidaymodel.CalendarDatesFilter) (holidaymodel.CalendarDatesResult, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return holidaymodel.CalendarDatesResult{}, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -49,14 +45,12 @@ func (a *HolidayAdapter) ListCalendarDates(ctx context.Context, tx *sql.Tx, filt
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM holiday_calendar_dates WHERE %s", where)
 	var total int64
-	observeCount := a.ObserveOnComplete("select", countQuery)
-	if err = exec.QueryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
-		observeCount()
+	countRow := a.QueryRowContext(ctx, tx, "select", countQuery, args...)
+	if err = countRow.Scan(&total); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.holiday.list_dates.count_error", "calendar_id", filter.CalendarID, "err", err)
 		return holidaymodel.CalendarDatesResult{}, fmt.Errorf("count holiday calendar dates: %w", err)
 	}
-	observeCount()
 
 	limit, offset := defaultPagination(filter.Limit, filter.Page, calendarDatesMaxPageSize)
 
@@ -68,16 +62,14 @@ func (a *HolidayAdapter) ListCalendarDates(ctx context.Context, tx *sql.Tx, filt
 		LIMIT ? OFFSET ?
 	`, where)
 
-	observeList := a.ObserveOnComplete("select", query)
-	rows, err := exec.QueryContext(ctx, query, append(args, limit, offset)...)
-	if err != nil {
-		observeList()
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.holiday.list_dates.query_error", "calendar_id", filter.CalendarID, "err", err)
-		return holidaymodel.CalendarDatesResult{}, fmt.Errorf("query holiday calendar dates: %w", err)
+	listArgs := append(append([]any{}, args...), limit, offset)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, listArgs...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.holiday.list_dates.query_error", "calendar_id", filter.CalendarID, "err", queryErr)
+		return holidaymodel.CalendarDatesResult{}, fmt.Errorf("query holiday calendar dates: %w", queryErr)
 	}
 	defer rows.Close()
-	defer observeList()
 
 	dates := make([]holidaymodel.CalendarDateInterface, 0)
 	for rows.Next() {

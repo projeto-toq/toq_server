@@ -11,34 +11,29 @@ import (
 )
 
 func (a *HolidayAdapter) UpdateCalendar(ctx context.Context, tx *sql.Tx, calendar holidaymodel.CalendarInterface) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	entity := converters.ToCalendarEntity(calendar)
 
 	query := `UPDATE holiday_calendars SET name = ?, scope = ?, state = ?, city = ?, is_active = ?, timezone = ? WHERE id = ?`
-	defer a.ObserveOnComplete("update", query)()
-	result, err := exec.ExecContext(ctx, query, entity.Name, entity.Scope, entity.State, entity.City, entity.IsActive, entity.Timezone, entity.ID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.holiday.update_calendar.exec_error", "calendar_id", entity.ID, "err", err)
-		return fmt.Errorf("update holiday calendar: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "update", query, entity.Name, entity.Scope, entity.State, entity.City, entity.IsActive, entity.Timezone, entity.ID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.holiday.update_calendar.exec_error", "calendar_id", entity.ID, "err", execErr)
+		return fmt.Errorf("update holiday calendar: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.holiday.update_calendar.rows_error", "calendar_id", entity.ID, "err", err)
-		return fmt.Errorf("holiday calendar rows affected: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.holiday.update_calendar.rows_error", "calendar_id", entity.ID, "err", rowsErr)
+		return fmt.Errorf("holiday calendar rows affected: %w", rowsErr)
 	}
 
 	if affected == 0 {

@@ -9,32 +9,27 @@ import (
 )
 
 func (a *HolidayAdapter) DeleteCalendarDate(ctx context.Context, tx *sql.Tx, id uint64) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `DELETE FROM holiday_calendar_dates WHERE id = ?`
-	defer a.ObserveOnComplete("delete", query)()
-	result, err := exec.ExecContext(ctx, query, id)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.holiday.delete_date.exec_error", "date_id", id, "err", err)
-		return fmt.Errorf("delete holiday calendar date: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "delete", query, id)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.holiday.delete_date.exec_error", "date_id", id, "err", execErr)
+		return fmt.Errorf("delete holiday calendar date: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.holiday.delete_date.rows_error", "date_id", id, "err", err)
-		return fmt.Errorf("holiday calendar date rows affected: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.holiday.delete_date.rows_error", "date_id", id, "err", rowsErr)
+		return fmt.Errorf("holiday calendar date rows affected: %w", rowsErr)
 	}
 
 	if affected == 0 {
