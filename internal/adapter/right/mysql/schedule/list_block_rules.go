@@ -14,15 +14,11 @@ import (
 )
 
 func (a *ScheduleAdapter) ListBlockRules(ctx context.Context, tx *sql.Tx, filter schedulemodel.BlockRulesFilter) ([]schedulemodel.AgendaRuleInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -49,29 +45,29 @@ func (a *ScheduleAdapter) ListBlockRules(ctx context.Context, tx *sql.Tx, filter
         ORDER BY r.day_of_week, r.start_minute
     `, strings.Join(conditions, " AND "))
 
-	rows, err := exec.QueryContext(ctx, query, args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.list_block_rules.query_error", "listing_id", filter.ListingID, "err", err)
-		return nil, fmt.Errorf("query block rules: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, args...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.schedule.list_block_rules.query_error", "listing_id", filter.ListingID, "err", queryErr)
+		return nil, fmt.Errorf("query block rules: %w", queryErr)
 	}
 	defer rows.Close()
 
 	rules := make([]schedulemodel.AgendaRuleInterface, 0)
 	for rows.Next() {
 		var ruleEntity entity.RuleEntity
-		if err = rows.Scan(&ruleEntity.ID, &ruleEntity.AgendaID, &ruleEntity.DayOfWeek, &ruleEntity.StartMinute, &ruleEntity.EndMinute, &ruleEntity.RuleType, &ruleEntity.IsActive); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.schedule.list_block_rules.scan_error", "listing_id", filter.ListingID, "err", err)
-			return nil, fmt.Errorf("scan block rule: %w", err)
+		if scanErr := rows.Scan(&ruleEntity.ID, &ruleEntity.AgendaID, &ruleEntity.DayOfWeek, &ruleEntity.StartMinute, &ruleEntity.EndMinute, &ruleEntity.RuleType, &ruleEntity.IsActive); scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.schedule.list_block_rules.scan_error", "listing_id", filter.ListingID, "err", scanErr)
+			return nil, fmt.Errorf("scan block rule: %w", scanErr)
 		}
 		rules = append(rules, converters.ToRuleModel(ruleEntity))
 	}
 
-	if err = rows.Err(); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.list_block_rules.rows_error", "listing_id", filter.ListingID, "err", err)
-		return nil, fmt.Errorf("iterate block rules: %w", err)
+	if rowsErr := rows.Err(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.schedule.list_block_rules.rows_error", "listing_id", filter.ListingID, "err", rowsErr)
+		return nil, fmt.Errorf("iterate block rules: %w", rowsErr)
 	}
 
 	return rules, nil

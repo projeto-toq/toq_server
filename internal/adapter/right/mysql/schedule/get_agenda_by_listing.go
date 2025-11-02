@@ -13,21 +13,17 @@ import (
 )
 
 func (a *ScheduleAdapter) GetAgendaByListingID(ctx context.Context, tx *sql.Tx, listingID int64) (schedulemodel.AgendaInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, listing_id, owner_id, timezone FROM listing_agendas WHERE listing_id = ? LIMIT 1`
 
-	row := exec.QueryRowContext(ctx, query, listingID)
+	row := a.QueryRowContext(ctx, tx, "select", query, listingID)
 
 	var agendaEntity entity.AgendaEntity
 	if err = row.Scan(&agendaEntity.ID, &agendaEntity.ListingID, &agendaEntity.OwnerID, &agendaEntity.Timezone); err != nil {

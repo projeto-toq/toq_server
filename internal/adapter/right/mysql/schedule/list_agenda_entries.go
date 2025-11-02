@@ -15,15 +15,11 @@ import (
 const agendaDetailMaxPageSize = 100
 
 func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, filter schedulemodel.AgendaDetailFilter) (schedulemodel.AgendaEntriesPage, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return schedulemodel.AgendaEntriesPage{}, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -44,10 +40,10 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM listing_agenda_entries e INNER JOIN listing_agendas a ON a.id = e.agenda_id WHERE %s", where)
 
 	var total int64
-	if err = exec.QueryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.agenda_detail.count_error", "listing_id", filter.ListingID, "err", err)
-		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("count agenda entries: %w", err)
+	if scanErr := a.QueryRowContext(ctx, tx, "select", countQuery, args...).Scan(&total); scanErr != nil {
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.schedule.agenda_detail.count_error", "listing_id", filter.ListingID, "err", scanErr)
+		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("count agenda entries: %w", scanErr)
 	}
 
 	limit, offset := defaultPagination(filter.Pagination.Limit, filter.Pagination.Page, agendaDetailMaxPageSize)
@@ -63,29 +59,29 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 
 	argsWithPagination := append(append([]any{}, args...), limit, offset)
 
-	rows, err := exec.QueryContext(ctx, query, argsWithPagination...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.agenda_detail.query_error", "listing_id", filter.ListingID, "err", err)
-		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("query agenda entries: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, argsWithPagination...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.schedule.agenda_detail.query_error", "listing_id", filter.ListingID, "err", queryErr)
+		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("query agenda entries: %w", queryErr)
 	}
 	defer rows.Close()
 
 	entries := make([]schedulemodel.AgendaEntryInterface, 0)
 	for rows.Next() {
 		var entryEntity entity.EntryEntity
-		if err = rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.schedule.agenda_detail.scan_error", "listing_id", filter.ListingID, "err", err)
-			return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("scan agenda entry: %w", err)
+		if scanErr := rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID); scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.schedule.agenda_detail.scan_error", "listing_id", filter.ListingID, "err", scanErr)
+			return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("scan agenda entry: %w", scanErr)
 		}
 		entries = append(entries, converters.ToEntryModel(entryEntity))
 	}
 
-	if err = rows.Err(); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.agenda_detail.rows_error", "listing_id", filter.ListingID, "err", err)
-		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("iterate agenda entries: %w", err)
+	if rowsErr := rows.Err(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.schedule.agenda_detail.rows_error", "listing_id", filter.ListingID, "err", rowsErr)
+		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("iterate agenda entries: %w", rowsErr)
 	}
 
 	return schedulemodel.AgendaEntriesPage{Entries: entries, Total: total}, nil

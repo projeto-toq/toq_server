@@ -15,26 +15,23 @@ func (a *ScheduleAdapter) InsertRules(ctx context.Context, tx *sql.Tx, rules []s
 		return nil
 	}
 
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `INSERT INTO listing_agenda_rules (agenda_id, day_of_week, start_minute, end_minute, rule_type, is_active) VALUES (?, ?, ?, ?, ?, ?)`
-	stmt, err := exec.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.insert_rules.prepare_error", "err", err)
-		return fmt.Errorf("prepare insert agenda rules: %w", err)
+	stmt, cleanup, prepareErr := a.PrepareContext(ctx, tx, "insert", query)
+	if prepareErr != nil {
+		utils.SetSpanError(ctx, prepareErr)
+		logger.Error("mysql.schedule.insert_rules.prepare_error", "err", prepareErr)
+		return fmt.Errorf("prepare insert agenda rules: %w", prepareErr)
 	}
-	defer stmt.Close()
+	defer cleanup()
 
 	for _, rule := range rules {
 		record := entity.RuleEntity{
@@ -47,10 +44,9 @@ func (a *ScheduleAdapter) InsertRules(ctx context.Context, tx *sql.Tx, rules []s
 		}
 		result, execErr := stmt.ExecContext(ctx, record.AgendaID, record.DayOfWeek, record.StartMinute, record.EndMinute, record.RuleType, record.IsActive)
 		if execErr != nil {
-			err = execErr
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.schedule.insert_rules.exec_error", "agenda_id", record.AgendaID, "err", err)
-			return fmt.Errorf("exec insert agenda rule: %w", err)
+			utils.SetSpanError(ctx, execErr)
+			logger.Error("mysql.schedule.insert_rules.exec_error", "agenda_id", record.AgendaID, "err", execErr)
+			return fmt.Errorf("exec insert agenda rule: %w", execErr)
 		}
 		if lastID, idErr := result.LastInsertId(); idErr == nil {
 			rule.SetID(uint64(lastID))

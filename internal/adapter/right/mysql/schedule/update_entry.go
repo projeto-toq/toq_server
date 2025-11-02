@@ -11,33 +11,29 @@ import (
 )
 
 func (a *ScheduleAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry schedulemodel.AgendaEntryInterface) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	entity := converters.ToEntryEntity(entry)
 
 	query := `UPDATE listing_agenda_entries SET entry_type = ?, starts_at = ?, ends_at = ?, blocking = ?, reason = ?, visit_id = ?, photo_booking_id = ? WHERE id = ?`
-	result, err := exec.ExecContext(ctx, query, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID, entity.ID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.update_entry.exec_error", "entry_id", entity.ID, "err", err)
-		return fmt.Errorf("update agenda entry: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "update", query, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID, entity.ID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.schedule.update_entry.exec_error", "entry_id", entity.ID, "err", execErr)
+		return fmt.Errorf("update agenda entry: %w", execErr)
 	}
 
-	affected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.update_entry.rows_error", "entry_id", entity.ID, "err", err)
-		return fmt.Errorf("agenda entry rows affected: %w", err)
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.schedule.update_entry.rows_error", "entry_id", entity.ID, "err", rowsErr)
+		return fmt.Errorf("agenda entry rows affected: %w", rowsErr)
 	}
 
 	if affected == 0 {

@@ -15,15 +15,11 @@ import (
 const ownerSummaryMaxPageSize = 50
 
 func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filter schedulemodel.OwnerSummaryFilter) (schedulemodel.OwnerSummaryResult, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return schedulemodel.OwnerSummaryResult{}, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -53,18 +49,18 @@ func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filt
 	countQuery := fmt.Sprintf("SELECT COUNT(DISTINCT a.listing_id) FROM listing_agenda_entries e INNER JOIN listing_agendas a ON a.id = e.agenda_id WHERE %s", where)
 
 	var total int64
-	countStmt, err := exec.PrepareContext(ctx, countQuery)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.owner_summary.prepare_count_error", "err", err)
-		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("prepare owner summary count: %w", err)
+	countStmt, cleanup, prepareErr := a.PrepareContext(ctx, tx, "select", countQuery)
+	if prepareErr != nil {
+		utils.SetSpanError(ctx, prepareErr)
+		logger.Error("mysql.schedule.owner_summary.prepare_count_error", "err", prepareErr)
+		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("prepare owner summary count: %w", prepareErr)
 	}
-	defer countStmt.Close()
+	defer cleanup()
 
-	if err = countStmt.QueryRowContext(ctx, args...).Scan(&total); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.owner_summary.count_error", "owner_id", filter.OwnerID, "err", err)
-		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("count owner summary listings: %w", err)
+	if scanErr := countStmt.QueryRowContext(ctx, args...).Scan(&total); scanErr != nil {
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.schedule.owner_summary.count_error", "owner_id", filter.OwnerID, "err", scanErr)
+		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("count owner summary listings: %w", scanErr)
 	}
 
 	limit, offset := defaultPagination(filter.Pagination.Limit, filter.Pagination.Page, ownerSummaryMaxPageSize)
@@ -80,38 +76,38 @@ func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filt
 
 	listArgs := append(append([]any{}, args...), limit, offset)
 
-	listingRows, err := exec.QueryContext(ctx, listQuery, listArgs...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.owner_summary.listings_query_error", "owner_id", filter.OwnerID, "err", err)
-		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("query owner summary listings: %w", err)
+	listingRows, listErr := a.QueryContext(ctx, tx, "select", listQuery, listArgs...)
+	if listErr != nil {
+		utils.SetSpanError(ctx, listErr)
+		logger.Error("mysql.schedule.owner_summary.listings_query_error", "owner_id", filter.OwnerID, "err", listErr)
+		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("query owner summary listings: %w", listErr)
 	}
 	defer listingRows.Close()
 
 	listingIDs := make([]int64, 0)
 	for listingRows.Next() {
 		var id int64
-		if err = listingRows.Scan(&id); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.schedule.owner_summary.listings_scan_error", "owner_id", filter.OwnerID, "err", err)
-			return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("scan owner summary listing: %w", err)
+		if scanErr := listingRows.Scan(&id); scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.schedule.owner_summary.listings_scan_error", "owner_id", filter.OwnerID, "err", scanErr)
+			return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("scan owner summary listing: %w", scanErr)
 		}
 		listingIDs = append(listingIDs, id)
 	}
 
-	if err = listingRows.Err(); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.owner_summary.listings_rows_error", "owner_id", filter.OwnerID, "err", err)
-		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("iterate owner summary listings: %w", err)
+	if rowsErr := listingRows.Err(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.schedule.owner_summary.listings_rows_error", "owner_id", filter.OwnerID, "err", rowsErr)
+		return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("iterate owner summary listings: %w", rowsErr)
 	}
 
 	if len(listingIDs) == 0 {
 		return schedulemodel.OwnerSummaryResult{Items: []schedulemodel.OwnerSummaryItem{}, Total: total}, nil
 	}
 
-	entriesResult, err := a.fetchSummaryEntries(ctx, exec, listingIDs, filter)
-	if err != nil {
-		return schedulemodel.OwnerSummaryResult{}, err
+	entriesResult, entriesErr := a.fetchSummaryEntries(ctx, tx, listingIDs, filter)
+	if entriesErr != nil {
+		return schedulemodel.OwnerSummaryResult{}, entriesErr
 	}
 
 	items := make([]schedulemodel.OwnerSummaryItem, 0, len(listingIDs))
@@ -123,7 +119,7 @@ func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filt
 	return schedulemodel.OwnerSummaryResult{Items: items, Total: total}, nil
 }
 
-func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, exec sqlExecutor, listingIDs []int64, filter schedulemodel.OwnerSummaryFilter) (map[int64][]schedulemodel.SummaryEntry, error) {
+func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, tx *sql.Tx, listingIDs []int64, filter schedulemodel.OwnerSummaryFilter) (map[int64][]schedulemodel.SummaryEntry, error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -154,11 +150,11 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, exec sqlExecu
 		ORDER BY a.listing_id, e.starts_at
 	`, where)
 
-	rows, err := exec.QueryContext(ctx, query, args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.owner_summary.entries_query_error", "err", err)
-		return nil, fmt.Errorf("query owner summary entries: %w", err)
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, args...)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.schedule.owner_summary.entries_query_error", "err", queryErr)
+		return nil, fmt.Errorf("query owner summary entries: %w", queryErr)
 	}
 	defer rows.Close()
 
@@ -167,7 +163,7 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, exec sqlExecu
 	for rows.Next() {
 		var entryEntity entity.EntryEntity
 		var listingID int64
-		if err = rows.Scan(
+		if scanErr := rows.Scan(
 			&entryEntity.ID,
 			&entryEntity.AgendaID,
 			&entryEntity.EntryType,
@@ -178,10 +174,10 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, exec sqlExecu
 			&entryEntity.VisitID,
 			&entryEntity.PhotoBookingID,
 			&listingID,
-		); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.schedule.owner_summary.entries_scan_error", "err", err)
-			return nil, fmt.Errorf("scan owner summary entry: %w", err)
+		); scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.schedule.owner_summary.entries_scan_error", "err", scanErr)
+			return nil, fmt.Errorf("scan owner summary entry: %w", scanErr)
 		}
 
 		entry := converters.ToEntryModel(entryEntity)
@@ -194,10 +190,10 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, exec sqlExecu
 		result[listingID] = append(result[listingID], summary)
 	}
 
-	if err = rows.Err(); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.owner_summary.entries_rows_error", "err", err)
-		return nil, fmt.Errorf("iterate owner summary entries: %w", err)
+	if rowsErr := rows.Err(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.schedule.owner_summary.entries_rows_error", "err", rowsErr)
+		return nil, fmt.Errorf("iterate owner summary entries: %w", rowsErr)
 	}
 
 	return result, nil

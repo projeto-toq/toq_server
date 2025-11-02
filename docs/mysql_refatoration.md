@@ -297,12 +297,15 @@ result, err := psa.ExecContext(ctx, tx, "update", updateBookingStatusQuery, stat
 ---
 
 ## 12. Fase 9 — Domínio Schedule
+**Status:** Concluída em 2025-11-03.
+
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/schedule/*.go`
 
 ### Atividades
 1. Migrar funções (`ListAgendaEntries`, `CreateRule`, `DeleteEntry`, etc.) para o executor único.
 2. Revisar contagens (paginadas) para uso de `QueryRowContext` com tratamento padronizado.
+3. Substituir helpers locais por arquivo dedicado de paginação compartilhada.
 
 ### Esqueleto
 ```go
@@ -311,6 +314,7 @@ result, err := sa.ExecContext(ctx, tx, "delete", deleteEntryQuery, entryID)
 
 ### Critérios
 - Nenhum uso direto de `tx.ExecContext` ou helpers proprietários.
+- `helpers.go` removido e paginação centralizada em `pagination.go`.
 
 ---
 

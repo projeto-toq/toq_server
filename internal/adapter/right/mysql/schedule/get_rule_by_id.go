@@ -14,22 +14,18 @@ import (
 
 // GetRuleByID retrieves a single rule by its identifier.
 func (a *ScheduleAdapter) GetRuleByID(ctx context.Context, tx *sql.Tx, ruleID uint64) (schedulemodel.AgendaRuleInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, agenda_id, day_of_week, start_minute, end_minute, rule_type, is_active FROM listing_agenda_rules WHERE id = ?`
 
 	var ruleEntity entity.RuleEntity
-	if err = exec.QueryRowContext(ctx, query, ruleID).Scan(&ruleEntity.ID, &ruleEntity.AgendaID, &ruleEntity.DayOfWeek, &ruleEntity.StartMinute, &ruleEntity.EndMinute, &ruleEntity.RuleType, &ruleEntity.IsActive); err != nil {
+	if err = a.QueryRowContext(ctx, tx, "select", query, ruleID).Scan(&ruleEntity.ID, &ruleEntity.AgendaID, &ruleEntity.DayOfWeek, &ruleEntity.StartMinute, &ruleEntity.EndMinute, &ruleEntity.RuleType, &ruleEntity.IsActive); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}

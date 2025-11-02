@@ -11,33 +11,29 @@ import (
 )
 
 func (a *ScheduleAdapter) InsertEntry(ctx context.Context, tx *sql.Tx, entry schedulemodel.AgendaEntryInterface) (uint64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return 0, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
-
-	exec := a.executor(tx)
+	defer spanEnd()
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	entity := converters.ToEntryEntity(entry)
 
 	query := `INSERT INTO listing_agenda_entries (agenda_id, entry_type, starts_at, ends_at, blocking, reason, visit_id, photo_booking_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := exec.ExecContext(ctx, query, entity.AgendaID, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.insert_entry.exec_error", "agenda_id", entity.AgendaID, "err", err)
-		return 0, fmt.Errorf("insert agenda entry: %w", err)
+	result, execErr := a.ExecContext(ctx, tx, "insert", query, entity.AgendaID, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.schedule.insert_entry.exec_error", "agenda_id", entity.AgendaID, "err", execErr)
+		return 0, fmt.Errorf("insert agenda entry: %w", execErr)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.insert_entry.last_id_error", "agenda_id", entity.AgendaID, "err", err)
-		return 0, fmt.Errorf("agenda entry last insert id: %w", err)
+	id, lastIDErr := result.LastInsertId()
+	if lastIDErr != nil {
+		utils.SetSpanError(ctx, lastIDErr)
+		logger.Error("mysql.schedule.insert_entry.last_id_error", "agenda_id", entity.AgendaID, "err", lastIDErr)
+		return 0, fmt.Errorf("agenda entry last insert id: %w", lastIDErr)
 	}
 
 	entry.SetID(uint64(id))
