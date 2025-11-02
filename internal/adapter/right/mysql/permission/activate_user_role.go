@@ -24,26 +24,18 @@ func (pa *PermissionAdapter) ActivateUserRole(ctx context.Context, tx *sql.Tx, u
 		WHERE user_id = ? AND role_id = ?
 	`
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.activate_user_role.prepare_error", "error", err)
-		return fmt.Errorf("prepare activate user role statement: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, userID, roleID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.activate_user_role.exec_error", "error", err)
-		return fmt.Errorf("execute activate user role: %w", err)
+	result, execErr := pa.ExecContext(ctx, tx, "update", query, userID, roleID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.permission.activate_user_role.exec_error", "error", execErr)
+		return fmt.Errorf("execute activate user role: %w", execErr)
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.activate_user_role.rows_affected_error", "error", err)
-		return fmt.Errorf("rows affected activate user role: %w", err)
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.activate_user_role.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("rows affected activate user role: %w", rowsErr)
 	}
 
 	if rowsAffected == 0 {

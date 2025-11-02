@@ -37,7 +37,8 @@ func (pa *PermissionAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, t
 		expiresAt   sql.NullTime
 	)
 
-	err = tx.QueryRowContext(ctx, query, userID, roleID).Scan(
+	row := pa.QueryRowContext(ctx, tx, "select", query, userID, roleID)
+	err = row.Scan(
 		&id, &uid, &roleIDOut, &isActiveInt, &status, &expiresAt,
 	)
 	if err != nil {

@@ -13,20 +13,20 @@ Garantir que todos os repositórios MySQL utilizem um executor único para instr
 - Instrumentação de métricas via `metricsport.MetricsPortInterface` continua centralizada no adapter MySQL.
 
 ## 3. Visão Faseada
-| Fase | Domínio/Foco | Pastas Principais | Resultado Esperado |
-|------|---------------|-------------------|--------------------|
-| 1 | Infraestrutura Comum | `internal/adapter/right/mysql` | Executor compartilhado exposto; adapters obtêm helpers padronizados |
-| 2 | Complex | `internal/adapter/right/mysql/complex` | Funções usam executor; `basic_*` removidos |
-| 3 | Global | `internal/adapter/right/mysql/global` | Funções usam executor; `basic_*` removidos |
-| 4 | Permission | `internal/adapter/right/mysql/permission` | Funções usam executor; `basic_*` removidos |
-| 5 | User | `internal/adapter/right/mysql/user` | Funções usam executor; `basic_*` removidos |
-| 6 | Listing | `internal/adapter/right/mysql/listing` | Consultas padronizadas com executor, inclusive catálogos |
-| 7 | Holiday | `internal/adapter/right/mysql/holiday` | Helpers convertidos para executor compartilhado |
-| 8 | Photo Session | `internal/adapter/right/mysql/photo_session` | Executor compartilhado substitui helpers locais |
-| 9 | Schedule | `internal/adapter/right/mysql/schedule` | Executor aplicado a inserts/updates/listagens |
-| 10 | Session | `internal/adapter/right/mysql/session` | Executor aplicado a operações de sessão |
-| 11 | Visit | `internal/adapter/right/mysql/visit` | Executor aplicado; helpers obsoletos removidos |
-| 12 | Documentação & Revisões | `docs`, `internal/core/factory` | Guia atualizado e checklist final |
+| Fase | Domínio/Foco            | Pastas Principais                            | Resultado Esperado                                                  |
+| ---- | ----------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| 1    | Infraestrutura Comum    | `internal/adapter/right/mysql`               | Executor compartilhado exposto; adapters obtêm helpers padronizados |
+| 2    | Complex                 | `internal/adapter/right/mysql/complex`       | Funções usam executor; `basic_*` removidos                          |
+| 3    | Global                  | `internal/adapter/right/mysql/global`        | Funções usam executor; `basic_*` removidos                          |
+| 4    | Permission              | `internal/adapter/right/mysql/permission`    | Funções usam executor; `basic_*` removidos                          |
+| 5    | User                    | `internal/adapter/right/mysql/user`          | Funções usam executor; `basic_*` removidos                          |
+| 6    | Listing                 | `internal/adapter/right/mysql/listing`       | Consultas padronizadas com executor, inclusive catálogos            |
+| 7    | Holiday                 | `internal/adapter/right/mysql/holiday`       | Helpers convertidos para executor compartilhado                     |
+| 8    | Photo Session           | `internal/adapter/right/mysql/photo_session` | Executor compartilhado substitui helpers locais                     |
+| 9    | Schedule                | `internal/adapter/right/mysql/schedule`      | Executor aplicado a inserts/updates/listagens                       |
+| 10   | Session                 | `internal/adapter/right/mysql/session`       | Executor aplicado a operações de sessão                             |
+| 11   | Visit                   | `internal/adapter/right/mysql/visit`         | Executor aplicado; helpers obsoletos removidos                      |
+| 12   | Documentação & Revisões | `docs`, `internal/core/factory`              | Guia atualizado e checklist final                                   |
 
 Cada fase deve ser concluída (com `make build`/`make lint`) antes de avançar.
 
@@ -133,6 +133,7 @@ func (ca *ComplexAdapter) CreateComplex(ctx context.Context, tx *sql.Tx, entity 
 ---
 
 ## 6. Fase 3 — Domínio Global
+**Status:** Concluída em 2025-11-02.
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/global/*.go`
 - Remover: `basic_create.go`, `basic_read.go`, `basic_update.go`, `basic_delete.go`
@@ -159,6 +160,7 @@ if err != nil {
 ---
 
 ## 7. Fase 4 — Domínio Permission
+**Status:** Concluída em 2025-11-02.
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/permission/*.go`
 - Remover: `basic_create.go`, `basic_read.go`, `basic_update.go`, `basic_delete.go`

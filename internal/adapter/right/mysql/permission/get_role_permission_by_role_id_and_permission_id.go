@@ -35,7 +35,8 @@ func (pa *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx contex
 		grantedInt      int64
 	)
 
-	err = tx.QueryRowContext(ctx, query, roleID, permissionID).Scan(
+	row := pa.QueryRowContext(ctx, tx, "select", query, roleID, permissionID)
+	err = row.Scan(
 		&id, &roleIDOut, &permissionIDOut, &grantedInt,
 	)
 	if err != nil {

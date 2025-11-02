@@ -25,15 +25,23 @@ func (pa *PermissionAdapter) GetAllPermissions(ctx context.Context, tx *sql.Tx) 
 		ORDER BY action
 	`
 
-	results, err := pa.Read(ctx, tx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.get_all_permissions.read_error", "error", err)
-		return nil, fmt.Errorf("get all permissions read: %w", err)
+	rows, readErr := pa.QueryContext(ctx, tx, "select", query)
+	if readErr != nil {
+		utils.SetSpanError(ctx, readErr)
+		logger.Error("mysql.permission.get_all_permissions.read_error", "error", readErr)
+		return nil, fmt.Errorf("get all permissions read: %w", readErr)
+	}
+	defer rows.Close()
+
+	rowEntities, rowsErr := rowsToEntities(rows)
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.get_all_permissions.rows_to_entities_error", "error", rowsErr)
+		return nil, fmt.Errorf("get all permissions rows to entities: %w", rowsErr)
 	}
 
-	permissions = make([]permissionmodel.PermissionInterface, 0, len(results))
-	for index, row := range results {
+	permissions = make([]permissionmodel.PermissionInterface, 0, len(rowEntities))
+	for index, row := range rowEntities {
 		if len(row) != 5 {
 			errColumns := fmt.Errorf("unexpected number of columns: expected 5, got %d", len(row))
 			utils.SetSpanError(ctx, errColumns)

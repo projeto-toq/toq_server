@@ -35,7 +35,8 @@ func (pa *PermissionAdapter) GetPermissionByID(ctx context.Context, tx *sql.Tx, 
 		isActiveInt int64
 	)
 
-	err = tx.QueryRowContext(ctx, query, permissionID).Scan(
+	row := pa.QueryRowContext(ctx, tx, "select", query, permissionID)
+	err = row.Scan(
 		&id, &name, &action, &description, &isActiveInt,
 	)
 	if err != nil {

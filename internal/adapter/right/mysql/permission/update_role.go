@@ -35,7 +35,7 @@ func (pa *PermissionAdapter) UpdateRole(ctx context.Context, tx *sql.Tx, role pe
 		WHERE id = ?
 	`
 
-	rowsAffected, err := pa.Update(ctx, tx, query,
+	result, execErr := pa.ExecContext(ctx, tx, "update", query,
 		entity.Name,
 		entity.Slug,
 		entity.Description,
@@ -43,10 +43,17 @@ func (pa *PermissionAdapter) UpdateRole(ctx context.Context, tx *sql.Tx, role pe
 		entity.IsActive,
 		entity.ID,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.update_role.exec_error", "error", err)
-		return fmt.Errorf("update role: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.permission.update_role.exec_error", "error", execErr)
+		return fmt.Errorf("update role: %w", execErr)
+	}
+
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.update_role.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("role update rows affected: %w", rowsErr)
 	}
 
 	logger.Debug("mysql.permission.update_role.success", "rows_affected", rowsAffected)

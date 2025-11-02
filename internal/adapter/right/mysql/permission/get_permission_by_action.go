@@ -35,7 +35,8 @@ func (pa *PermissionAdapter) GetPermissionByAction(ctx context.Context, tx *sql.
 		isActiveInt int64
 	)
 
-	err = tx.QueryRowContext(ctx, query, action).Scan(&id, &name, &actionOut, &description, &isActiveInt)
+	row := pa.QueryRowContext(ctx, tx, "select", query, action)
+	err = row.Scan(&id, &name, &actionOut, &description, &isActiveInt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			logger.Debug("mysql.permission.get_permission_by_action.not_found")

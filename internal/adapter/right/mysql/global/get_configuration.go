@@ -20,10 +20,18 @@ func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (conf
 
 	query := `SELECT * FROM configuration;`
 
-	entities, err := ga.Read(ctx, tx, query)
+	rows, err := ga.QueryContext(ctx, tx, "select", query)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.get_configuration.read_error", "error", err)
+		logger.Error("mysql.global.get_configuration.query_error", "error", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	entities, err := rowsToEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.global.get_configuration.scan_error", "error", err)
 		return nil, err
 	}
 
@@ -31,10 +39,10 @@ func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (conf
 		return nil, sql.ErrNoRows
 	}
 
-	configuration = make(map[string]string)
+	configuration = make(map[string]string, len(entities))
 
 	for _, entity := range entities {
-		key, ok := entity[1].([]byte)
+		keyBytes, ok := entity[1].([]byte)
 		if !ok {
 			err := errors.New("configuration key conversion failed")
 			utils.SetSpanError(ctx, err)
@@ -42,15 +50,16 @@ func (ga *GlobalAdapter) GetConfiguration(ctx context.Context, tx *sql.Tx) (conf
 			return nil, err
 		}
 
-		value, ok := entity[2].([]byte)
+		valueBytes, ok := entity[2].([]byte)
 		if !ok {
 			err := errors.New("configuration value conversion failed")
 			utils.SetSpanError(ctx, err)
 			logger.Error("mysql.global.get_configuration.value_conversion_error", "value", entity[2], "error", err)
 			return nil, err
 		}
-		configuration[string(key)] = string(value)
+
+		configuration[string(keyBytes)] = string(valueBytes)
 	}
 
-	return
+	return configuration, nil
 }

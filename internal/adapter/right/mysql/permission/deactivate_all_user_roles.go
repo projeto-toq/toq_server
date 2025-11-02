@@ -24,26 +24,18 @@ func (pa *PermissionAdapter) DeactivateAllUserRoles(ctx context.Context, tx *sql
 		WHERE user_id = ?
 	`
 
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.deactivate_all_user_roles.prepare_error", "error", err)
-		return fmt.Errorf("prepare deactivate all user roles statement: %w", err)
-	}
-	defer stmt.Close()
-
-	result, err := stmt.ExecContext(ctx, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.deactivate_all_user_roles.exec_error", "error", err)
-		return fmt.Errorf("execute deactivate all user roles: %w", err)
+	result, execErr := pa.ExecContext(ctx, tx, "update", query, userID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.permission.deactivate_all_user_roles.exec_error", "error", execErr)
+		return fmt.Errorf("execute deactivate all user roles: %w", execErr)
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.deactivate_all_user_roles.rows_affected_error", "error", err)
-		return fmt.Errorf("rows affected deactivate all user roles: %w", err)
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.deactivate_all_user_roles.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("rows affected deactivate all user roles: %w", rowsErr)
 	}
 
 	logger.Debug("mysql.permission.deactivate_all_user_roles.success", "rows_affected", rowsAffected)

@@ -23,11 +23,17 @@ func (pa *PermissionAdapter) DeleteRolePermission(ctx context.Context, tx *sql.T
 		WHERE id = ?
 	`
 
-	_, err = pa.Delete(ctx, tx, query, rolePermissionID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.delete_role_permission.exec_error", "error", err)
-		return fmt.Errorf("delete role permission: %w", err)
+	result, execErr := pa.ExecContext(ctx, tx, "delete", query, rolePermissionID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.permission.delete_role_permission.exec_error", "error", execErr)
+		return fmt.Errorf("delete role permission: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.delete_role_permission.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("role permission delete rows affected: %w", rowsErr)
 	}
 
 	logger.Debug("mysql.permission.delete_role_permission.success")

@@ -23,17 +23,25 @@ func (pa *PermissionAdapter) GetRolePermissionByID(ctx context.Context, tx *sql.
 
 	query := `SELECT id, role_id, permission_id, granted FROM role_permissions WHERE id = ?`
 
-	rows, readErr := pa.Read(ctx, tx, query, rolePermissionID)
+	rows, readErr := pa.QueryContext(ctx, tx, "select", query, rolePermissionID)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.get_role_permission_by_id.read_error", "error", readErr)
 		return nil, fmt.Errorf("get role permission by id read: %w", readErr)
 	}
-	if len(rows) == 0 {
+	defer rows.Close()
+
+	rowEntities, rowsErr := rowsToEntities(rows)
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.get_role_permission_by_id.rows_to_entities_error", "error", rowsErr)
+		return nil, fmt.Errorf("get role permission by id rows to entities: %w", rowsErr)
+	}
+	if len(rowEntities) == 0 {
 		return nil, nil
 	}
 
-	row := rows[0]
+	row := rowEntities[0]
 	if len(row) != 4 {
 		logger.Warn("mysql.permission.get_role_permission_by_id.columns_mismatch", "expected", 4, "got", len(row))
 		return nil, fmt.Errorf("unexpected number of columns")

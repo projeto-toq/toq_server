@@ -27,18 +27,26 @@ func (ga *GlobalAdapter) CreateAudit(ctx context.Context, tx *sql.Tx, audit glob
 
 	entity := globalconverters.AuditDomainToEntity(ctx, audit)
 
-	id, err := ga.Create(ctx, tx, query,
+	result, err := ga.ExecContext(ctx, tx, "insert", query,
 		entity.ExecutedAT,
 		entity.ExecutedBY,
 		entity.TableName,
 		entity.TableID,
-		entity.Action)
+		entity.Action,
+	)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.global.create_audit.create_error", "error", err)
-		return fmt.Errorf("create audit: %w", err)
+		logger.Error("mysql.global.create_audit.exec_error", "error", err)
+		return fmt.Errorf("insert audit: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.global.create_audit.last_insert_id_error", "error", err)
+		return fmt.Errorf("audit last insert id: %w", err)
 	}
 
 	audit.SetID(id)
-	return
+	return nil
 }

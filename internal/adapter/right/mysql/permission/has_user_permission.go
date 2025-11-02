@@ -3,6 +3,7 @@ package mysqlpermissionadapter
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -32,14 +33,20 @@ func (pa *PermissionAdapter) HasUserPermission(ctx context.Context, tx *sql.Tx, 
 		LIMIT 1
 	`
 
-	results, err := pa.Read(ctx, tx, query, userID, resource, action)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.has_user_permission.read_error", "error", err)
-		return false, fmt.Errorf("has user permission read: %w", err)
+	row := pa.QueryRowContext(ctx, tx, "select", query, userID, resource, action)
+	var exists int64
+	if scanErr := row.Scan(&exists); scanErr != nil {
+		if errors.Is(scanErr, sql.ErrNoRows) {
+			logger.Debug("mysql.permission.has_user_permission.success", "has_permission", false)
+			return false, nil
+		}
+
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.permission.has_user_permission.scan_error", "error", scanErr)
+		return false, fmt.Errorf("has user permission scan: %w", scanErr)
 	}
 
-	hasPermission := len(results) > 0
+	hasPermission := exists > 0
 	logger.Debug("mysql.permission.has_user_permission.success", "has_permission", hasPermission)
 	return hasPermission, nil
 }

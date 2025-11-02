@@ -62,7 +62,8 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 		rIsActiveInt int64
 	)
 
-	err = tx.QueryRowContext(ctx, query, userID).Scan(
+	row := pa.QueryRowContext(ctx, tx, "select", query, userID)
+	err = row.Scan(
 		&id,
 		&uid,
 		&roleID,

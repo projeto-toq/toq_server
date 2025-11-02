@@ -4,10 +4,20 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetActiveUserIDsByRoleID retorna IDs de usuários ativos associados a um role específico
 func (pa *PermissionAdapter) GetActiveUserIDsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) ([]int64, error) {
+	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer spanEnd()
+
+	logger = logger.With("role_id", roleID)
+
 	query := `
         SELECT DISTINCT
             ur.user_id
@@ -18,23 +28,31 @@ func (pa *PermissionAdapter) GetActiveUserIDsByRoleID(ctx context.Context, tx *s
           AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
     `
 
-	results, err := pa.Read(ctx, tx, query, roleID)
-	if err != nil {
-		return nil, err
+	rows, readErr := pa.QueryContext(ctx, tx, "select", query, roleID)
+	if readErr != nil {
+		utils.SetSpanError(ctx, readErr)
+		logger.Error("mysql.permission.get_active_user_ids_by_role_id.read_error", "error", readErr)
+		return nil, fmt.Errorf("get active user ids by role id read: %w", readErr)
+	}
+	defer rows.Close()
+
+	userIDs := make([]int64, 0)
+	for rows.Next() {
+		var userID int64
+		if scanErr := rows.Scan(&userID); scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.permission.get_active_user_ids_by_role_id.scan_error", "error", scanErr)
+			return nil, fmt.Errorf("scan active user id by role id: %w", scanErr)
+		}
+		userIDs = append(userIDs, userID)
 	}
 
-	userIDs := make([]int64, 0, len(results))
-	for _, row := range results {
-		if len(row) != 1 {
-			return nil, fmt.Errorf("unexpected number of columns: expected 1, got %d", len(row))
-		}
-
-		value, ok := row[0].(int64)
-		if !ok {
-			return nil, fmt.Errorf("unexpected column type for user_id: %T", row[0])
-		}
-		userIDs = append(userIDs, value)
+	if rowsErr := rows.Err(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.get_active_user_ids_by_role_id.rows_error", "error", rowsErr)
+		return nil, fmt.Errorf("iterate active user ids by role id: %w", rowsErr)
 	}
 
+	logger.Debug("mysql.permission.get_active_user_ids_by_role_id.success", "count", len(userIDs))
 	return userIDs, nil
 }

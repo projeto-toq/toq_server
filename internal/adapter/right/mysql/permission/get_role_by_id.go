@@ -36,7 +36,8 @@ func (pa *PermissionAdapter) GetRoleByID(ctx context.Context, tx *sql.Tx, roleID
 		isActiveInt int64
 	)
 
-	err = tx.QueryRowContext(ctx, query, roleID).Scan(
+	row := pa.QueryRowContext(ctx, tx, "select", query, roleID)
+	err = row.Scan(
 		&id, &name, &slug, &description, &isSystemInt, &isActiveInt,
 	)
 	if err != nil {

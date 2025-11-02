@@ -43,15 +43,23 @@ func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.T
 		ORDER BY ur.id
 	`
 
-	results, err := pa.Read(ctx, tx, query, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.get_user_roles_by_user_id.read_error", "error", err)
-		return nil, fmt.Errorf("get user roles by user id read: %w", err)
+	rows, readErr := pa.QueryContext(ctx, tx, "select", query, userID)
+	if readErr != nil {
+		utils.SetSpanError(ctx, readErr)
+		logger.Error("mysql.permission.get_user_roles_by_user_id.read_error", "error", readErr)
+		return nil, fmt.Errorf("get user roles by user id read: %w", readErr)
+	}
+	defer rows.Close()
+
+	rowEntities, rowsErr := rowsToEntities(rows)
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.get_user_roles_by_user_id.rows_to_entities_error", "error", rowsErr)
+		return nil, fmt.Errorf("get user roles by user id rows to entities: %w", rowsErr)
 	}
 
-	userRoles = make([]permissionmodel.UserRoleInterface, 0, len(results))
-	for index, row := range results {
+	userRoles = make([]permissionmodel.UserRoleInterface, 0, len(rowEntities))
+	for index, row := range rowEntities {
 		if len(row) != 12 {
 			errColumns := fmt.Errorf("unexpected number of columns: expected 12, got %d", len(row))
 			utils.SetSpanError(ctx, errColumns)

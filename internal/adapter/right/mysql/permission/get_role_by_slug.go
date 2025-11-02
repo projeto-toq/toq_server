@@ -36,7 +36,8 @@ func (pa *PermissionAdapter) GetRoleBySlug(ctx context.Context, tx *sql.Tx, slug
 		isActiveInt int64
 	)
 
-	err = tx.QueryRowContext(ctx, query, slug).Scan(
+	row := pa.QueryRowContext(ctx, tx, "select", query, slug)
+	err = row.Scan(
 		&id, &name, &slugOut, &description, &isSystemInt, &isActiveInt,
 	)
 	if err != nil {

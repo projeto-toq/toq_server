@@ -20,7 +20,7 @@ func (pa *PermissionAdapter) GetRoleIDsByPermissionID(ctx context.Context, tx *s
 
 	query := `SELECT DISTINCT role_id FROM role_permissions WHERE permission_id = ?`
 
-	rows, queryErr := tx.QueryContext(ctx, query, permissionID)
+	rows, queryErr := pa.QueryContext(ctx, tx, "select", query, permissionID)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
 		logger.Error("mysql.permission.get_role_ids_by_permission_id.query_error", "error", queryErr)
@@ -45,5 +45,6 @@ func (pa *PermissionAdapter) GetRoleIDsByPermissionID(ctx context.Context, tx *s
 		return nil, fmt.Errorf("rows iteration role ids by permission id: %w", err)
 	}
 
+	logger.Debug("mysql.permission.get_role_ids_by_permission_id.success", "count", len(roleIDs))
 	return roleIDs, nil
 }

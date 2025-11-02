@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 	"strings"
 
 	permissionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/converters"
@@ -80,19 +79,27 @@ func (pa *PermissionAdapter) ListRoles(ctx context.Context, tx *sql.Tx, filter p
 	offset := (filter.Page - 1) * filter.Limit
 	listArgs = append(listArgs, filter.Limit, offset)
 
-	rows, readErr := pa.Read(ctx, tx, selectQuery, listArgs...)
+	rows, readErr := pa.QueryContext(ctx, tx, "select", selectQuery, listArgs...)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.list_roles.read_error", "error", readErr)
 		return permissionrepository.RoleListResult{}, fmt.Errorf("list roles read: %w", readErr)
 	}
+	defer rows.Close()
 
-	result := permissionrepository.RoleListResult{}
-	if len(rows) > 0 {
-		result.Roles = make([]permissionmodel.RoleInterface, 0, len(rows))
+	rowEntities, rowsErr := rowsToEntities(rows)
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.list_roles.rows_to_entities_error", "error", rowsErr)
+		return permissionrepository.RoleListResult{}, fmt.Errorf("list roles rows to entities: %w", rowsErr)
 	}
 
-	for _, row := range rows {
+	result := permissionrepository.RoleListResult{}
+	if len(rowEntities) > 0 {
+		result.Roles = make([]permissionmodel.RoleInterface, 0, len(rowEntities))
+	}
+
+	for _, row := range rowEntities {
 		if len(row) != 6 {
 			logger.Warn("mysql.permission.list_roles.columns_mismatch", "expected", 6, "got", len(row))
 			continue
@@ -137,22 +144,14 @@ func (pa *PermissionAdapter) ListRoles(ctx context.Context, tx *sql.Tx, filter p
 	}
 
 	countQuery := `SELECT COUNT(*) FROM roles r ` + whereClause
-	countRows, countErr := pa.Read(ctx, tx, countQuery, args...)
-	if countErr != nil {
+	countRow := pa.QueryRowContext(ctx, tx, "select", countQuery, args...)
+	var total int64
+	if countErr := countRow.Scan(&total); countErr != nil {
 		utils.SetSpanError(ctx, countErr)
 		logger.Error("mysql.permission.list_roles.count_error", "error", countErr)
 		return permissionrepository.RoleListResult{}, fmt.Errorf("list roles count: %w", countErr)
 	}
-	if len(countRows) > 0 && len(countRows[0]) > 0 {
-		switch total := countRows[0][0].(type) {
-		case int64:
-			result.Total = total
-		case []byte:
-			if val, convErr := strconv.ParseInt(string(total), 10, 64); convErr == nil {
-				result.Total = val
-			}
-		}
-	}
+	result.Total = total
 
 	return result, nil
 }

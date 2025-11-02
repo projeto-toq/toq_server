@@ -34,17 +34,24 @@ func (pa *PermissionAdapter) CreateRole(ctx context.Context, tx *sql.Tx, role pe
 		VALUES (?, ?, ?, ?, ?)
 	`
 
-	id, err := pa.Create(ctx, tx, query,
+	result, execErr := pa.ExecContext(ctx, tx, "insert", query,
 		entity.Name,
 		entity.Slug,
 		entity.Description,
 		entity.IsSystemRole,
 		entity.IsActive,
 	)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.create_role.exec_error", "error", err)
-		return fmt.Errorf("create role: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.permission.create_role.exec_error", "error", execErr)
+		return fmt.Errorf("create role: %w", execErr)
+	}
+
+	id, lastErr := result.LastInsertId()
+	if lastErr != nil {
+		utils.SetSpanError(ctx, lastErr)
+		logger.Error("mysql.permission.create_role.last_insert_id_error", "error", lastErr)
+		return fmt.Errorf("role last insert id: %w", lastErr)
 	}
 
 	role.SetID(id)

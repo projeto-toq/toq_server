@@ -26,10 +26,21 @@ func (pa *PermissionAdapter) BlockUserTemporarily(ctx context.Context, tx *sql.T
 		WHERE user_id = ? AND is_active = 1
 	`
 
-	if _, err = tx.ExecContext(ctx, query, permissionmodel.StatusTempBlocked, blockedUntil, userID); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.block_user_temporarily.exec_error", "error", err)
-		return fmt.Errorf("block user temporarily exec: %w", err)
+	result, execErr := pa.ExecContext(ctx, tx, "update", query,
+		permissionmodel.StatusTempBlocked,
+		blockedUntil,
+		userID,
+	)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.permission.block_user_temporarily.exec_error", "error", execErr)
+		return fmt.Errorf("block user temporarily exec: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.block_user_temporarily.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("block user temporarily rows affected: %w", rowsErr)
 	}
 
 	logger.Debug("mysql.permission.block_user_temporarily.success")
@@ -52,14 +63,21 @@ func (pa *PermissionAdapter) UnblockUser(ctx context.Context, tx *sql.Tx, userID
 		WHERE user_id = ? AND status = ? AND is_active = 1
 	`
 
-	if _, err = tx.ExecContext(ctx, query,
+	result, execErr := pa.ExecContext(ctx, tx, "update", query,
 		permissionmodel.StatusActive,
 		userID,
 		permissionmodel.StatusTempBlocked,
-	); err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.unblock_user.exec_error", "error", err)
-		return fmt.Errorf("unblock user exec: %w", err)
+	)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.permission.unblock_user.exec_error", "error", execErr)
+		return fmt.Errorf("unblock user exec: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.permission.unblock_user.rows_affected_error", "error", rowsErr)
+		return fmt.Errorf("unblock user rows affected: %w", rowsErr)
 	}
 
 	logger.Debug("mysql.permission.unblock_user.success")
@@ -83,11 +101,11 @@ func (pa *PermissionAdapter) GetExpiredTempBlockedUsers(ctx context.Context, tx 
 		  AND ur.is_active = 1
 	`
 
-	rows, err := tx.QueryContext(ctx, query, permissionmodel.StatusTempBlocked)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.permission.get_expired_temp_blocked_users.query_error", "error", err)
-		return nil, fmt.Errorf("query expired temp blocked users: %w", err)
+	rows, queryErr := pa.QueryContext(ctx, tx, "select", query, permissionmodel.StatusTempBlocked)
+	if queryErr != nil {
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.permission.get_expired_temp_blocked_users.query_error", "error", queryErr)
+		return nil, fmt.Errorf("query expired temp blocked users: %w", queryErr)
 	}
 	defer rows.Close()
 
