@@ -63,7 +63,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{deployment_environment=~\"$environment\",service_version=~\"$version\",method!~\"OPTIONS\"}[5m])))",
+                    "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{method!~\"OPTIONS\"}[5m])))",
                     "legendFormat": "p95 latency",
                     "refId": "A"
                 },
@@ -72,7 +72,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{deployment_environment=~\"$environment\",service_version=~\"$version\",method!~\"OPTIONS\"}[5m])))",
+                    "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{method!~\"OPTIONS\"}[5m])))",
                     "legendFormat": "p99 latency",
                     "refId": "B"
                 }
@@ -122,7 +122,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (method) (rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m]))",
+                    "expr": "sum by (method) (rate(http_requests_total[5m]))",
                     "legendFormat": "{{method}}",
                     "refId": "A"
                 }
@@ -171,7 +171,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum(rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\",status=~\"5..\"}[5m]))",
+                    "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))",
                     "legendFormat": "5xx",
                     "refId": "A"
                 },
@@ -180,7 +180,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum(rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\",status=~\"4..\"}[5m]))",
+                    "expr": "sum(rate(http_requests_total{status=~\"4..\"}[5m]))",
                     "legendFormat": "4xx",
                     "refId": "B"
                 }
@@ -229,7 +229,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "avg_over_time(go_goroutines{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])",
+                    "expr": "avg_over_time(go_goroutines[5m])",
                     "legendFormat": "Goroutines",
                     "refId": "A"
                 },
@@ -238,7 +238,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "avg_over_time(process_resident_memory_bytes{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])",
+                    "expr": "avg_over_time(process_resident_memory_bytes[5m])",
                     "legendFormat": "RSS bytes",
                     "refId": "B"
                 }
@@ -301,7 +301,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "time() - process_start_time_seconds{deployment_environment=~\"$environment\",service_version=~\"$version\"}",
+                    "expr": "time() - process_start_time_seconds",
                     "legendFormat": "uptime seconds",
                     "refId": "A"
                 }
@@ -350,7 +350,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum(rate(errors_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])) by (component, error_type)",
+                    "expr": "sum(rate(errors_total[5m])) by (component, error_type)",
                     "legendFormat": "{{component}} {{error_type}}",
                     "refId": "A"
                 }
@@ -367,48 +367,7 @@
         "operations"
     ],
     "templating": {
-        "list": [
-            {
-                "allValue": ".*",
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                },
-                "definition": "label_values(http_requests_total, deployment_environment)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Environment",
-                "multi": false,
-                "name": "environment",
-                "options": [],
-                "query": "label_values(http_requests_total, deployment_environment)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "type": "query"
-            },
-            {
-                "allValue": ".*",
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                },
-                "definition": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Version",
-                "multi": false,
-                "name": "version",
-                "options": [],
-                "query": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "type": "query"
-            }
-        ]
+        "list": []
     },
     "time": {
         "from": "now-1h",
@@ -417,5 +376,5 @@
     "timezone": "",
     "title": "TOQ Server - Operations Overview",
     "uid": "toq-ops",
-    "version": 1
+    "version": 2
 }

@@ -61,7 +61,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (status) (rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m]))",
+                    "expr": "sum by (status) (rate(http_requests_total[5m]))",
                     "legendFormat": "HTTP {{status}}",
                     "refId": "A"
                 }
@@ -111,7 +111,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "histogram_quantile(0.95, sum by (le, path) (rate(http_request_duration_seconds_bucket{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])))",
+                    "expr": "histogram_quantile(0.95, sum by (le, path) (rate(http_request_duration_seconds_bucket[5m])))",
                     "legendFormat": "{{path}}",
                     "refId": "A"
                 }
@@ -145,7 +145,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "{service_name=\"toq_server\",deployment_environment=~\"$environment\",service_version=~\"$version\",severity=~\"$severity\",request_id=~\"$requestId\"}",
+                    "expr": "{service_name=\"toq_server\",severity=~\"$severity\",request_id=~\"$requestId\",path=~\"$path\"}",
                     "refId": "A"
                 }
             ],
@@ -169,11 +169,11 @@
                 "operation": "",
                 "search": {
                     "limit": 50,
-                    "query": "service.name=\"toq_server\" deployment.environment=\"$environment\" request_id=\"$requestId\""
+                    "query": "service.name=\"toq_server\" request_id=\"$requestId\""
                 },
                 "service": "toq_server",
                 "showSearch": true,
-                "tags": "deployment.environment=$environment request_id=$requestId",
+                "tags": "request_id=$requestId",
                 "traceId": ""
             },
             "title": "Traces",
@@ -221,7 +221,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by (component, error_type) (rate(errors_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m]))",
+                    "expr": "sum by (component, error_type) (rate(errors_total[5m]))",
                     "legendFormat": "{{component}} {{error_type}}",
                     "refId": "A"
                 }
@@ -250,7 +250,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "topk(10, sum by (request_id, path) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",severity=~\"ERROR|FATAL\"}[$__interval])))",
+                    "expr": "topk(10, sum by (request_id, path) (count_over_time({service_name=\"toq_server\",severity=~\"$severity\"}[$__interval])))",
                     "format": "table",
                     "legendFormat": "",
                     "refId": "A"
@@ -270,59 +270,19 @@
     "templating": {
         "list": [
             {
-                "allValue": ".*",
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                },
-                "definition": "label_values(http_requests_total, deployment_environment)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Environment",
-                "multi": false,
-                "name": "environment",
-                "options": [],
-                "query": "label_values(http_requests_total, deployment_environment)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "type": "query"
-            },
-            {
-                "allValue": ".*",
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                },
-                "definition": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Version",
-                "multi": false,
-                "name": "version",
-                "options": [],
-                "query": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "type": "query"
-            },
-            {
                 "allValue": "ERROR|FATAL",
                 "datasource": {
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "definition": "label_values({service_name=\"toq_server\"}, severity)",
                 "hide": 0,
-                "includeAll": false,
+                "includeAll": true,
                 "label": "Severity",
                 "multi": false,
                 "name": "severity",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "query": "label_values({service_name=\"toq_server\"}, severity)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
@@ -335,14 +295,34 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "definition": "label_values({service_name=\"toq_server\",severity=~\"$severity\"}, request_id)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Request ID",
                 "multi": false,
                 "name": "requestId",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "query": "label_values({service_name=\"toq_server\",severity=~\"$severity\"}, request_id)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\"}, path)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Path",
+                "multi": false,
+                "name": "path",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\"}, path)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,

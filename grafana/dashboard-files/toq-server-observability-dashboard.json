@@ -28,44 +28,46 @@
             "fieldConfig": {
                 "defaults": {
                     "color": {
-                        "expr": "sum by (status) (rate(http_requests_total{deployment_environment=~\"$environment\"}[5m]))",
+                        "mode": "palette-classic"
                     },
                     "custom": {
                         "drawStyle": "line",
                         "lineWidth": 2,
                         "showPoints": "auto"
-                    }
+                    },
+                    "unit": "req/s"
                 },
                 "overrides": []
-                        "expr": "sum(rate(errors_total{deployment_environment=~\"$environment\"}[5m]))",
-                "gridPos": {
-                    "h": 9,
-                    "w": 12,
-                    "x": 0,
-                    "y": 0
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
                 },
-                "id": 1,
-                "options": {
-                    "legend": {
-                        "displayMode": "table",
-                        "placement": "bottom"
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
                     },
-                    "tooltip": {
-                        "mode": "multi",
-                        "expr": "{service_name=\"toq_server\", deployment_environment=~\"$environment\", request_id=~\"$requestId\", severity=~\"$severity\"}",
-                    }
+                    "expr": "sum by (status) (rate(http_requests_total[5m]))",
+                    "legendFormat": "HTTP {{status}}",
+                    "refId": "A"
                 },
-                "targets": [
-                    {
-                        "datasource": {
-                            "type": "prometheus",
-                            "uid": "prometheus"
-                        },
-                        "expr": "sum by (status) (rate(http_requests_total[5m]))",
-                        "legendFormat": "HTTP {{status}}",
-                        "refId": "A"
-                    },
-                    "query": "service.name=\"toq_server\" deployment.environment=\"$environment\" request_id=\"$requestId\"""datasource": {
+                {
+                    "datasource": {
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
@@ -74,12 +76,12 @@
                     "refId": "B"
                 }
             ],
-            "title": "Alert pivots (HTTP vs infra errors)",
+            "title": "HTTP vs Infra Errors",
             "type": "timeseries"
         },
         {
             "datasource": {
-                "expr": "histogram_quantile(0.95, sum by (le, path) (rate(http_request_duration_seconds_bucket{deployment_environment=~\"$environment\"}[5m])))",
+                "type": "loki",
                 "uid": "loki"
             },
             "gridPos": {
@@ -90,12 +92,12 @@
             },
             "id": 2,
             "options": {
-                "dedupStrategy": "none",
+                "dedupStrategy": "signature",
                 "enableLogDetails": true,
                 "prettifyLogMessage": true,
+                "showCommonLabels": true,
                 "sortOrder": "Descending",
-                "wrapLogMessage": true,
-                "showCommonLabels": true
+                "wrapLogMessage": true
             },
             "targets": [
                 {
@@ -103,12 +105,11 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "{service_name=\"toq_server\", request_id=~\"$requestId\"} |= \"error\"",
+                    "expr": "{service_name=\"toq_server\",severity=~\"$severity\",request_id=~\"$requestId\",path=~\"$path\"}",
                     "refId": "A"
                 }
             ],
-            "transformations": [],
-            "title": "Logs (filter severity/error)",
+            "title": "Correlated Logs",
             "type": "logs"
         },
         {
@@ -124,15 +125,15 @@
             },
             "id": 3,
             "options": {
-                "traceId": "",
-                "service": "toq_server",
                 "operation": "",
-                "tags": "request_id=\"$requestId\"",
-                "showSearch": true,
                 "search": {
                     "limit": 50,
                     "query": "service.name=\"toq_server\" request_id=\"$requestId\""
-                }
+                },
+                "service": "toq_server",
+                "showSearch": true,
+                "tags": "request_id=$requestId",
+                "traceId": ""
             },
             "title": "Traces",
             "type": "traces"
@@ -146,7 +147,14 @@
                 "defaults": {
                     "color": {
                         "mode": "palette-classic"
-                    }
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 2,
+                        "showPoints": "auto"
+                    },
+                    "unit": "s"
                 },
                 "overrides": []
             },
@@ -178,7 +186,7 @@
                     "refId": "A"
                 }
             ],
-            "title": "Slow endpoints (p95)",
+            "title": "Slow Endpoints (p95)",
             "type": "timeseries"
         }
     ],
@@ -192,40 +200,20 @@
     "templating": {
         "list": [
             {
-                "allValue": ".*",
-                "datasource": {
-                    "type": "loki",
-                    "uid": "loki"
-                },
-                "definition": "label_values({service_name=\"toq_server\"}, deployment_environment)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Environment",
-                "multi": false,
-                "name": "environment",
-                "options": [],
-                "query": "label_values({service_name=\"toq_server\"}, deployment_environment)",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "type": "query"
-            },
-            {
                 "allValue": "ERROR|FATAL",
                 "datasource": {
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\", deployment_environment=~\"$environment\"}, severity)",
+                "definition": "label_values({service_name=\"toq_server\"}, severity)",
                 "hide": 0,
-                "includeAll": false,
+                "includeAll": true,
                 "label": "Severity",
                 "multi": false,
                 "name": "severity",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\", deployment_environment=~\"$environment\"}, severity)",
-                "refresh": 1,
+                "query": "label_values({service_name=\"toq_server\"}, severity)",
+                "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
                 "sort": 1,
@@ -237,14 +225,34 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\", deployment_environment=~\"$environment\"}, request_id)",
+                "definition": "label_values({service_name=\"toq_server\",severity=~\"$severity\"}, request_id)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Request ID",
                 "multi": false,
                 "name": "requestId",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\", deployment_environment=~\"$environment\"}, request_id)",
+                "query": "label_values({service_name=\"toq_server\",severity=~\"$severity\"}, request_id)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\"}, path)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Path",
+                "multi": false,
+                "name": "path",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\"}, path)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
@@ -260,5 +268,5 @@
     "timezone": "",
     "title": "TOQ Server - Observability Correlation",
     "uid": "toq-obs",
-    "version": 3
+    "version": 4
 }

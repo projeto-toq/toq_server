@@ -61,7 +61,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "sum by (severity) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",service_version=~\"$version\",severity=~\"$severity\",path=~\"$path\"}[$__interval]))",
+                    "expr": "sum by (severity) (count_over_time({service_name=\"toq_server\",severity=~\"$severity\",path=~\"$path\"}[$__interval]))",
                     "legendFormat": "{{severity}}",
                     "refId": "A"
                 }
@@ -105,7 +105,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "topk(5, sum by (path) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",severity=~\"ERROR|FATAL\"}[$__interval])))",
+                    "expr": "topk(5, sum by (path) (count_over_time({service_name=\"toq_server\",severity=~\"$severity\"}[$__interval])))",
                     "legendFormat": "{{path}}",
                     "refId": "A"
                 }
@@ -139,7 +139,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "{service_name=\"toq_server\",deployment_environment=~\"$environment\",service_version=~\"$version\",severity=~\"$severity\",request_id=~\"$requestId\",path=~\"$path\"}",
+                    "expr": "{service_name=\"toq_server\",severity=~\"$severity\",request_id=~\"$requestId\",path=~\"$path\"}",
                     "refId": "A"
                 }
             ],
@@ -203,7 +203,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "topk(10, sum by (user_agent) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",severity=~\"$severity\"}[$__interval])))",
+                    "expr": "topk(10, sum by (user_agent) (count_over_time({service_name=\"toq_server\",severity=~\"$severity\"}[$__interval])))",
                     "legendFormat": "{{user_agent}}",
                     "refId": "A"
                 }
@@ -230,59 +230,19 @@
     "templating": {
         "list": [
             {
-                "allValue": ".*",
-                "datasource": {
-                    "type": "loki",
-                    "uid": "loki"
-                },
-                "definition": "label_values({service_name=\"toq_server\"}, deployment_environment)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Environment",
-                "multi": false,
-                "name": "environment",
-                "options": [],
-                "query": "label_values({service_name=\"toq_server\"}, deployment_environment)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "type": "query"
-            },
-            {
-                "allValue": ".*",
-                "datasource": {
-                    "type": "loki",
-                    "uid": "loki"
-                },
-                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, service_version)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "Version",
-                "multi": false,
-                "name": "version",
-                "options": [],
-                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, service_version)",
-                "refresh": 2,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 1,
-                "type": "query"
-            },
-            {
                 "allValue": "ERROR|FATAL",
                 "datasource": {
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "definition": "label_values({service_name=\"toq_server\"}, severity)",
                 "hide": 0,
-                "includeAll": false,
+                "includeAll": true,
                 "label": "Severity",
                 "multi": false,
                 "name": "severity",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "query": "label_values({service_name=\"toq_server\"}, severity)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
@@ -295,14 +255,14 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "definition": "label_values({service_name=\"toq_server\",severity=~\"$severity\"}, request_id)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Request ID",
                 "multi": false,
                 "name": "requestId",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "query": "label_values({service_name=\"toq_server\",severity=~\"$severity\"}, request_id)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
@@ -315,14 +275,14 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, path)",
+                "definition": "label_values({service_name=\"toq_server\"}, path)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Path",
                 "multi": false,
                 "name": "path",
                 "options": [],
-                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, path)",
+                "query": "label_values({service_name=\"toq_server\"}, path)",
                 "refresh": 2,
                 "regex": "",
                 "skipUrlSync": false,
@@ -338,5 +298,5 @@
     "timezone": "",
     "title": "TOQ Server - Logs Analytics",
     "uid": "toq-logs-v2",
-    "version": 1
+    "version": 2
 }
