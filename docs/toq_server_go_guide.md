@@ -156,7 +156,13 @@ Observação: o projeto suporta erros de domínio via `derrors` (novo) e tipos `
 
 ### 7.1 Services (métodos públicos)
 
+- os serviços terão seu proprio diretório em internal/core/service/<service_name>/**
+- o arquivo de interface ficará em internal/core/service/<service_name>/<service_name>_service.go
+- o arquivo de interface terá apenas a struct do service, a interface e a func New
+- cada método público do service terá seu próprio arquivo em internal/core/service/<service_name>/<method_name>.go
+- Inicie transação via serviço global (`s.globalService.StartTransaction
 - Inicie tracer no topo; trate domínio vs infraestrutura; marque spans em erros de infra; não serialize HTTP.
+- Se houver necessidade de um helper com funções simples e pontuais, comun a várias funções públicas, crie um método privado helper.go. Se for função mais complexa crie um metodo privado.
 
 ```go
 func (s *someService) DoSomething(ctx context.Context, input Input) (Output, error) {
@@ -188,7 +194,6 @@ func (s *someService) DoSomething(ctx context.Context, input Input) (Output, err
 Notas:
 - Em erros de domínio (regras de negócio), apenas retorne o erro; não logue como `Error`.
 - Em erros de infra, faça `slog.Error(...)` no ponto de falha e `utils.SetSpanError`.
-- Criação de usuários (owner/realtor): `ValidateUserData` sempre consulta o CEP e aplica `street/city/state` retornados pelo provider, porém mantém `number`, `neighborhood` e `complement` exatamente como enviados pelo cliente (desde que não vazios). O frontend deve usar `/auth/validate/cep` para pré-validar e, se necessário, ajustar esses três campos antes da criação.
 
 ### 7.2 Services (métodos privados)
 
@@ -226,10 +231,11 @@ if err != nil {
 Padrão de repositórios:
 - Cada função deve ter seu próprio arquivo.
 - Conversões entre linhas/DTOs DB ↔ entidades de domínio não devem ser feitas inline na função do repositório.
-- Crie entidades de DB que representam ROWs em `internal/adapter/right/mysql/<repo_name>/entity/*.go`.
-- Centralize conversões em pacotes utilitários por domínio em `internal/adapter/right/mysql/<repo_name>/converters/*.go`.
+  - Crie entidades de DB que representam ROWs em `internal/adapter/right/mysql/<repo_name>/entities/*.go`.
+  - Centralize conversões em pacotes utilitários por domínio em `internal/adapter/right/mysql/<repo_name>/converters/*.go`.
 - Repositório foca em: construir query, executar, checar `RowsAffected`, lidar com `sql.ErrNoRows`, e retornar entidades/domínio já convertidas.
 - Em `RowsAffected == 0`, retorne `sql.ErrNoRows`. O mapeamento para “não encontrado/sem pendência” é feito no Service.
+- Se houver necessidade de um helper com funções simples e pontuais, comun a várias funções públicas, crie um método privado helper.go. Se for função mais complexa crie um metodo privado.
 
 ### 7.4 Handlers HTTP
 
@@ -251,14 +257,9 @@ Padrão de DTOs e Handlers:
   - Endpoints de listagem devem ser `GET` com filtros e paginação via query string.
   - Endpoints de criação, atualização e deleção devem usar `POST`, `PUT` e `DELETE`, respectivamente.
   - Endpoints de detalhe de item devem ser `POST`, recebendo identificadores no corpo.
+  - Somente endpoints GET podem receber filtros via query; demais verbos devem transportar identificadores e dados no corpo JSON (sem path params).
 - Regras para os endpoints admin:
   - Cada rota deve possuir seu handler em arquivo dedicado dentro de `handlers/admin_handlers/`.
-  - Somente endpoints GET podem receber filtros via query; demais verbos devem transportar identificadores e dados no corpo JSON (sem path params).
-
-#### Regras adicionais obrigatórias para handlers
-
-- Todo endpoint que listar itens com filtros ou paginação deve obrigatoriamente usar o verbo `GET` e receber os filtros na query string.
-- Toda consulta de detalhe de um único item deve ser exposta com `POST`, levando o identificador no corpo da requisição.
 - Todo handler público precisa possuir comentários em inglês com exemplos de utilização (incluindo parâmetros e payloads), garantindo a geração automática da documentação Swagger.
 
 ### 7.5 Workers/Go routines

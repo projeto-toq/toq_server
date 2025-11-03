@@ -20,11 +20,15 @@ func (sa *SessionAdapter) RevokeSessionsByUserID(ctx context.Context, tx *sql.Tx
 
 	query := `UPDATE sessions SET revoked = true WHERE user_id = ? AND revoked = false`
 
-	_, err = sa.Update(ctx, tx, query, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.revoke_sessions_by_user_id.update_error", "user_id", userID, "error", err)
-		return fmt.Errorf("revoke sessions by user id: %w", err)
+	result, execErr := sa.ExecContext(ctx, tx, "update", query, userID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.session.revoke_sessions_by_user_id.exec_error", "user_id", userID, "err", execErr)
+		return fmt.Errorf("revoke sessions by user id: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		logger.Warn("mysql.session.revoke_sessions_by_user_id.rows_affected_error", "user_id", userID, "err", rowsErr)
 	}
 
 	return nil

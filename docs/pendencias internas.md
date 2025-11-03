@@ -43,3 +43,4 @@
 - o repositório de listing está totalmente dofora dao prã de listing, sem converters, sem entity, func chamando func no próprio repositorio
 - incluir no toq_server_go_guide.md o padrão de repositorio sempre com converter no /converter e entity no /entity
 - service_areas_repo está com várias funcs no mesmo arquivo
+- repo de session tem outra interface dentro e nÃo segue o padrão

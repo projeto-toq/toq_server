@@ -11,22 +11,30 @@ import (
 )
 
 func (a *VisitAdapter) UpdateVisit(ctx context.Context, tx *sql.Tx, visit listingmodel.VisitInterface) error {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	entity := converters.ToVisitEntity(visit)
 
 	query := `UPDATE listing_visits SET listing_id = ?, owner_id = ?, realtor_id = ?, scheduled_start = ?, scheduled_end = ?, status = ?, cancel_reason = ?, notes = ?, updated_by = ? WHERE id = ?`
-	result, err := exec.ExecContext(ctx, query, entity.ListingID, entity.OwnerID, entity.RealtorID, entity.ScheduledStart, entity.ScheduledEnd, entity.Status, entity.CancelReason, entity.Notes, entity.UpdatedBy, entity.ID)
+	result, err := a.ExecContext(ctx, tx, "update_visit", query,
+		entity.ListingID,
+		entity.OwnerID,
+		entity.RealtorID,
+		entity.ScheduledStart,
+		entity.ScheduledEnd,
+		entity.Status,
+		entity.CancelReason,
+		entity.Notes,
+		entity.UpdatedBy,
+		entity.ID,
+	)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.visit.update.exec_error", "visit_id", entity.ID, "err", err)

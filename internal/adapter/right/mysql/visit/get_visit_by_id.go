@@ -7,29 +7,25 @@ import (
 	"fmt"
 
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/entity"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func (a *VisitAdapter) GetVisitByID(ctx context.Context, tx *sql.Tx, id int64) (listingmodel.VisitInterface, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, listing_id, owner_id, realtor_id, scheduled_start, scheduled_end, status, cancel_reason, notes, created_by, updated_by FROM listing_visits WHERE id = ?`
-	row := exec.QueryRowContext(ctx, query, id)
+	row := a.QueryRowContext(ctx, tx, "get_visit_by_id", query, id)
 
-	var visitEntity entity.VisitEntity
-	if err = row.Scan(&visitEntity.ID, &visitEntity.ListingID, &visitEntity.OwnerID, &visitEntity.RealtorID, &visitEntity.ScheduledStart, &visitEntity.ScheduledEnd, &visitEntity.Status, &visitEntity.CancelReason, &visitEntity.Notes, &visitEntity.CreatedBy, &visitEntity.UpdatedBy); err != nil {
+	visitEntity, err := scanVisitEntity(row)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}

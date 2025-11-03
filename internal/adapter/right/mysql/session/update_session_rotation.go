@@ -21,11 +21,17 @@ func (sa *SessionAdapter) UpdateSessionRotation(ctx context.Context, tx *sql.Tx,
 
 	query := `UPDATE sessions SET rotation_counter = ?, last_refresh_at = ? WHERE id = ?`
 
-	_, err = sa.Update(ctx, tx, query, rotationCounter, lastRefreshAt, id)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.update_session_rotation.update_error", "session_id", id, "error", err)
-		return fmt.Errorf("update session rotation: %w", err)
+	result, execErr := sa.ExecContext(ctx, tx, "update", query, rotationCounter, lastRefreshAt, id)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.session.update_session_rotation.exec_error", "session_id", id, "err", execErr)
+		return fmt.Errorf("update session rotation: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.session.update_session_rotation.rows_error", "session_id", id, "err", rowsErr)
+		return fmt.Errorf("update session rotation rows affected: %w", rowsErr)
 	}
 
 	return nil

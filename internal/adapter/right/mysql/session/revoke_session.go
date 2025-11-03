@@ -20,11 +20,17 @@ func (sa *SessionAdapter) RevokeSession(ctx context.Context, tx *sql.Tx, id int6
 
 	query := `UPDATE sessions SET revoked = true WHERE id = ?`
 
-	_, err = sa.Update(ctx, tx, query, id)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.revoke_session.update_error", "session_id", id, "error", err)
-		return fmt.Errorf("revoke session: %w", err)
+	result, execErr := sa.ExecContext(ctx, tx, "update", query, id)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.session.revoke_session.exec_error", "session_id", id, "err", execErr)
+		return fmt.Errorf("revoke session: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.session.revoke_session.rows_error", "session_id", id, "err", rowsErr)
+		return fmt.Errorf("revoke session rows affected: %w", rowsErr)
 	}
 
 	return nil

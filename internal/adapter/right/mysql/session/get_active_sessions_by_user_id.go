@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	sessionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/projeto-toq/toq_server/internal/core/model/session_model"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -25,22 +24,29 @@ func (sa *SessionAdapter) GetActiveSessionsByUserID(ctx context.Context, tx *sql
 			FROM sessions 
 			WHERE user_id = ? AND revoked = false AND expires_at > UTC_TIMESTAMP()`
 
-	entities, err := sa.Read(ctx, tx, query, userID)
+	rows, err := sa.QueryContext(ctx, tx, "get_active_sessions_by_user_id", query, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.get_active_sessions_by_user_id.read_error", "user_id", userID, "error", err)
+		logger.Error("mysql.session.get_active_sessions_by_user_id.query_error", "user_id", userID, "error", err)
 		return nil, fmt.Errorf("get active sessions by user id: %w", err)
 	}
+	defer rows.Close()
 
-	sessions = make([]sessionmodel.SessionInterface, 0, len(entities))
-	for _, entity := range entities {
-		session, err := sessionconverters.SessionEntityToDomain(entity)
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.session.get_active_sessions_by_user_id.convert_error", "user_id", userID, "error", err)
-			return nil, err
+	sessions = make([]sessionmodel.SessionInterface, 0)
+	for rows.Next() {
+		session, mapErr := sa.mapSessionFromScanner(ctx, rows, "get_active_sessions_by_user_id")
+		if mapErr != nil {
+			utils.SetSpanError(ctx, mapErr)
+			logger.Error("mysql.session.get_active_sessions_by_user_id.scan_error", "user_id", userID, "error", mapErr)
+			return nil, fmt.Errorf("get active sessions by user id: %w", mapErr)
 		}
 		sessions = append(sessions, session)
+	}
+
+	if err = rows.Err(); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.session.get_active_sessions_by_user_id.rows_error", "user_id", userID, "error", err)
+		return nil, fmt.Errorf("get active sessions by user id: %w", err)
 	}
 
 	return

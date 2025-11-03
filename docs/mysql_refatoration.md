@@ -319,6 +319,8 @@ result, err := sa.ExecContext(ctx, tx, "delete", deleteEntryQuery, entryID)
 ---
 
 ## 13. Fase 10 — Domínio Session
+**Status:** Concluída em 2025-11-03.
+
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/session/*.go`
 
@@ -338,6 +340,7 @@ result, err := sa.ExecContext(ctx, tx, "insert", insertSessionQuery, session.Tok
 ---
 
 ## 14. Fase 11 — Domínio Visit
+**Status:** Concluída em 2025-11-03.
 ### Arquivos Impactados
 - `internal/adapter/right/mysql/visit/*.go`
 - Remover helpers (`helpers.go`) substituindo por executor comum.

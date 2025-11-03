@@ -11,10 +11,10 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session sessionmodel.SessionInterface) (err error) {
+func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session sessionmodel.SessionInterface) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return
+		return err
 	}
 	defer spanEnd()
 
@@ -27,7 +27,7 @@ func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session
 
 	entity := sessionconverters.SessionDomainToEntity(ctx, session)
 
-	id, err := sa.Create(ctx, tx, query,
+	result, execErr := sa.ExecContext(ctx, tx, "insert", query,
 		entity.UserID,
 		entity.RefreshHash,
 		entity.TokenJTI,
@@ -41,12 +41,19 @@ func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session
 		entity.RotationCounter,
 		entity.LastRefreshAt,
 		entity.Revoked)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.create_session.create_error", "error", err)
-		return fmt.Errorf("create session: %w", err)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.session.create_session.exec_error", "err", execErr)
+		return fmt.Errorf("create session: %w", execErr)
+	}
+
+	id, lastIDErr := result.LastInsertId()
+	if lastIDErr != nil {
+		utils.SetSpanError(ctx, lastIDErr)
+		logger.Error("mysql.session.create_session.last_insert_error", "err", lastIDErr)
+		return fmt.Errorf("create session last insert id: %w", lastIDErr)
 	}
 
 	session.SetID(id)
-	return
+	return nil
 }

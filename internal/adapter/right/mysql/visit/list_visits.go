@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/entity"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -15,15 +14,12 @@ import (
 const visitsMaxPageSize = 50
 
 func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listingmodel.VisitListFilter) (listingmodel.VisitListResult, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return listingmodel.VisitListResult{}, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -66,7 +62,8 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 
 	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM listing_visits WHERE %s", where)
 	var total int64
-	if err = exec.QueryRowContext(ctx, countQuery, args...).Scan(&total); err != nil {
+	countRow := a.QueryRowContext(ctx, tx, "list_visits_count", countQuery, args...)
+	if err = countRow.Scan(&total); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.visit.list.count_error", "err", err)
 		return listingmodel.VisitListResult{}, fmt.Errorf("count visits: %w", err)
@@ -82,7 +79,10 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 		LIMIT ? OFFSET ?
 	`, where)
 
-	rows, err := exec.QueryContext(ctx, query, append(args, limit, offset)...)
+	params := append(make([]any, 0, len(args)+2), args...)
+	params = append(params, limit, offset)
+
+	rows, err := a.QueryContext(ctx, tx, "list_visits", query, params...)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.visit.list.query_error", "err", err)
@@ -92,11 +92,11 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 
 	visits := make([]listingmodel.VisitInterface, 0)
 	for rows.Next() {
-		var visitEntity entity.VisitEntity
-		if err = rows.Scan(&visitEntity.ID, &visitEntity.ListingID, &visitEntity.OwnerID, &visitEntity.RealtorID, &visitEntity.ScheduledStart, &visitEntity.ScheduledEnd, &visitEntity.Status, &visitEntity.CancelReason, &visitEntity.Notes, &visitEntity.CreatedBy, &visitEntity.UpdatedBy); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.visit.list.scan_error", "err", err)
-			return listingmodel.VisitListResult{}, fmt.Errorf("scan visit: %w", err)
+		visitEntity, scanErr := scanVisitEntity(rows)
+		if scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.visit.list.scan_error", "err", scanErr)
+			return listingmodel.VisitListResult{}, fmt.Errorf("scan visit: %w", scanErr)
 		}
 		visits = append(visits, converters.ToVisitModel(visitEntity))
 	}

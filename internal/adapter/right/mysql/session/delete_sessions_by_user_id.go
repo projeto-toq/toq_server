@@ -21,26 +21,29 @@ func (sa *SessionAdapter) DeleteSessionsByUserID(ctx context.Context, tx *sql.Tx
 
 	query := `DELETE FROM sessions WHERE user_id = ?`
 
-	// Use helper when tx is provided
+	// Use executor when tx is provided
 	if tx != nil {
-		if _, err := sa.Delete(ctx, tx, query, userID); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.session.delete_sessions_by_user_id.delete_error", "user_id", userID, "error", err)
-			return fmt.Errorf("delete sessions by user id: %w", err)
+		result, execErr := sa.ExecContext(ctx, tx, "delete", query, userID)
+		if execErr != nil {
+			utils.SetSpanError(ctx, execErr)
+			logger.Error("mysql.session.delete_sessions_by_user_id.exec_error", "user_id", userID, "err", execErr)
+			return fmt.Errorf("delete sessions by user id: %w", execErr)
+		}
+		if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+			logger.Warn("mysql.session.delete_sessions_by_user_id.rows_affected_error", "user_id", userID, "err", rowsErr)
 		}
 		return nil
 	}
 
 	// Fallback if no transaction (should rarely happen in our flows)
-	defer sa.ObserveOnComplete("delete", query)()
-	res, err := sa.DB().GetDB().ExecContext(ctx, query, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.delete_sessions_by_user_id.exec_error", "user_id", userID, "error", err)
-		return fmt.Errorf("delete sessions by user id: %w", err)
+	result, execErr := sa.ExecContext(ctx, nil, "delete", query, userID)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.session.delete_sessions_by_user_id.exec_error", "user_id", userID, "err", execErr)
+		return fmt.Errorf("delete sessions by user id: %w", execErr)
 	}
-	if _, err := res.RowsAffected(); err != nil {
-		logger.Warn("mysql.session.delete_sessions_by_user_id.rows_affected_error", "user_id", userID, "error", err)
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		logger.Warn("mysql.session.delete_sessions_by_user_id.rows_affected_error", "user_id", userID, "err", rowsErr)
 	}
 	return nil
 }

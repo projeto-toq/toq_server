@@ -11,22 +11,30 @@ import (
 )
 
 func (a *VisitAdapter) InsertVisit(ctx context.Context, tx *sql.Tx, visit listingmodel.VisitInterface) (int64, error) {
-	ctx, spanEnd, err := withTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return 0, err
 	}
-	if spanEnd != nil {
-		defer spanEnd()
-	}
+	defer spanEnd()
 
-	exec := a.executor(tx)
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	entity := converters.ToVisitEntity(visit)
 
 	query := `INSERT INTO listing_visits (listing_id, owner_id, realtor_id, scheduled_start, scheduled_end, status, cancel_reason, notes, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	result, err := exec.ExecContext(ctx, query, entity.ListingID, entity.OwnerID, entity.RealtorID, entity.ScheduledStart, entity.ScheduledEnd, entity.Status, entity.CancelReason, entity.Notes, entity.CreatedBy, entity.UpdatedBy)
+	result, err := a.ExecContext(ctx, tx, "insert_visit", query,
+		entity.ListingID,
+		entity.OwnerID,
+		entity.RealtorID,
+		entity.ScheduledStart,
+		entity.ScheduledEnd,
+		entity.Status,
+		entity.CancelReason,
+		entity.Notes,
+		entity.CreatedBy,
+		entity.UpdatedBy,
+	)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.visit.insert.exec_error", "listing_id", entity.ListingID, "err", err)

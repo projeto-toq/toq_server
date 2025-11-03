@@ -3,9 +3,9 @@ package sessionmysqladapter
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 
-	sessionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session/converters"
 	sessionmodel "github.com/projeto-toq/toq_server/internal/core/model/session_model"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -25,23 +25,16 @@ func (sa *SessionAdapter) GetActiveSessionByRefreshHash(ctx context.Context, tx 
 			FROM sessions 
 			WHERE refresh_hash = ? AND revoked = false AND expires_at > UTC_TIMESTAMP()`
 
-	entities, err := sa.Read(ctx, tx, query, hash)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.get_active_session_by_refresh_hash.read_error", "hash", hash, "error", err)
-		return nil, fmt.Errorf("get active session by refresh hash: %w", err)
-	}
-
-	if len(entities) == 0 {
+	row := sa.QueryRowContext(ctx, tx, "get_active_session_by_refresh_hash", query, hash)
+	session, err = sa.mapSessionFromScanner(ctx, row, "get_active_session_by_refresh_hash")
+	if errors.Is(err, sql.ErrNoRows) {
 		logger.Debug("mysql.session.get_active_session_by_refresh_hash.not_found", "hash", hash)
 		return nil, sql.ErrNoRows
 	}
-
-	session, err = sessionconverters.SessionEntityToDomain(entities[0])
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.get_active_session_by_refresh_hash.convert_error", "hash", hash, "error", err)
-		return
+		logger.Error("mysql.session.get_active_session_by_refresh_hash.scan_error", "hash", hash, "error", err)
+		return nil, fmt.Errorf("get active session by refresh hash: %w", err)
 	}
 
 	return

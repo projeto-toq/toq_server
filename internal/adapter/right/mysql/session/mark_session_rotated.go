@@ -20,11 +20,17 @@ func (sa *SessionAdapter) MarkSessionRotated(ctx context.Context, tx *sql.Tx, id
 
 	query := `UPDATE sessions SET rotated_at = UTC_TIMESTAMP() WHERE id = ?`
 
-	_, err = sa.Update(ctx, tx, query, id)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.session.mark_session_rotated.update_error", "session_id", id, "error", err)
-		return fmt.Errorf("mark session rotated: %w", err)
+	result, execErr := sa.ExecContext(ctx, tx, "update", query, id)
+	if execErr != nil {
+		utils.SetSpanError(ctx, execErr)
+		logger.Error("mysql.session.mark_session_rotated.exec_error", "session_id", id, "err", execErr)
+		return fmt.Errorf("mark session rotated: %w", execErr)
+	}
+
+	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.session.mark_session_rotated.rows_error", "session_id", id, "err", rowsErr)
+		return fmt.Errorf("mark session rotated rows affected: %w", rowsErr)
 	}
 
 	return nil
