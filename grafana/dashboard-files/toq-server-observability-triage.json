@@ -1,0 +1,362 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 2
+                    },
+                    "unit": "req/s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (status) (rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m]))",
+                    "legendFormat": "HTTP {{status}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "HTTP Responses by Status",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 2
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "histogram_quantile(0.95, sum by (le, path) (rate(http_request_duration_seconds_bucket{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])))",
+                    "legendFormat": "{{path}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Slow Endpoints (p95)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 7
+            },
+            "id": 3,
+            "options": {
+                "dedupStrategy": "none",
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showCommonLabels": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "{service_name=\"toq_server\",deployment_environment=~\"$environment\",service_version=~\"$version\",severity=~\"$severity\",request_id=~\"$requestId\"}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Correlated Logs",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "jaeger",
+                "uid": "jaeger"
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 7
+            },
+            "id": 4,
+            "options": {
+                "liveSpan": "5m",
+                "operation": "",
+                "search": {
+                    "limit": 50,
+                    "query": "service.name=\"toq_server\" deployment.environment=\"$environment\" request_id=\"$requestId\""
+                },
+                "service": "toq_server",
+                "showSearch": true,
+                "tags": "deployment.environment=$environment request_id=$requestId",
+                "traceId": ""
+            },
+            "title": "Traces",
+            "type": "traces"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 2,
+                        "showPoints": "auto"
+                    },
+                    "unit": "req/s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 0,
+                "y": 16
+            },
+            "id": 5,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (component, error_type) (rate(errors_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m]))",
+                    "legendFormat": "{{component}} {{error_type}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Errors by Component",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 12,
+                "y": 16
+            },
+            "id": 6,
+            "options": {
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "topk(10, sum by (request_id, path) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",severity=~\"ERROR|FATAL\"}[$__interval])))",
+                    "format": "table",
+                    "legendFormat": "",
+                    "refId": "A"
+                }
+            ],
+            "title": "Top Error Requests",
+            "type": "table"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "toq-server",
+        "triage"
+    ],
+    "templating": {
+        "list": [
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values(http_requests_total, deployment_environment)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Environment",
+                "multi": false,
+                "name": "environment",
+                "options": [],
+                "query": "label_values(http_requests_total, deployment_environment)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Version",
+                "multi": false,
+                "name": "version",
+                "options": [],
+                "query": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "allValue": "ERROR|FATAL",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Severity",
+                "multi": false,
+                "name": "severity",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Request ID",
+                "multi": false,
+                "name": "requestId",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timezone": "",
+    "title": "TOQ Server - Observability Triage",
+    "uid": "toq-triage",
+    "version": 1
+}

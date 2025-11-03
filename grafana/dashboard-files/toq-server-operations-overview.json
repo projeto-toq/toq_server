@@ -1,0 +1,421 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{deployment_environment=~\"$environment\",service_version=~\"$version\",method!~\"OPTIONS\"}[5m])))",
+                    "legendFormat": "p95 latency",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{deployment_environment=~\"$environment\",service_version=~\"$version\",method!~\"OPTIONS\"}[5m])))",
+                    "legendFormat": "p99 latency",
+                    "refId": "B"
+                }
+            ],
+            "title": "HTTP Latency (p95/p99)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "smooth",
+                        "lineWidth": 2
+                    },
+                    "unit": "req/s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (method) (rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m]))",
+                    "legendFormat": "{{method}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Traffic by Method",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 2
+                    },
+                    "unit": "req/s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 8
+            },
+            "id": 3,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\",status=~\"5..\"}[5m]))",
+                    "legendFormat": "5xx",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(rate(http_requests_total{deployment_environment=~\"$environment\",service_version=~\"$version\",status=~\"4..\"}[5m]))",
+                    "legendFormat": "4xx",
+                    "refId": "B"
+                }
+            ],
+            "title": "Error Rate",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 2,
+                        "showPoints": "auto"
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 8
+            },
+            "id": 4,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "avg_over_time(go_goroutines{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])",
+                    "legendFormat": "Goroutines",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "avg_over_time(process_resident_memory_bytes{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])",
+                    "legendFormat": "RSS bytes",
+                    "refId": "B"
+                }
+            ],
+            "title": "Runtime Saturation",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 99
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 16
+            },
+            "id": 5,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "value"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "time() - process_start_time_seconds{deployment_environment=~\"$environment\",service_version=~\"$version\"}",
+                    "legendFormat": "uptime seconds",
+                    "refId": "A"
+                }
+            ],
+            "title": "Process Uptime",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "bar",
+                        "barAlignment": 0,
+                        "lineWidth": 0
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 18,
+                "x": 6,
+                "y": 16
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(rate(errors_total{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])) by (component, error_type)",
+                    "legendFormat": "{{component}} {{error_type}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Errors by Component",
+            "type": "timeseries"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "toq-server",
+        "operations"
+    ],
+    "templating": {
+        "list": [
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values(http_requests_total, deployment_environment)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Environment",
+                "multi": false,
+                "name": "environment",
+                "options": [],
+                "query": "label_values(http_requests_total, deployment_environment)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Version",
+                "multi": false,
+                "name": "version",
+                "options": [],
+                "query": "label_values(http_requests_total{deployment_environment=~\"$environment\"}, service_version)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timezone": "",
+    "title": "TOQ Server - Operations Overview",
+    "uid": "toq-ops",
+    "version": 1
+}

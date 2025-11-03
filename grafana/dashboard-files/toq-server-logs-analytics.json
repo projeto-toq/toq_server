@@ -1,0 +1,342 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "sum by (severity) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",service_version=~\"$version\",severity=~\"$severity\",path=~\"$path\"}[$__interval]))",
+                    "legendFormat": "{{severity}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Log Volume by Severity",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 12,
+                "y": 0
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "topk(5, sum by (path) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",severity=~\"ERROR|FATAL\"}[$__interval])))",
+                    "legendFormat": "{{path}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Top Error Paths",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 7
+            },
+            "id": 3,
+            "options": {
+                "dedupStrategy": "signature",
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showCommonLabels": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": true
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "{service_name=\"toq_server\",deployment_environment=~\"$environment\",service_version=~\"$version\",severity=~\"$severity\",request_id=~\"$requestId\",path=~\"$path\"}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Structured Logs",
+            "type": "logs"
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 10
+                            },
+                            {
+                                "color": "red",
+                                "value": 30
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 7
+            },
+            "id": 4,
+            "options": {
+                "displayMode": "basic",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "value_and_name"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "topk(10, sum by (user_agent) (count_over_time({service_name=\"toq_server\",deployment_environment=~\"$environment\",severity=~\"$severity\"}[$__interval])))",
+                    "legendFormat": "{{user_agent}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "Top Callers (User-Agent)",
+            "transformations": [
+                {
+                    "id": "labelsToFields",
+                    "options": {
+                        "valueLabel": "Value"
+                    }
+                }
+            ],
+            "type": "bargauge"
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "toq-server",
+        "logs"
+    ],
+    "templating": {
+        "list": [
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\"}, deployment_environment)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Environment",
+                "multi": false,
+                "name": "environment",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\"}, deployment_environment)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, service_version)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Version",
+                "multi": false,
+                "name": "version",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, service_version)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "allValue": "ERROR|FATAL",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Severity",
+                "multi": false,
+                "name": "severity",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, severity)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Request ID",
+                "multi": false,
+                "name": "requestId",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, request_id)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "allValue": ".*",
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, path)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Path",
+                "multi": false,
+                "name": "path",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\",deployment_environment=~\"$environment\"}, path)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "timezone": "",
+    "title": "TOQ Server - Logs Analytics",
+    "uid": "toq-logs-v2",
+    "version": 1
+}

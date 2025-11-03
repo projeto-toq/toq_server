@@ -1,8 +1,6 @@
 package middlewares
 
 import (
-	"log/slog"
-
 	"github.com/gin-gonic/gin"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
@@ -13,11 +11,17 @@ import (
 // PermissionMiddleware verifica permissões específicas usando o sistema de permissões avançado
 func PermissionMiddleware(permissionService permissionservice.PermissionServiceInterface) gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
+		method := c.Request.Method
+		path := c.Request.URL.Path
+
 		// Skip para endpoints públicos
-		if !isPermissionCheckRequired(c.Request.Method, c.Request.URL.Path) {
+		if !isPermissionCheckRequired(method, path) {
 			c.Next()
 			return
 		}
+
+		ctx := c.Request.Context()
+		logger := coreutils.LoggerFromContext(ctx)
 
 		// Obter informações do usuário do contexto (definido pelo auth middleware)
 		userInfoInterface, exists := c.Get("userInfo")
@@ -26,6 +30,7 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 			if mp := getMetricsAdapterFromGin(c); mp != nil {
 				mp.IncrementErrors("permission", "missing_user_info")
 			}
+			logger.Warn("permission.middleware.user_info_missing", "path", path, "method", method)
 			c.Abort()
 			return
 		}
@@ -36,18 +41,17 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 			if mp := getMetricsAdapterFromGin(c); mp != nil {
 				mp.IncrementErrors("permission", "invalid_user_info")
 			}
+			logger.Warn("permission.middleware.user_info_invalid", "path", path, "method", method)
 			c.Abort()
 			return
 		}
 
 		userID := userInfo.ID
-		method := c.Request.Method
-		path := c.Request.URL.Path
 
 		// Usar o novo sistema de permissões HTTP
-		hasPermission, err := permissionService.HasHTTPPermission(c.Request.Context(), userID, method, path)
+		hasPermission, err := permissionService.HasHTTPPermission(ctx, userID, method, path)
 		if err != nil {
-			slog.Error("Error checking permission", "userID", userID, "method", method, "path", path, "error", err)
+			logger.Error("permission.middleware.check_failed", "user_id", userID, "method", method, "path", path, "err", err)
 			httperrors.SendHTTPErrorObj(c, coreutils.InternalError("Permission check failed"))
 			if mp := getMetricsAdapterFromGin(c); mp != nil {
 				mp.IncrementErrors("permission", "check_failed")
@@ -57,7 +61,7 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 		}
 
 		if !hasPermission {
-			slog.Warn("Permission denied", "userID", userID, "method", method, "path", path)
+			logger.Warn("permission.middleware.denied", "user_id", userID, "method", method, "path", path)
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthorizationError("Insufficient permissions"))
 			if mp := getMetricsAdapterFromGin(c); mp != nil {
 				mp.IncrementErrors("permission", "forbidden")
@@ -66,7 +70,7 @@ func PermissionMiddleware(permissionService permissionservice.PermissionServiceI
 			return
 		}
 
-		slog.Debug("Permission granted", "userID", userID, "method", method, "path", path)
+		logger.Debug("permission.middleware.granted", "user_id", userID, "method", method, "path", path)
 		c.Next()
 	})
 }

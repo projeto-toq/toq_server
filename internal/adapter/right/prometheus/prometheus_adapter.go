@@ -5,6 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -40,7 +41,9 @@ type PrometheusAdapter struct {
 func NewPrometheusAdapter() metricsport.MetricsPortInterface {
 	registry := prometheus.NewRegistry()
 	labels := prometheus.Labels{
-		"service": "toq_server",
+		"service":                "toq_server",
+		"deployment_environment": globalmodel.GetRuntimeEnvironment(),
+		"service_version":        globalmodel.AppVersion,
 	}
 	registerer := prometheus.WrapRegistererWith(labels, registry)
 	prometheus.DefaultRegisterer = registerer

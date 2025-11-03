@@ -105,6 +105,7 @@ func (b *Bootstrap) applyRuntimeEnvironmentOverrides() error {
 
 	cfg.runtimeEnvironment = environmentName
 	cfg.workersEnabled = workersEnabled
+	globalmodel.SetRuntimeEnvironment(environmentName)
 
 	slog.Info("Overrides de ambiente aplicados",
 		"http_port", b.env.HTTP.Port,

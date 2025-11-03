@@ -12,54 +12,64 @@
 | --- | --- | --- |
 | Loki | `3100` | Time-series DB e API de consulta para logs |
 | OpenTelemetry Collector | `4317/4318` | Recebe spans/logs OTLP, agrega atributos e envia ao Loki |
-| Grafana | `3000` | Dashboards (`TOQ Server Logs`) e consultas Explore |
+| Grafana | `3000` | Dashboards (`TOQ Server - Operations Overview`, `TOQ Server - Dependencies Observability`, `TOQ Server - Logs Analytics`, `TOQ Server - Observability Triage`) e consultas Explore |
 | Jaeger | `16686` | Consulta de traces vinculados via `trace_id` |
 
 ## Variáveis de Ambiente Importantes
 - `LOKI_RETENTION_DAYS`: dias de retenção do Loki. Dev = `7`, sugerido prod = `3`.
-- `OTEL_EXPORTER_OTLP_ENDPOINT`: endpoint do collector (compartilhado por métricas/traces/logs).
-- `OTEL_EXPORTER_OTLP_INSECURE`: defina `false` quando houver TLS.
+- `OTEL_RESOURCE_SERVICE_NAME`: nome lógico exportado como `service.name` (default `toq_server`).
+- `OTEL_RESOURCE_ENVIRONMENT`: ambiente (`dev`, `homo`, `prod`), replicado para métricas/logs/traces.
+- `OTEL_RESOURCE_SERVICE_VERSION`: versão da aplicação exibida nos dashboards.
+- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`: endpoint protegido do backend de traces (Jaeger/Tempo).
+- `OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER`: header `Authorization` usado no exporter OTLP gRPC (opcional).
+- `LOKI_OTLP_ENDPOINT`: endpoint OTLP/HTTP do Loki ou gateway de logs.
+- `LOKI_OTLP_AUTH_HEADER`: header `Authorization` para Loki (opcional).
+- `LOKI_TENANT_ID`: identificador multi-tenant (ex.: `toq`).
 
 > Altere valores via `.env` para manter os stacks sincronizados. PR-05 não muda defaults, apenas registra expectativas.
 
 ## Passos para Subir o Stack (dev)
 ```bash
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-export OTEL_EXPORTER_OTLP_INSECURE=true
+export OTEL_RESOURCE_SERVICE_NAME=toq_server
+export OTEL_RESOURCE_ENVIRONMENT=homo
+export OTEL_RESOURCE_SERVICE_VERSION=2.0.0
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=jaeger:4317
+export OTEL_EXPORTER_OTLP_TRACES_INSECURE=true
+export LOKI_OTLP_ENDPOINT=http://loki:3100/otlp
+export LOKI_OTLP_INSECURE=true
+export LOKI_TENANT_ID=toq
 export LOKI_RETENTION_DAYS=7
 docker compose up -d loki otel-collector grafana jaeger
 ```
 Inicie o servidor (`go run cmd/toq_server.go` ou binário). O bootstrap já conecta o `ctxlogger` aos handlers e workers.
 
-## Painel "TOQ Server Logs"
-Arquivo: `grafana/dashboard-files/toq-server-logs.json`
+## Dashboards disponíveis
 
-Atualizações recentes:
-- Variáveis de filtro **Request ID**, **Severity** e **HTTP Path** aplicadas diretamente sobre labels Loki (`request_id`, `severity`, `path`).
-- Campo derivado `trace_id` segue apontando para Jaeger por meio do datasource configurado no Loki.
-- Consultas (`count_over_time` e painéis de logs) usam os filtros selecionados para reduzir ruído e acelerar a investigação.
+- **TOQ Server - Operations Overview** (`grafana/dashboard-files/toq-server-operations-overview.json`)
+	- Golden signals (latência p95/p99, tráfego por método, erros por classe, saturação de memória/goroutines).
+	- Variáveis: `Environment`, `Version` (via métricas Prometheus com labels constantes) para isolar instâncias.
 
-### Painéis
-1. **Eventos por severidade** — Timeseries usando `count_over_time`, segmentado por `severity` com filtros de `request_id` e `path`.
-2. **Fluxo de logs** — Painel de logs com labels comuns (`request_id`, `severity`, `trace_id`, `path`).
-3. **Erros por serviço** — Tabela agregada filtrável por `request_id` e `path`, destacando requisições com `severity="ERROR"`.
+- **TOQ Server - Dependencies Observability** (`grafana/dashboard-files/toq-server-dependencies-observability.json`)
+	- Métricas de MySQL/Redis (throughput, latência p95, erros) + saturação de CPU/memória coletadas via hostmetrics.
+	- Útil para validar regressões em queries, lock contention e impactos de cache.
 
-### Variáveis de Template
-```text
-requestId: label_values({service_name="toq_server"}, request_id)
-severity:  label_values({service_name="toq_server", request_id=~"$requestId"}, severity)
-path:      label_values({service_name="toq_server", request_id=~"$requestId"}, path)
-```
-Selecione valores específicos quando precisar investigar um fluxo; o valor `.*` aplica o filtro sobre todos os registros.
+- **TOQ Server - Logs Analytics** (`grafana/dashboard-files/toq-server-logs-analytics.json`)
+	- Timeseries de volume por `severity`, top paths de erro, painel de logs contextualizados e bargauge por `user_agent`.
+	- Variáveis: `Environment`, `Version`, `Severity`, `Request ID`, `Path` — todas alimentadas por labels Loki produzidos pelo collector (`deployment.environment`, `service.version`, etc.).
+
+- **TOQ Server - Observability Triage** (`grafana/dashboard-files/toq-server-observability-triage.json`)
+	- Vista única para correlação HTTP status vs. latência, logs filtrados, traces Jaeger (via tags `deployment.environment` e `request_id`) e tabela de requisições com maior incidência de erros.
+
+Cada dashboard está pensado para investigação rápida: escolha o ambiente/versão, isolate o `request_id` (se conhecido) e acompanhe métricas, logs e traces no mesmo contexto.
 
 ### Derived Fields
-No painel de logs, o campo `trace_id` está configurado como link para o Jaeger (`http://localhost:16686/trace/${__value.raw}` por padrão). Ajuste a URL conforme ambiente.
+No painel **Logs Analytics**, o campo `trace_id` permanece com link configurável para Jaeger (`http://localhost:16686/trace/${__value.raw}` por padrão). Ajuste conforme o domínio real do cluster.
 
 ## Fluxo de Investigação Recomendado
 1. **Execute o servidor com `ENVIRONMENT=homo`** para garantir que logs, métricas e traces sejam exportados para o collector.
-2. Use os filtros `Request ID`, `Severity` e `Path` no dashboard “TOQ Server Logs” para isolar o cenário alvo.
+2. Use os filtros `Environment`, `Version`, `Severity`, `Path` e `Request ID` no dashboard “TOQ Server - Logs Analytics” para isolar o cenário alvo.
 3. Abra uma linha de log, utilize o link “Jaeger Trace” (campo `trace_id`) e valide o span correspondente no Jaeger.
-4. Opcionalmente, migre para o painel “TOQ Server - Observability Correlation” e reaproveite os filtros para cruzar métricas e traces.
+4. Migre para o painel “TOQ Server - Observability Triage” para cruzar métricas e traces com o mesmo filtro.
 
 ## Checklist de Smoke
 - Verifique no Grafana Explore se as labels `service_name`, `severity`, `request_id`, `trace_id`, `path`, `method`, `client_ip` e `user_agent` estão disponíveis.

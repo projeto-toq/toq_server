@@ -26,7 +26,13 @@ processors:
   resource:
     attributes:
       - key: service.name
-        value: toq_server
+        value: ${OTEL_RESOURCE_SERVICE_NAME}
+        action: upsert
+      - key: deployment.environment
+        value: ${OTEL_RESOURCE_ENVIRONMENT}
+        action: upsert
+      - key: service.version
+        value: ${OTEL_RESOURCE_SERVICE_VERSION}
         action: upsert
   transform/log_labels:
     log_statements:
@@ -40,8 +46,10 @@ processors:
           - set(attributes["user_agent"], attributes["user_agent"])
           - set(attributes["trace_id"], trace_id)
           - set(attributes["span_id"], span_id)
-          - set(attributes["loki.attribute.labels"], "severity,request_id,path,method,user_agent,trace_id,span_id")
-          - set(attributes["loki.resource.labels"], "service.name")
+          - set(attributes["deployment.environment"], resource.attributes["deployment.environment"])
+          - set(attributes["service.version"], resource.attributes["service.version"])
+          - set(attributes["loki.attribute.labels"], "severity,request_id,path,method,user_agent,trace_id,span_id,deployment.environment,service.version")
+          - set(attributes["loki.resource.labels"], "service.name,deployment.environment,service.version")
 
 exporters:
   debug:
@@ -51,14 +59,19 @@ exporters:
     const_labels:
       service: "toq_server"
   otlp:
-    endpoint: jaeger:4317
+    endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}
+    headers:
+      authorization: "${OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER}"
     tls:
-      insecure: true
+      insecure: ${OTEL_EXPORTER_OTLP_TRACES_INSECURE}
   otlphttp/loki:
-    endpoint: http://loki:3100/otlp
+    endpoint: ${LOKI_OTLP_ENDPOINT}
     compression: gzip
+    headers:
+      X-Scope-OrgID: "${LOKI_TENANT_ID}"
+      Authorization: "${LOKI_OTLP_AUTH_HEADER}"
     tls:
-      insecure: true
+      insecure: ${LOKI_OTLP_INSECURE}
 
 extensions:
   health_check:

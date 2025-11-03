@@ -8,8 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -42,6 +44,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 			return
 		}
 
+		environment := globalmodel.GetRuntimeEnvironment()
 		ctx := c.Request.Context()
 
 		// Get request ID for correlation with logs
@@ -55,6 +58,14 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 		method := c.Request.Method
 		// path already declared above for filtering
 		spanName := fmt.Sprintf("%s %s", method, path)
+		scheme := c.Request.URL.Scheme
+		if scheme == "" {
+			if c.Request.TLS != nil {
+				scheme = "https"
+			} else {
+				scheme = "http"
+			}
+		}
 
 		// Create tracer and span
 		tracer := otel.Tracer("toq_server")
@@ -65,7 +76,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 		span.SetAttributes(
 			semconv.HTTPMethodKey.String(method),
 			semconv.HTTPRouteKey.String(path),
-			semconv.HTTPSchemeKey.String(c.Request.URL.Scheme),
+			semconv.HTTPSchemeKey.String(scheme),
 			attribute.String("http.host", c.Request.Host),
 			semconv.HTTPUserAgentKey.String(c.Request.UserAgent()),
 			attribute.String("http.client_ip", c.ClientIP()),
@@ -75,12 +86,14 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 		span.SetAttributes(
 			attribute.String("app.request_id", requestID),
 			attribute.String("app.service", "toq_server"),
-			attribute.String("app.version", "1.0.0"),
+			attribute.String("app.version", globalmodel.AppVersion),
+			attribute.String("deployment.environment", environment),
 		)
+		span.SetAttributes(attribute.String("http.route_template", path))
 
 		// Add query parameters if present
-		if query := c.Request.URL.RawQuery; query != "" {
-			span.SetAttributes(attribute.String("http.query_string", query))
+		if c.Request.URL.RawQuery != "" {
+			span.SetAttributes(attribute.Bool("http.query_params_present", true))
 		}
 
 		// Atualiza o contexto da requisição com o contexto de tracing criado acima
@@ -98,14 +111,16 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 			)
 
 			// Set span status based on HTTP status code
-			if statusCode >= http.StatusBadRequest {
-				span.SetAttributes(attribute.Bool("error", true))
-				if statusCode >= http.StatusInternalServerError {
-					span.SetAttributes(attribute.String("error.type", "server_error"))
-					utils.SetSpanError(ctx, fmt.Errorf("http_status_%d", statusCode))
-				} else {
-					span.SetAttributes(attribute.String("error.type", "client_error"))
-				}
+			switch {
+			case statusCode >= http.StatusInternalServerError:
+				span.SetAttributes(attribute.String("error.type", "server_error"))
+				span.SetStatus(codes.Error, http.StatusText(statusCode))
+				utils.SetSpanError(ctx, fmt.Errorf("http_status_%d", statusCode))
+			case statusCode >= http.StatusBadRequest:
+				span.SetAttributes(attribute.String("error.type", "client_error"))
+				span.SetStatus(codes.Error, http.StatusText(statusCode))
+			default:
+				span.SetStatus(codes.Ok, http.StatusText(statusCode))
 			}
 
 			span.End()
