@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -152,8 +151,8 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 			fields = append(fields, slog.Any("errors", errorMessages))
 		}
 
-		// Log usando o logger global (respeita split/output configurado)
-		slog.Default().LogAttrs(context.Background(), logLevel, message, fields...)
+		logger := utils.LoggerFromContext(c.Request.Context())
+		logger.LogAttrs(c.Request.Context(), logLevel, message, fields...)
 	})
 }
 
@@ -233,7 +232,8 @@ func ErrorLoggingMiddleware() gin.HandlerFunc {
 				logLevel = slog.LevelError
 			}
 
-			slog.Default().LogAttrs(context.Background(), logLevel, "HTTP Error", fields...)
+			logger := utils.LoggerFromContext(c.Request.Context())
+			logger.LogAttrs(c.Request.Context(), logLevel, "HTTP Error", fields...)
 		}
 	})
 }
@@ -273,6 +273,7 @@ func ConfigurableLoggingMiddleware(config LoggingConfig) gin.HandlerFunc {
 			slog.String("client_ip", utils.GetClientIPFromGinContext(c)),
 		}
 
-		slog.Default().LogAttrs(context.Background(), slog.LevelInfo, "HTTP Request", fields...)
+		logger := utils.LoggerFromContext(c.Request.Context())
+		logger.LogAttrs(c.Request.Context(), slog.LevelInfo, "HTTP Request", fields...)
 	})
 }

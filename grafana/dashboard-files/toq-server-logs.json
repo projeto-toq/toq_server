@@ -73,7 +73,7 @@
                         "uid": "loki"
                     },
                     "editorMode": "code",
-                    "expr": "sum by (severity) (count_over_time({service_name=\"toq_server\", request_id=~\"$requestId\"}[$__interval]))",
+                    "expr": "sum by (severity) (count_over_time({service_name=\"toq_server\", request_id=~\"$requestId\", severity=~\"$severity\", path=~\"$path\"}[$__interval]))",
                     "legendFormat": "{{severity}}",
                     "queryType": "range",
                     "refId": "A"
@@ -117,7 +117,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "{service_name=\"toq_server\", request_id=~\"$requestId\"}",
+                    "expr": "{service_name=\"toq_server\", request_id=~\"$requestId\", severity=~\"$severity\", path=~\"$path\"}",
                     "queryType": "range",
                     "refId": "A"
                 }
@@ -175,7 +175,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "sum by (service_name, severity, request_id) (count_over_time({service_name=\"toq_server\", request_id=~\"$requestId\", severity=\"ERROR\"}[$__interval]))",
+                    "expr": "sum by (service_name, path, request_id) (count_over_time({service_name=\"toq_server\", request_id=~\"$requestId\", path=~\"$path\", severity=\"ERROR\"}[$__interval]))",
                     "format": "table",
                     "queryType": "range",
                     "refId": "A"
@@ -212,7 +212,62 @@
                 "regex": "",
                 "skipUrlSync": false,
                 "sort": 0,
-                "type": "query"
+                "type": "query",
+                "current": {
+                    "selected": true,
+                    "text": "All",
+                    "value": ".*"
+                }
+            },
+            {
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\", request_id=~\"$requestId\"}, severity)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Severity",
+                "multi": false,
+                "name": "severity",
+                "allValue": ".*",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\", request_id=~\"$requestId\"}, severity)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 1,
+                "type": "query",
+                "current": {
+                    "selected": true,
+                    "text": "All",
+                    "value": ".*"
+                }
+            },
+            {
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\", request_id=~\"$requestId\"}, path)",
+                "hide": 0,
+                "includeAll": true,
+                "label": "Path",
+                "multi": false,
+                "name": "path",
+                "allValue": ".*",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\", request_id=~\"$requestId\"}, path)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 2,
+                "type": "query",
+                "current": {
+                    "selected": true,
+                    "text": "All",
+                    "value": ".*"
+                }
             }
         ]
     },
@@ -224,6 +279,6 @@
     "timezone": "",
     "title": "TOQ Server Logs",
     "uid": "toq-server-logs",
-    "version": 1,
+    "version": 2,
     "weekStart": ""
 }

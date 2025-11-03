@@ -104,7 +104,7 @@
                         "type": "loki",
                         "uid": "loki"
                     },
-                    "expr": "{service_name=\"toq_server\"} |= \"error\"",
+                    "expr": "{service_name=\"toq_server\", request_id=~\"$requestId\"} |= \"error\"",
                     "refId": "A"
                 }
             ],
@@ -125,14 +125,14 @@
             },
             "id": 3,
             "options": {
-                "traceId": null,
+                "traceId": "",
                 "service": "toq_server",
                 "operation": "",
-                "tags": "",
+                "tags": "request_id=\"$requestId\"",
                 "showSearch": true,
                 "search": {
-                    "limit": 20,
-                    "query": "service.name=\"toq_server\""
+                    "limit": 50,
+                    "query": "service.name=\"toq_server\" request_id=\"$requestId\""
                 }
             },
             "title": "Traces",
@@ -191,7 +191,27 @@
         "observability"
     ],
     "templating": {
-        "list": []
+        "list": [
+            {
+                "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                },
+                "definition": "label_values({service_name=\"toq_server\"}, request_id)",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Request ID",
+                "multi": false,
+                "name": "requestId",
+                "options": [],
+                "query": "label_values({service_name=\"toq_server\"}, request_id)",
+                "refresh": 2,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            }
+        ]
     },
     "time": {
         "from": "now-1h",
@@ -200,5 +220,5 @@
     "timezone": "",
     "title": "TOQ Server - Observability Correlation",
     "uid": "toq-obs",
-    "version": 1
+    "version": 3
 }

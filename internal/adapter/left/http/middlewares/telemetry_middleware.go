@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -58,6 +59,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 		// Create tracer and span
 		tracer := otel.Tracer("toq_server")
 		ctx, span := tracer.Start(ctx, spanName)
+		ctx = utils.ContextWithLogger(ctx)
 
 		// Set OpenTelemetry HTTP semantic convention attributes
 		span.SetAttributes(
@@ -96,10 +98,11 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 			)
 
 			// Set span status based on HTTP status code
-			if statusCode >= 400 {
+			if statusCode >= http.StatusBadRequest {
 				span.SetAttributes(attribute.Bool("error", true))
-				if statusCode >= 500 {
+				if statusCode >= http.StatusInternalServerError {
 					span.SetAttributes(attribute.String("error.type", "server_error"))
+					utils.SetSpanError(ctx, fmt.Errorf("http_status_%d", statusCode))
 				} else {
 					span.SetAttributes(attribute.String("error.type", "client_error"))
 				}

@@ -4,8 +4,8 @@
 
 ## Visão Geral
 - **Objetivo**: Persistir e explorar logs estruturados do TOQ Server com correlação de traces e recursos de filtro por `request_id`.
-- **Pipeline**: `ContextWithLogger` (handlers/middlewares/workers) → `slog` → ponte OpenTelemetry → Collector (OTLP HTTP) → Loki → Grafana.
-- **Compatibilidade**: Mantém JSON/stdout existentes, adicionando labels/atributos enriquecidos (request/trace/client) para consultas.
+- **Pipeline**: `ContextWithLogger` (handlers/middlewares/workers) → `slog` → ponte OpenTelemetry → Collector (`transform/log_labels`) → Loki (OTLP) → Grafana.
+- **Compatibilidade**: Mantém JSON/stdout existentes e promove `request_id`, `severity`, `path`, `method`, `user_agent`, `trace_id` e `span_id` a labels no Loki via atributo especial `loki.attribute.labels`.
 
 ## Componentes
 | Serviço | Porta | Responsabilidade |
@@ -34,34 +34,35 @@ Inicie o servidor (`go run cmd/toq_server.go` ou binário). O bootstrap já cone
 ## Painel "TOQ Server Logs"
 Arquivo: `grafana/dashboard-files/toq-server-logs.json`
 
-Principais atualizações (PR-05):
-- Variável adicional **Request ID** (`$requestId`) para filtrar consultas.
-- Campo derivado `request_id` exibido na tabela/logs.
-- Link rápido para Jaeger via `trace_id`.
+Atualizações recentes:
+- Variáveis de filtro **Request ID**, **Severity** e **HTTP Path** aplicadas diretamente sobre labels Loki (`request_id`, `severity`, `path`).
+- Campo derivado `trace_id` segue apontando para Jaeger por meio do datasource configurado no Loki.
+- Consultas (`count_over_time` e painéis de logs) usam os filtros selecionados para reduzir ruído e acelerar a investigação.
 
 ### Painéis
-1. **Eventos por severidade** — Timeseries usando `count_over_time`, segmentado por `severity`.
-2. **Fluxo de logs** — Painel de logs com labels comuns visíveis (`request_id`, `trace_id`).
-3. **Erros por serviço** — Tabela agregada filtrável por `request_id` via variável.
+1. **Eventos por severidade** — Timeseries usando `count_over_time`, segmentado por `severity` com filtros de `request_id` e `path`.
+2. **Fluxo de logs** — Painel de logs com labels comuns (`request_id`, `severity`, `trace_id`, `path`).
+3. **Erros por serviço** — Tabela agregada filtrável por `request_id` e `path`, destacando requisições com `severity="ERROR"`.
 
 ### Variáveis de Template
 ```text
 requestId: label_values({service_name="toq_server"}, request_id)
+severity:  label_values({service_name="toq_server", request_id=~"$requestId"}, severity)
+path:      label_values({service_name="toq_server", request_id=~"$requestId"}, path)
 ```
-Selecione um `request_id` específico ou utilize `.*` (valor padrão) para todos os registros.
+Selecione valores específicos quando precisar investigar um fluxo; o valor `.*` aplica o filtro sobre todos os registros.
 
 ### Derived Fields
 No painel de logs, o campo `trace_id` está configurado como link para o Jaeger (`http://localhost:16686/trace/${__value.raw}` por padrão). Ajuste a URL conforme ambiente.
 
 ## Fluxo de Investigação Recomendado
-1. Use o filtro `Request ID` para isolar requisições reportadas.
-2. Abra a entrada no painel de logs e copie `trace_id`.
-3. Clique no link `TraceID` para abrir o Jaeger no trace correspondente.
-4. Utilize o `request_id` nos handlers/serviços para correlacionar logs com métricas e eventos de auditoria.
+1. **Execute o servidor com `ENVIRONMENT=homo`** para garantir que logs, métricas e traces sejam exportados para o collector.
+2. Use os filtros `Request ID`, `Severity` e `Path` no dashboard “TOQ Server Logs” para isolar o cenário alvo.
+3. Abra uma linha de log, utilize o link “Jaeger Trace” (campo `trace_id`) e valide o span correspondente no Jaeger.
+4. Opcionalmente, migre para o painel “TOQ Server - Observability Correlation” e reaproveite os filtros para cruzar métricas e traces.
 
 ## Checklist de Smoke
-- Gera logs INFO/ERROR após iniciar o stack.
-- No Grafana Explore, confirma labels `service_name`, `severity`, `request_id`, `trace_id`, `client_ip` e `user_agent`.
+- Verifique no Grafana Explore se as labels `service_name`, `severity`, `request_id`, `trace_id`, `path`, `method`, `client_ip` e `user_agent` estão disponíveis.
 - Valida `request_id` derivado dos middlewares (RequestID + ContextWithLogger).
 - Garante navegação Jaeger pela derived field.
 - Ajusta `LOKI_RETENTION_DAYS` (ex.: `3`) e reinicia Loki para confirmar retenção.

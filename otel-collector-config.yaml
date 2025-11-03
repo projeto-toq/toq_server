@@ -28,6 +28,20 @@ processors:
       - key: service.name
         value: toq_server
         action: upsert
+  transform/log_labels:
+    log_statements:
+      - context: log
+        statements:
+          - set(attributes["severity"], severity_text)
+          - set(attributes["severity"], attributes["level"]) where attributes["severity"] == ""
+          - set(attributes["request_id"], attributes["request_id"])
+          - set(attributes["path"], attributes["path"])
+          - set(attributes["method"], attributes["method"])
+          - set(attributes["user_agent"], attributes["user_agent"])
+          - set(attributes["trace_id"], trace_id)
+          - set(attributes["span_id"], span_id)
+          - set(attributes["loki.attribute.labels"], "severity,request_id,path,method,user_agent,trace_id,span_id")
+          - set(attributes["loki.resource.labels"], "service.name")
 
 exporters:
   debug:
@@ -64,5 +78,5 @@ service:
       exporters: [prometheus, debug]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch, resource]
+      processors: [memory_limiter, batch, resource, transform/log_labels]
       exporters: [debug, otlphttp/loki]
