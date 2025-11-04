@@ -25,6 +25,30 @@ services:
     networks:
       - toq-network
 
+  # MySQL metrics exporter
+  mysql-exporter:
+    image: prom/mysqld-exporter:latest
+    environment:
+      - 'DATA_SOURCE_NAME=toq_user:toq_password@(mysql:3306)/'
+    ports:
+      - "127.0.0.1:9104:9104"
+    depends_on:
+      - mysql
+    networks:
+      - toq-network
+
+  # Redis metrics exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      - 'REDIS_ADDR=redis:6379'
+    ports:
+      - "127.0.0.1:9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - toq-network
+
   # Prometheus (for metrics)
   prometheus:
     image: prom/prometheus:latest

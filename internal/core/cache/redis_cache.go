@@ -8,7 +8,9 @@ import (
 	"time"
 
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -18,7 +20,21 @@ type RedisCache struct {
 	globalService globalservice.GlobalServiceInterface
 	defaultTTL    time.Duration
 	keyPrefix     string
+	metrics       metricsport.MetricsPortInterface
 }
+
+const (
+	cacheOperationGet    = "get"
+	cacheOperationSet    = "set"
+	cacheOperationDelete = "delete"
+	cacheOperationScan   = "scan"
+
+	cacheResultHit     = "hit"
+	cacheResultMiss    = "miss"
+	cacheResultExpired = "expired"
+	cacheResultError   = "error"
+	cacheResultSuccess = "success"
+)
 
 // PermissionCacheEntry representa uma entrada de cache para o sistema de permissões moderno
 type PermissionCacheEntry struct {
@@ -42,13 +58,20 @@ type RoleCacheEntry struct {
 }
 
 // NewRedisCache cria uma nova instância do cache Redis
-func NewRedisCache(redisURL string, globalService globalservice.GlobalServiceInterface) (CacheInterface, error) {
+func NewRedisCache(redisURL string, globalService globalservice.GlobalServiceInterface, metrics metricsport.MetricsPortInterface) (CacheInterface, error) {
 	opts, err := redis.ParseURL(redisURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse Redis URL: %w", err)
 	}
 
 	client := redis.NewClient(opts)
+
+	if err := redisotel.InstrumentTracing(client); err != nil {
+		slog.Error("Failed to instrument Redis tracing", "error", err)
+	}
+	if err := redisotel.InstrumentMetrics(client); err != nil {
+		slog.Error("Failed to instrument Redis metrics", "error", err)
+	}
 
 	// Testar conexão
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -66,6 +89,7 @@ func NewRedisCache(redisURL string, globalService globalservice.GlobalServiceInt
 		globalService: globalService,
 		defaultTTL:    15 * time.Minute, // TTL padrão de 15 minutos
 		keyPrefix:     "toq_cache:",
+		metrics:       metrics,
 	}, nil
 }
 
@@ -90,14 +114,17 @@ func (rc *RedisCache) Get(ctx context.Context, userID int64, action string) (all
 	if err != nil {
 		if err == redis.Nil {
 			// Cache miss - não é erro
+			rc.recordCacheOperation(cacheOperationGet, cacheResultMiss)
 			return false, false, nil
 		}
+		rc.recordCacheOperation(cacheOperationGet, cacheResultError)
 		slog.Error("Redis cache get error", "key", key, "error", err)
 		return false, false, err
 	}
 
 	var entry PermissionCacheEntry
 	if err := json.Unmarshal([]byte(result), &entry); err != nil {
+		rc.recordCacheOperation(cacheOperationGet, cacheResultError)
 		slog.Error("Failed to unmarshal cache entry", "key", key, "error", err)
 		return false, false, err
 	}
@@ -105,10 +132,17 @@ func (rc *RedisCache) Get(ctx context.Context, userID int64, action string) (all
 	// Verificar se o cache não expirou
 	if time.Since(entry.CreatedAt) > rc.defaultTTL {
 		// Cache expirado
-		rc.client.Del(ctx, key) // Remover entrada expirada
+		rc.recordCacheOperation(cacheOperationGet, cacheResultExpired)
+		if err := rc.client.Del(ctx, key).Err(); err != nil {
+			rc.recordCacheOperation(cacheOperationDelete, cacheResultError)
+			slog.Error("Failed to delete expired cache entry", "key", key, "error", err)
+		} else {
+			rc.recordCacheOperation(cacheOperationDelete, cacheResultSuccess)
+		}
 		return false, false, nil
 	}
 
+	rc.recordCacheOperation(cacheOperationGet, cacheResultHit)
 	slog.Debug("Cache hit", "key", key, "allowed", entry.Allowed)
 	return entry.Allowed, entry.Valid, nil
 }
@@ -128,16 +162,19 @@ func (rc *RedisCache) Set(ctx context.Context, userID int64, action string, allo
 
 	data, err := json.Marshal(entry)
 	if err != nil {
+		rc.recordCacheOperation(cacheOperationSet, cacheResultError)
 		slog.Error("Failed to marshal cache entry", "key", key, "error", err)
 		return err
 	}
 
 	err = rc.client.Set(ctx, key, data, rc.defaultTTL).Err()
 	if err != nil {
+		rc.recordCacheOperation(cacheOperationSet, cacheResultError)
 		slog.Error("Failed to set cache entry", "key", key, "error", err)
 		return err
 	}
 
+	rc.recordCacheOperation(cacheOperationSet, cacheResultSuccess)
 	slog.Debug("Cache set", "key", key, "allowed", allowed)
 	return nil
 }
@@ -149,24 +186,34 @@ func (rc *RedisCache) GetRole(ctx context.Context, roleSlug permissionmodel.Role
 	result, err := rc.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
+			rc.recordCacheOperation(cacheOperationGet, cacheResultMiss)
 			return 0, false, nil
 		}
+		rc.recordCacheOperation(cacheOperationGet, cacheResultError)
 		slog.Error("Redis cache get role error", "key", key, "error", err)
 		return 0, false, err
 	}
 
 	var entry RoleCacheEntry
 	if err := json.Unmarshal([]byte(result), &entry); err != nil {
+		rc.recordCacheOperation(cacheOperationGet, cacheResultError)
 		slog.Error("Failed to unmarshal role cache entry", "key", key, "error", err)
 		return 0, false, err
 	}
 
 	// Verificar se o cache não expirou
 	if time.Since(entry.CachedAt) > rc.defaultTTL {
-		rc.client.Del(ctx, key)
+		rc.recordCacheOperation(cacheOperationGet, cacheResultExpired)
+		if err := rc.client.Del(ctx, key).Err(); err != nil {
+			rc.recordCacheOperation(cacheOperationDelete, cacheResultError)
+			slog.Error("Failed to delete expired role cache entry", "key", key, "error", err)
+		} else {
+			rc.recordCacheOperation(cacheOperationDelete, cacheResultSuccess)
+		}
 		return 0, false, nil
 	}
 
+	rc.recordCacheOperation(cacheOperationGet, cacheResultHit)
 	return entry.RoleID, true, nil
 }
 
@@ -185,16 +232,19 @@ func (rc *RedisCache) SetRole(ctx context.Context, roleID int64, roleName string
 
 	data, err := json.Marshal(entry)
 	if err != nil {
+		rc.recordCacheOperation(cacheOperationSet, cacheResultError)
 		slog.Error("Failed to marshal role cache entry", "key", key, "error", err)
 		return err
 	}
 
 	err = rc.client.Set(ctx, key, data, rc.defaultTTL).Err()
 	if err != nil {
+		rc.recordCacheOperation(cacheOperationSet, cacheResultError)
 		slog.Error("Failed to set role cache entry", "key", key, "error", err)
 		return err
 	}
 
+	rc.recordCacheOperation(cacheOperationSet, cacheResultSuccess)
 	slog.Debug("Role cache set", "key", key, "role_slug", roleSlug)
 	return nil
 }
@@ -214,6 +264,7 @@ func (rc *RedisCache) Clean(ctx context.Context) {
 	}
 
 	if err := iter.Err(); err != nil {
+		rc.recordCacheOperation(cacheOperationScan, cacheResultError)
 		slog.Error("Error scanning cache keys", "error", err)
 		return
 	}
@@ -221,9 +272,11 @@ func (rc *RedisCache) Clean(ctx context.Context) {
 	if len(keys) > 0 {
 		deleted, err := rc.client.Del(ctx, keys...).Result()
 		if err != nil {
+			rc.recordCacheOperation(cacheOperationDelete, cacheResultError)
 			slog.Error("Error deleting cache keys", "error", err)
 			return
 		}
+		rc.recordCacheOperation(cacheOperationDelete, cacheResultSuccess)
 		slog.Info("Cache cleaned", "deleted_keys", deleted)
 	} else {
 		slog.Debug("No cache keys to clean")
@@ -244,6 +297,7 @@ func (rc *RedisCache) CleanByUser(ctx context.Context, userID int64) {
 	}
 
 	if err := iter.Err(); err != nil {
+		rc.recordCacheOperation(cacheOperationScan, cacheResultError)
 		slog.Error("Error scanning cache keys by user", "user_id", userID, "error", err)
 		return
 	}
@@ -251,9 +305,11 @@ func (rc *RedisCache) CleanByUser(ctx context.Context, userID int64) {
 	if len(keys) > 0 {
 		deleted, err := rc.client.Del(ctx, keys...).Result()
 		if err != nil {
+			rc.recordCacheOperation(cacheOperationDelete, cacheResultError)
 			slog.Error("Error deleting cache keys by user", "user_id", userID, "error", err)
 			return
 		}
+		rc.recordCacheOperation(cacheOperationDelete, cacheResultSuccess)
 		slog.Debug("Cache cleaned by user", "user_id", userID, "deleted_keys", deleted)
 	}
 }
@@ -268,6 +324,13 @@ func (rc *RedisCache) buildRoleKey(roleSlug permissionmodel.RoleSlug) string {
 	return fmt.Sprintf("%srole:slug:%s", rc.keyPrefix, roleSlug)
 }
 
+func (rc *RedisCache) recordCacheOperation(operation, result string) {
+	if rc.metrics == nil {
+		return
+	}
+	rc.metrics.IncrementCacheOperations(operation, result)
+}
+
 // Close fecha a conexão com o Redis
 func (rc *RedisCache) Close() error {
 	return rc.client.Close()
@@ -280,11 +343,14 @@ func (rc *RedisCache) GetUserPermissions(ctx context.Context, userID int64) ([]b
 	result, err := rc.client.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
+			rc.recordCacheOperation(cacheOperationGet, cacheResultMiss)
 			return nil, fmt.Errorf("cache miss - user permissions not found for user %d", userID)
 		}
+		rc.recordCacheOperation(cacheOperationGet, cacheResultError)
 		return nil, fmt.Errorf("failed to get user permissions from Redis: %w", err)
 	}
 
+	rc.recordCacheOperation(cacheOperationGet, cacheResultHit)
 	slog.Debug("User permissions cache hit", "userID", userID, "dataSize", len(result))
 	return []byte(result), nil
 }
@@ -295,9 +361,11 @@ func (rc *RedisCache) SetUserPermissions(ctx context.Context, userID int64, perm
 
 	err := rc.client.Set(ctx, key, permissionsJSON, ttl).Err()
 	if err != nil {
+		rc.recordCacheOperation(cacheOperationSet, cacheResultError)
 		return fmt.Errorf("failed to set user permissions in Redis: %w", err)
 	}
 
+	rc.recordCacheOperation(cacheOperationSet, cacheResultSuccess)
 	slog.Debug("User permissions cached", "userID", userID, "ttl", ttl, "dataSize", len(permissionsJSON))
 	return nil
 }
@@ -308,9 +376,11 @@ func (rc *RedisCache) DeleteUserPermissions(ctx context.Context, userID int64) e
 
 	err := rc.client.Del(ctx, key).Err()
 	if err != nil {
+		rc.recordCacheOperation(cacheOperationDelete, cacheResultError)
 		return fmt.Errorf("failed to delete user permissions from Redis: %w", err)
 	}
 
+	rc.recordCacheOperation(cacheOperationDelete, cacheResultSuccess)
 	slog.Debug("User permissions cache invalidated", "userID", userID)
 	return nil
 }

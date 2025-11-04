@@ -20,3 +20,15 @@ scrape_configs:
           - "host.docker.internal:18080" # instância de debug (VS Code)
     metrics_path: "/metrics"
     scrape_interval: 10s
+
+  - job_name: "mysql_exporter"
+    static_configs:
+      - targets:
+          - "mysql-exporter:9104"
+    scrape_interval: 15s
+
+  - job_name: "redis_exporter"
+    static_configs:
+      - targets:
+          - "redis-exporter:9121"
+    scrape_interval: 15s

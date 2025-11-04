@@ -107,7 +107,7 @@ Shutdown: `Bootstrap.Shutdown()` cancela contexto, aguarda workers e executa cle
 
 - Orquestração em `config.InjectDependencies(lm)` com `AdapterFactory`.
 - Abstract Factory (`internal/core/factory`):
-  - CreateStorageAdapters(ctx, env, db) → Database, Cache, CloseFunc.
+  - CreateStorageAdapters(ctx, env, db, metrics) → Database, Cache, CloseFunc.
   - CreateRepositoryAdapters(database) → repositórios MySQL.
   - CreateValidationAdapters(env) → CEP, CPF, CNPJ, ...
   - CreateExternalServiceAdapters(ctx, env) → FCM, Email, SMS, Storage.

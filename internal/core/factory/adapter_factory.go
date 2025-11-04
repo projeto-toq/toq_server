@@ -34,7 +34,7 @@ type AdapterFactory interface {
 	CreateExternalServiceAdapters(ctx context.Context, env *globalmodel.Environment) (ExternalServiceAdapters, error)
 
 	// CreateStorageAdapters cria adapters de armazenamento (Database, Cache)
-	CreateStorageAdapters(ctx context.Context, env *globalmodel.Environment, db *sql.DB) (StorageAdapters, error)
+	CreateStorageAdapters(ctx context.Context, env *globalmodel.Environment, db *sql.DB, metrics metricsport.MetricsPortInterface) (StorageAdapters, error)
 
 	// CreateRepositoryAdapters cria todos os repositórios MySQL
 	CreateRepositoryAdapters(database *mysqladapter.Database, metrics metricsport.MetricsPortInterface) (RepositoryAdapters, error)

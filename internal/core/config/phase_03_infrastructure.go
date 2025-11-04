@@ -78,7 +78,7 @@ func (b *Bootstrap) initializeCache() error {
 	b.logger.Debug("Conectando ao Redis", "url", redisURL)
 
 	// Testar conexão com Redis
-	_, err := cache.NewRedisCache(redisURL, nil)
+	_, err := cache.NewRedisCache(redisURL, nil, nil)
 	if err != nil {
 		return NewBootstrapError("Phase03", "redis_connection", "Failed to initialize Redis cache", err)
 	}

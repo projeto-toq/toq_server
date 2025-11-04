@@ -14,6 +14,8 @@
 | OpenTelemetry Collector | `4317/4318` | Recebe spans/logs OTLP, agrega atributos e envia ao Loki |
 | Grafana | `3000` | Dashboards (`TOQ Server - Operations Overview`, `TOQ Server - Dependencies Observability`, `TOQ Server - Logs Analytics`, `TOQ Server - Observability Triage`) e consultas Explore |
 | Jaeger | `16686` | Consulta de traces vinculados via `trace_id` |
+| MySQL Exporter | `9104` | Exposição de métricas MySQL (threads, buffer pool, latency) para Prometheus |
+| Redis Exporter | `9121` | Exposição de métricas Redis (clientes, memória, hits/miss) para Prometheus |
 
 ## Variáveis de Ambiente Importantes
 - `LOKI_RETENTION_DAYS`: dias de retenção do Loki. Dev = `7`, sugerido prod = `3`.
@@ -39,7 +41,7 @@ export LOKI_OTLP_ENDPOINT=http://loki:3100/otlp
 export LOKI_OTLP_INSECURE=true
 export LOKI_TENANT_ID=toq
 export LOKI_RETENTION_DAYS=7
-docker compose up -d loki otel-collector grafana jaeger
+docker compose up -d loki otel-collector grafana jaeger mysql-exporter redis-exporter
 ```
 Inicie o servidor (`go run cmd/toq_server.go` ou binário). O bootstrap já conecta o `ctxlogger` aos handlers e workers.
 
@@ -47,6 +49,7 @@ Inicie o servidor (`go run cmd/toq_server.go` ou binário). O bootstrap já cone
 
 - **TOQ Server - Operations Overview** (`grafana/dashboard-files/toq-server-operations-overview.json`)
 	- Golden signals (latência p95/p99, tráfego por método, erros por classe, saturação de memória/goroutines).
+	- Painéis adicionais: GC pause médio, `cache_operations_total` (hits/miss/expired em 5 min), `redis_connected_clients`, heap alloc e HTTP in-flight.
 	- Variáveis: `Environment`, `Version` (via métricas Prometheus com labels constantes) para isolar instâncias.
 
 - **TOQ Server - Dependencies Observability** (`grafana/dashboard-files/toq-server-dependencies-observability.json`)
@@ -64,6 +67,12 @@ Cada dashboard está pensado para investigação rápida: escolha o ambiente/ver
 
 ### Derived Fields
 No painel **Logs Analytics**, o campo `trace_id` permanece com link configurável para Jaeger (`http://localhost:16686/trace/${__value.raw}` por padrão). Ajuste conforme o domínio real do cluster.
+
+## Métricas Redis Cache
+- O adapter Redis (`internal/core/cache/redis_cache.go`) agora injeta instrumentação OpenTelemetry (`redisotel`) para traces/métricas nativas do cliente.
+- Integração com o Prometheus Adapter registra operações em `cache_operations_total{operation="get|set|delete", result="hit|miss|expired|success|error"}`.
+- Painéis “Redis Cache Operations (5m)” e “Redis Connected Clients” no dashboard de operações exibem taxa de hits/miss e saúde do cache.
+- Qualquer erro de marshal/Redis é refletido como `result="error"`, permitindo alarmes baseados em proporção de falhas.
 
 ## Fluxo de Investigação Recomendado
 1. **Execute o servidor com `ENVIRONMENT=homo`** para garantir que logs, métricas e traces sejam exportados para o collector.

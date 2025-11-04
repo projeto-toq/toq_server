@@ -50,9 +50,15 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 		return fmt.Errorf("invalid factory configuration: %w", err)
 	}
 
+	// Preparar adapter de métricas (se disponível) para uso compartilhado
+	var metrics metricsport.MetricsPortInterface
+	if c.metricsAdapter != nil {
+		metrics = c.metricsAdapter.Prometheus
+	}
+
 	// 1. Criar Storage Adapters (Database + Cache)
 
-	storage, err := c.adapterFactory.CreateStorageAdapters(c.context, &c.env, c.db)
+	storage, err := c.adapterFactory.CreateStorageAdapters(c.context, &c.env, c.db, metrics)
 	if err != nil {
 		return fmt.Errorf("failed to create storage adapters: %w", err)
 	}
@@ -70,11 +76,6 @@ func (c *config) InjectDependencies(lm *LifecycleManager) (err error) {
 	factoryConfig.Database = storage.Database
 
 	// 2. Criar Repository Adapters
-
-	var metrics metricsport.MetricsPortInterface
-	if c.metricsAdapter != nil {
-		metrics = c.metricsAdapter.Prometheus
-	}
 
 	repositories, err := c.adapterFactory.CreateRepositoryAdapters(storage.Database, metrics)
 	if err != nil {

@@ -154,14 +154,14 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 
 // CreateStorageAdapters cria adapters de armazenamento (Database e Cache)
 // Inclui MySQL database e Redis cache com função de cleanup
-func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env *globalmodel.Environment, db *sql.DB) (StorageAdapters, error) {
+func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env *globalmodel.Environment, db *sql.DB, metrics metricsport.MetricsPortInterface) (StorageAdapters, error) {
 	slog.Info("Creating storage adapters")
 
 	// Database Adapter
 	database := mysqladapter.NewDB(db)
 
 	// Redis Cache - criar sem GlobalService inicialmente (será injetado posteriormente)
-	redisCache, err := cache.NewRedisCache(env.REDIS.URL, nil)
+	redisCache, err := cache.NewRedisCache(env.REDIS.URL, nil, metrics)
 	if err != nil {
 		return StorageAdapters{}, fmt.Errorf("failed to create Redis cache: %w", err)
 	}

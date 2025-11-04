@@ -96,7 +96,9 @@ func GenerateTracer(ctx context.Context) (newctx context.Context, end func(), er
 
 	// Add request ID if available for correlation
 	if requestID != "" {
-		span.SetAttributes(attribute.String("app.request_id", requestID))
+		span.SetAttributes(
+			attribute.String("request_id", requestID),
+		)
 	}
 
 	// Create end function with proper error handling
@@ -156,7 +158,9 @@ func GenerateBusinessTracer(ctx context.Context, operationName string) (context.
 	}
 
 	if requestID != "" {
-		span.SetAttributes(attribute.String("app.request_id", requestID))
+		span.SetAttributes(
+			attribute.String("request_id", requestID),
+		)
 	}
 
 	// Create end function with error handling

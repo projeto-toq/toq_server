@@ -84,7 +84,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 
 		// Add custom attributes for correlation and debugging
 		span.SetAttributes(
-			attribute.String("app.request_id", requestID),
+			attribute.String("request_id", requestID),
 			attribute.String("app.service", "toq_server"),
 			attribute.String("app.version", globalmodel.AppVersion),
 			attribute.String("deployment.environment", environment),
