@@ -51,44 +51,45 @@ services:
     networks:
       - toq-network
 
-  # Prometheus (for metrics)
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "127.0.0.1:9091:9090" # bind apenas em loopback para uso via Nginx
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  # Grafana Alloy - Unified Telemetry Collector
+  alloy:
+    image: grafana/alloy:latest
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    environment:
+      - ALLOY_SERVICE_NAME=${OTEL_RESOURCE_SERVICE_NAME:-toq_server}
+      - ALLOY_SERVICE_VERSION=${OTEL_RESOURCE_SERVICE_VERSION:-2.0.0}
+      - ALLOY_ENVIRONMENT=${OTEL_RESOURCE_ENVIRONMENT:-homo}
+      - ALLOY_NAMESPACE=${OTEL_RESOURCE_NAMESPACE:-projeto-toq}
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - ./alloy/data:/var/lib/alloy/data
+    ports:
+      - "127.0.0.1:12345:12345" # Alloy UI
+      - "127.0.0.1:4318:4318" # OTLP HTTP receiver
+    depends_on:
+      - tempo
+      - loki
+      - prometheus
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - toq-network
 
-  # Grafana (for visualization)
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "127.0.0.1:3000:3000" # bind apenas em loopback
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=Senh@123
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_DOMAIN=grafana.gca.dev.br
-      - GF_SERVER_ROOT_URL=https://grafana.gca.dev.br
-      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+  # Grafana Tempo - Distributed Tracing Backend
+  tempo:
+    image: grafana/tempo:latest
+    command:
+      - -config.file=/etc/tempo/tempo-config.yaml
     volumes:
-      - /codigos/grafana:/var/lib/grafana
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/dashboard-files:/var/lib/grafana/dashboards
-    depends_on:
-      - prometheus
-      - loki
-      - jaeger
+      - ./tempo/tempo-config.yaml:/etc/tempo/tempo-config.yaml:ro
+      - /codigos/tempo-data:/var/tempo
+    ports:
+      - "127.0.0.1:3200:3200" # Tempo HTTP API
+      - "127.0.0.1:4319:4318" # Tempo OTLP HTTP receiver
     networks:
       - toq-network
 
@@ -103,59 +104,61 @@ services:
     ports:
       - "127.0.0.1:3100:3100"
     volumes:
-      - ./loki-config.yaml:/etc/loki/config/loki-config.yaml:z
+      - ./loki-config.yaml:/etc/loki/config/loki-config.yaml:ro
       - /codigos/loki-data:/loki
     networks:
       - toq-network
 
-  # OpenTelemetry Collector
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    command: [ "--config=/etc/otel-collector-config.yaml" ]
-    environment:
-      - OTEL_RESOURCE_SERVICE_NAME=${OTEL_RESOURCE_SERVICE_NAME:-toq_server}
-      - OTEL_RESOURCE_ENVIRONMENT=${OTEL_RESOURCE_ENVIRONMENT:-homo}
-      - OTEL_RESOURCE_SERVICE_VERSION=${OTEL_RESOURCE_SERVICE_VERSION:-2.0.0}
-      - OTEL_RESOURCE_NAMESPACE=${OTEL_RESOURCE_NAMESPACE:-projeto-toq}
-      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-jaeger:4317}
-      - OTEL_EXPORTER_OTLP_TRACES_INSECURE=${OTEL_EXPORTER_OTLP_TRACES_INSECURE:-true}
-      - OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER=${OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER:-}
-      - LOKI_OTLP_LOGS_ENDPOINT=${LOKI_OTLP_LOGS_ENDPOINT:-http://loki:3100/otlp/v1/logs}
-      - LOKI_OTLP_INSECURE=${LOKI_OTLP_INSECURE:-true}
-      - LOKI_OTLP_AUTH_HEADER=${LOKI_OTLP_AUTH_HEADER:-}
-      - LOKI_TENANT_ID=${LOKI_TENANT_ID:-fake}
+  # Prometheus (for metrics storage)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "127.0.0.1:9091:9090"
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "127.0.0.1:4317:4317" # OTLP gRPC receiver somente loopback
-      - "127.0.0.1:4318:4318" # OTLP HTTP receiver somente loopback
-      - "127.0.0.1:8888:8888" # Métricas collector loopback
-      - "127.0.0.1:8889:8889" # Exporter metrics loopback
-    depends_on:
-      - loki
-      - jaeger
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /codigos/prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-remote-write-receiver'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - toq-network
 
-  # Jaeger for distributed tracing
-  jaeger:
-    image: jaegertracing/all-in-one:latest
+  # Grafana (for visualization)
+  grafana:
+    image: grafana/grafana:latest
     ports:
-      - "127.0.0.1:16686:16686" # Jaeger UI somente loopback
-      - "127.0.0.1:14268:14268" # Collector HTTP interno
-      - "127.0.0.1:6831:6831/udp" # Agent UDP interno
-      - "127.0.0.1:14317:4317" # OTLP gRPC interno
-      - "127.0.0.1:14318:4318" # OTLP HTTP interno
+      - "127.0.0.1:3000:3000"
     environment:
-      - COLLECTOR_OTLP_ENABLED=true
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=Senh@123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=grafana.gca.dev.br
+      - GF_SERVER_ROOT_URL=https://grafana.gca.dev.br
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor,traceToMetrics,traceToLogs
+    volumes:
+      - /codigos/grafana:/var/lib/grafana
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboard-files:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
     networks:
       - toq-network
 
-  # Swagger UI for API documentation 
+  # Swagger UI for API documentation
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
     ports:
-      - "127.0.0.1:8082:8080" # loopback only
+      - "127.0.0.1:8082:8080"
     environment:
       - URL=https://api.gca.dev.br/docs/swagger.json
       - BASE_URL=/
@@ -163,11 +166,7 @@ services:
       - host.docker.internal:host-gateway
     networks:
       - toq-network
-    # Remove depends_on toq-server since it runs on host
 
 networks:
   toq-network:
-    driver: bridge
-
-  swagger-ui:
     driver: bridge

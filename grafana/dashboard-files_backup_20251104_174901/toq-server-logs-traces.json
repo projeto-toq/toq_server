@@ -30,7 +30,7 @@
             },
             "targets": [
                 {
-                    "expr": "{job=~\".*toq_server.*\", request_id=~\"$request_id\", trace_id=~\"$trace_id\", method=~\"$method\", path=~\"$path\", status=~\"$status\"}",
+                    "expr": "{service=\"toq_server\", request_id=~\"$request_id\", trace_id=~\"$trace_id\", method=~\"$method\", path=~\"$path\", status=~\"$status\"}",
                     "refId": "A"
                 }
             ],
@@ -51,15 +51,13 @@
             "title": "Traces correlacionados",
             "type": "traces",
             "datasource": {
-                "type": "tempo",
-                "uid": "tempo"
+                "type": "jaeger",
+                "uid": "jaeger"
             },
             "targets": [
                 {
-                    "query": "{.service.name=\"toq_server\"}",
-                    "queryType": "traceql",
-                    "refId": "A",
-                    "limit": 20
+                    "query": "{{- if ne $trace_id \"\" }}$trace_id{{- end }}",
+                    "refId": "A"
                 }
             ],
             "gridPos": {
@@ -79,7 +77,7 @@
             },
             "targets": [
                 {
-                    "expr": "sum(rate(http_requests_total{job=~\".*toq_server.*\", status=~\"5..\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status, path, method)",
+                    "expr": "sum(rate(http_requests_total{service=\"toq_server\", status=~\"5..\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status, path, method)",
                     "format": "table",
                     "refId": "A"
                 }
@@ -110,7 +108,7 @@
             },
             "targets": [
                 {
-                    "expr": "sum(rate(http_requests_total{job=~\".*toq_server.*\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status)",
+                    "expr": "sum(rate(http_requests_total{service=\"toq_server\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status)",
                     "legendFormat": "{{status}}",
                     "refId": "A"
                 }
@@ -151,8 +149,8 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({job=~\".*toq_server.*\"}, request_id)",
-                "query": "label_values({job=~\".*toq_server.*\"}, request_id)",
+                "definition": "label_values({service=\"toq_server\"}, request_id)",
+                "query": "label_values({service=\"toq_server\"}, request_id)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",
@@ -170,16 +168,15 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({job=~\".*toq_server.*\"}, trace_id)",
-                "query": "label_values({job=~\".*toq_server.*\"}, trace_id)",
-                "includeAll": true,
-                "multi": true,
-                "allValue": ".*",
+                "definition": "label_values({service=\"toq_server\"}, trace_id)",
+                "query": "label_values({service=\"toq_server\"}, trace_id)",
+                "includeAll": false,
+                "multi": false,
                 "refresh": 1,
                 "current": {
-                    "selected": true,
-                    "text": "All",
-                    "value": ".*"
+                    "selected": false,
+                    "text": "Selecione",
+                    "value": ""
                 }
             },
             {
@@ -189,8 +186,8 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({job=~\".*toq_server.*\"}, method)",
-                "query": "label_values({job=~\".*toq_server.*\"}, method)",
+                "definition": "label_values({service=\"toq_server\"}, method)",
+                "query": "label_values({service=\"toq_server\"}, method)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",
@@ -208,8 +205,8 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({job=~\".*toq_server.*\"}, path)",
-                "query": "label_values({job=~\".*toq_server.*\"}, path)",
+                "definition": "label_values({service=\"toq_server\"}, path)",
+                "query": "label_values({service=\"toq_server\"}, path)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",
@@ -227,8 +224,8 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({job=~\".*toq_server.*\"}, status)",
-                "query": "label_values({job=~\".*toq_server.*\"}, status)",
+                "definition": "label_values({service=\"toq_server\"}, status)",
+                "query": "label_values({service=\"toq_server\"}, status)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",

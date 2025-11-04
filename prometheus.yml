@@ -1,34 +1,15 @@
 global:
-  scrape_interval: 15s # Intervalo de scrape para todas as configurações
+  scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels:
+    cluster: 'dev'
+    replica: '1'
 
+# Scraping delegado ao Grafana Alloy
+# Prometheus apenas armazena métricas recebidas via remote_write do Alloy
+
+# Mantido apenas para self-monitoring
 scrape_configs:
-  - job_name: "prometheus" # Para monitorar o próprio Prometheus
+  - job_name: "prometheus"
     static_configs:
-      - targets: ["prometheus:9090"] # Nome do serviço Docker
-
-  - job_name: "otel-collector" # Para obter métricas do OpenTelemetry Collector
-    static_configs:
-      - targets: ["otel-collector:8889"] # Prometheus exporter do otel-collector
-    metrics_path: "/metrics"
-    scrape_interval: 10s
-
-  - job_name: "toq_server_metrics" # Para obter métricas diretas da aplicação
-    static_configs:
-      - targets:
-          - "host.docker.internal:8080"
-          - "host.docker.internal:18080" # instância de debug (VS Code)
-    metrics_path: "/metrics"
-    scrape_interval: 10s
-
-  - job_name: "mysql_exporter"
-    static_configs:
-      - targets:
-          - "mysql-exporter:9104"
-    scrape_interval: 15s
-
-  - job_name: "redis_exporter"
-    static_configs:
-      - targets:
-          - "redis-exporter:9121"
-    scrape_interval: 15s
+      - targets: ["localhost:9090"]

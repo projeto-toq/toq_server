@@ -1,0 +1,223 @@
+// ========================================
+// Grafana Alloy Configuration for TOQ Server
+// HTTP-only REST API (no gRPC)
+// ========================================
+
+// ========================================
+// OTLP Receivers (HTTP only)
+// ========================================
+
+otelcol.receiver.otlp "default" {
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    metrics = [otelcol.processor.resourcedetection.default.input]
+    logs    = [otelcol.processor.resourcedetection.default.input]
+    traces  = [otelcol.processor.resourcedetection.default.input]
+  }
+}
+
+// ========================================
+// Processors
+// ========================================
+
+// Resource detection (hostname, container metadata)
+otelcol.processor.resourcedetection "default" {
+  detectors = ["env", "docker", "system"]
+
+  system {
+    hostname_sources = ["os"]
+  }
+
+  output {
+    metrics = [otelcol.processor.attributes.enrich.input]
+    logs    = [otelcol.processor.attributes.enrich.input]
+    traces  = [otelcol.processor.attributes.enrich.input]
+  }
+}
+
+// Enrich attributes with service metadata
+otelcol.processor.attributes "enrich" {
+  // Add service metadata
+  action {
+    key    = "service.name"
+    value  = env("ALLOY_SERVICE_NAME")
+    action = "upsert"
+  }
+
+  action {
+    key    = "service.version"
+    value  = env("ALLOY_SERVICE_VERSION")
+    action = "upsert"
+  }
+
+  action {
+    key    = "deployment.environment"
+    value  = env("ALLOY_ENVIRONMENT")
+    action = "upsert"
+  }
+
+  action {
+    key    = "service.namespace"
+    value  = env("ALLOY_NAMESPACE")
+    action = "upsert"
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.default.input]
+    logs    = [otelcol.processor.attributes.log_labels.input]
+    traces  = [otelcol.processor.batch.default.input]
+  }
+}
+
+// Add Loki labels to logs
+otelcol.processor.attributes "log_labels" {
+  // Promote trace_id to top-level for Loki label extraction
+  action {
+    key    = "trace_id"
+    action = "insert"
+    from_context = "trace_id"
+  }
+
+  action {
+    key    = "span_id"
+    action = "insert"
+    from_context = "span_id"
+  }
+
+  // Mark attributes for Loki label extraction
+  action {
+    key    = "loki.attribute.labels"
+    value  = "service_name,trace_id,span_id,request_id,method,path,status,user_id"
+    action = "insert"
+  }
+
+  output {
+    logs = [otelcol.processor.batch.default.input]
+  }
+}
+
+// Batch processor
+otelcol.processor.batch "default" {
+  timeout          = "1s"
+  send_batch_size  = 1024
+
+  output {
+    metrics = [otelcol.exporter.prometheus.default.input]
+    logs    = [otelcol.exporter.loki.default.input]
+    traces  = [otelcol.exporter.otlphttp.tempo.input]
+  }
+}
+
+// ========================================
+// Exporters
+// ========================================
+
+// Export traces to Tempo (HTTP only)
+otelcol.exporter.otlphttp "tempo" {
+  client {
+    endpoint = "http://tempo:4318"
+    tls {
+      insecure             = true
+      insecure_skip_verify = true
+    }
+  }
+}
+
+// Export logs to Loki
+otelcol.exporter.loki "default" {
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+
+  external_labels = {
+    cluster = "dev",
+    job     = "toq_server",
+  }
+}
+
+// Export metrics to Prometheus (remote write)
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.remote_write "default" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+  }
+}
+
+// ========================================
+// Prometheus Scrape Configs
+// ========================================
+
+// Scrape toq_server metrics (running on host)
+prometheus.scrape "toq_server" {
+  targets = [
+    {"__address__" = "host.docker.internal:8080", "__metrics_path__" = "/metrics"},
+    {"__address__" = "host.docker.internal:18080", "__metrics_path__" = "/metrics"},
+  ]
+
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  scrape_interval = "10s"
+  scrape_timeout  = "5s"
+
+  job_name = "toq_server_metrics"
+}
+
+// Scrape MySQL Exporter
+prometheus.scrape "mysql_exporter" {
+  targets = [
+    {"__address__" = "mysql-exporter:9104"},
+  ]
+
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+
+  job_name = "mysql_exporter"
+}
+
+// Scrape Redis Exporter
+prometheus.scrape "redis_exporter" {
+  targets = [
+    {"__address__" = "redis-exporter:9121"},
+  ]
+
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+
+  job_name = "redis_exporter"
+}
+
+// Scrape Alloy own metrics
+prometheus.scrape "alloy_internal" {
+  targets = [
+    {"__address__" = "localhost:12345", "__metrics_path__" = "/metrics"},
+  ]
+
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  scrape_interval = "15s"
+
+  job_name = "alloy"
+}
+
+// ========================================
+// Logging & Debugging
+// ========================================
+
+logging {
+  level  = "info"
+  format = "json"
+}

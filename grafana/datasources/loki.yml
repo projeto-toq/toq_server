@@ -7,14 +7,11 @@ datasources:
     uid: loki
     url: http://loki:3100
     jsonData:
-      httpHeaderName1: X-Scope-OrgID
-      maxLines: 1000
+      maxLines: 5000
       derivedFields:
         - name: trace_id
           matcherRegex: '"trace_id":"([0-9a-f]+)"'
-          datasourceUid: jaeger
-          url: /trace/$${__value.raw}
-          urlDisplayLabel: Jaeger Trace
-    secureJsonData:
-      httpHeaderValue1: fake
+          datasourceUid: tempo
+          url: '/explore?left=["now-1h","now","tempo",{"query":"$${__value.raw}"}]'
+          urlDisplayLabel: View Trace in Tempo
     editable: false
