@@ -17,20 +17,37 @@ receivers:
         mute_process_name_error: true
 
 processors:
-  batch:
-    timeout: 1s
-    send_batch_size: 1024
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
-  resource/drop_service_metadata:
+  resource/service_attributes:
     attributes:
       - key: service.name
-        action: delete
+        action: upsert
+        value: ${OTEL_RESOURCE_SERVICE_NAME}
       - key: service.version
-        action: delete
+        action: upsert
+        value: ${OTEL_RESOURCE_SERVICE_VERSION}
       - key: deployment.environment
-        action: delete
+        action: upsert
+        value: ${OTEL_RESOURCE_ENVIRONMENT}
+      - key: service.namespace
+        action: upsert
+        value: ${OTEL_RESOURCE_NAMESPACE:-projeto-toq}
+  attributes/http_context:
+    actions:
+      - key: method
+        action: upsert
+        from_attribute: http.method
+      - key: path
+        action: upsert
+        from_attribute: http.route
+      - key: status
+        action: upsert
+        from_attribute: http.status_code
+      - key: status
+        action: convert
+        type: string
   attributes/log_attributes:
     actions:
       # Adiciona trace_id e span_id como atributos para correlação
@@ -40,6 +57,20 @@ processors:
       - key: span_id
         action: insert
         from_context: span_id
+      - key: user_id
+        action: upsert
+        from_attribute: user_id
+      - key: user_id
+        action: convert
+        type: string
+  attributes/loki_labels:
+    actions:
+      - key: loki.attribute.labels
+        action: upsert
+        value: trace_id,span_id,request_id,method,path,status,user_id,service.name
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
 
 exporters:
   prometheus:
@@ -52,14 +83,26 @@ exporters:
       authorization: "${OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER}"
     tls:
       insecure: ${OTEL_EXPORTER_OTLP_TRACES_INSECURE}
-  otlphttp/loki:
+  loki/default:
     endpoint: ${LOKI_OTLP_ENDPOINT}
-    logs_endpoint: ${LOKI_OTLP_ENDPOINT}
+    tenant_id: ${LOKI_TENANT_ID}
     tls:
       insecure: ${LOKI_OTLP_INSECURE}
     headers:
-      X-Scope-OrgID: "${LOKI_TENANT_ID}"
       Authorization: "${LOKI_OTLP_AUTH_HEADER}"
+    default_labels_enabled:
+      exporter: false
+      job: false
+    labels:
+      attributes:
+        - trace_id
+        - span_id
+        - request_id
+        - method
+        - path
+        - status
+        - user_id
+        - service.name
 
 extensions:
   health_check:
@@ -71,13 +114,13 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, resource/drop_service_metadata, batch]
+      processors: [memory_limiter, resource/service_attributes, batch]
       exporters: [otlp]
     metrics:
       receivers: [otlp, hostmetrics]
-      processors: [memory_limiter, resource/drop_service_metadata, batch]
+      processors: [memory_limiter, resource/service_attributes, batch]
       exporters: [prometheus]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, resource/drop_service_metadata, batch, attributes/log_attributes]
-      exporters: [otlphttp/loki]
+      processors: [memory_limiter, resource/service_attributes, attributes/http_context, attributes/log_attributes, attributes/loki_labels, batch]
+      exporters: [loki/default]

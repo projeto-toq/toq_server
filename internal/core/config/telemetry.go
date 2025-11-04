@@ -108,6 +108,8 @@ func (tm *TelemetryManager) initializeLogging(ctx context.Context, res *resource
 		return nil
 	}
 
+	serviceName, _, _ := tm.resolveServiceMetadata()
+
 	endpoint, err := normalizeOTLPEndpoint(tm.env.TELEMETRY.OTLP.Endpoint)
 	if err != nil {
 		return fmt.Errorf("invalid OTLP log endpoint: %w", err)
@@ -135,7 +137,7 @@ func (tm *TelemetryManager) initializeLogging(ctx context.Context, res *resource
 	tm.logProvider = logProvider
 
 	baseHandler := slog.Default().Handler()
-	var otelHandler slog.Handler = otelslog.NewHandler("toq_server",
+	var otelHandler slog.Handler = otelslog.NewHandler(serviceName,
 		otelslog.WithLoggerProvider(logProvider),
 		otelslog.WithVersion(globalmodel.AppVersion),
 		otelslog.WithSource(true),
@@ -162,7 +164,13 @@ func (tm *TelemetryManager) createResource() (*resource.Resource, error) {
 	}
 	instanceID := fmt.Sprintf("%s-%d", hostname, os.Getpid())
 
+	serviceName, serviceNamespace, deployEnv := tm.resolveServiceMetadata()
+
 	attributes := []attribute.KeyValue{
+		semconv.ServiceNameKey.String(serviceName),
+		semconv.ServiceNamespaceKey.String(serviceNamespace),
+		semconv.ServiceVersionKey.String(globalmodel.AppVersion),
+		attribute.String("deployment.environment", deployEnv),
 		semconv.ServiceInstanceID(instanceID),
 	}
 
@@ -172,6 +180,28 @@ func (tm *TelemetryManager) createResource() (*resource.Resource, error) {
 			resource.Default().SchemaURL(),
 			attributes...),
 	)
+}
+
+func (tm *TelemetryManager) resolveServiceMetadata() (serviceName, serviceNamespace, environment string) {
+	serviceName = os.Getenv("OTEL_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = os.Getenv("OTEL_RESOURCE_SERVICE_NAME")
+	}
+	if serviceName == "" {
+		serviceName = "toq_server"
+	}
+
+	serviceNamespace = os.Getenv("OTEL_RESOURCE_NAMESPACE")
+	if serviceNamespace == "" {
+		serviceNamespace = "projeto-toq"
+	}
+
+	environment = os.Getenv("OTEL_RESOURCE_ENVIRONMENT")
+	if environment == "" {
+		environment = tm.runtimeEnv
+	}
+
+	return serviceName, serviceNamespace, environment
 }
 
 // initializeTracing configura o tracing OpenTelemetry
