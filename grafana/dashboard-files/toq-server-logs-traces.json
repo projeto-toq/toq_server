@@ -30,7 +30,7 @@
             },
             "targets": [
                 {
-                    "expr": "{service=~\"$service\", request_id=~\"$request_id\", trace_id=~\"$trace_id\", method=~\"$method\", path=~\"$path\", status=~\"$status\"}",
+                    "expr": "{service=\"toq_server\", request_id=~\"$request_id\", trace_id=~\"$trace_id\", method=~\"$method\", path=~\"$path\", status=~\"$status\"}",
                     "refId": "A"
                 }
             ],
@@ -56,7 +56,7 @@
             },
             "targets": [
                 {
-                    "query": "$trace_id",
+                    "query": "{{- if ne $trace_id \"\" }}$trace_id{{- end }}",
                     "refId": "A"
                 }
             ],
@@ -77,7 +77,7 @@
             },
             "targets": [
                 {
-                    "expr": "sum(rate(http_requests_total{service=~\"$service\", status=~\"5..\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status, path, method)",
+                    "expr": "sum(rate(http_requests_total{service=\"toq_server\", status=~\"5..\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status, path, method)",
                     "format": "table",
                     "refId": "A"
                 }
@@ -108,7 +108,7 @@
             },
             "targets": [
                 {
-                    "expr": "sum(rate(http_requests_total{service=~\"$service\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status)",
+                    "expr": "sum(rate(http_requests_total{service=\"toq_server\", path=~\"$path\", method=~\"$method\"}[$__rate_interval])) by (status)",
                     "legendFormat": "{{status}}",
                     "refId": "A"
                 }
@@ -143,33 +143,14 @@
     "templating": {
         "list": [
             {
-                "name": "service",
-                "type": "query",
-                "datasource": {
-                    "type": "loki",
-                    "uid": "loki"
-                },
-                "definition": "label_values({service!=\"\"}, service)",
-                "query": "label_values({service!=\"\"}, service)",
-                "includeAll": true,
-                "multi": true,
-                "allValue": ".*",
-                "refresh": 1,
-                "current": {
-                    "selected": false,
-                    "text": "All",
-                    "value": ".*"
-                }
-            },
-            {
                 "name": "request_id",
                 "type": "query",
                 "datasource": {
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service=~\"$service\"}, request_id)",
-                "query": "label_values({service=~\"$service\"}, request_id)",
+                "definition": "label_values({service=\"toq_server\"}, request_id)",
+                "query": "label_values({service=\"toq_server\"}, request_id)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",
@@ -187,16 +168,15 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service=~\"$service\"}, trace_id)",
-                "query": "label_values({service=~\"$service\"}, trace_id)",
-                "includeAll": true,
-                "multi": true,
-                "allValue": ".*",
+                "definition": "label_values({service=\"toq_server\"}, trace_id)",
+                "query": "label_values({service=\"toq_server\"}, trace_id)",
+                "includeAll": false,
+                "multi": false,
                 "refresh": 1,
                 "current": {
                     "selected": false,
-                    "text": "All",
-                    "value": ".*"
+                    "text": "Selecione",
+                    "value": ""
                 }
             },
             {
@@ -206,8 +186,8 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service=~\"$service\"}, method)",
-                "query": "label_values({service=~\"$service\"}, method)",
+                "definition": "label_values({service=\"toq_server\"}, method)",
+                "query": "label_values({service=\"toq_server\"}, method)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",
@@ -225,8 +205,8 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service=~\"$service\"}, path)",
-                "query": "label_values({service=~\"$service\"}, path)",
+                "definition": "label_values({service=\"toq_server\"}, path)",
+                "query": "label_values({service=\"toq_server\"}, path)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",
@@ -244,8 +224,8 @@
                     "type": "loki",
                     "uid": "loki"
                 },
-                "definition": "label_values({service=~\"$service\"}, status)",
-                "query": "label_values({service=~\"$service\"}, status)",
+                "definition": "label_values({service=\"toq_server\"}, status)",
+                "query": "label_values({service=\"toq_server\"}, status)",
                 "includeAll": true,
                 "multi": true,
                 "allValue": ".*",

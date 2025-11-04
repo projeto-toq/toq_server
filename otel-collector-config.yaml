@@ -33,7 +33,7 @@ processors:
         value: ${OTEL_RESOURCE_ENVIRONMENT}
       - key: service.namespace
         action: upsert
-        value: ${OTEL_RESOURCE_NAMESPACE:-projeto-toq}
+        value: ${OTEL_RESOURCE_NAMESPACE}
   attributes/http_context:
     actions:
       - key: method
@@ -45,9 +45,6 @@ processors:
       - key: status
         action: upsert
         from_attribute: http.status_code
-      - key: status
-        action: convert
-        type: string
   attributes/log_attributes:
     actions:
       # Adiciona trace_id e span_id como atributos para correlação
@@ -60,14 +57,16 @@ processors:
       - key: user_id
         action: upsert
         from_attribute: user_id
-      - key: user_id
-        action: convert
-        type: string
+  attributes/service_label:
+    actions:
+      - key: service
+        action: upsert
+        value: ${OTEL_RESOURCE_SERVICE_NAME}
   attributes/loki_labels:
     actions:
       - key: loki.attribute.labels
         action: upsert
-        value: trace_id,span_id,request_id,method,path,status,user_id,service.name
+        value: trace_id,span_id,request_id,method,path,status,user_id,service
   batch:
     timeout: 1s
     send_batch_size: 1024
@@ -83,26 +82,15 @@ exporters:
       authorization: "${OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER}"
     tls:
       insecure: ${OTEL_EXPORTER_OTLP_TRACES_INSECURE}
-  loki/default:
-    endpoint: ${LOKI_OTLP_ENDPOINT}
-    tenant_id: ${LOKI_TENANT_ID}
+  otlphttp/loki:
+    endpoint: ${LOKI_OTLP_LOGS_ENDPOINT}
     tls:
       insecure: ${LOKI_OTLP_INSECURE}
     headers:
+      X-Scope-OrgID: "${LOKI_TENANT_ID}"
       Authorization: "${LOKI_OTLP_AUTH_HEADER}"
-    default_labels_enabled:
-      exporter: false
-      job: false
-    labels:
-      attributes:
-        - trace_id
-        - span_id
-        - request_id
-        - method
-        - path
-        - status
-        - user_id
-        - service.name
+  debug/logs:
+    verbosity: detailed
 
 extensions:
   health_check:
@@ -122,5 +110,5 @@ service:
       exporters: [prometheus]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, resource/service_attributes, attributes/http_context, attributes/log_attributes, attributes/loki_labels, batch]
-      exporters: [loki/default]
+      processors: [memory_limiter, resource/service_attributes, attributes/service_label, attributes/http_context, attributes/log_attributes, attributes/loki_labels, batch]
+      exporters: [otlphttp/loki, debug/logs]

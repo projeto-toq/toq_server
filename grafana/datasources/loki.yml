@@ -7,6 +7,7 @@ datasources:
     uid: loki
     url: http://loki:3100
     jsonData:
+      httpHeaderName1: X-Scope-OrgID
       maxLines: 1000
       derivedFields:
         - name: trace_id
@@ -14,4 +15,6 @@ datasources:
           datasourceUid: jaeger
           url: /trace/$${__value.raw}
           urlDisplayLabel: Jaeger Trace
+    secureJsonData:
+      httpHeaderValue1: fake
     editable: false
