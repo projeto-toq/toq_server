@@ -39,17 +39,56 @@ processors:
       - context: log
         statements:
           - set(attributes["severity"], severity_text)
-          - set(attributes["severity"], attributes["level"]) where attributes["severity"] == ""
-          - set(attributes["request_id"], attributes["request_id"])
-          - set(attributes["path"], attributes["path"])
-          - set(attributes["method"], attributes["method"])
-          - set(attributes["user_agent"], attributes["user_agent"])
-          - set(attributes["trace_id"], trace_id)
-          - set(attributes["span_id"], span_id)
-          - set(attributes["deployment.environment"], resource.attributes["deployment.environment"])
-          - set(attributes["service.version"], resource.attributes["service.version"])
-          - set(attributes["loki.attribute.labels"], "severity,request_id,path,method,user_agent,trace_id,span_id,deployment.environment,service.version")
-          - set(attributes["loki.resource.labels"], "service.name,deployment.environment,service.version")
+          - set(attributes["severity"], attributes["level"]) where attributes["severity"] == "" and attributes["level"] != ""
+          - set(attributes["severity"], attributes["log_severity_text"]) where attributes["severity"] == "" and attributes["log_severity_text"] != ""
+          - set(attributes["request_id"], attributes["request_id"]) where attributes["request_id"] != ""
+          - set(attributes["request_id"], attributes["app.request_id"]) where attributes["request_id"] == "" and attributes["app.request_id"] != ""
+          - set(attributes["path"], attributes["path"]) where attributes["path"] != ""
+          - set(attributes["path"], attributes["http.route"]) where attributes["path"] == "" and attributes["http.route"] != ""
+          - set(attributes["path"], attributes["http.target"]) where attributes["path"] == "" and attributes["http.target"] != ""
+          - set(attributes["method"], attributes["method"]) where attributes["method"] != ""
+          - set(attributes["method"], attributes["http.method"]) where attributes["method"] == "" and attributes["http.method"] != ""
+          - set(attributes["user_agent"], attributes["user_agent"]) where attributes["user_agent"] != ""
+          - set(attributes["user_agent"], attributes["http.user_agent"]) where attributes["user_agent"] == "" and attributes["http.user_agent"] != ""
+          - set(attributes["trace_id"], trace_id) where trace_id != ""
+          - set(attributes["span_id"], span_id) where span_id != ""
+          - set(attributes["deployment_environment"], resource.attributes["deployment.environment"]) where resource.attributes["deployment.environment"] != ""
+          - set(attributes["service_version"], resource.attributes["service.version"]) where resource.attributes["service.version"] != ""
+          - set(resource.attributes["service_instance_id"], resource.attributes["service.instance.id"]) where resource.attributes["service.instance.id"] != ""
+          - set(resource.attributes["service_name"], resource.attributes["service.name"]) where resource.attributes["service.name"] != ""
+          - set(attributes["loki.attribute.labels"], ["severity", "request_id", "path", "method", "user_agent", "trace_id", "span_id", "deployment_environment", "service_version"])
+  attributes/loki_labels:
+    actions:
+      - action: upsert
+        key: loki.attribute.severity
+        from_attribute: severity
+      - action: upsert
+        key: loki.attribute.request_id
+        from_attribute: request_id
+      - action: upsert
+        key: loki.attribute.path
+        from_attribute: path
+      - action: upsert
+        key: loki.attribute.method
+        from_attribute: method
+      - action: upsert
+        key: loki.attribute.user_agent
+        from_attribute: user_agent
+      - action: upsert
+        key: loki.attribute.trace_id
+        from_attribute: trace_id
+      - action: upsert
+        key: loki.attribute.span_id
+        from_attribute: span_id
+      - action: upsert
+        key: loki.attribute.deployment_environment
+        from_attribute: deployment_environment
+      - action: upsert
+        key: loki.attribute.service_version
+        from_attribute: service_version
+      - action: upsert
+        key: loki.attribute.labels
+        value: severity,request_id,path,method,user_agent,trace_id,span_id,deployment_environment,service_version
 
 exporters:
   debug:
@@ -91,5 +130,5 @@ service:
       exporters: [prometheus, debug]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch, resource, transform/log_labels]
+      processors: [memory_limiter, batch, resource, transform/log_labels, attributes/loki_labels]
       exporters: [debug, otlphttp/loki]

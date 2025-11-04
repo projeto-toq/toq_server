@@ -230,7 +230,7 @@
     "templating": {
         "list": [
             {
-                "allValue": "ERROR|FATAL",
+                "allValue": ".*",
                 "datasource": {
                     "type": "loki",
                     "uid": "loki"

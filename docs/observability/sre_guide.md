@@ -17,6 +17,8 @@
 | MySQL Exporter | `9104` | Exposição de métricas MySQL (threads, buffer pool, latency) para Prometheus |
 | Redis Exporter | `9121` | Exposição de métricas Redis (clientes, memória, hits/miss) para Prometheus |
 
+> O `mysqld-exporter` lê credenciais do arquivo `configs/mysql-exporter.cnf` montado como `.my.cnf`. Ajuste usuário/senha conforme o ambiente real.
+
 ## Variáveis de Ambiente Importantes
 - `LOKI_RETENTION_DAYS`: dias de retenção do Loki. Dev = `7`, sugerido prod = `3`.
 - `OTEL_RESOURCE_SERVICE_NAME`: nome lógico exportado como `service.name` (default `toq_server`).

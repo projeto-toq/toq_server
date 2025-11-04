@@ -9,16 +9,13 @@ Atualmente temos no sistema telemetria sendo gerada com traces enviados ao jaege
 
 Precismaos ter o conjunto de informações básicas para monitorar o sistema que é um rest-api, portanto precisamos garantir ao menos:
 1) dashboard de sinais vitais GO e host (CPU, memória, concorrencia, GC, etc)
-2) monitoramento de database mysql
-  2.1) talvez seja importante ter um coletor/exporter específico para mysql
-  2.2) utilzar o que já existe no projeto 
-  2.3) existe cache com redis, necessário algo específico para ele?
-3) dashboard de logs estruturados com filtros por request_id, trace_id, path, method
-4) dashboard de traces com correlação com logs via trace_id
+2) monitoramento de database mysql e do redis
+3) dashboard de logs estruturados com filtros por request_id, trace_id, path, method, etc
+4) dashboard de traces com correlação com logs via trace_id e/ou request_id
 5) monitoramento de HTTP Request Rate, HTTP Requests In Flight, HTTP Request Duration e request in flight,  latência, erros 4xx/5xx, traffic qps, erros por segundo etc.
 6) algum outro dashboard que lhe pareça relevante para monitorar uma aplicação REST API em Go.
 
-Ja existe alguns dashboards criados no grafana mas se necessário podem ser completamnte alterados ou removidos.
+Ja existe alguns dashboards criados no grafana mas se necessário podem ser completamente alterados ou removidos.
 
 Assim:
 1) verifique as metricas que já estão sendo coletadas e quais estão faltando ou precisam melhorias.
@@ -31,6 +28,8 @@ Assim:
   4.1) Estas devem ser verificadas no prometheus, para garantir que estão sendo coletadas corretamente.
 5) Os dashboards do grafana possuem filtros que não funcionam ou estão incompletos, corrija estes filtros para garantir que todos os dados possam ser filtrados corretamente.
 6) garanta que todos os dashboards estejam utilizando as melhores práticas de visualização de dados, como uso adequado de gráficos, tabelas, alertas e cores para facilitar a interpretação dos dados.
+7) os valores environment, service.name e service.version estão sendo exportados, mas não deveriam, pois isso é uma configuração interna da aplicação. Corrija isso.
+
 
 **Solicitação:** Analise o problema, **leia as configurações e docker compose** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md. O plano deve prever já toda a alteração de configuração necessária, para que quando aprovado, possa ser implementado diretamente.
 
