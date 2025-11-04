@@ -23,76 +23,25 @@ processors:
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
-  resource:
+  resource/drop_service_metadata:
     attributes:
       - key: service.name
-        value: ${OTEL_RESOURCE_SERVICE_NAME}
-        action: upsert
-      - key: deployment.environment
-        value: ${OTEL_RESOURCE_ENVIRONMENT}
-        action: upsert
+        action: delete
       - key: service.version
-        value: ${OTEL_RESOURCE_SERVICE_VERSION}
-        action: upsert
-  transform/log_labels:
-    log_statements:
-      - context: log
-        statements:
-          - set(attributes["severity"], severity_text)
-          - set(attributes["severity"], attributes["level"]) where attributes["severity"] == "" and attributes["level"] != ""
-          - set(attributes["severity"], attributes["log_severity_text"]) where attributes["severity"] == "" and attributes["log_severity_text"] != ""
-          - set(attributes["request_id"], attributes["request_id"]) where attributes["request_id"] != ""
-          - set(attributes["request_id"], attributes["app.request_id"]) where attributes["request_id"] == "" and attributes["app.request_id"] != ""
-          - set(attributes["path"], attributes["path"]) where attributes["path"] != ""
-          - set(attributes["path"], attributes["http.route"]) where attributes["path"] == "" and attributes["http.route"] != ""
-          - set(attributes["path"], attributes["http.target"]) where attributes["path"] == "" and attributes["http.target"] != ""
-          - set(attributes["method"], attributes["method"]) where attributes["method"] != ""
-          - set(attributes["method"], attributes["http.method"]) where attributes["method"] == "" and attributes["http.method"] != ""
-          - set(attributes["user_agent"], attributes["user_agent"]) where attributes["user_agent"] != ""
-          - set(attributes["user_agent"], attributes["http.user_agent"]) where attributes["user_agent"] == "" and attributes["http.user_agent"] != ""
-          - set(attributes["trace_id"], trace_id) where trace_id != ""
-          - set(attributes["span_id"], span_id) where span_id != ""
-          - set(attributes["deployment_environment"], resource.attributes["deployment.environment"]) where resource.attributes["deployment.environment"] != ""
-          - set(attributes["service_version"], resource.attributes["service.version"]) where resource.attributes["service.version"] != ""
-          - set(resource.attributes["service_instance_id"], resource.attributes["service.instance.id"]) where resource.attributes["service.instance.id"] != ""
-          - set(resource.attributes["service_name"], resource.attributes["service.name"]) where resource.attributes["service.name"] != ""
-          - set(attributes["loki.attribute.labels"], ["severity", "request_id", "path", "method", "user_agent", "trace_id", "span_id", "deployment_environment", "service_version"])
-  attributes/loki_labels:
+        action: delete
+      - key: deployment.environment
+        action: delete
+  attributes/log_attributes:
     actions:
-      - action: upsert
-        key: loki.attribute.severity
-        from_attribute: severity
-      - action: upsert
-        key: loki.attribute.request_id
-        from_attribute: request_id
-      - action: upsert
-        key: loki.attribute.path
-        from_attribute: path
-      - action: upsert
-        key: loki.attribute.method
-        from_attribute: method
-      - action: upsert
-        key: loki.attribute.user_agent
-        from_attribute: user_agent
-      - action: upsert
-        key: loki.attribute.trace_id
-        from_attribute: trace_id
-      - action: upsert
-        key: loki.attribute.span_id
-        from_attribute: span_id
-      - action: upsert
-        key: loki.attribute.deployment_environment
-        from_attribute: deployment_environment
-      - action: upsert
-        key: loki.attribute.service_version
-        from_attribute: service_version
-      - action: upsert
-        key: loki.attribute.labels
-        value: severity,request_id,path,method,user_agent,trace_id,span_id,deployment_environment,service_version
+      # Adiciona trace_id e span_id como atributos para correlação
+      - key: trace_id
+        action: insert
+        from_context: trace_id
+      - key: span_id
+        action: insert
+        from_context: span_id
 
 exporters:
-  debug:
-    verbosity: detailed
   prometheus:
     endpoint: "0.0.0.0:8889"
     const_labels:
@@ -105,12 +54,12 @@ exporters:
       insecure: ${OTEL_EXPORTER_OTLP_TRACES_INSECURE}
   otlphttp/loki:
     endpoint: ${LOKI_OTLP_ENDPOINT}
-    compression: gzip
+    logs_endpoint: ${LOKI_OTLP_ENDPOINT}
+    tls:
+      insecure: ${LOKI_OTLP_INSECURE}
     headers:
       X-Scope-OrgID: "${LOKI_TENANT_ID}"
       Authorization: "${LOKI_OTLP_AUTH_HEADER}"
-    tls:
-      insecure: ${LOKI_OTLP_INSECURE}
 
 extensions:
   health_check:
@@ -122,13 +71,13 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch, resource]
-      exporters: [debug, otlp]
+      processors: [memory_limiter, resource/drop_service_metadata, batch]
+      exporters: [otlp]
     metrics:
       receivers: [otlp, hostmetrics]
-      processors: [memory_limiter, batch, resource]
-      exporters: [prometheus, debug]
+      processors: [memory_limiter, resource/drop_service_metadata, batch]
+      exporters: [prometheus]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch, resource, transform/log_labels, attributes/loki_labels]
-      exporters: [debug, otlphttp/loki]
+      processors: [memory_limiter, resource/drop_service_metadata, batch, attributes/log_attributes]
+      exporters: [otlphttp/loki]

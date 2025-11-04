@@ -163,8 +163,6 @@ func (tm *TelemetryManager) createResource() (*resource.Resource, error) {
 	instanceID := fmt.Sprintf("%s-%d", hostname, os.Getpid())
 
 	attributes := []attribute.KeyValue{
-		semconv.ServiceName("toq_server"),
-		semconv.ServiceVersion(globalmodel.AppVersion),
 		semconv.ServiceInstanceID(instanceID),
 	}
 

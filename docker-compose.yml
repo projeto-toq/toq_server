@@ -119,7 +119,7 @@ services:
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-jaeger:4317}
       - OTEL_EXPORTER_OTLP_TRACES_INSECURE=${OTEL_EXPORTER_OTLP_TRACES_INSECURE:-true}
       - OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER=${OTEL_EXPORTER_OTLP_TRACES_AUTH_HEADER:-}
-      - LOKI_OTLP_ENDPOINT=${LOKI_OTLP_ENDPOINT:-http://loki:3100/otlp}
+      - LOKI_OTLP_ENDPOINT=${LOKI_OTLP_ENDPOINT:-http://loki:3100/loki/api/v1/push}
       - LOKI_OTLP_INSECURE=${LOKI_OTLP_INSECURE:-true}
       - LOKI_OTLP_AUTH_HEADER=${LOKI_OTLP_AUTH_HEADER:-}
       - LOKI_TENANT_ID=${LOKI_TENANT_ID:-toq}
@@ -150,7 +150,7 @@ services:
     networks:
       - toq-network
 
-  # Swagger UI for API documentation
+  # Swagger UI for API documentation 
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
     ports:

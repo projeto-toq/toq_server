@@ -11,7 +11,6 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -44,7 +43,6 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 			return
 		}
 
-		environment := globalmodel.GetRuntimeEnvironment()
 		ctx := c.Request.Context()
 
 		// Get request ID for correlation with logs
@@ -85,9 +83,6 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 		// Add custom attributes for correlation and debugging
 		span.SetAttributes(
 			attribute.String("request_id", requestID),
-			attribute.String("app.service", "toq_server"),
-			attribute.String("app.version", globalmodel.AppVersion),
-			attribute.String("deployment.environment", environment),
 		)
 		span.SetAttributes(attribute.String("http.route_template", path))
 

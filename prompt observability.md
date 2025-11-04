@@ -15,9 +15,9 @@ Precismaos ter o conjunto de informações básicas para monitorar o sistema que
 5) monitoramento de HTTP Request Rate, HTTP Requests In Flight, HTTP Request Duration e request in flight,  latência, erros 4xx/5xx, traffic qps, erros por segundo etc.
 6) algum outro dashboard que lhe pareça relevante para monitorar uma aplicação REST API em Go.
 
-Ja existe alguns dashboards criados no grafana mas se necessário podem ser completamente alterados ou removidos.
+Ja existe alguns dashboards criados no grafana, mas devem ser removidos e novos deverão ser criados.
 
-Assim:
+Assim, estude a documentação dos componentes em uso para construir este sistema de observabilidade otimizado, seguindo as melhores práticas de configuração e uso, garantindo o alinhamento com os padrões de arquitetura, tratamento de erros, observabilidade e documentação do projeto, e:
 1) verifique as metricas que já estão sendo coletadas e quais estão faltando ou precisam melhorias.
   1.1) Estas devem ser verificadas no prometheus, para garantir que estão sendo coletadas corretamente.
 2) verifique os campos do log que estão sendo gerados e quais estão faltando ou precisam melhorias
@@ -26,9 +26,9 @@ Assim:
   3.1) Estes devem ser verificados no jaeger/grafana, para garantir que estão sendo coletados corretamente.
 4) verifique as metricas do mysql e do redis que estão sendo coletadas e quais estão faltando ou precisam melhorias
   4.1) Estas devem ser verificadas no prometheus, para garantir que estão sendo coletadas corretamente.
-5) Os dashboards do grafana possuem filtros que não funcionam ou estão incompletos, corrija estes filtros para garantir que todos os dados possam ser filtrados corretamente.
+5) Os dashboards do grafana devem ter filtros relevantes, de acordo com o dashboard, para facilitar a análise dos dados.
 6) garanta que todos os dashboards estejam utilizando as melhores práticas de visualização de dados, como uso adequado de gráficos, tabelas, alertas e cores para facilitar a interpretação dos dados.
-7) os valores environment, service.name e service.version estão sendo exportados, mas não deveriam, pois isso é uma configuração interna da aplicação. Corrija isso.
+
 
 
 **Solicitação:** Analise o problema, **leia as configurações e docker compose** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md. O plano deve prever já toda a alteração de configuração necessária, para que quando aprovado, possa ser implementado diretamente.
@@ -44,12 +44,3 @@ Assim:
 
 - **Documentação:** Deve haver ajustes no documento docs/sre_guide.md para refletir as mudanças implementadas, garantindo que o guia de observabilidade esteja completo e atualizado.
 ---
-
-### **Regras Obrigatórias de Análise e Planejamento**
-
-#### 1. Arquitetura e Fluxo de Código
-- **Arquitetura:** A solução deve seguir estritamente a **Arquitetura Hexagonal**.
-- **Fluxo de Chamadas:** As chamadas de função devem seguir a hierarquia `Handlers` → `Services` → `Repositories`.
-- **Injeção de Dependência:** O padrão de _factories_ deve ser usado para a injeção de dependências.
-- **Localização de Repositórios:** Os repositórios devem ser localizados em `/internal/adapter/right/mysql/` e deve fazer uso dos convertess para mapear entidades de banco de dados para entidades e vice versa.
-- **Transações SQL:** Todas as transações de banco de dados devem utilizar `global_services/transactions`.
