@@ -80,12 +80,13 @@ func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input Upd
 	}
 
 	// Valida transições de estado permitidas
-	if status == photosessionmodel.BookingStatusAccepted || status == photosessionmodel.BookingStatusRejected {
+	switch status {
+	case photosessionmodel.BookingStatusAccepted, photosessionmodel.BookingStatusRejected:
 		// Aceitar/Rejeitar só é permitido em PENDING_APPROVAL
 		if booking.Status() != photosessionmodel.BookingStatusPendingApproval {
 			return derrors.Conflict("session is not pending approval")
 		}
-	} else if status == photosessionmodel.BookingStatusDone {
+	case photosessionmodel.BookingStatusDone:
 		// Concluir só é permitido em ACCEPTED ou ACTIVE
 		if booking.Status() != photosessionmodel.BookingStatusAccepted &&
 			booking.Status() != photosessionmodel.BookingStatusActive {
