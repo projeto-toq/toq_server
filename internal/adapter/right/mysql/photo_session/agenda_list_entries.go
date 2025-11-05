@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (a *PhotoSessionAdapter) ListEntriesByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.AgendaEntryInterface, error) {
+func (a *PhotoSessionAdapter) ListEntriesByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time, entryType *photosessionmodel.AgendaEntryType) ([]photosessionmodel.AgendaEntryInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
@@ -23,10 +23,18 @@ func (a *PhotoSessionAdapter) ListEntriesByRange(ctx context.Context, tx *sql.Tx
 
 	query := `SELECT id, photographer_user_id, entry_type, source, source_id, starts_at, ends_at, blocking, reason, timezone
 		FROM photographer_agenda_entries
-		WHERE photographer_user_id = ? AND ends_at > ? AND starts_at < ?
-		ORDER BY starts_at ASC`
+		WHERE photographer_user_id = ? AND ends_at > ? AND starts_at < ?`
 
-	rows, queryErr := a.QueryContext(ctx, tx, "select", query, photographerID, rangeStart, rangeEnd)
+	args := []interface{}{photographerID, rangeStart, rangeEnd}
+
+	if entryType != nil {
+		query += ` AND entry_type = ?`
+		args = append(args, string(*entryType))
+	}
+
+	query += ` ORDER BY starts_at ASC`
+
+	rows, queryErr := a.QueryContext(ctx, tx, "select", query, args...)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
 		logger.Error("mysql.photo_session.list_entries.query_error", "photographer_id", photographerID, "err", queryErr)

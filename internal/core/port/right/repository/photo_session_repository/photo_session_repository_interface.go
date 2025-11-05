@@ -11,7 +11,7 @@ import (
 // PhotoSessionRepositoryInterface defines persistence operations for photographer agenda entries and bookings.
 type PhotoSessionRepositoryInterface interface {
 	CreateEntries(ctx context.Context, tx *sql.Tx, entries []photosessionmodel.AgendaEntryInterface) ([]uint64, error)
-	ListEntriesByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.AgendaEntryInterface, error)
+	ListEntriesByRange(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time, entryType *photosessionmodel.AgendaEntryType) ([]photosessionmodel.AgendaEntryInterface, error)
 	ListPhotographerIDs(ctx context.Context, tx *sql.Tx) ([]uint64, error)
 	ListPhotographerIDsByLocation(ctx context.Context, tx *sql.Tx, city string, state string) ([]uint64, error)
 	FindBlockingEntries(ctx context.Context, tx *sql.Tx, photographerID uint64, rangeStart, rangeEnd time.Time) ([]photosessionmodel.AgendaEntryInterface, error)

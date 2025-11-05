@@ -5,10 +5,11 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Atualmente temos dificuldade para fornecer informações de data de agendamento de fotos do imóvel, permitindo ao proprietário cancelar ou reagendas a sessão de fotos.
+Atualmente o fotografo tem dificulade de saber quais os pedidos de sessão de fotos estão pendentes de aceites para cada imóvel listado. 
 
 Assim:
-1) inclua na resposta ao endpoint GET /listings/detail o campo photoSessionId.
+1) inclua nos filtros do endpoint GET /photographer/agenda entryType;
+  1.1) no doc swagger inclua as opções de filtro para o entryType.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

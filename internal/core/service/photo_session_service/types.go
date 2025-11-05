@@ -84,6 +84,7 @@ type ListAgendaInput struct {
 	Page           int
 	Size           int
 	Location       *time.Location
+	EntryType      *photosessionmodel.AgendaEntryType
 }
 
 // ListAgendaOutput describes the agenda listing result.

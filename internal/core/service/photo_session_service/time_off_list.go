@@ -67,7 +67,7 @@ func (s *photoSessionService) ListTimeOff(ctx context.Context, input ListTimeOff
 		}
 	}()
 
-	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, utils.ConvertToUTC(fromLocal), utils.ConvertToUTC(toLocal))
+	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, utils.ConvertToUTC(fromLocal), utils.ConvertToUTC(toLocal), nil)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("photo_session.list_time_off.repo_error", "photographer_id", input.PhotographerID, "err", err)

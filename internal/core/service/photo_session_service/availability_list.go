@@ -130,7 +130,7 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 
 	availability := make([]AvailabilitySlot, 0)
 	for _, photographerID := range photographerIDs {
-		entries, err := s.repo.ListEntriesByRange(ctx, tx, photographerID, rangeStart.UTC(), rangeEnd.UTC())
+		entries, err := s.repo.ListEntriesByRange(ctx, tx, photographerID, rangeStart.UTC(), rangeEnd.UTC(), nil)
 		if err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("photo_session.list_availability.list_entries_error", "photographer_id", photographerID, "err", err)

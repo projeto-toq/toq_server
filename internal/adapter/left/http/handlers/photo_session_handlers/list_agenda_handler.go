@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -20,7 +21,7 @@ const (
 
 // ListAgenda handles the retrieval of the photographer's agenda.
 // @Summary      List Photographer Agenda
-// @Description  Retrieves the photographer's agenda, including available and blocked slots, within a given date range.
+// @Description  Retrieves the photographer's agenda, including available and blocked slots, within a given date range. Optional entryType filter to retrieve only specific types of entries.
 // @Tags         Photographer
 // @Produce      json
 // @Param        startDate query string true "Start date in RFC3339 format"
@@ -28,6 +29,7 @@ const (
 // @Param        page      query int    false "Page number (defaults to 1)"
 // @Param        size      query int    false "Page size (defaults to 20, max 100)"
 // @Param        timezone  query string false "Timezone identifier" default(America/Sao_Paulo)
+// @Param        entryType query string false "Filter by entry type" Enums(PHOTO_SESSION, BLOCK, TIME_OFF, HOLIDAY)
 // @Success      200 {object} photosessionservices.ListAgendaOutput
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse
@@ -74,6 +76,12 @@ func (h *PhotoSessionHandler) ListAgenda(c *gin.Context) {
 		return
 	}
 
+	var entryTypeFilter *photosessionmodel.AgendaEntryType
+	if query.EntryType != nil {
+		entryType := photosessionmodel.AgendaEntryType(*query.EntryType)
+		entryTypeFilter = &entryType
+	}
+
 	input := photosessionservices.ListAgendaInput{
 		PhotographerID: uint64(userID),
 		StartDate:      startDate,
@@ -81,6 +89,7 @@ func (h *PhotoSessionHandler) ListAgenda(c *gin.Context) {
 		Page:           page,
 		Size:           size,
 		Location:       loc,
+		EntryType:      entryTypeFilter,
 	}
 
 	output, dErr := h.service.ListAgenda(c.Request.Context(), input)

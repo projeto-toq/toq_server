@@ -5967,7 +5967,7 @@ const docTemplate = `{
         },
         "/photographer/agenda": {
             "get": {
-                "description": "Retrieves the photographer's agenda, including available and blocked slots, within a given date range.",
+                "description": "Retrieves the photographer's agenda, including available and blocked slots, within a given date range. Optional entryType filter to retrieve only specific types of entries.",
                 "produces": [
                     "application/json"
                 ],
@@ -6007,6 +6007,18 @@ const docTemplate = `{
                         "default": "America/Sao_Paulo",
                         "description": "Timezone identifier",
                         "name": "timezone",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "PHOTO_SESSION",
+                            "BLOCK",
+                            "TIME_OFF",
+                            "HOLIDAY"
+                        ],
+                        "type": "string",
+                        "description": "Filter by entry type",
+                        "name": "entryType",
                         "in": "query"
                     }
                 ],

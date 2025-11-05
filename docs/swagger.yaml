@@ -6533,7 +6533,8 @@ paths:
   /photographer/agenda:
     get:
       description: Retrieves the photographer's agenda, including available and blocked
-        slots, within a given date range.
+        slots, within a given date range. Optional entryType filter to retrieve only
+        specific types of entries.
       parameters:
       - description: Start date in RFC3339 format
         in: query
@@ -6557,6 +6558,15 @@ paths:
         description: Timezone identifier
         in: query
         name: timezone
+        type: string
+      - description: Filter by entry type
+        enum:
+        - PHOTO_SESSION
+        - BLOCK
+        - TIME_OFF
+        - HOLIDAY
+        in: query
+        name: entryType
         type: string
       produces:
       - application/json

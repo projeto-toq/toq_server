@@ -2,10 +2,11 @@ package dto
 
 // ListAgendaQuery captures query parameters for listing the photographer agenda.
 type ListAgendaQuery struct {
-	StartDate string `form:"startDate" binding:"required" example:"2023-10-01T00:00:00Z"`
-	EndDate   string `form:"endDate" binding:"required" example:"2023-10-31T23:59:59Z"`
-	Page      int    `form:"page" binding:"omitempty,min=1" example:"1"`
-	Size      int    `form:"size" binding:"omitempty,min=1" example:"20"`
+	StartDate string  `form:"startDate" binding:"required" example:"2023-10-01T00:00:00Z"`
+	EndDate   string  `form:"endDate" binding:"required" example:"2023-10-31T23:59:59Z"`
+	Page      int     `form:"page" binding:"omitempty,min=1" example:"1"`
+	Size      int     `form:"size" binding:"omitempty,min=1" example:"20"`
+	EntryType *string `form:"entryType" binding:"omitempty,oneof=PHOTO_SESSION BLOCK TIME_OFF HOLIDAY" example:"PHOTO_SESSION"`
 }
 
 // UpdateSessionStatusRequest defines the payload for updating a session's status.

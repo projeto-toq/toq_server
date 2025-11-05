@@ -66,7 +66,7 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		return ListAgendaOutput{}, profileErr
 	}
 
-	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, utils.ConvertToUTC(startLocal), utils.ConvertToUTC(endLocal))
+	entries, err := s.repo.ListEntriesByRange(ctx, tx, input.PhotographerID, utils.ConvertToUTC(startLocal), utils.ConvertToUTC(endLocal), input.EntryType)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("service.list_agenda.repo_error", "photographer_id", input.PhotographerID, "err", err)
@@ -82,14 +82,20 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		slots = append(slots, s.buildAgendaSlot(entry, loc))
 	}
 
-	holidaySlots, holidayErr := s.fetchHolidaySlots(ctx, input.PhotographerID, loc, profile, startLocal, endLocal, occupied)
-	if holidayErr != nil {
-		return ListAgendaOutput{}, holidayErr
+	// Only add holiday slots if no filter or filter includes HOLIDAY
+	if input.EntryType == nil || *input.EntryType == photosessionmodel.AgendaEntryTypeHoliday {
+		holidaySlots, holidayErr := s.fetchHolidaySlots(ctx, input.PhotographerID, loc, profile, startLocal, endLocal, occupied)
+		if holidayErr != nil {
+			return ListAgendaOutput{}, holidayErr
+		}
+		slots = append(slots, holidaySlots...)
 	}
-	slots = append(slots, holidaySlots...)
 
-	nonWorkingSlots := s.buildNonWorkingSlots(input.PhotographerID, loc, startLocal, endLocal, occupied)
-	slots = append(slots, nonWorkingSlots...)
+	// Only add non-working slots (blocks) if no filter or filter includes BLOCK
+	if input.EntryType == nil || *input.EntryType == photosessionmodel.AgendaEntryTypeBlock {
+		nonWorkingSlots := s.buildNonWorkingSlots(input.PhotographerID, loc, startLocal, endLocal, occupied)
+		slots = append(slots, nonWorkingSlots...)
+	}
 
 	sort.Slice(slots, func(i, j int) bool {
 		if slots[i].Start.Equal(slots[j].Start) {
