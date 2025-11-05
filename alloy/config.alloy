@@ -213,6 +213,20 @@ prometheus.scrape "alloy_internal" {
   job_name = "alloy"
 }
 
+// Scrape Node Exporter (host metrics: CPU, Memory, Disk, Network)
+prometheus.scrape "node_exporter" {
+  targets = [
+    {"__address__" = "host.docker.internal:9100"},
+  ]
+
+  forward_to = [prometheus.remote_write.default.receiver]
+
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+
+  job_name = "node"
+}
+
 // ========================================
 // Logging & Debugging
 // ========================================

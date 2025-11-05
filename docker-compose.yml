@@ -51,6 +51,19 @@ services:
     networks:
       - toq-network
 
+  # Node Exporter - Host metrics (CPU, Memory, Disk, Network)
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: toq_server-node-exporter
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+
   # Grafana Alloy - Unified Telemetry Collector
   alloy:
     image: grafana/alloy:latest

@@ -30,8 +30,8 @@
             },
             "targets": [
                 {
-                    "expr": "100 * sum(rate(system_cpu_time{service=\"toq_server\", state!=\"idle\"}[$__rate_interval])) / sum(rate(system_cpu_time{service=\"toq_server\"}[$__rate_interval]))",
-                    "legendFormat": "CPU %",
+                    "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                    "legendFormat": "CPU Usage %",
                     "refId": "A"
                 }
             ],
@@ -66,8 +66,8 @@
             },
             "targets": [
                 {
-                    "expr": "100 * sum(system_memory_usage{service=\"toq_server\", state=\"used\"}) / sum(system_memory_usage{service=\"toq_server\", state=\"total\"})",
-                    "legendFormat": "Memory %",
+                    "expr": "100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))",
+                    "legendFormat": "Memory Usage %",
                     "refId": "A"
                 }
             ],

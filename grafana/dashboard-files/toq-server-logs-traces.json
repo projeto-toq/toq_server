@@ -49,7 +49,8 @@
         {
             "id": 2,
             "title": "Traces correlacionados",
-            "type": "traces",
+            "description": "Lista todos os traces do serviço. Para ver detalhes de um trace específico, clique no Trace ID nos logs à esquerda.",
+            "type": "table",
             "datasource": {
                 "type": "tempo",
                 "uid": "tempo"
@@ -59,7 +60,8 @@
                     "query": "{.service.name=\"toq_server\"}",
                     "queryType": "traceql",
                     "refId": "A",
-                    "limit": 20
+                    "limit": 50,
+                    "tableType": "traces"
                 }
             ],
             "gridPos": {
@@ -67,7 +69,68 @@
                 "w": 12,
                 "x": 12,
                 "y": 0
-            }
+            },
+            "options": {
+                "showHeader": true,
+                "sortBy": [],
+                "footer": {
+                    "show": false,
+                    "reducer": [],
+                    "fields": "",
+                    "enablePagination": true
+                }
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "align": "auto",
+                        "displayMode": "auto",
+                        "filterable": true
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "traceID"
+                        },
+                        "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "title": "View trace in Explore",
+                                        "url": "/explore?left=%7B%22datasource%22%3A%22tempo%22%2C%22queries%22%3A%5B%7B%22query%22%3A%22${__value.raw}%22%2C%22queryType%22%3A%22traceql%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22now-1h%22%2C%22to%22%3A%22now%22%7D%7D",
+                                        "targetBlank": true
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "indexByName": {
+                            "traceID": 0,
+                            "rootServiceName": 1,
+                            "rootTraceName": 2,
+                            "startTimeUnixNano": 3,
+                            "durationMs": 4
+                        },
+                        "renameByName": {
+                            "traceID": "Trace ID",
+                            "rootServiceName": "Service",
+                            "rootTraceName": "Operation",
+                            "startTimeUnixNano": "Start Time",
+                            "durationMs": "Duration (ms)"
+                        }
+                    }
+                }
+            ]
         },
         {
             "id": 3,
