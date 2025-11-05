@@ -5364,7 +5364,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns all fields of a listing given its identifier.",
+                "description": "Returns all fields of a listing given its identifier, including active photo session ID if exists.",
                 "consumes": [
                     "application/json"
                 ],
@@ -10563,6 +10563,9 @@ const docTemplate = `{
                 },
                 "owner": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "photoSessionId": {
+                    "type": "integer"
                 },
                 "propertyType": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse"

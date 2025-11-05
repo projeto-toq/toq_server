@@ -49,6 +49,7 @@ type ListingDetailOutput struct {
 	Accompanying      *CatalogValueDetail
 	FinancingBlockers []FinancingBlockerDetail
 	Guarantees        []GuaranteeDetail
+	PhotoSessionID    *uint64
 }
 
 // GetListingDetail retorna todos os dados de um listing específico.
@@ -89,6 +90,17 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 	}
 
 	output.Listing = listing
+
+	// Buscar booking ativo de photo session se existir
+	booking, bookingErr := ls.photoSessionSvc.GetActiveBookingByListingID(ctx, tx, listingID)
+	if bookingErr != nil && !errors.Is(bookingErr, sql.ErrNoRows) {
+		// Apenas loga warning se não for ErrNoRows (ausência de booking é esperado)
+		logger.Warn("listing.detail.get_active_booking_warning", "listing_id", listingID, "err", bookingErr)
+		// Não retorna erro; apenas não preenche o campo
+	} else if bookingErr == nil && booking != nil {
+		bookingID := booking.ID()
+		output.PhotoSessionID = &bookingID
+	}
 
 	cache := make(map[string]*CatalogValueDetail)
 

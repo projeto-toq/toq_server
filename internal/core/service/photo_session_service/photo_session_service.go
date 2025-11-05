@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	photosessionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
@@ -28,6 +29,7 @@ type PhotoSessionServiceInterface interface {
 	ReservePhotoSession(ctx context.Context, input ReserveSessionInput) (ReserveSessionOutput, error)
 	ConfirmPhotoSession(ctx context.Context, input ConfirmSessionInput) (ConfirmSessionOutput, error)
 	CancelPhotoSession(ctx context.Context, input CancelSessionInput) (CancelSessionOutput, error)
+	GetActiveBookingByListingID(ctx context.Context, tx *sql.Tx, listingID int64) (photosessionmodel.PhotoSessionBookingInterface, error)
 	ListServiceAreas(ctx context.Context, input ListServiceAreasInput) (ListServiceAreasOutput, error)
 	CreateServiceArea(ctx context.Context, input CreateServiceAreaInput) (ServiceAreaResult, error)
 	GetServiceArea(ctx context.Context, input ServiceAreaDetailInput) (ServiceAreaResult, error)

@@ -14,7 +14,7 @@ import (
 // GetListing trata a rota GET /listings/detail.
 //
 //	@Summary		Get listing detail
-//	@Description	Returns all fields of a listing given its identifier.
+//	@Description	Returns all fields of a listing given its identifier, including active photo session ID if exists.
 //	@Tags			Listings
 //	@Accept			json
 //	@Produce		json

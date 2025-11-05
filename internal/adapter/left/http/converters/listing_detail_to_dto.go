@@ -44,6 +44,7 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 		TenantEmail:        listing.TenantEmail(),
 		TenantPhone:        listing.TenantPhone(),
 		Deleted:            listing.Deleted(),
+		PhotoSessionID:     detail.PhotoSessionID,
 	}
 
 	if option, ok := listingmodel.PropertyTypeOptionFromBit(listing.ListingType()); ok {

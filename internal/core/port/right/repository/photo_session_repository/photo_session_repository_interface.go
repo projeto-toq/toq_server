@@ -28,6 +28,7 @@ type PhotoSessionRepositoryInterface interface {
 	GetBookingByID(ctx context.Context, tx *sql.Tx, bookingID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
 	GetBookingByIDForUpdate(ctx context.Context, tx *sql.Tx, bookingID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
 	FindBookingByAgendaEntry(ctx context.Context, tx *sql.Tx, agendaEntryID uint64) (photosessionmodel.PhotoSessionBookingInterface, error)
+	GetActiveBookingByListingID(ctx context.Context, tx *sql.Tx, listingID int64) (photosessionmodel.PhotoSessionBookingInterface, error)
 
 	ListServiceAreasByPhotographer(ctx context.Context, tx *sql.Tx, photographerID uint64) ([]photosessionmodel.PhotographerServiceAreaInterface, error)
 	GetServiceAreaByID(ctx context.Context, tx *sql.Tx, areaID uint64) (photosessionmodel.PhotographerServiceAreaInterface, error)

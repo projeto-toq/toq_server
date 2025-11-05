@@ -141,6 +141,7 @@ type ListingDetailResponse struct {
 	TenantEmail        string                            `json:"tenantEmail"`
 	TenantPhone        string                            `json:"tenantPhone"`
 	Accompanying       *CatalogItemResponse              `json:"accompanying,omitempty"`
+	PhotoSessionID     *uint64                           `json:"photoSessionId,omitempty"`
 	Deleted            bool                              `json:"deleted"`
 }
 
