@@ -155,7 +155,7 @@ func listingEligibleForPhotoSession(status listingmodel.ListingStatus) bool {
 	case
 		// listingmodel.StatusDraft,
 		listingmodel.StatusPendingPhotoScheduling,
-		listingmodel.StatusPendingAvailabilityConfirm,
+		listingmodel.StatusPendingPhotoConfirmation,
 		listingmodel.StatusPhotosScheduled: //,
 		// listingmodel.StatusPendingPhotoProcessing,
 		// listingmodel.StatusPendingOwnerApproval		:

@@ -908,33 +908,6 @@ definitions:
       message:
         type: string
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionRequest:
-    properties:
-      listingId:
-        example: 1001
-        type: integer
-      photoSessionId:
-        example: 3003
-        type: integer
-    required:
-    - listingId
-    - photoSessionId
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse:
-    properties:
-      photoSessionId:
-        example: 3003
-        type: integer
-      scheduledEnd:
-        example: "2025-10-24T10:00:00Z"
-        type: string
-      scheduledStart:
-        example: "2025-10-24T09:00:00Z"
-        type: string
-      status:
-        example: ACTIVE
-        type: string
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateAgencyRequest:
     properties:
       agency:
@@ -2149,6 +2122,10 @@ definitions:
         example: 12345
         type: integer
       status:
+        enum:
+        - ACCEPTED
+        - REJECTED
+        - DONE
         example: ACCEPTED
         type: string
     required:
@@ -2440,6 +2417,8 @@ definitions:
         type: boolean
       isTimeOff:
         type: boolean
+      photoSessionId:
+        type: integer
       photographerId:
         type: integer
       reason:
@@ -6349,54 +6328,6 @@ paths:
       summary: Cancel a booked photo session
       tags:
       - Listing Photo Sessions
-  /listings/photo-session/confirm:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Confirmation payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionRequest'
-        x-example: '{"listingId":1001,"photoSessionId":3003}'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Session confirmed
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse'
-        "400":
-          description: Invalid payload
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Photo session not found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "409":
-          description: Listing not eligible
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Confirm a photo session reservation
-      tags:
-      - Listing Photo Sessions
   /listings/photo-session/reserve:
     post:
       consumes:
@@ -6534,7 +6465,8 @@ paths:
     get:
       description: Retrieves the photographer's agenda, including available and blocked
         slots, within a given date range. Optional entryType filter to retrieve only
-        specific types of entries.
+        specific types of entries. Photo session entries include the photoSessionId
+        field for approval workflows.
       parameters:
       - description: Start date in RFC3339 format
         in: query

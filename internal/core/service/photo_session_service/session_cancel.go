@@ -99,7 +99,7 @@ func (s *photoSessionService) CancelPhotoSession(ctx context.Context, input Canc
 		if booking.Status() == photosessionmodel.BookingStatusActive {
 			expectedStatus = listingmodel.StatusPhotosScheduled
 		} else {
-			expectedStatus = listingmodel.StatusPendingAvailabilityConfirm
+			expectedStatus = listingmodel.StatusPendingPhotoConfirmation
 		}
 	default:
 		return CancelSessionOutput{}, derrors.ErrPhotoSessionNotCancelable

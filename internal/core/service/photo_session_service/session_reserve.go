@@ -145,7 +145,7 @@ func (s *photoSessionService) ReservePhotoSession(ctx context.Context, input Res
 		return ReserveSessionOutput{}, derrors.Infra("failed to create booking", err)
 	}
 
-	if updateErr := s.listingRepo.UpdateListingStatus(ctx, tx, listing.ID(), listingmodel.StatusPendingAvailabilityConfirm, listing.Status()); updateErr != nil {
+	if updateErr := s.listingRepo.UpdateListingStatus(ctx, tx, listing.ID(), listingmodel.StatusPendingPhotoConfirmation, listing.Status()); updateErr != nil {
 		if errors.Is(updateErr, sql.ErrNoRows) {
 			return ReserveSessionOutput{}, derrors.ErrListingNotEligible
 		}

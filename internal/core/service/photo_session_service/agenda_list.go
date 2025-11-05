@@ -2,6 +2,7 @@ package photosessionservices
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"sort"
 	"strings"
@@ -73,13 +74,19 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		return ListAgendaOutput{}, derrors.Wrap(err, derrors.KindInfra, "failed to list agenda entries")
 	}
 
+	// Carregar bookings associados para popular photoSessionId
+	bookingsMap, err := s.loadBookingsForEntries(ctx, tx, entries)
+	if err != nil {
+		return ListAgendaOutput{}, derrors.Wrap(err, derrors.KindInfra, "failed to load bookings for agenda entries")
+	}
+
 	occupied := make(map[string]struct{}, len(entries))
 	slots := make([]AgendaSlot, 0, len(entries))
 	for _, entry := range entries {
 		startLocal := entry.StartsAt().In(loc)
 		endLocal := entry.EndsAt().In(loc)
 		occupied[agendaSlotKey(entry.EntryType(), entry.Source(), startLocal, endLocal)] = struct{}{}
-		slots = append(slots, s.buildAgendaSlot(entry, loc))
+		slots = append(slots, s.buildAgendaSlot(entry, loc, bookingsMap))
 	}
 
 	// Only add holiday slots if no filter or filter includes HOLIDAY
@@ -126,7 +133,7 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 	}, nil
 }
 
-func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntryInterface, loc *time.Location) AgendaSlot {
+func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntryInterface, loc *time.Location, bookingsMap map[uint64]uint64) AgendaSlot {
 	start := entry.StartsAt().In(loc)
 	end := entry.EndsAt().In(loc)
 
@@ -154,6 +161,12 @@ func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntr
 		if sourceID, ok := entry.SourceID(); ok && sourceID != nil {
 			slot.SourceID = *sourceID
 		}
+
+		// Popular photoSessionId se disponível no map
+		if bookingID, found := bookingsMap[entry.ID()]; found {
+			slot.PhotoSessionID = &bookingID
+		}
+
 	case photosessionmodel.AgendaEntryTypeHoliday:
 		if sourceID, ok := entry.SourceID(); ok && sourceID != nil {
 			slot.HolidayCalendarIDs = []uint64{*sourceID}
@@ -173,4 +186,42 @@ func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntr
 func buildAgendaGroupID(entry photosessionmodel.AgendaEntryInterface, loc *time.Location) string {
 	dayKey := entry.StartsAt().In(loc).Format("2006-01-02")
 	return fmt.Sprintf("%s-%s", strings.ToLower(string(entry.Source())), dayKey)
+}
+
+// loadBookingsForEntries retrieves bookings associated with agenda entries.
+// Returns a map of agendaEntryID -> bookingID for quick lookup.
+func (s *photoSessionService) loadBookingsForEntries(ctx context.Context, tx *sql.Tx, entries []photosessionmodel.AgendaEntryInterface) (map[uint64]uint64, error) {
+	logger := utils.LoggerFromContext(ctx)
+
+	// Coleta IDs de entradas do tipo PHOTO_SESSION com source BOOKING
+	entryIDs := make([]uint64, 0)
+	for _, entry := range entries {
+		if entry.EntryType() == photosessionmodel.AgendaEntryTypePhotoSession &&
+			entry.Source() == photosessionmodel.AgendaEntrySourceBooking {
+			entryIDs = append(entryIDs, entry.ID())
+		}
+	}
+
+	if len(entryIDs) == 0 {
+		return make(map[uint64]uint64), nil
+	}
+
+	// Buscar bookings associados
+	bookingsMap := make(map[uint64]uint64, len(entryIDs))
+	for _, entryID := range entryIDs {
+		booking, err := s.repo.FindBookingByAgendaEntry(ctx, tx, entryID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				// Booking não encontrado - log de warning, não bloqueia
+				logger.Warn("agenda.load_bookings.booking_not_found", "agenda_entry_id", entryID)
+				continue
+			}
+			utils.SetSpanError(ctx, err)
+			logger.Error("agenda.load_bookings.repo_error", "agenda_entry_id", entryID, "err", err)
+			return nil, fmt.Errorf("failed to load booking for entry %d: %w", entryID, err)
+		}
+		bookingsMap[entryID] = booking.ID()
+	}
+
+	return bookingsMap, nil
 }

@@ -27,7 +27,6 @@ type ListingHandlerPort interface {
 	RemoveFavoriteListing(c *gin.Context)
 	ListPhotographerSlots(c *gin.Context)
 	ReservePhotoSession(c *gin.Context)
-	ConfirmPhotoSession(c *gin.Context)
 	CancelPhotoSession(c *gin.Context)
 
 	// Visit management

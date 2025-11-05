@@ -114,7 +114,7 @@ func (s *photoSessionService) ConfirmPhotoSession(ctx context.Context, input Con
 		return ConfirmSessionOutput{}, derrors.Infra("failed to update booking status", updateErr)
 	}
 
-	if updateErr := s.listingRepo.UpdateListingStatus(ctx, tx, listing.ID(), listingmodel.StatusPhotosScheduled, listingmodel.StatusPendingAvailabilityConfirm); updateErr != nil {
+	if updateErr := s.listingRepo.UpdateListingStatus(ctx, tx, listing.ID(), listingmodel.StatusPhotosScheduled, listingmodel.StatusPendingPhotoConfirmation); updateErr != nil {
 		if errors.Is(updateErr, sql.ErrNoRows) {
 			return ConfirmSessionOutput{}, derrors.ErrListingNotEligible
 		}

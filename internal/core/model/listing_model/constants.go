@@ -10,7 +10,7 @@ const (
 	// StatusPendingPhotoScheduling: Anúncio criado e aguardando o agendamento da sessão de fotos.
 	StatusPendingPhotoScheduling
 	// StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. ag confirmação
-	StatusPendingAvailabilityConfirm
+	StatusPendingPhotoConfirmation
 	// StatusPhotosScheduled: Sessão de fotos agendada, aguardando execução.
 	StatusPhotosScheduled
 	// StatusPendingPhotoProcessing: Sessão concluída, aguardando tratamento e upload das fotos.
@@ -47,8 +47,8 @@ func (s ListingStatus) String() string {
 		return "PENDING_AVAILABILITY"
 	case StatusPendingPhotoScheduling:
 		return "PENDING_PHOTO_SCHEDULING"
-	case StatusPendingAvailabilityConfirm:
-		return "PENDING_AVAILABILITY_CONFIRM"
+	case StatusPendingPhotoConfirmation:
+		return "PENDING_PHOTO_CONFIRMATION"
 	case StatusPhotosScheduled:
 		return "PHOTOS_SCHEDULED"
 	case StatusPendingPhotoProcessing:

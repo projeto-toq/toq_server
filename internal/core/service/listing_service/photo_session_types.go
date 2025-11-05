@@ -48,20 +48,6 @@ type ReservePhotoSessionOutput struct {
 	PhotographerID uint64
 }
 
-// ConfirmPhotoSessionInput encapsulates data to finalize a reservation into a booking.
-type ConfirmPhotoSessionInput struct {
-	ListingID      int64
-	PhotoSessionID uint64
-}
-
-// ConfirmPhotoSessionOutput returns booking metadata after confirmation.
-type ConfirmPhotoSessionOutput struct {
-	PhotoSessionID uint64
-	ScheduledStart time.Time
-	ScheduledEnd   time.Time
-	Status         string
-}
-
 // CancelPhotoSessionInput identifies a scheduled photo session to cancel.
 type CancelPhotoSessionInput struct {
 	PhotoSessionID uint64

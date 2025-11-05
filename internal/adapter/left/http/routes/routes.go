@@ -279,7 +279,6 @@ func RegisterListingRoutes(
 		// Photo session scheduling
 		listings.GET("/photo-session/slots", listingHandler.ListPhotographerSlots)
 		listings.POST("/photo-session/reserve", listingHandler.ReservePhotoSession)
-		listings.POST("/photo-session/confirm", listingHandler.ConfirmPhotoSession)
 		listings.POST("/photo-session/cancel", listingHandler.CancelPhotoSession)
 
 		// Individual listing operations

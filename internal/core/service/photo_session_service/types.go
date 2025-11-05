@@ -103,6 +103,7 @@ type AgendaSlot struct {
 	EntryType          photosessionmodel.AgendaEntryType   `json:"entryType"`
 	Source             photosessionmodel.AgendaEntrySource `json:"source"`
 	SourceID           uint64                              `json:"sourceId,omitempty"`
+	PhotoSessionID     *uint64                             `json:"photoSessionId,omitempty"`
 	Start              time.Time                           `json:"start"`
 	End                time.Time                           `json:"end"`
 	Status             photosessionmodel.SlotStatus        `json:"status"`

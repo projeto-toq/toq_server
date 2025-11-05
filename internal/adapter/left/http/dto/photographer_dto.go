@@ -10,9 +10,11 @@ type ListAgendaQuery struct {
 }
 
 // UpdateSessionStatusRequest defines the payload for updating a session's status.
+// Status can be ACCEPTED (photographer accepts the session), REJECTED (photographer declines),
+// or DONE (photographer confirms the session was completed).
 type UpdateSessionStatusRequest struct {
 	SessionID uint64 `json:"sessionId" binding:"required" example:"12345"`
-	Status    string `json:"status" binding:"required" example:"ACCEPTED"`
+	Status    string `json:"status" binding:"required,oneof=ACCEPTED REJECTED DONE" example:"ACCEPTED"`
 }
 
 // CreateTimeOffRequest represents the payload to block a photographer agenda.

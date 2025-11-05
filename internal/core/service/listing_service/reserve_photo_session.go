@@ -64,7 +64,7 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		return output, utils.AuthorizationError("listing does not belong to current user")
 	}
 
-	if listing.Status() == listingmodel.StatusPendingAvailabilityConfirm {
+	if listing.Status() == listingmodel.StatusPendingPhotoConfirmation {
 		return output, derrors.ErrListingNotEligible
 	}
 

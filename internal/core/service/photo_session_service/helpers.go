@@ -87,7 +87,7 @@ func resolveLocation(timezone string) (*time.Location, error) {
 func listingAllowsPhotoSession(status listingmodel.ListingStatus) bool {
 	switch status {
 	case listingmodel.StatusPendingPhotoScheduling,
-		listingmodel.StatusPendingAvailabilityConfirm,
+		listingmodel.StatusPendingPhotoConfirmation,
 		listingmodel.StatusPhotosScheduled:
 		return true
 	default:

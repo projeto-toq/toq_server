@@ -21,7 +21,7 @@ const (
 
 // ListAgenda handles the retrieval of the photographer's agenda.
 // @Summary      List Photographer Agenda
-// @Description  Retrieves the photographer's agenda, including available and blocked slots, within a given date range. Optional entryType filter to retrieve only specific types of entries.
+// @Description  Retrieves the photographer's agenda, including available and blocked slots, within a given date range. Optional entryType filter to retrieve only specific types of entries. Photo session entries include the photoSessionId field for approval workflows.
 // @Tags         Photographer
 // @Produce      json
 // @Param        startDate query string true "Start date in RFC3339 format"

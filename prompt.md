@@ -5,11 +5,35 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Atualmente o fotografo tem dificulade de saber quais os pedidos de sessão de fotos estão pendentes de aceites para cada imóvel listado. 
+Após executar o POST /listings/photo-session/reserve para reservar uma sessão de fotos com o seguinte body:
+```json
+{
+  "listingId": 3,
+  "slotId": 23237176880
+}
+```
+O listing deve passar de 
+	// StatusPendingPhotoScheduling: Anúncio criado e aguardando o agendamento da sessão de fotos.
+	StatusPendingPhotoScheduling
+para
+	// StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. aguardando confirmação
+	StatusPendingPhotoConfirmation
 
-Assim:
-1) inclua nos filtros do endpoint GET /photographer/agenda entryType;
-  1.1) no doc swagger inclua as opções de filtro para o entryType.
+Após executar o POST /photographer/sessions/status para aprovar(confirmar) uma sessão de fotos com o seguinte body:
+```json
+{
+  "sessionId": 2,
+  "status": "ACCEPTED"
+}
+```
+O listing deve passar de
+	// StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. aguardando confirmação
+	StatusPendingPhotoConfirmation
+para
+	// StatusPhotosScheduled: Sessão de fotos agendada, aguardando execução.
+	StatusPhotosScheduled
+
+Mas os services não estão atualizando o status do listing corretamente.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

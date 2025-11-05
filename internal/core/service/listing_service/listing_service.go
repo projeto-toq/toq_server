@@ -69,7 +69,6 @@ type ListingServiceInterface interface {
 	GetCatalogValueDetail(ctx context.Context, category string, id uint8) (listingmodel.CatalogValueInterface, error)
 	ListPhotographerSlots(ctx context.Context, input ListPhotographerSlotsInput) (ListPhotographerSlotsOutput, error)
 	ReservePhotoSession(ctx context.Context, input ReservePhotoSessionInput) (ReservePhotoSessionOutput, error)
-	ConfirmPhotoSession(ctx context.Context, input ConfirmPhotoSessionInput) (ConfirmPhotoSessionOutput, error)
 	CancelPhotoSession(ctx context.Context, input CancelPhotoSessionInput) error
 	GetListingDetail(ctx context.Context, listingID int64) (ListingDetailOutput, error)
 }

@@ -5685,81 +5685,6 @@
                 }
             }
         },
-        "/listings/photo-session/confirm": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listing Photo Sessions"
-                ],
-                "summary": "Confirm a photo session reservation",
-                "parameters": [
-                    {
-                        "x-example": "{\"listingId\":1001,\"photoSessionId\":3003}",
-                        "description": "Confirmation payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Session confirmed",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid payload",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Photo session not found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Listing not eligible",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/listings/photo-session/reserve": {
             "post": {
                 "security": [
@@ -5960,7 +5885,7 @@
         },
         "/photographer/agenda": {
             "get": {
-                "description": "Retrieves the photographer's agenda, including available and blocked slots, within a given date range. Optional entryType filter to retrieve only specific types of entries.",
+                "description": "Retrieves the photographer's agenda, including available and blocked slots, within a given date range. Optional entryType filter to retrieve only specific types of entries. Photo session entries include the photoSessionId field for approval workflows.",
                 "produces": [
                     "application/json"
                 ],
@@ -9726,44 +9651,6 @@
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionRequest": {
-            "type": "object",
-            "required": [
-                "listingId",
-                "photoSessionId"
-            ],
-            "properties": {
-                "listingId": {
-                    "type": "integer",
-                    "example": 1001
-                },
-                "photoSessionId": {
-                    "type": "integer",
-                    "example": 3003
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ConfirmPhotoSessionResponse": {
-            "type": "object",
-            "properties": {
-                "photoSessionId": {
-                    "type": "integer",
-                    "example": 3003
-                },
-                "scheduledEnd": {
-                    "type": "string",
-                    "example": "2025-10-24T10:00:00Z"
-                },
-                "scheduledStart": {
-                    "type": "string",
-                    "example": "2025-10-24T09:00:00Z"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "ACTIVE"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateAgencyRequest": {
             "type": "object",
             "required": [
@@ -11589,6 +11476,11 @@
                 },
                 "status": {
                     "type": "string",
+                    "enum": [
+                        "ACCEPTED",
+                        "REJECTED",
+                        "DONE"
+                    ],
                     "example": "ACCEPTED"
                 }
             }
@@ -11993,6 +11885,9 @@
                 },
                 "isTimeOff": {
                     "type": "boolean"
+                },
+                "photoSessionId": {
+                    "type": "integer"
                 },
                 "photographerId": {
                     "type": "integer"

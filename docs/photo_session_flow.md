@@ -26,26 +26,26 @@ Este documento descreve o fluxo ponta-a-ponta das sessões de fotos, contempland
      - A sessão recém-reservada aparece como `RESERVED` (booking pendente de aprovação).
 
 4. **Ações do fotógrafo**
-   - **Aceitar sessão**: atualiza booking para `ACCEPTED`, slot para `BOOKED` e anúncio para `StatusPhotosScheduled`.
-   - **Recusar sessão**: altera booking para `REJECTED`, libera slot para `AVAILABLE` e retorna anúncio para `StatusPendingPhotoScheduling`.
+   - O fotógrafo consulta sua agenda via `ListAgenda` e pode atualizar o status da sessão via `UpdateSessionStatus`:
+     - **Aceitar sessão (ACCEPTED)**: atualiza booking para `ACCEPTED`, slot para `BOOKED` e anúncio para `StatusPhotosScheduled`. Envia notificação FCM ao proprietário informando a aceitação.
+     - **Recusar sessão (REJECTED)**: altera booking para `REJECTED`, libera slot para `AVAILABLE` e retorna anúncio para `StatusPendingPhotoScheduling`. Envia notificação FCM ao proprietário informando a recusa.
+     - **Marcar como concluída (DONE)**: atualiza booking para `DONE`, altera anúncio para `StatusPendingPhotoProcessing` (aguardando upload/edição das fotos). Envia notificação FCM ao proprietário informando a conclusão da sessão.
    - **Bloquear dia (Time Off)**: uso do fluxo `CreateTimeOff`, que gera intervalo bloqueado, reexecuta o ensure e remove slots futuros conflitantes.
    - **Excluir bloqueio**: via `DeleteTimeOff`, reabre a agenda para aquele intervalo.
    - **Visualizar feriados**: agenda in-line apresenta marcações de feriados vindas do serviço de feriados.
 
-5. **Confirmação pelo proprietário**
-   - Caso o proprietário confirme após aceitação do fotógrafo, o booking passa a `ACTIVE` (quando aplicável) e o anúncio permanece `StatusPhotosScheduled`. (Processo depende do handler `ConfirmPhotoSession`).
-
-6. **Cancelamentos**
+5. **Cancelamentos**
    - **Pelo proprietário**: `CancelPhotoSession` aceita bookings em `PENDING_APPROVAL`, `ACCEPTED` ou `ACTIVE`.
      - Atualiza booking para `CANCELLED`.
      - Libera slot (`AVAILABLE`).
      - Regride anúncio para `StatusPendingPhotoScheduling` (ou `StatusPendingAvailabilityConfirm` dependendo do estado anterior).
      - Dispara SMS informando o cancelamento ao fotógrafo.
-   - **Pelo fotógrafo**: ainda tratado via recusa antes da confirmação (mesma lógica do passo 4 — recusar sessão).
+   - **Pelo fotógrafo**: recusa antes da confirmação via `UpdateSessionStatus` com status `REJECTED` (mesma lógica do passo 4).
 
 ## Opções do Fotógrafo
-- **Aceitar sessão**: compromisso formal, slot `BOOKED`, anúncio `PhotosScheduled`.
-- **Recusar sessão**: slot volta para `AVAILABLE`; anúncio em `PendingPhotoScheduling`.
+- **Aceitar sessão (ACCEPTED)**: compromisso formal, slot `BOOKED`, anúncio `StatusPhotosScheduled`, notificação FCM ao proprietário.
+- **Recusar sessão (REJECTED)**: slot volta para `AVAILABLE`; anúncio em `StatusPendingPhotoScheduling`, notificação FCM ao proprietário.
+- **Marcar como concluída (DONE)**: sessão finalizada, anúncio em `StatusPendingPhotoProcessing`, notificação FCM ao proprietário.
 - **Bloquear dia/horário (Time Off)**: remove slots futuros dentro do intervalo e evita novas reservas.
 - **Visualizar feriados**: feriados são marcados como `BLOCKED` na agenda, com os labels correspondentes.
 - **Rever agenda consolidada**: `ListAgenda` mistura slots, feriados e time off com agrupamentos por dia/período.
@@ -63,15 +63,17 @@ Este documento descreve o fluxo ponta-a-ponta das sessões de fotos, contempland
   - Reserva: mensagem automática para o fotógrafo confirmar disponibilidade.
   - Cancelamento: mensagem informando cancelamento pelo proprietário.
 - **FCM**:
-  - (Em desenvolvimento) previsto para notificar proprietários sobre atualizações do fotógrafo.
+  - Notificações ao proprietário quando fotógrafo aceita/recusa/finaliza sessão.
+  - Implementado via serviço unificado de notificações com verificação de opt-in.
 - **Serviços externos**:
-  - Feridos (holiday service) para sinalização na agenda.
+  - Feriados (holiday service) para sinalização na agenda.
   - Notificação unificada para disparo de SMS/FCM.
 
 ## Estados do Anúncio (Resumo)
 - `StatusPendingPhotoScheduling`: aguardando agendamento.
 - `StatusPendingAvailabilityConfirm`: reserva criada, aguardando fotógrafo.
-- `StatusPhotosScheduled`: sessão aceita/confirmada.
+- `StatusPhotosScheduled`: sessão aceita/confirmada pelo fotógrafo.
+- `StatusPendingPhotoProcessing`: sessão finalizada, aguardando upload/edição das fotos.
 - Retornos ou cancelamentos regridem conforme regras descritas acima.
 
 ## Checklist de Validação
@@ -81,6 +83,6 @@ Este documento descreve o fluxo ponta-a-ponta das sessões de fotos, contempland
 - Serviços de notificação retornam sucesso (logar avisos/erros quando indisponíveis).
 
 ## Próximos Passos
-- Implementar notificações FCM para proprietários em alterações de status do booking.
 - Automatizar job scheduler (ex.: cron, Cloud Tasks) para execução contínua do ensure.
 - Adicionar métricas/observabilidade específicas (tempo médio de aceitação, cancelamentos por fotógrafo, etc.).
+- Implementar upload e processamento de fotos após status `DONE`.
