@@ -1,75 +1,94 @@
-### Resumo e Refatoração: Engenheiro de Software Go Sênior
+### Engenheiro de Software Go Sênior — Análise e Refatoração TOQ Server
 
-Este documento descreve as instruções para atuar como um engenheiro de software Go sênior, focando na análise de um problema e na proposição de uma solução detalhada, seguindo a arquitetura hexagonal e boas práticas de código, garantindo o alinhamento com os padrões de arquitetura, tratamento de erros, observabilidade e documentação. Toda a interação deve ser feita em português.
-
----
-
-**Problemas:**
-Devido a recorrentes refatorações feitas por diferentes desenvolvedores, creio que o código está violando algumas regras descritas no guia do projeto em docs/toq_server_go_guide.md. Isso tem causado problemas de manutenção e dificuldades na adição de novas funcionalidades.
-
-Assim vamos começar uma revisão faseada de todo o projeto:
-1) Analise o repositorio visit em internal/adapter/right/mysql/visit, cuja interface está em internal/core/port/right/repository/visit_repository/ em busca de desvios das regras do manual do projeto em docs/toq_server_go_guide.md.
-2) Analise se existem melhorias possíveis a serem aplicadas.
-
-**Não é necessáario apresentar, nesta fase de planejamento, todo o código quando a alteração é apenas documentação sem alteração no código em si.**
-
-**Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
-
-### **Instruções para a Proposição do Plano**
-
-- **Ação:** Apenas a análise e a geração do plano são solicitadas. **Nenhum código deve ser implementado**.
-- **Análise:** O problema e os requisitos devem ser analisados cuidadosamente. O código e arquivos de configuração existentes devem ser revisados para um plano preciso. Não faça suposições e confirme todos os detalhes necessários.
-- **Plano:** Um plano detalhado deve ser apresentado, incluindo a descrição da arquitetura proposta, as interfaces, a estrutura de diretórios e a ordem de execução das etapas.
-- **Qualidade do Plano:** O plano deve ser **extremamente prescritivo**, sem o uso de _mocks_ ou soluções temporárias. Para cada arquivo novo ou alterado, inclua um **esqueleto de código (code skeleton)** ou a **assinatura completa da função (full function signature)**, mostrando:
-    * Structs, Interfaces (Ports) e DTOs com todos os campos.
-    * Assinaturas completas de métodos públicos e privados.
-    * Uso explícito de `utils.GenerateTracer`, `defer spanEnd()`, e `utils.SetSpanError` nos pontos aplicáveis (Services e Repositories).
-- **Acompanhamento:** As etapas já planejadas e as próximas a serem analisadas devem ser sempre informadas para acompanhamento.
-- **Ambiente:** O plano deve considerar que estamos em ambiente de desvolvimento, portanto não deve haver back compatibility, migração de dados, preocupação com janela de manutenção ou _downtime_.
-- **Testes:** O plano **NÃO** deve incluir a criação/alteração de testes unitários e de integração para garantir a qualidade do código.
-- **Documentação:** A documentação Swagger/docs deve ser criada por comentários em DTO/Handler e execução de make swagger. Sem alterações manuais no swagger.yaml/json.
----
-
-### **Regras Obrigatórias de Análise e Planejamento**
-
-#### 1. Arquitetura e Fluxo de Código
-- **Arquitetura:** A solução deve seguir estritamente a **Arquitetura Hexagonal**.
-- **Fluxo de Chamadas:** As chamadas de função devem seguir a hierarquia `Handlers` → `Services` → `Repositories`.
-- **Injeção de Dependência:** O padrão de _factories_ deve ser usado para a injeção de dependências.
-- **Localização de Repositórios:** Os repositórios devem ser localizados em `/internal/adapter/right/mysql/` e deve fazer uso dos convertess para mapear entidades de banco de dados para entidades e vice versa.
-- **Transações SQL:** Todas as transações de banco de dados devem utilizar `global_services/transactions`.
-
-
-#### 2. Tratamento de Erros e Observabilidade
-
-- **Tracing:**
-  - Iniciar _tracing_ com `utils.GenerateTracer(ctx)` em métodos públicos de **Services**, **Repositories** e em **Workers/Go routines**.
-  - Evitar _spans_ duplicados em **Handlers HTTP**, pois o `TelemetryMiddleware` já inicia o _tracing_.
-  - Chamar a função de finalização (`defer spanEnd()`) e usar `utils.SetSpanError` para marcar erros.
-
-- **Logging:**
-  - Usar `slog` para _logs_ de domínio e segurança.
-    - `slog.Info`: Eventos esperados do domínio.
-    - `slog.Warn`: Condições anômalas ou falhas não fatais.
-    - `slog.Error`: Falhas internas de infraestrutura.
-  - Evitar _logs_ excessivos em **Repositórios (adapters)**.
-  - **Handlers** não devem gerar _logs_ de acesso, pois o `StructuredLoggingMiddleware` já faz isso.
-
-- **Tratamento de Erros:**
-  - **Repositórios (Adapters):** Retornam erros "puros" (`error`).
-  - **Serviços (Core):** Propagam erros de domínio usando `utils.WrapDomainErrorWithSource(derr)` e criam novos erros com `utils.NewHTTPErrorWithSource(...)`.
-  - **Handlers (HTTP):** Usam `http_errors.SendHTTPErrorObj(c, err)` para converter erros em JSON.
-
-#### 3. Boas Práticas Gerais
-- **Estilo de Código:** A proposta deve seguir as **Go Best Practices** e o **Google Go Style Guide**.
-- **Separação:** Manter a clara separação entre arquivos de **domínio**, **interfaces** e suas implementações.
-- **Processo:** O plano não deve incluir a geração de _scripts_ de migração ou soluções temporárias.
-- Não execute git status, git diff nem go test.
+**Objetivo:** Atuar como engenheiro Go sênior para analisar código existente, identificar desvios das regras do projeto e propor planos detalhados de refatoração/implementação. Toda a interação deve ser feita em português.
 
 ---
 
-### **Regras de Documentação e Comentários**
+## 🎯 Problema / Solicitação
 
-- A documentação da solução deve ser clara e concisa.
-- A documentação das funções deve ser em **inglês**.
-- A API deve ser documentada com **Swagger**, usando anotações diretamente no código, em inglês e não alterando swagger.yaml/json manualmente.
+Devido a recorrentes refatorações, o repositório user em internal/adapter/right/mysql/user está violando regras do guia.
+
+Tarefas:
+1. Analisar internal/adapter/right/mysql/user/ (incluindo entities, converters, 
+   todos os métodos do repositório)
+2. Comparar com interface em internal/core/port/right/repository/user_repository/
+3. Validar contra scripts/db_creation.sql
+4. Identificar desvios do guia em docs/toq_server_go_guide.md
+5. Propor melhorias adicionais
+
+
+---
+
+## 📘 Fonte da Verdade
+
+**TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**
+- **`docs/toq_server_go_guide.md`** — Guia completo do projeto (seções 1-17)
+- **`README.md`** — Configurações de ambiente e observabilidade
+
+**⚠️ Consulte SEMPRE esses documentos antes de propor qualquer solução.**
+
+---
+
+## 🎯 Processo de Trabalho
+
+1. **Leia o código** envolvido (adapters, services, handlers, entities, converters)
+2. **Identifique desvios** das regras do guia (cite seções específicas)
+3. **Proponha plano detalhado** com code skeletons
+4. **Não implemente código** — apenas análise e planejamento
+
+---
+
+## 📋 Formato do Plano
+
+### 1. Diagnóstico
+- Lista de arquivos analisados
+- Desvios identificados (referencie seção do guia violada)
+- Impacto de cada desvio
+- Melhorias possíveis
+
+### 2. Code Skeletons
+Para cada arquivo novo/alterado, forneça **esqueletos** conforme templates da **Seção 8 do guia**:
+- **Handlers:** Assinatura + Swagger completo (sem implementação)
+- **Services:** Assinatura + Godoc + estrutura tracing/transação
+- **Repositories:** Assinatura + Godoc + query + InstrumentedAdapter
+- **DTOs:** Struct completa com tags e comentários
+- **Entities:** Struct completa com sql.Null* quando aplicável
+- **Converters:** Lógica completa de conversão
+
+### 3. Estrutura de Diretórios
+Mostre organização final seguindo **Regra de Espelhamento (Seção 2.1 do guia)**
+
+### 4. Ordem de Execução
+Etapas numeradas com dependências
+
+### 5. Checklist de Conformidade
+Valide contra **seções específicas do guia**:
+- [ ] Arquitetura hexagonal (Seção 1)
+- [ ] Regra de Espelhamento Port ↔ Adapter (Seção 2.1)
+- [ ] InstrumentedAdapter em repos (Seção 7.3)
+- [ ] Transações via globalService (Seção 7.1)
+- [ ] Tracing/Logging/Erros (Seções 5, 7, 9)
+- [ ] Documentação (Seção 8)
+- [ ] Sem anti-padrões (Seção 14)
+
+---
+
+## 🚫 Restrições
+
+### Permitido (ambiente dev)
+- Alterações disruptivas, quebrar compatibilidade, alterar assinaturas
+
+### Proibido
+- ❌ Criar/alterar testes unitários
+- ❌ Scripts de migração de dados
+- ❌ Editar swagger.json/yaml manualmente
+- ❌ Executar git/go test
+- ❌ Mocks ou soluções temporárias
+
+---
+
+## 📝 Documentação
+
+- **Código:** Inglês (seguir Seção 8 do guia)
+- **Plano:** Português (citar seções do guia ao justificar)
+- **Swagger:** `make swagger` (anotações no código)

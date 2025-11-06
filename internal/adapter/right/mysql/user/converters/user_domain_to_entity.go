@@ -7,22 +7,40 @@ import (
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
+// UserDomainToEntity converts a domain model to a database entity
+//
+// This converter handles the translation from clean domain types to database-specific
+// types (sql.Null*), preparing data for database insertion/update.
+//
+// Conversion Rules:
+//   - string → sql.NullString (Valid=true if non-empty)
+//   - time.Time → sql.NullTime (Valid=true if not zero time)
+//   - bool → TINYINT(1) (true = 1, false = 0)
+//
+// Parameters:
+//   - domain: UserInterface from core layer
+//
+// Returns:
+//   - entity: UserEntity ready for database operations
+//
+// Important:
+//   - ID may be 0 for new records (populated by AUTO_INCREMENT)
+//   - Empty strings are converted to NULL for optional fields
+//   - Zero times (IsZero()) are converted to NULL for optional date fields
+//   - Photo field is not set here (managed separately by photo upload flow)
 func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserEntity) {
 	entity = userentity.UserEntity{}
+
+	// Map mandatory fields (NOT NULL in schema)
 	entity.ID = domain.GetID()
 	entity.FullName = domain.GetFullName()
-	entity.NickName = sql.NullString{String: domain.GetNickName(), Valid: domain.GetNickName() != ""}
 	entity.NationalID = domain.GetNationalID()
-	entity.CreciNumber = sql.NullString{String: domain.GetCreciNumber(), Valid: domain.GetCreciNumber() != ""}
-	entity.CreciState = sql.NullString{String: domain.GetCreciState(), Valid: domain.GetCreciState() != ""}
-	entity.CreciValidity = sql.NullTime{Time: domain.GetCreciValidity(), Valid: !domain.GetCreciValidity().IsZero()}
 	entity.BornAT = domain.GetBornAt()
 	entity.PhoneNumber = domain.GetPhoneNumber()
 	entity.Email = domain.GetEmail()
 	entity.ZipCode = domain.GetZipCode()
 	entity.Street = domain.GetStreet()
 	entity.Number = domain.GetNumber()
-	entity.Complement = sql.NullString{String: domain.GetComplement(), Valid: domain.GetComplement() != ""}
 	entity.Neighborhood = domain.GetNeighborhood()
 	entity.City = domain.GetCity()
 	entity.State = domain.GetState()
@@ -30,7 +48,43 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 	entity.OptStatus = domain.IsOptStatus()
 	entity.LastActivityAT = domain.GetLastActivityAt()
 	entity.Deleted = domain.IsDeleted()
-	entity.LastSignInAttempt = sql.NullTime{Time: domain.GetLastSignInAttempt(), Valid: !domain.GetLastSignInAttempt().IsZero()}
+
+	// Map optional fields - convert to sql.Null* with Valid based on value presence
+	nickName := domain.GetNickName()
+	entity.NickName = sql.NullString{
+		String: nickName,
+		Valid:  nickName != "",
+	}
+
+	creciNumber := domain.GetCreciNumber()
+	entity.CreciNumber = sql.NullString{
+		String: creciNumber,
+		Valid:  creciNumber != "",
+	}
+
+	creciState := domain.GetCreciState()
+	entity.CreciState = sql.NullString{
+		String: creciState,
+		Valid:  creciState != "",
+	}
+
+	creciValidity := domain.GetCreciValidity()
+	entity.CreciValidity = sql.NullTime{
+		Time:  creciValidity,
+		Valid: !creciValidity.IsZero(),
+	}
+
+	complement := domain.GetComplement()
+	entity.Complement = sql.NullString{
+		String: complement,
+		Valid:  complement != "",
+	}
+
+	lastSignIn := domain.GetLastSignInAttempt()
+	entity.LastSignInAttempt = sql.NullTime{
+		Time:  lastSignIn,
+		Valid: !lastSignIn.IsZero(),
+	}
 
 	return
 }

@@ -133,100 +133,46 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 	rows, queryErr := ua.QueryContext(ctx, tx, "select", listQuery, listArgs...)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
-		logger.Error("mysql.user.list_admin.query_error", "error", queryErr)
-		return result, fmt.Errorf("list admin users query: %w", queryErr)
+		logger.Error("mysql.user.list_users.query_error", "error", queryErr)
+		return result, fmt.Errorf("list users query: %w", queryErr)
 	}
 	defer rows.Close()
 
-	entities, rowsErr := rowsToEntities(rows)
-	if rowsErr != nil {
-		utils.SetSpanError(ctx, rowsErr)
-		logger.Error("mysql.user.list_admin.rows_to_entities_error", "error", rowsErr)
-		return result, fmt.Errorf("list admin users rows to entities: %w", rowsErr)
+	// Convert database rows to strongly-typed entities (type-safe scanning)
+	userEntities, scanErr := scanUserEntitiesWithRoles(rows)
+	if scanErr != nil {
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.user.list_users.scan_error", "error", scanErr)
+		return result, fmt.Errorf("scan user entities: %w", scanErr)
 	}
 
-	if len(entities) > 0 {
-		result.Users = make([]usermodel.UserInterface, 0, len(entities))
+	if len(userEntities) > 0 {
+		result.Users = make([]usermodel.UserInterface, 0, len(userEntities))
 	}
 
-	for _, row := range entities {
-		if len(row) < 32 {
-			logger.Warn("mysql.user.list_admin.unexpected_columns", "expected", 32, "got", len(row))
-			continue
-		}
+	for _, entity := range userEntities {
+		// Convert user entity to domain model
+		user := userconverters.UserEntityToDomain(entity.User)
 
-		userEntitySlice := row[:22]
-		user, convertErr := userconverters.UserEntityToDomain(userEntitySlice)
-		if convertErr != nil {
-			utils.SetSpanError(ctx, convertErr)
-			logger.Error("mysql.user.list_admin.convert_error", "error", convertErr)
-			return result, fmt.Errorf("convert user entity: %w", convertErr)
-		}
-
-		if row[22] != nil {
+		// Attach role information if present (LEFT JOIN may return NULL)
+		if entity.HasRole {
 			userRole := permissionmodel.NewUserRole()
-			switch id := row[22].(type) {
-			case int64:
-				userRole.SetID(id)
-			}
+			userRole.SetID(entity.UserRoleID)
 			userRole.SetUserID(user.GetID())
-			switch roleID := row[23].(type) {
-			case int64:
-				userRole.SetRoleID(roleID)
-			}
-			switch statusVal := row[24].(type) {
-			case int64:
-				userRole.SetStatus(permissionmodel.UserRoleStatus(statusVal))
-			}
-			switch activeVal := row[25].(type) {
-			case int64:
-				userRole.SetIsActive(activeVal == 1)
-			}
+			userRole.SetRoleID(entity.RoleID)
+			userRole.SetStatus(permissionmodel.UserRoleStatus(entity.RoleStatus))
+			userRole.SetIsActive(entity.RoleIsActive)
 
-			if row[26] != nil {
-				role := permissionmodel.NewRole()
-				switch val := row[26].(type) {
-				case int64:
-					role.SetID(val)
-				}
-				if row[27] != nil {
-					switch nameVal := row[27].(type) {
-					case []byte:
-						role.SetName(string(nameVal))
-					case string:
-						role.SetName(nameVal)
-					}
-				}
-				if row[28] != nil {
-					switch slugVal := row[28].(type) {
-					case []byte:
-						role.SetSlug(string(slugVal))
-					case string:
-						role.SetSlug(slugVal)
-					}
-				}
-				if row[29] != nil {
-					switch desc := row[29].(type) {
-					case []byte:
-						role.SetDescription(string(desc))
-					case string:
-						role.SetDescription(desc)
-					}
-				}
-				if row[30] != nil {
-					switch flag := row[30].(type) {
-					case int64:
-						role.SetIsSystemRole(flag == 1)
-					}
-				}
-				if row[31] != nil {
-					switch flag := row[31].(type) {
-					case int64:
-						role.SetIsActive(flag == 1)
-					}
-				}
-				userRole.SetRole(role)
-			}
+			// Attach role details
+			role := permissionmodel.NewRole()
+			role.SetID(entity.RoleID)
+			role.SetName(entity.RoleName)
+			role.SetSlug(entity.RoleSlug)
+			role.SetDescription(entity.RoleDescription)
+			role.SetIsSystemRole(entity.RoleIsSystemRole)
+			role.SetIsActive(entity.RoleActive)
+
+			userRole.SetRole(role)
 			user.SetActiveRole(userRole)
 		}
 

@@ -3,7 +3,6 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
@@ -23,7 +22,9 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT u.*
+	query := `SELECT u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
+	                 u.born_at, u.phone_number, u.email, u.zip_code, u.street, u.number, u.complement,
+	                 u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted, u.last_signin_attempt
 				 FROM users u
 				 JOIN realtors_agency ra ON u.id = ra.agency_id
 				 WHERE ra.realtor_id = ?`
@@ -36,10 +37,10 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 	}
 	defer rows.Close()
 
-	entities, err := rowsToEntities(rows)
+	entities, err := scanUserEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_agency_of_realtor.rows_to_entities_error", "error", err)
+		logger.Error("mysql.user.get_agency_of_realtor.scan_error", "error", err)
 		return nil, fmt.Errorf("scan agency rows: %w", err)
 	}
 
@@ -48,18 +49,13 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 	}
 
 	if len(entities) > 1 {
-		errMultiple := errors.New("multiple agencies found for realtor")
+		errMultiple := fmt.Errorf("multiple agencies found for realtor: %d", realtorID)
 		utils.SetSpanError(ctx, errMultiple)
 		logger.Error("mysql.user.get_agency_of_realtor.multiple_agencies_error", "realtor_id", realtorID, "error", errMultiple)
 		return nil, errMultiple
 	}
 
-	agency, err = userconverters.UserEntityToDomain(entities[0])
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_agency_of_realtor.convert_error", "error", err)
-		return nil, fmt.Errorf("convert agency user entity: %w", err)
-	}
+	agency = userconverters.UserEntityToDomain(entities[0])
 
 	return agency, nil
 

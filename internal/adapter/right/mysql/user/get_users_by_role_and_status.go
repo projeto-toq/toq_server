@@ -40,10 +40,10 @@ func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, 
 	}
 	defer rows.Close()
 
-	entities, qerr := rowsToEntities(rows)
+	entities, qerr := scanUserEntities(rows)
 	if qerr != nil {
 		utils.SetSpanError(ctx, qerr)
-		logger.Error("mysql.user.get_users_by_role.rows_to_entities_error", "error", qerr)
+		logger.Error("mysql.user.get_users_by_role.scan_error", "error", qerr)
 		return nil, fmt.Errorf("scan users by role rows: %w", qerr)
 	}
 
@@ -53,12 +53,7 @@ func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, 
 
 	users := make([]usermodel.UserInterface, 0, len(entities))
 	for _, e := range entities {
-		u, convErr := userconverters.UserEntityToDomain(e)
-		if convErr != nil {
-			utils.SetSpanError(ctx, convErr)
-			logger.Error("mysql.user.get_users_by_role.convert_error", "error", convErr)
-			return nil, fmt.Errorf("convert user entity: %w", convErr)
-		}
+		u := userconverters.UserEntityToDomain(e)
 		users = append(users, u)
 	}
 	return users, nil

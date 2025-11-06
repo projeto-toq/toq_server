@@ -21,7 +21,7 @@ func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermo
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE deleted = 0;`
+	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt FROM users WHERE deleted = 0`
 
 	rows, queryErr := ua.QueryContext(ctx, tx, "select", query)
 	if queryErr != nil {
@@ -31,10 +31,10 @@ func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermo
 	}
 	defer rows.Close()
 
-	entities, err := rowsToEntities(rows)
+	entities, err := scanUserEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_users.rows_to_entities_error", "error", err)
+		logger.Error("mysql.user.get_users.scan_error", "error", err)
 		return nil, fmt.Errorf("scan user rows: %w", err)
 	}
 
@@ -43,19 +43,9 @@ func (ua *UserAdapter) GetUsers(ctx context.Context, tx *sql.Tx) (users []usermo
 	}
 
 	for _, entity := range entities {
-		user, convertErr := userconverters.UserEntityToDomain(entity)
-		if convertErr != nil {
-			utils.SetSpanError(ctx, convertErr)
-			logger.Error("mysql.user.get_users.convert_error", "error", convertErr)
-			return nil, fmt.Errorf("convert user entity: %w", convertErr)
-		}
-
-		// Note: Active role should be set by the calling service using Permission Service
-		// This maintains separation of concerns between User and Permission domains
-
+		user := userconverters.UserEntityToDomain(entity)
 		users = append(users, user)
 	}
 
-	return
-
+	return users, nil
 }

@@ -41,7 +41,7 @@ func (us *userService) ValidateUserData(ctx context.Context, tx *sql.Tx, user us
 	}
 
 	//verify if user already exists
-	exist, err := us.repo.VerifyUserDuplicity(ctx, tx, user)
+	exist, err := us.repo.HasUserDuplicate(ctx, tx, user)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.validate_user_data.duplicity_check_error", "error", err)

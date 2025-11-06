@@ -3,7 +3,6 @@ package mysqluseradapter
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
@@ -32,10 +31,10 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 	}
 	defer rows.Close()
 
-	entities, err := rowsToEntities(rows)
+	entities, err := scanUserEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_user_by_phone.rows_to_entities_error", "error", err)
+		logger.Error("mysql.user.get_user_by_phone.scan_error", "error", err)
 		return nil, fmt.Errorf("scan user by phone rows: %w", err)
 	}
 
@@ -44,22 +43,13 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 	}
 
 	if len(entities) > 1 {
-		errMultiple := errors.New("multiple users found for phone number")
+		errMultiple := fmt.Errorf("multiple users found for phone number: %s", phoneNumber)
 		utils.SetSpanError(ctx, errMultiple)
 		logger.Error("mysql.user.get_user_by_phone.multiple_users_error", "phone_number", phoneNumber, "error", errMultiple)
 		return nil, errMultiple
 	}
 
-	user, err = userconverters.UserEntityToDomain(entities[0])
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_user_by_phone.convert_error", "error", err)
-		return nil, fmt.Errorf("convert user entity: %w", err)
-	}
+	user = userconverters.UserEntityToDomain(entities[0])
 
-	// Note: Active role should be set by the calling service using Permission Service
-	// This maintains separation of concerns between User and Permission domains
-
-	return
-
+	return user, nil
 }
