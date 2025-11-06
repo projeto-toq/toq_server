@@ -23,7 +23,9 @@ type UserRepoPortInterface interface {
 	GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error)
 	GetUserByNationalID(ctx context.Context, tx *sql.Tx, nationalID string) (user usermodel.UserInterface, err error)
 	GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (user usermodel.UserInterface, err error)
-	GetUsers(ctx context.Context, tx *sql.Tx) (users []usermodel.UserInterface, err error)
+	// ListAllUsers retrieves all users from the database without filters
+	// Follows naming convention: List* for collection retrieval (Section 8.1.4 of guide)
+	ListAllUsers(ctx context.Context, tx *sql.Tx) (users []usermodel.UserInterface, err error)
 	// GetUsersByRoleAndStatus lists users filtered by role slug and active user_role status
 	GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleSlug, status permissionmodel.UserRoleStatus) (users []usermodel.UserInterface, err error)
 	GetUserValidations(ctx context.Context, tx *sql.Tx, id int64) (validation usermodel.ValidationInterface, err error)

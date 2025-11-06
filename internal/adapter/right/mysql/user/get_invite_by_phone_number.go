@@ -21,7 +21,10 @@ func (ua *UserAdapter) GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, p
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM agency_invites WHERE phone_number = ?;`
+	// Query agency invitation by phone number
+	// Note: phone_number is indexed but not unique, though business logic prevents duplicates per agency
+	query := `SELECT id, agency_id, phone_number 
+	          FROM agency_invites WHERE phone_number = ?;`
 
 	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, phoneNumber)
 	if queryErr != nil {
@@ -31,23 +34,23 @@ func (ua *UserAdapter) GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, p
 	}
 	defer rows.Close()
 
-	entities, err := rowsToEntities(rows)
+	// Scan rows using type-safe function (replaces rowsToEntities)
+	entities, err := scanInviteEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_invite_by_phone.rows_to_entities_error", "error", err)
+		logger.Error("mysql.user.get_invite_by_phone.scan_error", "error", err)
 		return nil, fmt.Errorf("scan invite by phone rows: %w", err)
 	}
 
+	// Handle no results
 	if len(entities) == 0 {
 		return nil, sql.ErrNoRows
 	}
 
-	invite, err = userconverters.AgencyInviteEntityToDomain(entities[0])
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_invite_by_phone.convert_error", "error", err)
-		return nil, fmt.Errorf("convert agency invite entity: %w", err)
-	}
+	// Convert first entity to domain model using type-safe converter
+	// Note: Query may return multiple rows if multiple agencies invited same number
+	// Service layer should handle multi-agency invitation logic
+	invite = userconverters.AgencyInviteEntityToDomainTyped(entities[0])
 
 	return invite, nil
 }

@@ -22,7 +22,12 @@ func (ua *UserAdapter) GetUserValidations(ctx context.Context, tx *sql.Tx, id in
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM temp_user_validations WHERE user_id = ?;`
+	// Query validation record by user ID
+	// Note: Primary key is user_id, so max 1 row expected
+	query := `SELECT user_id, new_email, email_code, email_code_exp, 
+	          new_phone, phone_code, phone_code_exp, 
+	          password_code, password_code_exp 
+	          FROM temp_user_validations WHERE user_id = ?;`
 
 	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, id)
 	if queryErr != nil {
@@ -32,17 +37,20 @@ func (ua *UserAdapter) GetUserValidations(ctx context.Context, tx *sql.Tx, id in
 	}
 	defer rows.Close()
 
-	entities, err := rowsToEntities(rows)
+	// Scan rows using type-safe function (replaces rowsToEntities)
+	entities, err := scanValidationEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_user_validations.rows_to_entities_error", "error", err)
+		logger.Error("mysql.user.get_user_validations.scan_error", "error", err)
 		return nil, fmt.Errorf("scan user validations rows: %w", err)
 	}
 
+	// Handle no results
 	if len(entities) == 0 {
 		return nil, sql.ErrNoRows
 	}
 
+	// Safety check: primary key should prevent multiple rows
 	if len(entities) > 1 {
 		errMultiple := errors.New("multiple validations found for user")
 		utils.SetSpanError(ctx, errMultiple)
@@ -50,13 +58,8 @@ func (ua *UserAdapter) GetUserValidations(ctx context.Context, tx *sql.Tx, id in
 		return nil, errMultiple
 	}
 
-	validation, err = userconverters.UserValidationEntityToDomain(entities[0])
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_user_validations.convert_error", "error", err)
-		return nil, fmt.Errorf("convert user validation entity: %w", err)
-	}
+	// Convert entity to domain model using type-safe converter
+	validation = userconverters.UserValidationEntityToDomainTyped(entities[0])
 
 	return
-
 }

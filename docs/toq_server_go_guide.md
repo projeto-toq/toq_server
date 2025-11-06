@@ -346,6 +346,32 @@ if err != nil {
 }
 ```
 
+**REGRA OBRIGATÓRIA: Nunca use SELECT ***
+
+- **TODAS as queries devem listar colunas explicitamente** para evitar:
+  - **Schema evolution breaking Scan()**: Adicionar/reordenar colunas no schema quebra `rows.Scan()` silenciosamente
+  - **Type assertion errors**: Mudanças de tipo de coluna causam panics em runtime
+  - **Performance issues**: `SELECT *` trafega colunas não utilizadas (ex: BLOBs pesados)
+  - **Manutenibilidade**: Code reviewers não sabem quais campos são realmente usados
+
+✅ **CORRETO:**
+```go
+query := `SELECT id, name, email, created_at FROM users WHERE id = ?`
+```
+
+❌ **INCORRETO:**
+```go
+query := `SELECT * FROM users WHERE id = ?`  // NUNCA use SELECT *
+```
+
+**Exceção permitida:** `SELECT COUNT(*)` é aceitável pois retorna tipo conhecido (int64).
+
+**Justificativa técnica:**
+- Colunas explícitas garantem que `rows.Scan()` sempre recebe valores na ordem esperada
+- Previne bugs silenciosos quando schema é alterado (nova coluna adicionada/removida)
+- Facilita debug: erro de scan aponta exatamente qual campo/tipo está incorreto
+- Query optimizer trabalha melhor com colunas específicas
+
 - Em falhas, `slog.Error` com contexto enxuto (ids, chave da operação) e retorne erro puro (`error`).
 - Nunca use pacotes HTTP nesta camada; não mapeie para domínio.
 - Sucesso: no máximo `slog.Debug` quando necessário.

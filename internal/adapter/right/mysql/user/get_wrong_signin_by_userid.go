@@ -22,7 +22,10 @@ func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, i
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM temp_wrong_signin WHERE user_id = ?;`
+	// Query wrong signin tracking by user ID
+	// Note: Primary key is user_id, so max 1 row expected
+	query := `SELECT user_id, failed_attempts, last_attempt_at 
+	          FROM temp_wrong_signin WHERE user_id = ?;`
 
 	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, id)
 	if queryErr != nil {
@@ -32,17 +35,20 @@ func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, i
 	}
 	defer rows.Close()
 
-	entities, err := rowsToEntities(rows)
+	// Scan rows using type-safe function (replaces rowsToEntities)
+	entities, err := scanWrongSigninEntities(rows)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_wrong_signin.rows_to_entities_error", "error", err)
+		logger.Error("mysql.user.get_wrong_signin.scan_error", "error", err)
 		return nil, fmt.Errorf("scan wrong signin rows: %w", err)
 	}
 
+	// Handle no results
 	if len(entities) == 0 {
 		return nil, sql.ErrNoRows
 	}
 
+	// Safety check: primary key should prevent multiple rows
 	if len(entities) > 1 {
 		errMultiple := errors.New("multiple wrong_signin rows found")
 		utils.SetSpanError(ctx, errMultiple)
@@ -50,12 +56,8 @@ func (ua *UserAdapter) GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, i
 		return nil, errMultiple
 	}
 
-	wrongSignin, err = userconverters.WrongSignInEntityToDomain(entities[0])
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.user.get_wrong_signin.convert_error", "error", err)
-		return nil, fmt.Errorf("convert wrong signin entity: %w", err)
-	}
+	// Convert entity to domain model using type-safe converter
+	wrongSignin = userconverters.WrongSignInEntityToDomainTyped(entities[0])
 
 	return
 

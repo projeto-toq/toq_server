@@ -6,10 +6,11 @@
 
 ## 🎯 Problema / Solicitação
 
-O código que trata as operações com usuário, definido pela tabela users no banco MySQL, está com diversas violações das regras do guia toq_server_go_guide.md devido a múltiplas refatorações ao longo do tempo.
+Devido a recorrentes refatorações, o repositório user em internal/adapter/right/mysql/user está violando regras do guia.
 
 Tarefas:
-1. Analisar internal/adapter/right/mysql/user/ (incluindo entities, converters e todos os métodos do repositório)
+1. Analisar internal/adapter/right/mysql/user/ (incluindo entities, converters, 
+   todos os métodos do repositório)
 2. Comparar com interface em internal/core/port/right/repository/user_repository/
 3. Validar contra scripts/db_creation.sql
 4. Identificar desvios do guia em docs/toq_server_go_guide.md

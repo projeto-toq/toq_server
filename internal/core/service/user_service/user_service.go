@@ -87,7 +87,8 @@ type UserServiceInterface interface {
 	GetAgencyOfRealtor(ctx context.Context, realtorID int64) (agency usermodel.UserInterface, err error)
 	GetProfile(ctx context.Context) (user usermodel.UserInterface, err error)
 	GetRealtorsByAgency(ctx context.Context, agencyID int64) (realtors []usermodel.UserInterface, err error)
-	GetUsers(ctx context.Context) (users []usermodel.UserInterface, err error)
+	// ListAllUsers retrieves all active users without filters
+	ListAllUsers(ctx context.Context) (users []usermodel.UserInterface, err error)
 	Home(ctx context.Context, userID int64) (user usermodel.UserInterface, err error)
 	InviteRealtor(ctx context.Context, phoneNumber string) (err error)
 	RefreshTokens(ctx context.Context, refresh string) (tokens usermodel.Tokens, err error)

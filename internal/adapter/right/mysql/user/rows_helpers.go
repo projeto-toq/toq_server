@@ -220,33 +220,128 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 	return entities, nil
 }
 
-// rowsToEntities converts *sql.Rows to [][]any preserving column order.
-// Used by converters that handle []any slices (agency_invite, validations, wrong_signin)
-// TODO: Migrate these converters to use type-safe scanning with dedicated scan functions
-func rowsToEntities(rows *sql.Rows) ([][]any, error) {
-	columns, err := rows.Columns()
-	if err != nil {
-		return nil, err
-	}
-
-	entities := make([][]any, 0)
+// scanValidationEntities scans multiple rows into a slice of UserValidationEntity structs
+//
+// Provides type-safe scanning for temp_user_validations queries, eliminating
+// runtime panics from incorrect column indexing.
+//
+// Parameters:
+//   - rows: *sql.Rows from QueryContext (caller must close)
+//
+// Returns:
+//   - entities: Slice of UserValidationEntity with all rows scanned
+//   - error: Scan errors, column mismatch, or rows.Err()
+//
+// Query Columns Expected (in order):
+//  1. user_id (INT)
+//  2. new_email (VARCHAR, nullable)
+//  3. email_code (VARCHAR, nullable)
+//  4. email_code_exp (TIMESTAMP, nullable)
+//  5. new_phone (VARCHAR, nullable)
+//  6. phone_code (VARCHAR, nullable)
+//  7. phone_code_exp (TIMESTAMP, nullable)
+//  8. password_code (VARCHAR, nullable)
+//  9. password_code_exp (TIMESTAMP, nullable)
+func scanValidationEntities(rows *sql.Rows) ([]userentity.UserValidationEntity, error) {
+	var entities []userentity.UserValidationEntity
 
 	for rows.Next() {
-		entity := make([]any, len(columns))
-		dest := make([]any, len(columns))
-		for i := range dest {
-			dest[i] = &entity[i]
+		var entity userentity.UserValidationEntity
+		err := rows.Scan(
+			&entity.UserID,
+			&entity.NewEmail,
+			&entity.EmailCode,
+			&entity.EmailCodeExp,
+			&entity.NewPhone,
+			&entity.PhoneCode,
+			&entity.PhoneCodeExp,
+			&entity.PasswordCode,
+			&entity.PasswordCodeExp,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan validation entity: %w", err)
 		}
-
-		if err := rows.Scan(dest...); err != nil {
-			return nil, err
-		}
-
 		entities = append(entities, entity)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("validation rows iteration error: %w", err)
+	}
+
+	return entities, nil
+}
+
+// scanInviteEntities scans multiple rows into a slice of AgencyInvite structs
+//
+// Provides type-safe scanning for agency_invites queries.
+//
+// Parameters:
+//   - rows: *sql.Rows from QueryContext (caller must close)
+//
+// Returns:
+//   - entities: Slice of AgencyInvite with all rows scanned
+//   - error: Scan errors, column mismatch, or rows.Err()
+//
+// Query Columns Expected (in order):
+//  1. id (INT, PRIMARY KEY)
+//  2. agency_id (INT, FOREIGN KEY to users.id)
+//  3. phone_number (VARCHAR)
+func scanInviteEntities(rows *sql.Rows) ([]userentity.AgencyInvite, error) {
+	var entities []userentity.AgencyInvite
+
+	for rows.Next() {
+		var entity userentity.AgencyInvite
+		err := rows.Scan(
+			&entity.ID,
+			&entity.AgencyID,
+			&entity.PhoneNumber,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan invite entity: %w", err)
+		}
+		entities = append(entities, entity)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("invite rows iteration error: %w", err)
+	}
+
+	return entities, nil
+}
+
+// scanWrongSigninEntities scans multiple rows into a slice of WrongSignInEntity structs
+//
+// Provides type-safe scanning for temp_wrong_signin queries.
+//
+// Parameters:
+//   - rows: *sql.Rows from QueryContext (caller must close)
+//
+// Returns:
+//   - entities: Slice of WrongSignInEntity with all rows scanned
+//   - error: Scan errors, column mismatch, or rows.Err()
+//
+// Query Columns Expected (in order):
+//  1. user_id (INT, PRIMARY KEY, FOREIGN KEY to users.id)
+//  2. failed_attempts (TINYINT)
+//  3. last_attempt_at (TIMESTAMP)
+func scanWrongSigninEntities(rows *sql.Rows) ([]userentity.WrongSignInEntity, error) {
+	var entities []userentity.WrongSignInEntity
+
+	for rows.Next() {
+		var entity userentity.WrongSignInEntity
+		err := rows.Scan(
+			&entity.UserID,
+			&entity.FailedAttempts,
+			&entity.LastAttemptAT,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("scan wrong signin entity: %w", err)
+		}
+		entities = append(entities, entity)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("wrong signin rows iteration error: %w", err)
 	}
 
 	return entities, nil

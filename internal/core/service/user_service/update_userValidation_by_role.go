@@ -8,13 +8,6 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// UpdateUserValidationByUserRole is deprecated due to unsafe dereferencing of ActiveRole/Role.
-// Use UpdateUserValidationByRole instead. Mantido temporariamente para compatibilidade interna.
-func (us *userService) UpdateUserValidationByUserRole(ctx context.Context, tx *sql.Tx, user *usermodel.UserInterface, userValidation usermodel.ValidationInterface) (bool, error) {
-	// Redireciona para a versão segura utilizando o userID a partir da validação.
-	return us.UpdateUserValidationByRole(ctx, tx, userValidation.GetUserID(), userValidation)
-}
-
 // UpdateUserValidationByRole safely updates user status after contact validation using the active role
 // resolved via permission service, avoiding nil dereferences.
 // Returns whether tokens should be generated after the update.
