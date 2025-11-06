@@ -5,12 +5,15 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após a última refatoração feita no repositório Devicetoken, onde ele foi extraido do user_repository para um repositório próprio, as funções add_device_token.go, add_token_for_device.go, remove_all_device_tokens.go remove_device_token.go e remove_tokens_by_device_id.go, que são delegadores continuam no user_repository.
-Isto se deve porque estas funções são chamadas pelos services de user, porem isto quebra o principio da arquitetura hexagonal, onde cada repositório deve ser responsável apenas por sua entidade.
+O toq_server_go_guide, no item 7.3 Repositórios faz um detalhamento sobre a documentação que deve ser feita no código. Entretanto esta diretriz está restrita aos repositórios.
+
 Assim:
-1) inclua injete o repositorio de devicetoken no user_service
-2) elimine os delegadores do user_repository, movendo as chamadas diretamente do user_service para o device_token_repository.
-3) confirme que a lógica permancerá adequada e sem quebrar o codigo.
+1) cria uma seção documentação e mova o conteudo atual sobre documentação, que está esplalhado pelo guia para ela;
+2) detalhe como deve ser a documentação em cada área do projeto, handlers, services, repositories, helpers, entities, factories etc.
+  2.1) esta documentação deve ser robusta para facilitar a manutenção futura
+  2.2) a documentação deve ser externa a função, explicando para quem vai usá-la/chamá-la mas também interna a funçao, explicando sua lógica
+3) toda a documentação deve ser em ingles
+4) no caso dos handlers/dto, que serão base para a geração do swagger, devem haver exemplos de cada filtro, campo, body etc, assim como um descrição clara e detalhada do funcionamento e utilização.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 
@@ -71,5 +74,4 @@ Assim:
 
 - A documentação da solução deve ser clara e concisa.
 - A documentação das funções deve ser em **inglês**.
-- Os comentários internos devem ser em **português**.
 - A API deve ser documentada com **Swagger**, usando anotações diretamente no código, em inglês e não alterando swagger.yaml/json manualmente.
