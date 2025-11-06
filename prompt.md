@@ -5,35 +5,12 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-Após executar o POST /listings/photo-session/reserve para reservar uma sessão de fotos com o seguinte body:
-```json
-{
-  "listingId": 3,
-  "slotId": 23237176880
-}
-```
-O listing deve passar de 
-	// StatusPendingPhotoScheduling: Anúncio criado e aguardando o agendamento da sessão de fotos.
-	StatusPendingPhotoScheduling
-para
-	// StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. aguardando confirmação
-	StatusPendingPhotoConfirmation
-
-Após executar o POST /photographer/sessions/status para aprovar(confirmar) uma sessão de fotos com o seguinte body:
-```json
-{
-  "sessionId": 2,
-  "status": "ACCEPTED"
-}
-```
-O listing deve passar de
-	// StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. aguardando confirmação
-	StatusPendingPhotoConfirmation
-para
-	// StatusPhotosScheduled: Sessão de fotos agendada, aguardando execução.
-	StatusPhotosScheduled
-
-Mas os services não estão atualizando o status do listing corretamente.
+Após a última refatoração feita no repositório Devicetoken, onde ele foi extraido do user_repository para um repositório próprio, as funções add_device_token.go, add_token_for_device.go, remove_all_device_tokens.go remove_device_token.go e remove_tokens_by_device_id.go, que são delegadores continuam no user_repository.
+Isto se deve porque estas funções são chamadas pelos services de user, porem isto quebra o principio da arquitetura hexagonal, onde cada repositório deve ser responsável apenas por sua entidade.
+Assim:
+1) inclua injete o repositorio de devicetoken no user_service
+2) elimine os delegadores do user_repository, movendo as chamadas diretamente do user_service para o device_token_repository.
+3) confirme que a lógica permancerá adequada e sem quebrar o codigo.
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 

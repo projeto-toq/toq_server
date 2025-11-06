@@ -52,7 +52,7 @@ func (us *userService) PushOptOut(ctx context.Context, userID int64) (err error)
 func (us *userService) pushOptOut(ctx context.Context, tx *sql.Tx, userID int64) (err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	// Remove all stored device tokens for this user via repository (best-effort)
-	if err = us.repo.RemoveAllDeviceTokens(ctx, tx, userID); err != nil {
+	if err = us.deviceTokenRepo.RemoveAllByUserID(userID); err != nil {
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("user.push_optout.remove_tokens_error", "error", err, "user_id", userID)
 		return

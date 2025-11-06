@@ -42,6 +42,7 @@ import (
 
 	// Repository adapters
 	mysqlcomplexadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/complex"
+	mysqldevicetokenadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/device_token"
 	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
 	mysqlholidayadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday"
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
@@ -188,11 +189,11 @@ func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env 
 func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter.Database, metrics metricsport.MetricsPortInterface) (RepositoryAdapters, error) {
 	slog.Info("Creating repository adapters")
 
-	// User Repository
-	userRepo := mysqluseradapter.NewUserAdapter(database, metrics)
+	// Device Token Repository (independent adapter)
+	deviceTokenRepo := mysqldevicetokenadapter.NewDeviceTokenAdapter(database, metrics)
 
-	// Device Token Repository (access through User Repository)
-	deviceTokenRepo := userRepo.GetDeviceTokenRepository()
+	// User Repository (without device token delegation - follows single responsibility principle)
+	userRepo := mysqluseradapter.NewUserAdapter(database, metrics)
 
 	// Global Repository
 	globalRepo := mysqlglobaladapter.NewGlobalAdapter(database, metrics)

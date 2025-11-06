@@ -68,7 +68,7 @@ func (us *userService) updateOptStatus(ctx context.Context, tx *sql.Tx, userID i
 
 	// Transição para opt-out: remover tokens antes de persistir
 	if !opt {
-		if err = us.repo.RemoveAllDeviceTokens(ctx, tx, userID); err != nil {
+		if err = us.deviceTokenRepo.RemoveAllByUserID(userID); err != nil {
 			utils.LoggerFromContext(ctx).Warn("user.update_opt_status.device_tokens_delete_failed", "user_id", userID, "error", err)
 			return
 		}

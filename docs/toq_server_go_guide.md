@@ -60,6 +60,116 @@ Sumário
 
 Observação: modelos de domínio ficam em `internal/core/model/*`. Não importar pacotes HTTP em modelos.
 
+### 2.1 Regra de Espelhamento Port ↔ Adapter (Arquitetura Hexagonal)
+
+**Princípio Fundamental:** A estrutura de diretórios dos adapters DEVE espelhar a estrutura dos ports para garantir navegabilidade, clareza arquitetural e aderência à Arquitetura Hexagonal.
+
+**Regra Obrigatória:**
+
+Para cada Port definido em:
+```
+internal/core/port/right/repository/{DOMAIN_NAME}/
+```
+
+DEVE existir um Adapter correspondente em:
+```
+internal/adapter/right/mysql/{DOMAIN_NAME}/
+```
+
+**Estrutura Padrão de um Adapter:**
+
+```
+internal/adapter/right/mysql/{DOMAIN_NAME}/
+├── {domain}_adapter.go          # Struct do adapter + NewFunc APENAS
+├── create_{entity}.go            # Um método público por arquivo
+├── get_{entity}_by_id.go
+├── update_{entity}.go
+├── delete_{entity}.go
+├── list_{entities}.go
+├── converters/                   # Conversões DB ↔ Domain
+│   ├── {entity}_entity_to_domain.go
+│   └── {entity}_domain_to_entity.go
+└── entities/                     # Structs que representam schema DB
+    └── {entity}_entity.go
+```
+
+**Exemplo Completo:**
+
+```
+Port (Interface):
+  internal/core/port/right/repository/device_token_repository/
+    └── device_token_repo_port.go    # DeviceTokenRepoPortInterface
+
+Adapter (Implementação MySQL):
+  internal/adapter/right/mysql/device_token/
+    ├── device_token_adapter.go      # DeviceTokenAdapter struct + NewFunc
+    ├── add_token.go                 # func (a *DeviceTokenAdapter) AddToken(...)
+    ├── remove_token.go
+    ├── list_by_user_id.go
+    ├── converters/
+    │   └── device_token_entity_to_domain.go
+    └── entities/
+        └── device_token_entity.go
+```
+
+**Benefícios desta Regra:**
+
+1. **Navegabilidade 1:1:** Localização de implementações é intuitiva e previsível.
+2. **Separação de Responsabilidades (SRP):** Cada adapter gerencia apenas seu domínio.
+3. **Testabilidade:** Testes isolados por domínio, facilitando mocks e coverage.
+4. **Escalabilidade:** Novos domínios seguem padrão consistente, evitando "god adapters".
+5. **Desacoplamento Real:** Facilita substituição de tecnologias (MySQL → PostgreSQL, Redis, etc).
+6. **Code Reviews Eficientes:** Revisores sabem exatamente onde procurar implementações.
+7. **Onboarding de Novos Desenvolvedores:** Estrutura física reflete estrutura lógica da arquitetura.
+
+**Anti-Padrões a Evitar:**
+
+❌ **Implementar múltiplos domínios em um único adapter:**
+```
+# ERRADO: device_token implementado dentro de user/
+internal/adapter/right/mysql/user/
+├── user_adapter.go
+├── device_token_repository.go   # ❌ Violação de SRP
+└── get_user_by_id.go
+```
+
+✅ **Cada domínio tem seu próprio adapter:**
+```
+# CORRETO: separação clara de responsabilidades
+internal/adapter/right/mysql/user/
+└── user_adapter.go
+
+internal/adapter/right/mysql/device_token/
+└── device_token_adapter.go
+```
+
+❌ **Métodos de negócio no arquivo do adapter:**
+```go
+// user_adapter.go - ERRADO
+type UserAdapter struct { ... }
+func NewUserAdapter(...) { ... }
+func (ua *UserAdapter) CreateUser(...) { ... }  // ❌ Método aqui
+```
+
+✅ **Apenas struct e NewFunc no arquivo principal:**
+```go
+// user_adapter.go - CORRETO
+type UserAdapter struct { ... }
+func NewUserAdapter(...) { ... }
+// create_user.go (arquivo separado)
+func (ua *UserAdapter) CreateUser(...) { ... }  // ✅
+```
+
+**Checklist de Conformidade Arquitetural:**
+
+- [ ] Cada Port em `/port/right/repository/{DOMAIN}/` tem Adapter em `/adapter/right/mysql/{DOMAIN}/`
+- [ ] Arquivo principal do adapter contém APENAS struct + NewFunc
+- [ ] Cada método público está em arquivo próprio
+- [ ] Converters separados em subdiretório `/converters/`
+- [ ] Entities separadas em subdiretório `/entities/`
+- [ ] Adapter usa `InstrumentedAdapter` para queries (tracing + métricas)
+- [ ] Nenhum adapter implementa Ports de outros domínios
+
 ## 3. Bootstrapping e ciclo de vida
 
 Orquestrado por `internal/core/config` (struct `Bootstrap`) com Lifecycle Manager e health tracking.
@@ -234,8 +344,28 @@ Padrão de repositórios:
   - Crie entidades de DB que representam ROWs em `internal/adapter/right/mysql/<repo_name>/entities/*.go`.
   - Centralize conversões em pacotes utilitários por domínio em `internal/adapter/right/mysql/<repo_name>/converters/*.go`.
 - Repositório foca em: construir query, executar, checar `RowsAffected`, lidar com `sql.ErrNoRows`, e retornar entidades/domínio já convertidas.
-- Em `RowsAffected == 0`, retorne `sql.ErrNoRows`. O mapeamento para “não encontrado/sem pendência” é feito no Service.
+- Em `RowsAffected == 0`, retorne `sql.ErrNoRows`. O mapeamento para "não encontrado/sem pendência" é feito no Service.
 - Se houver necessidade de um helper com funções simples e pontuais, comun a várias funções públicas, crie um método privado helper.go. Se for função mais complexa crie um metodo privado.
+
+**Documentação Interna de Repositórios (OBRIGATÓRIO):**
+
+Todas as funções públicas de repositórios DEVEM possuir documentação interna robusta em inglês, explicando detalhadamente a lógica para facilitar futuras manutenções. A documentação deve incluir:
+
+1. **Godoc Comment (Público):** Descrição concisa do propósito da função.
+2. **Comentários Inline (Detalhados):** Explicação de cada etapa crítica da implementação.
+
+**Pontos Obrigatórios da Documentação:**
+- ✅ Godoc completo com descrição, parâmetros e retornos
+- ✅ Comentário explicando inicialização de tracing
+- ✅ Comentário sobre logger context propagation
+- ✅ Explicação de regras de negócio na query (ex: `deleted = 0`)
+- ✅ Comentário sobre uso de InstrumentedAdapter
+- ✅ Explicação de tratamento de erros (span marking, logging)
+- ✅ Justificativa para retorno de `sql.ErrNoRows`
+- ✅ Explicação de edge cases (múltiplos resultados, dados vazios)
+- ✅ Comentário sobre conversão domain/entity
+
+Ver **Seção 15 (Exemplos Rápidos)** para template completo de documentação.
 
 ### 7.4 Handlers HTTP
 
@@ -346,7 +476,7 @@ Checklist rápido de refatoração:
 
 ## 15. Exemplos rápidos
 
-Service (público) — erro de infra vs domínio:
+### 15.1 Service (público) — erro de infra vs domínio:
 
 ```go
 if err := repo.UpdateUser(...); err != nil {
@@ -358,7 +488,7 @@ if err := repo.UpdateUser(...); err != nil {
 return derrors.ErrPhoneChangeNotPending
 ```
 
-Repository — erro puro e log enxuto:
+### 15.2 Repository — erro puro e log enxuto:
 
 ```go
 res, err := tx.ExecContext(ctx, q, args...)
@@ -368,7 +498,7 @@ if err != nil {
 }
 ```
 
-Handler — serialização padronizada:
+### 15.3 Handler — serialização padronizada:
 
 ```go
 if err != nil {
@@ -376,6 +506,87 @@ if err != nil {
     return
 }
 ```
+
+### 15.4 Template Completo de Documentação para Repositórios:
+
+```go
+// GetUserByID retrieves a user by their unique ID from the users table.
+// Returns sql.ErrNoRows if no user is found with the given ID or if the user is marked as deleted.
+// This function ensures only active (non-deleted) users are returned.
+//
+// Parameters:
+//   - ctx: Context for tracing, cancellation, and logging
+//   - tx: Database transaction (can be nil for standalone queries)
+//   - id: User's unique identifier
+//
+// Returns:
+//   - user: UserInterface containing all user data
+//   - error: sql.ErrNoRows if not found, or other database errors
+func (ua *UserAdapter) GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error) {
+	// Initialize tracing for observability (metrics + distributed tracing)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer spanEnd()
+
+	// Attach logger to context to ensure request_id/trace_id propagation
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	// Query only active users (deleted = 0) to maintain data integrity
+	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, 
+	          creci_validity, born_at, phone_number, email, zip_code, street, number, 
+	          complement, neighborhood, city, state, password, opt_status, 
+	          last_activity_at, deleted, last_signin_attempt 
+	          FROM users 
+	          WHERE id = ? AND deleted = 0`
+
+	// Execute query using instrumented adapter (auto-generates metrics + tracing)
+	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, id)
+	if queryErr != nil {
+		// Mark span as error for distributed tracing analysis
+		utils.SetSpanError(ctx, queryErr)
+		logger.Error("mysql.user.get_user_by_id.query_error", "error", queryErr)
+		return nil, queryErr
+	}
+	defer rows.Close()
+
+	// Convert database rows to strongly-typed entities
+	entities, err := rowsToUserEntities(rows)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.user.get_user_by_id.scan_error", "error", err)
+		return nil, fmt.Errorf("scan user rows: %w", err)
+	}
+
+	// Handle no results: return standard sql.ErrNoRows for service layer handling
+	if len(entities) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	// Safety check: unique constraint should prevent multiple rows
+	if len(entities) > 1 {
+		errMultiple := fmt.Errorf("multiple users found with the same ID: %d", id)
+		utils.SetSpanError(ctx, errMultiple)
+		logger.Error("mysql.user.get_user_by_id.multiple_users_error", "user_id", id, "error", errMultiple)
+		return nil, errMultiple
+	}
+
+	// Convert database entity to domain model (separation of concerns)
+	user = userconverters.UserEntityToDomain(entities[0])
+
+	return user, nil
+}
+```
+
+**Benefícios da Documentação Robusta:**
+- ✅ Novos desenvolvedores entendem a lógica rapidamente
+- ✅ Facilita code reviews e auditoria de código
+- ✅ Reduz bugs causados por mal-entendidos de lógica
+- ✅ Serve como documentação viva que evolui com o código
+- ✅ Ajuda em troubleshooting e debugging
+- ✅ Melhora onboarding de novos membros da equipe
 
 ## 16. Referências
 

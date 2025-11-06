@@ -144,7 +144,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	}
 
 	// Remove all device tokens
-	if err2 := us.repo.RemoveAllDeviceTokens(ctx, tx, user.GetID()); err2 != nil {
+	if err2 := us.deviceTokenRepo.RemoveAllByUserID(user.GetID()); err2 != nil {
 		logger.Warn("user.delete_account.remove_device_tokens_warning", "error", err2, "user_id", user.GetID())
 	}
 

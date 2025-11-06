@@ -95,7 +95,7 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		}
 	}
 
-	if removeTokensErr := us.repo.RemoveAllDeviceTokens(ctx, tx, existing.GetID()); removeTokensErr != nil {
+	if removeTokensErr := us.deviceTokenRepo.RemoveAllByUserID(existing.GetID()); removeTokensErr != nil {
 		logger.Warn("admin.users.delete.remove_tokens_failed", "user_id", existing.GetID(), "error", removeTokensErr)
 	}
 	existing.SetLastActivityAt(time.Now().UTC())

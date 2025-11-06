@@ -201,6 +201,7 @@ func (c *config) InitUserHandler() {
 	c.userService = userservices.NewUserService(
 		c.repositoryAdapters.User,
 		c.repositoryAdapters.Session,
+		c.repositoryAdapters.DeviceToken,
 		c.globalService,
 		c.listingService,
 		c.photoSessionService,

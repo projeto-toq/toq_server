@@ -24,8 +24,8 @@ import (
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
-	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user"
 	complexrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/complex_repository"
+	devicetokenrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/device_token_repository"
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -72,7 +72,7 @@ type RepositoryAdapters struct {
 	PhotoSession photosessionrepo.PhotoSessionRepositoryInterface
 	Session      sessionrepoport.SessionRepoPortInterface
 	Permission   permissionrepository.PermissionRepositoryInterface
-	DeviceToken  *mysqluseradapter.DeviceTokenRepository
+	DeviceToken  devicetokenrepository.DeviceTokenRepoPortInterface
 }
 
 // HTTPHandlers agrupa todos os handlers HTTP

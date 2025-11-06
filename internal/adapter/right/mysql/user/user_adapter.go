@@ -1,90 +1,31 @@
 package mysqluseradapter
 
 import (
-	"context"
-	"database/sql"
-
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
-
-	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
 )
 
+// UserAdapter implements UserRepoPortInterface using MySQL
+// This adapter provides persistence operations for user entities
+// It uses InstrumentedAdapter to ensure all database operations are traced and metered
 type UserAdapter struct {
 	mysqladapter.InstrumentedAdapter
 }
 
-func NewUserAdapter(db *mysqladapter.Database, metrics metricsport.MetricsPortInterface) *UserAdapter {
+// NewUserAdapter creates a new UserAdapter with instrumented database access and metrics
+// The adapter automatically generates metrics and tracing for all database operations
+//
+// Parameters:
+//   - db: MySQL database connection pool
+//   - metrics: Metrics interface for Prometheus instrumentation
+//
+// Returns:
+//   - *UserAdapter: Configured adapter ready for use
+func NewUserAdapter(
+	db *mysqladapter.Database,
+	metrics metricsport.MetricsPortInterface,
+) *UserAdapter {
 	return &UserAdapter{
 		InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics),
 	}
-}
-
-//TODO estas funções não podem estar neste arquivo. Aqui só interface e NewFUNC
-
-// GetDeviceTokenRepository returns a repository bound to the underlying *sql.DB
-// Avoids leaking *sql.DB outside adapter layer.
-func (ua *UserAdapter) GetDeviceTokenRepository() *DeviceTokenRepository {
-	return NewDeviceTokenRepository(ua.DB().GetDB())
-}
-
-// AddDeviceToken adds a device token for a user (satisfies UserRepoPortInterface extension)
-func (ua *UserAdapter) AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string, platform *string) error {
-	if token == "" {
-		return nil
-	}
-	e := userentity.DeviceTokenEntity{UserID: userID, Token: token, DeviceID: "", Platform: platform}
-	_, err := ua.CreateDeviceToken(ctx, tx, e)
-	return err
-}
-
-// RemoveDeviceToken deletes a single device token for a user
-func (ua *UserAdapter) RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error {
-	if token == "" {
-		return nil
-	}
-	result, execErr := ua.ExecContext(ctx, tx, "delete", `DELETE FROM device_tokens WHERE user_id = ? AND device_token = ?`, userID, token)
-	if execErr != nil {
-		return execErr
-	}
-	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
-		return rowsErr
-	}
-	return nil
-}
-
-func (ua *UserAdapter) RemoveAllDeviceTokens(ctx context.Context, tx *sql.Tx, userID int64) error {
-	result, execErr := ua.ExecContext(ctx, tx, "delete", `DELETE FROM device_tokens WHERE user_id = ?`, userID)
-	if execErr != nil {
-		return execErr
-	}
-	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
-		return rowsErr
-	}
-	return nil
-}
-
-// AddTokenForDevice stores a token associated to a device when schema supports it; fallback to user-only.
-func (ua *UserAdapter) AddTokenForDevice(ctx context.Context, tx *sql.Tx, userID int64, deviceID, token string, platform *string) error {
-	if token == "" {
-		return nil
-	}
-	e := userentity.DeviceTokenEntity{UserID: userID, Token: token, DeviceID: deviceID, Platform: platform}
-	_, err := ua.CreateDeviceToken(ctx, tx, e)
-	return err
-}
-
-// RemoveTokensByDeviceID removes tokens for a specific device; no-op without device_id column.
-func (ua *UserAdapter) RemoveTokensByDeviceID(ctx context.Context, tx *sql.Tx, userID int64, deviceID string) error {
-	if deviceID == "" {
-		return nil
-	}
-	result, execErr := ua.ExecContext(ctx, tx, "delete", `DELETE FROM device_tokens WHERE user_id = ? AND device_id = ?`, userID, deviceID)
-	if execErr != nil {
-		return execErr
-	}
-	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
-		return rowsErr
-	}
-	return nil
 }

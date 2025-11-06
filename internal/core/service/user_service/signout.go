@@ -129,7 +129,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		// Remove device tokens
 		if deviceToken != "" {
 			// Prefer explicit token removal if provided
-			if errTok := us.repo.RemoveDeviceToken(ctx, tx, userID, deviceToken); errTok != nil {
+			if errTok := us.deviceTokenRepo.RemoveToken(userID, deviceToken); errTok != nil {
 				logger.Warn("auth.signout.single.device_token_delete_failed", "user_id", userID, "error", errTok)
 				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "token", "error").Inc()
 			} else {
@@ -137,7 +137,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 			}
 		}
 		if targetDeviceID != "" {
-			if errTok := us.repo.RemoveTokensByDeviceID(ctx, tx, userID, targetDeviceID); errTok != nil {
+			if errTok := us.deviceTokenRepo.RemoveTokensByDeviceID(userID, targetDeviceID); errTok != nil {
 				logger.Warn("auth.signout.single.device_tokens_by_device_delete_failed", "user_id", userID, "device_id", targetDeviceID, "error", errTok)
 				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "error").Inc()
 			} else {
@@ -158,7 +158,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 			us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: userID})
 		}
 		// Remove all device tokens via repository
-		if errAll := us.repo.RemoveAllDeviceTokens(ctx, tx, userID); errAll != nil {
+		if errAll := us.deviceTokenRepo.RemoveAllByUserID(userID); errAll != nil {
 			logger.Warn("auth.signout.global.device_tokens_delete_failed", "user_id", userID, "error", errAll)
 			metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "all", "error").Inc()
 		} else {
