@@ -5,15 +5,13 @@ Este documento descreve as instruções para atuar como um engenheiro de softwar
 ---
 
 **Problemas:**
-O toq_server_go_guide, no item 7.3 Repositórios faz um detalhamento sobre a documentação que deve ser feita no código. Entretanto esta diretriz está restrita aos repositórios.
+Devido a recorrentes refatorações feitas por diferentes desenvolvedores, creio que o código está violando algumas regras descritas no guia do projeto em docs/toq_server_go_guide.md. Isso tem causado problemas de manutenção e dificuldades na adição de novas funcionalidades.
 
-Assim:
-1) cria uma seção documentação e mova o conteudo atual sobre documentação, que está esplalhado pelo guia para ela;
-2) detalhe como deve ser a documentação em cada área do projeto, handlers, services, repositories, helpers, entities, factories etc.
-  2.1) esta documentação deve ser robusta para facilitar a manutenção futura
-  2.2) a documentação deve ser externa a função, explicando para quem vai usá-la/chamá-la mas também interna a funçao, explicando sua lógica
-3) toda a documentação deve ser em ingles
-4) no caso dos handlers/dto, que serão base para a geração do swagger, devem haver exemplos de cada filtro, campo, body etc, assim como um descrição clara e detalhada do funcionamento e utilização.
+Assim vamos começar uma revisão faseada de todo o projeto:
+1) Analise o repositorio visit em internal/adapter/right/mysql/visit, cuja interface está em internal/core/port/right/repository/visit_repository/ em busca de desvios das regras do manual do projeto em docs/toq_server_go_guide.md.
+2) Analise se existem melhorias possíveis a serem aplicadas.
+
+**Não é necessáario apresentar, nesta fase de planejamento, todo o código quando a alteração é apenas documentação sem alteração no código em si.**
 
 **Solicitação:** Analise o problema, **leia o código** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md.
 
