@@ -5,20 +5,16 @@ Este documento descreve as instruções para atuar como um engenheiro de observa
 ---
 
 **Problemas:**
-Atualmente temos no sistema telemetria sendo gerada com traces enviados ao jaeger, logs via loki/grafana e métricas via prometheus/grafana, todos rodando em docker cujo docker-compose está na raiz do projeto. Porém a integração entre esses componentes está muito difícil, com muitos erros e inconsistencias.
+Atualmente o dashboard de observabilidade do Grafana TOQ Server - Logs e Traces não possui filtro por severidade de logs (debug, info, warn, error). Isso dificulta a análise de problemas específicos, especialmente quando se deseja focar em logs de erro ou avisos críticos.
+Além disso o processo de correlação de logs e traces requer que após localizar o erro no log seja necessário copiar o trace_id e colar na busca de traces, o que é um processo manual e propenso a erros.
 
-Temos os dashboards do Grafana já configurados, mas a integração com de logs com traces e métricas não está funcionando corretamente, dificultando a análise de problemas de performance e erros na aplicação.
+1) será que não seria elhor termos 2 dashboards separados, um para logs e outro para traces?
+    1.1) no dashboard de logs teríamos mais espaço de visualização dos logs e busca por filtros dedicados, com filtros por severidade, data/hora além dos atuais.
+    1.2) uma opção de clicar no trace_id ou em algum link para abrir o dashboard de traces já filtrado por esse trace_id.
+2) no dashboard de traces, teríamos um filtro por trace_id, e também filtros por data/hora, operação, duração, status (erro/sucesso).
+    2.1) ao clicar em um trace específico, o painel de detalhes do trace seria exibido, mostrando todas as informações relevantes de forma clara e organizada.
+    2.2) uma opção de clicar em um link para abrir o dashboard de logs já filtrado por esse trace_id.
 
-Quero tentar uma abordagem diferente substituindo o stack atual de observabilidade com Grafana, Loki, Prometheus e Jaeger por Grafana Alloy, com tempo e loki. Mantendo os atuais exporters de mysql e redis, mas integrando-os ao novo stack de observabilidade.
-
-Assim:
-1) avalia a possibilidade de substituir o stack atual por Grafana Alloy, Tempo e Loki, mantendo os exporters atuais.
-2) Proponha um plano detalhado para a implementação dessa nova arquitetura de observabilidade, incluindo todas as alterações necessárias na configuração do docker-compose, nas aplicações e nos dashboards do Grafana.
-3) Garanta que a nova solução permita uma integração perfeita entre logs, métricas e traces, facilitando a análise de problemas de performance e erros na aplicação.
-4) identifique possíveis alterações no código GO da aplicação para suportar a nova arquitetura de observabilidade, se necessário.
-5) Quais os riscos e impactos desta migração?
-
-**Solicitação:** Analise o problema, **leia as configurações e docker compose** envolvido, **ache a causa raiz** e proponha um plano detalhado para a implementação/refatoração da solução, após ler o o manual do projeto em docs/toq_server_go_guide.md. O plano deve prever já toda a alteração de configuração necessária, para que quando aprovado, possa ser implementado diretamente.
 
 ### **Instruções para a Proposição do Plano**
 

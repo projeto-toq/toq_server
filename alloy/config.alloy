@@ -90,7 +90,7 @@ otelcol.processor.attributes "log_labels" {
   // Mark attributes for Loki label extraction
   action {
     key    = "loki.attribute.labels"
-    value  = "service_name,trace_id,span_id,request_id,method,path,status,user_id"
+    value  = "service_name,level,trace_id,span_id,request_id,method,path,status,user_id"
     action = "insert"
   }
 

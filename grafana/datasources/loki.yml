@@ -12,6 +12,13 @@ datasources:
         - name: trace_id
           matcherRegex: '"trace_id":"([0-9a-f]+)"'
           datasourceUid: tempo
-          url: '/explore?left=["now-1h","now","tempo",{"query":"$${__value.raw}"}]'
-          urlDisplayLabel: View Trace in Tempo
+          url: '/d/toq-traces/toq-server-traces?orgId=1&var-trace_id=$${__value.raw}&from=$${__from}&to=$${__to}'
+          urlDisplayLabel: Abrir Dashboard de Traces
+          internal: false
+        - name: trace_id_explore
+          matcherRegex: '"trace_id":"([0-9a-f]+)"'
+          datasourceUid: tempo
+          url: '/explore?left=["$${__from}","$${__to}","tempo",{"query":"$${__value.raw}","queryType":"traceql"}]'
+          urlDisplayLabel: Ver Trace no Explore
+          internal: true
     editable: false
