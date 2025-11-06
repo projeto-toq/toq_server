@@ -30,26 +30,26 @@ import (
 //   - DO NOT add business logic methods to this struct
 //   - DO NOT import core/model packages here
 type UserEntity struct {
-	// ID is the user's unique identifier (PRIMARY KEY, AUTO_INCREMENT, BIGINT)
+	// ID is the user's unique identifier (PRIMARY KEY, AUTO_INCREMENT, INT UNSIGNED)
 	ID int64
 
-	// FullName is the user's complete legal name (NOT NULL, VARCHAR(100))
+	// FullName is the user's complete legal name (NOT NULL, VARCHAR(150))
 	// Used for legal identification and contracts
 	// Example: "João Silva Santos"
 	FullName string
 
-	// NickName is the user's display name (NULL, VARCHAR(50))
+	// NickName is the user's display name (NULL, VARCHAR(45))
 	// Used in UI elements and notifications
 	// Example: "João"
 	NickName sql.NullString
 
-	// NationalID is the user's CPF or CNPJ (NOT NULL, VARCHAR(14), UNIQUE)
+	// NationalID is the user's CPF or CNPJ (NOT NULL, VARCHAR(25), UNIQUE)
 	// Format: digits only (no punctuation)
 	// CPF example: "12345678901" (11 digits)
 	// CNPJ example: "12345678000195" (14 digits)
 	NationalID string
 
-	// CreciNumber is the CRECI registration number (NULL, VARCHAR(20))
+	// CreciNumber is the CRECI registration number (NULL, VARCHAR(15))
 	// Required ONLY for realtor role
 	// Format: numeric followed by "-F" (e.g., "12345-F")
 	CreciNumber sql.NullString
@@ -67,12 +67,12 @@ type UserEntity struct {
 	// User must be at least 18 years old (enforced by service layer)
 	BornAT time.Time
 
-	// PhoneNumber is the user's mobile in E.164 format (NOT NULL, VARCHAR(20), UNIQUE)
+	// PhoneNumber is the user's mobile in E.164 format (NOT NULL, VARCHAR(25), UNIQUE)
 	// Must include country code with + prefix
 	// Example: "+5511999999999" (Brazil mobile)
 	PhoneNumber string
 
-	// Email is the user's email address (NOT NULL, VARCHAR(100), UNIQUE)
+	// Email is the user's email address (NOT NULL, VARCHAR(45), UNIQUE)
 	// Used for account recovery and email notifications
 	// Example: "joao.silva@example.com"
 	Email string
@@ -109,7 +109,7 @@ type UserEntity struct {
 	// Example: "SP"
 	State string
 
-	// Password is the bcrypt hash of user's password (NOT NULL, VARCHAR(255))
+	// Password is the bcrypt hash of user's password (NOT NULL, VARCHAR(100))
 	// NEVER store plain text passwords
 	// Hash generated with bcrypt.GenerateFromPassword()
 	Password string

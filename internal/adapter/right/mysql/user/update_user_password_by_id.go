@@ -64,11 +64,11 @@ func (ua *UserAdapter) UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, u
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	// Update only password field by user ID
-	// Note: No WHERE deleted = 0 check - updates ANY user (active or deleted)
-	query := `UPDATE users SET password = ? WHERE id = ?;`
+	// Update only password field for active users (deleted = 0)
+	// Note: WHERE deleted = 0 prevents updating soft-deleted users
+	query := `UPDATE users SET password = ? WHERE id = ? AND deleted = 0`
 
-	// Execute update using instrumented adapter
+	// Execute update using instrumented adapter (auto-generates metrics + tracing)
 	result, execErr := ua.ExecContext(ctx, tx, "update", query,
 		user.GetPassword(),
 		user.GetID(),
@@ -79,12 +79,18 @@ func (ua *UserAdapter) UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, u
 		return fmt.Errorf("update user password: %w", execErr)
 	}
 
-	// Check rows affected (validate user exists)
-	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
-		utils.SetSpanError(ctx, rowsErr)
-		logger.Error("mysql.user.update_user_password.rows_affected_error", "user_id", user.GetID(), "error", rowsErr)
-		return fmt.Errorf("user password update rows affected: %w", rowsErr)
+	// Check if user exists and was updated
+	rowsAffected, raErr := result.RowsAffected()
+	if raErr != nil {
+		utils.SetSpanError(ctx, raErr)
+		logger.Error("mysql.user.update_user_password.rows_affected_error", "user_id", user.GetID(), "error", raErr)
+		return fmt.Errorf("user password update rows affected: %w", raErr)
 	}
 
-	return
+	// Return sql.ErrNoRows if user not found or deleted (service layer maps to 404)
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

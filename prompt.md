@@ -6,15 +6,23 @@
 
 ## 🎯 Problema / Solicitação
 
-O código que trata as operações com usuário, definido pela tabela users no banco MySQL, está com diversas violações das regras do guia toq_server_go_guide.md devido a múltiplas refatorações ao longo do tempo.
+O sistema de gestão de usuários, implementado pelo serviço service/user_service, pelo repositorio repository/user_repositoy, e pela persistencia representados pelas tabelas users e user_roles. Cada usuário terá necessariamente ao menos 1 role e alguns podem ter mais que um role. Caso tenha mais de um role associado, um deles deve ser o role "ativo", que indica o papel atual do usuário no sistema.
+
+O sistema de permissionamento, implementado pelo serviço de service/permission_service, pelo repositorio permission/repository, e pela persistencia representada pelas tabelas roles, roles_permission e permissions. Cada role possui um conjunto de permissions associadas, que definem as ações que o usuário com aquele role pode executar no sistema.
+
+Assim, ao chamar algum endpoint protegido, o sistema, atraves do permission_middleware, verifica se o user_role daquele usuário possui as permissions necessárias para executar a ação, com base no seu role ativo e nas permissions associadas a esse role.
+
+O sistema de permissionamento gerencia as tabelas de roles, permissions e roles_permissions, enquanto o sistema de gestão de usuários gerencia as tabelas de users e user_roles. A associação entre usuários e seus roles é feita na tabela user_roles, onde um usuário pode ter múltiplos roles, mas apenas um deles é marcado como ativo.
+
+Ocorre que em algum momento da construção do código, foi delegado a permission_repository a gestão de user_roles, o que gera complexidade para user_service construir um usuário inteiro com suas roles, sendo obrigado a chamar permisson_repository para obter as roles do usuário.
 
 Tarefas:
-1. Analisar internal/adapter/right/mysql/user/ (incluindo entities, converters e todos os métodos do repositório)
-2. Comparar com interface em internal/core/port/right/repository/user_repository/
-3. Validar contra scripts/db_creation.sql
-4. Identificar desvios do guia em docs/toq_server_go_guide.md
-5. Propor melhorias adicionais
-
+1. Analise os codigos de user_service, user_repository, permission_service e permission_repository. Mapeando se a situação descrita procede.
+2. No caso de ser procedente, isto viola alguma regra do guia de arquitetura do projeto ou de boas práticas de código? Justifique citando as seções específicas do guia.
+3. Proponha um plano detalhado para corrigir o problema, realocando a responsabilidade de gestão de user_roles para user_repository, incluindo code skeletons para os arquivos que precisariam ser criados ou alterados, seguindo o formato descrito abaixo.
+4. Apresente a estrutura final de diretórios e arquivos após a implementação do plano, seguindo a Regra de Espelhamento Port ↔ Adapter do guia.
+5. Forneça uma ordem de execução numerada para implementar o plano, considerando dependências entre etapas.
+6. Inclua um checklist de conformidade para garantir que o plano atende todas as regras do guia de arquitetura e padrões de código relevantes.
 
 ---
 

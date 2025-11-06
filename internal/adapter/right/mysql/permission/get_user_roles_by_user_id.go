@@ -78,7 +78,10 @@ func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.T
 		// Handle expires_at (pode ser NULL)
 		if row[5] != nil {
 			if expiresAt, ok := row[5].(time.Time); ok {
-				entity.ExpiresAt = &expiresAt
+				entity.ExpiresAt = sql.NullTime{
+					Time:  expiresAt,
+					Valid: true,
+				}
 			}
 		}
 

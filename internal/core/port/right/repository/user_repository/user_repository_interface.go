@@ -23,10 +23,7 @@ type UserRepoPortInterface interface {
 	GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error)
 	GetUserByNationalID(ctx context.Context, tx *sql.Tx, nationalID string) (user usermodel.UserInterface, err error)
 	GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (user usermodel.UserInterface, err error)
-	// ListAllUsers retrieves all users from the database without filters
-	// Follows naming convention: List* for collection retrieval (Section 8.1.4 of guide)
 	ListAllUsers(ctx context.Context, tx *sql.Tx) (users []usermodel.UserInterface, err error)
-	// GetUsersByRoleAndStatus lists users filtered by role slug and active user_role status
 	GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleSlug, status permissionmodel.UserRoleStatus) (users []usermodel.UserInterface, err error)
 	GetUserValidations(ctx context.Context, tx *sql.Tx, id int64) (validation usermodel.ValidationInterface, err error)
 	GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, id int64) (wrongSignin usermodel.WrongSigninInterface, err error)
@@ -38,18 +35,11 @@ type UserRepoPortInterface interface {
 	UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error)
 	UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error)
 	UpdateUserRoleStatusByUserID(ctx context.Context, userID int64, status int) (err error)
-	// UpdateUserRoleStatus applies a status to the active user role for the given role slug within a transaction.
 	UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, userID int64, role permissionmodel.RoleSlug, status permissionmodel.UserRoleStatus) error
 	ResetUserWrongSigninAttempts(ctx context.Context, userID int64) (err error)
-	// HasUserDuplicate checks if any active user exists with matching phone, email, or national ID
 	HasUserDuplicate(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
-	// ExistsEmailForAnotherUser checks if an email is already used by a different user (deleted=0)
 	ExistsEmailForAnotherUser(ctx context.Context, tx *sql.Tx, email string, excludeUserID int64) (bool, error)
-	// ExistsPhoneForAnotherUser checks if a phone number is already used by a different user (deleted=0)
 	ExistsPhoneForAnotherUser(ctx context.Context, tx *sql.Tx, phone string, excludeUserID int64) (bool, error)
-
-	// DeleteExpiredValidations removes temp_user_validations rows where all codes are empty or expired
-	// Returns number of rows deleted
 	DeleteExpiredValidations(ctx context.Context, tx *sql.Tx, limit int) (int64, error)
 }
 

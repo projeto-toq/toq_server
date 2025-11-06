@@ -91,14 +91,16 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 	// Monta entidades tipadas
 	userRoleEntity := &permissionentities.UserRoleEntity{
 		ID:       id,
-		UserID:   uid,
+		UserID:   userID,
 		RoleID:   roleID,
 		IsActive: isActiveInt == 1,
 		Status:   status,
 	}
 	if expiresAt.Valid {
-		t := expiresAt.Time
-		userRoleEntity.ExpiresAt = &t
+		userRoleEntity.ExpiresAt = sql.NullTime{
+			Time:  expiresAt.Time,
+			Valid: true,
+		}
 	}
 
 	roleEntity := &permissionentities.RoleEntity{

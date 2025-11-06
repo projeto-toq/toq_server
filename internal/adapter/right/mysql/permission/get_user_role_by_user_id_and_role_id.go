@@ -53,14 +53,16 @@ func (pa *PermissionAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, t
 
 	entity := &permissionentities.UserRoleEntity{
 		ID:       id,
-		UserID:   uid,
+		UserID:   userID,
 		RoleID:   roleIDOut,
 		IsActive: isActiveInt == 1,
 		Status:   status,
 	}
 	if expiresAt.Valid {
-		t := expiresAt.Time
-		entity.ExpiresAt = &t
+		entity.ExpiresAt = sql.NullTime{
+			Time:  expiresAt.Time,
+			Valid: true,
+		}
 	}
 
 	userRole, convertErr := permissionconverters.UserRoleEntityToDomain(entity)

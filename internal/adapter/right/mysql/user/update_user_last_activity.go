@@ -60,11 +60,11 @@ func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, i
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	// Update last_activity_at to current UTC timestamp
-	// Note: No WHERE deleted = 0 check - updates ANY user (active or deleted)
-	query := `UPDATE users SET last_activity_at = ? WHERE id = ?;`
+	// Update last_activity_at to current UTC timestamp for active users
+	// Note: WHERE deleted = 0 ensures only active users are updated
+	query := `UPDATE users SET last_activity_at = ? WHERE id = ? AND deleted = 0`
 
-	// Execute update using instrumented adapter
+	// Execute update using instrumented adapter (auto-generates metrics + tracing)
 	result, execErr := ua.ExecContext(ctx, tx, "update", query,
 		time.Now().UTC(),
 		id,
@@ -75,12 +75,18 @@ func (ua *UserAdapter) UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, i
 		return fmt.Errorf("update user last_activity: %w", execErr)
 	}
 
-	// Check rows affected (not treated as error if 0, user may not exist)
-	if _, rowsErr := result.RowsAffected(); rowsErr != nil {
+	// Check if user exists and was updated
+	rowsAffected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
 		utils.SetSpanError(ctx, rowsErr)
 		logger.Error("mysql.user.update_user_last_activity.rows_affected_error", "user_id", id, "error", rowsErr)
 		return fmt.Errorf("user last activity update rows affected: %w", rowsErr)
 	}
 
-	return
+	// Return sql.ErrNoRows if user not found or deleted (service layer maps to 404)
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

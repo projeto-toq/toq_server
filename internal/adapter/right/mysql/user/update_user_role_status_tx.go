@@ -21,7 +21,8 @@ func (ua *UserAdapter) UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, use
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	// Comentário: para evitar atualização incorreta, limitamos por is_active=1 e role slug.
+	// Limit update to active role (is_active=1) matching the provided role slug
+	// This prevents accidental updates to inactive or different role records
 	const q = `
 		UPDATE user_roles ur
 		JOIN roles r ON r.id = ur.role_id
@@ -37,7 +38,7 @@ func (ua *UserAdapter) UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, use
 	if res != nil {
 		if rows, rerr := res.RowsAffected(); rerr == nil {
 			if rows == 0 {
-				// Nenhuma linha atualizada indica ausência de papel ativo com o slug informado
+				// No rows updated indicates absence of active role with provided slug
 				errNoRows := sql.ErrNoRows
 				utils.SetSpanError(ctx, errNoRows)
 				logger.Error("mysql.user.update_user_role_status_tx.no_rows", "user_id", userID, "role", role, "status", status, "error", errNoRows)

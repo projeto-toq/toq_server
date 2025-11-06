@@ -18,8 +18,14 @@ func UserRoleEntityToDomain(entity *permissionentities.UserRoleEntity) (permissi
 	userRole.SetIsActive(entity.IsActive)
 	userRole.SetStatus(permissionmodel.UserRoleStatus(entity.Status))
 
-	if entity.ExpiresAt != nil {
-		userRole.SetExpiresAt(entity.ExpiresAt)
+	// Map optional ExpiresAt field (sql.NullTime → *time.Time)
+	if entity.ExpiresAt.Valid {
+		userRole.SetExpiresAt(&entity.ExpiresAt.Time)
+	}
+
+	// Map optional BlockedUntil field (sql.NullTime → *time.Time)
+	if entity.BlockedUntil.Valid {
+		userRole.SetBlockedUntil(&entity.BlockedUntil.Time)
 	}
 
 	return userRole, nil
