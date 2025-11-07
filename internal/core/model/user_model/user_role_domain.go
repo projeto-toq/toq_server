@@ -1,6 +1,11 @@
-package permissionmodel
+package usermodel
 
-import "time"
+import (
+	"time"
+
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+)
 
 // userRole representa a associação entre usuário e role
 type userRole struct {
@@ -8,16 +13,16 @@ type userRole struct {
 	userID       int64
 	roleID       int64
 	isActive     bool
-	status       UserRoleStatus
+	status       globalmodel.UserRoleStatus
 	expiresAt    *time.Time
 	blockedUntil *time.Time
-	role         RoleInterface
+	role         permissionmodel.RoleInterface
 }
 
 func NewUserRole() UserRoleInterface {
 	return &userRole{
 		isActive: true,
-		status:   StatusActive,
+		status:   globalmodel.StatusActive,
 	}
 }
 
@@ -53,11 +58,11 @@ func (ur *userRole) SetIsActive(isActive bool) {
 	ur.isActive = isActive
 }
 
-func (ur *userRole) GetStatus() UserRoleStatus {
+func (ur *userRole) GetStatus() globalmodel.UserRoleStatus {
 	return ur.status
 }
 
-func (ur *userRole) SetStatus(status UserRoleStatus) {
+func (ur *userRole) SetStatus(status globalmodel.UserRoleStatus) {
 	ur.status = status
 }
 
@@ -77,10 +82,10 @@ func (ur *userRole) SetBlockedUntil(blockedUntil *time.Time) {
 	ur.blockedUntil = blockedUntil
 }
 
-func (ur *userRole) GetRole() RoleInterface {
+func (ur *userRole) GetRole() permissionmodel.RoleInterface {
 	return ur.role
 }
 
-func (ur *userRole) SetRole(role RoleInterface) {
+func (ur *userRole) SetRole(role permissionmodel.RoleInterface) {
 	ur.role = role
 }

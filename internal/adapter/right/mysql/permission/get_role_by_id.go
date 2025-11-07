@@ -12,7 +12,7 @@ import (
 )
 
 // GetRoleByID busca um role pelo ID
-func (pa *PermissionAdapter) GetRoleByID(ctx context.Context, tx *sql.Tx, roleID int64) (role permissionmodel.RoleInterface, err error) {
+func (p *PermissionAdapter) GetRoleByID(ctx context.Context, tx *sql.Tx, roleID int64) (role permissionmodel.RoleInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (pa *PermissionAdapter) GetRoleByID(ctx context.Context, tx *sql.Tx, roleID
 		isActiveInt int64
 	)
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, roleID)
+	row := p.QueryRowContext(ctx, tx, "select", query, roleID)
 	err = row.Scan(
 		&id, &name, &slug, &description, &isSystemInt, &isActiveInt,
 	)

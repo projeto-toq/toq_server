@@ -1,15 +1,15 @@
-package permissionservice
+package userservices
 
 import (
 	"context"
 	"database/sql"
 
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetUserRoles returns all roles of a user, independent of is_active, including populated role details.
-func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) ([]permissionmodel.UserRoleInterface, error) {
+func (us *userService) GetUserRoles(ctx context.Context, userID int64) ([]usermodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
@@ -21,7 +21,7 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	}
 
 	// Start transaction
-	tx, err := p.globalService.StartTransaction(ctx)
+	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		logger.Error("permission.user_roles.tx_start_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -29,7 +29,7 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	}
 	defer func() {
 		if err != nil {
-			if rbErr := p.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				logger.Error("permission.user_roles.tx_rollback_failed", "user_id", userID, "error", rbErr)
 				utils.SetSpanError(ctx, rbErr)
 			}
@@ -37,7 +37,7 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	}()
 
 	// Busca todas as roles do usuário (ativas e inativas); a regra de negócio prevê apenas uma ativa.
-	userRoles, err := p.permissionRepository.GetUserRolesByUserID(ctx, tx, userID)
+	userRoles, err := us.repo.GetUserRolesByUserID(ctx, tx, userID)
 	if err != nil {
 		logger.Error("permission.user_roles.db_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -45,7 +45,7 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 	}
 
 	// Commit the transaction
-	if err = p.globalService.CommitTransaction(ctx, tx); err != nil {
+	if err = us.globalService.CommitTransaction(ctx, tx); err != nil {
 		logger.Error("permission.user_roles.tx_commit_failed", "user_id", userID, "error", err)
 		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
@@ -55,7 +55,7 @@ func (p *permissionServiceImpl) GetUserRoles(ctx context.Context, userID int64) 
 }
 
 // GetUserRolesWithTx returns all roles of a user within a provided transaction (used in flows) and includes role details.
-func (p *permissionServiceImpl) GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error) {
+func (us *userService) GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]usermodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
@@ -67,7 +67,7 @@ func (p *permissionServiceImpl) GetUserRolesWithTx(ctx context.Context, tx *sql.
 	}
 
 	// Busca todas as roles do usuário (ativas e inativas); a regra de negócio prevê apenas uma ativa.
-	userRoles, err := p.permissionRepository.GetUserRolesByUserID(ctx, tx, userID)
+	userRoles, err := us.repo.GetUserRolesByUserID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("permission.user_roles.db_failed", "user_id", userID, "error", err)

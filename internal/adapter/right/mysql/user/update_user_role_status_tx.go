@@ -5,13 +5,14 @@ import (
 	"database/sql"
 	"fmt"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // UpdateUserRoleStatus updates the active user role status for a specific role using a transaction.
 // It affects only the active role row matching the provided role slug.
-func (ua *UserAdapter) UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, userID int64, role permissionmodel.RoleSlug, status permissionmodel.UserRoleStatus) error {
+func (ua *UserAdapter) UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, userID int64, role permissionmodel.RoleSlug, status globalmodel.UserRoleStatus) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err

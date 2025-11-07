@@ -6,23 +6,29 @@
 
 ## 🎯 Problema / Solicitação
 
-O sistema de gestão de usuários, implementado pelo serviço service/user_service, pelo repositorio repository/user_repositoy, e pela persistencia representados pelas tabelas users e user_roles. Cada usuário terá necessariamente ao menos 1 role e alguns podem ter mais que um role. Caso tenha mais de um role associado, um deles deve ser o role "ativo", que indica o papel atual do usuário no sistema.
+O sistema de gestão de usuários é implementado pelo modelo model/user_model, pelo serviço service/user_service, pelo repositorio repository/user_repository, e pela persistencia representados pelas tabelas users e user_roles. Cada usuário terá necessariamente ao menos 1 role e alguns podem ter mais que um role. Caso tenha mais de um role associado, um deles deve ser o role "ativo", que indica o papel atual do usuário no sistema.
 
-O sistema de permissionamento, implementado pelo serviço de service/permission_service, pelo repositorio permission/repository, e pela persistencia representada pelas tabelas roles, roles_permission e permissions. Cada role possui um conjunto de permissions associadas, que definem as ações que o usuário com aquele role pode executar no sistema.
+O sistema de permissionamento é implementado pelo modelo model/permission_model, serviço service/permission_service, pelo repositorio permission/repository, e pela persistencia representada pelas tabelas roles, roles_permission e permissions. Cada role possui um conjunto de permissions associadas originárias de permissions, que definem as ações que o usuário com aquele role pode executar no sistema.
 
 Assim, ao chamar algum endpoint protegido, o sistema, atraves do permission_middleware, verifica se o user_role daquele usuário possui as permissions necessárias para executar a ação, com base no seu role ativo e nas permissions associadas a esse role.
 
 O sistema de permissionamento gerencia as tabelas de roles, permissions e roles_permissions, enquanto o sistema de gestão de usuários gerencia as tabelas de users e user_roles. A associação entre usuários e seus roles é feita na tabela user_roles, onde um usuário pode ter múltiplos roles, mas apenas um deles é marcado como ativo.
 
-Ocorre que em algum momento da construção do código, foi delegado a permission_repository a gestão de user_roles, o que gera complexidade para user_service construir um usuário inteiro com suas roles, sendo obrigado a chamar permisson_repository para obter as roles do usuário.
+Ocorre que em algum momento da construção do código, foi delegado ao sistema de permissionamento a gestão de user_roles, o que gera complexidade para user_service construir um usuário inteiro com suas roles, sendo obrigado a chamar permission_repository para obter as roles do usuário.
 
-Tarefas:
-1. Analise os codigos de user_service, user_repository, permission_service e permission_repository. Mapeando se a situação descrita procede.
-2. No caso de ser procedente, isto viola alguma regra do guia de arquitetura do projeto ou de boas práticas de código? Justifique citando as seções específicas do guia.
-3. Proponha um plano detalhado para corrigir o problema, realocando a responsabilidade de gestão de user_roles para user_repository, incluindo code skeletons para os arquivos que precisariam ser criados ou alterados, seguindo o formato descrito abaixo.
+Considerando os dominios user é um dominio principal e deveria, caso necessário, receber o dominio permission como dependência, e não o contrário, onde permission_service depende de user_repository para gerir user_roles.
+
+Além disso em diversos pontos a reconstrução de user em service necessita a chamada para obter o usuário e uma chamada para obter suas roles, o que gera complexidade desnecessária e quebra o encapsulamento do dominio user.
+
+Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
+1. Analise os codigos de user_model, user_service, user_repository, permission_model, permission_service e permission_repository. Mapeando se a situação descrita procede.
+2. Proponha um plano detalhado para corrigir o problema, realocando a responsabilidade de gestão de user_roles para user_* ao invés de permission_*.
+3. revise a injeção de dependências entre os serviços, garantindo que user_service possa depender de permission_service se necessário, mas não o contrário.
+4. Revise as chamadas para reconstrução de usuários em user_service, garantindo que todas as roles associadas sejam obtidas diretamente por user_service sem necessidade de chamadas adicionais a permission_repository.
+    4.1. Talves ajustar as funçãoes que buscam usuários (get_user_by id, get_all_users, etc) para que retornem o usuário completo com suas roles associadas.
 4. Apresente a estrutura final de diretórios e arquivos após a implementação do plano, seguindo a Regra de Espelhamento Port ↔ Adapter do guia.
-5. Forneça uma ordem de execução numerada para implementar o plano, considerando dependências entre etapas.
-6. Inclua um checklist de conformidade para garantir que o plano atende todas as regras do guia de arquitetura e padrões de código relevantes.
+5. Como será um refatoração grande, divida em etapas, detalhe a ordem de execução das etapas do plano, considerando dependências entre elas e salve todo o detalhe em um arquivo para acompanhamento das etapas da implementação.
+
 
 ---
 

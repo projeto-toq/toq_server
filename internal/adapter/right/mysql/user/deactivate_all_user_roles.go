@@ -1,4 +1,4 @@
-package mysqlpermissionadapter
+package mysqluseradapter
 
 import (
 	"context"
@@ -9,14 +9,17 @@ import (
 )
 
 // DeactivateAllUserRoles desativa todos os roles de um usuário
-func (pa *PermissionAdapter) DeactivateAllUserRoles(ctx context.Context, tx *sql.Tx, userID int64) error {
-	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+func (ua *UserAdapter) DeactivateAllUserRoles(ctx context.Context, tx *sql.Tx, userID int64) error {
+	// Initialize tracing for observability
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
 	}
 	defer spanEnd()
 
-	logger = logger.With("user_id", userID)
+	// Attach logger to context for request_id/trace_id propagation
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	query := `
 		UPDATE user_roles
@@ -24,7 +27,7 @@ func (pa *PermissionAdapter) DeactivateAllUserRoles(ctx context.Context, tx *sql
 		WHERE user_id = ?
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "update", query, userID)
+	result, execErr := ua.ExecContext(ctx, tx, "update", query, userID)
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.permission.deactivate_all_user_roles.exec_error", "error", execErr)

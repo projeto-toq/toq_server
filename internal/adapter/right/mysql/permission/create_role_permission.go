@@ -11,7 +11,7 @@ import (
 )
 
 // CreateRolePermission cria uma nova associação role-permission no banco de dados
-func (pa *PermissionAdapter) CreateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) (err error) {
+func (p *PermissionAdapter) CreateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) (err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return
@@ -39,7 +39,7 @@ func (pa *PermissionAdapter) CreateRolePermission(ctx context.Context, tx *sql.T
 		VALUES (?, ?, ?)
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "insert", query,
+	result, execErr := p.ExecContext(ctx, tx, "insert", query,
 		entity.RoleID,
 		entity.PermissionID,
 		entity.Granted,

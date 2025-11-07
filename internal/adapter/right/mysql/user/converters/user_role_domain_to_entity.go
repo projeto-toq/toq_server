@@ -1,19 +1,19 @@
-package permissionconverters
+package userconverters
 
 import (
 	"database/sql"
 
-	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 // UserRoleDomainToEntity converte UserRoleInterface para UserRoleEntity
-func UserRoleDomainToEntity(userRole permissionmodel.UserRoleInterface) (*permissionentities.UserRoleEntity, error) {
+func UserRoleDomainToEntity(userRole usermodel.UserRoleInterface) (*userentity.UserRoleEntity, error) {
 	if userRole == nil {
 		return nil, nil
 	}
 
-	entity := &permissionentities.UserRoleEntity{
+	entity := &userentity.UserRoleEntity{
 		ID:       userRole.GetID(),
 		UserID:   userRole.GetUserID(),
 		RoleID:   userRole.GetRoleID(),

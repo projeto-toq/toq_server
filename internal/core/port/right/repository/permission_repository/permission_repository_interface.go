@@ -3,7 +3,6 @@ package permissionrepository
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 )
@@ -28,17 +27,6 @@ type PermissionRepositoryInterface interface {
 	UpdatePermission(ctx context.Context, tx *sql.Tx, permission permissionmodel.PermissionInterface) error
 	DeletePermission(ctx context.Context, tx *sql.Tx, permissionID int64) error
 
-	// UserRole operations
-	CreateUserRole(ctx context.Context, tx *sql.Tx, userRole permissionmodel.UserRoleInterface) (permissionmodel.UserRoleInterface, error)
-	GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
-	GetActiveUserRoleByUserID(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error)
-	GetUserRoleByUserIDAndRoleID(ctx context.Context, tx *sql.Tx, userID, roleID int64) (permissionmodel.UserRoleInterface, error)
-	UpdateUserRole(ctx context.Context, tx *sql.Tx, userRole permissionmodel.UserRoleInterface) error
-	DeleteUserRole(ctx context.Context, tx *sql.Tx, userRoleID int64) error
-	DeactivateAllUserRoles(ctx context.Context, tx *sql.Tx, userID int64) error
-	ActivateUserRole(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
-	GetActiveUserIDsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) ([]int64, error)
-
 	// RolePermission operations
 	CreateRolePermission(ctx context.Context, tx *sql.Tx, rolePermission permissionmodel.RolePermissionInterface) error
 	GetRolePermissionByID(ctx context.Context, tx *sql.Tx, rolePermissionID int64) (permissionmodel.RolePermissionInterface, error)
@@ -50,13 +38,9 @@ type PermissionRepositoryInterface interface {
 	DeleteRolePermission(ctx context.Context, tx *sql.Tx, rolePermissionID int64) error
 	GetRoleIDsByPermissionID(ctx context.Context, tx *sql.Tx, permissionID int64) ([]int64, error)
 
-	// User blocking operations
-	BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time, reason string) error
-	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
-	GetExpiredTempBlockedUsers(ctx context.Context, tx *sql.Tx) ([]permissionmodel.UserRoleInterface, error)
-
 	// Complex queries for permission checking
 	GetUserPermissions(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
+	GetActiveUserIDsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) ([]int64, error)
 }
 
 type RoleListFilter struct {

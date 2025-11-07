@@ -1,22 +1,23 @@
-package permissionconverters
+package userconverters
 
 import (
-	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
 
 // UserRoleEntityToDomain converte UserRoleEntity para UserRoleInterface
-func UserRoleEntityToDomain(entity *permissionentities.UserRoleEntity) (permissionmodel.UserRoleInterface, error) {
+func UserRoleEntityToDomain(entity *userentity.UserRoleEntity) (usermodel.UserRoleInterface, error) {
 	if entity == nil {
 		return nil, nil
 	}
 
-	userRole := permissionmodel.NewUserRole()
+	userRole := usermodel.NewUserRole()
 	userRole.SetID(entity.ID)
 	userRole.SetUserID(entity.UserID)
 	userRole.SetRoleID(entity.RoleID)
 	userRole.SetIsActive(entity.IsActive)
-	userRole.SetStatus(permissionmodel.UserRoleStatus(entity.Status))
+	userRole.SetStatus(globalmodel.UserRoleStatus(entity.Status))
 
 	// Map optional ExpiresAt field (sql.NullTime → *time.Time)
 	if entity.ExpiresAt.Valid {

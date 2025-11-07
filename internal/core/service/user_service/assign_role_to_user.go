@@ -1,22 +1,23 @@
-package permissionservice
+package userservices
 
 import (
 	"context"
 	"database/sql"
 	"time"
 
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // AssignRoleOptions permite personalizar campos do user_role criado pelo serviço.
 type AssignRoleOptions struct {
 	IsActive *bool
-	Status   *permissionmodel.UserRoleStatus
+	Status   *globalmodel.UserRoleStatus
 }
 
 // AssignRoleToUser atribui um role a um usuário (sem transação - uso direto)
-func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (permissionmodel.UserRoleInterface, error) {
+func (us *userService) AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (usermodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
@@ -24,7 +25,7 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 	logger := utils.LoggerFromContext(ctx)
 
 	// Start transaction
-	tx, err := p.globalService.StartTransaction(ctx)
+	tx, err := us.globalService.StartTransaction(ctx)
 	if err != nil {
 		logger.Error("permission.role.assign.tx_start_failed", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -32,20 +33,20 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 	}
 	defer func() {
 		if err != nil {
-			if rollbackErr := p.globalService.RollbackTransaction(ctx, tx); rollbackErr != nil {
+			if rollbackErr := us.globalService.RollbackTransaction(ctx, tx); rollbackErr != nil {
 				logger.Error("permission.role.assign.tx_rollback_failed", "user_id", userID, "role_id", roleID, "error", rollbackErr)
 				utils.SetSpanError(ctx, rollbackErr)
 			}
 		}
 	}()
 
-	userRole, err := p.AssignRoleToUserWithTx(ctx, tx, userID, roleID, expiresAt, opts)
+	userRole, err := us.AssignRoleToUserWithTx(ctx, tx, userID, roleID, expiresAt, opts)
 	if err != nil {
 		return nil, err
 	}
 
 	// Commit the transaction
-	err = p.globalService.CommitTransaction(ctx, tx)
+	err = us.globalService.CommitTransaction(ctx, tx)
 	if err != nil {
 		logger.Error("permission.role.assign.tx_commit_failed", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -56,7 +57,7 @@ func (p *permissionServiceImpl) AssignRoleToUser(ctx context.Context, userID, ro
 }
 
 // AssignRoleToUserWithTx atribui um role a um usuário (com transação - uso em fluxos)
-func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (permissionmodel.UserRoleInterface, error) {
+func (us *userService) AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (usermodel.UserRoleInterface, error) {
 	ctx, end, _ := utils.GenerateTracer(ctx)
 	defer end()
 
@@ -74,7 +75,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	logger.Debug("permission.role.assign.request", "user_id", userID, "role_id", roleID, "expires_at", expiresAt)
 
 	// Verificar se o role existe
-	role, err := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
+	role, err := us.permissionService.GetRoleByIDWithTx(ctx, tx, roleID)
 	if err != nil {
 		logger.Error("permission.role.assign.db_failed", "stage", "get_role", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -85,7 +86,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	}
 
 	// Verificar se o usuário já tem este role
-	existingUserRole, err := p.permissionRepository.GetUserRoleByUserIDAndRoleID(ctx, tx, userID, roleID)
+	existingUserRole, err := us.repo.GetUserRoleByUserIDAndRoleID(ctx, tx, userID, roleID)
 	if err != nil {
 		logger.Error("permission.role.assign.db_failed", "stage", "get_user_role", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -96,7 +97,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	}
 
 	// Criar o novo UserRole
-	userRole := permissionmodel.NewUserRole()
+	userRole := usermodel.NewUserRole()
 	userRole.SetUserID(userID)
 	userRole.SetRoleID(roleID)
 
@@ -106,7 +107,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	}
 	userRole.SetIsActive(isActive)
 
-	status := permissionmodel.StatusPendingBoth
+	status := globalmodel.StatusPendingBoth
 	if opts != nil && opts.Status != nil {
 		status = *opts.Status
 	}
@@ -117,7 +118,7 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	}
 
 	// Salvar no banco
-	userRole, err = p.permissionRepository.CreateUserRole(ctx, tx, userRole)
+	userRole, err = us.repo.CreateUserRole(ctx, tx, userRole)
 	if err != nil {
 		logger.Error("permission.role.assign.db_failed", "stage", "create_user_role", "user_id", userID, "role_id", roleID, "error", err)
 		utils.SetSpanError(ctx, err)
@@ -125,6 +126,6 @@ func (p *permissionServiceImpl) AssignRoleToUserWithTx(ctx context.Context, tx *
 	}
 
 	logger.Info("permission.role.assigned", "user_id", userID, "role_id", roleID, "role_name", role.GetName(), "is_active", isActive, "status", status.String())
-	p.invalidateUserCacheSafe(ctx, userID, "assign_role_to_user")
+	us.permissionService.InvalidateUserCache(ctx, userID)
 	return userRole, nil
 }

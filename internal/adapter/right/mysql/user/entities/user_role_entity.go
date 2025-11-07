@@ -1,4 +1,4 @@
-package permissionentities
+package userentity
 
 import (
 	"database/sql"

@@ -11,7 +11,7 @@ import (
 )
 
 // CreatePermission cria uma nova permissão no banco de dados
-func (pa *PermissionAdapter) CreatePermission(ctx context.Context, tx *sql.Tx, permission permissionmodel.PermissionInterface) (err error) {
+func (p *PermissionAdapter) CreatePermission(ctx context.Context, tx *sql.Tx, permission permissionmodel.PermissionInterface) (err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return
@@ -36,7 +36,7 @@ func (pa *PermissionAdapter) CreatePermission(ctx context.Context, tx *sql.Tx, p
 		VALUES (?, ?, ?, ?)
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "insert", query,
+	result, execErr := p.ExecContext(ctx, tx, "insert", query,
 		entity.Name,
 		entity.Action,
 		entity.Description,

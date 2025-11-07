@@ -12,7 +12,7 @@ import (
 )
 
 // GetUserPermissions busca todas as permissões efetivas de um usuário através de seus roles
-func (pa *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx, userID int64) (permissions []permissionmodel.PermissionInterface, err error) {
+func (p *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx, userID int64) (permissions []permissionmodel.PermissionInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (pa *PermissionAdapter) GetUserPermissions(ctx context.Context, tx *sql.Tx,
 		ORDER BY p.action
 	`
 
-	rows, readErr := pa.QueryContext(ctx, tx, "select", query, userID)
+	rows, readErr := p.QueryContext(ctx, tx, "select", query, userID)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.get_user_permissions.read_error", "error", readErr)

@@ -23,7 +23,7 @@ func (a *PhotoSessionAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry
 	entity := converters.ToAgendaEntryEntity(entry)
 
 	query := `UPDATE photographer_agenda_entries
-        SET entry_type = ?, source = ?, source_id = ?, starts_at = ?, ends_at = ?, blocking = ?, reason = ?, timezone = ?, updated_at = NOW()
+        SET entry_type = ?, source = ?, source_id = ?, starts_at = ?, ends_at = ?, blocking = ?, reason = ?, timezone = ?
         WHERE id = ?`
 
 	var sourceID any

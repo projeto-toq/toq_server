@@ -9,7 +9,7 @@ import (
 )
 
 // DeletePermission remove uma permissão pelo ID
-func (pa *PermissionAdapter) DeletePermission(ctx context.Context, tx *sql.Tx, permissionID int64) (err error) {
+func (p *PermissionAdapter) DeletePermission(ctx context.Context, tx *sql.Tx, permissionID int64) (err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return
@@ -23,7 +23,7 @@ func (pa *PermissionAdapter) DeletePermission(ctx context.Context, tx *sql.Tx, p
 		WHERE id = ?
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "delete", query, permissionID)
+	result, execErr := p.ExecContext(ctx, tx, "delete", query, permissionID)
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.permission.delete_permission.exec_error", "error", execErr)

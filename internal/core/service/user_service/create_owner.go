@@ -83,7 +83,7 @@ func (us *userService) createOwner(ctx context.Context, tx *sql.Tx, owner usermo
 		return nil, err
 	}
 
-	userRole, err := us.permissionService.AssignRoleToUserWithTx(ctx, tx, owner.GetID(), role.GetID(), nil, nil)
+	userRole, err := us.AssignRoleToUserWithTx(ctx, tx, owner.GetID(), role.GetID(), nil, nil)
 	if err != nil {
 		return
 	}

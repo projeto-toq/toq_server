@@ -9,7 +9,7 @@ import (
 )
 
 // GetRoleIDsByPermissionID retorna IDs de roles vinculados a uma permissão
-func (pa *PermissionAdapter) GetRoleIDsByPermissionID(ctx context.Context, tx *sql.Tx, permissionID int64) ([]int64, error) {
+func (p *PermissionAdapter) GetRoleIDsByPermissionID(ctx context.Context, tx *sql.Tx, permissionID int64) ([]int64, error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func (pa *PermissionAdapter) GetRoleIDsByPermissionID(ctx context.Context, tx *s
 
 	query := `SELECT DISTINCT role_id FROM role_permissions WHERE permission_id = ?`
 
-	rows, queryErr := pa.QueryContext(ctx, tx, "select", query, permissionID)
+	rows, queryErr := p.QueryContext(ctx, tx, "select", query, permissionID)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
 		logger.Error("mysql.permission.get_role_ids_by_permission_id.query_error", "error", queryErr)

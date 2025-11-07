@@ -24,7 +24,7 @@ func (us *userService) UpdateUserValidationByRole(ctx context.Context, tx *sql.T
 	generateTokens = false
 
 	// Obter role ativa de forma segura via permission service (dentro da mesma transação)
-	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	activeRole, aerr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if aerr != nil {
 		if derr, ok := aerr.(utils.DomainError); ok {
 			return false, utils.WrapDomainErrorWithSource(derr)

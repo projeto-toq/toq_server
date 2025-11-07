@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -50,9 +50,9 @@ func (h *AdminHandler) GetAdminUsers(c *gin.Context) {
 		return
 	}
 
-	var roleStatus *permissionmodel.UserRoleStatus
+	var roleStatus *globalmodel.UserRoleStatus
 	if req.RoleStatus != nil {
-		status := permissionmodel.UserRoleStatus(*req.RoleStatus)
+		status := globalmodel.UserRoleStatus(*req.RoleStatus)
 		roleStatus = &status
 	}
 

@@ -110,7 +110,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	userID := user.GetID()
 
 	// Verificação única de bloqueio temporário ANTES de qualquer validação
-	isBlocked, err := us.permissionService.IsUserTempBlockedWithTx(ctx, tx, userID)
+	isBlocked, err := us.IsUserTempBlockedWithTx(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("auth.signin.check_temp_block_error", "user_id", userID, "error", err)
@@ -126,7 +126,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	}
 
 	// Busca a role ativa via Permission Service (há apenas uma ativa por vez)
-	activeRole, err := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	activeRole, err := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("auth.signin.get_active_role_error", "user_id", userID, "error", err)
@@ -224,7 +224,7 @@ func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user 
 	// Verifica se deve bloquear o usuário
 	if wrongSignin.GetFailedAttempts() >= usermodel.MaxWrongSigninAttempts {
 		// Bloqueia usuário temporariamente usando permission service
-		err = us.permissionService.BlockUserTemporarily(ctx, tx, userID, "Too many failed signin attempts")
+		err = us.repo.BlockUserTemporarily(ctx, tx, userID, time.Now().UTC().Add(usermodel.TempBlockDuration), "Too many failed signin attempts")
 		if err != nil {
 			logger.Error("auth.signin.block_user_failed", "user_id", userID, "error", err)
 			return utils.InternalError("Failed to process security measures")
@@ -249,13 +249,13 @@ func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user 
 func (us *userService) clearTemporaryBlockOnSuccess(ctx context.Context, tx *sql.Tx, userID int64) error {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	isBlocked, err := us.permissionService.IsUserTempBlockedWithTx(ctx, tx, userID)
+	isBlocked, err := us.IsUserTempBlockedWithTx(ctx, tx, userID)
 	if err != nil {
 		return err
 	}
 
 	if isBlocked {
-		err = us.permissionService.UnblockUser(ctx, tx, userID)
+		err = us.repo.UnblockUser(ctx, tx, userID)
 		if err != nil {
 			return err
 		}

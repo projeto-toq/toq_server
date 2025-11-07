@@ -1,4 +1,4 @@
-package mysqlpermissionadapter
+package mysqluseradapter
 
 import (
 	"context"
@@ -7,19 +7,24 @@ import (
 
 	permissionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetActiveUserRoleByUserID retorna o role ativo único do usuário
-func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error) {
-	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+func (ua *UserAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *sql.Tx, userID int64) (usermodel.UserRoleInterface, error) {
+	// Initialize tracing for observability
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer spanEnd()
 
-	logger = logger.With("user_id", userID)
+	// Attach logger to context for request_id/trace_id propagation
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	// Query com JOIN em roles para popular o Role no UserRole
 	query := `
@@ -62,7 +67,7 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 		rIsActiveInt int64
 	)
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, userID)
+	row := ua.QueryRowContext(ctx, tx, "select", query, userID)
 	err = row.Scan(
 		&id,
 		&uid,
@@ -89,7 +94,7 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 	}
 
 	// Monta entidades tipadas
-	userRoleEntity := &permissionentities.UserRoleEntity{
+	userRoleEntity := &userentity.UserRoleEntity{
 		ID:       id,
 		UserID:   userID,
 		RoleID:   roleID,
@@ -118,7 +123,7 @@ func (pa *PermissionAdapter) GetActiveUserRoleByUserID(ctx context.Context, tx *
 	}
 
 	// Converte para domínio e associa Role ao UserRole
-	userRole, convertErr := permissionconverters.UserRoleEntityToDomain(userRoleEntity)
+	userRole, convertErr := userconverters.UserRoleEntityToDomain(userRoleEntity)
 	if convertErr != nil {
 		utils.SetSpanError(ctx, convertErr)
 		logger.Error("mysql.permission.get_active_user_role_by_user_id.convert_user_role_error", "error", convertErr)

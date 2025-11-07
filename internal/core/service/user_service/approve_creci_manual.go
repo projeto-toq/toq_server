@@ -6,13 +6,14 @@ import (
 	"errors"
 	"fmt"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // ApproveCreciManual updates realtor status from pending manual to approved/refused and dispatches FCM notifications to all opted-in devices
-func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, target permissionmodel.UserRoleStatus) (err error) {
+func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, target globalmodel.UserRoleStatus) (err error) {
 	ctx, spanEnd, terr := utils.GenerateTracer(ctx)
 	if terr != nil {
 		return utils.InternalError("Failed to generate tracer")
@@ -23,7 +24,7 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	logger := utils.LoggerFromContext(ctx)
 
 	// Validate target status: allowed set is Active or one of the refused statuses
-	if !permissionmodel.IsManualApprovalTarget(target) {
+	if !globalmodel.IsManualApprovalTarget(target) {
 		return utils.ValidationError("status", "Invalid target status")
 	}
 
@@ -43,7 +44,7 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	}()
 
 	// Check current status must be pending manual
-	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	activeRole, aerr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if aerr != nil {
 		utils.SetSpanError(ctx, aerr)
 		logger.Error("admin.approve_creci.get_active_role_error", "user_id", userID, "error", aerr)
@@ -52,7 +53,7 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	if activeRole == nil || activeRole.GetRole() == nil {
 		return utils.InternalError("User active role missing")
 	}
-	if activeRole.GetStatus() != permissionmodel.StatusPendingManual {
+	if activeRole.GetStatus() != globalmodel.StatusPendingManual {
 		return utils.ConflictError("User is not pending manual review")
 	}
 
@@ -86,7 +87,7 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 	return nil
 }
 
-func (us *userService) sendManualApprovalNotification(ctx context.Context, userID int64, target permissionmodel.UserRoleStatus) error {
+func (us *userService) sendManualApprovalNotification(ctx context.Context, userID int64, target globalmodel.UserRoleStatus) error {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -124,8 +125,8 @@ func (us *userService) sendManualApprovalNotification(ctx context.Context, userI
 	return nil
 }
 
-func buildManualApprovalNotificationPayload(target permissionmodel.UserRoleStatus) (subject, body string) {
-	if target == permissionmodel.StatusActive {
+func buildManualApprovalNotificationPayload(target globalmodel.UserRoleStatus) (subject, body string) {
+	if target == globalmodel.StatusActive {
 		return "Aprovação de Cadastro", "Seu cadastro como corretor foi aprovado."
 	}
 
@@ -133,11 +134,11 @@ func buildManualApprovalNotificationPayload(target permissionmodel.UserRoleStatu
 	body = "Seu cadastro foi reprovado."
 
 	switch target {
-	case permissionmodel.StatusRefusedImage:
+	case globalmodel.StatusRefusedImage:
 		body = "Seu cadastro foi reprovado por problemas nas imagens enviadas."
-	case permissionmodel.StatusRefusedDocument:
+	case globalmodel.StatusRefusedDocument:
 		body = "Seu cadastro foi reprovado por inconsistência nos documentos."
-	case permissionmodel.StatusRefusedData:
+	case globalmodel.StatusRefusedData:
 		body = "Seu cadastro foi reprovado por divergência de dados."
 	}
 

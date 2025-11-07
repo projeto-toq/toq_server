@@ -12,7 +12,7 @@ import (
 )
 
 // GetRolePermissionByRoleIDAndPermissionID busca um role_permission específico pela combinação role_id + permission_id
-func (pa *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx context.Context, tx *sql.Tx, roleID, permissionID int64) (rolePermission permissionmodel.RolePermissionInterface, err error) {
+func (p *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx context.Context, tx *sql.Tx, roleID, permissionID int64) (rolePermission permissionmodel.RolePermissionInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (pa *PermissionAdapter) GetRolePermissionByRoleIDAndPermissionID(ctx contex
 		grantedInt      int64
 	)
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, roleID, permissionID)
+	row := p.QueryRowContext(ctx, tx, "select", query, roleID, permissionID)
 	err = row.Scan(
 		&id, &roleIDOut, &permissionIDOut, &grantedInt,
 	)

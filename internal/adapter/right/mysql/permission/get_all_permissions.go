@@ -12,7 +12,7 @@ import (
 )
 
 // GetAllPermissions busca todas as permissões
-func (pa *PermissionAdapter) GetAllPermissions(ctx context.Context, tx *sql.Tx) (permissions []permissionmodel.PermissionInterface, err error) {
+func (p *PermissionAdapter) GetAllPermissions(ctx context.Context, tx *sql.Tx) (permissions []permissionmodel.PermissionInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (pa *PermissionAdapter) GetAllPermissions(ctx context.Context, tx *sql.Tx) 
 		ORDER BY action
 	`
 
-	rows, readErr := pa.QueryContext(ctx, tx, "select", query)
+	rows, readErr := p.QueryContext(ctx, tx, "select", query)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.get_all_permissions.read_error", "error", readErr)

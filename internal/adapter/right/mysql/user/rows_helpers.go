@@ -7,47 +7,35 @@ import (
 	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
 )
 
-// // scanUserEntity scans a single *sql.Row into a UserEntity struct
-// //
-// // This function provides type-safe scanning of database rows, eliminating
-// // the need for manual type assertions and reducing error-prone column ordering dependencies.
-// //
-// // Parameters:
-// //   - row: *sql.Row from QueryRowContext
-// //
-// // Returns:
-// //   - entity: UserEntity with all fields populated from database row
-// //   - error: Scan errors or column mismatch errors
-// //
-// //nolint:unused // Reserved for future use with QueryRowContext methods
-// func scanUserEntity(row *sql.Row) (userentity.UserEntity, error) {
-// 	var entity userentity.UserEntity
-// 	err := row.Scan(
-// 		&entity.ID,
-// 		&entity.FullName,
-// 		&entity.NickName,
-// 		&entity.NationalID,
-// 		&entity.CreciNumber,
-// 		&entity.CreciState,
-// 		&entity.CreciValidity,
-// 		&entity.BornAT,
-// 		&entity.PhoneNumber,
-// 		&entity.Email,
-// 		&entity.ZipCode,
-// 		&entity.Street,
-// 		&entity.Number,
-// 		&entity.Complement,
-// 		&entity.Neighborhood,
-// 		&entity.City,
-// 		&entity.State,
-// 		&entity.Password,
-// 		&entity.OptStatus,
-// 		&entity.LastActivityAT,
-// 		&entity.Deleted,
-// 		&entity.LastSignInAttempt,
-// 	)
-// 	return entity, err
-// }
+// rowsToEntities converts *sql.Rows to [][]any preserving the column order.
+func rowsToEntities(rows *sql.Rows) ([][]any, error) {
+	cols, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	entities := make([][]any, 0)
+
+	for rows.Next() {
+		entity := make([]any, len(cols))
+		dest := make([]any, len(cols))
+		for i := range dest {
+			dest[i] = &entity[i]
+		}
+
+		if err := rows.Scan(dest...); err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, entity)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return entities, nil
+}
 
 // scanUserEntities scans multiple rows into a slice of UserEntity structs
 //

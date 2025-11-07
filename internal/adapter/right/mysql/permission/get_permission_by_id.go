@@ -12,7 +12,7 @@ import (
 )
 
 // GetPermissionByID busca uma permissão pelo ID
-func (pa *PermissionAdapter) GetPermissionByID(ctx context.Context, tx *sql.Tx, permissionID int64) (permission permissionmodel.PermissionInterface, err error) {
+func (p *PermissionAdapter) GetPermissionByID(ctx context.Context, tx *sql.Tx, permissionID int64) (permission permissionmodel.PermissionInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (pa *PermissionAdapter) GetPermissionByID(ctx context.Context, tx *sql.Tx, 
 		isActiveInt int64
 	)
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, permissionID)
+	row := p.QueryRowContext(ctx, tx, "select", query, permissionID)
 	err = row.Scan(
 		&id, &name, &action, &description, &isActiveInt,
 	)

@@ -54,7 +54,7 @@ func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInter
 	}
 
 	// Carregar active role (se existir) via permission service usando a mesma transação read-only
-	activeRole, arErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, user.GetID())
+	activeRole, arErr := us.GetActiveUserRoleWithTx(ctx, tx, user.GetID())
 	if arErr != nil {
 		utils.SetSpanError(ctx, arErr)
 		logger.Error("user.get_profile.get_active_role_error", "error", arErr, "user_id", userID)

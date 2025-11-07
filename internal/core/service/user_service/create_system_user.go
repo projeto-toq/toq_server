@@ -11,7 +11,6 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
-	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
@@ -194,10 +193,10 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		return SystemUserResult{}, opErr
 	}
 
-	status := permissionmodel.StatusActive
+	status := globalmodel.StatusActive
 	isActive := true
-	assignOpts := &permissionservices.AssignRoleOptions{IsActive: &isActive, Status: &status}
-	userRole, assignErr := us.permissionService.AssignRoleToUserWithTx(ctx, tx, newUser.GetID(), role.GetID(), nil, assignOpts)
+	assignOpts := &AssignRoleOptions{IsActive: &isActive, Status: &status}
+	userRole, assignErr := us.AssignRoleToUserWithTx(ctx, tx, newUser.GetID(), role.GetID(), nil, assignOpts)
 	if assignErr != nil {
 		utils.SetSpanError(ctx, assignErr)
 		logger.Error("admin.users.create.assign_role_failed", "user_id", newUser.GetID(), "role_id", role.GetID(), "error", assignErr)

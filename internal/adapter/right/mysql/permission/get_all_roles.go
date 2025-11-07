@@ -12,7 +12,7 @@ import (
 )
 
 // GetAllRoles busca todos os roles
-func (pa *PermissionAdapter) GetAllRoles(ctx context.Context, tx *sql.Tx) (roles []permissionmodel.RoleInterface, err error) {
+func (p *PermissionAdapter) GetAllRoles(ctx context.Context, tx *sql.Tx) (roles []permissionmodel.RoleInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (pa *PermissionAdapter) GetAllRoles(ctx context.Context, tx *sql.Tx) (roles
 		ORDER BY name
 	`
 
-	rows, readErr := pa.QueryContext(ctx, tx, "select", query)
+	rows, readErr := p.QueryContext(ctx, tx, "select", query)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.get_all_roles.read_error", "error", readErr)

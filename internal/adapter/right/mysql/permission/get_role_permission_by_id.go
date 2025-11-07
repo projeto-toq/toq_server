@@ -12,7 +12,7 @@ import (
 )
 
 // GetRolePermissionByID retorna uma relação role-permission pelo ID
-func (pa *PermissionAdapter) GetRolePermissionByID(ctx context.Context, tx *sql.Tx, rolePermissionID int64) (permissionmodel.RolePermissionInterface, error) {
+func (p *PermissionAdapter) GetRolePermissionByID(ctx context.Context, tx *sql.Tx, rolePermissionID int64) (permissionmodel.RolePermissionInterface, error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func (pa *PermissionAdapter) GetRolePermissionByID(ctx context.Context, tx *sql.
 
 	query := `SELECT id, role_id, permission_id, granted FROM role_permissions WHERE id = ?`
 
-	rows, readErr := pa.QueryContext(ctx, tx, "select", query, rolePermissionID)
+	rows, readErr := p.QueryContext(ctx, tx, "select", query, rolePermissionID)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.get_role_permission_by_id.read_error", "error", readErr)

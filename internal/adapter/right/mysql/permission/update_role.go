@@ -11,7 +11,7 @@ import (
 )
 
 // UpdateRole atualiza um role existente
-func (pa *PermissionAdapter) UpdateRole(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleInterface) (err error) {
+func (p *PermissionAdapter) UpdateRole(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleInterface) (err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return
@@ -35,7 +35,7 @@ func (pa *PermissionAdapter) UpdateRole(ctx context.Context, tx *sql.Tx, role pe
 		WHERE id = ?
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "update", query,
+	result, execErr := p.ExecContext(ctx, tx, "update", query,
 		entity.Name,
 		entity.Slug,
 		entity.Description,

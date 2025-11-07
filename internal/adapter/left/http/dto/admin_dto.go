@@ -3,7 +3,7 @@ package dto
 import (
 	"fmt"
 
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 // Admin endpoints DTOs
@@ -49,13 +49,13 @@ type AdminApproveUserRequest struct {
 }
 
 // ToStatus converts the request status into a valid domain status.
-func (r *AdminApproveUserRequest) ToStatus() (permissionmodel.UserRoleStatus, error) {
+func (r *AdminApproveUserRequest) ToStatus() (globalmodel.UserRoleStatus, error) {
 	if r == nil || r.Status == nil {
 		return 0, fmt.Errorf("status is required")
 	}
 
-	status := permissionmodel.UserRoleStatus(*r.Status)
-	if !permissionmodel.IsManualApprovalTarget(status) {
+	status := globalmodel.UserRoleStatus(*r.Status)
+	if !globalmodel.IsManualApprovalTarget(status) {
 		return 0, fmt.Errorf("invalid status value: %d", *r.Status)
 	}
 

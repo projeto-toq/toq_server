@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
@@ -124,12 +125,12 @@ type UserServiceInterface interface {
 	// GetUserByIDWithTx returns the user with the active role using the provided transaction
 	GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int64) (usermodel.UserInterface, error)
 	// GetActiveRoleStatus returns only the status of the active user role
-	GetActiveRoleStatus(ctx context.Context) (status permissionmodel.UserRoleStatus, err error)
+	GetActiveRoleStatus(ctx context.Context) (status globalmodel.UserRoleStatus, err error)
 	// GetCrecisToValidateByStatus returns realtors filtered by active role status
-	GetCrecisToValidateByStatus(ctx context.Context, status permissionmodel.UserRoleStatus) ([]usermodel.UserInterface, error)
+	GetCrecisToValidateByStatus(ctx context.Context, status globalmodel.UserRoleStatus) ([]usermodel.UserInterface, error)
 
 	// ApproveCreciManual updates realtor status from pending manual to approved/refused and sends notification
-	ApproveCreciManual(ctx context.Context, userID int64, status permissionmodel.UserRoleStatus) error
+	ApproveCreciManual(ctx context.Context, userID int64, status globalmodel.UserRoleStatus) error
 
 	// Admin system user management
 	ListUsers(ctx context.Context, input ListUsersInput) (ListUsersOutput, error)
@@ -140,6 +141,34 @@ type UserServiceInterface interface {
 
 	ValidateCPF(ctx context.Context, nationalID string, bornAt time.Time) error
 	ValidateCNPJ(ctx context.Context, nationalID string) error
+
+	AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (usermodel.UserRoleInterface, error)
+	RemoveRoleFromUser(ctx context.Context, userID, roleID int64) error
+	GetUserRoles(ctx context.Context, userID int64) ([]usermodel.UserRoleInterface, error)
+	// NOVOS: Controle de múltiplos roles ativos
+	SwitchActiveRole(ctx context.Context, userID, newRoleID int64) error
+	GetActiveUserRole(ctx context.Context, userID int64) (usermodel.UserRoleInterface, error)
+	DeactivateAllUserRoles(ctx context.Context, userID int64) error
+	//GetRoleBySlug(ctx context.Context, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
+
+	// Métodos com transação (para uso em fluxos maiores)
+	//GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
+	AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (usermodel.UserRoleInterface, error)
+	RemoveRoleFromUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
+
+	GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]usermodel.UserRoleInterface, error)
+	// Nova assinatura: retorna a role ativa usando a transação do chamador
+	GetActiveUserRoleWithTx(ctx context.Context, tx *sql.Tx, userID int64) (usermodel.UserRoleInterface, error)
+	SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error
+
+	// User blocking operations
+	//BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, reason string) error
+	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
+	// IsUserTempBlocked checks block status without requiring caller to manage tx
+	IsUserTempBlocked(ctx context.Context, userID int64) (bool, error)
+	// IsUserTempBlockedWithTx allows callers with an existing transaction to reuse it
+	IsUserTempBlockedWithTx(ctx context.Context, tx *sql.Tx, userID int64) (bool, error)
+	GetExpiredTempBlockedUsers(ctx context.Context) ([]usermodel.UserRoleInterface, error)
 }
 
 // CreciDocumentDownloadURLs encapsula as URLs assinadas geradas pelo serviço para os documentos CRECI

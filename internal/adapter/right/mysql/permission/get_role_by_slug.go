@@ -12,7 +12,7 @@ import (
 )
 
 // GetRoleBySlug busca um role pelo slug
-func (pa *PermissionAdapter) GetRoleBySlug(ctx context.Context, tx *sql.Tx, slug string) (role permissionmodel.RoleInterface, err error) {
+func (p *PermissionAdapter) GetRoleBySlug(ctx context.Context, tx *sql.Tx, slug string) (role permissionmodel.RoleInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (pa *PermissionAdapter) GetRoleBySlug(ctx context.Context, tx *sql.Tx, slug
 		isActiveInt int64
 	)
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, slug)
+	row := p.QueryRowContext(ctx, tx, "select", query, slug)
 	err = row.Scan(
 		&id, &name, &slugOut, &description, &isSystemInt, &isActiveInt,
 	)

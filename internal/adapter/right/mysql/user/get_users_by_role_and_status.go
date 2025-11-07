@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -62,7 +63,7 @@ import (
 //	    // No active owners found
 //	}
 //	// users contains all active owners with deleted=0
-func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleSlug, status permissionmodel.UserRoleStatus) ([]usermodel.UserInterface, error) {
+func (ua *UserAdapter) GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleSlug, status globalmodel.UserRoleStatus) ([]usermodel.UserInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err

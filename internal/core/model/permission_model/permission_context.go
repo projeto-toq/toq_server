@@ -1,12 +1,16 @@
 package permissionmodel
 
+import (
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+)
+
 // PermissionContext contém o contexto para avaliação de permissões
 type PermissionContext struct {
-	UserID     int64                  `json:"user_id"`
-	UserRoleID int64                  `json:"user_role_id"`
-	RoleStatus UserRoleStatus         `json:"role_status"`
-	RoleSlug   RoleSlug               `json:"role_slug"`
-	Metadata   map[string]interface{} `json:"metadata"`
+	UserID     int64                      `json:"user_id"`
+	UserRoleID int64                      `json:"user_role_id"`
+	RoleStatus globalmodel.UserRoleStatus `json:"role_status"`
+	RoleSlug   RoleSlug                   `json:"role_slug"`
+	Metadata   map[string]interface{}     `json:"metadata"`
 }
 
 // NewPermissionContext cria um novo contexto de permissão
@@ -14,7 +18,7 @@ func NewPermissionContext(userID, userRoleID int64) *PermissionContext {
 	return &PermissionContext{
 		UserID:     userID,
 		UserRoleID: userRoleID,
-		RoleStatus: StatusActive, // Mantém por compatibilidade, mas será ignorado
+		RoleStatus: globalmodel.StatusActive, // Mantém por compatibilidade, mas será ignorado
 		RoleSlug:   "",
 		Metadata:   make(map[string]interface{}),
 	}

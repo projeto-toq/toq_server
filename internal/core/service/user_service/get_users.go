@@ -3,7 +3,7 @@ package userservices
 import (
 	"context"
 
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -36,7 +36,7 @@ func (us *userService) ListUsers(ctx context.Context, input ListUsersInput) (Lis
 		_ = us.globalService.RollbackTransaction(ctx, tx)
 	}()
 
-	var statusPtr *permissionmodel.UserRoleStatus
+	var statusPtr *globalmodel.UserRoleStatus
 	if input.RoleStatus != nil {
 		statusCopy := *input.RoleStatus
 		statusPtr = &statusCopy

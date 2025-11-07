@@ -12,7 +12,7 @@ import (
 )
 
 // GetRolePermissionsByRoleID busca todas as associações role_permission de um role
-func (pa *PermissionAdapter) GetRolePermissionsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) (rolePermissions []permissionmodel.RolePermissionInterface, err error) {
+func (p *PermissionAdapter) GetRolePermissionsByRoleID(ctx context.Context, tx *sql.Tx, roleID int64) (rolePermissions []permissionmodel.RolePermissionInterface, err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (pa *PermissionAdapter) GetRolePermissionsByRoleID(ctx context.Context, tx 
 		ORDER BY id
 	`
 
-	rows, readErr := pa.QueryContext(ctx, tx, "select", query, roleID)
+	rows, readErr := p.QueryContext(ctx, tx, "select", query, roleID)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.get_role_permissions_by_role_id.read_error", "error", readErr)

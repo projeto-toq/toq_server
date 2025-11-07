@@ -12,7 +12,7 @@ import (
 )
 
 // GetPermissionByAction retrieves a permission using the HTTP action identifier (METHOD:PATH)
-func (pa *PermissionAdapter) GetPermissionByAction(ctx context.Context, tx *sql.Tx, action string) (permissionmodel.PermissionInterface, error) {
+func (p *PermissionAdapter) GetPermissionByAction(ctx context.Context, tx *sql.Tx, action string) (permissionmodel.PermissionInterface, error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (pa *PermissionAdapter) GetPermissionByAction(ctx context.Context, tx *sql.
 		isActiveInt int64
 	)
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, action)
+	row := p.QueryRowContext(ctx, tx, "select", query, action)
 	err = row.Scan(&id, &name, &actionOut, &description, &isActiveInt)
 	if err != nil {
 		if err == sql.ErrNoRows {

@@ -1,4 +1,4 @@
-package mysqlpermissionadapter
+package mysqluseradapter
 
 import (
 	"context"
@@ -9,19 +9,23 @@ import (
 
 	permissionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/converters"
 	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	userentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetUserRolesByUserID busca todos os user_roles de um usuário
-func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) (userRoles []permissionmodel.UserRoleInterface, err error) {
-	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+func (ua *UserAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) (userRoles []usermodel.UserRoleInterface, err error) {
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer spanEnd()
 
-	logger = logger.With("user_id", userID)
+	// Attach logger to context for request_id/trace_id propagation
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	query := `
 		SELECT 
@@ -43,7 +47,7 @@ func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.T
 		ORDER BY ur.id
 	`
 
-	rows, readErr := pa.QueryContext(ctx, tx, "select", query, userID)
+	rows, readErr := ua.QueryContext(ctx, tx, "select", query, userID)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.get_user_roles_by_user_id.read_error", "error", readErr)
@@ -58,16 +62,16 @@ func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.T
 		return nil, fmt.Errorf("get user roles by user id rows to entities: %w", rowsErr)
 	}
 
-	userRoles = make([]permissionmodel.UserRoleInterface, 0, len(rowEntities))
+	userRoles = make([]usermodel.UserRoleInterface, 0, len(rowEntities))
 	for index, row := range rowEntities {
 		if len(row) != 12 {
 			errColumns := fmt.Errorf("unexpected number of columns: expected 12, got %d", len(row))
 			utils.SetSpanError(ctx, errColumns)
-			logger.Error("mysql.permission.get_user_roles_by_user_id.columns_mismatch", "row_index", index, "error", errColumns)
+			logger.Error("mysql.user.get_user_roles_by_user_id.columns_mismatch", "row_index", index, "error", errColumns)
 			return nil, errColumns
 		}
 
-		entity := &permissionentities.UserRoleEntity{
+		entity := &userentities.UserRoleEntity{
 			ID:       int64FromAny(row[0]),
 			UserID:   int64FromAny(row[1]),
 			RoleID:   int64FromAny(row[2]),
@@ -85,10 +89,10 @@ func (pa *PermissionAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.T
 			}
 		}
 
-		userRole, convertErr := permissionconverters.UserRoleEntityToDomain(entity)
+		userRole, convertErr := userconverters.UserRoleEntityToDomain(entity)
 		if convertErr != nil {
 			utils.SetSpanError(ctx, convertErr)
-			logger.Error("mysql.permission.get_user_roles_by_user_id.convert_error", "row_index", index, "error", convertErr)
+			logger.Error("mysql.user.get_user_roles_by_user_id.convert_error", "row_index", index, "error", convertErr)
 			return nil, fmt.Errorf("convert user role entity to domain: %w", convertErr)
 		}
 		if userRole != nil {

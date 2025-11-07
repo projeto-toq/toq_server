@@ -13,22 +13,22 @@ import (
 
 // decideNextStatusAfterContactChange decides the next status after a successful email/phone change.
 // It is a pure function: given the role and pending flags, it returns the target status.
-func decideNextStatusAfterContactChange(role permissionmodel.RoleSlug, emailPending, phonePending bool, current permissionmodel.UserRoleStatus) permissionmodel.UserRoleStatus {
+func decideNextStatusAfterContactChange(role permissionmodel.RoleSlug, emailPending, phonePending bool, current globalmodel.UserRoleStatus) globalmodel.UserRoleStatus {
 	// Primeiro, se ainda há pendência de algum fator de contato, refletir essa pendência no status.
 	if emailPending {
-		return permissionmodel.StatusPendingEmail
+		return globalmodel.StatusPendingEmail
 	}
 	if phonePending {
-		return permissionmodel.StatusPendingPhone
+		return globalmodel.StatusPendingPhone
 	}
 	// Caso não haja mais pendências, decidir por role.
 	switch role {
 	case permissionmodel.RoleSlugOwner:
-		return permissionmodel.StatusActive
+		return globalmodel.StatusActive
 	case permissionmodel.RoleSlugRealtor:
-		return permissionmodel.StatusPendingCreci
+		return globalmodel.StatusPendingCreci
 	case permissionmodel.RoleSlugAgency:
-		return permissionmodel.StatusPendingCnpj
+		return globalmodel.StatusPendingCnpj
 	default:
 		// Papel desconhecido: manter status atual por segurança.
 		return current
@@ -37,7 +37,7 @@ func decideNextStatusAfterContactChange(role permissionmodel.RoleSlug, emailPend
 
 // applyStatusTransitionAfterContactChange loads user and validations, then applies the target status
 // based on pending contact factors and active role. Runs inside the provided transaction.
-func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Context, tx *sql.Tx, emailJustConfirmed bool) (permissionmodel.UserRoleStatus, bool, error) {
+func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Context, tx *sql.Tx, emailJustConfirmed bool) (globalmodel.UserRoleStatus, bool, error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 	// Carregar usuário e papel ativo
@@ -47,7 +47,7 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 		return 0, false, derrors.Auth("Authentication required")
 	}
 	// Resolver papel ativo via permission service (robusto e desacoplado de carregamento do usuário)
-	active, derr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	active, derr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if derr != nil {
 		// pode ser domínio (KindError) ou erro puro de infra – deixar o caller mapear/logar
 		return 0, false, derr

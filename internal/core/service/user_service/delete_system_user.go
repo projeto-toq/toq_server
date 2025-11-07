@@ -65,7 +65,7 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 
 	us.setDeletedData(existing)
 
-	activeRole, arErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, input.UserID)
+	activeRole, arErr := us.GetActiveUserRoleWithTx(ctx, tx, input.UserID)
 	if arErr != nil {
 		utils.SetSpanError(ctx, arErr)
 		logger.Error("admin.users.delete.get_role_failed", "user_id", input.UserID, "error", arErr)
@@ -114,7 +114,7 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		return opErr
 	}
 
-	if statusErr := us.repo.UpdateUserRoleStatus(ctx, tx, existing.GetID(), roleSlug, permissionmodel.StatusDeleted); statusErr != nil {
+	if statusErr := us.repo.UpdateUserRoleStatus(ctx, tx, existing.GetID(), roleSlug, globalmodel.StatusDeleted); statusErr != nil {
 		if errorsIsNoRows(statusErr) {
 			logger.Warn("admin.users.delete.update_role_status_no_rows", "user_id", existing.GetID(), "role_slug", roleSlug)
 		} else {
@@ -138,7 +138,7 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		return utils.InternalError("")
 	}
 
-	if deactivateErr := us.permissionService.DeactivateAllUserRoles(ctx, existing.GetID()); deactivateErr != nil {
+	if deactivateErr := us.repo.DeactivateAllUserRoles(ctx, tx, existing.GetID()); deactivateErr != nil {
 		utils.SetSpanError(ctx, deactivateErr)
 		logger.Error("admin.users.delete.deactivate_roles_failed", "user_id", existing.GetID(), "error", deactivateErr)
 		return utils.InternalError("")

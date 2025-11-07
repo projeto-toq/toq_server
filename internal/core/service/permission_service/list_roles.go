@@ -89,43 +89,43 @@ func (p *permissionServiceImpl) ListRoles(ctx context.Context, input ListRolesIn
 	return output, nil
 }
 
-// GetRoleByID retorna role pelo identificador.
-func (p *permissionServiceImpl) GetRoleByID(ctx context.Context, roleID int64) (permissionmodel.RoleInterface, error) {
-	ctx, end, err := utils.GenerateTracer(ctx)
-	if err != nil {
-		return nil, utils.InternalError("Failed to generate tracer")
-	}
-	defer end()
+// // GetRoleByID retorna role pelo identificador.
+// func (p *permissionServiceImpl) GetRoleByID(ctx context.Context, roleID int64) (permissionmodel.RoleInterface, error) {
+// 	ctx, end, err := utils.GenerateTracer(ctx)
+// 	if err != nil {
+// 		return nil, utils.InternalError("Failed to generate tracer")
+// 	}
+// 	defer end()
 
-	ctx = utils.ContextWithLogger(ctx)
-	logger := utils.LoggerFromContext(ctx)
+// 	ctx = utils.ContextWithLogger(ctx)
+// 	logger := utils.LoggerFromContext(ctx)
 
-	if roleID <= 0 {
-		return nil, utils.BadRequest("invalid role id")
-	}
+// 	if roleID <= 0 {
+// 		return nil, utils.BadRequest("invalid role id")
+// 	}
 
-	tx, txErr := p.globalService.StartReadOnlyTransaction(ctx)
-	if txErr != nil {
-		utils.SetSpanError(ctx, txErr)
-		logger.Error("permission.role.get.tx_start_failed", "role_id", roleID, "error", txErr)
-		return nil, utils.InternalError("")
-	}
-	defer func() {
-		_ = p.globalService.RollbackTransaction(ctx, tx)
-	}()
+// 	tx, txErr := p.globalService.StartReadOnlyTransaction(ctx)
+// 	if txErr != nil {
+// 		utils.SetSpanError(ctx, txErr)
+// 		logger.Error("permission.role.get.tx_start_failed", "role_id", roleID, "error", txErr)
+// 		return nil, utils.InternalError("")
+// 	}
+// 	defer func() {
+// 		_ = p.globalService.RollbackTransaction(ctx, tx)
+// 	}()
 
-	role, repoErr := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
-	if repoErr != nil {
-		utils.SetSpanError(ctx, repoErr)
-		logger.Error("permission.role.get.repo_error", "role_id", roleID, "error", repoErr)
-		return nil, utils.InternalError("")
-	}
-	if role == nil {
-		return nil, utils.NotFoundError("role")
-	}
+// 	role, repoErr := p.permissionRepository.GetRoleByID(ctx, tx, roleID)
+// 	if repoErr != nil {
+// 		utils.SetSpanError(ctx, repoErr)
+// 		logger.Error("permission.role.get.repo_error", "role_id", roleID, "error", repoErr)
+// 		return nil, utils.InternalError("")
+// 	}
+// 	if role == nil {
+// 		return nil, utils.NotFoundError("role")
+// 	}
 
-	return role, nil
-}
+// 	return role, nil
+// }
 
 // UpdateRole aplica alterações permitidas em um role existente.
 func (p *permissionServiceImpl) UpdateRole(ctx context.Context, input UpdateRoleInput) (permissionmodel.RoleInterface, error) {

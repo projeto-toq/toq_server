@@ -68,7 +68,7 @@ func (us *userService) GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int
 	}
 
 	// Carrega a active role via permission service
-	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, id)
+	activeRole, aerr := us.GetActiveUserRoleWithTx(ctx, tx, id)
 	if aerr != nil {
 		utils.SetSpanError(ctx, aerr)
 		utils.LoggerFromContext(ctx).Error("user.get_by_id.read_active_role_error", "error", aerr, "user_id", id)

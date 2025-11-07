@@ -57,7 +57,7 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 	}
 
 	// Garantir role ativa carregada a partir do Permission Service
-	activeRole, arErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	activeRole, arErr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if arErr != nil {
 		utils.SetSpanError(ctx, arErr)
 		logger.Error("user.delete_account.get_active_role_error", "error", arErr, "user_id", userID)
@@ -181,7 +181,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	}
 
 	// Remover todos os roles do usuário
-	userRoles, err := us.permissionService.GetUserRolesWithTx(ctx, tx, user.GetID())
+	userRoles, err := us.repo.GetUserRolesByUserID(ctx, tx, user.GetID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.delete_account.get_user_roles_error", "error", err, "user_id", user.GetID())
@@ -205,7 +205,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 			continue
 		}
 
-		err = us.permissionService.RemoveRoleFromUserWithTx(ctx, tx, user.GetID(), role.GetID())
+		err = us.RemoveRoleFromUserWithTx(ctx, tx, user.GetID(), role.GetID())
 		if err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("user.delete_account.remove_role_error", "error", err, "user_id", user.GetID(), "role_id", role.GetID())
@@ -229,7 +229,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	return
 }
 
-func (us *userService) markUserRolesAsDeleted(ctx context.Context, tx *sql.Tx, userID int64, userRoles []permissionmodel.UserRoleInterface, activeRoleSlug permissionmodel.RoleSlug) error {
+func (us *userService) markUserRolesAsDeleted(ctx context.Context, tx *sql.Tx, userID int64, userRoles []usermodel.UserRoleInterface, activeRoleSlug permissionmodel.RoleSlug) error {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
@@ -264,7 +264,7 @@ func (us *userService) markUserRolesAsDeleted(ctx context.Context, tx *sql.Tx, u
 		return err
 	}
 
-	if err := us.repo.UpdateUserRoleStatus(ctx, tx, userID, activeRoleSlug, permissionmodel.StatusDeleted); err != nil {
+	if err := us.repo.UpdateUserRoleStatus(ctx, tx, userID, activeRoleSlug, globalmodel.StatusDeleted); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
 			logger.Error("user.delete_account.update_role_status_no_rows", "user_id", userID, "role_slug", activeRoleSlug)

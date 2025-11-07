@@ -184,7 +184,7 @@ func IsPublicEndpoint(path string) bool {
 }
 
 // GetUserRoleSlugFromUserRole extrai o RoleSlug de um UserRoleInterface
-func GetUserRoleSlugFromUserRole(userRole permissionmodel.UserRoleInterface) permissionmodel.RoleSlug {
+func GetUserRoleSlugFromUserRole(userRole usermodel.UserRoleInterface) permissionmodel.RoleSlug {
 	if userRole == nil || userRole.GetRole() == nil {
 		return ""
 	}
@@ -192,6 +192,6 @@ func GetUserRoleSlugFromUserRole(userRole permissionmodel.UserRoleInterface) per
 }
 
 // IsProfileActiveFromStatus verifica se o status indica perfil ativo
-func IsProfileActiveFromStatus(status permissionmodel.UserRoleStatus) bool {
-	return status == permissionmodel.StatusActive
+func IsProfileActiveFromStatus(status globalmodel.UserRoleStatus) bool {
+	return status == globalmodel.StatusActive
 }

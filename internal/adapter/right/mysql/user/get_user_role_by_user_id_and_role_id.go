@@ -1,25 +1,28 @@
-package mysqlpermissionadapter
+package mysqluseradapter
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 
-	permissionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/converters"
-	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetUserRoleByUserIDAndRoleID busca um user_role específico pela combinação user_id + role_id
-func (pa *PermissionAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, tx *sql.Tx, userID, roleID int64) (permissionmodel.UserRoleInterface, error) {
-	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+func (ua *UserAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, tx *sql.Tx, userID, roleID int64) (usermodel.UserRoleInterface, error) {
+	// Initialize tracing for observability
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer spanEnd()
 
-	logger = logger.With("user_id", userID, "role_id", roleID)
+	// Attach logger to context for request_id/trace_id propagation
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	query := `
 		SELECT id, user_id, role_id, is_active, status, expires_at
@@ -37,7 +40,7 @@ func (pa *PermissionAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, t
 		expiresAt   sql.NullTime
 	)
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, userID, roleID)
+	row := ua.QueryRowContext(ctx, tx, "select", query, userID, roleID)
 	err = row.Scan(
 		&id, &uid, &roleIDOut, &isActiveInt, &status, &expiresAt,
 	)
@@ -51,7 +54,7 @@ func (pa *PermissionAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, t
 		return nil, fmt.Errorf("get user role by user id and role id scan: %w", err)
 	}
 
-	entity := &permissionentities.UserRoleEntity{
+	entity := &userentity.UserRoleEntity{
 		ID:       id,
 		UserID:   userID,
 		RoleID:   roleIDOut,
@@ -65,10 +68,10 @@ func (pa *PermissionAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, t
 		}
 	}
 
-	userRole, convertErr := permissionconverters.UserRoleEntityToDomain(entity)
+	userRole, convertErr := userconverters.UserRoleEntityToDomain(entity)
 	if convertErr != nil {
 		utils.SetSpanError(ctx, convertErr)
-		logger.Error("mysql.permission.get_user_role_by_user_id_and_role_id.convert_error", "error", convertErr)
+		logger.Error("mysql.user.get_user_role_by_user_id_and_role_id.convert_error", "error", convertErr)
 		return nil, fmt.Errorf("convert user role entity to domain: %w", convertErr)
 	}
 

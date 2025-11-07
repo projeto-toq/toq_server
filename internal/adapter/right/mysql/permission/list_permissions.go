@@ -14,7 +14,7 @@ import (
 )
 
 // ListPermissions retorna permissões com filtros e paginação
-func (pa *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, filter permissionrepository.PermissionListFilter) (permissionrepository.PermissionListResult, error) {
+func (p *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, filter permissionrepository.PermissionListFilter) (permissionrepository.PermissionListResult, error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return permissionrepository.PermissionListResult{}, err
@@ -56,7 +56,7 @@ func (pa *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, fi
 	offset := (filter.Page - 1) * filter.Limit
 	listArgs = append(listArgs, filter.Limit, offset)
 
-	rows, readErr := pa.QueryContext(ctx, tx, "select", query, listArgs...)
+	rows, readErr := p.QueryContext(ctx, tx, "select", query, listArgs...)
 	if readErr != nil {
 		utils.SetSpanError(ctx, readErr)
 		logger.Error("mysql.permission.list_permissions.read_error", "error", readErr)
@@ -127,7 +127,7 @@ func (pa *PermissionAdapter) ListPermissions(ctx context.Context, tx *sql.Tx, fi
 	}
 
 	countQuery := `SELECT COUNT(*) FROM permissions p ` + whereClause
-	countRow := pa.QueryRowContext(ctx, tx, "select", countQuery, args...)
+	countRow := p.QueryRowContext(ctx, tx, "select", countQuery, args...)
 	var total int64
 	if countErr := countRow.Scan(&total); countErr != nil {
 		utils.SetSpanError(ctx, countErr)

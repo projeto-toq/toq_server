@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
@@ -225,11 +226,11 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 
 		// Attach role information if present (LEFT JOIN may return NULL)
 		if entity.HasRole {
-			userRole := permissionmodel.NewUserRole()
+			userRole := usermodel.NewUserRole()
 			userRole.SetID(entity.UserRoleID)
 			userRole.SetUserID(user.GetID())
 			userRole.SetRoleID(entity.RoleID)
-			userRole.SetStatus(permissionmodel.UserRoleStatus(entity.RoleStatus))
+			userRole.SetStatus(globalmodel.UserRoleStatus(entity.RoleStatus))
 			userRole.SetIsActive(entity.RoleIsActive)
 
 			// Attach role details

@@ -1,27 +1,32 @@
-package mysqlpermissionadapter
+package mysqluseradapter
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 
-	permissionconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/converters"
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	userconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/converters"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // UpdateUserRole atualiza um user_role existente
-func (pa *PermissionAdapter) UpdateUserRole(ctx context.Context, tx *sql.Tx, userRole permissionmodel.UserRoleInterface) (err error) {
-	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
+func (ua *UserAdapter) UpdateUserRole(ctx context.Context, tx *sql.Tx, userRole usermodel.UserRoleInterface) (err error) {
+	// Initialize tracing for observability
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
 	}
 	defer spanEnd()
 
-	entity, convertErr := permissionconverters.UserRoleDomainToEntity(userRole)
+	// Attach logger to context for request_id/trace_id propagation
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	entity, convertErr := userconverters.UserRoleDomainToEntity(userRole)
 	if convertErr != nil {
 		utils.SetSpanError(ctx, convertErr)
-		logger.Error("mysql.permission.update_user_role.convert_error", "error", convertErr)
+		logger.Error("mysql.user.update_user_role.convert_error", "error", convertErr)
 		return fmt.Errorf("convert user role domain to entity: %w", convertErr)
 	}
 	if entity == nil {
@@ -41,7 +46,7 @@ func (pa *PermissionAdapter) UpdateUserRole(ctx context.Context, tx *sql.Tx, use
 		WHERE id = ?
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "update", query,
+	result, execErr := ua.ExecContext(ctx, tx, "update", query,
 		entity.UserID,
 		entity.RoleID,
 		entity.IsActive,

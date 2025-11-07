@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
@@ -66,7 +67,7 @@ func (uh *UserHandler) AddAlternativeUserRole(c *gin.Context) {
 		return
 	}
 
-	if activeRole.GetStatus() != permissionmodel.StatusActive {
+	if activeRole.GetStatus() != globalmodel.StatusActive {
 		httperrors.SendHTTPErrorObj(c, coreutils.ConflictError("Active role status must be active"))
 		return
 	}

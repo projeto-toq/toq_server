@@ -6,29 +6,29 @@ import (
 	"time"
 
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
-	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
+	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 type TempBlockCleanerWorker struct {
-	permissionService permissionservice.PermissionServiceInterface
-	globalService     globalservice.GlobalServiceInterface
-	stopChan          chan struct{}
-	doneChan          chan struct{}
-	interval          time.Duration
-	logger            *slog.Logger
+	userService   userservice.UserServiceInterface
+	globalService globalservice.GlobalServiceInterface
+	stopChan      chan struct{}
+	doneChan      chan struct{}
+	interval      time.Duration
+	logger        *slog.Logger
 }
 
 func NewTempBlockCleanerWorker(
-	permissionService permissionservice.PermissionServiceInterface,
+	userService userservice.UserServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 ) *TempBlockCleanerWorker {
 	return &TempBlockCleanerWorker{
-		permissionService: permissionService,
-		globalService:     globalService,
-		stopChan:          make(chan struct{}),
-		doneChan:          make(chan struct{}),
-		interval:          5 * time.Minute, // Check every 5 minutes for expired blocks
+		userService:   userService,
+		globalService: globalService,
+		stopChan:      make(chan struct{}),
+		doneChan:      make(chan struct{}),
+		interval:      5 * time.Minute, // Check every 5 minutes for expired blocks
 	}
 }
 
@@ -79,7 +79,7 @@ func (w *TempBlockCleanerWorker) processExpiredBlocks(ctx context.Context) {
 
 	logger.Debug("Processing expired temporary blocks")
 
-	expiredUsers, err := w.permissionService.GetExpiredTempBlockedUsers(ctx)
+	expiredUsers, err := w.userService.GetExpiredTempBlockedUsers(ctx)
 	if err != nil {
 		logger.Error("Failed to get expired temp blocked users", "error", err)
 		return
@@ -120,9 +120,9 @@ func (w *TempBlockCleanerWorker) unblockUser(ctx context.Context, userID int64) 
 		}
 	}()
 
-	err = w.permissionService.UnblockUser(ctx, tx, userID)
+	err = w.userService.UnblockUser(ctx, tx, userID)
 	if err != nil {
-		logger.Error("Failed to unblock user in permission service", "userID", userID, "error", err)
+		logger.Error("Failed to unblock user in user service", "userID", userID, "error", err)
 		return err
 	}
 

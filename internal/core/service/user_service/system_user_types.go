@@ -3,6 +3,7 @@ package userservices
 import (
 	"time"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 )
@@ -15,7 +16,7 @@ type ListUsersInput struct {
 	Limit            int
 	RoleName         string
 	RoleSlug         string
-	RoleStatus       *permissionmodel.UserRoleStatus
+	RoleStatus       *globalmodel.UserRoleStatus
 	IsSystemRole     *bool
 	FullName         string
 	CPF              string

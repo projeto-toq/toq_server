@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -90,7 +90,7 @@ func (us *userService) VerifyCreciDocuments(ctx context.Context) (err error) {
 		}
 	}()
 
-	if e = us.repo.UpdateUserRoleStatusByUserID(ctx, userID, int(permissionmodel.StatusPendingManual)); e != nil {
+	if e = us.repo.UpdateUserRoleStatusByUserID(ctx, userID, int(globalmodel.StatusPendingManual)); e != nil {
 		utils.SetSpanError(ctx, e)
 		logger.Error("user.verify_creci.update_status_error", "user_id", userID, "error", e)
 		err = utils.InternalError("Failed to set user status")

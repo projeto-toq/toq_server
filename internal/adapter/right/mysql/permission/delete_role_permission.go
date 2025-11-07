@@ -9,7 +9,7 @@ import (
 )
 
 // DeleteRolePermission remove um role_permission pelo ID
-func (pa *PermissionAdapter) DeleteRolePermission(ctx context.Context, tx *sql.Tx, rolePermissionID int64) (err error) {
+func (p *PermissionAdapter) DeleteRolePermission(ctx context.Context, tx *sql.Tx, rolePermissionID int64) (err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return
@@ -23,7 +23,7 @@ func (pa *PermissionAdapter) DeleteRolePermission(ctx context.Context, tx *sql.T
 		WHERE id = ?
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "delete", query, rolePermissionID)
+	result, execErr := p.ExecContext(ctx, tx, "delete", query, rolePermissionID)
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.permission.delete_role_permission.exec_error", "error", execErr)

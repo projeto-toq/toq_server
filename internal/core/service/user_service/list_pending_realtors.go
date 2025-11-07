@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 )
 
@@ -15,7 +16,7 @@ func (us *userService) ListPendingRealtors(ctx context.Context, page, limit int)
 		limit = 20
 	}
 
-	status := permissionmodel.StatusPendingManual
+	status := globalmodel.StatusPendingManual
 	roleSlug := permissionmodel.RoleSlugRealtor.String()
 	isSystemRole := false
 	deleted := false

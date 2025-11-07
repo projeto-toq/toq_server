@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"errors"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
+func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRoleStatus globalmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -51,7 +52,7 @@ func (us *userService) GetCrecisToValidateByStatus(ctx context.Context, UserRole
 	return
 }
 
-func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus permissionmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
+func (us *userService) getCrecisToValidateByStatus(ctx context.Context, tx *sql.Tx, UserRoleStatus globalmodel.UserRoleStatus) (realtors []usermodel.UserInterface, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	// Buscar corretores pelo novo método filtrando por role e status
 	realtors, err = us.repo.GetUsersByRoleAndStatus(ctx, tx, permissionmodel.RoleSlugRealtor, UserRoleStatus)

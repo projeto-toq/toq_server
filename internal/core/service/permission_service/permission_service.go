@@ -3,7 +3,6 @@ package permissionservice
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	cacheport "github.com/projeto-toq/toq_server/internal/core/cache"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
@@ -44,8 +43,9 @@ type PermissionServiceInterface interface {
 	RestoreRole(ctx context.Context, roleID int64) (permissionmodel.RoleInterface, error)
 	ListRoles(ctx context.Context, input ListRolesInput) (ListRolesOutput, error)
 	GetRoleByID(ctx context.Context, roleID int64) (permissionmodel.RoleInterface, error)
-	AssignRoleToUser(ctx context.Context, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (permissionmodel.UserRoleInterface, error)
-	RemoveRoleFromUser(ctx context.Context, userID, roleID int64) error
+	GetRoleByIDWithTx(ctx context.Context, tx *sql.Tx, roleID int64) (permissionmodel.RoleInterface, error)
+	GetRoleBySlug(ctx context.Context, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
+	GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
 
 	// Gestão de permissões
 	ListPermissions(ctx context.Context, input ListPermissionsInput) (ListPermissionsOutput, error)
@@ -67,32 +67,8 @@ type PermissionServiceInterface interface {
 	RefreshUserPermissions(ctx context.Context, userID int64) error
 
 	// Query helpers
-	GetUserRoles(ctx context.Context, userID int64) ([]permissionmodel.UserRoleInterface, error)
+
 	GetUserPermissions(ctx context.Context, userID int64) ([]permissionmodel.PermissionInterface, error)
 	GetRolePermissions(ctx context.Context, roleID int64) ([]permissionmodel.PermissionInterface, error)
-
-	// NOVOS: Controle de múltiplos roles ativos
-	SwitchActiveRole(ctx context.Context, userID, newRoleID int64) error
-	GetActiveUserRole(ctx context.Context, userID int64) (permissionmodel.UserRoleInterface, error)
-	DeactivateAllUserRoles(ctx context.Context, userID int64) error
-	GetRoleBySlug(ctx context.Context, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
-
-	// Métodos com transação (para uso em fluxos maiores)
-	GetRoleBySlugWithTx(ctx context.Context, tx *sql.Tx, slug permissionmodel.RoleSlug) (permissionmodel.RoleInterface, error)
-	AssignRoleToUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64, expiresAt *time.Time, opts *AssignRoleOptions) (permissionmodel.UserRoleInterface, error)
-	RemoveRoleFromUserWithTx(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
 	GetUserPermissionsWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.PermissionInterface, error)
-	GetUserRolesWithTx(ctx context.Context, tx *sql.Tx, userID int64) ([]permissionmodel.UserRoleInterface, error)
-	// Nova assinatura: retorna a role ativa usando a transação do chamador
-	GetActiveUserRoleWithTx(ctx context.Context, tx *sql.Tx, userID int64) (permissionmodel.UserRoleInterface, error)
-	SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error
-
-	// User blocking operations
-	BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, reason string) error
-	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
-	// IsUserTempBlocked checks block status without requiring caller to manage tx
-	IsUserTempBlocked(ctx context.Context, userID int64) (bool, error)
-	// IsUserTempBlockedWithTx allows callers with an existing transaction to reuse it
-	IsUserTempBlockedWithTx(ctx context.Context, tx *sql.Tx, userID int64) (bool, error)
-	GetExpiredTempBlockedUsers(ctx context.Context) ([]permissionmodel.UserRoleInterface, error)
 }

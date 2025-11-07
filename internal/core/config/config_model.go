@@ -354,9 +354,9 @@ func (c *config) InitializeTempBlockCleaner() error {
 		slog.Info("Workers desabilitados; TempBlockCleaner não será inicializado")
 		return nil
 	}
-	if c.permissionService == nil {
-		slog.Error("Permission service not available for temp block cleaner initialization")
-		return fmt.Errorf("permission service not initialized")
+	if c.userService == nil {
+		slog.Error("User service not available for temp block cleaner initialization")
+		return fmt.Errorf("user service not initialized")
 	}
 
 	if c.globalService == nil {
@@ -364,7 +364,7 @@ func (c *config) InitializeTempBlockCleaner() error {
 		return fmt.Errorf("global service not initialized")
 	}
 
-	c.tempBlockCleaner = goroutines.NewTempBlockCleanerWorker(c.permissionService, c.globalService)
+	c.tempBlockCleaner = goroutines.NewTempBlockCleanerWorker(c.userService, c.globalService)
 	slog.Info("✅ TempBlockCleanerWorker initialized")
 	return nil
 }

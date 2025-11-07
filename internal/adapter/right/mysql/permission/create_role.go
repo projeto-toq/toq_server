@@ -11,7 +11,7 @@ import (
 )
 
 // CreateRole cria um novo role no banco de dados
-func (pa *PermissionAdapter) CreateRole(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleInterface) (err error) {
+func (p *PermissionAdapter) CreateRole(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleInterface) (err error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return
@@ -34,7 +34,7 @@ func (pa *PermissionAdapter) CreateRole(ctx context.Context, tx *sql.Tx, role pe
 		VALUES (?, ?, ?, ?, ?)
 	`
 
-	result, execErr := pa.ExecContext(ctx, tx, "insert", query,
+	result, execErr := p.ExecContext(ctx, tx, "insert", query,
 		entity.Name,
 		entity.Slug,
 		entity.Description,

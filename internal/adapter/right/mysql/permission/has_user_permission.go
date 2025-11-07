@@ -10,7 +10,7 @@ import (
 )
 
 // HasUserPermission verifica se um usuário tem uma permissão específica de forma otimizada
-func (pa *PermissionAdapter) HasUserPermission(ctx context.Context, tx *sql.Tx, userID int64, resource, action string) (bool, error) {
+func (p *PermissionAdapter) HasUserPermission(ctx context.Context, tx *sql.Tx, userID int64, resource, action string) (bool, error) {
 	ctx, spanEnd, logger, err := startPermissionOperation(ctx)
 	if err != nil {
 		return false, err
@@ -33,7 +33,7 @@ func (pa *PermissionAdapter) HasUserPermission(ctx context.Context, tx *sql.Tx, 
 		LIMIT 1
 	`
 
-	row := pa.QueryRowContext(ctx, tx, "select", query, userID, resource, action)
+	row := p.QueryRowContext(ctx, tx, "select", query, userID, resource, action)
 	var exists int64
 	if scanErr := row.Scan(&exists); scanErr != nil {
 		if errors.Is(scanErr, sql.ErrNoRows) {

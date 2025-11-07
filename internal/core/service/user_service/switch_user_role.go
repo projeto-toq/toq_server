@@ -62,7 +62,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	activeRole, activeErr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	activeRole, activeErr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if activeErr != nil {
 		utils.SetSpanError(ctx, activeErr)
 		logger.Error("user.switch_role.get_active_role_error", "error", activeErr, "user_id", userID)
@@ -102,7 +102,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 		return tokens, utils.InternalError("Target role not found")
 	}
 
-	userRoles, rolesErr := us.permissionService.GetUserRolesWithTx(ctx, tx, userID)
+	userRoles, rolesErr := us.GetUserRolesWithTx(ctx, tx, userID)
 	if rolesErr != nil {
 		utils.SetSpanError(ctx, rolesErr)
 		logger.Error("user.switch_role.get_user_roles_error", "error", rolesErr, "user_id", userID)
@@ -122,7 +122,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 		return tokens, utils.BadRequest(fmt.Sprintf("User must have role '%s' assigned to switch", targetSlug))
 	}
 
-	if err = us.permissionService.SwitchActiveRoleWithTx(ctx, tx, userID, targetRole.GetID()); err != nil {
+	if err = us.SwitchActiveRoleWithTx(ctx, tx, userID, targetRole.GetID()); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.switch_role.switch_active_role_error", "error", err, "user_id", userID, "role_id", targetRole.GetID())
 		return
@@ -135,7 +135,7 @@ func (us *userService) switchUserRole(ctx context.Context, tx *sql.Tx, userID in
 		return
 	}
 
-	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	activeRole, aerr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if aerr != nil {
 		utils.SetSpanError(ctx, aerr)
 		utils.LoggerFromContext(ctx).Error("user.switch_role.read_active_role_error", "error", aerr, "user_id", userID)

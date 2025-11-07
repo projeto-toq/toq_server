@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 
-	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // GetActiveRoleStatus returns only the status of the active user role for the current authenticated user.
 // Domain invariant: an active role must always exist; its absence is treated as an infrastructure inconsistency.
-func (us *userService) GetActiveRoleStatus(ctx context.Context) (status permissionmodel.UserRoleStatus, err error) {
+func (us *userService) GetActiveRoleStatus(ctx context.Context) (status globalmodel.UserRoleStatus, err error) {
 	ctx, spanEnd, terr := utils.GenerateTracer(ctx)
 	if terr != nil {
 		return 0, utils.InternalError("Failed to generate tracer")
@@ -40,7 +40,7 @@ func (us *userService) GetActiveRoleStatus(ctx context.Context) (status permissi
 		}
 	}()
 
-	activeRole, aerr := us.permissionService.GetActiveUserRoleWithTx(ctx, tx, userID)
+	activeRole, aerr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
 	if aerr != nil {
 		utils.SetSpanError(ctx, aerr)
 		logger.Error("user.get_active_role_status.read_active_role_error", "error", aerr, "user_id", userID)

@@ -21,7 +21,7 @@ func (uh *UserHandler) GetUserRoles(c *gin.Context) {
 	}
 
 	// Call permission service directly to get user roles (no business logic required)
-	roles, err := uh.permissionService.GetUserRoles(ctx, userInfo.ID)
+	roles, err := uh.userService.GetUserRoles(ctx, userInfo.ID)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
