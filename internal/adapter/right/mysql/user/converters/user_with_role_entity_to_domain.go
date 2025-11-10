@@ -53,7 +53,7 @@ func UserWithRoleEntityToDomain(entity userentity.UserWithRoleEntity) (usermodel
 		CreciNumber:       entity.CreciNumber,
 		CreciState:        entity.CreciState,
 		CreciValidity:     entity.CreciValidity,
-		BornAT:            entity.BornAT,
+		BornAt:            entity.BornAt,
 		PhoneNumber:       entity.PhoneNumber,
 		Email:             entity.Email,
 		ZipCode:           entity.ZipCode,
@@ -65,7 +65,7 @@ func UserWithRoleEntityToDomain(entity userentity.UserWithRoleEntity) (usermodel
 		State:             entity.State,
 		Password:          entity.Password,
 		OptStatus:         entity.OptStatus,
-		LastActivityAT:    entity.LastActivityAT,
+		LastActivityAt:    entity.LastActivityAt,
 		Deleted:           entity.Deleted,
 		LastSignInAttempt: entity.LastSignInAttempt,
 	}
@@ -80,11 +80,11 @@ func UserWithRoleEntityToDomain(entity userentity.UserWithRoleEntity) (usermodel
 
 	// Step 3: Convert user_role fields
 	userRoleEntity := userentity.UserRoleEntity{
-		ID:       entity.UserRoleID.Int64,
-		UserID:   entity.UserRoleUserID.Int64,
-		RoleID:   entity.UserRoleRoleID.Int64,
+		ID:       uint32(entity.UserRoleID.Int32),
+		UserID:   uint32(entity.UserRoleUserID.Int32),
+		RoleID:   uint32(entity.UserRoleRoleID.Int32),
 		IsActive: entity.UserRoleIsActive.Bool,
-		Status:   entity.UserRoleStatus.Int64,
+		Status:   int8(entity.UserRoleStatus.Int16),
 	}
 
 	// Handle nullable fields for user_role
@@ -111,12 +111,12 @@ func UserWithRoleEntityToDomain(entity userentity.UserWithRoleEntity) (usermodel
 	if !entity.RoleID.Valid {
 		// Inconsistent state: user_role exists but role doesn't (data integrity issue)
 		return nil, fmt.Errorf("user_role exists but role is missing (user_id=%d, user_role_id=%d)",
-			entity.UserID, entity.UserRoleID.Int64)
+			entity.UserID, entity.UserRoleID.Int32)
 	}
 
 	// Step 5: Convert role fields
 	roleEntity := permissionentity.RoleEntity{
-		ID:           entity.RoleID.Int64,
+		ID:           int64(entity.RoleID.Int32),
 		Slug:         entity.RoleSlug.String,
 		Name:         entity.RoleName.String,
 		Description:  entity.RoleDescription.String,

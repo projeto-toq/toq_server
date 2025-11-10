@@ -41,9 +41,9 @@ import "time"
 //   - DO NOT add business logic methods to this struct
 //   - DO NOT import core/model packages here
 type WrongSignInEntity struct {
-	// UserID is the user's unique identifier (PRIMARY KEY, FOREIGN KEY to users.id)
+	// UserID is the user's unique identifier (PRIMARY KEY, FOREIGN KEY to users.id, INT UNSIGNED)
 	// ON DELETE CASCADE: tracking row removed when user deleted
-	UserID int64
+	UserID uint32
 
 	// FailedAttempts is the count of consecutive failed sign-in attempts (NOT NULL, TINYINT UNSIGNED)
 	// Incremented on each failed authentication

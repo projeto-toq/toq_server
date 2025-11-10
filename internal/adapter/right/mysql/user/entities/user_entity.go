@@ -11,14 +11,14 @@ import (
 // for nullable columns. It should ONLY be used within the MySQL adapter layer.
 //
 // Schema Mapping:
-//   - Database: users table (InnoDB, utf8mb4_unicode_ci)
-//   - Primary Key: id (BIGINT AUTO_INCREMENT)
+//   - Database: users table (InnoDB, utf8mb3)
+//   - Primary Key: id (INT UNSIGNED AUTO_INCREMENT)
 //   - Unique Constraints: national_id, email, phone_number
 //   - Indexes: idx_users_deleted, idx_users_national_id, idx_users_email
 //
 // NULL Handling:
 //   - sql.NullString: Used for VARCHAR columns that allow NULL
-//   - sql.NullTime: Used for DATETIME columns that allow NULL
+//   - sql.NullTime: Used for TIMESTAMP(6)/DATE columns that allow NULL
 //   - Direct types: Used for NOT NULL columns
 //
 // Conversion:
@@ -31,7 +31,7 @@ import (
 //   - DO NOT import core/model packages here
 type UserEntity struct {
 	// ID is the user's unique identifier (PRIMARY KEY, AUTO_INCREMENT, INT UNSIGNED)
-	ID int64
+	ID uint32
 
 	// FullName is the user's complete legal name (NOT NULL, VARCHAR(150))
 	// Used for legal identification and contracts
@@ -54,7 +54,7 @@ type UserEntity struct {
 	// Format: numeric followed by "-F" (e.g., "12345-F")
 	CreciNumber sql.NullString
 
-	// CreciState is the Brazilian state where CRECI is registered (NULL, CHAR(2))
+	// CreciState is the Brazilian state where CRECI is registered (NULL, VARCHAR(2))
 	// Required when CreciNumber is provided
 	// Must be a valid 2-letter Brazilian state code (e.g., "SP", "RJ")
 	CreciState sql.NullString
@@ -63,9 +63,9 @@ type UserEntity struct {
 	// Must be a future date for active realtors
 	CreciValidity sql.NullTime
 
-	// BornAT is the user's date of birth (NOT NULL, DATE)
+	// BornAt is the user's date of birth (NOT NULL, DATE)
 	// User must be at least 18 years old (enforced by service layer)
-	BornAT time.Time
+	BornAt time.Time
 
 	// PhoneNumber is the user's mobile in E.164 format (NOT NULL, VARCHAR(25), UNIQUE)
 	// Must include country code with + prefix
@@ -77,34 +77,34 @@ type UserEntity struct {
 	// Example: "joao.silva@example.com"
 	Email string
 
-	// ZipCode is the Brazilian postal code (CEP) (NOT NULL, CHAR(8))
+	// ZipCode is the Brazilian postal code (CEP) (NOT NULL, VARCHAR(8))
 	// Format: 8 digits without separators (no hyphen)
 	// Example: "01310100" (Avenida Paulista, São Paulo)
 	ZipCode string
 
-	// Street is the street name (NOT NULL, VARCHAR(100))
+	// Street is the street name (NOT NULL, VARCHAR(150))
 	// Typically populated automatically from CEP lookup
 	// Example: "Avenida Paulista"
 	Street string
 
-	// Number is the building/property number (NOT NULL, VARCHAR(10))
+	// Number is the building/property number (NOT NULL, VARCHAR(15))
 	// Use "S/N" for addresses without number
 	Number string
 
-	// Complement provides additional address info (NULL, VARCHAR(50))
+	// Complement provides additional address info (NULL, VARCHAR(150))
 	// Optional field for apartment number, building name, etc.
 	// Example: "Apto 501", "Bloco B"
 	Complement sql.NullString
 
-	// Neighborhood is the district/neighborhood name (NOT NULL, VARCHAR(50))
+	// Neighborhood is the district/neighborhood name (NOT NULL, VARCHAR(150))
 	// Example: "Bela Vista"
 	Neighborhood string
 
-	// City is the city name (NOT NULL, VARCHAR(50))
+	// City is the city name (NOT NULL, VARCHAR(150))
 	// Example: "São Paulo"
 	City string
 
-	// State is the Brazilian state code (NOT NULL, CHAR(2))
+	// State is the Brazilian state code (NOT NULL, VARCHAR(2))
 	// Must be a valid 2-letter state code
 	// Example: "SP"
 	State string
@@ -114,21 +114,21 @@ type UserEntity struct {
 	// Hash generated with bcrypt.GenerateFromPassword()
 	Password string
 
-	// OptStatus indicates if user opted in for marketing (NOT NULL, TINYINT(1), DEFAULT 0)
+	// OptStatus indicates if user opted in for marketing (NOT NULL, TINYINT UNSIGNED, DEFAULT 0)
 	// true = opted in, false = opted out
 	OptStatus bool
 
-	// LastActivityAT is the timestamp of user's last action (NOT NULL, DATETIME)
+	// LastActivityAt is the timestamp of user's last action (NOT NULL, TIMESTAMP(6))
 	// Updated by activity tracking system
 	// Used for idle timeout and analytics
-	LastActivityAT time.Time
+	LastActivityAt time.Time
 
-	// Deleted indicates soft delete status (NOT NULL, TINYINT(1), DEFAULT 0)
+	// Deleted indicates soft delete status (NOT NULL, TINYINT UNSIGNED, DEFAULT 0)
 	// true = logically deleted (hidden from queries)
 	// false = active user
 	Deleted bool
 
-	// LastSignInAttempt is the timestamp of last sign-in attempt (NULL, DATETIME)
+	// LastSignInAttempt is the timestamp of last sign-in attempt (NULL, TIMESTAMP(6))
 	// Used for security monitoring and wrong password tracking
 	LastSignInAttempt sql.NullTime
 }

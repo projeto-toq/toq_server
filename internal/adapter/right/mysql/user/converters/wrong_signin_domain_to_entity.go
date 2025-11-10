@@ -35,7 +35,7 @@ import (
 //	entity := WrongSignInDomainToEntity(wrongSignin)
 func WrongSignInDomainToEntity(domain usermodel.WrongSigninInterface) (entity userentity.WrongSignInEntity) {
 	entity = userentity.WrongSignInEntity{}
-	entity.UserID = domain.GetUserID()
+	entity.UserID = uint32(domain.GetUserID())
 	entity.FailedAttempts = uint8(domain.GetFailedAttempts())
 	entity.LastAttemptAT = domain.GetLastAttemptAt()
 	return

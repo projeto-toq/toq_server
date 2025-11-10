@@ -55,11 +55,11 @@ func (ua *UserAdapter) GetUserRoleByUserIDAndRoleID(ctx context.Context, tx *sql
 	}
 
 	entity := &userentity.UserRoleEntity{
-		ID:       id,
-		UserID:   userID,
-		RoleID:   roleIDOut,
+		ID:       uint32(id),
+		UserID:   uint32(userID),
+		RoleID:   uint32(roleIDOut),
 		IsActive: isActiveInt == 1,
-		Status:   status,
+		Status:   int8(status),
 	}
 	if expiresAt.Valid {
 		entity.ExpiresAt = sql.NullTime{

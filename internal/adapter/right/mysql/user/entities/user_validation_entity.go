@@ -45,7 +45,7 @@ import "database/sql"
 type UserValidationEntity struct {
 	// UserID is the user's unique identifier (PRIMARY KEY, FOREIGN KEY to users.id)
 	// ON DELETE CASCADE: validation row removed when user deleted
-	UserID int64
+	UserID uint32
 
 	// NewEmail stores the pending new email address (NULL, VARCHAR(45))
 	// Set when user requests email change, cleared after successful validation

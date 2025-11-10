@@ -50,7 +50,7 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 			&entity.CreciNumber,       // 5. u.creci_number (nullable)
 			&entity.CreciState,        // 6. u.creci_state (nullable)
 			&entity.CreciValidity,     // 7. u.creci_validity (nullable)
-			&entity.BornAT,            // 8. u.born_at
+			&entity.BornAt,            // 8. u.born_at
 			&entity.PhoneNumber,       // 9. u.phone_number
 			&entity.Email,             // 10. u.email
 			&entity.ZipCode,           // 11. u.zip_code
@@ -62,7 +62,7 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 			&entity.State,             // 17. u.state
 			&entity.Password,          // 18. u.password
 			&entity.OptStatus,         // 19. u.opt_status
-			&entity.LastActivityAT,    // 20. u.last_activity_at
+			&entity.LastActivityAt,    // 20. u.last_activity_at
 			&entity.Deleted,           // 21. u.deleted
 			&entity.LastSignInAttempt, // 22. u.last_signin_attempt (nullable)
 

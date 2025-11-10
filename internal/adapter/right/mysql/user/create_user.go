@@ -68,7 +68,7 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 		entity.CreciNumber,
 		entity.CreciState,
 		entity.CreciValidity,
-		entity.BornAT,
+		entity.BornAt,
 		entity.PhoneNumber,
 		entity.Email,
 		entity.ZipCode,
@@ -80,7 +80,7 @@ func (ua *UserAdapter) CreateUser(ctx context.Context, tx *sql.Tx, user usermode
 		entity.State,
 		entity.Password,
 		entity.OptStatus,
-		entity.LastActivityAT,
+		entity.LastActivityAt,
 		entity.Deleted,
 		entity.LastSignInAttempt,
 	)

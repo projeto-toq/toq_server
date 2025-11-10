@@ -28,10 +28,10 @@ func UserEntityToDomain(entity userentity.UserEntity) usermodel.UserInterface {
 	user := usermodel.NewUser()
 
 	// Map mandatory fields (NOT NULL in schema)
-	user.SetID(entity.ID)
+	user.SetID(int64(entity.ID))
 	user.SetFullName(entity.FullName)
 	user.SetNationalID(entity.NationalID)
-	user.SetBornAt(entity.BornAT)
+	user.SetBornAt(entity.BornAt)
 	user.SetPhoneNumber(entity.PhoneNumber)
 	user.SetEmail(entity.Email)
 	user.SetZipCode(entity.ZipCode)
@@ -42,7 +42,7 @@ func UserEntityToDomain(entity userentity.UserEntity) usermodel.UserInterface {
 	user.SetState(entity.State)
 	user.SetPassword(entity.Password)
 	user.SetOptStatus(entity.OptStatus)
-	user.SetLastActivityAt(entity.LastActivityAT)
+	user.SetLastActivityAt(entity.LastActivityAt)
 	user.SetDeleted(entity.Deleted)
 
 	// Map optional fields (NULL in schema) - check Valid before accessing

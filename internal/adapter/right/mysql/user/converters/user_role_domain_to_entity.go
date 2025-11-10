@@ -43,11 +43,11 @@ func UserRoleDomainToEntity(userRole usermodel.UserRoleInterface) (*userentity.U
 	}
 
 	entity := &userentity.UserRoleEntity{
-		ID:       userRole.GetID(),
-		UserID:   userRole.GetUserID(),
-		RoleID:   userRole.GetRoleID(),
+		ID:       uint32(userRole.GetID()),
+		UserID:   uint32(userRole.GetUserID()),
+		RoleID:   uint32(userRole.GetRoleID()),
 		IsActive: userRole.GetIsActive(),
-		Status:   int64(userRole.GetStatus()),
+		Status:   int8(userRole.GetStatus()),
 	}
 
 	// Map optional ExpiresAt field (*time.Time → sql.NullTime)

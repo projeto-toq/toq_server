@@ -67,7 +67,7 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 		entity.CreciNumber,
 		entity.CreciState,
 		entity.CreciValidity,
-		entity.BornAT,
+		entity.BornAt,
 		entity.PhoneNumber,
 		entity.Email,
 		entity.ZipCode,

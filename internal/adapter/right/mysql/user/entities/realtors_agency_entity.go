@@ -41,15 +41,15 @@ package userentity
 //   - DO NOT import core/model packages here
 type RealtorsAgencyEntity struct {
 	// ID is the association's unique identifier (PRIMARY KEY, AUTO_INCREMENT, INT UNSIGNED)
-	ID int64
+	ID uint32
 
 	// AgencyID is the managing agency's user ID (NOT NULL, INT UNSIGNED, FOREIGN KEY to users.id)
 	// CASCADE DELETE: association removed when agency is deleted
 	// Must reference a user with role "agency"
-	AgencyID int64
+	AgencyID uint32
 
 	// RealtorID is the realtor's user ID (NOT NULL, INT UNSIGNED, FOREIGN KEY to users.id)
 	// Standard DELETE behavior (no CASCADE): allows tracking orphaned associations
 	// Must reference a user with role "realtor"
-	RealtorID int64
+	RealtorID uint32
 }

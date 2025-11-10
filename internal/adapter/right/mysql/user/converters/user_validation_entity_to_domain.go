@@ -21,7 +21,7 @@ func UserValidationEntityToDomainTyped(entity userentity.UserValidationEntity) u
 	val := usermodel.NewValidation()
 
 	// Set user ID (always present, primary key)
-	val.SetUserID(entity.UserID)
+	val.SetUserID(int64(entity.UserID))
 
 	// Map optional fields - check Valid before accessing
 	if entity.NewEmail.Valid {

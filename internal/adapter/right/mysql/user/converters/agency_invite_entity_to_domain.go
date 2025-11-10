@@ -27,8 +27,8 @@ import (
 func AgencyInviteEntityToDomainTyped(entity userentity.AgencyInvite) usermodel.InviteInterface {
 	domain := usermodel.NewInvite()
 
-	domain.SetID(entity.ID)
-	domain.SetAgencyID(entity.AgencyID)
+	domain.SetID(int64(entity.ID))
+	domain.SetAgencyID(int64(entity.AgencyID))
 	domain.SetPhoneNumber(entity.PhoneNumber)
 
 	return domain

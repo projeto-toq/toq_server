@@ -27,7 +27,7 @@ import (
 func WrongSignInEntityToDomainTyped(entity userentity.WrongSignInEntity) usermodel.WrongSigninInterface {
 	wsi := usermodel.NewWrongSignin()
 
-	wsi.SetUserID(entity.UserID)
+	wsi.SetUserID(int64(entity.UserID))
 	wsi.SetFailedAttempts(int64(entity.FailedAttempts)) // uint8 -> int64 conversion
 	wsi.SetLastAttemptAt(entity.LastAttemptAT)
 

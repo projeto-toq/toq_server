@@ -40,12 +40,12 @@ package userentity
 //   - DO NOT import core/model packages here
 type AgencyInvite struct {
 	// ID is the invitation's unique identifier (PRIMARY KEY, AUTO_INCREMENT, INT UNSIGNED)
-	ID int64
+	ID uint32
 
 	// AgencyID is the inviting agency's user ID (NOT NULL, INT UNSIGNED, FOREIGN KEY to users.id)
 	// References a user with "agency" role
 	// Used to track which agency sent the invitation
-	AgencyID int64
+	AgencyID uint32
 
 	// PhoneNumber is the invited realtor's phone in E.164 format (NOT NULL, VARCHAR(15))
 	// Must be unique per agency (one agency cannot invite same number twice)

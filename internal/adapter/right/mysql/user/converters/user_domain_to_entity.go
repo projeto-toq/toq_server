@@ -32,10 +32,10 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 	entity = userentity.UserEntity{}
 
 	// Map mandatory fields (NOT NULL in schema)
-	entity.ID = domain.GetID()
+	entity.ID = uint32(domain.GetID())
 	entity.FullName = domain.GetFullName()
 	entity.NationalID = domain.GetNationalID()
-	entity.BornAT = domain.GetBornAt()
+	entity.BornAt = domain.GetBornAt()
 	entity.PhoneNumber = domain.GetPhoneNumber()
 	entity.Email = domain.GetEmail()
 	entity.ZipCode = domain.GetZipCode()
@@ -46,7 +46,7 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 	entity.State = domain.GetState()
 	entity.Password = domain.GetPassword()
 	entity.OptStatus = domain.IsOptStatus()
-	entity.LastActivityAT = domain.GetLastActivityAt()
+	entity.LastActivityAt = domain.GetLastActivityAt()
 	entity.Deleted = domain.IsDeleted()
 
 	// Map optional fields - convert to sql.Null* with Valid based on value presence

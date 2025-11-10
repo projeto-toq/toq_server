@@ -30,8 +30,8 @@ import (
 //	// entity ready for INSERT query
 func AgencyInviteDomainToEntity(domain usermodel.InviteInterface) (entity userentity.AgencyInvite) {
 	entity = userentity.AgencyInvite{}
-	entity.ID = domain.GetID()
-	entity.AgencyID = domain.GetAgencyID()
+	entity.ID = uint32(domain.GetID())
+	entity.AgencyID = uint32(domain.GetAgencyID())
 	entity.PhoneNumber = domain.GetPhoneNumber()
 
 	return

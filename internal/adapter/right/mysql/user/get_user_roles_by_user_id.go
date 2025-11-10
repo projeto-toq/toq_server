@@ -72,11 +72,11 @@ func (ua *UserAdapter) GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, use
 		}
 
 		entity := &userentities.UserRoleEntity{
-			ID:       int64FromAny(row[0]),
-			UserID:   int64FromAny(row[1]),
-			RoleID:   int64FromAny(row[2]),
+			ID:       uint32(int64FromAny(row[0])),
+			UserID:   uint32(int64FromAny(row[1])),
+			RoleID:   uint32(int64FromAny(row[2])),
 			IsActive: intFromAny(row[3]) == 1,
-			Status:   int64FromAny(row[4]),
+			Status:   int8(int64FromAny(row[4])),
 		}
 
 		// Handle expires_at (pode ser NULL)

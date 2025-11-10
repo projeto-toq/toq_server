@@ -39,7 +39,7 @@ import (
 //	entity := UserValidationDomainToEntity(validation)
 func UserValidationDomainToEntity(domain usermodel.ValidationInterface) (entity userentity.UserValidationEntity) {
 	entity = userentity.UserValidationEntity{}
-	entity.UserID = domain.GetUserID()
+	entity.UserID = uint32(domain.GetUserID())
 	entity.NewEmail = sql.NullString{String: domain.GetNewEmail(), Valid: domain.GetNewEmail() != ""}
 	entity.EmailCode = sql.NullString{String: domain.GetEmailCode(), Valid: domain.GetEmailCode() != ""}
 	entity.EmailCodeExp = sql.NullTime{Time: domain.GetEmailCodeExp(), Valid: !domain.GetEmailCodeExp().IsZero()}

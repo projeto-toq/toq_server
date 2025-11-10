@@ -45,9 +45,9 @@ func UserRoleEntityToDomain(entity *userentity.UserRoleEntity) (usermodel.UserRo
 	}
 
 	userRole := usermodel.NewUserRole()
-	userRole.SetID(entity.ID)
-	userRole.SetUserID(entity.UserID)
-	userRole.SetRoleID(entity.RoleID)
+	userRole.SetID(int64(entity.ID))
+	userRole.SetUserID(int64(entity.UserID))
+	userRole.SetRoleID(int64(entity.RoleID))
 	userRole.SetIsActive(entity.IsActive)
 	userRole.SetStatus(globalmodel.UserRoleStatus(entity.Status))
 

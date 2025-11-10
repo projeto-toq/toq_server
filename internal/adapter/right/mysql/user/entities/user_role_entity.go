@@ -44,16 +44,16 @@ import (
 //   - DO NOT import core/model packages here
 type UserRoleEntity struct {
 	// ID is the user-role association's unique identifier (PRIMARY KEY, AUTO_INCREMENT, INT UNSIGNED)
-	ID int64 `db:"id"`
+	ID uint32 `db:"id"`
 
 	// UserID is the user's identifier (NOT NULL, INT UNSIGNED, FOREIGN KEY to users.id)
 	// CASCADE DELETE: association removed when user deleted
-	UserID int64 `db:"user_id"`
+	UserID uint32 `db:"user_id"`
 
 	// RoleID is the role's identifier (NOT NULL, INT UNSIGNED, FOREIGN KEY to roles.id)
 	// CASCADE DELETE: association removed when role deleted
 	// References roles.id
-	RoleID int64 `db:"role_id"`
+	RoleID uint32 `db:"role_id"`
 
 	// IsActive indicates if this is the user's currently active role (NOT NULL, TINYINT UNSIGNED, DEFAULT 1)
 	// true = active (used for JWT claims and permission checks)
@@ -61,13 +61,13 @@ type UserRoleEntity struct {
 	// Only ONE user_role per user should have is_active=1 at any time
 	IsActive bool `db:"is_active"`
 
-	// Status represents the approval/lifecycle state of the role assignment (NOT NULL, TINYINT, DEFAULT 0)
+	// Status represents the approval/lifecycle state of the role assignment (NOT NULL, TINYINT signed, DEFAULT 0)
 	// 0 = pending approval (awaiting admin review)
 	// 1 = approved (active and operational)
 	// 2 = rejected (denied by admin)
 	// 3 = suspended (temporarily disabled)
 	// Signed TINYINT allows for future negative states if needed
-	Status int64 `db:"status"`
+	Status int8 `db:"status"`
 
 	// ExpiresAt is the optional expiration timestamp for the role (NULL, TIMESTAMP(6))
 	// Used for trial periods, temporary access, or time-limited promotions
