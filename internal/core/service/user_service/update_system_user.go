@@ -78,13 +78,7 @@ func (us *userService) UpdateSystemUser(ctx context.Context, input UpdateSystemU
 		return SystemUserResult{}, opErr
 	}
 
-	activeRole, arErr := us.GetActiveUserRoleWithTx(ctx, tx, input.UserID)
-	if arErr != nil {
-		utils.SetSpanError(ctx, arErr)
-		logger.Error("admin.users.update.get_role_failed", "user_id", input.UserID, "error", arErr)
-		opErr = utils.InternalError("")
-		return SystemUserResult{}, opErr
-	}
+	activeRole := existing.GetActiveRole()
 	if activeRole == nil || activeRole.GetRole() == nil || !activeRole.GetRole().GetIsSystemRole() {
 		opErr = derrors.ErrSystemUserRoleMismatch
 		return SystemUserResult{}, opErr

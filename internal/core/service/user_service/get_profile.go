@@ -53,15 +53,12 @@ func (us *userService) GetProfile(ctx context.Context) (user usermodel.UserInter
 		return nil, utils.InternalError("Failed to get user by ID")
 	}
 
-	// Carregar active role (se existir) via permission service usando a mesma transação read-only
-	activeRole, arErr := us.GetActiveUserRoleWithTx(ctx, tx, user.GetID())
-	if arErr != nil {
-		utils.SetSpanError(ctx, arErr)
-		logger.Error("user.get_profile.get_active_role_error", "error", arErr, "user_id", userID)
-		return nil, utils.InternalError("Failed to get active user role")
-	}
-	if activeRole != nil {
-		user.SetActiveRole(activeRole)
+	// Validate domain invariant: repository already populated active role
+	if user.GetActiveRole() == nil {
+		// This should NEVER happen if database is consistent
+		utils.SetSpanError(ctx, err)
+		logger.Error("user.get_profile.active_role_missing", "user_id", userID)
+		return nil, utils.InternalError("User active role missing")
 	}
 
 	if cmErr := us.globalService.CommitTransaction(ctx, tx); cmErr != nil {

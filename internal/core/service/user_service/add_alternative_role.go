@@ -66,13 +66,7 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	// Check if user has active role
-	activeRole, aerr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
-	if aerr != nil {
-		utils.SetSpanError(ctx, aerr)
-		utils.LoggerFromContext(ctx).Error("user.get_active_role_status.read_active_role_error", "error", aerr, "user_id", userID)
-		return utils.InternalError("Failed to get active role")
-	}
-
+	activeRole := user.GetActiveRole()
 	if activeRole == nil {
 		derr := utils.InternalError("Active role missing")
 		utils.LoggerFromContext(ctx).Error("user.active_role.missing", "user_id", userID)

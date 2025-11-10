@@ -93,6 +93,8 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string, password string, deviceToken string, deviceID string, _ string, _ string) (tokens usermodel.Tokens, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+
+	// Repository now returns user WITH active role in single query
 	user, err := us.repo.GetUserByNationalID(ctx, tx, nationalID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -125,21 +127,14 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 		return
 	}
 
-	// Busca a role ativa via Permission Service (há apenas uma ativa por vez)
-	activeRole, err := us.GetActiveUserRoleWithTx(ctx, tx, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("auth.signin.get_active_role_error", "user_id", userID, "error", err)
-		err = utils.InternalError("Failed to validate user permissions")
-		return
-	}
+	// Validate domain invariant: repository already populated active role
+	activeRole := user.GetActiveRole()
 	if activeRole == nil {
 		// Log da tentativa sem role ativa
 		logger.Warn("auth.signin.no_active_role", "security", true, "user_id", userID)
 		err = utils.AuthorizationError("No active user roles")
 		return
 	}
-	user.SetActiveRole(activeRole)
 
 	// Comparar a senha fornecida com o hash armazenado (bcrypt)
 	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {

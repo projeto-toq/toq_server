@@ -48,7 +48,7 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 		}
 	}()
 
-	// Load user (somente usuários não deletados são retornados pelo repo)
+	// Load user with active role (repository returns complete aggregate)
 	user, err := us.repo.GetUserByID(ctx, tx, userID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -56,13 +56,8 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 		return
 	}
 
-	// Garantir role ativa carregada a partir do Permission Service
-	activeRole, arErr := us.GetActiveUserRoleWithTx(ctx, tx, userID)
-	if arErr != nil {
-		utils.SetSpanError(ctx, arErr)
-		logger.Error("user.delete_account.get_active_role_error", "error", arErr, "user_id", userID)
-		return tokens, utils.InternalError("")
-	}
+	// Validate domain invariant: repository already populated active role
+	activeRole := user.GetActiveRole()
 	if activeRole == nil || activeRole.GetRole() == nil {
 		// Inconsistência interna: por domínio, usuário deve ter role ativa
 		err = utils.InternalError("Active role missing unexpectedly")
@@ -70,7 +65,6 @@ func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Toke
 		logger.Error("user.delete_account.active_role_missing", "user_id", userID)
 		return tokens, err
 	}
-	user.SetActiveRole(activeRole)
 
 	var publishSessionsEvent bool
 	tokens, publishSessionsEvent, err = us.deleteAccount(ctx, tx, user)

@@ -9,8 +9,28 @@ import (
 )
 
 // GetUserByID returns the domain user with the active role eagerly loaded.
-// It enforces the invariant that every user must have exactly one valid active role.
-// A read-only transaction is used to ensure a consistent view across user and permission reads.
+//
+// This method now delegates to the repository which performs an optimized JOIN query,
+// returning the complete user aggregate (User + ActiveRole) in a single database round-trip.
+//
+// The service layer validates the domain invariant that every user MUST have an active role.
+// If the repository returns a user without active role, this is treated as an error.
+//
+// Parameters:
+//   - ctx: Context for tracing, cancellation, and logging
+//   - id: User's unique identifier
+//
+// Returns:
+//   - user: UserInterface with ActiveRole populated
+//   - error: Domain error with appropriate HTTP status code:
+//   - 404 (Not Found) if user doesn't exist
+//   - 500 (Internal) if active role is missing (domain invariant violation)
+//   - 500 (Internal) for infrastructure failures (DB errors)
+//
+// Performance Improvement:
+//   - Old: 2 queries (GetUserByID + GetActiveUserRoleByUserID)
+//   - New: 1 query (repository JOIN)
+//   - Latency reduction: ~50% (eliminates one DB round-trip)
 func (us *userService) GetUserByID(ctx context.Context, id int64) (user usermodel.UserInterface, err error) {
 	ctx, spanEnd, terr := utils.GenerateTracer(ctx)
 	if terr != nil {
@@ -50,39 +70,49 @@ func (us *userService) GetUserByID(ctx context.Context, id int64) (user usermode
 	return user, nil
 }
 
-// GetUserByIDWithTx loads the user and its active role using the provided transaction.
-// It enforces the same invariant regarding the active role.
-// Português: use esta variante quando já estiver dentro de uma transação; nunca retorne usuário sem active role.
+// GetUserByIDWithTx loads the user with its active role using the provided transaction.
+//
+// IMPORTANT: After refactoring, this method is SIMPLIFIED. The repository now returns
+// the complete user aggregate, so we no longer need to make a second query for active role.
+//
+// Domain Invariant Validation:
+//   - Every user MUST have exactly one active role
+//   - If repository returns user without active role, this is an error
+//   - Service logs the violation and returns Internal Error
+//
+// Parameters:
+//   - ctx: Context for logging
+//   - tx: Database transaction (must not be nil)
+//   - id: User's unique identifier
+//
+// Returns:
+//   - user: UserInterface with ActiveRole populated
+//   - error: Domain error (404 Not Found, 500 Internal)
 func (us *userService) GetUserByIDWithTx(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 
-	// Carrega o usuário básico
+	// Repository now returns user WITH active role in single query
 	user, err = us.repo.GetUserByID(ctx, tx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			// User not found or deleted
 			return nil, utils.NotFoundError("User")
 		}
+		// Infrastructure error (DB failure, connection lost, etc.)
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("user.get_by_id.read_user_error", "error", err, "user_id", id)
 		return nil, utils.InternalError("Failed to get user by ID")
 	}
 
-	// Carrega a active role via permission service
-	activeRole, aerr := us.GetActiveUserRoleWithTx(ctx, tx, id)
-	if aerr != nil {
-		utils.SetSpanError(ctx, aerr)
-		utils.LoggerFromContext(ctx).Error("user.get_by_id.read_active_role_error", "error", aerr, "user_id", id)
-		return nil, utils.InternalError("Failed to get active user role")
-	}
-
-	if activeRole == nil {
-		// Invariável do domínio: todo usuário deve ter exatamente um active role válido
+	// Validate domain invariant: every user MUST have active role
+	if user.GetActiveRole() == nil {
+		// This should NEVER happen if database is consistent
+		// (every user should have at least one active role)
 		utils.LoggerFromContext(ctx).Error("user.active_role.missing", "user_id", id)
 		derr := utils.InternalError("User active role missing")
 		utils.SetSpanError(ctx, derr)
 		return nil, derr
 	}
 
-	user.SetActiveRole(activeRole)
 	return user, nil
 }

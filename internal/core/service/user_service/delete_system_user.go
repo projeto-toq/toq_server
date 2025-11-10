@@ -65,13 +65,7 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 
 	us.setDeletedData(existing)
 
-	activeRole, arErr := us.GetActiveUserRoleWithTx(ctx, tx, input.UserID)
-	if arErr != nil {
-		utils.SetSpanError(ctx, arErr)
-		logger.Error("admin.users.delete.get_role_failed", "user_id", input.UserID, "error", arErr)
-		opErr = utils.InternalError("")
-		return opErr
-	}
+	activeRole := existing.GetActiveRole()
 	if activeRole == nil || activeRole.GetRole() == nil || !activeRole.GetRole().GetIsSystemRole() {
 		opErr = derrors.ErrSystemUserRoleMismatch
 		return opErr
