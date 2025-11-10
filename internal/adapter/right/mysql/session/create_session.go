@@ -25,7 +25,7 @@ func (sa *SessionAdapter) CreateSession(ctx context.Context, tx *sql.Tx, session
 			(user_id, refresh_hash, token_jti, expires_at, absolute_expires_at, created_at, rotated_at, user_agent, ip, device_id, rotation_counter, last_refresh_at, revoked)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-	entity := sessionconverters.SessionDomainToEntity(ctx, session)
+	entity := sessionconverters.SessionDomainToEntity(session)
 
 	result, execErr := sa.ExecContext(ctx, tx, "insert", query,
 		entity.UserID,

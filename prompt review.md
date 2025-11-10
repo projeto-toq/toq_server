@@ -6,27 +6,18 @@
 
 ## 🎯 Problema / Solicitação
 
-O sistema de gestão de usuários é implementado pelo modelo model/user_model, pelo serviço service/user_service, pelo repositorio repository/user_repository, e pela persistencia representados pelas tabelas users e user_roles que podem ser consultadas pelo scripts/db_creation.sql.
+O sistema de gestão de usuários é implementado:
+- pelo modelo model/session_model;
+- pelo serviço service/session_service;
+- pelo repositorio repository/session_repository;
+- pelo adapater mysql em mysql/session;
+- e pela persistencia representados por tabelas que podem ser consultadas pelo scripts/db_creation.sql.
 
 Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto (docs/toq_server_go_guide.md) estão sendo seguidas corretamente.
 
-Considerando as extesão da verificação, vamos focar em lotes de arquivos, iniciando pelos arquivos 
-├── list_all_users.go
-├── list_users.go
-├── reset_wrong_signin_attempts.go
-├── rows_helpers.go
-├── scan_helpers.go
-├── update_agency_invite_by_id.go
-├── update_user_by_id.go
-├── update_user_last_activity.go
-├── update_user_password_by_id.go
-├── update_user_role.go
-├── update_user_role_status.go
-├── update_user_role_status_tx.go
-├── update_user_validations.go
-├── update_wrong_signin.go
-├── user_adapter.go
-└── user_blocking.go
+Considerando as extesão da verificação, vamos focar em lotes de arquivos, iniciando pelos arquivos: 
+- do mysql/session/converters;
+- do mysql/session/entities;
 
 Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
 1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.

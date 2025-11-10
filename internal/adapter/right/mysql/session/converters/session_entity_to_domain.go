@@ -1,114 +1,94 @@
 package sessionconverters
 
 import (
-	"fmt"
-	"time"
-
+	sessionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session/entities"
 	sessionmodel "github.com/projeto-toq/toq_server/internal/core/model/session_model"
 )
 
-func SessionEntityToDomain(entity []any) (session sessionmodel.SessionInterface, err error) {
-	session = sessionmodel.NewSession()
+// SessionEntityToDomain converts a database entity to a domain model
+//
+// This converter handles the translation from database-specific types (sql.Null*)
+// to clean domain types, ensuring the core layer remains decoupled from database concerns.
+//
+// Conversion Rules:
+//   - sql.NullString → string (empty string if NULL or !Valid)
+//   - sql.NullTime → time.Time (zero time if NULL; pointer types remain nil if NULL)
+//   - Direct types → Direct types (id, user_id, refresh_hash, expires_at, created_at, rotation_counter, revoked)
+//   - bool → bool (direct mapping; DB stores 0/1 as TINYINT)
+//
+// NULL Semantics:
+//   - TokenJTI: Empty string for NULL (session without issued access token)
+//   - AbsoluteExpiresAt: Zero time for NULL (no absolute expiration)
+//   - RotatedAt: Pointer remains nil if NULL (never rotated)
+//   - UserAgent/IP/DeviceID: Empty strings for NULL (metadata not captured)
+//   - LastRefreshAt: Pointer remains nil if NULL (never refreshed)
+//
+// Parameters:
+//   - entity: SessionEntity from database query
+//
+// Returns:
+//   - session: SessionInterface with all fields populated from entity
+//
+// Example:
+//
+//	entity := sessionentities.SessionEntity{
+//	    ID: 123,
+//	    UserID: 456,
+//	    RefreshHash: "abc123...",
+//	    TokenJTI: sql.NullString{String: "uuid-here", Valid: true},
+//	    // ... other fields
+//	}
+//	domain := SessionEntityToDomain(entity)
+//	fmt.Println(domain.GetID()) // Output: 123
+func SessionEntityToDomain(entity sessionentities.SessionEntity) sessionmodel.SessionInterface {
+	session := sessionmodel.NewSession()
 
-	id, ok := entity[0].(int64)
-	if !ok {
-		return nil, fmt.Errorf("convert id to int64: %T", entity[0])
-	}
-	session.SetID(id)
+	// Map mandatory fields (NOT NULL in schema)
+	session.SetID(entity.ID)
+	session.SetUserID(entity.UserID)
+	session.SetRefreshHash(entity.RefreshHash)
+	session.SetExpiresAt(entity.ExpiresAt)
+	session.SetCreatedAt(entity.CreatedAt)
+	session.SetRotationCounter(entity.RotationCounter)
+	session.SetRevoked(entity.Revoked)
 
-	userID, ok := entity[1].(int64)
-	if !ok {
-		return nil, fmt.Errorf("convert user_id to int64: %T", entity[1])
-	}
-	session.SetUserID(userID)
-
-	refreshHash, ok := entity[2].([]byte)
-	if !ok {
-		return nil, fmt.Errorf("convert refresh_hash to []byte: %T", entity[2])
-	}
-	session.SetRefreshHash(string(refreshHash))
-
-	if entity[3] != nil {
-		tokenJTI, ok := entity[3].([]byte)
-		if !ok {
-			return nil, fmt.Errorf("convert token_jti to []byte: %T", entity[3])
-		}
-		session.SetTokenJTI(string(tokenJTI))
-	}
-
-	expiresAt, ok := entity[4].(time.Time)
-	if !ok {
-		return nil, fmt.Errorf("convert expires_at to time.Time: %T", entity[4])
-	}
-	session.SetExpiresAt(expiresAt)
-
-	if entity[5] != nil {
-		absoluteExpiresAt, ok := entity[5].(time.Time)
-		if !ok {
-			return nil, fmt.Errorf("convert absolute_expires_at to time.Time: %T", entity[5])
-		}
-		session.SetAbsoluteExpiresAt(absoluteExpiresAt)
-	}
-
-	createdAt, ok := entity[6].(time.Time)
-	if !ok {
-		return nil, fmt.Errorf("convert created_at to time.Time: %T", entity[6])
-	}
-	session.SetCreatedAt(createdAt)
-
-	if entity[7] != nil {
-		rotatedAt, ok := entity[7].(time.Time)
-		if !ok {
-			return nil, fmt.Errorf("convert rotated_at to time.Time: %T", entity[7])
-		}
-		session.SetRotatedAt(&rotatedAt)
+	// Map optional fields (NULL in schema) - check Valid before accessing
+	// TokenJTI: empty string if NULL (session created but no access token issued yet)
+	if entity.TokenJTI.Valid {
+		session.SetTokenJTI(entity.TokenJTI.String)
 	}
 
-	if entity[8] != nil {
-		userAgent, ok := entity[8].([]byte)
-		if !ok {
-			return nil, fmt.Errorf("convert user_agent to []byte: %T", entity[8])
-		}
-		session.SetUserAgent(string(userAgent))
+	// AbsoluteExpiresAt: zero time if NULL (no hard expiration limit)
+	if entity.AbsoluteExpiresAt.Valid {
+		session.SetAbsoluteExpiresAt(entity.AbsoluteExpiresAt.Time)
 	}
 
-	if entity[9] != nil {
-		ip, ok := entity[9].([]byte)
-		if !ok {
-			return nil, fmt.Errorf("convert ip to []byte: %T", entity[9])
-		}
-		session.SetIP(string(ip))
+	// RotatedAt: pointer remains nil if NULL (session never refreshed)
+	if entity.RotatedAt.Valid {
+		rotated := entity.RotatedAt.Time
+		session.SetRotatedAt(&rotated)
 	}
 
-	if entity[10] != nil {
-		deviceID, ok := entity[10].([]byte)
-		if !ok {
-			return nil, fmt.Errorf("convert device_id to []byte: %T", entity[10])
-		}
-		session.SetDeviceID(string(deviceID))
+	// UserAgent: empty string if NULL (client didn't provide user-agent)
+	if entity.UserAgent.Valid {
+		session.SetUserAgent(entity.UserAgent.String)
 	}
 
-	if entity[11] != nil {
-		rotationCounter, ok := entity[11].(int64)
-		if !ok {
-			return nil, fmt.Errorf("convert rotation_counter to int64: %T", entity[11])
-		}
-		session.SetRotationCounter(int(rotationCounter))
+	// IP: empty string if NULL (IP not captured)
+	if entity.IP.Valid {
+		session.SetIP(entity.IP.String)
 	}
 
-	if entity[12] != nil {
-		lastRefreshAt, ok := entity[12].(time.Time)
-		if !ok {
-			return nil, fmt.Errorf("convert last_refresh_at to time.Time: %T", entity[12])
-		}
-		session.SetLastRefreshAt(&lastRefreshAt)
+	// DeviceID: empty string if NULL (legacy session or device ID not provided)
+	if entity.DeviceID.Valid {
+		session.SetDeviceID(entity.DeviceID.String)
 	}
 
-	revoked, ok := entity[13].(int64)
-	if !ok {
-		return nil, fmt.Errorf("convert revoked to int64: %T", entity[13])
+	// LastRefreshAt: pointer remains nil if NULL (session never refreshed)
+	if entity.LastRefreshAt.Valid {
+		last := entity.LastRefreshAt.Time
+		session.SetLastRefreshAt(&last)
 	}
-	session.SetRevoked(revoked == 1)
 
-	return session, nil
+	return session
 }
