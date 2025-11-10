@@ -25,14 +25,14 @@
 ├── delete_user_roles_by_userid.go
 ├── delete_validation.go
 ├── delete_wrong_signin_by_userid.go
-├── entities
-│   ├── agency_invite_entity.go
-│   ├── realtors_agency_entity.go
-│   ├── user_entity.go
-│   ├── user_role_entity.go
-│   ├── user_validation_entity.go
-│   ├── user_with_role_entity.go
-│   └── wrong_signin_entity.go
+    ├── entities
+    │   ├── agency_invite_entity.go
+    │   ├── realtors_agency_entity.go
+    │   ├── user_entity.go
+    │   ├── user_role_entity.go
+    │   ├── user_validation_entity.go
+    │   ├── user_with_role_entity.go
+    │   └── wrong_signin_entity.go
 ├── exists_email_for_another_user.go
 ├── exists_phone_for_another_user.go
 ├── get_active_user_role_by_user_id.go

@@ -10,7 +10,7 @@ O sistema de gestão de usuários é implementado pelo modelo model/user_model, 
 
 Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto (docs/toq_server_go_guide.md) estão sendo seguidas corretamente.
 
-Considerando as extesão da verificação, vamos focar em lotes de arquivos, iniciando pelos arquivos de internal/adapter/right/mysql/user/converters.
+Considerando as extesão da verificação, vamos focar em lotes de arquivos, iniciando pelos arquivos de internal/adapter/right/mysql/user/entities.
 
 Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
 1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.

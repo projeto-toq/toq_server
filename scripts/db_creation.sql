@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`users` (
   `born_at` DATE NOT NULL,
   `phone_number` VARCHAR(25) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
-  `zip_code` VARCHAR(15) NOT NULL,
+  `zip_code` VARCHAR(8) NOT NULL,
   `street` VARCHAR(150) NOT NULL,
   `number` VARCHAR(15) NOT NULL,
   `complement` VARCHAR(150) NULL DEFAULT NULL,
