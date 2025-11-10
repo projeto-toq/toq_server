@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	permissionentities "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission/entities"
 	userentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user/entities"
 )
 
@@ -97,4 +98,98 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 	}
 
 	return entities, nil
+}
+
+// scanUserRoleWithRoleEntities scans multiple rows from a JOIN query (user_roles + roles)
+// into strongly-typed entities with embedded role data.
+//
+// This function handles scanning of 12 columns from the JOIN query, mapping each column
+// to the appropriate entity field with proper NULL handling.
+//
+// Parameters:
+//   - rows: SQL result set from GetUserRolesByUserID query
+//
+// Returns:
+//   - userRoleEntities: Slice of UserRoleEntity (populated)
+//   - roleEntities: Slice of RoleEntity (parallel array to userRoleEntities)
+//   - error: Scanning errors (schema mismatch, type conversion failures)
+//
+// Column Order (must match query SELECT order):
+//   - Columns 1-6: UserRole fields (user_roles table)
+//   - Columns 7-12: Role fields (roles table)
+//
+// Performance:
+//   - Single Scan() call per row (efficient memory usage)
+//   - Type-safe scanning (no reflection overhead)
+func scanUserRoleWithRoleEntities(rows *sql.Rows) ([]userentity.UserRoleEntity, []permissionentities.RoleEntity, error) {
+	var userRoleEntities []userentity.UserRoleEntity
+	var roleEntities []permissionentities.RoleEntity
+
+	for rows.Next() {
+		var (
+			// UserRole fields
+			id          int64
+			userID      int64
+			roleID      int64
+			isActiveInt int64
+			status      int64
+			expiresAt   sql.NullTime
+
+			// Role fields
+			rID          int64
+			rSlug        string
+			rName        string
+			rDescription sql.NullString
+			rIsSystemInt int64
+			rIsActiveInt int64
+		)
+
+		// Scan all 12 columns from JOIN query
+		err := rows.Scan(
+			// UserRole fields (6 columns)
+			&id, &userID, &roleID, &isActiveInt, &status, &expiresAt,
+			// Role fields (6 columns)
+			&rID, &rSlug, &rName, &rDescription, &rIsSystemInt, &rIsActiveInt,
+		)
+		if err != nil {
+			return nil, nil, fmt.Errorf("scan user role with role entity: %w", err)
+		}
+
+		// Build UserRoleEntity
+		userRoleEntity := userentity.UserRoleEntity{
+			ID:       uint32(id),
+			UserID:   uint32(userID),
+			RoleID:   uint32(roleID),
+			IsActive: isActiveInt == 1,
+			Status:   int8(status),
+		}
+		if expiresAt.Valid {
+			userRoleEntity.ExpiresAt = expiresAt
+		}
+
+		// Build RoleEntity
+		roleEntity := permissionentities.RoleEntity{
+			ID:   rID,
+			Slug: rSlug,
+			Name: rName,
+			Description: func() string {
+				if rDescription.Valid {
+					return rDescription.String
+				}
+				return ""
+			}(),
+			IsSystemRole: rIsSystemInt == 1,
+			IsActive:     rIsActiveInt == 1,
+		}
+
+		userRoleEntities = append(userRoleEntities, userRoleEntity)
+		roleEntities = append(roleEntities, roleEntity)
+	}
+
+	// Check for errors during iteration
+	if err := rows.Err(); err != nil {
+		return nil, nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	return userRoleEntities, roleEntities, nil
 }
