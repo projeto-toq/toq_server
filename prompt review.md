@@ -11,21 +11,22 @@ O sistema de gestão de usuários é implementado pelo modelo model/user_model, 
 Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto (docs/toq_server_go_guide.md) estão sendo seguidas corretamente.
 
 Considerando as extesão da verificação, vamos focar em lotes de arquivos, iniciando pelos arquivos 
-├── exists_email_for_another_user.go
-├── exists_phone_for_another_user.go
-├── get_active_user_role_by_user_id.go
-├── get_agency_of_realtor.go
-├── get_invite_by_phone_number.go
-├── get_realtors_by_agency.go
-├── get_user_by_id.go
-├── get_user_by_nationalid.go
-├── get_user_by_phone_number.go
-├── get_user_role_by_user_id_and_role_id.go
-├── get_user_roles_by_user_id.go
-├── get_user_validations.go
-├── get_users_by_role_and_status.go
-├── get_wrong_signin_by_userid.go
-├── has_user_duplicate.go
+├── list_all_users.go
+├── list_users.go
+├── reset_wrong_signin_attempts.go
+├── rows_helpers.go
+├── scan_helpers.go
+├── update_agency_invite_by_id.go
+├── update_user_by_id.go
+├── update_user_last_activity.go
+├── update_user_password_by_id.go
+├── update_user_role.go
+├── update_user_role_status.go
+├── update_user_role_status_tx.go
+├── update_user_validations.go
+├── update_wrong_signin.go
+├── user_adapter.go
+└── user_blocking.go
 
 Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
 1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.

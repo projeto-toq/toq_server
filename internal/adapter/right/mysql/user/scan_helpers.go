@@ -13,27 +13,92 @@ import (
 //
 // This function handles the complex scanning of 35 columns from the LEFT JOIN query,
 // mapping each column to the appropriate entity field with proper NULL handling.
+// It is specifically designed for queries that retrieve user data along with their
+// active role information in a single database roundtrip.
+//
+// Used By:
+//   - GetUserByID (internal/adapter/right/mysql/user/get_user_by_id.go)
+//   - GetUserByNationalID (internal/adapter/right/mysql/user/get_user_by_nationalid.go)
+//   - GetUserByPhoneNumber (internal/adapter/right/mysql/user/get_user_by_phone_number.go)
 //
 // Parameters:
-//   - rows: SQL result set from GetUserByID/GetUserByNationalID/GetUserByPhoneNumber queries
+//   - rows: SQL result set from GetUser* queries (caller must close)
 //
 // Returns:
 //   - entities: Slice of UserWithRoleEntity (one per row, typically 0 or 1 row)
 //   - error: Scanning errors (schema mismatch, type conversion failures)
 //
-// Column Order (must match query SELECT order):
-//   - Columns 1-22: User fields (users table)
-//   - Columns 23-29: UserRole fields (user_roles table, nullable)
-//   - Columns 30-35: Role fields (roles table, nullable)
+// Column Order (MUST match query SELECT order exactly):
+//
+//	Columns 1-22: User fields (users table)
+//	 1. id (INT UNSIGNED)
+//	 2. full_name (VARCHAR)
+//	 3. nick_name (VARCHAR, nullable)
+//	 4. national_id (VARCHAR)
+//	 5. creci_number (VARCHAR, nullable)
+//	 6. creci_state (VARCHAR, nullable)
+//	 7. creci_validity (DATE, nullable)
+//	 8. born_at (DATE)
+//	 9. phone_number (VARCHAR)
+//	10. email (VARCHAR)
+//	11. zip_code (VARCHAR)
+//	12. street (VARCHAR)
+//	13. number (VARCHAR)
+//	14. complement (VARCHAR, nullable)
+//	15. neighborhood (VARCHAR)
+//	16. city (VARCHAR)
+//	17. state (VARCHAR)
+//	18. password (VARCHAR)
+//	19. opt_status (TINYINT)
+//	20. last_activity_at (TIMESTAMP)
+//	21. deleted (TINYINT)
+//	22. last_signin_attempt (TIMESTAMP, nullable)
+//
+//	Columns 23-29: UserRole fields (user_roles table, ALL nullable due to LEFT JOIN)
+//	23. ur.id (INT, nullable)
+//	24. ur.user_id (INT, nullable)
+//	25. ur.role_id (INT, nullable)
+//	26. ur.is_active (TINYINT, nullable)
+//	27. ur.status (TINYINT, nullable)
+//	28. ur.expires_at (TIMESTAMP, nullable)
+//	29. ur.blocked_until (DATETIME, nullable)
+//
+//	Columns 30-35: Role fields (roles table, ALL nullable due to LEFT JOIN)
+//	30. r.id (INT, nullable)
+//	31. r.slug (VARCHAR, nullable)
+//	32. r.name (VARCHAR, nullable)
+//	33. r.description (TEXT, nullable)
+//	34. r.is_system_role (TINYINT, nullable)
+//	35. r.is_active (TINYINT, nullable)
 //
 // NULL Handling:
 //   - User fields: Uses sql.Null* types for optional fields (nick_name, creci_*, complement, etc.)
 //   - UserRole fields: ALL nullable (user might not have active role)
 //   - Role fields: ALL nullable (user might not have active role)
+//   - LEFT JOIN ensures user is returned even without role (HasRole flag in entity)
 //
 // Performance:
 //   - Single Scan() call per row (efficient memory usage)
 //   - Type-safe scanning (no reflection overhead)
+//   - Pre-allocates struct fields (no dynamic allocation during scan)
+//
+// Example Query That Uses This Scanner:
+//
+//	query := `SELECT
+//	    u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
+//	    u.born_at, u.phone_number, u.email, u.zip_code, u.street, u.number, u.complement,
+//	    u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted, u.last_signin_attempt,
+//	    ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at, ur.blocked_until,
+//	    r.id, r.slug, r.name, r.description, r.is_system_role, r.is_active
+//	FROM users u
+//	LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = 1
+//	LEFT JOIN roles r ON r.id = ur.role_id
+//	WHERE u.id = ? AND u.deleted = 0`
+//
+// Error Scenarios:
+//   - Column count mismatch: Returns error with column index
+//   - Type mismatch: Returns error with field name
+//   - NULL in NOT NULL column: Returns scan error
 func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, error) {
 	var entities []userentity.UserWithRoleEntity
 
@@ -106,21 +171,52 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 // This function handles scanning of 12 columns from the JOIN query, mapping each column
 // to the appropriate entity field with proper NULL handling.
 //
+// Used By:
+//   - GetUserRolesByUserID (internal/adapter/right/mysql/user/get_user_roles_by_user_id.go)
+//
 // Parameters:
-//   - rows: SQL result set from GetUserRolesByUserID query
+//   - rows: SQL result set from GetUserRolesByUserID query (caller must close)
 //
 // Returns:
 //   - userRoleEntities: Slice of UserRoleEntity (populated)
 //   - roleEntities: Slice of RoleEntity (parallel array to userRoleEntities)
 //   - error: Scanning errors (schema mismatch, type conversion failures)
 //
-// Column Order (must match query SELECT order):
-//   - Columns 1-6: UserRole fields (user_roles table)
-//   - Columns 7-12: Role fields (roles table)
+// Column Order (MUST match query SELECT order exactly):
+//
+//	Columns 1-6: UserRole fields (user_roles table)
+//	 1. ur.id (INT)
+//	 2. ur.user_id (INT)
+//	 3. ur.role_id (INT)
+//	 4. ur.is_active (TINYINT)
+//	 5. ur.status (TINYINT)
+//	 6. ur.expires_at (TIMESTAMP, nullable)
+//
+//	Columns 7-12: Role fields (roles table)
+//	 7. r.id (INT)
+//	 8. r.slug (VARCHAR)
+//	 9. r.name (VARCHAR)
+//	10. r.description (TEXT, nullable)
+//	11. r.is_system_role (TINYINT)
+//	12. r.is_active (TINYINT)
 //
 // Performance:
 //   - Single Scan() call per row (efficient memory usage)
 //   - Type-safe scanning (no reflection overhead)
+//   - Returns parallel arrays (index correspondence maintained)
+//
+// Example Query That Uses This Scanner:
+//
+//	query := `SELECT
+//	    ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at,
+//	    r.id, r.slug, r.name, r.description, r.is_system_role, r.is_active
+//	FROM user_roles ur
+//	JOIN roles r ON r.id = ur.role_id
+//	WHERE ur.user_id = ?`
+//
+// Error Scenarios:
+//   - Column count mismatch: Returns error with column index
+//   - Type mismatch: Returns error with field name
 func scanUserRoleWithRoleEntities(rows *sql.Rows) ([]userentity.UserRoleEntity, []permissionentities.RoleEntity, error) {
 	var userRoleEntities []userentity.UserRoleEntity
 	var roleEntities []permissionentities.RoleEntity

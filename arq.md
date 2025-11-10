@@ -48,21 +48,21 @@
     ├── get_users_by_role_and_status.go
     ├── get_wrong_signin_by_userid.go
     ├── has_user_duplicate.go
-├── list_all_users.go
-├── list_users.go
-├── reset_wrong_signin_attempts.go
-├── rows_helpers.go
-├── scan_helpers.go
-├── update_agency_invite_by_id.go
-├── update_user_by_id.go
-├── update_user_last_activity.go
-├── update_user_password_by_id.go
-├── update_user_role.go
-├── update_user_role_status.go
-├── update_user_role_status_tx.go
-├── update_user_validations.go
-├── update_wrong_signin.go
-├── user_adapter.go
-└── user_blocking.go
+    ├── list_all_users.go
+    ├── list_users.go
+    ├── reset_wrong_signin_attempts.go
+    ├── rows_helpers.go
+    ├── scan_helpers.go
+    ├── update_agency_invite_by_id.go
+    ├── update_user_by_id.go
+    ├── update_user_last_activity.go
+    ├── update_user_password_by_id.go
+    ├── update_user_role.go
+    ├── update_user_role_status.go
+    ├── update_user_role_status_tx.go
+    ├── update_user_validations.go
+    ├── update_wrong_signin.go
+    ├── user_adapter.go
+    └── user_blocking.go
 
 3 directories, 63 files

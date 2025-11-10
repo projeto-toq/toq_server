@@ -12,12 +12,47 @@ import (
 // Iterates through *sql.Rows and populates a typed slice, providing compile-time
 // type safety and clear error handling.
 //
+// Used By:
+//   - ListAllUsers (internal/adapter/right/mysql/user/list_all_users.go)
+//   - Other queries that return user data without JOIN
+//
 // Parameters:
 //   - rows: *sql.Rows from QueryContext (caller must close)
 //
 // Returns:
 //   - entities: Slice of UserEntity with all rows scanned
 //   - error: Scan errors, column mismatch, or rows.Err()
+//
+// Column Order (MUST match query SELECT order exactly):
+//  1. id (INT UNSIGNED)
+//  2. full_name (VARCHAR)
+//  3. nick_name (VARCHAR, nullable)
+//  4. national_id (VARCHAR)
+//  5. creci_number (VARCHAR, nullable)
+//  6. creci_state (VARCHAR, nullable)
+//  7. creci_validity (DATE, nullable)
+//  8. born_at (DATE)
+//  9. phone_number (VARCHAR)
+//  10. email (VARCHAR)
+//  11. zip_code (VARCHAR)
+//  12. street (VARCHAR)
+//  13. number (VARCHAR)
+//  14. complement (VARCHAR, nullable)
+//  15. neighborhood (VARCHAR)
+//  16. city (VARCHAR)
+//  17. state (VARCHAR)
+//  18. password (VARCHAR)
+//  19. opt_status (TINYINT)
+//  20. last_activity_at (TIMESTAMP)
+//  21. deleted (TINYINT)
+//  22. last_signin_attempt (TIMESTAMP, nullable)
+//
+// Example Query That Uses This Scanner:
+//
+//	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state,
+//	    creci_validity, born_at, phone_number, email, zip_code, street, number, complement,
+//	    neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt
+//	    FROM users WHERE deleted = 0`
 func scanUserEntities(rows *sql.Rows) ([]userentity.UserEntity, error) {
 	var entities []userentity.UserEntity
 
@@ -183,6 +218,9 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 // Provides type-safe scanning for temp_user_validations queries, eliminating
 // runtime panics from incorrect column indexing.
 //
+// Used By:
+//   - GetUserValidations (internal/adapter/right/mysql/user/get_user_validations.go)
+//
 // Parameters:
 //   - rows: *sql.Rows from QueryContext (caller must close)
 //
@@ -190,7 +228,7 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 //   - entities: Slice of UserValidationEntity with all rows scanned
 //   - error: Scan errors, column mismatch, or rows.Err()
 //
-// Query Columns Expected (in order):
+// Column Order (MUST match query SELECT order exactly):
 //  1. user_id (INT)
 //  2. new_email (VARCHAR, nullable)
 //  3. email_code (VARCHAR, nullable)
@@ -200,6 +238,12 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 //  7. phone_code_exp (TIMESTAMP, nullable)
 //  8. password_code (VARCHAR, nullable)
 //  9. password_code_exp (TIMESTAMP, nullable)
+//
+// Example Query That Uses This Scanner:
+//
+//	query := `SELECT user_id, new_email, email_code, email_code_exp,
+//	    new_phone, phone_code, phone_code_exp, password_code, password_code_exp
+//	    FROM temp_user_validations WHERE user_id = ?`
 func scanValidationEntities(rows *sql.Rows) ([]userentity.UserValidationEntity, error) {
 	var entities []userentity.UserValidationEntity
 
@@ -233,6 +277,9 @@ func scanValidationEntities(rows *sql.Rows) ([]userentity.UserValidationEntity, 
 //
 // Provides type-safe scanning for agency_invites queries.
 //
+// Used By:
+//   - GetInviteByPhoneNumber (internal/adapter/right/mysql/user/get_invite_by_phone_number.go)
+//
 // Parameters:
 //   - rows: *sql.Rows from QueryContext (caller must close)
 //
@@ -240,10 +287,15 @@ func scanValidationEntities(rows *sql.Rows) ([]userentity.UserValidationEntity, 
 //   - entities: Slice of AgencyInvite with all rows scanned
 //   - error: Scan errors, column mismatch, or rows.Err()
 //
-// Query Columns Expected (in order):
+// Column Order (MUST match query SELECT order exactly):
 //  1. id (INT, PRIMARY KEY)
 //  2. agency_id (INT, FOREIGN KEY to users.id)
 //  3. phone_number (VARCHAR)
+//
+// Example Query That Uses This Scanner:
+//
+//	query := `SELECT id, agency_id, phone_number
+//	    FROM agency_invites WHERE phone_number = ?`
 func scanInviteEntities(rows *sql.Rows) ([]userentity.AgencyInvite, error) {
 	var entities []userentity.AgencyInvite
 
@@ -271,6 +323,9 @@ func scanInviteEntities(rows *sql.Rows) ([]userentity.AgencyInvite, error) {
 //
 // Provides type-safe scanning for temp_wrong_signin queries.
 //
+// Used By:
+//   - GetWrongSignInByUserID (internal/adapter/right/mysql/user/get_wrong_signin_by_userid.go)
+//
 // Parameters:
 //   - rows: *sql.Rows from QueryContext (caller must close)
 //
@@ -278,10 +333,15 @@ func scanInviteEntities(rows *sql.Rows) ([]userentity.AgencyInvite, error) {
 //   - entities: Slice of WrongSignInEntity with all rows scanned
 //   - error: Scan errors, column mismatch, or rows.Err()
 //
-// Query Columns Expected (in order):
+// Column Order (MUST match query SELECT order exactly):
 //  1. user_id (INT, PRIMARY KEY, FOREIGN KEY to users.id)
 //  2. failed_attempts (TINYINT)
 //  3. last_attempt_at (TIMESTAMP)
+//
+// Example Query That Uses This Scanner:
+//
+//	query := `SELECT user_id, failed_attempts, last_attempt_at
+//	    FROM temp_wrong_signin WHERE user_id = ?`
 func scanWrongSigninEntities(rows *sql.Rows) ([]userentity.WrongSignInEntity, error) {
 	var entities []userentity.WrongSignInEntity
 

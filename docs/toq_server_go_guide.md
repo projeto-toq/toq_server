@@ -60,7 +60,7 @@ Sumário
     - config/ — Bootstrap (fases 01–08), lifecycle, telemetry, HTTP server.
     - factory/ — Abstract Factory para criar adapters/handlers.
     - port/ — Ports (interfaces) left/right (HTTP e repositórios/providers).
-    - service/ — Services; um arquivo por caso de uso/método público.
+    - service/ — Services; um arquivo por caso de uso/método público (OBRIGATÓRIO).
     - model/ — Modelos de domínio (interfaces e structs).
     - utils/ — Tracing, errors, converters, validators, etc.
     - events/, go_routines/ — Barramento e rotinas de sistema.
@@ -172,11 +172,49 @@ func NewUserAdapter(...) { ... }
 func (ua *UserAdapter) CreateUser(...) { ... }  // ✅
 ```
 
+**Regra OBRIGATÓRIA: Uma Função Pública Por Arquivo**
+
+Cada método público de um adapter/service/handler DEVE estar em seu próprio arquivo dedicado. Esta regra é **obrigatória e sem exceções** para garantir:
+
+1. **Manutenibilidade:** Mudanças isoladas com histórico Git limpo (1 arquivo = 1 responsabilidade)
+2. **Legibilidade:** Desenvolvedores localizam funções rapidamente por nome de arquivo
+3. **Code Review:** PRs focados e revisões granulares (não revisar múltiplas funções de uma vez)
+4. **Testabilidade:** Testes unitários espelham estrutura (1 arquivo de teste por função)
+5. **Refatoração Segura:** Mudanças em uma função não afetam acidentalmente outras no mesmo arquivo
+
+**Nomenclatura de Arquivos:**
+- Adapters: `{action}_{entity}.go` → `create_user.go`, `get_user_by_id.go`, `update_user_status.go`
+- Services: `{action}_{entity}.go` → `confirm_email_change.go`, `revoke_user_session.go`
+- Handlers: `{action}_{entity}_handler.go` → `create_user_handler.go`, `update_user_handler.go`
+
+**Exemplo Correto:**
+```
+internal/adapter/right/mysql/user/
+├── user_adapter.go                    # Struct + NewFunc APENAS
+├── block_user_temporarily.go          # func (ua *UserAdapter) BlockUserTemporarily(...)
+├── unblock_user.go                    # func (ua *UserAdapter) UnblockUser(...)
+├── get_expired_temp_blocked_users.go  # func (ua *UserAdapter) GetExpiredTempBlockedUsers(...)
+├── create_user.go
+├── update_user_by_id.go
+└── ...
+```
+
+**Exemplo Incorreto (ANTI-PADRÃO):**
+```go
+// user_blocking.go - ❌ ERRADO: múltiplas funções no mesmo arquivo
+func (ua *UserAdapter) BlockUserTemporarily(...) error      // ❌ Deve estar em block_user_temporarily.go
+func (ua *UserAdapter) UnblockUser(...) error               // ❌ Deve estar em unblock_user.go
+func (ua *UserAdapter) GetExpiredTempBlockedUsers(...) (...)// ❌ Deve estar em get_expired_temp_blocked_users.go
+```
+
+**Arquivos Legacy Não Conformes (Requerem Refatoração):**
+- `internal/adapter/right/mysql/user/user_blocking.go` - Deve ser dividido em 3 arquivos separados
+
 **Checklist de Conformidade Arquitetural:**
 
 - [ ] Cada Port em `/port/right/repository/{DOMAIN}/` tem Adapter em `/adapter/right/mysql/{DOMAIN}/`
 - [ ] Arquivo principal do adapter contém APENAS struct + NewFunc
-- [ ] Cada método público está em arquivo próprio
+- [ ] Cada método público está em arquivo próprio (OBRIGATÓRIO, sem exceções)
 - [ ] Converters separados em subdiretório `/converters/`
 - [ ] Entities separadas em subdiretório `/entities/`
 - [ ] Adapter usa `InstrumentedAdapter` para queries (tracing + métricas)
@@ -1936,11 +1974,11 @@ utils.SetSpanError(ctx, err)
 - Ports (interfaces) ficam em `internal/core/port/...` e são separadas por contexto (left/right) e por módulo (authhandler, userhandler, repositories, etc.).
 - Interface em arquivo distinto dos domínios: não misture a definição de interface com os modelos de domínio; mantenha os modelos em `internal/core/model` e interfaces em `internal/core/port`.
 - Services estarão no diretório service e possuem um diretório por módulo (ex.: user_service, permission_service, listing_service).
-- Cada service terá seu arquivo de interface com o nome de seu módulo (ex.: user_service.go) apenas com struct, interface e func New e cada método público estará em um arquivo separado (ex.: create_user.go, update_user.go).
-- Cada função exposta relevante deve ter seu próprio arquivo no Service para granularidade e histórico limpo (ex.: `confirm_email_change.go`, `confirm_phone_change.go`).
+- Cada service terá seu arquivo de interface com o nome de seu módulo (ex.: user_service.go) apenas com struct, interface e func New e **cada método público estará em um arquivo separado** (ex.: create_user.go, update_user.go) - OBRIGATÓRIO.
+- Cada função exposta relevante deve ter seu próprio arquivo no Service para granularidade e histórico limpo (ex.: `confirm_email_change.go`, `confirm_phone_change.go`) - OBRIGATÓRIO.
 - Handlers estarão no diretório http/handlers e possuirão um diretório por módulo (ex.: user_handlers, admin_handlers, auth_handlers).
-- Cada handler estará em um arquivo separado (ex.: create_user_handler.go, update_user_handler.go) apenas com struct, interface e func New e cada método público estará em um arquivo separado.
-- Em adapters/handlers, mantenha cada endpoint em arquivo separado (ex.: `update_user_role_status.go`).
+- Cada handler estará em um arquivo separado (ex.: create_user_handler.go, update_user_handler.go) apenas com struct, interface e func New e **cada método público estará em um arquivo separado** - OBRIGATÓRIO.
+- Em adapters, **cada método público deve estar em arquivo separado** (ex.: `create_user.go`, `update_user_role_status.go`, `block_user_temporarily.go`) - OBRIGATÓRIO.
 
 ## 13. Padrão para análise/refatoração
 
