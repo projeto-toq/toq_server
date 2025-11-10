@@ -62,7 +62,40 @@ type PermissionServiceInterface interface {
 	GetRolePermissionByID(ctx context.Context, rolePermissionID int64) (permissionmodel.RolePermissionInterface, error)
 
 	// Cache management
-	InvalidateUserCache(ctx context.Context, userID int64) error
+	// InvalidateUserCache invalida o cache de permissões de um usuário
+	// Retorna erro se a operação falhar; caller deve decidir como tratar.
+	//
+	// Parameters:
+	//   - ctx: Context for tracing and logging
+	//   - userID: ID do usuário cujo cache será invalidado
+	//   - source: Identificador da operação que causou a invalidação (ex: "assign_role", "switch_active_role")
+	//            Usado para rastreabilidade em logs e métricas
+	//
+	// Returns:
+	//   - error: Infrastructure error se a invalidação falhar
+	//
+	// Usage:
+	//   // Quando a falha DEVE ser propagada (operações críticas)
+	//   if err := ps.InvalidateUserCache(ctx, userID, "critical_operation"); err != nil {
+	//       logger.Error("cache_invalidation_failed", "error", err)
+	//       return err
+	//   }
+	InvalidateUserCache(ctx context.Context, userID int64, source string) error
+
+	// InvalidateUserCacheSafe tenta invalidar o cache mas NÃO propaga erros
+	// Registra apenas WARN em logs se a operação falhar.
+	// Ideal para operações best-effort após commits de transação.
+	//
+	// Parameters:
+	//   - ctx: Context for tracing and logging
+	//   - userID: ID do usuário cujo cache será invalidado
+	//   - source: Identificador da operação que causou a invalidação
+	//
+	// Usage:
+	//   // Após commit bem-sucedido, quando falha não deve bloquear fluxo
+	//   ps.InvalidateUserCacheSafe(ctx, userID, "assign_role")
+	InvalidateUserCacheSafe(ctx context.Context, userID int64, source string)
+
 	ClearUserPermissionsCache(ctx context.Context, userID int64) error
 	RefreshUserPermissions(ctx context.Context, userID int64) error
 

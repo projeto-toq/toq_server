@@ -68,9 +68,10 @@ func (p *permissionServiceImpl) RevokePermissionFromRole(ctx context.Context, ro
 		return utils.InternalError("")
 	}
 
-	logger.Info("permission.permission.revoked", "role_id", roleID, "permission_id", permissionID)
 	for _, uid := range affectedUserIDs {
-		p.invalidateUserCacheSafe(ctx, uid, "revoke_permission_from_role")
+		p.InvalidateUserCacheSafe(ctx, uid, "revoke_permission_from_role")
 	}
+
+	logger.Info("permission.permission.revoked", "role_id", roleID, "permission_id", permissionID)
 	return nil
 }

@@ -113,9 +113,9 @@ func (p *permissionServiceImpl) UpdatePermission(ctx context.Context, input Upda
 	}
 
 	for uid := range userIDSet {
-		p.invalidateUserCacheSafe(ctx, uid, "update_permission")
+		p.InvalidateUserCacheSafe(ctx, uid, "update_permission")
 	}
 
-	logger.Info("permission.permission.updated", "permission_id", existing.GetID(), "active", existing.GetIsActive())
+	logger.Info("permission.updated", "permission_id", input.ID)
 	return existing, nil
 }

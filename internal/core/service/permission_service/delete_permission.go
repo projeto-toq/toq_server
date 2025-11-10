@@ -86,9 +86,9 @@ func (p *permissionServiceImpl) DeletePermission(ctx context.Context, permission
 	}
 
 	for uid := range userIDSet {
-		p.invalidateUserCacheSafe(ctx, uid, "delete_permission")
+		p.InvalidateUserCacheSafe(ctx, uid, "delete_permission")
 	}
 
-	logger.Info("permission.permission.deleted", "permission_id", permissionID)
+	logger.Info("permission.deleted", "permission_id", permissionID)
 	return nil
 }

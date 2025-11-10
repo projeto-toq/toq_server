@@ -21,7 +21,7 @@ func (p *permissionServiceImpl) RefreshUserPermissions(ctx context.Context, user
 	logger.Debug("permission.permissions.refresh.request", "user_id", userID)
 
 	// Invalidar cache atual
-	if err := p.InvalidateUserCache(ctx, userID); err != nil {
+	if err := p.InvalidateUserCache(ctx, userID, "refresh_user_permissions"); err != nil {
 		logger.Warn("permission.permissions.refresh.invalidate_failed", "user_id", userID, "error", err)
 	}
 

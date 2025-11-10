@@ -72,7 +72,7 @@ func (p *permissionServiceImpl) DeleteRolePermission(ctx context.Context, rolePe
 	}
 
 	for _, uid := range affectedUsers {
-		p.invalidateUserCacheSafe(ctx, uid, "delete_role_permission")
+		p.InvalidateUserCacheSafe(ctx, uid, "delete_role_permission")
 	}
 
 	logger.Info("permission.role_permission.deleted", "role_permission_id", rolePermissionID)

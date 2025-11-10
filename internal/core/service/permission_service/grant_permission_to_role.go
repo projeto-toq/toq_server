@@ -104,9 +104,11 @@ func (p *permissionServiceImpl) GrantPermissionToRole(ctx context.Context, roleI
 		utils.SetSpanError(ctx, err)
 		return utils.InternalError("")
 	}
-	logger.Info("permission.permission.granted", "role_id", roleID, "permission_id", permissionID)
+
 	for _, uid := range affectedUserIDs {
-		p.invalidateUserCacheSafe(ctx, uid, "grant_permission_to_role")
+		p.InvalidateUserCacheSafe(ctx, uid, "grant_permission_to_role")
 	}
+
+	logger.Info("permission.permission.granted", "role_id", roleID, "permission_id", permissionID)
 	return nil
 }

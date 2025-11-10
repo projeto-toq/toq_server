@@ -6,14 +6,25 @@
 
 ## 🎯 Problema / Solicitação
 
-após a refatoração do sistema de gestão de usuários e permissionamento, foi identificado uma poss''ivel melhoria em internal/right/mysql/user/get_user_by_id.go e demais funções semelhantes que buscam usuários, tais como get_user_by_national_id.go, get_user_by_phone_number. go etc.
-Considernado o modelo de usuarios internal/core/model/user_model/* o modelo user sempre precisa de activeRole e o get_user_by_id.go e semelhantes apenas retornam o user sem sua active role. Isso faz coom que user_service precise fazer chamadas adicionais para buscar a role ativa do usuário.
+após a refatoração do sistema de gestão de usuários e permissionamento, o lint reporta:
+internal/core/service/user_service/assign_role_to_user.go:129:42: Error return value of `us.permissionService.InvalidateUserCache` is not checked (errcheck)
+        us.permissionService.InvalidateUserCache(ctx, userID)
+                                                ^
+internal/core/service/user_service/remove_role_from_user.go:91:42: Error return value of `us.permissionService.InvalidateUserCache` is not checked (errcheck)
+        us.permissionService.InvalidateUserCache(ctx, userID)
+                                                ^
+internal/core/service/user_service/switch_active_role.go:79:42: Error return value of `us.permissionService.InvalidateUserCache` is not checked (errcheck)
+        us.permissionService.InvalidateUserCache(ctx, userID) // TODO incluir mensagem, "switch_active_role_with_tx")
+                                                ^
+make: *** [Makefile:39: ci-lint] Error 1
+
 
 Assim:
-1. Analise os codigos de user_model, user_service, user_repository, mapeando se a situação descrita procede.
-2. Proponha um plano detalhado para corrigir o problema, permitindo que uma úncia chamada traga todo o usuário com sua active role.
-    2.1. Considere a necessidade de alterar user_repository para incluir joins ou chamadas adicionais para permission_repository.
-    2.2. Considere a necessidade de alterar user_model para incluir a active role como parte do modelo retornado.
+1. Analise os codigos de user_model, user_service, user_repository, permission_model, permission_service, permission_repository mapeando a causa raiz do problema.
+2. Proponha um plano detalhado para corrigir o problema.
+3. Existe um TODO que é necessário incluir a mensagem da causa da invalidação do cache. Isto se deve a refatoração que moveu a responsabilidade de gestão de user_roles para user_service. Proponha como incluir essa mensagem em cada chamada de invalidação de cache.
+    3.1. Revise as assinaturas das funções de invalidação de cache em permission_service e permission_repository, garantindo que aceitem um parâmetro adicional para a mensagem.
+    3.2. Revise todas as chamadas para essas funções em user_service, garantindo que a mensagem apropriada seja passada com base na operação realizada (ex: "assign_role", "remove_role", "switch_active_role").
 
 
 ---

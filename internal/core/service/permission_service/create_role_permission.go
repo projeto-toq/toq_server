@@ -109,7 +109,7 @@ func (p *permissionServiceImpl) CreateRolePermission(ctx context.Context, input 
 	}
 
 	for _, uid := range affectedUsers {
-		p.invalidateUserCacheSafe(ctx, uid, "create_role_permission")
+		p.InvalidateUserCacheSafe(ctx, uid, "create_role_permission")
 	}
 
 	logger.Info("permission.role_permission.created", "role_permission_id", rolePermission.GetID(), "role_id", input.RoleID, "permission_id", input.PermissionID)

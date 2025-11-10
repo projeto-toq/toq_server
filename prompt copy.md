@@ -6,28 +6,19 @@
 
 ## 🎯 Problema / Solicitação
 
-O sistema de gestão de usuários é implementado pelo modelo model/user_model, pelo serviço service/user_service, pelo repositorio repository/user_repository, e pela persistencia representados pelas tabelas users e user_roles. Cada usuário terá necessariamente ao menos 1 role e alguns podem ter mais que um role. Caso tenha mais de um role associado, um deles deve ser o role "ativo", que indica o papel atual do usuário no sistema.
+O sistema de gestão de usuários é implementado pelo modelo model/user_model, pelo serviço service/user_service, pelo repositorio repository/user_repository, e pela persistencia representados pelas tabelas users e user_roles que podem ser consultadas pelo scripts/db_creation.sql.
 
-O sistema de permissionamento é implementado pelo modelo model/permission_model, serviço service/permission_service, pelo repositorio permission/repository, e pela persistencia representada pelas tabelas roles, roles_permission e permissions. Cada role possui um conjunto de permissions associadas originárias de permissions, que definem as ações que o usuário com aquele role pode executar no sistema.
+Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto (docs/toq_server_go_guide.md) estão sendo seguidas corretamente.
 
-Assim, ao chamar algum endpoint protegido, o sistema, atraves do permission_middleware, verifica se o user_role daquele usuário possui as permissions necessárias para executar a ação, com base no seu role ativo e nas permissions associadas a esse role.
-
-O sistema de permissionamento gerencia as tabelas de roles, permissions e roles_permissions, enquanto o sistema de gestão de usuários gerencia as tabelas de users e user_roles. A associação entre usuários e seus roles é feita na tabela user_roles, onde um usuário pode ter múltiplos roles, mas apenas um deles é marcado como ativo.
-
-Ocorre que em algum momento da construção do código, foi delegado ao sistema de permissionamento a gestão de user_roles, o que gera complexidade para user_service construir um usuário inteiro com suas roles, sendo obrigado a chamar permission_repository para obter as roles do usuário.
-
-Considerando os dominios user é um dominio principal e deveria, caso necessário, receber o dominio permission como dependência, e não o contrário, onde permission_service depende de user_repository para gerir user_roles.
-
-Além disso em diversos pontos a reconstrução de user em service necessita a chamada para obter o usuário e uma chamada para obter suas roles, o que gera complexidade desnecessária e quebra o encapsulamento do dominio user.
+Considerando as extesão da verificação, vamos focar em lotes de arquivos, iniciando pelos arquivos de internal/adapter/right/mysql/user/converters.
 
 Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
-1. Analise os codigos de user_model, user_service, user_repository, permission_model, permission_service e permission_repository. Mapeando se a situação descrita procede.
-2. Proponha um plano detalhado para corrigir o problema, realocando a responsabilidade de gestão de user_roles para user_* ao invés de permission_*.
-3. revise a injeção de dependências entre os serviços, garantindo que user_service possa depender de permission_service se necessário, mas não o contrário.
-4. Revise as chamadas para reconstrução de usuários em user_service, garantindo que todas as roles associadas sejam obtidas diretamente por user_service sem necessidade de chamadas adicionais a permission_repository.
-    4.1. Talves ajustar as funçãoes que buscam usuários (get_user_by id, get_all_users, etc) para que retornem o usuário completo com suas roles associadas.
-4. Apresente a estrutura final de diretórios e arquivos após a implementação do plano, seguindo a Regra de Espelhamento Port ↔ Adapter do guia.
-5. Como será um refatoração grande, divida em etapas, detalhe a ordem de execução das etapas do plano, considerando dependências entre elas e salve todo o detalhe em um arquivo para acompanhamento das etapas da implementação.
+1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.
+2. Para cada desvio identificado, explique qual regra foi violada e o impacto disso no sistema.
+3. Proponha um plano detalhado para corrigir os desvios, incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
+    3.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
+4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
+5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
 
 
 ---

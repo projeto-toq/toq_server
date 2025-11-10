@@ -77,9 +77,9 @@ func (p *permissionServiceImpl) UpdateRolePermission(ctx context.Context, input 
 	}
 
 	for _, uid := range affectedUsers {
-		p.invalidateUserCacheSafe(ctx, uid, "update_role_permission")
+		p.InvalidateUserCacheSafe(ctx, uid, "update_role_permission")
 	}
 
-	logger.Info("permission.role_permission.updated", "role_permission_id", existing.GetID(), "granted", existing.GetGranted())
+	logger.Info("permission.role_permission.updated", "role_permission_id", input.ID)
 	return existing, nil
 }
