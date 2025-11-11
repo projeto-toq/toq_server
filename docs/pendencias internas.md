@@ -43,6 +43,6 @@
         - modificar pedidos de visita
         - cancelar pedidos de visita
 - /listings/photo-session/slots? from + period >= hora atual
-- remover a limpeza de dados em delete account
+
 - permitir hard delete de lisnting enquanto não for publicado removendo todos os agendamentos, fotos, propostas, visitas
 - após publicado, deve ser passado ao modeo de suspenso e entÃo soft delete

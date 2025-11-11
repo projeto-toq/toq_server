@@ -6,16 +6,14 @@
 
 ## 🎯 Problema / Solicitação
 
-Houve uma mudança na regra de negócio no processo de reserva de slots para realização de fotos do imovel anunciado (listing).
-Hoje, após o owner reservar o slot e o listing passar para o estado de photosessionmodel.BookingStatusPendingApproval, o fotografo deve aprovar ou recusar a solicitação de agendamento. Esta açÃo é realizada na função UpdateSessionStatus do service photosession.
-Agora, após a reserva do slot, o sistema deve automaticamente aprovar a sessão de fotos, sem a necessidade de intervenção do fotógrafo.
-O código está mais detalhado prevendo opções futras de aprovação manual, mas a regra atual é de aprovação automática. EntÃo o código deve ser altera mas mantido de forma comentada para futuras necessidades.
+Houve uma mudança na regra de negócio no processo de deleção de contas de usuários. Atualmente, ao deletar uma conta, o sistema limpa todos os dados associados ao usuário. A nova regra exige que essa limpeza de dados seja removida, ou seja, ao deletar uma conta, os dados do usuário devem ser mantidos no sistema e somente o campo deleted deve ser atualizado para 1, o que na prática elimina o usuário do ponto de vista funcional, mas mantém seus dados para possíveis auditorias futuras.
 
 
 Assim:
-1. Analise o código atual do service photosession, especialmente a função UpdateSessionStatus.
-2. Identifique os pontos onde a lógica de aprovação manual está implementada.
-3. Proponha um plano detalhado para refatorar o código, comentando a lógica de aprovação manual e implementando a aprovação automática, de forma que no futuro a lógica manual possa ser facilmente reativada.
+1. Analise o código atual do serviço de deleção de contas de usuários em DeleteAccount.
+2. Identifique onde os dados do usuário são mascarados no processo de deleção.
+3. Proponha um plano detalhado para refatorar o código, permitindo a manunteção dos dados do usuário ao invés de sua remoção completa.
+4. Deve ser possível ao usuário que deletou sua conta, voltar a cadastrar-se com o mesmo email, telefone e nationalID, sem conflitos. Esta verificação é feit a em HasUserDuplicate.
 
 ---
 

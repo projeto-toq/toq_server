@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
@@ -13,7 +12,8 @@ import (
 )
 
 // DeleteAccount deletes the current authenticated user's account.
-// It revokes all sessions and removes all device tokens, masks PII, soft deletes the active role, and hard deletes the remaining roles.
+// It revokes all sessions, removes device tokens, and marks the account as deleted.
+// User data and role history are preserved for audit purposes.
 // Idempotent: if already deleted, returns success and expired tokens.
 func (us *userService) DeleteAccount(ctx context.Context) (tokens usermodel.Tokens, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -93,12 +93,6 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 
 	//delete the account dependencies
 	activeRole := user.GetActiveRole()
-	var activeRoleID int64
-	var activeRoleSlug permissionmodel.RoleSlug
-	if activeRole != nil && activeRole.GetRole() != nil {
-		activeRoleID = activeRole.GetRole().GetID()
-		activeRoleSlug = permissionmodel.RoleSlug(activeRole.GetRole().GetSlug())
-	}
 
 	if activeRole != nil && activeRole.GetRole() != nil {
 		roleSlug := permissionmodel.RoleSlug(activeRole.GetRole().GetSlug())
@@ -142,7 +136,8 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 		logger.Warn("user.delete_account.remove_device_tokens_warning", "error", err2, "user_id", user.GetID())
 	}
 
-	us.setDeletedData(user)
+	// Mark user as deleted (preserving all data for audit)
+	user.SetDeleted(true)
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
@@ -151,63 +146,21 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 		return
 	}
 
-	err = us.repo.UpdateUserPasswordByID(ctx, tx, user)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.delete_account.update_password_error", "error", err, "user_id", user.GetID())
-		return
-	}
-
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Mascarado dados do usuário (conta apagada)")
+	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Conta apagada por solicitação do usuário (dados preservados para auditoria)")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.delete_account.audit_users_error", "error", err, "user_id", user.GetID())
 		return
 	}
 
-	// Delete user folder in cloud storage
-	if us.cloudStorageService != nil {
-		folderErr := us.DeleteUserFolder(ctx, user.GetID())
-		if folderErr != nil {
-			logger.Error("user.delete_account.delete_user_folder_error", "error", folderErr, "user_id", user.GetID())
-			return tokens, publishSessionsEvent, utils.InternalError("Failed to delete user assets")
-		}
+	// Deactivate all user roles (soft delete: is_active = 0 for all roles)
+	if err2 := us.repo.DeactivateAllUserRoles(ctx, tx, user.GetID()); err2 != nil {
+		utils.SetSpanError(ctx, err2)
+		logger.Error("user.delete_account.deactivate_roles_error", "error", err2, "user_id", user.GetID())
+		return tokens, publishSessionsEvent, utils.InternalError("Failed to deactivate user roles")
 	}
 
-	// Remover todos os roles do usuário
-	userRoles, err := us.repo.GetUserRolesByUserID(ctx, tx, user.GetID())
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.delete_account.get_user_roles_error", "error", err, "user_id", user.GetID())
-		return
-	}
-
-	if err = us.markUserRolesAsDeleted(ctx, tx, user.GetID(), userRoles, activeRoleSlug); err != nil {
-		return tokens, publishSessionsEvent, err
-	}
-
-	for _, userRole := range userRoles {
-		role := userRole.GetRole()
-		if role == nil {
-			errMissingRole := utils.InternalError("Role details missing for user role")
-			utils.SetSpanError(ctx, errMissingRole)
-			logger.Error("user.delete_account.role_without_details", "user_id", user.GetID(), "user_role_id", userRole.GetID())
-			return tokens, publishSessionsEvent, errMissingRole
-		}
-
-		if (activeRoleID != 0 && role.GetID() == activeRoleID) || (activeRoleSlug != "" && permissionmodel.RoleSlug(role.GetSlug()) == activeRoleSlug) {
-			continue
-		}
-
-		err = us.RemoveRoleFromUserWithTx(ctx, tx, user.GetID(), role.GetID())
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("user.delete_account.remove_role_error", "error", err, "user_id", user.GetID(), "role_id", role.GetID())
-			return
-		}
-	}
-
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Apagados os papéis do usuário, pois a conta foi apagada")
+	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Desativados todos os papéis do usuário (is_active=0), pois a conta foi apagada")
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.delete_account.audit_user_roles_error", "error", err, "user_id", user.GetID())
@@ -221,54 +174,4 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	}
 
 	return
-}
-
-func (us *userService) markUserRolesAsDeleted(ctx context.Context, tx *sql.Tx, userID int64, userRoles []usermodel.UserRoleInterface, activeRoleSlug permissionmodel.RoleSlug) error {
-	ctx = utils.ContextWithLogger(ctx)
-	logger := utils.LoggerFromContext(ctx)
-
-	if activeRoleSlug == "" {
-		for _, userRole := range userRoles {
-			if !userRole.GetIsActive() {
-				continue
-			}
-			role := userRole.GetRole()
-			if role == nil {
-				err := utils.InternalError("Active role details missing")
-				utils.SetSpanError(ctx, err)
-				logger.Error("user.delete_account.active_role_without_details", "user_id", userID, "user_role_id", userRole.GetID())
-				return err
-			}
-			slug := permissionmodel.RoleSlug(role.GetSlug())
-			if slug == "" {
-				err := utils.InternalError("Active role slug missing")
-				utils.SetSpanError(ctx, err)
-				logger.Error("user.delete_account.active_role_without_slug", "user_id", userID, "user_role_id", userRole.GetID())
-				return err
-			}
-			activeRoleSlug = slug
-			break
-		}
-	}
-
-	if activeRoleSlug == "" {
-		err := utils.InternalError("Active role not found")
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.delete_account.active_role_not_found", "user_id", userID)
-		return err
-	}
-
-	if err := us.repo.UpdateUserRoleStatus(ctx, tx, userID, activeRoleSlug, globalmodel.StatusDeleted); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			utils.SetSpanError(ctx, err)
-			logger.Error("user.delete_account.update_role_status_no_rows", "user_id", userID, "role_slug", activeRoleSlug)
-			return utils.InternalError("Failed to update role status")
-		}
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.delete_account.update_role_status_error", "error", err, "user_id", userID, "role_slug", activeRoleSlug)
-		return utils.InternalError("Failed to update role status")
-	}
-
-	logger.Info("user.delete_account.role_status_marked_deleted", "user_id", userID, "role_slug", activeRoleSlug)
-	return nil
 }

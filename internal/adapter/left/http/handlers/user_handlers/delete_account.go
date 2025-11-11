@@ -12,7 +12,7 @@ import (
 // DeleteAccount deletes the authenticated user's account
 //
 //	@Summary      Delete account
-//	@Description  Permanently delete the current user's account. Revokes all sessions, removes device tokens, masks PII, and detaches roles.
+//	@Description  Logically delete the current user's account. Revokes all sessions and removes device tokens. User data and role history are preserved for audit purposes and regulatory compliance (LGPD). The account cannot be restored after deletion, but the user may create a new account with the same credentials (email, phone, CPF).
 //	@Tags         User
 //	@Accept       json
 //	@Produce      json

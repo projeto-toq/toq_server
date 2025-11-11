@@ -7369,7 +7369,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Permanently delete the current user's account. Revokes all sessions, removes device tokens, masks PII, and detaches roles.",
+                "description": "Logically delete the current user's account. Revokes all sessions and removes device tokens. User data and role history are preserved for audit purposes and regulatory compliance (LGPD). The account cannot be restored after deletion, but the user may create a new account with the same credentials (email, phone, CPF).",
                 "consumes": [
                     "application/json"
                 ],

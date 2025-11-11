@@ -10,7 +10,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// DeleteSystemUser efetua a exclusão lógica de um usuário de sistema e desativa seu role.
+// DeleteSystemUser performs logical deletion of a system user and deactivates all their roles.
+// User data and role history are preserved for audit purposes.
 func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemUserInput) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -63,8 +64,6 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		return opErr
 	}
 
-	us.setDeletedData(existing)
-
 	activeRole := existing.GetActiveRole()
 	if activeRole == nil || activeRole.GetRole() == nil || !activeRole.GetRole().GetIsSystemRole() {
 		opErr = derrors.ErrSystemUserRoleMismatch
@@ -92,6 +91,9 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 	if removeTokensErr := us.deviceTokenRepo.RemoveAllByUserID(existing.GetID()); removeTokensErr != nil {
 		logger.Warn("admin.users.delete.remove_tokens_failed", "user_id", existing.GetID(), "error", removeTokensErr)
 	}
+
+	// Mark user as deleted (preserving all data for audit)
+	existing.SetDeleted(true)
 	existing.SetLastActivityAt(time.Now().UTC())
 
 	if updateErr := us.repo.UpdateUserByID(ctx, tx, existing); updateErr != nil {
@@ -101,25 +103,15 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		return opErr
 	}
 
-	if pwdErr := us.repo.UpdateUserPasswordByID(ctx, tx, existing); pwdErr != nil {
-		utils.SetSpanError(ctx, pwdErr)
-		logger.Error("admin.users.delete.update_password_failed", "user_id", existing.GetID(), "error", pwdErr)
+	// Deactivate all user roles (soft delete: is_active = 0 for all roles)
+	if deactivateErr := us.repo.DeactivateAllUserRoles(ctx, tx, existing.GetID()); deactivateErr != nil {
+		utils.SetSpanError(ctx, deactivateErr)
+		logger.Error("admin.users.delete.deactivate_roles_failed", "user_id", existing.GetID(), "error", deactivateErr)
 		opErr = utils.InternalError("")
 		return opErr
 	}
 
-	if statusErr := us.repo.UpdateUserRoleStatus(ctx, tx, existing.GetID(), roleSlug, globalmodel.StatusDeleted); statusErr != nil {
-		if errorsIsNoRows(statusErr) {
-			logger.Warn("admin.users.delete.update_role_status_no_rows", "user_id", existing.GetID(), "role_slug", roleSlug)
-		} else {
-			utils.SetSpanError(ctx, statusErr)
-			logger.Error("admin.users.delete.update_role_status_failed", "user_id", existing.GetID(), "role_slug", roleSlug, "error", statusErr)
-			opErr = utils.InternalError("")
-			return opErr
-		}
-	}
-
-	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Dados do usuário mascarados e conta desativada via painel admin", existing.GetID()); auditErr != nil {
+	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "System user deleted (data and role history preserved for audit)", existing.GetID()); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
 		logger.Error("admin.users.delete.audit_failed", "user_id", existing.GetID(), "error", auditErr)
 		opErr = utils.InternalError("")
@@ -129,12 +121,6 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		utils.SetSpanError(ctx, commitErr)
 		logger.Error("admin.users.delete.tx_commit_failed", "user_id", existing.GetID(), "error", commitErr)
-		return utils.InternalError("")
-	}
-
-	if deactivateErr := us.repo.DeactivateAllUserRoles(ctx, tx, existing.GetID()); deactivateErr != nil {
-		utils.SetSpanError(ctx, deactivateErr)
-		logger.Error("admin.users.delete.deactivate_roles_failed", "user_id", existing.GetID(), "error", deactivateErr)
 		return utils.InternalError("")
 	}
 
