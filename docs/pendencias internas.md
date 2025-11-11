@@ -42,3 +42,4 @@
         - aceitar pedidos de visita
         - modificar pedidos de visita
         - cancelar pedidos de visita
+- /listings/photo-session/slots? from + period >= hora atual

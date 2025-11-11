@@ -6,25 +6,30 @@
 
 ## 🎯 Problema / Solicitação
 
-após a refatoração do sistema de gestão de usuários e permissionamento, o lint reporta:
-internal/core/service/user_service/assign_role_to_user.go:129:42: Error return value of `us.permissionService.InvalidateUserCache` is not checked (errcheck)
-        us.permissionService.InvalidateUserCache(ctx, userID)
-                                                ^
-internal/core/service/user_service/remove_role_from_user.go:91:42: Error return value of `us.permissionService.InvalidateUserCache` is not checked (errcheck)
-        us.permissionService.InvalidateUserCache(ctx, userID)
-                                                ^
-internal/core/service/user_service/switch_active_role.go:79:42: Error return value of `us.permissionService.InvalidateUserCache` is not checked (errcheck)
-        us.permissionService.InvalidateUserCache(ctx, userID) // TODO incluir mensagem, "switch_active_role_with_tx")
-                                                ^
-make: *** [Makefile:39: ci-lint] Error 1
+Segundo a regra de negócios, após o listing entrar no modo:
+```go
+	// StatusPendingPhotoProcessing: Sessão concluída, aguardando tratamento e upload das fotos.
+	StatusPendingPhotoProcessing
+```
+o fotografo, que já realizou o sessÃo de fotografias tem um conjunto de fotos veritcias, fotos horizontais, videos verticias e videos horizontais para upload.
+Este processo de upload, deve ser feito pela interface web, que é o unico acesso do fotografo. O upload será para um bucket S3 através de URL pré-assinada.
+Como serÃo dezenas de fotos e videos, o frontend deve solicitar ao backend as URLs pré-assinadas para cada arquivo a ser enviado.
+Com estas URLs, o frontend fará o upload diretamente para o S3.
+Ao termino do upload, o frontend deve notificar o backend que o upload foi concluído.
+Ao receber esta notificação, o backend deve preparar a compactaçÃo das fotos e videos para disponibilização para download pelo cliente final. estas compactações deverÃo preparar para thumbnails e midias de diferentes resoluções, para adequar a diferentes dispositivos clientes.
+O download serÃa feito tambem via URL pré-assinada, onde o cliente final poderia baixar um arquivo zip com todas as fotos e videos, ou baixar individualmente cada mídia. Os thumbnails podem ser baixados todos, permitindo a criação de galerias leves no app cliente.
+O processo de compactaçÃo deverá ser assincrono através de jobs assincronos utilizando algum serviço da AWS, como SQS, Lambda ou Step Functions.
+Precisamos de um guia de como será implementado este fluxo, considerando as melhores práticas de arquitetura, segurança e escalabilidade, para compartilhar com o time de desenvolvimetno de frontend, permitindo o desenvolvimetno paralelo do frontend e backend.
+
 
 
 Assim:
-1. Analise os codigos de user_model, user_service, user_repository, permission_model, permission_service, permission_repository mapeando a causa raiz do problema.
-2. Proponha um plano detalhado para corrigir o problema.
-3. Existe um TODO que é necessário incluir a mensagem da causa da invalidação do cache. Isto se deve a refatoração que moveu a responsabilidade de gestão de user_roles para user_service. Proponha como incluir essa mensagem em cada chamada de invalidação de cache.
-    3.1. Revise as assinaturas das funções de invalidação de cache em permission_service e permission_repository, garantindo que aceitem um parâmetro adicional para a mensagem.
-    3.2. Revise todas as chamadas para essas funções em user_service, garantindo que a mensagem apropriada seja passada com base na operação realizada (ex: "assign_role", "remove_role", "switch_active_role").
+1. Analise os codigos necessários e baseados nas melhores práticas e no guia do projeto, crie o documentno media_processing_guide.md, detalhando o fluxo completo de upload e download de mídias, incluindo:
+   - Endpoints necessários
+        - Formatos de requisição e resposta
+        - Códigos de status HTTP
+   - etapas envolvidas e sequencias
+   - serviços AWS recomendados e justificativas
 
 
 ---
