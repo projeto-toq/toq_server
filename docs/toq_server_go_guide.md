@@ -1086,7 +1086,7 @@ func (ua *UserAdapter) GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (u
     query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, 
               creci_validity, born_at, phone_number, email, zip_code, street, number, 
               complement, neighborhood, city, state, password, opt_status, 
-              last_activity_at, deleted, last_signin_attempt 
+              last_activity_at, deleted
               FROM users 
               WHERE id = ? AND deleted = 0`
 

@@ -35,18 +35,15 @@ import (
 //   - Each failure increments counter and updates last_attempt_at timestamp
 //   - When counter reaches MaxWrongSigninAttempts (3), user is blocked temporarily
 //   - Block duration: TempBlockDuration (15 minutes) from moment of lockout
-//   - Lockout timestamp recorded in users.last_signin_attempt field
 //   - Tracking record (temp_wrong_signin) persists until successful signin or timeout
 //
 // Database Operations:
 //   - UPSERT temp_wrong_signin (tracking table)
 //   - UPDATE user_roles (sets status to StatusTempBlocked) - via BlockUserTemporarily
-//   - UPDATE users (records last_signin_attempt) - via UpdateUserLastSignInAttempt
 //
 // Side Effects:
 //   - Modifies temp_wrong_signin table (counter incremented)
 //   - May modify user_roles table (status change to blocked)
-//   - May modify users table (last_signin_attempt timestamp set)
 //   - Logs WARN when user is blocked (security event)
 //   - Logs INFO on each failed attempt (observability)
 //

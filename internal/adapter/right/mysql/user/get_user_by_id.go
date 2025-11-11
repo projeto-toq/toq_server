@@ -75,7 +75,7 @@ func (ua *UserAdapter) GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (u
 			u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state,
 			u.creci_validity, u.born_at, u.phone_number, u.email, u.zip_code, u.street, 
 			u.number, u.complement, u.neighborhood, u.city, u.state, u.password, 
-			u.opt_status, u.last_activity_at, u.deleted, u.last_signin_attempt,
+			u.opt_status, u.last_activity_at, u.deleted,
 			ur.id AS user_role_id, ur.user_id AS user_role_user_id, ur.role_id AS user_role_role_id,
 			ur.is_active AS user_role_is_active, ur.status AS user_role_status, 
 			ur.expires_at AS user_role_expires_at, ur.blocked_until AS user_role_blocked_until,

@@ -52,24 +52,23 @@ import (
 //	19. opt_status (TINYINT)
 //	20. last_activity_at (TIMESTAMP)
 //	21. deleted (TINYINT)
-//	22. last_signin_attempt (TIMESTAMP, nullable)
 //
-//	Columns 23-29: UserRole fields (user_roles table, ALL nullable due to LEFT JOIN)
-//	23. ur.id (INT, nullable)
-//	24. ur.user_id (INT, nullable)
-//	25. ur.role_id (INT, nullable)
-//	26. ur.is_active (TINYINT, nullable)
-//	27. ur.status (TINYINT, nullable)
-//	28. ur.expires_at (TIMESTAMP, nullable)
-//	29. ur.blocked_until (DATETIME, nullable)
+//	Columns 22-28: UserRole fields (user_roles table, ALL nullable due to LEFT JOIN)
+//	22. ur.id (INT, nullable)
+//	23. ur.user_id (INT, nullable)
+//	24. ur.role_id (INT, nullable)
+//	25. ur.is_active (TINYINT, nullable)
+//	26. ur.status (TINYINT, nullable)
+//	27. ur.expires_at (TIMESTAMP, nullable)
+//	28. ur.blocked_until (DATETIME, nullable)
 //
-//	Columns 30-35: Role fields (roles table, ALL nullable due to LEFT JOIN)
-//	30. r.id (INT, nullable)
-//	31. r.slug (VARCHAR, nullable)
-//	32. r.name (VARCHAR, nullable)
-//	33. r.description (TEXT, nullable)
-//	34. r.is_system_role (TINYINT, nullable)
-//	35. r.is_active (TINYINT, nullable)
+//	Columns 29-34: Role fields (roles table, ALL nullable due to LEFT JOIN)
+//	29. r.id (INT, nullable)
+//	30. r.slug (VARCHAR, nullable)
+//	31. r.name (VARCHAR, nullable)
+//	32. r.description (TEXT, nullable)
+//	33. r.is_system_role (TINYINT, nullable)
+//	34. r.is_active (TINYINT, nullable)
 //
 // NULL Handling:
 //   - User fields: Uses sql.Null* types for optional fields (nick_name, creci_*, complement, etc.)
@@ -87,7 +86,7 @@ import (
 //	query := `SELECT
 //	    u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
 //	    u.born_at, u.phone_number, u.email, u.zip_code, u.street, u.number, u.complement,
-//	    u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted, u.last_signin_attempt,
+//	    u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted,
 //	    ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at, ur.blocked_until,
 //	    r.id, r.slug, r.name, r.description, r.is_system_role, r.is_active
 //	FROM users u
@@ -105,49 +104,48 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 	for rows.Next() {
 		var entity userentity.UserWithRoleEntity
 
-		// Scan all 35 columns from JOIN query
+		// Scan all 34 columns from JOIN query
 		// Order MUST match SELECT clause in get_user_by_*.go queries
 		err := rows.Scan(
-			// User fields (22 columns from users table)
-			&entity.UserID,            // 1. u.id
-			&entity.FullName,          // 2. u.full_name
-			&entity.NickName,          // 3. u.nick_name (nullable)
-			&entity.NationalID,        // 4. u.national_id
-			&entity.CreciNumber,       // 5. u.creci_number (nullable)
-			&entity.CreciState,        // 6. u.creci_state (nullable)
-			&entity.CreciValidity,     // 7. u.creci_validity (nullable)
-			&entity.BornAt,            // 8. u.born_at
-			&entity.PhoneNumber,       // 9. u.phone_number
-			&entity.Email,             // 10. u.email
-			&entity.ZipCode,           // 11. u.zip_code
-			&entity.Street,            // 12. u.street
-			&entity.Number,            // 13. u.number
-			&entity.Complement,        // 14. u.complement (nullable)
-			&entity.Neighborhood,      // 15. u.neighborhood
-			&entity.City,              // 16. u.city
-			&entity.State,             // 17. u.state
-			&entity.Password,          // 18. u.password
-			&entity.OptStatus,         // 19. u.opt_status
-			&entity.LastActivityAt,    // 20. u.last_activity_at
-			&entity.Deleted,           // 21. u.deleted
-			&entity.LastSignInAttempt, // 22. u.last_signin_attempt (nullable)
+			// User fields (21 columns from users table)
+			&entity.UserID,         // 1. u.id
+			&entity.FullName,       // 2. u.full_name
+			&entity.NickName,       // 3. u.nick_name (nullable)
+			&entity.NationalID,     // 4. u.national_id
+			&entity.CreciNumber,    // 5. u.creci_number (nullable)
+			&entity.CreciState,     // 6. u.creci_state (nullable)
+			&entity.CreciValidity,  // 7. u.creci_validity (nullable)
+			&entity.BornAt,         // 8. u.born_at
+			&entity.PhoneNumber,    // 9. u.phone_number
+			&entity.Email,          // 10. u.email
+			&entity.ZipCode,        // 11. u.zip_code
+			&entity.Street,         // 12. u.street
+			&entity.Number,         // 13. u.number
+			&entity.Complement,     // 14. u.complement (nullable)
+			&entity.Neighborhood,   // 15. u.neighborhood
+			&entity.City,           // 16. u.city
+			&entity.State,          // 17. u.state
+			&entity.Password,       // 18. u.password
+			&entity.OptStatus,      // 19. u.opt_status
+			&entity.LastActivityAt, // 20. u.last_activity_at
+			&entity.Deleted,        // 21. u.deleted
 
 			// UserRole fields (7 columns from user_roles table, ALL nullable)
-			&entity.UserRoleID,           // 23. ur.id
-			&entity.UserRoleUserID,       // 24. ur.user_id
-			&entity.UserRoleRoleID,       // 25. ur.role_id
-			&entity.UserRoleIsActive,     // 26. ur.is_active
-			&entity.UserRoleStatus,       // 27. ur.status
-			&entity.UserRoleExpiresAt,    // 28. ur.expires_at
-			&entity.UserRoleBlockedUntil, // 29. ur.blocked_until
+			&entity.UserRoleID,           // 22. ur.id
+			&entity.UserRoleUserID,       // 23. ur.user_id
+			&entity.UserRoleRoleID,       // 24. ur.role_id
+			&entity.UserRoleIsActive,     // 25. ur.is_active
+			&entity.UserRoleStatus,       // 26. ur.status
+			&entity.UserRoleExpiresAt,    // 27. ur.expires_at
+			&entity.UserRoleBlockedUntil, // 28. ur.blocked_until
 
 			// Role fields (6 columns from roles table, ALL nullable)
-			&entity.RoleID,           // 30. r.id
-			&entity.RoleSlug,         // 31. r.slug
-			&entity.RoleName,         // 32. r.name
-			&entity.RoleDescription,  // 33. r.description
-			&entity.RoleIsSystemRole, // 34. r.is_system_role
-			&entity.RoleIsActive,     // 35. r.is_active
+			&entity.RoleID,           // 29. r.id
+			&entity.RoleSlug,         // 30. r.slug
+			&entity.RoleName,         // 31. r.name
+			&entity.RoleDescription,  // 32. r.description
+			&entity.RoleIsSystemRole, // 33. r.is_system_role
+			&entity.RoleIsActive,     // 34. r.is_active
 		)
 
 		if err != nil {

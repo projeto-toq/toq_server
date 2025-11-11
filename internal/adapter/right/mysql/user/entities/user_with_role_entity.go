@@ -94,9 +94,6 @@ type UserWithRoleEntity struct {
 	// Deleted indicates soft delete status (users.deleted, TINYINT UNSIGNED, NOT NULL)
 	Deleted bool
 
-	// LastSignInAttempt is the timestamp of last sign-in attempt (users.last_signin_attempt, TIMESTAMP(6), NULL)
-	LastSignInAttempt sql.NullTime
-
 	// ==================== UserRole fields (from user_roles table) ====================
 	// All nullable because user might not have active role (LEFT JOIN)
 

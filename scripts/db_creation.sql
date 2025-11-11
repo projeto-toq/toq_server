@@ -42,7 +42,6 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`users` (
   `opt_status` TINYINT UNSIGNED NOT NULL,
   `last_activity_at` TIMESTAMP(6) NOT NULL,
   `deleted` TINYINT UNSIGNED NOT NULL,
-  `last_signin_attempt` TIMESTAMP(6) NULL DEFAULT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -935,7 +934,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `toq_db`;
-INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `password`, `opt_status`, `last_activity_at`, `deleted`, `last_signin_attempt`) VALUES (1, 'Administrador', 'Admin', '52642435000133', NULL, NULL, NULL, '2023-10-24', '+551152413731', 'toq@toq.app.br', '06472001', 'Av Copacabana', '268', 'sala 2305 - 23 andar', 'Dezoito do forte', 'Barueri', 'SP', '$2a$10$OCEwz031FBlA6SWP7JGULOY2DqJwlD665cXORNFzfKFB2WeQ7/aQa', 1, '2025-08-29 00:00:00.000000', 0, NULL);
+INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `password`, `opt_status`, `last_activity_at`, `deleted`) VALUES (1, 'Administrador', 'Admin', '52642435000133', NULL, NULL, NULL, '2023-10-24', '+551152413731', 'toq@toq.app.br', '06472001', 'Av Copacabana', '268', 'sala 2305 - 23 andar', 'Dezoito do forte', 'Barueri', 'SP', '$2a$10$OCEwz031FBlA6SWP7JGULOY2DqJwlD665cXORNFzfKFB2WeQ7/aQa', 1, '2025-08-29 00:00:00.000000', 0);
 
 COMMIT;
 
