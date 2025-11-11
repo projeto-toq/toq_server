@@ -33,12 +33,11 @@ type UserRepoPortInterface interface {
 	UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, id int64) (err error)
 	BatchUpdateUserLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
-	UpdateUserLastSignInAttempt(ctx context.Context, tx *sql.Tx, userID int64, attemptTime time.Time) error
 	UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error)
 	UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error)
 	UpdateUserRoleStatusByUserID(ctx context.Context, userID int64, status int) (err error)
 	UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, userID int64, role permissionmodel.RoleSlug, status globalmodel.UserRoleStatus) error
-	ResetUserWrongSigninAttempts(ctx context.Context, userID int64) (err error)
+	ResetUserWrongSigninAttempts(ctx context.Context, tx *sql.Tx, userID int64) error
 	HasUserDuplicate(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
 	ExistsEmailForAnotherUser(ctx context.Context, tx *sql.Tx, email string, excludeUserID int64) (bool, error)
 	ExistsPhoneForAnotherUser(ctx context.Context, tx *sql.Tx, phone string, excludeUserID int64) (bool, error)

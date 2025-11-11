@@ -50,8 +50,6 @@ type UserInterface interface {
 	SetLastActivityAt(time.Time)
 	IsDeleted() bool
 	SetDeleted(bool)
-	GetLastSignInAttempt() time.Time
-	SetLastSignInAttempt(time.Time)
 	GetDeviceToken() string
 	SetDeviceToken(string)
 	GetDeviceTokens() []DeviceTokenInterface

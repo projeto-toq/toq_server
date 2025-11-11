@@ -66,9 +66,5 @@ func UserEntityToDomain(entity userentity.UserEntity) usermodel.UserInterface {
 		user.SetComplement(entity.Complement.String)
 	}
 
-	if entity.LastSignInAttempt.Valid {
-		user.SetLastSignInAttempt(entity.LastSignInAttempt.Time)
-	}
-
 	return user
 }

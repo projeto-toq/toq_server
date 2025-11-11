@@ -126,6 +126,11 @@ func (us *userService) processFailedSigninAttempt(ctx context.Context, tx *sql.T
 			"user_id", userID,
 			"attempts", wrongSignin.GetFailedAttempts(),
 			"blocked_duration_minutes", int(usermodel.TempBlockDuration.Minutes()))
+
+		// SECURITY: Send notification to legitimate user about account lock
+		// This happens ASYNCHRONOUSLY to not block signin flow
+		// User receives alert via email/SMS, but attacker gets generic "Invalid credentials"
+		go us.sendAccountLockedNotification(ctx, userID)
 	}
 
 	return nil

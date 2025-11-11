@@ -45,13 +45,12 @@ import (
 //  19. opt_status (TINYINT)
 //  20. last_activity_at (TIMESTAMP)
 //  21. deleted (TINYINT)
-//  22. last_signin_attempt (TIMESTAMP, nullable)
 //
 // Example Query That Uses This Scanner:
 //
 //	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state,
 //	    creci_validity, born_at, phone_number, email, zip_code, street, number, complement,
-//	    neighborhood, city, state, password, opt_status, last_activity_at, deleted, last_signin_attempt
+//	    neighborhood, city, state, password, opt_status, last_activity_at, deleted
 //	    FROM users WHERE deleted = 0`
 func scanUserEntities(rows *sql.Rows) ([]userentity.UserEntity, error) {
 	var entities []userentity.UserEntity
@@ -80,7 +79,6 @@ func scanUserEntities(rows *sql.Rows) ([]userentity.UserEntity, error) {
 			&entity.OptStatus,
 			&entity.LastActivityAt,
 			&entity.Deleted,
-			&entity.LastSignInAttempt,
 		)
 		if err != nil {
 			return nil, err
@@ -144,7 +142,7 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 		var roleIsSystemRole sql.NullInt64
 		var roleActive sql.NullInt64
 
-		// Scan user fields (22 columns)
+		// Scan user fields (21 columns)
 		err := rows.Scan(
 			&entity.User.ID,
 			&entity.User.FullName,
@@ -167,7 +165,6 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 			&entity.User.OptStatus,
 			&entity.User.LastActivityAt,
 			&entity.User.Deleted,
-			&entity.User.LastSignInAttempt,
 			// Scan user_role fields (4 columns, may be NULL if no role)
 			&userRoleID,
 			&roleID,

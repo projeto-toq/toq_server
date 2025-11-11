@@ -3,7 +3,6 @@ package userservices
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -184,7 +183,6 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 
 	newUser.SetOptStatus(true)
 	newUser.SetNickName(nickName)
-	newUser.SetLastSignInAttempt(time.Time{})
 
 	if err = us.repo.CreateUser(ctx, tx, newUser); err != nil {
 		utils.SetSpanError(ctx, err)

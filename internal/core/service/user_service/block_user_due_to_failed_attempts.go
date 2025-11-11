@@ -11,9 +11,8 @@ import (
 
 // blockUserDueToFailedAttempts blocks a user account temporarily after excessive signin failures
 //
-// This method performs two operations:
-//  1. Sets user's active role to StatusTempBlocked with expiration timestamp (via user_roles table)
-//  2. Records the lockout moment in users.last_signin_attempt field for audit/analytics
+// This method sets user's active role to StatusTempBlocked with expiration timestamp
+// (via user_roles table). The lockout moment is tracked by user_roles.blocked_until.
 //
 // The function is called ONLY when failed attempt counter reaches MaxWrongSigninAttempts threshold.
 // Blocking is temporary and automatically expires after TempBlockDuration period.
@@ -30,16 +29,13 @@ import (
 //   - Block duration: TempBlockDuration (15 minutes from Now)
 //   - Updates user_roles.status to StatusTempBlocked
 //   - Sets user_roles.blocked_until with expiration timestamp
-//   - Records lockout moment in users.last_signin_attempt
 //   - Worker process automatically unblocks when blocked_until expires
 //
 // Database Operations:
 //   - UPDATE user_roles (status + blocked_until columns) - via BlockUserTemporarily
-//   - UPDATE users (last_signin_attempt column) - via UpdateUserLastSignInAttempt
 //
 // Side Effects:
 //   - Modifies user_roles table (sets temp block status + expiration)
-//   - Modifies users table (records lockout timestamp)
 //   - User cannot authenticate until blocked_until expires
 //   - Logs ERROR if operations fail
 //
@@ -50,7 +46,6 @@ import (
 //
 // Observability:
 //   - Errors logged with "auth.signin.block_user_failed" key
-//   - Errors logged with "auth.signin.update_last_attempt_failed" key
 //   - Span error marking for failed operations
 //
 // Important Notes:
@@ -81,17 +76,6 @@ func (us *userService) blockUserDueToFailedAttempts(ctx context.Context, tx *sql
 			"blocked_until", blockedUntil,
 			"error", err)
 		return utils.InternalError("Failed to process security measures")
-	}
-
-	// Record lockout timestamp in users table for audit/analytics
-	lockoutTime := time.Now().UTC()
-	err = us.repo.UpdateUserLastSignInAttempt(ctx, tx, userID, lockoutTime)
-	if err != nil {
-		logger.Error("auth.signin.update_last_attempt_failed",
-			"user_id", userID,
-			"lockout_time", lockoutTime,
-			"error", err)
-		return utils.InternalError("Failed to update user record")
 	}
 
 	return nil

@@ -53,7 +53,7 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 	query := `UPDATE users SET
 			full_name = ?, nick_name = ?, national_id = ?, creci_number = ?, creci_state = ?, creci_validity = ?,
 			born_at = ?, phone_number = ?, email = ?, zip_code = ?, street = ?, number = ?, complement = ?, neighborhood = ?, 
-			city = ?, state = ?, opt_status = ?, deleted = ?, last_signin_attempt = ?
+			city = ?, state = ?, opt_status = ?, deleted = ?
 			WHERE id = ?`
 
 	// Convert domain model to database entity
@@ -79,7 +79,6 @@ func (ua *UserAdapter) UpdateUserByID(ctx context.Context, tx *sql.Tx, user user
 		entity.State,
 		entity.OptStatus,
 		entity.Deleted,
-		entity.LastSignInAttempt,
 		entity.ID,
 	)
 	if execErr != nil {

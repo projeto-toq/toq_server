@@ -127,8 +127,4 @@ type UserEntity struct {
 	// true = logically deleted (hidden from queries)
 	// false = active user
 	Deleted bool
-
-	// LastSignInAttempt is the timestamp of last sign-in attempt (NULL, TIMESTAMP(6))
-	// Used for security monitoring and wrong password tracking
-	LastSignInAttempt sql.NullTime
 }

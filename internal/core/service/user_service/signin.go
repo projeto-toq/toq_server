@@ -64,8 +64,11 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 		logger.Error("auth.signin.tx_start_error", "error", txErr)
 		return tokens, utils.InternalError("Failed to start transaction")
 	}
+
+	// Track transaction status to prevent double rollback
+	txCommitted := false
 	defer func() {
-		if err != nil {
+		if err != nil && !txCommitted {
 			if rbErr := us.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
 				logger.Error("auth.signin.tx_rollback_error", "error", rbErr)
@@ -74,17 +77,35 @@ func (us *userService) SignInWithContext(ctx context.Context, nationalID string,
 	}()
 
 	tokens, err = us.signIn(ctx, tx, nationalID, password, trimmedToken, trimmedDeviceID, ipAddress, userAgent)
+
+	// CRITICAL: If authentication failed, commit the transaction to persist failed attempt tracking
+	// The signIn function already processed and logged the failed attempt
 	if err != nil {
+		// Check if it's a domain error that should persist tracking data
+		if domainErr, ok := err.(utils.DomainError); ok {
+			code := domainErr.Code()
+			// Commit for authentication (401), authorization (403), or user blocked (423) errors
+			if code == 401 || code == 403 || code == 423 {
+				if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
+					utils.SetSpanError(ctx, commitErr)
+					logger.Error("auth.signin.tx_commit_after_auth_error", "error", commitErr)
+					// Return internal error instead of auth error since commit failed
+					return tokens, utils.InternalError("Failed to process authentication")
+				}
+				txCommitted = true
+			}
+		}
 		return
 	}
 
-	// Commit the transaction
+	// Commit the transaction on successful authentication
 	if commitErr := us.globalService.CommitTransaction(ctx, tx); commitErr != nil {
 		utils.SetSpanError(ctx, commitErr)
 		logger.Error("auth.signin.tx_commit_error", "error", commitErr)
 		err = utils.InternalError("Failed to commit transaction")
 		return
 	}
+	txCommitted = true
 
 	return
 }
@@ -120,9 +141,10 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	}
 
 	if isBlocked {
-		// Log do bloqueio
+		// SECURITY: Return generic error to prevent account enumeration
+		// User will receive notification via email/SMS about the block
 		logger.Warn("auth.signin.user_blocked", "security", true, "user_id", userID)
-		err = utils.UserBlockedError("Account temporarily blocked due to too many failed attempts")
+		err = utils.AuthenticationError("Invalid credentials")
 		return
 	}
 
@@ -137,12 +159,14 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 
 	// Comparar a senha fornecida com o hash armazenado (bcrypt)
 	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {
+		// Process failed attempt and persist tracking record
 		err = us.processFailedSigninAttempt(ctx, tx, userID)
 		if err != nil {
 			return
 		}
 
 		// Log da tentativa com credenciais inválidas
+		// Transaction will be committed by SignInWithContext to persist failed attempt counter
 		logger.Debug("auth.signin.invalid_credentials", "security", true, "user_id", userID)
 		err = utils.AuthenticationError("Invalid credentials")
 		return

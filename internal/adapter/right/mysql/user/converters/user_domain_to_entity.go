@@ -80,11 +80,5 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 		Valid:  complement != "",
 	}
 
-	lastSignIn := domain.GetLastSignInAttempt()
-	entity.LastSignInAttempt = sql.NullTime{
-		Time:  lastSignIn,
-		Valid: !lastSignIn.IsZero(),
-	}
-
 	return
 }

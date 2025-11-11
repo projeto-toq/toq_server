@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Alerta de Segurança - TOQ</title>
+</head>
+
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f6f6f6;">
+    <div style="max-width: 560px; margin: 0 auto; background: #ffffff; padding: 24px; border-radius: 4px;">
+        <h2 style="color: #d32f2f;">🔒 Alerta de Segurança</h2>
+        <p style="font-size: 15px; color: #444444; line-height: 1.6;">
+            Olá <strong>{{.NickName}}</strong>,
+        </p>
+        <p style="font-size: 15px; color: #444444; line-height: 1.6;">
+            Detectamos múltiplas tentativas de login sem sucesso em sua conta.
+        </p>
+        <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 16px 0;">
+            <p style="margin: 0; font-size: 15px; color: #856404;">
+                <strong>Por segurança, sua conta foi temporariamente bloqueada por 15 minutos.</strong>
+            </p>
+        </div>
+        <h3 style="color: #222222; font-size: 16px;">Detalhes do Bloqueio:</h3>
+        <ul style="font-size: 15px; color: #444444; line-height: 1.8;">
+            <li><strong>Horário do bloqueio:</strong> {{.BlockedAt}}</li>
+            <li><strong>Desbloqueio automático em:</strong> {{.UnblockAt}}</li>
+            <li><strong>Tentativas falhadas:</strong> {{.FailedAttempts}} (limite máximo)</li>
+        </ul>
+        <p style="font-size: 15px; color: #444444; line-height: 1.6;">
+            Se você <strong>não reconhece</strong> essas tentativas de login, recomendamos que você altere sua senha
+            assim que sua conta for desbloqueada.
+        </p>
+        <p style="text-align: center; margin: 24px 0;">
+            <a href="{{.ResetPasswordURL}}"
+                style="background-color: #d32f2f; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">
+                Redefinir Senha
+            </a>
+        </p>
+        <div style="background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px; margin: 16px 0;">
+            <p style="margin: 0; font-size: 14px; color: #2e7d32;">
+                ✓ Sua conta será desbloqueada automaticamente após 15 minutos.
+            </p>
+        </div>
+        <p style="font-size: 15px; color: #444444; line-height: 1.6;">
+            Em caso de dúvidas, entre em contato com o time de suporte da TOQ.
+        </p>
+        <p style="font-size: 15px; color: #444444; line-height: 1.6;">
+            Atenciosamente,<br />
+            <strong>Equipe TOQ</strong>
+        </p>
+        <hr style="border: none; border-top: 1px solid #eeeeee; margin: 24px 0;" />
+        <p style="font-size: 12px; color: #999999; text-align: center;">
+            Este é um e-mail automático de segurança. Por favor, não responda a esta mensagem.
+        </p>
+    </div>
+</body>
+
+</html>
