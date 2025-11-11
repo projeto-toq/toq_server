@@ -5,30 +5,30 @@ import (
 )
 
 type user struct {
-	id               int64
-	activeRole       UserRoleInterface
-	fullName         string
-	nickName         string
-	nationalID       string
-	creciNumber      string
-	creciState       string
-	creciValidity    time.Time
-	bornAt           time.Time
-	phoneNumber      string
-	email            string
-	zipCode          string
-	street           string
-	number           string
-	complement       string
-	neighborhood     string
-	city             string
-	state            string
-	password         string
-	optStatus        bool
-	lastActivityAt   time.Time
-	deleted          bool
-	lastSiginAttempt time.Time
-	deviceTokens     []DeviceTokenInterface
+	id                int64
+	activeRole        UserRoleInterface
+	fullName          string
+	nickName          string
+	nationalID        string
+	creciNumber       string
+	creciState        string
+	creciValidity     time.Time
+	bornAt            time.Time
+	phoneNumber       string
+	email             string
+	zipCode           string
+	street            string
+	number            string
+	complement        string
+	neighborhood      string
+	city              string
+	state             string
+	password          string
+	optStatus         bool
+	lastActivityAt    time.Time
+	deleted           bool
+	lastSignInAttempt time.Time
+	deviceTokens      []DeviceTokenInterface
 }
 
 func (u *user) GetID() int64 {
@@ -205,11 +205,11 @@ func (u *user) SetDeleted(deleted bool) {
 	u.deleted = deleted
 }
 func (u *user) GetLastSignInAttempt() time.Time {
-	return u.lastSiginAttempt
+	return u.lastSignInAttempt
 }
 
 func (u *user) SetLastSignInAttempt(lastSignInAttempt time.Time) {
-	u.lastSiginAttempt = lastSignInAttempt
+	u.lastSignInAttempt = lastSignInAttempt
 }
 
 // Backwards-compatible single token accessor (returns first token if exists)

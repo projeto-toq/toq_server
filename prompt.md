@@ -6,14 +6,13 @@
 
 ## 🎯 Problema / Solicitação
 
-Houve uma mudança na regra de negócio no processo de deleção de contas de usuários. Atualmente, ao deletar uma conta, o sistema limpa todos os dados associados ao usuário. A nova regra exige que essa limpeza de dados seja removida, ou seja, ao deletar uma conta, os dados do usuário devem ser mantidos no sistema e somente o campo deleted deve ser atualizado para 1, o que na prática elimina o usuário do ponto de vista funcional, mas mantém seus dados para possíveis auditorias futuras.
-
+Para garantir a segurança do aplicativo evitando tentativas de froça bruta para logins, o sistema de autenticação implementa bloqueios temporários após múltiplas tentativas falhas. No entanto, o campo `last_signin_attempt` não está sendo atualizado corretamente, e a lógica de contagem de tentativas falhas (`wrong_user_sign`) não está funcionando como esperado.
 
 Assim:
-1. Analise o código atual do serviço de deleção de contas de usuários em DeleteAccount.
-2. Identifique onde os dados do usuário são mascarados no processo de deleção.
-3. Proponha um plano detalhado para refatorar o código, permitindo a manunteção dos dados do usuário ao invés de sua remoção completa.
-4. Deve ser possível ao usuário que deletou sua conta, voltar a cadastrar-se com o mesmo email, telefone e nationalID, sem conflitos. Esta verificação é feit a em HasUserDuplicate.
+1. Analise o código atual do sistema de bloqueio de tetnativas de login.
+2. Identifique a causa raiz do problema e as evidencias no código.
+3. Proponha um plano detalhado para corrigir o problema, incluindo code skeletons para handlers, services, repositories, DTOs, entities e converters conforme necessário.
+4. Garanta que o plano siga as regras de arquitetura, padrões de código, observabilidade e documentação do projeto.
 
 ---
 

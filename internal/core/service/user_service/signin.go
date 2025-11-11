@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"strings"
-	"time"
 
 	"errors"
 
@@ -138,7 +137,7 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 
 	// Comparar a senha fornecida com o hash armazenado (bcrypt)
 	if bcrypt.CompareHashAndPassword([]byte(user.GetPassword()), []byte(password)) != nil {
-		err = us.processWrongSignin(ctx, tx, user)
+		err = us.processFailedSigninAttempt(ctx, tx, userID)
 		if err != nil {
 			return
 		}
@@ -188,56 +187,6 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	// Não é necessário chamar UpdateUserLastActivity diretamente
 
 	return
-}
-
-// processWrongSignin processa tentativas de signin incorretas com melhor logging
-func (us *userService) processWrongSignin(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) error {
-	ctx = utils.ContextWithLogger(ctx)
-	logger := utils.LoggerFromContext(ctx)
-	userID := user.GetID()
-
-	wrongSignin, err := us.repo.GetWrongSigninByUserID(ctx, tx, userID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			wrongSignin = usermodel.NewWrongSignin()
-		} else {
-			logger.Error("auth.signin.wrong_signin_get_failed", "user_id", userID, "error", err)
-			return utils.InternalError("Failed to check signin attempts")
-		}
-	}
-
-	wrongSignin.SetUserID(userID)
-	wrongSignin.SetLastAttemptAt(time.Now().UTC())
-	wrongSignin.SetFailedAttempts(wrongSignin.GetFailedAttempts() + 1)
-
-	err = us.repo.UpdateWrongSignIn(ctx, tx, wrongSignin)
-	if err != nil {
-		logger.Error("auth.signin.wrong_signin_update_failed", "user_id", userID, "error", err)
-		return utils.InternalError("Failed to update signin attempts")
-	}
-
-	// Verifica se deve bloquear o usuário
-	if wrongSignin.GetFailedAttempts() >= usermodel.MaxWrongSigninAttempts {
-		// Bloqueia usuário temporariamente usando permission service
-		err = us.repo.BlockUserTemporarily(ctx, tx, userID, time.Now().UTC().Add(usermodel.TempBlockDuration), "Too many failed signin attempts")
-		if err != nil {
-			logger.Error("auth.signin.block_user_failed", "user_id", userID, "error", err)
-			return utils.InternalError("Failed to process security measures")
-		}
-
-		// Atualiza última tentativa de signin
-		user.SetLastSignInAttempt(time.Now().UTC())
-		err = us.repo.UpdateUserByID(ctx, tx, user)
-		if err != nil {
-			logger.Error("auth.signin.update_last_attempt_failed", "user_id", userID, "error", err)
-			return utils.InternalError("Failed to update user record")
-		}
-
-		// Log do bloqueio
-		logger.Warn("auth.signin.user_blocked", "security", true, "user_id", userID, "attempts", wrongSignin.GetFailedAttempts())
-	}
-
-	return nil
 }
 
 // clearTemporaryBlockOnSuccess remove bloqueio temporário após login bem-sucedido

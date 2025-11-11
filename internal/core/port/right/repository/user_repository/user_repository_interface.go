@@ -33,6 +33,7 @@ type UserRepoPortInterface interface {
 	UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, id int64) (err error)
 	BatchUpdateUserLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
 	UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
+	UpdateUserLastSignInAttempt(ctx context.Context, tx *sql.Tx, userID int64, attemptTime time.Time) error
 	UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error)
 	UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error)
 	UpdateUserRoleStatusByUserID(ctx context.Context, userID int64, status int) (err error)
