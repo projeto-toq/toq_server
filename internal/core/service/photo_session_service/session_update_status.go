@@ -9,11 +9,46 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
-	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // UpdateSessionStatus updates the status of a photo session booking and notifies the listing owner.
+//
+// This endpoint is only available when manual photographer approval is enabled via configuration.
+// If automatic approval is enabled (require_photographer_approval=false), this operation returns
+// a validation error indicating the feature is disabled.
+//
+// Supported Status Transitions:
+//   - PENDING_APPROVAL → ACCEPTED (photographer accepts)
+//   - PENDING_APPROVAL → REJECTED (photographer declines)
+//   - ACCEPTED/ACTIVE → DONE (photographer completes session)
+//
+// Listing Status Changes:
+//   - ACCEPTED: StatusPendingPhotoConfirmation → StatusPhotosScheduled
+//   - REJECTED: StatusPendingPhotoConfirmation → StatusPendingPhotoScheduling
+//   - DONE: StatusPhotosScheduled → StatusPendingPhotoProcessing
+//
+// Parameters:
+//   - ctx: Context for tracing, cancellation, and logging
+//   - input: UpdateSessionStatusInput with sessionID, photographerID, status
+//
+// Returns:
+//   - error: Domain error with appropriate HTTP status code:
+//   - 400 (BadRequest) if manual approval is disabled in config
+//   - 401 (Auth) if photographer not authorized
+//   - 403 (Forbidden) if session does not belong to photographer
+//   - 404 (NotFound) if session not found
+//   - 409 (Conflict) if session not in expected state for transition
+//   - 422 (Validation) if input invalid
+//   - 500 (Infra) for infrastructure failures
+//
+// Configuration:
+//   - Requires photo_session.require_photographer_approval = true in env.yaml
+//
+// Side Effects:
+//   - Updates photographer_photo_session_bookings.status
+//   - Updates listings.status
+//   - Sends FCM push notification to listing owner
 func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input UpdateSessionStatusInput) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -23,6 +58,14 @@ func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input Upd
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+
+	// Check if manual approval mode is enabled
+	if !s.cfg.RequirePhotographerApproval {
+		logger.Warn("photo_session.update_status.manual_approval_disabled",
+			"photographer_id", input.PhotographerID,
+			"session_id", input.SessionID)
+		return derrors.BadRequest("manual photographer approval is disabled; photo sessions are automatically approved upon reservation")
+	}
 
 	// Validações de entrada
 	if input.SessionID == 0 {
@@ -189,73 +232,4 @@ func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input Upd
 		"listing_new_status", newListingStatus.String())
 
 	return nil
-}
-
-// sendOwnerNotifications sends FCM push notifications to all opted-in devices of the listing owner.
-// This function runs asynchronously and logs any errors without propagating them.
-func (s *photoSessionService) sendOwnerNotifications(ctx context.Context, userID int64, title, body string, listingID int64, sessionID uint64) {
-	ctx = utils.ContextWithLogger(ctx)
-	logger := utils.LoggerFromContext(ctx)
-
-	// Busca todos os device tokens do usuário (apenas dispositivos com opt-in ativo)
-	tokens, err := s.globalService.ListDeviceTokensByUserIDIfOptedIn(ctx, userID)
-	if err != nil {
-		logger.Error("photo_session.notification.list_tokens_error",
-			"user_id", userID,
-			"listing_id", listingID,
-			"err", err)
-		return
-	}
-
-	if len(tokens) == 0 {
-		logger.Info("photo_session.notification.no_tokens",
-			"user_id", userID,
-			"listing_id", listingID)
-		return
-	}
-
-	// Obtém serviço de notificação unificado
-	notifier := s.globalService.GetUnifiedNotificationService()
-	if notifier == nil {
-		logger.Error("photo_session.notification.service_unavailable",
-			"user_id", userID)
-		return
-	}
-
-	// Envia notificação para cada token (permite múltiplos dispositivos do mesmo usuário)
-	sentCount := 0
-	for _, token := range tokens {
-		req := globalservice.NotificationRequest{
-			Type:    globalservice.NotificationTypeFCM,
-			Token:   token,
-			Subject: title,
-			Body:    body,
-		}
-
-		// SendNotification é assíncrono por padrão, mas já estamos em goroutine
-		if notifErr := notifier.SendNotification(ctx, req); notifErr != nil {
-			logger.Warn("photo_session.notification.send_error",
-				"user_id", userID,
-				"token", token[:min(len(token), 20)]+"...", // Log apenas início do token
-				"err", notifErr)
-		} else {
-			sentCount++
-		}
-	}
-
-	logger.Info("photo_session.notification.completed",
-		"user_id", userID,
-		"listing_id", listingID,
-		"session_id", sessionID,
-		"tokens_found", len(tokens),
-		"notifications_sent", sentCount,
-		"title", title)
-}
-
-// min returns the minimum of two integers (helper function)
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }

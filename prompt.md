@@ -6,31 +6,16 @@
 
 ## 🎯 Problema / Solicitação
 
-Segundo a regra de negócios, após o listing entrar no modo:
-```go
-	// StatusPendingPhotoProcessing: Sessão concluída, aguardando tratamento e upload das fotos.
-	StatusPendingPhotoProcessing
-```
-o fotografo, que já realizou o sessÃo de fotografias tem um conjunto de fotos veritcias, fotos horizontais, videos verticias e videos horizontais para upload.
-Este processo de upload, deve ser feito pela interface web, que é o unico acesso do fotografo. O upload será para um bucket S3 através de URL pré-assinada.
-Como serÃo dezenas de fotos e videos, o frontend deve solicitar ao backend as URLs pré-assinadas para cada arquivo a ser enviado.
-Com estas URLs, o frontend fará o upload diretamente para o S3.
-Ao termino do upload, o frontend deve notificar o backend que o upload foi concluído.
-Ao receber esta notificação, o backend deve preparar a compactaçÃo das fotos e videos para disponibilização para download pelo cliente final. estas compactações deverÃo preparar para thumbnails e midias de diferentes resoluções, para adequar a diferentes dispositivos clientes.
-O download serÃa feito tambem via URL pré-assinada, onde o cliente final poderia baixar um arquivo zip com todas as fotos e videos, ou baixar individualmente cada mídia. Os thumbnails podem ser baixados todos, permitindo a criação de galerias leves no app cliente.
-O processo de compactaçÃo deverá ser assincrono através de jobs assincronos utilizando algum serviço da AWS, como SQS, Lambda ou Step Functions.
-Precisamos de um guia de como será implementado este fluxo, considerando as melhores práticas de arquitetura, segurança e escalabilidade, para compartilhar com o time de desenvolvimetno de frontend, permitindo o desenvolvimetno paralelo do frontend e backend.
-
+Houve uma mudança na regra de negócio no processo de reserva de slots para realização de fotos do imovel anunciado (listing).
+Hoje, após o owner reservar o slot e o listing passar para o estado de photosessionmodel.BookingStatusPendingApproval, o fotografo deve aprovar ou recusar a solicitação de agendamento. Esta açÃo é realizada na função UpdateSessionStatus do service photosession.
+Agora, após a reserva do slot, o sistema deve automaticamente aprovar a sessão de fotos, sem a necessidade de intervenção do fotógrafo.
+O código está mais detalhado prevendo opções futras de aprovação manual, mas a regra atual é de aprovação automática. EntÃo o código deve ser altera mas mantido de forma comentada para futuras necessidades.
 
 
 Assim:
-1. Analise os codigos necessários e baseados nas melhores práticas e no guia do projeto, crie o documentno media_processing_guide.md, detalhando o fluxo completo de upload e download de mídias, incluindo:
-   - Endpoints necessários
-        - Formatos de requisição e resposta
-        - Códigos de status HTTP
-   - etapas envolvidas e sequencias
-   - serviços AWS recomendados e justificativas
-
+1. Analise o código atual do service photosession, especialmente a função UpdateSessionStatus.
+2. Identifique os pontos onde a lógica de aprovação manual está implementada.
+3. Proponha um plano detalhado para refatorar o código, comentando a lógica de aprovação manual e implementando a aprovação automática, de forma que no futuro a lógica manual possa ser facilmente reativada.
 
 ---
 

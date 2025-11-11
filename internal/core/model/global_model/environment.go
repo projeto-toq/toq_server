@@ -116,6 +116,10 @@ type Environment struct {
 		PhotographerHorizonMonths          int    `yaml:"photographer_horizon_months"`
 		PhotographerTimezone               string `yaml:"photographer_timezone"`
 		PhotographerAgendaRefreshIntervalH int    `yaml:"photographer_agenda_refresh_interval_hours"`
+		// RequirePhotographerApproval controls whether photo session bookings require
+		// manual photographer acceptance (true) or are automatically approved (false).
+		// Default: false (automatic approval)
+		RequirePhotographerApproval bool `yaml:"require_photographer_approval"`
 	} `yaml:"photo_session"`
 	FCM struct {
 		CredentialsFile string `yaml:"credentials_file"`

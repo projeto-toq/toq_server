@@ -354,13 +354,14 @@ func (c *config) InitPhotoSessionService() {
 	}
 
 	photoCfg := photosessionservices.Config{
-		SlotDurationMinutes: c.env.PhotoSession.SlotDurationMinutes,
-		SlotsPerPeriod:      c.env.PhotoSession.SlotsPerPeriod,
-		MorningStartHour:    c.env.PhotoSession.MorningStartHour,
-		AfternoonStartHour:  c.env.PhotoSession.AfternoonStartHour,
-		BusinessStartHour:   c.env.PhotoSession.BusinessStartHour,
-		BusinessEndHour:     c.env.PhotoSession.BusinessEndHour,
-		AgendaHorizonMonths: c.env.PhotoSession.PhotographerHorizonMonths,
+		SlotDurationMinutes:         c.env.PhotoSession.SlotDurationMinutes,
+		SlotsPerPeriod:              c.env.PhotoSession.SlotsPerPeriod,
+		MorningStartHour:            c.env.PhotoSession.MorningStartHour,
+		AfternoonStartHour:          c.env.PhotoSession.AfternoonStartHour,
+		BusinessStartHour:           c.env.PhotoSession.BusinessStartHour,
+		BusinessEndHour:             c.env.PhotoSession.BusinessEndHour,
+		AgendaHorizonMonths:         c.env.PhotoSession.PhotographerHorizonMonths,
+		RequirePhotographerApproval: c.env.PhotoSession.RequirePhotographerApproval,
 	}
 
 	c.photoSessionService = photosessionservices.NewPhotoSessionService(
