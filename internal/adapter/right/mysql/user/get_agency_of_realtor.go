@@ -24,23 +24,24 @@ import (
 //
 // Returns:
 //   - agency: UserInterface containing the agency's complete data
-//   - error: sql.ErrNoRows if realtor has no agency or database errors
+//   - error: sql.ErrNoRows if realtor has no agency or agency is deleted, or database errors
 //
 // Business Rules:
 //   - Uses INNER JOIN on realtors_agency table
 //   - Realtor without agency association returns sql.ErrNoRows
-//   - Does NOT filter by deleted status (returns even if agency is soft-deleted)
+//   - Filters by deleted = 0 (excludes soft-deleted agencies)
 //   - Multiple agencies per realtor is a data integrity violation (logs error)
 //
 // Query Logic:
 //   - JOIN users u with realtors_agency ra on u.id = ra.agency_id
 //   - Filter by ra.realtor_id = ?
+//   - Filter by u.deleted = 0 (only active agencies)
 //   - Returns all user fields for the agency
 //
 // Edge Cases:
 //   - Realtor not in realtors_agency table: Returns sql.ErrNoRows
+//   - Agency is soft-deleted: Returns sql.ErrNoRows
 //   - Multiple agencies for one realtor: Returns error (data integrity issue)
-//   - Agency is soft-deleted (deleted=1): Still returned (service decides handling)
 //
 // Performance:
 //   - Uses index on realtors_agency.realtor_id for fast lookup
@@ -55,7 +56,7 @@ import (
 //
 //	agency, err := adapter.GetAgencyOfRealtor(ctx, tx, realtorID)
 //	if err == sql.ErrNoRows {
-//	    // Realtor is not associated with any agency
+//	    // Realtor is not associated with any agency or agency is deleted
 //	}
 //	// agency contains the associated agency's data
 func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realtorID int64) (agency usermodel.UserInterface, err error) {
@@ -71,13 +72,14 @@ func (ua *UserAdapter) GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realt
 	logger := utils.LoggerFromContext(ctx)
 
 	// Query agency via JOIN with realtors_agency relationship table
-	// Note: INNER JOIN excludes realtors without agency association
+	// INNER JOIN excludes realtors without agency association
+	// Filter by deleted = 0 to exclude soft-deleted agencies
 	query := `SELECT u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
 	                 u.born_at, u.phone_number, u.email, u.zip_code, u.street, u.number, u.complement,
 	                 u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted
 				 FROM users u
 				 JOIN realtors_agency ra ON u.id = ra.agency_id
-				 WHERE ra.realtor_id = ?`
+				 WHERE ra.realtor_id = ? AND u.deleted = 0`
 
 	// Execute query using instrumented adapter
 	rows, queryErr := ua.QueryContext(ctx, tx, "select", query, realtorID)

@@ -98,7 +98,7 @@ func (us *userService) sendAccountLockedNotification(_ context.Context, userID i
 
 	// Calculate when account will be automatically unblocked
 	now := time.Now().UTC()
-	unblockTime := now.Add(15 * time.Minute)
+	unblockTime := now.Add(us.cfg.TempBlockDuration)
 
 	// Render email body from HTML template
 	renderer := newAccountLockedEmailRenderer()
@@ -106,7 +106,7 @@ func (us *userService) sendAccountLockedNotification(_ context.Context, userID i
 		"NickName":         user.GetNickName(),
 		"BlockedAt":        now.Format("02/01/2006 15:04:05 MST"),
 		"UnblockAt":        unblockTime.Format("02/01/2006 15:04:05 MST"),
-		"FailedAttempts":   3,
+		"FailedAttempts":   us.cfg.MaxWrongSigninAttempts,
 		"ResetPasswordURL": us.cfg.SystemUserResetPasswordURL,
 	})
 	if err != nil {

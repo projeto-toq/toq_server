@@ -13,8 +13,14 @@ import (
 
 // GetUserByPhoneNumber retrieves a user with their active role by phone number.
 //
-// Identical strategy to GetUserByNationalID but filters by phone_number.
-// Does NOT filter by deleted status for security reasons.
+// This function performs a LEFT JOIN between users, user_roles, and roles tables
+// to eagerly load the user's active role in a single query.
+//
+// Query Strategy:
+//   - LEFT JOIN ensures user is returned even if no active role exists
+//   - Filters by phone_number (UNIQUE constraint in database)
+//   - Filters by deleted = 0 (excludes soft-deleted users)
+//   - Filters user_roles by is_active = 1 (only current role)
 //
 // Parameters:
 //   - ctx: Context for tracing and logging
@@ -23,11 +29,15 @@ import (
 //
 // Returns:
 //   - user: UserInterface with all fields including ActiveRole
-//   - error: sql.ErrNoRows if not found, or database errors
+//   - error: sql.ErrNoRows if not found or user is deleted, or database errors
+//
+// Business Rules:
+//   - Only returns active (non-deleted) users
+//   - Service layer handles additional authentication checks
 //
 // Security Note:
-//   - Returns deleted users to prevent account enumeration
-//   - Service layer handles deleted account logic
+//   - Unlike GetUserByNationalID, this function DOES filter deleted users
+//   - Phone-based lookups are not used in authentication flows (no enumeration risk)
 func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (user usermodel.UserInterface, err error) {
 	// Initialize tracing for observability
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -41,6 +51,7 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 	logger := utils.LoggerFromContext(ctx)
 
 	// Optimized query: JOIN fetches user + active role
+	// Filter by deleted = 0 to exclude soft-deleted users
 	query := `
 		SELECT 
 			u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state,
@@ -56,7 +67,7 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 		FROM users u
 		LEFT JOIN user_roles ur ON u.id = ur.user_id AND ur.is_active = 1
 		LEFT JOIN roles r ON ur.role_id = r.id
-		WHERE u.phone_number = ?
+		WHERE u.phone_number = ? AND u.deleted = 0
 	`
 
 	// Execute query using instrumented adapter

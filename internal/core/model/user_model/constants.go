@@ -12,11 +12,6 @@ const (
 
 	//expiraton time for validation codes
 	ValidationCodeExpiration = 2 * time.Hour
-
-	//user wrong signin attempts
-	MaxWrongSigninAttempts = 3
-	//temporary block duration for failed signin attempts
-	TempBlockDuration = 15 * time.Minute
 )
 
 type ActionFinished int

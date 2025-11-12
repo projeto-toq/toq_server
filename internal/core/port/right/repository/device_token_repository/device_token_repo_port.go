@@ -1,6 +1,11 @@
 package devicetokenrepository
 
-import usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+import (
+	"context"
+	"database/sql"
+
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+)
 
 // DeviceTokenRepoPortInterface defines persistence operations for device tokens (hexagonal right port)
 type DeviceTokenRepoPortInterface interface {
@@ -8,8 +13,8 @@ type DeviceTokenRepoPortInterface interface {
 	AddToken(userID int64, token string, platform *string) (usermodel.DeviceTokenInterface, error)
 	RemoveToken(userID int64, token string) error
 	RemoveAllByUserID(userID int64) error
-	ListTokensByOptedInUsers() ([]string, error)
-	ListTokensByUserIDIfOptedIn(userID int64) ([]string, error)
+	ListTokensByOptedInUsers(ctx context.Context, tx *sql.Tx) ([]string, error)
+	ListTokensByUserIDIfOptedIn(ctx context.Context, tx *sql.Tx, userID int64) ([]string, error)
 
 	// Per-device operations (compatible defaults when device_id is not present in schema)
 	AddTokenForDevice(userID int64, deviceID, token string, platform *string) (usermodel.DeviceTokenInterface, error)

@@ -5,14 +5,13 @@ import (
 	"database/sql"
 	"time"
 
-	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // blockUserDueToFailedAttempts blocks a user account temporarily after excessive signin failures
 //
-// This method sets user's active role to StatusTempBlocked with expiration timestamp
-// (via user_roles table). The lockout moment is tracked by user_roles.blocked_until.
+// This method sets users.blocked_until with expiration timestamp. The blocking is independent
+// of user_roles status, preserving any validation progress (e.g., StatusPendingPhone).
 //
 // The function is called ONLY when failed attempt counter reaches MaxWrongSigninAttempts threshold.
 // Blocking is temporary and automatically expires after TempBlockDuration period.
@@ -26,16 +25,16 @@ import (
 //   - error: Infrastructure errors (database, transaction) mapped to InternalError (500)
 //
 // Business Rules:
-//   - Block duration: TempBlockDuration (15 minutes from Now)
-//   - Updates user_roles.status to StatusTempBlocked
-//   - Sets user_roles.blocked_until with expiration timestamp
+//   - Block duration: TempBlockDuration (from config, default 15 minutes)
+//   - Updates users.blocked_until with expiration timestamp
+//   - Preserves user_roles.status (does NOT modify role validation state)
 //   - Worker process automatically unblocks when blocked_until expires
 //
 // Database Operations:
-//   - UPDATE user_roles (status + blocked_until columns) - via BlockUserTemporarily
+//   - UPDATE users (blocked_until column) - via SetUserBlockedUntil
 //
 // Side Effects:
-//   - Modifies user_roles table (sets temp block status + expiration)
+//   - Modifies users table (sets temporal block expiration)
 //   - User cannot authenticate until blocked_until expires
 //   - Logs ERROR if operations fail
 //
@@ -66,10 +65,10 @@ func (us *userService) blockUserDueToFailedAttempts(ctx context.Context, tx *sql
 	logger := utils.LoggerFromContext(ctx)
 
 	// Calculate block expiration time
-	blockedUntil := time.Now().UTC().Add(usermodel.TempBlockDuration)
+	blockedUntil := time.Now().UTC().Add(us.cfg.TempBlockDuration)
 
-	// Block user's active role temporarily
-	err := us.repo.BlockUserTemporarily(ctx, tx, userID, blockedUntil, "Too many failed signin attempts")
+	// Block user temporarily (sets users.blocked_until)
+	err := us.repo.SetUserBlockedUntil(ctx, tx, userID, blockedUntil)
 	if err != nil {
 		logger.Error("auth.signin.block_user_failed",
 			"user_id", userID,

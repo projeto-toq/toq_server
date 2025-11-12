@@ -11,6 +11,8 @@ type Config struct {
 	PhotographerTimezone              string
 	PhotographerAgendaHorizonMonths   int
 	PhotographerAgendaRefreshInterval time.Duration
+	MaxWrongSigninAttempts            int
+	TempBlockDuration                 time.Duration
 }
 
 func normalizeConfig(cfg Config) Config {
@@ -27,6 +29,12 @@ func normalizeConfig(cfg Config) Config {
 	}
 	if cfg.PhotographerAgendaRefreshInterval <= 0 {
 		cfg.PhotographerAgendaRefreshInterval = 24 * time.Hour
+	}
+	if cfg.MaxWrongSigninAttempts <= 0 {
+		cfg.MaxWrongSigninAttempts = 3
+	}
+	if cfg.TempBlockDuration <= 0 {
+		cfg.TempBlockDuration = 15 * time.Minute
 	}
 	return cfg
 }

@@ -54,9 +54,25 @@ type UserRepoPortInterface interface {
 	ActivateUserRole(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
 
 	// User blocking operations
-	BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time, reason string) error
-	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
-	GetExpiredTempBlockedUsers(ctx context.Context, tx *sql.Tx) ([]usermodel.UserRoleInterface, error)
+
+	// SetUserBlockedUntil sets temporary block expiration for a user
+	// Blocks user until specified timestamp (blocked_until column in users table)
+	// Used by signin flow after MaxWrongSigninAttempts reached (configured in env.yaml)
+	SetUserBlockedUntil(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time) error
+
+	// ClearUserBlockedUntil clears temporary block for a user
+	// Sets blocked_until = NULL (unblocks user)
+	// Used by worker when blocked_until expires, or by signin on success
+	ClearUserBlockedUntil(ctx context.Context, tx *sql.Tx, userID int64) error
+
+	// GetUsersWithExpiredBlock returns users whose blocked_until has passed
+	// Used by worker to automatically unblock users
+	// Returns empty slice if no expired blocks found (not an error)
+	GetUsersWithExpiredBlock(ctx context.Context, tx *sql.Tx) ([]usermodel.UserInterface, error)
+
+	// SetUserPermanentlyBlocked sets or clears permanent admin block
+	// Used by admin endpoints to permanently block/unblock users
+	SetUserPermanentlyBlocked(ctx context.Context, tx *sql.Tx, userID int64, blocked bool) error
 }
 
 type ListUsersFilter struct {

@@ -91,9 +91,9 @@ func (gs *globalService) GetMetrics() metricsport.MetricsPortInterface {
 }
 
 // ListDeviceTokensByUserIDIfOptedIn returns all push tokens for a user when promotional opt-in is active.
-func (gs *globalService) ListDeviceTokensByUserIDIfOptedIn(_ context.Context, userID int64) ([]string, error) {
+func (gs *globalService) ListDeviceTokensByUserIDIfOptedIn(ctx context.Context, userID int64) ([]string, error) {
 	if gs.deviceTokenRepo == nil {
 		return nil, fmt.Errorf("device token repository not configured")
 	}
-	return gs.deviceTokenRepo.ListTokensByUserIDIfOptedIn(userID)
+	return gs.deviceTokenRepo.ListTokensByUserIDIfOptedIn(ctx, nil, userID)
 }

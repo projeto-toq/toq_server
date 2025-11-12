@@ -30,31 +30,28 @@ func (t TableName) String() string {
 }
 
 // UserRoleStatus representa os possíveis status de um user_role
+// NOTE: User blocking moved to users table (blocked_until, permanently_blocked)
+// This enum now represents ONLY evolutionary role validation status
 type UserRoleStatus int
 
 const (
-	StatusActive          UserRoleStatus = iota // normal user status 0
-	StatusBlocked                               // blocked by admin 1
-	StatusTempBlocked                           // temporarily blocked due to failed signin attempts 2
-	StatusPendingBoth                           // awaiting both email and phone confirmation 3
-	StatusPendingEmail                          // awaiting email confirmation 4
-	StatusPendingPhone                          // awaiting phone confirmation 5
-	StatusPendingCreci                          // awaiting creci images to be uploaded 6
-	StatusPendingCnpj                           // awaiting cnpj images to be uploaded 7
-	StatusPendingManual                         // awaiting manual verification by admin 8
-	StatusRejected                              // admin reject the documentation (legacy/general) 9
-	StatusRefusedImage                          // refused due to image issues (e.g., unreadable/invalid) 10
-	StatusRefusedDocument                       // refused due to document mismatch/invalidity 11
-	StatusRefusedData                           // refused due to data inconsistency 12
-	StatusDeleted                               // user request the deletion of the account 13
+	StatusActive          UserRoleStatus = iota // role approved and operational 0
+	StatusPendingBoth                           // awaiting both email and phone confirmation 1
+	StatusPendingEmail                          // awaiting email confirmation 2
+	StatusPendingPhone                          // awaiting phone confirmation 3
+	StatusPendingCreci                          // awaiting creci images to be uploaded 4
+	StatusPendingCnpj                           // awaiting cnpj images to be uploaded 5
+	StatusPendingManual                         // awaiting manual verification by admin 6
+	StatusRejected                              // admin rejected the documentation (legacy/general) 7
+	StatusRefusedImage                          // refused due to image issues (e.g., unreadable/invalid) 8
+	StatusRefusedDocument                       // refused due to document mismatch/invalidity 9
+	StatusRefusedData                           // refused due to data inconsistency 10
 )
 
 // String implementa fmt.Stringer para UserRoleStatus
 func (us UserRoleStatus) String() string {
 	statuses := [...]string{
 		"active",
-		"blocked",
-		"temp_blocked",
 		"pending_both",
 		"pending_email",
 		"pending_phone",
@@ -65,7 +62,6 @@ func (us UserRoleStatus) String() string {
 		"refused_image",
 		"refused_document",
 		"refused_data",
-		"deleted",
 	}
 	if us < StatusActive || int(us) >= len(statuses) {
 		return "unknown"

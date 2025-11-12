@@ -134,6 +134,10 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 		conditions = append(conditions, "u.phone_number LIKE ?")
 		args = append(args, filter.PhoneNumber)
 	}
+	// Filter by deleted status (OPTIONAL for admin panel)
+	// When filter.Deleted is nil, BOTH deleted and non-deleted users are returned
+	// Service layer MUST explicitly pass filter.Deleted = false to exclude deleted users
+	// This allows admin panel to show deleted users for audit/recovery purposes
 	if filter.Deleted != nil {
 		conditions = append(conditions, "u.deleted = ?")
 		if *filter.Deleted {

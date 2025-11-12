@@ -66,5 +66,15 @@ func UserEntityToDomain(entity userentity.UserEntity) usermodel.UserInterface {
 		user.SetComplement(entity.Complement.String)
 	}
 
+	// NEW: Map blocking fields
+	if entity.BlockedUntil.Valid {
+		t := entity.BlockedUntil.Time
+		user.SetBlockedUntil(&t)
+	} else {
+		user.SetBlockedUntil(nil)
+	}
+
+	user.SetPermanentlyBlocked(entity.PermanentlyBlocked)
+
 	return user
 }

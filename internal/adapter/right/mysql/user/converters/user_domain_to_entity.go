@@ -80,5 +80,20 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 		Valid:  complement != "",
 	}
 
+	// NEW: Map blocking fields
+	blockedUntil := domain.GetBlockedUntil()
+	if blockedUntil != nil {
+		entity.BlockedUntil = sql.NullTime{
+			Time:  *blockedUntil,
+			Valid: true,
+		}
+	} else {
+		entity.BlockedUntil = sql.NullTime{
+			Valid: false,
+		}
+	}
+
+	entity.PermanentlyBlocked = domain.IsPermanentlyBlocked()
+
 	return
 }

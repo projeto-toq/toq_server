@@ -79,9 +79,30 @@ func (w *TempBlockCleanerWorker) processExpiredBlocks(ctx context.Context) {
 
 	logger.Debug("Processing expired temporary blocks")
 
-	expiredUsers, err := w.userService.GetExpiredTempBlockedUsers(ctx)
+	// Start transaction for batch query
+	tx, err := w.globalService.StartTransaction(ctx)
 	if err != nil {
-		logger.Error("Failed to get expired temp blocked users", "error", err)
+		logger.Error("Failed to start transaction for fetching expired blocks", "error", err)
+		return
+	}
+	defer func() {
+		if err != nil {
+			if rbErr := w.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
+				logger.Error("Failed to rollback tx after fetch error", "error", rbErr)
+			}
+		}
+	}()
+
+	// Fetch users with expired blocks (returns []UserInterface from users table)
+	expiredUsers, err := w.userService.GetUsersWithExpiredBlock(ctx, tx)
+	if err != nil {
+		logger.Error("Failed to get users with expired blocks", "error", err)
+		return
+	}
+
+	// Commit the read transaction
+	if cmErr := w.globalService.CommitTransaction(ctx, tx); cmErr != nil {
+		logger.Error("Failed to commit tx after fetching expired blocks", "error", cmErr)
 		return
 	}
 
@@ -90,15 +111,15 @@ func (w *TempBlockCleanerWorker) processExpiredBlocks(ctx context.Context) {
 		return
 	}
 
-	logger.Info("Found expired temporary blocks", "count", len(expiredUsers))
+	logger.Info("Found users with expired blocks", "count", len(expiredUsers))
 
-	for _, userRole := range expiredUsers {
-		err := w.unblockUser(ctx, userRole.GetUserID())
+	for _, user := range expiredUsers {
+		err := w.unblockUser(ctx, user.GetID())
 		if err != nil {
-			logger.Error("Failed to unblock user", "userID", userRole.GetUserID(), "error", err)
+			logger.Error("Failed to clear expired block", "userID", user.GetID(), "error", err)
 			continue
 		}
-		logger.Info("User unblocked successfully", "userID", userRole.GetUserID())
+		logger.Info("User block cleared successfully", "userID", user.GetID())
 	}
 }
 
@@ -109,25 +130,25 @@ func (w *TempBlockCleanerWorker) unblockUser(ctx context.Context, userID int64) 
 	// Start a new transaction for each user to avoid blocking other operations
 	tx, err := w.globalService.StartTransaction(ctx)
 	if err != nil {
-		logger.Error("Failed to start transaction for unblocking user", "userID", userID, "error", err)
+		logger.Error("Failed to start transaction for clearing block", "userID", userID, "error", err)
 		return err
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := w.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				logger.Error("Failed to rollback tx when unblocking user", "userID", userID, "error", rbErr)
+				logger.Error("Failed to rollback tx when clearing block", "userID", userID, "error", rbErr)
 			}
 		}
 	}()
 
-	err = w.userService.UnblockUser(ctx, tx, userID)
+	err = w.userService.ClearUserBlockedUntil(ctx, tx, userID)
 	if err != nil {
-		logger.Error("Failed to unblock user in user service", "userID", userID, "error", err)
+		logger.Error("Failed to clear user blocked_until", "userID", userID, "error", err)
 		return err
 	}
 
 	if cmErr := w.globalService.CommitTransaction(ctx, tx); cmErr != nil {
-		logger.Error("Failed to commit tx when unblocking user", "userID", userID, "error", cmErr)
+		logger.Error("Failed to commit tx when clearing block", "userID", userID, "error", cmErr)
 		return cmErr
 	}
 

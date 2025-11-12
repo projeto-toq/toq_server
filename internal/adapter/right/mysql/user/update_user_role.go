@@ -46,7 +46,7 @@ import (
 //
 // Important Notes:
 //   - Does NOT deactivate other roles (service layer responsibility)
-//   - Does NOT update blocked_until (use BlockUserTemporarily for that)
+//   - Does NOT update blocked_until (deprecated column, use users.blocked_until instead)
 //   - Transaction managed by service layer
 //
 // Example:

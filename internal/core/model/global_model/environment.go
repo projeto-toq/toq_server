@@ -63,6 +63,8 @@ type Environment struct {
 		MaxSessionRotations              int `yaml:"max_session_rotations"`
 		SessionCleanerIntervalSeconds    int `yaml:"session_cleaner_interval_seconds"`
 		ValidationCleanerIntervalSeconds int `yaml:"validation_cleaner_interval_seconds"`
+		MaxWrongSigninAttempts           int `yaml:"max_wrong_signin_attempts"`
+		TempBlockDurationMinutes         int `yaml:"temp_block_duration_minutes"`
 	}
 	SECURITY struct {
 		HMAC struct {

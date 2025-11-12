@@ -131,16 +131,8 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 
 	userID := user.GetID()
 
-	// Verificação única de bloqueio temporário ANTES de qualquer validação
-	isBlocked, err := us.IsUserTempBlockedWithTx(ctx, tx, userID)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("auth.signin.check_temp_block_error", "user_id", userID, "error", err)
-		err = utils.InternalError("Failed to validate user status")
-		return
-	}
-
-	if isBlocked {
+	// Check if user is blocked (permanent or temporal) BEFORE any validation
+	if user.IsBlocked() {
 		// SECURITY: Return generic error to prevent account enumeration
 		// User will receive notification via email/SMS about the block
 		logger.Warn("auth.signin.user_blocked", "security", true, "user_id", userID)
@@ -184,10 +176,15 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	}
 
 	// Remove bloqueio temporário se login foi bem-sucedido
-	err = us.clearTemporaryBlockOnSuccess(ctx, tx, userID)
-	if err != nil {
-		// Não falha o login por problema de desbloqueio, apenas loga
-		logger.Warn("auth.signin.clear_temp_block_failed", "user_id", userID, "error", err)
+	if user.GetBlockedUntil() != nil {
+		clearErr := us.repo.ClearUserBlockedUntil(ctx, tx, userID)
+		if clearErr != nil && !errors.Is(clearErr, sql.ErrNoRows) {
+			// Não falha o login por problema de desbloqueio, apenas loga
+			logger.Warn("auth.signin.clear_temp_block_failed", "user_id", userID, "error", clearErr)
+		} else if clearErr == nil {
+			// Log do desbloqueio apenas se efetivamente desbloqueou
+			logger.Info("auth.signin.user_unblocked", "security", true, "user_id", userID)
+		}
 	}
 
 	// Adiciona device token vinculado ao deviceID sanitizado
@@ -211,26 +208,4 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	// Não é necessário chamar UpdateUserLastActivity diretamente
 
 	return
-}
-
-// clearTemporaryBlockOnSuccess remove bloqueio temporário após login bem-sucedido
-func (us *userService) clearTemporaryBlockOnSuccess(ctx context.Context, tx *sql.Tx, userID int64) error {
-	ctx = utils.ContextWithLogger(ctx)
-	logger := utils.LoggerFromContext(ctx)
-	isBlocked, err := us.IsUserTempBlockedWithTx(ctx, tx, userID)
-	if err != nil {
-		return err
-	}
-
-	if isBlocked {
-		err = us.repo.UnblockUser(ctx, tx, userID)
-		if err != nil {
-			return err
-		}
-
-		// Log do desbloqueio
-		logger.Info("auth.signin.user_unblocked", "security", true, "user_id", userID)
-	}
-
-	return nil
 }

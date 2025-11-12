@@ -7,6 +7,7 @@ import (
 
 // DeviceTokenAdapter implements DeviceTokenRepoPortInterface using MySQL
 type DeviceTokenAdapter struct {
+	mysqladapter.InstrumentedAdapter
 	db      *mysqladapter.Database
 	metrics metricsport.MetricsPortInterface
 }
@@ -17,7 +18,8 @@ func NewDeviceTokenAdapter(
 	metrics metricsport.MetricsPortInterface,
 ) *DeviceTokenAdapter {
 	return &DeviceTokenAdapter{
-		db:      db,
-		metrics: metrics,
+		InstrumentedAdapter: mysqladapter.NewInstrumentedAdapter(db, metrics),
+		db:                  db,
+		metrics:             metrics,
 	}
 }

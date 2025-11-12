@@ -28,6 +28,10 @@ type user struct {
 	lastActivityAt time.Time
 	deleted        bool
 	deviceTokens   []DeviceTokenInterface
+
+	// NEW: User-level blocking fields
+	blockedUntil       *time.Time
+	permanentlyBlocked bool
 }
 
 func (u *user) GetID() int64 {
@@ -244,4 +248,41 @@ func (u *user) AddDeviceToken(token string) bool {
 	dt.SetDeviceToken(token)
 	u.deviceTokens = append(u.deviceTokens, dt)
 	return true
+}
+
+// ==================== NEW: User-level blocking methods ====================
+
+// GetBlockedUntil returns the temporary block expiration timestamp
+func (u *user) GetBlockedUntil() *time.Time {
+	return u.blockedUntil
+}
+
+// SetBlockedUntil sets the temporary block expiration timestamp
+func (u *user) SetBlockedUntil(blockedUntil *time.Time) {
+	u.blockedUntil = blockedUntil
+}
+
+// IsPermanentlyBlocked returns true if user is permanently blocked by admin
+func (u *user) IsPermanentlyBlocked() bool {
+	return u.permanentlyBlocked
+}
+
+// SetPermanentlyBlocked sets or clears the permanent admin block flag
+func (u *user) SetPermanentlyBlocked(blocked bool) {
+	u.permanentlyBlocked = blocked
+}
+
+// IsBlocked checks if user is currently blocked (temporary or permanent)
+func (u *user) IsBlocked() bool {
+	// Check permanent block
+	if u.permanentlyBlocked {
+		return true
+	}
+
+	// Check temporary block (blocked_until > NOW)
+	if u.blockedUntil != nil && time.Now().UTC().Before(*u.blockedUntil) {
+		return true
+	}
+
+	return false
 }

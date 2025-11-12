@@ -104,7 +104,6 @@ type UserServiceInterface interface {
 	SignOut(ctx context.Context, deviceToken, refreshToken, deviceID string) (err error)
 	SwitchUserRole(ctx context.Context) (tokens usermodel.Tokens, err error)
 	BatchUpdateLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
-	BlockUserTemporarily(ctx context.Context, userID int64) (err error)
 	// UpdateProfile updates allowed user profile fields using a typed input contract.
 	// It must not change email, phone or password; those have dedicated flows.
 	UpdateProfile(ctx context.Context, in UpdateProfileInput) (err error)
@@ -160,14 +159,11 @@ type UserServiceInterface interface {
 	GetActiveUserRoleWithTx(ctx context.Context, tx *sql.Tx, userID int64) (usermodel.UserRoleInterface, error)
 	SwitchActiveRoleWithTx(ctx context.Context, tx *sql.Tx, userID, newRoleID int64) error
 
-	// User blocking operations
-	//BlockUserTemporarily(ctx context.Context, tx *sql.Tx, userID int64, reason string) error
-	UnblockUser(ctx context.Context, tx *sql.Tx, userID int64) error
-	// IsUserTempBlocked checks block status without requiring caller to manage tx
-	IsUserTempBlocked(ctx context.Context, userID int64) (bool, error)
-	// IsUserTempBlockedWithTx allows callers with an existing transaction to reuse it
-	IsUserTempBlockedWithTx(ctx context.Context, tx *sql.Tx, userID int64) (bool, error)
-	GetExpiredTempBlockedUsers(ctx context.Context) ([]usermodel.UserRoleInterface, error)
+	// User blocking operations (direct operations on users table - preserves user_roles.status)
+	SetUserBlockedUntil(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time) error
+	ClearUserBlockedUntil(ctx context.Context, tx *sql.Tx, userID int64) error
+	GetUsersWithExpiredBlock(ctx context.Context, tx *sql.Tx) ([]usermodel.UserInterface, error)
+	SetUserPermanentlyBlocked(ctx context.Context, tx *sql.Tx, userID int64, blocked bool) error
 }
 
 // CreciDocumentDownloadURLs encapsula as URLs assinadas geradas pelo serviço para os documentos CRECI

@@ -197,6 +197,8 @@ func (c *config) InitUserHandler() {
 		PhotographerTimezone:              c.env.PhotoSession.PhotographerTimezone,
 		PhotographerAgendaHorizonMonths:   c.env.PhotoSession.PhotographerHorizonMonths,
 		PhotographerAgendaRefreshInterval: refreshInterval * time.Hour,
+		MaxWrongSigninAttempts:            c.GetMaxWrongSigninAttempts(),
+		TempBlockDuration:                 c.GetTempBlockDuration(),
 	}
 	c.userService = userservices.NewUserService(
 		c.repositoryAdapters.User,

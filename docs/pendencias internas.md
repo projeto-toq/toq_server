@@ -45,3 +45,6 @@
 
 - permitir hard delete de lisnting enquanto não for publicado removendo todos os agendamentos, fotos, propostas, visitas
 - após publicado, deve ser passado ao modeo de suspenso e entÃo soft delete
+- após o bloqueio não deve haver incremento nas contagens de tentativas de login nem envio de e-mail, está mandando mais de 1
+- tem que haver uso de audit no login/bloqueio/desbloquio de usuário
+- audit está otimizado?

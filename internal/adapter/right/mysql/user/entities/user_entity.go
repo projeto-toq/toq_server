@@ -127,4 +127,22 @@ type UserEntity struct {
 	// true = logically deleted (hidden from queries)
 	// false = active user
 	Deleted bool
+
+	// ==================== NEW: User-level blocking fields ====================
+
+	// BlockedUntil is the timestamp until which the user is temporarily blocked (NULL, DATETIME)
+	// User is blocked while blocked_until > NOW() (temporal block)
+	// NULL = not temporarily blocked
+	// Used for security measures (failed signin attempts, suspicious activity)
+	// Worker automatically clears when timestamp expires
+	// Example: User banned for 15 minutes → blocked_until = NOW() + 15 minutes
+	BlockedUntil sql.NullTime
+
+	// PermanentlyBlocked indicates if user is permanently blocked by admin (NOT NULL, TINYINT(1))
+	// 1 = permanently blocked (cannot authenticate, requires manual unblock)
+	// 0 = not permanently blocked (normal status)
+	// Used for policy violations, fraud, terms of service violations
+	// Only admin can set/unset this flag
+	// Example: User found committing fraud → permanently_blocked = 1
+	PermanentlyBlocked bool
 }

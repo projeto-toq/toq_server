@@ -14,13 +14,12 @@ import (
 // GetUserByNationalID retrieves a user with their active role by national ID (CPF or CNPJ).
 //
 // This function performs the same optimized JOIN as GetUserByID but filters by national_id instead.
-// It does NOT filter by deleted status, allowing authentication checks to detect deleted accounts
-// (prevents account enumeration attacks).
+// Filters by deleted = 0 to prevent authentication of soft-deleted accounts.
 //
 // Query Strategy:
 //   - LEFT JOIN users + user_roles + roles
-//   - No deleted filter (returns deleted users for security checks)
-//   - Filters user_roles by is_active = 1
+//   - Filters by deleted = 0 (excludes soft-deleted users)
+//   - Filters user_roles by is_active = 1 (only current role)
 //
 // Parameters:
 //   - ctx: Context for tracing and logging
@@ -29,17 +28,18 @@ import (
 //
 // Returns:
 //   - user: UserInterface with all fields including ActiveRole if exists
-//   - error: sql.ErrNoRows if not found, or database errors
+//   - error: sql.ErrNoRows if not found or user is deleted, or database errors
 //
 // Business Rules:
 //   - National ID is UNIQUE constraint in database
-//   - Does NOT filter by deleted (returns even deleted users)
-//   - Service layer decides if deleted users are acceptable for the operation
+//   - Only returns active (non-deleted) users
+//   - Deleted users cannot authenticate (security requirement)
+//   - Service layer handles authentication flow and error messaging
 //
 // Security Considerations:
 //   - Used for authentication (SignIn, password reset)
-//   - Returns deleted users to prevent account enumeration
-//   - Service logs authentication attempts for deleted accounts
+//   - Prevents sign-in with deleted accounts
+//   - Returns sql.ErrNoRows for both non-existent and deleted accounts (prevents enumeration)
 //
 // Performance:
 //   - Single query replaces 2-query pattern
@@ -57,7 +57,7 @@ func (ua *UserAdapter) GetUserByNationalID(ctx context.Context, tx *sql.Tx, nati
 	logger := utils.LoggerFromContext(ctx)
 
 	// Optimized query: JOIN fetches user + active role
-	// Note: NO deleted filter (security requirement for authentication)
+	// Filter by deleted = 0 to prevent authentication of soft-deleted accounts
 	query := `
 		SELECT 
 			u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state,
@@ -73,7 +73,7 @@ func (ua *UserAdapter) GetUserByNationalID(ctx context.Context, tx *sql.Tx, nati
 		FROM users u
 		LEFT JOIN user_roles ur ON u.id = ur.user_id AND ur.is_active = 1
 		LEFT JOIN roles r ON ur.role_id = r.id
-		WHERE u.national_id = ?
+		WHERE u.national_id = ? AND u.deleted = 0
 	`
 
 	// Execute query using instrumented adapter

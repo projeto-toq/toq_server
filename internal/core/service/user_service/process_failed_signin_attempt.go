@@ -16,7 +16,7 @@ import (
 //  1. Retrieves or initializes failed attempt tracking record
 //  2. Increments failure counter and updates timestamp
 //  3. Persists tracking record to database
-//  4. Checks if threshold reached (MaxWrongSigninAttempts)
+//  4. Checks if threshold reached (MaxWrongSigninAttempts from config)
 //  5. If threshold reached: blocks user temporarily and records lockout timestamp
 //
 // The function is called ONLY when password validation fails (bcrypt.CompareHashAndPassword != nil).
@@ -33,17 +33,18 @@ import (
 // Business Rules:
 //   - Counter starts at 1 on first failure (record created via UPSERT)
 //   - Each failure increments counter and updates last_attempt_at timestamp
-//   - When counter reaches MaxWrongSigninAttempts (3), user is blocked temporarily
-//   - Block duration: TempBlockDuration (15 minutes) from moment of lockout
+//   - When counter reaches MaxWrongSigninAttempts (from config, default 3), user is blocked temporarily
+//   - Block duration: TempBlockDuration (from config, default 15 minutes) from moment of lockout
 //   - Tracking record (temp_wrong_signin) persists until successful signin or timeout
+//   - Email notification sent ONLY on first block (when attempts == max), not on subsequent attempts
 //
 // Database Operations:
 //   - UPSERT temp_wrong_signin (tracking table)
-//   - UPDATE user_roles (sets status to StatusTempBlocked) - via BlockUserTemporarily
+//   - UPDATE users (sets blocked_until timestamp) - via SetUserBlockedUntil
 //
 // Side Effects:
 //   - Modifies temp_wrong_signin table (counter incremented)
-//   - May modify user_roles table (status change to blocked)
+//   - May modify users table (blocked_until set if threshold reached)
 //   - Logs WARN when user is blocked (security event)
 //   - Logs INFO on each failed attempt (observability)
 //
@@ -106,11 +107,11 @@ func (us *userService) processFailedSigninAttempt(ctx context.Context, tx *sql.T
 		"security", true,
 		"user_id", userID,
 		"attempts", wrongSignin.GetFailedAttempts(),
-		"max_attempts", usermodel.MaxWrongSigninAttempts)
+		"max_attempts", us.cfg.MaxWrongSigninAttempts)
 
 	// Check if threshold reached: block user if at or above limit
-	if wrongSignin.GetFailedAttempts() >= usermodel.MaxWrongSigninAttempts {
-		// Block user temporarily (sets user_roles.status and blocked_until)
+	if wrongSignin.GetFailedAttempts() >= int64(us.cfg.MaxWrongSigninAttempts) {
+		// Block user temporarily (sets users.blocked_until)
 		err = us.blockUserDueToFailedAttempts(ctx, tx, userID)
 		if err != nil {
 			// Error already logged by blockUserDueToFailedAttempts
@@ -122,12 +123,15 @@ func (us *userService) processFailedSigninAttempt(ctx context.Context, tx *sql.T
 			"security", true,
 			"user_id", userID,
 			"attempts", wrongSignin.GetFailedAttempts(),
-			"blocked_duration_minutes", int(usermodel.TempBlockDuration.Minutes()))
+			"blocked_duration_minutes", int(us.cfg.TempBlockDuration.Minutes()))
 
 		// SECURITY: Send notification to legitimate user about account lock
 		// This happens ASYNCHRONOUSLY to not block signin flow
 		// User receives alert via email/SMS, but attacker gets generic "Invalid credentials"
-		go us.sendAccountLockedNotification(ctx, userID)
+		// IMPORTANT: Only send email on the FIRST block (when attempts == max), not on subsequent attempts
+		if wrongSignin.GetFailedAttempts() == int64(us.cfg.MaxWrongSigninAttempts) {
+			go us.sendAccountLockedNotification(ctx, userID)
+		}
 	}
 
 	return nil

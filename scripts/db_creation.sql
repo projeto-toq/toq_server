@@ -42,7 +42,10 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`users` (
   `opt_status` TINYINT UNSIGNED NOT NULL,
   `last_activity_at` TIMESTAMP(6) NOT NULL,
   `deleted` TINYINT UNSIGNED NOT NULL,
-  PRIMARY KEY (`id`))
+  `blocked_until` DATETIME NULL,
+  `permanently_blocked` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  INDEX `idx_users_blocking` (`blocked_until` ASC, `permanently_blocked` ASC) VISIBLE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -337,7 +340,6 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`user_roles` (
   `is_active` TINYINT UNSIGNED NOT NULL DEFAULT 1,
   `status` TINYINT NOT NULL DEFAULT 0,
   `expires_at` TIMESTAMP(6) NULL DEFAULT NULL,
-  `blocked_until` DATETIME NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_user_idx` (`user_id` ASC) VISIBLE,
   INDEX `uk_user_roles` (`user_id` ASC, `role_id` ASC) INVISIBLE,
@@ -934,7 +936,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `toq_db`;
-INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `password`, `opt_status`, `last_activity_at`, `deleted`) VALUES (1, 'Administrador', 'Admin', '52642435000133', NULL, NULL, NULL, '2023-10-24', '+551152413731', 'toq@toq.app.br', '06472001', 'Av Copacabana', '268', 'sala 2305 - 23 andar', 'Dezoito do forte', 'Barueri', 'SP', '$2a$10$OCEwz031FBlA6SWP7JGULOY2DqJwlD665cXORNFzfKFB2WeQ7/aQa', 1, '2025-08-29 00:00:00.000000', 0);
+INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `password`, `opt_status`, `last_activity_at`, `deleted`, `blocked_until`, `permanently_blocked`) VALUES (1, 'Administrador', 'Admin', '52642435000133', NULL, NULL, NULL, '2023-10-24', '+551152413731', 'toq@toq.app.br', '06472001', 'Av Copacabana', '268', 'sala 2305 - 23 andar', 'Dezoito do forte', 'Barueri', 'SP', '$2a$10$OCEwz031FBlA6SWP7JGULOY2DqJwlD665cXORNFzfKFB2WeQ7/aQa', 1, '2025-08-29 00:00:00.000000', 0, NULL, DEFAULT);
 
 COMMIT;
 

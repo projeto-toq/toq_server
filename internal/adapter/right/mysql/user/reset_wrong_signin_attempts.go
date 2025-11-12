@@ -49,12 +49,11 @@ import (
 //
 // Example:
 //
-//	// Unblock user workflow (worker or admin)
+//	// Clear failed attempts after successful signin
 //	tx, _ := globalService.StartTransaction(ctx)
 //	defer rollbackOnError(tx)
 //
-//	err := adapter.UnblockUser(ctx, tx, userID)
-//	err = adapter.ResetUserWrongSigninAttempts(ctx, tx, userID)
+//	err := adapter.ResetUserWrongSigninAttempts(ctx, tx, userID)
 //
 //	_ = globalService.CommitTransaction(ctx, tx)
 func (ua *UserAdapter) ResetUserWrongSigninAttempts(ctx context.Context, tx *sql.Tx, userID int64) error {

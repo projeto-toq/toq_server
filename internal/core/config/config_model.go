@@ -110,6 +110,8 @@ type ConfigInterface interface {
 	GetRuntimeEnvironment() string
 	AreWorkersEnabled() bool
 	SetHealthServing(serving bool)
+	GetMaxWrongSigninAttempts() int
+	GetTempBlockDuration() time.Duration
 	httpport.APIVersionProvider
 }
 

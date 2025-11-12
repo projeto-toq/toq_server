@@ -6,15 +6,13 @@
 
 ## 🎯 Problema / Solicitação
 
-Após a última refatoração o processo de bloqueio de usuários por tentativas de login com credenciais inválidas voltou a funcionar, porém a rotina de desbloqueio nÃo está funcionando corretamente e o usuário nÃo está sendo desbloquado após 15 min como previsto.
-Estamos no ambinte de desenvolvimento onde a rotina de limpeza func (w *TempBlockCleanerWorker) processExpiredBlocks(ctx context.Context) nÃo está rodando, mas o ambiente de homologaçÃo está em execução e compartilha o mesmo DB, portanto deveria limpar o bloqiuo automaticamente após 15 min.
-Adicionalmente o campo last_sign_attempt na tabela users está sem uso, pois está duplicado com o campo last_attempt_at na tabela wrong_signin_attempts. Precisamos corrigir esses problemas.
+Após a última refatoração sobre bloqueio de usuários após tentativas com senha incorreta, o usuário é bloqueado e a rotina de liberação automatica após o período o usuário continua com a tabela user_roles com o user_roles.status=2 e com blocked_until preenchido.
+O usu'rio faz login, mas creio que o login não está verificando se o usuário está bloqueado ou não.
 
 Assim:
-1. Analise o código atual do sistema de desbloqueio de tentativas de login e eventuais usos da coluna last_sign_attempt na tabela users.
-2. Identifique a causa raiz do problema e as evidencias no código.
-3. Proponha um plano detalhado para corrigir o problema, incluindo code skeletons para handlers, services, repositories, DTOs, entities e converters conforme necessário.
-4. Garanta que o plano siga as regras de arquitetura, padrões de código, observabilidade e documentação do projeto.
+1. Analise o código atual de sign in para confirmar que usuários com user_roles.status = 2 não estao fazendo login, como deveria ser.
+2. Analise o código atual de desbloquieio de usuários para confirmar que o desbloqueio automático está funcionando corretamente.
+    2.1) e porque a tabela user_roles não está sendo atualizada para status = 0 após o desbloqueio automático.
 
 ---
 
