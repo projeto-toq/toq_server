@@ -190,8 +190,8 @@ func (us *userService) signIn(ctx context.Context, tx *sql.Tx, nationalID string
 	// Adiciona device token vinculado ao deviceID sanitizado
 	if deviceToken != "" {
 		logger.Debug("auth.signin.device_token.add_for_device", "device_id", deviceID, "user_id", userID)
-		if _, errAdd := us.deviceTokenRepo.AddTokenForDevice(userID, deviceID, deviceToken, nil); errAdd != nil {
-			logger.Warn("auth.signin.device_token_add_for_device_failed", "user_id", userID, "device_id", deviceID, "error", errAdd)
+		if _, errAdd := us.repo.AddDeviceToken(ctx, tx, userID, deviceID, deviceToken, nil); errAdd != nil {
+			logger.Warn("auth.signin.device_token_add_failed", "user_id", userID, "device_id", deviceID, "error", errAdd)
 		}
 	}
 

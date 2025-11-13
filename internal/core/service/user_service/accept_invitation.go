@@ -139,9 +139,15 @@ func (us *userService) acceptInvitation(ctx context.Context, tx *sql.Tx, userID 
 
 	err = us.repo.UpdateUserByID(ctx, tx, realtor)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.accept_invitation.repo_update_user_error", "user_id", realtor.GetID(), "err", err)
-		return 0, utils.InternalError("Failed to update user")
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (realtor was loaded in same transaction, so realtor exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.accept_invitation.repo_update_user_error", "user_id", realtor.GetID(), "err", err)
+			return 0, utils.InternalError("Failed to update user")
+		}
+		// No changes needed = success, continue
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableAgencyInvites, "Convite para relacionamento com imobiliária aceito")

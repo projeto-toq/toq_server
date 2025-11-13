@@ -384,8 +384,14 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	//update the listing
 	err = ls.listingRepository.UpdateListing(ctx, tx, existing)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		return utils.InternalError("")
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (listing was loaded in same transaction, so exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			return utils.InternalError("Failed to update listing")
+		}
+		// No changes needed = success, continue
 	}
 
 	err = ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio atualizado")

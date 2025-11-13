@@ -6,13 +6,15 @@
 
 ## 🎯 Problema / Solicitação
 
-Após a última refatoração sobre bloqueio de usuários após tentativas com senha incorreta, o usuário é bloqueado e a rotina de liberação automatica após o período o usuário continua com a tabela user_roles com o user_roles.status=2 e com blocked_until preenchido.
-O usu'rio faz login, mas creio que o login não está verificando se o usuário está bloqueado ou não.
+Após a refatoraçÃo onde repository responde sql.ErrNoRows, foi identificado que o endpoint de confirmaçÃo de troca de email estÃ falhando com erro 500 quando o usuÃrio nÃo Ã encontrado. Logs de erro:
+{"time":"2025-11-12T16:15:57.239971148Z","level":"ERROR","msg":"user.confirm_email_change.stage_error","request_id":"b7a2173a-eb7e-441a-9346-ad84ff927e0e","stage":"update_user","err":"sql: no rows in result set"}
+{"time":"2025-11-12T16:15:57.244005132Z","level":"ERROR","msg":"HTTP Error","request_id":"b7a2173a-eb7e-441a-9346-ad84ff927e0e","request_id":"b7a2173a-eb7e-441a-9346-ad84ff927e0e","method":"POST","path":"/api/v2/user/email/confirm","status":500,"duration":12936655,"size":61,"client_ip":"79.55.106.238","user_agent":"PostmanRuntime/7.50.0","user_id":6,"user_role_id":6,"function":"github.com/projeto-toq/toq_server/internal/core/utils.InternalError","file":"/codigos/go_code/toq_server/internal/core/utils/http_errors.go","line":248,"stack":["github.com/projeto-toq/toq_server/internal/core/utils.InternalError (http_errors.go:248)"],"error_code":500,"error_message":"Failed to update user","errors":["HTTP 500: Failed to update user"]}
+
+sql.ErrnoRows deveria ser tratado pelo service para determinar se é erro ou não.
 
 Assim:
-1. Analise o código atual de sign in para confirmar que usuários com user_roles.status = 2 não estao fazendo login, como deveria ser.
-2. Analise o código atual de desbloquieio de usuários para confirmar que o desbloqueio automático está funcionando corretamente.
-    2.1) e porque a tabela user_roles não está sendo atualizada para status = 0 após o desbloqueio automático.
+1. Analise o código onde o erro ocorreu e identifique a causa raiz do problema.
+2. Verifique outros pontos service onde sql.ErrNoRows pode estar sendo mal interpretado.
 
 ---
 

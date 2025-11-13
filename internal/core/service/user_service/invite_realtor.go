@@ -101,18 +101,22 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 
 		// Enviar notificação push para corretor já na plataforma
 		notificationService := us.globalService.GetUnifiedNotificationService()
-		pushRequest := globalservice.NotificationRequest{
-			Type:    globalservice.NotificationTypeFCM,
-			Token:   realtor.GetDeviceToken(),
-			Subject: "Nova Proposta de Trabalho",
-			Body:    fmt.Sprintf("A imobiliária %s quer trabalhar com você!", agency.GetNickName()),
-		}
+		tokens := realtor.GetDeviceTokens()
+		if len(tokens) > 0 {
+			// Send to the first available device token
+			pushRequest := globalservice.NotificationRequest{
+				Type:    globalservice.NotificationTypeFCM,
+				Token:   tokens[0].Token,
+				Subject: "Nova Proposta de Trabalho",
+				Body:    fmt.Sprintf("A imobiliária %s quer trabalhar com você!", agency.GetNickName()),
+			}
 
-		err = notificationService.SendNotification(ctx, pushRequest)
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("user.invite_realtor.send_push_error", "error", err)
-			return err
+			err = notificationService.SendNotification(ctx, pushRequest)
+			if err != nil {
+				utils.SetSpanError(ctx, err)
+				logger.Error("user.invite_realtor.send_push_error", "error", err)
+				return err
+			}
 		}
 
 	case isOnPlataform && !isInvited:
@@ -146,9 +150,17 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 	//update the user status
 	err = us.repo.UpdateUserByID(ctx, tx, realtor)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.invite_realtor.update_realtor_error", "error", err, "realtor_id", realtor.GetID())
-		return
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (realtor was loaded from DB, so realtor exists, just no fields changed)
+		if errors.Is(err, sql.ErrNoRows) {
+			// No rows affected = no changes needed = success
+			err = nil
+		} else {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.invite_realtor.update_realtor_error", "error", err, "realtor_id", realtor.GetID())
+			return utils.InternalError("Failed to update realtor")
+		}
 	}
 
 	return
@@ -212,9 +224,15 @@ func (us *userService) updateInvite(ctx context.Context, tx *sql.Tx, invite user
 	invite.SetAgencyID(agency.GetID())
 	err = us.repo.UpdateAgencyInviteByID(ctx, tx, invite)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.invite_realtor.update_invite_error", "error", err, "invite_id", invite.GetID())
-		return
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (invite was loaded in same transaction, so exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.invite_realtor.update_invite_error", "error", err, "invite_id", invite.GetID())
+			return utils.InternalError("Failed to update invite")
+		}
+		// No changes needed = success, continue
 	}
 
 	return
@@ -262,18 +280,22 @@ func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx
 	if push {
 		// Enviar notificação push para corretor na plataforma
 		notificationService := us.globalService.GetUnifiedNotificationService()
-		pushRequest := globalservice.NotificationRequest{
-			Type:    globalservice.NotificationTypeFCM,
-			Token:   realtor.GetDeviceToken(),
-			Subject: "Nova Proposta de Trabalho",
-			Body:    fmt.Sprintf("A imobiliária %s quer trabalhar com você!", agency.GetNickName()),
-		}
+		tokens := realtor.GetDeviceTokens()
+		if len(tokens) > 0 {
+			// Send to the first available device token
+			pushRequest := globalservice.NotificationRequest{
+				Type:    globalservice.NotificationTypeFCM,
+				Token:   tokens[0].Token,
+				Subject: "Nova Proposta de Trabalho",
+				Body:    fmt.Sprintf("A imobiliária %s quer trabalhar com você!", agency.GetNickName()),
+			}
 
-		err = notificationService.SendNotification(ctx, pushRequest)
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("user.invite_realtor.send_push_error", "error", err)
-			return err
+			err = notificationService.SendNotification(ctx, pushRequest)
+			if err != nil {
+				utils.SetSpanError(ctx, err)
+				logger.Error("user.invite_realtor.send_push_error", "error", err)
+				return err
+			}
 		}
 	} else {
 		err = us.sendSMStoNewRealtor(ctx, phoneNumber, agency)

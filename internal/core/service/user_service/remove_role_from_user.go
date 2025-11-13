@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -119,9 +120,15 @@ func (us *userService) RemoveRoleFromUserWithTx(ctx context.Context, tx *sql.Tx,
 	// Perform hard delete from database
 	err = us.repo.DeleteUserRole(ctx, tx, userRole.GetID())
 	if err != nil {
-		logger.Error("permission.role.delete_user_role_failed", "user_id", userID, "role_id", roleID, "user_role_id", userRole.GetID(), "error", err)
-		utils.SetSpanError(ctx, err)
-		return utils.InternalError("")
+		// Handle sql.ErrNoRows as success: happens when DELETE affects 0 rows
+		// (userRole was loaded in same transaction, so it exists, but may have been already deleted by concurrent operation)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			logger.Error("permission.role.delete_user_role_failed", "user_id", userID, "role_id", roleID, "user_role_id", userRole.GetID(), "error", err)
+			utils.SetSpanError(ctx, err)
+			return utils.InternalError("Failed to delete user role")
+		}
+		// No rows affected = already deleted = idempotent success, continue
 	}
 
 	// Log success (domain event)

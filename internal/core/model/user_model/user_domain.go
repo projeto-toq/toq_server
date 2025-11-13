@@ -27,7 +27,7 @@ type user struct {
 	optStatus      bool
 	lastActivityAt time.Time
 	deleted        bool
-	deviceTokens   []DeviceTokenInterface
+	deviceTokens   []DeviceToken
 
 	// NEW: User-level blocking fields
 	blockedUntil       *time.Time
@@ -208,46 +208,45 @@ func (u *user) SetDeleted(deleted bool) {
 	u.deleted = deleted
 }
 
-// Backwards-compatible single token accessor (returns first token if exists)
-func (u *user) GetDeviceToken() string {
-	if len(u.deviceTokens) == 0 {
-		return ""
-	}
-	return u.deviceTokens[0].GetDeviceToken()
-}
+// ==================== Device Token Management ====================
 
-// Backwards-compatible setter: sets or replaces the first token
-func (u *user) SetDeviceToken(token string) {
-	if len(u.deviceTokens) == 0 {
-		dt := NewDeviceToken()
-		dt.SetDeviceToken(token)
-		u.deviceTokens = []DeviceTokenInterface{dt}
-		return
-	}
-	u.deviceTokens[0].SetDeviceToken(token)
-}
-
-// Full slice getter
-func (u *user) GetDeviceTokens() []DeviceTokenInterface {
+// GetDeviceTokens returns all push notification tokens for this user
+func (u *user) GetDeviceTokens() []DeviceToken {
 	return u.deviceTokens
 }
 
-// Replace all device tokens
-func (u *user) SetDeviceTokens(tokens []DeviceTokenInterface) {
+// SetDeviceTokens sets the complete list of device tokens
+func (u *user) SetDeviceTokens(tokens []DeviceToken) {
 	u.deviceTokens = tokens
 }
 
-// AddDeviceToken adds a token if not already present; returns true if added
-func (u *user) AddDeviceToken(token string) bool {
-	for _, t := range u.deviceTokens {
-		if t.GetDeviceToken() == token {
-			return false
+// AddDeviceToken appends a new device token to the user in-memory state
+func (u *user) AddDeviceToken(token DeviceToken) {
+	u.deviceTokens = append(u.deviceTokens, token)
+}
+
+// RemoveDeviceToken removes a token by token string from in-memory state
+// Returns true if token was found and removed
+func (u *user) RemoveDeviceToken(tokenString string) bool {
+	for i, t := range u.deviceTokens {
+		if t.Token == tokenString {
+			// Remove element by slicing
+			u.deviceTokens = append(u.deviceTokens[:i], u.deviceTokens[i+1:]...)
+			return true
 		}
 	}
-	dt := NewDeviceToken()
-	dt.SetDeviceToken(token)
-	u.deviceTokens = append(u.deviceTokens, dt)
-	return true
+	return false
+}
+
+// GetDeviceToken returns a specific token by token string
+// Returns nil if not found
+func (u *user) GetDeviceToken(tokenString string) *DeviceToken {
+	for _, t := range u.deviceTokens {
+		if t.Token == tokenString {
+			return &t
+		}
+	}
+	return nil
 }
 
 // ==================== NEW: User-level blocking methods ====================

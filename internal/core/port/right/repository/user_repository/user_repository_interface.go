@@ -73,6 +73,109 @@ type UserRepoPortInterface interface {
 	// SetUserPermanentlyBlocked sets or clears permanent admin block
 	// Used by admin endpoints to permanently block/unblock users
 	SetUserPermanentlyBlocked(ctx context.Context, tx *sql.Tx, userID int64, blocked bool) error
+
+	// ==================== Device Token Management ====================
+
+	// AddDeviceToken registers a new push notification token for a user device
+	// Uses INSERT ... ON DUPLICATE KEY UPDATE to handle token rotation for same device
+	// Returns the created/updated device token record
+	//
+	// Parameters:
+	//   - ctx: Context for tracing and cancellation
+	//   - tx: Database transaction (can be nil for standalone operation)
+	//   - userID: User's unique identifier
+	//   - deviceID: Unique device identifier (UUIDv4)
+	//   - token: FCM or APNs push notification token
+	//   - platform: Device platform ("android"/"ios"/"web") - optional
+	//
+	// Returns:
+	//   - token: Created device token record with ID
+	//   - error: Database errors
+	AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, deviceID, token string, platform *string) (usermodel.DeviceToken, error)
+
+	// RemoveDeviceToken deletes a specific push notification token
+	// Returns sql.ErrNoRows if token not found
+	//
+	// Parameters:
+	//   - ctx: Context for tracing
+	//   - tx: Database transaction (can be nil)
+	//   - userID: User's unique identifier
+	//   - token: The token string to remove
+	//
+	// Returns:
+	//   - error: sql.ErrNoRows if not found, or database errors
+	RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error
+
+	// RemoveAllDeviceTokensByUserID removes all tokens for a user (cleanup on logout/delete)
+	// Returns no error if user has no tokens (0 rows affected is success)
+	//
+	// Parameters:
+	//   - ctx: Context for tracing
+	//   - tx: Database transaction (can be nil)
+	//   - userID: User's unique identifier
+	//
+	// Returns:
+	//   - error: Database errors
+	RemoveAllDeviceTokensByUserID(ctx context.Context, tx *sql.Tx, userID int64) error
+
+	// RemoveDeviceTokensByDeviceID removes all tokens for a specific device
+	// Used when device session is revoked or device is unregistered
+	// Returns no error if device has no tokens
+	//
+	// Parameters:
+	//   - ctx: Context for tracing
+	//   - tx: Database transaction (can be nil)
+	//   - userID: User's unique identifier
+	//   - deviceID: Unique device identifier
+	//
+	// Returns:
+	//   - error: Database errors
+	RemoveDeviceTokensByDeviceID(ctx context.Context, tx *sql.Tx, userID int64, deviceID string) error
+
+	// ListDeviceTokensByUserID retrieves all tokens for a user
+	// Returns empty slice if user has no tokens (NOT sql.ErrNoRows)
+	//
+	// Parameters:
+	//   - ctx: Context for tracing
+	//   - tx: Database transaction (can be nil)
+	//   - userID: User's unique identifier
+	//
+	// Returns:
+	//   - tokens: Slice of device tokens
+	//   - error: Database errors
+	ListDeviceTokensByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]usermodel.DeviceToken, error)
+
+	// ListDeviceTokenStringsByUserIDIfOptedIn retrieves FCM token strings for opted-in user
+	// Only returns tokens if user.opt_status = 1 and user.deleted = 0
+	// Returns empty slice if user opted out or deleted (NOT sql.ErrNoRows)
+	//
+	// Use Case: Targeted push notifications to single user
+	//
+	// Parameters:
+	//   - ctx: Context for tracing
+	//   - tx: Database transaction (can be nil)
+	//   - userID: User's unique identifier
+	//
+	// Returns:
+	//   - tokens: Slice of FCM token strings (DISTINCT)
+	//   - error: Database errors
+	ListDeviceTokenStringsByUserIDIfOptedIn(ctx context.Context, tx *sql.Tx, userID int64) ([]string, error)
+
+	// ListDeviceTokenStringsByOptedInUsers retrieves all tokens for all opted-in users
+	// Only returns tokens where user.opt_status = 1 and user.deleted = 0
+	// Returns empty slice if no users opted in (NOT sql.ErrNoRows)
+	//
+	// Use Case: Broadcast notifications to all opted-in users
+	// Warning: Can return large result set (thousands of tokens)
+	//
+	// Parameters:
+	//   - ctx: Context for tracing
+	//   - tx: Database transaction (can be nil)
+	//
+	// Returns:
+	//   - tokens: Slice of FCM token strings (DISTINCT)
+	//   - error: Database errors
+	ListDeviceTokenStringsByOptedInUsers(ctx context.Context, tx *sql.Tx) ([]string, error)
 }
 
 type ListUsersFilter struct {

@@ -47,7 +47,7 @@ func (gs *globalService) StartSessionEventSubscriber() func() {
 		case events.SessionsRevoked:
 			// If we have a deviceID, prune tokens associated to that device (schema fallback: no-op)
 			if evt.DeviceID != "" {
-				if err := gs.deviceTokenRepo.RemoveTokensByDeviceID(evt.UserID, evt.DeviceID); err != nil {
+				if err := gs.userRepo.RemoveDeviceTokensByDeviceID(context.Background(), nil, evt.UserID, evt.DeviceID); err != nil {
 					logger.Warn("session.subscriber.device_tokens_prune_failed", "err", err)
 					metricDevicePruneByEvent.WithLabelValues(string(evt.Type), "error").Inc()
 				} else {

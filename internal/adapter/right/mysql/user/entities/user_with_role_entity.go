@@ -94,6 +94,12 @@ type UserWithRoleEntity struct {
 	// Deleted indicates soft delete status (users.deleted, TINYINT UNSIGNED, NOT NULL)
 	Deleted bool
 
+	// BlockedUntil is the timestamp until which the user is temporarily blocked (users.blocked_until, DATETIME, NULL)
+	BlockedUntil sql.NullTime
+
+	// PermanentlyBlocked indicates if user is permanently blocked (users.permanently_blocked, TINYINT(1), NOT NULL)
+	PermanentlyBlocked bool
+
 	// ==================== UserRole fields (from user_roles table) ====================
 	// All nullable because user might not have active role (LEFT JOIN)
 
@@ -115,9 +121,6 @@ type UserWithRoleEntity struct {
 
 	// UserRoleExpiresAt is the optional expiration timestamp (user_roles.expires_at, TIMESTAMP(6), NULL)
 	UserRoleExpiresAt sql.NullTime
-
-	// UserRoleBlockedUntil is the optional block timestamp (user_roles.blocked_until, DATETIME, NULL)
-	UserRoleBlockedUntil sql.NullTime
 
 	// ==================== Role fields (from roles table) ====================
 	// All nullable because user might not have active role (LEFT JOIN)

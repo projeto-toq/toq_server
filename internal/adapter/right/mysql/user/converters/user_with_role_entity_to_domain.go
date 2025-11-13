@@ -46,27 +46,29 @@ import (
 func UserWithRoleEntityToDomain(entity userentity.UserWithRoleEntity) (usermodel.UserInterface, error) {
 	// Step 1: Convert user fields (always present)
 	userEntity := userentity.UserEntity{
-		ID:             entity.UserID,
-		FullName:       entity.FullName,
-		NickName:       entity.NickName,
-		NationalID:     entity.NationalID,
-		CreciNumber:    entity.CreciNumber,
-		CreciState:     entity.CreciState,
-		CreciValidity:  entity.CreciValidity,
-		BornAt:         entity.BornAt,
-		PhoneNumber:    entity.PhoneNumber,
-		Email:          entity.Email,
-		ZipCode:        entity.ZipCode,
-		Street:         entity.Street,
-		Number:         entity.Number,
-		Complement:     entity.Complement,
-		Neighborhood:   entity.Neighborhood,
-		City:           entity.City,
-		State:          entity.State,
-		Password:       entity.Password,
-		OptStatus:      entity.OptStatus,
-		LastActivityAt: entity.LastActivityAt,
-		Deleted:        entity.Deleted,
+		ID:                 entity.UserID,
+		FullName:           entity.FullName,
+		NickName:           entity.NickName,
+		NationalID:         entity.NationalID,
+		CreciNumber:        entity.CreciNumber,
+		CreciState:         entity.CreciState,
+		CreciValidity:      entity.CreciValidity,
+		BornAt:             entity.BornAt,
+		PhoneNumber:        entity.PhoneNumber,
+		Email:              entity.Email,
+		ZipCode:            entity.ZipCode,
+		Street:             entity.Street,
+		Number:             entity.Number,
+		Complement:         entity.Complement,
+		Neighborhood:       entity.Neighborhood,
+		City:               entity.City,
+		State:              entity.State,
+		Password:           entity.Password,
+		OptStatus:          entity.OptStatus,
+		LastActivityAt:     entity.LastActivityAt,
+		Deleted:            entity.Deleted,
+		BlockedUntil:       entity.BlockedUntil,
+		PermanentlyBlocked: entity.PermanentlyBlocked,
 	}
 
 	user := UserEntityToDomain(userEntity)
@@ -90,13 +92,6 @@ func UserWithRoleEntityToDomain(entity userentity.UserWithRoleEntity) (usermodel
 	if entity.UserRoleExpiresAt.Valid {
 		userRoleEntity.ExpiresAt = sql.NullTime{
 			Time:  entity.UserRoleExpiresAt.Time,
-			Valid: true,
-		}
-	}
-
-	if entity.UserRoleBlockedUntil.Valid {
-		userRoleEntity.BlockedUntil = sql.NullTime{
-			Time:  entity.UserRoleBlockedUntil.Time,
 			Valid: true,
 		}
 	}

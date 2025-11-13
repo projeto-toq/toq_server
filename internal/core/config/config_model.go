@@ -200,9 +200,6 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.Permission == nil {
 		slog.Error("repositories.Permission is nil")
 	}
-	if repositories.DeviceToken == nil {
-		slog.Error("repositories.DeviceToken is nil")
-	}
 
 	// Criar uma cópia dos repositórios para evitar problemas com ponteiros
 	c.repositoryAdapters = &factory.RepositoryAdapters{
@@ -216,7 +213,6 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 		PhotoSession: repositories.PhotoSession,
 		Session:      repositories.Session,
 		Permission:   repositories.Permission,
-		DeviceToken:  repositories.DeviceToken,
 	}
 
 	slog.Info("Repository adapters assigned successfully")

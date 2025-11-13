@@ -158,19 +158,19 @@ func (c *config) InitGlobalService() {
 		slog.Error("cloudStorage adapter is nil")
 		return
 	}
-	if c.repositoryAdapters.DeviceToken == nil {
-		slog.Error("repositoryAdapters.DeviceToken is nil")
+	if c.repositoryAdapters.User == nil {
+		slog.Error("repositoryAdapters.User is nil")
 		return
 	}
 
 	c.globalService = globalservice.NewGlobalService(
 		c.repositoryAdapters.Global,
+		c.repositoryAdapters.User,
 		c.cep,
 		c.firebaseCloudMessaging,
 		c.email,
 		c.sms,
 		c.cloudStorage,
-		c.repositoryAdapters.DeviceToken,
 		metrics,
 	)
 
@@ -203,7 +203,6 @@ func (c *config) InitUserHandler() {
 	c.userService = userservices.NewUserService(
 		c.repositoryAdapters.User,
 		c.repositoryAdapters.Session,
-		c.repositoryAdapters.DeviceToken,
 		c.globalService,
 		c.listingService,
 		c.photoSessionService,

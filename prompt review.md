@@ -6,18 +6,16 @@
 
 ## 🎯 Problema / Solicitação
 
-O sistema de gestão de usuários é implementado:
-- pelo modelo model/session_model;
-- pelo serviço service/session_service;
-- pelo repositorio repository/session_repository;
-- pelo adapater mysql em mysql/session;
+O sistema de gestão de device_tokens é implementado:
+- pelo modelo model/user_model;
+- pelo serviço service/user_service;
+- pelo repositorio repository/device_token_repository;
+- pelo adapater mysql em mysql/device_token;
 - e pela persistencia representados por tabelas que podem ser consultadas pelo scripts/db_creation.sql.
 
 Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto (docs/toq_server_go_guide.md) estão sendo seguidas corretamente.
 
-Considerando as extesão da verificação, vamos focar em lotes de arquivos, iniciando pelos arquivos: 
-- do mysql/session/converters;
-- do mysql/session/entities;
+temos que revisar **todos os arquivos relacionados à gestão de device_tokens** para garantir que estão em conformidade com as regras do guia do projeto.
 
 Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
 1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.
@@ -26,6 +24,9 @@ Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
     3.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
 4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
+6. device_tokens deveria ter serviço e modelo separados?
+    6.1 se sim, o que não me parece pela simplicidade da funcionalidade, explique o porquê e proponha o plano de alteração.
+    6.2 se não, explique o porquê e proponha elimine o repository e o adapter mysql mesclando em user_service e user_model respectivamente.
 
 
 ---

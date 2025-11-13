@@ -58,13 +58,5 @@ func UserRoleDomainToEntity(userRole usermodel.UserRoleInterface) (*userentity.U
 		}
 	}
 
-	// Map optional BlockedUntil field (*time.Time → sql.NullTime)
-	if blockedUntil := userRole.GetBlockedUntil(); blockedUntil != nil {
-		entity.BlockedUntil = sql.NullTime{
-			Time:  *blockedUntil,
-			Valid: true,
-		}
-	}
-
 	return entity, nil
 }

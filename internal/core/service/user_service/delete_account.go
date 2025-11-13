@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
@@ -132,7 +133,7 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 	}
 
 	// Remove all device tokens
-	if err2 := us.deviceTokenRepo.RemoveAllByUserID(user.GetID()); err2 != nil {
+	if err2 := us.repo.RemoveAllDeviceTokensByUserID(ctx, tx, user.GetID()); err2 != nil {
 		logger.Warn("user.delete_account.remove_device_tokens_warning", "error", err2, "user_id", user.GetID())
 	}
 
@@ -141,9 +142,15 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.delete_account.update_user_error", "error", err, "user_id", user.GetID())
-		return
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (user was loaded in same transaction, so user exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.delete_account.update_user_error", "error", err, "user_id", user.GetID())
+			return tokens, publishSessionsEvent, utils.InternalError("Failed to mark user as deleted")
+		}
+		// No changes needed = success, continue
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Conta apagada por solicitação do usuário (dados preservados para auditoria)")

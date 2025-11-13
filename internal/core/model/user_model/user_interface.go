@@ -50,11 +50,30 @@ type UserInterface interface {
 	SetLastActivityAt(time.Time)
 	IsDeleted() bool
 	SetDeleted(bool)
-	GetDeviceToken() string
-	SetDeviceToken(string)
-	GetDeviceTokens() []DeviceTokenInterface
-	SetDeviceTokens([]DeviceTokenInterface)
-	AddDeviceToken(string) bool
+
+	// ==================== Device Token Management ====================
+
+	// GetDeviceTokens returns all push notification tokens for this user
+	// Returns empty slice if user has no devices registered
+	// Used for sending targeted push notifications
+	GetDeviceTokens() []DeviceToken
+
+	// SetDeviceTokens sets the complete list of device tokens
+	// Used by repository after fetching from database
+	SetDeviceTokens(tokens []DeviceToken)
+
+	// AddDeviceToken appends a new device token to the user
+	// Note: This does NOT persist to database, only updates in-memory state
+	// Call user_service methods to persist changes
+	AddDeviceToken(token DeviceToken)
+
+	// RemoveDeviceToken removes a token by token string
+	// Returns true if token was found and removed
+	RemoveDeviceToken(tokenString string) bool
+
+	// GetDeviceToken returns a specific token by token string
+	// Returns nil if not found
+	GetDeviceToken(tokenString string) *DeviceToken
 
 	// ==================== NEW: User-level blocking methods ====================
 

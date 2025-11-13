@@ -57,10 +57,10 @@ func (ua *UserAdapter) GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, pho
 			u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state,
 			u.creci_validity, u.born_at, u.phone_number, u.email, u.zip_code, u.street, 
 			u.number, u.complement, u.neighborhood, u.city, u.state, u.password, 
-			u.opt_status, u.last_activity_at, u.deleted,
+			u.opt_status, u.last_activity_at, u.deleted, u.blocked_until, u.permanently_blocked,
 			ur.id AS user_role_id, ur.user_id AS user_role_user_id, ur.role_id AS user_role_role_id,
 			ur.is_active AS user_role_is_active, ur.status AS user_role_status, 
-			ur.expires_at AS user_role_expires_at, ur.blocked_until AS user_role_blocked_until,
+			ur.expires_at AS user_role_expires_at,
 			r.id AS role_id, r.slug AS role_slug, r.name AS role_name, 
 			r.description AS role_description, r.is_system_role AS role_is_system_role, 
 			r.is_active AS role_is_active

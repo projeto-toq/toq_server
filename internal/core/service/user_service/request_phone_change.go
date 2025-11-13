@@ -132,9 +132,12 @@ func (us *userService) requestPhoneChange(ctx context.Context, tx *sql.Tx, id in
 
 	err = us.repo.UpdateUserValidations(ctx, tx, validation)
 	if err != nil {
+		// Note: UpdateUserValidations is an UPSERT operation
+		// It should never return sql.ErrNoRows (creates if not exists)
+		// Any error here is infrastructure failure
 		utils.SetSpanError(ctx, err)
 		logger.Error("phone_change.request.update_validations_error", "error", err, "user_id", user.GetID())
-		return
+		return user, validation, utils.InternalError("Failed to update validations")
 	}
 
 	// Note: SendNotification moved to after transaction commit

@@ -115,14 +115,20 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.reject_invitation.send_notification_error", "error", err)
-		return
+		return err
 	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, realtor)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.reject_invitation.update_realtor_error", "error", err, "realtor_id", realtor.GetID())
-		return
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (realtor was loaded in same transaction, so realtor exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.reject_invitation.update_realtor_error", "error", err, "realtor_id", realtor.GetID())
+			return utils.InternalError("Failed to update realtor")
+		}
+		// No changes needed = success, continue
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableAgencyInvites, "Convite para relacionamento com imobiliária rejeitado")

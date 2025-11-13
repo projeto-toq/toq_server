@@ -126,6 +126,9 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
+		// Note: UpdateUserValidations is an UPSERT operation
+		// Validation was loaded successfully above in the same transaction
+		// Any error here is infrastructure failure
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "update_validations", "err", err)
 		return utils.InternalError("Failed to update validations")
@@ -133,9 +136,15 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "update_user", "err", err)
-		return utils.InternalError("Failed to update user")
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (user was loaded in same transaction, so user exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "update_user", "err", err)
+			return utils.InternalError("Failed to update user")
+		}
+		// No changes needed = success, continue
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "email do usuário alterado")

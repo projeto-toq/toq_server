@@ -902,7 +902,7 @@ FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
-(id, user_id, role_id, is_active, status, blocked_until, @expires_at)
+(id, user_id, role_id, is_active, status, @expires_at)
 SET expires_at = NULLIF(@expires_at, 'NULL');
 
 LOAD DATA INFILE '/var/lib/mysql-files/listing_catalog_values.csv'

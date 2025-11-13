@@ -3,6 +3,7 @@ package userservices
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
@@ -139,9 +140,15 @@ func (us *userService) updateProfile(
 
 	err = us.repo.UpdateUserByID(ctx, tx, current)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.update_profile.update_user_error", "error", err, "user_id", in.UserID)
-		return utils.InternalError("Failed to update user")
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (user was loaded in same transaction, so user exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.update_profile.update_user_error", "error", err, "user_id", in.UserID)
+			return utils.InternalError("Failed to update user")
+		}
+		// No changes needed = success, continue
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário atualizou o perfil")

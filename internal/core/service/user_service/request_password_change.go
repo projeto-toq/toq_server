@@ -101,7 +101,12 @@ func (us *userService) requestPasswordChange(ctx context.Context, tx *sql.Tx, na
 
 	err = us.repo.UpdateUserValidations(ctx, tx, validation)
 	if err != nil {
-		return
+		// Note: UpdateUserValidations is an UPSERT operation
+		// It should never return sql.ErrNoRows (creates if not exists)
+		// Any error here is infrastructure failure
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("user.request_password_change.update_validations_error", "err", err, "user_id", user.GetID())
+		return user, validation, utils.InternalError("Failed to update user validations")
 	}
 
 	// Notification is sent after commit by caller

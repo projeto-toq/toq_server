@@ -56,10 +56,5 @@ func UserRoleEntityToDomain(entity *userentity.UserRoleEntity) (usermodel.UserRo
 		userRole.SetExpiresAt(&entity.ExpiresAt.Time)
 	}
 
-	// Map optional BlockedUntil field (sql.NullTime → *time.Time)
-	if entity.BlockedUntil.Valid {
-		userRole.SetBlockedUntil(&entity.BlockedUntil.Time)
-	}
-
 	return userRole, nil
 }

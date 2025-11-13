@@ -142,6 +142,9 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 
 	err = us.repo.UpdateUserValidations(ctx, tx, userValidation)
 	if err != nil {
+		// Note: UpdateUserValidations is an UPSERT operation
+		// Validation was loaded successfully above in the same transaction
+		// Any error here is infrastructure failure
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.confirm_phone_change.stage_error", "stage", "update_validations", "err", err)
 		return derrors.Infra("Failed to update validations", err)
@@ -152,9 +155,15 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 
 	err = us.repo.UpdateUserByID(ctx, tx, user)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.confirm_phone_change.stage_error", "stage", "update_user", "err", err)
-		return derrors.Infra("Failed to update user", err)
+		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
+		// (user was loaded in same transaction, so user exists, just no fields changed)
+		if !errors.Is(err, sql.ErrNoRows) {
+			// Real infrastructure error
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.confirm_phone_change.stage_error", "stage", "update_user", "err", err)
+			return derrors.Infra("Failed to update user", err)
+		}
+		// No changes needed = success, continue
 	}
 
 	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Alterada o telefone do usuário")

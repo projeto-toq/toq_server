@@ -74,11 +74,4 @@ type UserRoleEntity struct {
 	// After this time, role should be deactivated by cron job
 	// NULL = no expiration (permanent assignment)
 	ExpiresAt sql.NullTime `db:"expires_at"`
-
-	// BlockedUntil is the optional timestamp until which role is blocked (NULL, DATETIME)
-	// Used for temporary suspensions (e.g., policy violation cooldown)
-	// Role cannot be activated while blocked_until > NOW()
-	// NULL = not blocked
-	// Example: User banned for 7 days → blocked_until = NOW() + 7 days
-	BlockedUntil sql.NullTime `db:"blocked_until"`
 }

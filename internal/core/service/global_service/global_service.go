@@ -12,43 +12,43 @@ import (
 	emailport "github.com/projeto-toq/toq_server/internal/core/port/right/email"
 	fcmport "github.com/projeto-toq/toq_server/internal/core/port/right/fcm"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
-	devicetokenrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/device_token_repository"
 	globalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
+	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 )
 
 type globalService struct {
 	globalRepo           globalrepository.GlobalRepoPortInterface
+	userRepo             userrepository.UserRepoPortInterface
 	cep                  cepport.CEPPortInterface
 	firebaseCloudMessage fcmport.FCMPortInterface
 	email                emailport.EmailPortInterface
 	sms                  smsport.SMSPortInterface
 	googleCludStorage    storageport.CloudStoragePortInterface
-	deviceTokenRepo      devicetokenrepository.DeviceTokenRepoPortInterface
 	eventBus             events.Bus
 	metrics              metricsport.MetricsPortInterface
 }
 
 func NewGlobalService(
 	globalRepo globalrepository.GlobalRepoPortInterface,
+	userRepo userrepository.UserRepoPortInterface,
 	cep cepport.CEPPortInterface,
 	firebaseCloudMessage fcmport.FCMPortInterface,
 	email emailport.EmailPortInterface,
 	sms smsport.SMSPortInterface,
 	googleCloudStorage storageport.CloudStoragePortInterface,
-	deviceTokenRepo devicetokenrepository.DeviceTokenRepoPortInterface,
 	// optional metrics (can be nil in tests or minimal setups)
 	metrics metricsport.MetricsPortInterface,
 ) GlobalServiceInterface {
 	return &globalService{
 		globalRepo:           globalRepo,
+		userRepo:             userRepo,
 		cep:                  cep,
 		firebaseCloudMessage: firebaseCloudMessage,
 		email:                email,
 		sms:                  sms,
 		googleCludStorage:    googleCloudStorage,
-		deviceTokenRepo:      deviceTokenRepo,
 		eventBus:             events.NewInMemoryBus(),
 		metrics:              metrics,
 	}
@@ -92,8 +92,8 @@ func (gs *globalService) GetMetrics() metricsport.MetricsPortInterface {
 
 // ListDeviceTokensByUserIDIfOptedIn returns all push tokens for a user when promotional opt-in is active.
 func (gs *globalService) ListDeviceTokensByUserIDIfOptedIn(ctx context.Context, userID int64) ([]string, error) {
-	if gs.deviceTokenRepo == nil {
-		return nil, fmt.Errorf("device token repository not configured")
+	if gs.userRepo == nil {
+		return nil, fmt.Errorf("user repository not configured")
 	}
-	return gs.deviceTokenRepo.ListTokensByUserIDIfOptedIn(ctx, nil, userID)
+	return gs.userRepo.ListDeviceTokenStringsByUserIDIfOptedIn(ctx, nil, userID)
 }

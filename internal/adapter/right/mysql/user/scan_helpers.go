@@ -30,45 +30,46 @@ import (
 //
 // Column Order (MUST match query SELECT order exactly):
 //
-//	Columns 1-22: User fields (users table)
-//	 1. id (INT UNSIGNED)
-//	 2. full_name (VARCHAR)
-//	 3. nick_name (VARCHAR, nullable)
-//	 4. national_id (VARCHAR)
-//	 5. creci_number (VARCHAR, nullable)
-//	 6. creci_state (VARCHAR, nullable)
-//	 7. creci_validity (DATE, nullable)
-//	 8. born_at (DATE)
-//	 9. phone_number (VARCHAR)
-//	10. email (VARCHAR)
-//	11. zip_code (VARCHAR)
-//	12. street (VARCHAR)
-//	13. number (VARCHAR)
-//	14. complement (VARCHAR, nullable)
-//	15. neighborhood (VARCHAR)
-//	16. city (VARCHAR)
-//	17. state (VARCHAR)
-//	18. password (VARCHAR)
-//	19. opt_status (TINYINT)
-//	20. last_activity_at (TIMESTAMP)
-//	21. deleted (TINYINT)
+//	Columns 1-23: User fields (users table)
+//	1. u.id (INT UNSIGNED, NOT NULL)
+//	2. u.full_name (VARCHAR, NOT NULL)
+//	3. u.nick_name (VARCHAR, nullable)
+//	4. u.national_id (VARCHAR, NOT NULL)
+//	5. u.creci_number (VARCHAR, nullable)
+//	6. u.creci_state (VARCHAR, nullable)
+//	7. u.creci_validity (DATE, nullable)
+//	8. u.born_at (DATE, NOT NULL)
+//	9. u.phone_number (VARCHAR, NOT NULL)
+//	10. u.email (VARCHAR, NOT NULL)
+//	11. u.zip_code (VARCHAR, NOT NULL)
+//	12. u.street (VARCHAR, NOT NULL)
+//	13. u.number (VARCHAR, NOT NULL)
+//	14. u.complement (VARCHAR, nullable)
+//	15. u.neighborhood (VARCHAR, NOT NULL)
+//	16. u.city (VARCHAR, NOT NULL)
+//	17. u.state (VARCHAR, NOT NULL)
+//	18. u.password (VARCHAR, NOT NULL)
+//	19. u.opt_status (TINYINT, NOT NULL)
+//	20. u.last_activity_at (TIMESTAMP, NOT NULL)
+//	21. u.deleted (TINYINT, NOT NULL)
+//	22. u.blocked_until (DATETIME, nullable)
+//	23. u.permanently_blocked (TINYINT, NOT NULL)
 //
-//	Columns 22-28: UserRole fields (user_roles table, ALL nullable due to LEFT JOIN)
-//	22. ur.id (INT, nullable)
-//	23. ur.user_id (INT, nullable)
-//	24. ur.role_id (INT, nullable)
-//	25. ur.is_active (TINYINT, nullable)
-//	26. ur.status (TINYINT, nullable)
-//	27. ur.expires_at (TIMESTAMP, nullable)
-//	28. ur.blocked_until (DATETIME, nullable)
+//	Columns 24-29: UserRole fields (user_roles table, ALL nullable due to LEFT JOIN)
+//	24. ur.id (INT, nullable)
+//	25. ur.user_id (INT, nullable)
+//	26. ur.role_id (INT, nullable)
+//	27. ur.is_active (TINYINT, nullable)
+//	28. ur.status (TINYINT, nullable)
+//	29. ur.expires_at (TIMESTAMP, nullable)
 //
-//	Columns 29-34: Role fields (roles table, ALL nullable due to LEFT JOIN)
-//	29. r.id (INT, nullable)
-//	30. r.slug (VARCHAR, nullable)
-//	31. r.name (VARCHAR, nullable)
-//	32. r.description (TEXT, nullable)
-//	33. r.is_system_role (TINYINT, nullable)
-//	34. r.is_active (TINYINT, nullable)
+//	Columns 30-35: Role fields (roles table, ALL nullable due to LEFT JOIN)
+//	30. r.id (INT, nullable)
+//	31. r.slug (VARCHAR, nullable)
+//	32. r.name (VARCHAR, nullable)
+//	33. r.description (TEXT, nullable)
+//	34. r.is_system_role (TINYINT, nullable)
+//	35. r.is_active (TINYINT, nullable)
 //
 // NULL Handling:
 //   - User fields: Uses sql.Null* types for optional fields (nick_name, creci_*, complement, etc.)
@@ -87,7 +88,8 @@ import (
 //	    u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
 //	    u.born_at, u.phone_number, u.email, u.zip_code, u.street, u.number, u.complement,
 //	    u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted,
-//	    ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at, ur.blocked_until,
+//	    u.blocked_until, u.permanently_blocked,
+//	    ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at,
 //	    r.id, r.slug, r.name, r.description, r.is_system_role, r.is_active
 //	FROM users u
 //	LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = 1
@@ -104,48 +106,49 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 	for rows.Next() {
 		var entity userentity.UserWithRoleEntity
 
-		// Scan all 34 columns from JOIN query
+		// Scan all 35 columns from JOIN query
 		// Order MUST match SELECT clause in get_user_by_*.go queries
 		err := rows.Scan(
-			// User fields (21 columns from users table)
-			&entity.UserID,         // 1. u.id
-			&entity.FullName,       // 2. u.full_name
-			&entity.NickName,       // 3. u.nick_name (nullable)
-			&entity.NationalID,     // 4. u.national_id
-			&entity.CreciNumber,    // 5. u.creci_number (nullable)
-			&entity.CreciState,     // 6. u.creci_state (nullable)
-			&entity.CreciValidity,  // 7. u.creci_validity (nullable)
-			&entity.BornAt,         // 8. u.born_at
-			&entity.PhoneNumber,    // 9. u.phone_number
-			&entity.Email,          // 10. u.email
-			&entity.ZipCode,        // 11. u.zip_code
-			&entity.Street,         // 12. u.street
-			&entity.Number,         // 13. u.number
-			&entity.Complement,     // 14. u.complement (nullable)
-			&entity.Neighborhood,   // 15. u.neighborhood
-			&entity.City,           // 16. u.city
-			&entity.State,          // 17. u.state
-			&entity.Password,       // 18. u.password
-			&entity.OptStatus,      // 19. u.opt_status
-			&entity.LastActivityAt, // 20. u.last_activity_at
-			&entity.Deleted,        // 21. u.deleted
+			// User fields (23 columns from users table)
+			&entity.UserID,             // 1. u.id
+			&entity.FullName,           // 2. u.full_name
+			&entity.NickName,           // 3. u.nick_name (nullable)
+			&entity.NationalID,         // 4. u.national_id
+			&entity.CreciNumber,        // 5. u.creci_number (nullable)
+			&entity.CreciState,         // 6. u.creci_state (nullable)
+			&entity.CreciValidity,      // 7. u.creci_validity (nullable)
+			&entity.BornAt,             // 8. u.born_at
+			&entity.PhoneNumber,        // 9. u.phone_number
+			&entity.Email,              // 10. u.email
+			&entity.ZipCode,            // 11. u.zip_code
+			&entity.Street,             // 12. u.street
+			&entity.Number,             // 13. u.number
+			&entity.Complement,         // 14. u.complement (nullable)
+			&entity.Neighborhood,       // 15. u.neighborhood
+			&entity.City,               // 16. u.city
+			&entity.State,              // 17. u.state
+			&entity.Password,           // 18. u.password
+			&entity.OptStatus,          // 19. u.opt_status
+			&entity.LastActivityAt,     // 20. u.last_activity_at
+			&entity.Deleted,            // 21. u.deleted
+			&entity.BlockedUntil,       // 22. u.blocked_until (nullable)
+			&entity.PermanentlyBlocked, // 23. u.permanently_blocked
 
-			// UserRole fields (7 columns from user_roles table, ALL nullable)
-			&entity.UserRoleID,           // 22. ur.id
-			&entity.UserRoleUserID,       // 23. ur.user_id
-			&entity.UserRoleRoleID,       // 24. ur.role_id
-			&entity.UserRoleIsActive,     // 25. ur.is_active
-			&entity.UserRoleStatus,       // 26. ur.status
-			&entity.UserRoleExpiresAt,    // 27. ur.expires_at
-			&entity.UserRoleBlockedUntil, // 28. ur.blocked_until
+			// UserRole fields (6 columns from user_roles table, ALL nullable)
+			&entity.UserRoleID,        // 24. ur.id
+			&entity.UserRoleUserID,    // 25. ur.user_id
+			&entity.UserRoleRoleID,    // 26. ur.role_id
+			&entity.UserRoleIsActive,  // 27. ur.is_active
+			&entity.UserRoleStatus,    // 28. ur.status
+			&entity.UserRoleExpiresAt, // 29. ur.expires_at
 
 			// Role fields (6 columns from roles table, ALL nullable)
-			&entity.RoleID,           // 29. r.id
-			&entity.RoleSlug,         // 30. r.slug
-			&entity.RoleName,         // 31. r.name
-			&entity.RoleDescription,  // 32. r.description
-			&entity.RoleIsSystemRole, // 33. r.is_system_role
-			&entity.RoleIsActive,     // 34. r.is_active
+			&entity.RoleID,           // 30. r.id
+			&entity.RoleSlug,         // 31. r.slug
+			&entity.RoleName,         // 32. r.name
+			&entity.RoleDescription,  // 33. r.description
+			&entity.RoleIsSystemRole, // 34. r.is_system_role
+			&entity.RoleIsActive,     // 35. r.is_active
 		)
 
 		if err != nil {

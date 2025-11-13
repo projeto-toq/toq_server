@@ -12,7 +12,6 @@ import (
 	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
 
 	// creciport "github.com/projeto-toq/toq_server/internal/core/port/right/creci"
-	devicetokenrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/device_token_repository"
 	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
@@ -25,7 +24,6 @@ import (
 type userService struct {
 	repo                userrepoport.UserRepoPortInterface
 	sessionRepo         sessionrepoport.SessionRepoPortInterface
-	deviceTokenRepo     devicetokenrepository.DeviceTokenRepoPortInterface
 	globalService       globalservice.GlobalServiceInterface
 	listingService      listingservices.ListingServiceInterface
 	photoSessionService photosessionservices.PhotoSessionServiceInterface
@@ -41,7 +39,6 @@ type userService struct {
 func NewUserService(
 	ur userrepoport.UserRepoPortInterface,
 	sr sessionrepoport.SessionRepoPortInterface,
-	deviceTokenRepo devicetokenrepository.DeviceTokenRepoPortInterface,
 	gsi globalservice.GlobalServiceInterface,
 	listingService listingservices.ListingServiceInterface,
 	photoSessionService photosessionservices.PhotoSessionServiceInterface,
@@ -57,7 +54,6 @@ func NewUserService(
 	return &userService{
 		repo:                ur,
 		sessionRepo:         sr,
-		deviceTokenRepo:     deviceTokenRepo,
 		globalService:       gsi,
 		listingService:      listingService,
 		photoSessionService: photoSessionService,
