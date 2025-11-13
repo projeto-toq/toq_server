@@ -2,47 +2,33 @@ package s3adapter
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) (err error) {
-	if s.adminClient == nil {
-		err = errors.New("s3 admin client is nil")
-		return
-	}
-
+// CreateUserFolder prepares user storage namespace in S3.
+//
+// S3 uses a flat structure with key prefixes instead of directories.
+// Prefixes are created automatically when objects are uploaded.
+// This function exists for consistency with the CloudStoragePortInterface
+// and provides logging for observability purposes.
+//
+// Parameters:
+//   - ctx: Context for logging and tracing
+//   - UserID: User's unique identifier
+//
+// Returns:
+//   - error: Always nil (prefixes are created automatically on first object upload)
+//
+// Note: Legacy .placeholder files are no longer created as they are unnecessary
+// for S3 operations and increase storage costs without functional benefit.
+func (s *S3Adapter) CreateUserFolder(ctx context.Context, UserID int64) error {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	logger.Debug("adapter.s3.create_user_folder.start", "user_id", UserID, "bucket", s.bucketName)
 
-	// Lista de placeholders para criar toda a estrutura de pastas
-	placeholders := []string{
-		fmt.Sprintf("%d/.placeholder", UserID),       // Pasta raiz do usuário
-		fmt.Sprintf("%d/photo/.placeholder", UserID), // Pasta de fotos padronizada
-	}
+	// S3 automatically creates key prefixes when objects are uploaded
+	// No need to create placeholder objects
+	logger.Info("adapter.s3.user_folder_ready", "user_id", UserID, "bucket", s.userBucketName, "prefix", UserID)
 
-	// Criar cada placeholder para garantir que as "pastas" existam
-	for _, placeholderPath := range placeholders {
-		_, err := s.adminClient.PutObject(ctx, &s3.PutObjectInput{
-			Bucket: aws.String(s.bucketName),
-			Key:    aws.String(placeholderPath),
-			Body:   nil, // Objeto vazio
-		})
-
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("adapter.s3.create_user_folder.placeholder_error", "user_id", UserID, "path", placeholderPath, "error", err)
-			return err
-		}
-
-		logger.Debug("adapter.s3.create_user_folder.placeholder_created", "user_id", UserID, "path", placeholderPath)
-	}
-
-	logger.Info("adapter.s3.create_user_folder.success", "user_id", UserID, "bucket", s.bucketName)
 	return nil
 }

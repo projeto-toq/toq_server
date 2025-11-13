@@ -6,13 +6,16 @@
 
 ## 🎯 Solicitação
 
-Após a última refatoração sobre bloqueio de usuários após tentativas com senha incorreta, o usuário é bloqueado e a rotina de liberação automatica após o período o usuário continua com a tabela user_roles com o user_roles.status=2 e com blocked_until preenchido.
-O usu'rio faz login, mas creio que o login não está verificando se o usuário está bloqueado ou não.
+É necessário alterar o nome do bucket onde os arquivos de mídia dos usuários são armazenados. Atualmente, o bucket é chamado `toq-app-media` e deve ser chamado `toq-user-medias`.
+O bucket já está criado na AWS e a aplicação possui as permissões necessárias para acessá-lo.
 
 Assim:
-1. Analise o código atual de sign in para confirmar que usuários com user_roles.status = 2 não estao fazendo login, como deveria ser.
-2. Analise o código atual de desbloquieio de usuários para confirmar que o desbloqueio automático está funcionando corretamente.
-    2.1) e porque a tabela user_roles não está sendo atualizada para status = 0 após o desbloqueio automático.
+1. Analise o código atual no adapter de armazenamento S3.
+2. Identifique todos os pontos onde o nome do bucket é referenciado.
+3. Proponha um plano detalhado para alterar o nome do bucket para `toq-user-medias`, garantindo que todas as funcionalidades relacionadas ao upload, download e gerenciamento de arquivos de mídia dos usuários continuem funcionando corretamente.
+4. Forneça code skeletons para as alterações propostas, incluindo handlers, services, repositories, DTOs, entities e converters, conforme aplicável.
+5. Garanta que o plano siga todas as regras de arquitetura, padrões de código, observabilidade e documentação do projeto.
+6. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os usuários serão apagados.
 
 ---
 

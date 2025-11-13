@@ -131,9 +131,10 @@ type Environment struct {
 		ResetPasswordURL string `yaml:"reset_password_url"`
 	} `yaml:"system_user"`
 	S3 struct {
-		Region     string `yaml:"region"`
-		BucketName string `yaml:"bucket_name"`
-		AdminRole  struct {
+		Region            string `yaml:"region"`
+		UserBucketName    string `yaml:"user_bucket_name"`
+		ListingBucketName string `yaml:"listing_bucket_name"`
+		AdminRole         struct {
 			AccessKeyID     string `yaml:"access_key_id"`
 			SecretAccessKey string `yaml:"secret_access_key"`
 		} `yaml:"admin"`

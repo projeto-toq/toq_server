@@ -2,21 +2,51 @@
 - Cache redis tem funções na redis_cache.go
 - A consulta ao detalhe do usuário deve trazer todas as roles, além da active
 - Permission.service está poluindo tracing com startpermission centralizado
-- o bucket S3 que hoje se chama
-    toq-app-media
-    |- 1
-    |- 2
-    ...
-    deve ser renomeado para:
-    toq-app-medias
-    |- users
-       |- 1
-       |- 2
-       ...
-    |- listings
-       |- 1
-       |- 2
-       ...
+
+### Buckets S3
+
+#### Bucket de Mídias de Usuários
+- **Nome:** `toq-user-medias`
+- **Descrição:** Armazena fotos de perfil, documentos CRECI e outras mídias dos usuários
+- **Região:** us-east-1
+- **Estrutura de Pastas:**
+  ```
+  /{user_id}/
+  ├── photo.jpg                    # Foto de perfil original
+  ├── thumbnails/
+  │   ├── small.jpg               # Thumbnail pequeno (100x100)
+  │   ├── medium.jpg              # Thumbnail médio (300x300)
+  │   └── large.jpg               # Thumbnail grande (600x600)
+  ├── selfie.jpg                  # Selfie para validação CRECI
+  ├── front.jpg                   # Frente do documento CRECI
+  └── back.jpg                    # Verso do documento CRECI
+  ```
+
+#### Bucket de Mídias de Listings
+- **Nome:** `toq-listing-medias`
+- **Descrição:** Armazena fotos de imóveis, plantas e outras mídias relacionadas a listings
+- **Região:** us-east-1
+- **Status:** Configurado, aguardando implementação de funcionalidades de listing
+- **Estrutura Planejada:**
+  ```
+  /{listing_id}/
+  ├── photos/
+  │   ├── 001.jpg
+  │   ├── 002.jpg
+  │   └── ...
+  ├── thumbnails/
+  │   └── ...
+  └── floorplan.pdf
+  ```
+
+#### Observações
+- Buckets separados implementados em 2025-11-13
+- Bucket de usuários migrado de `toq-app-media` para `toq-user-medias`
+- Todos os usuários foram apagados como parte da migração (breaking change)
+- Configuração gerenciada via `configs/env.yaml` com campos `user_bucket_name` e `listing_bucket_name`
+- Credenciais IAM diferentes para Admin (read/write) e Reader (read-only)
+
+---
 
 - Ao deletar usuáario, deletar (hard delete):
     - anuncios em draft

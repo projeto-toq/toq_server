@@ -20,7 +20,7 @@ func (s *S3Adapter) DeleteUserFolder(ctx context.Context, userID int64) error {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 	prefix := fmt.Sprintf("%d/", userID)
-	logger.Info("adapter.s3.delete_user_folder.start", "user_id", userID, "bucket", s.bucketName, "prefix", prefix)
+	logger.Info("adapter.s3.delete_user_folder.start", "user_id", userID, "bucket", s.userBucketName, "prefix", prefix)
 
 	// 1. Listar todos os objetos do usuário
 	allObjects, err := s.listAllObjectsWithPrefix(ctx, prefix, userID)
@@ -37,7 +37,7 @@ func (s *S3Adapter) DeleteUserFolder(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	logger.Info("adapter.s3.delete_user_folder.success", "user_id", userID, "bucket", s.bucketName)
+	logger.Info("adapter.s3.delete_user_folder.success", "user_id", userID, "bucket", s.userBucketName)
 	return nil
 }
 
@@ -49,7 +49,7 @@ func (s *S3Adapter) listAllObjectsWithPrefix(ctx context.Context, prefix string,
 	logger.Debug("adapter.s3.delete_user_folder.list.start", "user_id", userID, "prefix", prefix)
 
 	input := &s3.ListObjectsV2Input{
-		Bucket: aws.String(s.bucketName),
+		Bucket: aws.String(s.userBucketName),
 		Prefix: aws.String(prefix),
 	}
 
@@ -155,7 +155,7 @@ func (s *S3Adapter) deleteBatch(ctx context.Context, objects []string, userID in
 
 	// Executar delete em lote
 	input := &s3.DeleteObjectsInput{
-		Bucket: aws.String(s.bucketName),
+		Bucket: aws.String(s.userBucketName),
 		Delete: &types.Delete{
 			Objects: objectIdentifiers,
 			Quiet:   aws.Bool(true), // Não retornar objetos deletados com sucesso

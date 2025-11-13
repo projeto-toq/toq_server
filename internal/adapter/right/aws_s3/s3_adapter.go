@@ -14,19 +14,25 @@ import (
 )
 
 type S3Adapter struct {
-	adminClient  *s3.Client
-	readerClient *s3.Client
-	uploader     *manager.Uploader
-	downloader   *manager.Downloader
-	bucketName   string
-	region       string
+	adminClient       *s3.Client
+	readerClient      *s3.Client
+	uploader          *manager.Uploader
+	downloader        *manager.Downloader
+	userBucketName    string
+	listingBucketName string
+	region            string
 }
 
 // NewS3Adapter builds an S3 adapter leveraging the default AWS credential chain.
+// It initializes clients for both user and listing media buckets, enabling
+// segregated storage for different business domains.
 func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter *S3Adapter, CloseFunc func() error, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-	logger.Info("adapter.s3.creating", "region", env.S3.Region, "bucket", env.S3.BucketName)
+	logger.Info("adapter.s3.creating",
+		"region", env.S3.Region,
+		"user_bucket", env.S3.UserBucketName,
+		"listing_bucket", env.S3.ListingBucketName)
 
 	// Configuração básica da AWS
 	cfg, err := config.LoadDefaultConfig(ctx,
@@ -59,12 +65,13 @@ func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter 
 	downloader := manager.NewDownloader(readerClient)
 
 	s3Adapter = &S3Adapter{
-		adminClient:  adminClient,
-		readerClient: readerClient,
-		uploader:     uploader,
-		downloader:   downloader,
-		bucketName:   env.S3.BucketName,
-		region:       env.S3.Region,
+		adminClient:       adminClient,
+		readerClient:      readerClient,
+		uploader:          uploader,
+		downloader:        downloader,
+		userBucketName:    env.S3.UserBucketName,
+		listingBucketName: env.S3.ListingBucketName,
+		region:            env.S3.Region,
 	}
 
 	// CloseFunc (S3 clients não precisam de Close explícito, mas mantemos para compatibilidade)
@@ -73,7 +80,10 @@ func NewS3Adapter(ctx context.Context, env *globalmodel.Environment) (s3Adapter 
 		return nil
 	}
 
-	logger.Info("adapter.s3.created", "bucket", env.S3.BucketName, "region", env.S3.Region)
+	logger.Info("adapter.s3.created",
+		"user_bucket", env.S3.UserBucketName,
+		"listing_bucket", env.S3.ListingBucketName,
+		"region", env.S3.Region)
 	return s3Adapter, CloseFunc, nil
 }
 

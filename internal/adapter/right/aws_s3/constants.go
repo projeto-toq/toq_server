@@ -1,16 +1,15 @@
 package s3adapter
 
 const (
-	// UsersBucketName é o nome do bucket principal para todos os tipos de media (users, listings, temp)
-	UsersBucketName = "toq-app-media"
-
-	// Photo types - caminhos relativos dentro da pasta do usuário
+	// Photo types - relative paths within user folder
+	// These paths are used to construct full S3 object keys: /{userID}/{PhotoType}
 	PhotoTypeOriginal = "photo.jpg"
 	PhotoTypeSmall    = "thumbnails/small.jpg"
 	PhotoTypeMedium   = "thumbnails/medium.jpg"
 	PhotoTypeLarge    = "thumbnails/large.jpg"
 
-	// CRECI Document types - caminhos relativos dentro da pasta do usuário
+	// CRECI Document types - relative paths within user folder
+	// These paths are used to construct full S3 object keys: /{userID}/{DocumentType}
 	CreciDocumentSelfie = "selfie.jpg"
 	CreciDocumentFront  = "front.jpg"
 	CreciDocumentBack   = "back.jpg"
