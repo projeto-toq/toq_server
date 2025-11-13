@@ -8,6 +8,9 @@ import (
 
 type ListingEntity struct {
 	ID                 int64
+	ListingIdentityID  int64
+	ListingUUID        string
+	ActiveVersionID    sql.NullInt64
 	UserID             int64
 	Code               uint32
 	Version            uint8
@@ -78,7 +81,7 @@ func (e *ListingEntity) FeaturesToDomain() (features []listingmodel.FeatureInter
 	for _, entity := range e.Features {
 		feature := listingmodel.NewFeature()
 		feature.SetID(entity.ID)
-		feature.SetListingID(entity.ListingID)
+		feature.SetListingVersionID(entity.ListingVersionID)
 		feature.SetFeatureID(entity.FeatureID)
 		feature.SetQuantity(entity.Quantity)
 		features = append(features, feature)
@@ -90,7 +93,7 @@ func (e *ListingEntity) ExchangePlacesToDomain() (exchangePlaces []listingmodel.
 	for _, entity := range e.ExchangePlaces {
 		exchangePlace := listingmodel.NewExchangePlace()
 		exchangePlace.SetID(entity.ID)
-		exchangePlace.SetListingID(entity.ListingID)
+		exchangePlace.SetListingVersionID(entity.ListingVersionID)
 		exchangePlace.SetNeighborhood(entity.Neighborhood)
 		exchangePlace.SetCity(entity.City)
 		exchangePlace.SetState(entity.State)
@@ -103,7 +106,7 @@ func (e *ListingEntity) FinancingBlockersToDomain() (financingBlockers []listing
 	for _, entity := range e.FinancingBlocker {
 		financingBlocker := listingmodel.NewFinancingBlocker()
 		financingBlocker.SetID(entity.ID)
-		financingBlocker.SetListingID(entity.ListingID)
+		financingBlocker.SetListingVersionID(entity.ListingVersionID)
 		financingBlocker.SetBlocker(listingmodel.FinancingBlocker(entity.Blocker))
 		financingBlockers = append(financingBlockers, financingBlocker)
 	}
@@ -114,7 +117,7 @@ func (e *ListingEntity) GuaranteesToDomain() (guarantees []listingmodel.Guarante
 	for _, entity := range e.Guarantees {
 		guarantee := listingmodel.NewGuarantee()
 		guarantee.SetID(entity.ID)
-		guarantee.SetListingID(entity.ListingID)
+		guarantee.SetListingVersionID(entity.ListingVersionID)
 		guarantee.SetPriority(entity.Priority)
 		guarantee.SetGuarantee(listingmodel.GuaranteeType(entity.Guarantee))
 		guarantees = append(guarantees, guarantee)

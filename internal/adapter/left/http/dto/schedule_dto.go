@@ -14,29 +14,29 @@ type SchedulePaginationRequest struct {
 
 // ScheduleRuleRequest represents the payload to create recurring unavailability rules.
 type ScheduleRuleRequest struct {
-	ListingID  int64    `json:"listingId" binding:"required" example:"3241"`
-	WeekDays   []string `json:"weekDays" binding:"required" example:"[\"MONDAY\",\"TUESDAY\"]"`
-	RangeStart string   `json:"rangeStart" binding:"required" example:"09:00"`
-	RangeEnd   string   `json:"rangeEnd" binding:"required" example:"18:00"`
-	Active     bool     `json:"active"`
-	Timezone   string   `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
+	ListingIdentityID int64    `json:"listingIdentityId" binding:"required" example:"3241"`
+	WeekDays          []string `json:"weekDays" binding:"required" example:"[\"MONDAY\",\"TUESDAY\"]"`
+	RangeStart        string   `json:"rangeStart" binding:"required" example:"09:00"`
+	RangeEnd          string   `json:"rangeEnd" binding:"required" example:"18:00"`
+	Active            bool     `json:"active"`
+	Timezone          string   `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // ScheduleRuleUpdateRequest represents the payload to update an existing rule.
 type ScheduleRuleUpdateRequest struct {
-	RuleID     uint64   `json:"ruleId" binding:"required" example:"9801"`
-	ListingID  int64    `json:"listingId" binding:"required" example:"3241"`
-	WeekDays   []string `json:"weekDays" binding:"required" example:"[\"MONDAY\"]"`
-	RangeStart string   `json:"rangeStart" binding:"required" example:"10:00"`
-	RangeEnd   string   `json:"rangeEnd" binding:"required" example:"22:00"`
-	Active     bool     `json:"active"`
-	Timezone   string   `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
+	RuleID            uint64   `json:"ruleId" binding:"required" example:"9801"`
+	ListingIdentityID int64    `json:"listingIdentityId" binding:"required" example:"3241"`
+	WeekDays          []string `json:"weekDays" binding:"required" example:"[\"MONDAY\"]"`
+	RangeStart        string   `json:"rangeStart" binding:"required" example:"10:00"`
+	RangeEnd          string   `json:"rangeEnd" binding:"required" example:"22:00"`
+	Active            bool     `json:"active"`
+	Timezone          string   `json:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // ScheduleRuleDeleteRequest represents the payload to delete a recurring rule.
 type ScheduleRuleDeleteRequest struct {
-	RuleID    uint64 `json:"ruleId" binding:"required" example:"9801"`
-	ListingID int64  `json:"listingId" binding:"required" example:"3241"`
+	RuleID            uint64 `json:"ruleId" binding:"required" example:"9801"`
+	ListingIdentityID int64  `json:"listingIdentityId" binding:"required" example:"3241"`
 }
 
 // ScheduleRuleResponse exposes a recurring rule definition.
@@ -50,23 +50,23 @@ type ScheduleRuleResponse struct {
 
 // ScheduleRulesResponse wraps a listing rule collection.
 type ScheduleRulesResponse struct {
-	ListingID int64                  `json:"listingId"`
-	Rules     []ScheduleRuleResponse `json:"rules"`
-	Timezone  string                 `json:"timezone"`
+	ListingIdentityID int64                  `json:"listingIdentityId"`
+	Rules             []ScheduleRuleResponse `json:"rules"`
+	Timezone          string                 `json:"timezone"`
 }
 
 // ScheduleFinishAgendaRequest represents the payload to finish agenda creation.
 type ScheduleFinishAgendaRequest struct {
-	ListingID int64 `json:"listingId" binding:"required" example:"3241"`
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required" example:"3241"`
 }
 
 // OwnerAgendaSummaryQuery captures query string parameters for owner agenda summary.
 type OwnerAgendaSummaryQuery struct {
-	ListingIDs []int64 `form:"listingIds"`
-	RangeFrom  string  `form:"rangeFrom"`
-	RangeTo    string  `form:"rangeTo"`
-	Page       int     `form:"page"`
-	Limit      int     `form:"limit"`
+	ListingIdentityIDs []int64 `form:"listingIdentityIds"`
+	RangeFrom          string  `form:"rangeFrom"`
+	RangeTo            string  `form:"rangeTo"`
+	Page               int     `form:"page"`
+	Limit              int     `form:"limit"`
 }
 
 // OwnerAgendaSummaryEntryResponse describes a normalized agenda entry in the summary response.
@@ -79,8 +79,8 @@ type OwnerAgendaSummaryEntryResponse struct {
 
 // OwnerAgendaSummaryItemResponse groups summary entries for a specific listing.
 type OwnerAgendaSummaryItemResponse struct {
-	ListingID int64                             `json:"listingId"`
-	Entries   []OwnerAgendaSummaryEntryResponse `json:"entries"`
+	ListingIdentityID int64                             `json:"listingIdentityId"`
+	Entries           []OwnerAgendaSummaryEntryResponse `json:"entries"`
 }
 
 // OwnerAgendaSummaryResponse aggregates the consolidated agenda view for owners.
@@ -91,11 +91,11 @@ type OwnerAgendaSummaryResponse struct {
 
 // ListingAgendaDetailQuery represents query parameters to list agenda entries of a specific listing.
 type ListingAgendaDetailQuery struct {
-	ListingID int64  `form:"listingId" binding:"required"`
-	RangeFrom string `form:"rangeFrom"`
-	RangeTo   string `form:"rangeTo"`
-	Page      int    `form:"page"`
-	Limit     int    `form:"limit"`
+	ListingIdentityID int64  `form:"listingIdentityId" binding:"required"`
+	RangeFrom         string `form:"rangeFrom"`
+	RangeTo           string `form:"rangeTo"`
+	Page              int    `form:"page"`
+	Limit             int    `form:"limit"`
 }
 
 // ScheduleEntryResponse exposes detailed information about a single agenda entry.
@@ -124,13 +124,13 @@ type ListingAgendaDetailResponse struct {
 
 // ListingBlockRulesQuery represents query parameters to list recurring block rules for a listing agenda.
 type ListingBlockRulesQuery struct {
-	ListingID int64    `form:"listingId" binding:"required"`
-	WeekDays  []string `form:"weekDays"`
+	ListingIdentityID int64    `form:"listingIdentityId" binding:"required"`
+	WeekDays          []string `form:"weekDays"`
 }
 
 // ScheduleAvailabilityQuery represents query parameters to fetch listing availability slots.
 type ScheduleAvailabilityQuery struct {
-	ListingID          int64  `form:"listingId" binding:"required"`
+	ListingIdentityID  int64  `form:"listingIdentityId" binding:"required"`
 	RangeFrom          string `form:"rangeFrom"`
 	RangeTo            string `form:"rangeTo"`
 	SlotDurationMinute uint16 `form:"slotDurationMinute"`

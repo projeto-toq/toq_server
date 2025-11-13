@@ -14,12 +14,12 @@ import (
 type ScheduleServiceInterface interface {
 	CreateDefaultAgenda(ctx context.Context, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error)
 	CreateDefaultAgendaWithTx(ctx context.Context, tx *sql.Tx, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error)
-	GetAgendaByListingID(ctx context.Context, listingID int64) (schedulemodel.AgendaInterface, error)
+	GetAgendaByListingIdentityID(ctx context.Context, listingIdentityID int64) (schedulemodel.AgendaInterface, error)
 	ListBlockRules(ctx context.Context, filter schedulemodel.BlockRulesFilter) (schedulemodel.RuleListResult, error)
 	CreateRules(ctx context.Context, input CreateRuleInput) (RuleMutationResult, error)
 	UpdateRule(ctx context.Context, input UpdateRuleInput) (schedulemodel.AgendaRuleInterface, error)
 	DeleteRule(ctx context.Context, input DeleteRuleInput) error
-	ListRules(ctx context.Context, listingID, ownerID int64) (schedulemodel.RuleListResult, error)
+	ListRules(ctx context.Context, listingIdentityID, ownerID int64) (schedulemodel.RuleListResult, error)
 	ListOwnerSummary(ctx context.Context, filter schedulemodel.OwnerSummaryFilter) (schedulemodel.OwnerSummaryResult, error)
 	ListAgendaEntries(ctx context.Context, filter schedulemodel.AgendaDetailFilter) (schedulemodel.AgendaDetailResult, error)
 	CreateBlockEntry(ctx context.Context, input CreateBlockEntryInput) (schedulemodel.AgendaEntryInterface, error)

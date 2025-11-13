@@ -8,7 +8,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) DeleteListingFeatures(ctx context.Context, tx *sql.Tx, listingID int64) (err error) {
+func (la *ListingAdapter) DeleteListingFeatures(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -18,26 +18,26 @@ func (la *ListingAdapter) DeleteListingFeatures(ctx context.Context, tx *sql.Tx,
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `DELETE FROM features WHERE listing_id = ?`
+	query := `DELETE FROM features WHERE listing_version_id = ?`
 
-	result, execErr := la.ExecContext(ctx, tx, "delete", query, listingID)
+	result, execErr := la.ExecContext(ctx, tx, "delete", query, listingVersionID)
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
-		logger.Error("mysql.listing.delete_features.exec_error", "error", execErr, "listing_id", listingID)
+		logger.Error("mysql.listing.delete_features.exec_error", "error", execErr, "listing_version_id", listingVersionID)
 		return fmt.Errorf("exec delete listing features: %w", execErr)
 	}
 
 	qty, rowsErr := result.RowsAffected()
 	if rowsErr != nil {
 		utils.SetSpanError(ctx, rowsErr)
-		logger.Error("mysql.listing.delete_features.rows_affected_error", "error", rowsErr, "listing_id", listingID)
+		logger.Error("mysql.listing.delete_features.rows_affected_error", "error", rowsErr, "listing_version_id", listingVersionID)
 		return fmt.Errorf("rows affected for delete listing features: %w", rowsErr)
 	}
 
 	if qty == 0 {
 		err = fmt.Errorf("no features rows deleted for listing: %w", sql.ErrNoRows)
 		// utils.SetSpanError(ctx, err)
-		logger.Debug("mysql.listing.delete_features.no_rows", "error", err, "listing_id", listingID)
+		logger.Debug("mysql.listing.delete_features.no_rows", "error", err, "listing_version_id", listingVersionID)
 		// return err
 	}
 

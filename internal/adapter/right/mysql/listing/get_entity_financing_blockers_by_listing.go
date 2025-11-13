@@ -10,7 +10,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Context, tx *sql.Tx, listingID int64) (blockers []listingentity.EntityFinancingBlocker, err error) {
+func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Context, tx *sql.Tx, listingVersionID int64) (blockers []listingentity.EntityFinancingBlocker, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -20,9 +20,9 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM financing_blockers WHERE listing_id = ?;`
+	query := `SELECT * FROM financing_blockers WHERE listing_version_id = ?;`
 
-	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingID)
+	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingVersionID)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
 		logger.Error("mysql.listing.get_entity_financing_blockers.query_error", "error", queryErr)
@@ -34,7 +34,7 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 		blocker := listingentity.EntityFinancingBlocker{}
 		err = rows.Scan(
 			&blocker.ID,
-			&blocker.ListingID,
+			&blocker.ListingVersionID,
 			&blocker.Blocker,
 		)
 		if err != nil {

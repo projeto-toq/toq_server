@@ -20,9 +20,9 @@ func (la *ListingAdapter) CreateFeature(ctx context.Context, tx *sql.Tx, feature
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	statement := `INSERT INTO features (listing_id, feature_id, qty) VALUES (?, ?, ?);`
+	statement := `INSERT INTO features (listing_version_id, feature_id, qty) VALUES (?, ?, ?);`
 
-	result, execErr := la.ExecContext(ctx, tx, "insert", statement, feature.ListingID(), feature.FeatureID(), feature.Quantity())
+	result, execErr := la.ExecContext(ctx, tx, "insert", statement, feature.ListingVersionID(), feature.FeatureID(), feature.Quantity())
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.listing.create_feature.exec_error", "error", execErr)

@@ -9,9 +9,9 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (s *scheduleService) GetAgendaByListingID(ctx context.Context, listingID int64) (schedulemodel.AgendaInterface, error) {
-	if listingID <= 0 {
-		return nil, utils.ValidationError("listingId", "listingId must be greater than zero")
+func (s *scheduleService) GetAgendaByListingIdentityID(ctx context.Context, listingIdentityID int64) (schedulemodel.AgendaInterface, error) {
+	if listingIdentityID <= 0 {
+		return nil, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -36,13 +36,13 @@ func (s *scheduleService) GetAgendaByListingID(ctx context.Context, listingID in
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, listingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, listingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.get_agenda.repo_error", "listing_id", listingID, "err", err)
+		logger.Error("schedule.get_agenda.repo_error", "listing_identity_id", listingIdentityID, "err", err)
 		return nil, utils.InternalError("")
 	}
 

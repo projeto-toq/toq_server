@@ -43,14 +43,14 @@ func (lh *ListingHandler) UpdateListing(c *gin.Context) {
 		return
 	}
 
-	if !request.ID.IsPresent() || request.ID.IsNull() {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_ID", "Listing ID must be provided in the request body")
+	if !request.ListingVersionID.IsPresent() || request.ListingVersionID.IsNull() {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_VERSION_ID", "listingVersionId must be provided in the request body")
 		return
 	}
 
-	listingID, ok := request.ID.Value()
+	listingID, ok := request.ListingVersionID.Value()
 	if !ok || listingID <= 0 {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_ID", "Listing ID is invalid")
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_VERSION_ID", "listingVersionId is invalid")
 		return
 	}
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -87,6 +88,45 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		utils.SetSpanError(ctx, repoErr)
 		logger.Error("listing.detail.get_listing_error", "err", repoErr, "listing_id", listingID)
 		return output, utils.InternalError("")
+	}
+
+	versionSummaries, listErr := ls.listingRepository.ListListingVersions(ctx, tx, listingrepository.ListListingVersionsFilter{
+		ListingIdentityID: listing.IdentityID(),
+		IncludeDeleted:    false,
+	})
+	if listErr != nil {
+		utils.SetSpanError(ctx, listErr)
+		logger.Error("listing.detail.list_versions_error", "err", listErr, "listing_identity_id", listing.IdentityID())
+		return output, utils.InternalError("")
+	}
+
+	if len(versionSummaries) > 0 {
+		versions := make([]listingmodel.ListingVersionInterface, 0, len(versionSummaries))
+		var draftVersion listingmodel.ListingVersionInterface
+
+		for _, summary := range versionSummaries {
+			version := summary.Version
+			if version == nil {
+				continue
+			}
+
+			versions = append(versions, version)
+			if summary.IsActive {
+				listing.SetActiveVersion(version)
+			}
+			if !summary.IsActive && version.Status() == listingmodel.StatusDraft {
+				draftVersion = version
+			}
+		}
+
+		listing.SetVersions(versions)
+		if draftVersion != nil {
+			listing.SetDraftVersion(draftVersion)
+		} else {
+			listing.ClearDraftVersion()
+		}
+	} else {
+		listing.ClearDraftVersion()
 	}
 
 	output.Listing = listing

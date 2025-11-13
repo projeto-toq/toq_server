@@ -18,7 +18,7 @@ import (
 // @Tags        Listing Schedules
 // @Accept      json
 // @Produce     json
-// @Param       request body dto.ScheduleRuleDeleteRequest true "Rule deletion payload" Extensions(x-example={"ruleId":5021,"listingId":3241})
+// @Param       request body dto.ScheduleRuleDeleteRequest true "Rule deletion payload" Extensions(x-example={"ruleId":5021,"listingIdentityId":3241})
 // @Success     204 "Rule deleted successfully"
 // @Failure     400 {object} dto.ErrorResponse
 // @Failure     401 {object} dto.ErrorResponse
@@ -43,10 +43,10 @@ func (h *ScheduleHandler) DeleteBlockRule(c *gin.Context) {
 	}
 
 	input := scheduleservices.DeleteRuleInput{
-		RuleID:    req.RuleID,
-		ListingID: req.ListingID,
-		OwnerID:   userInfo.ID,
-		ActorID:   userInfo.ID,
+		RuleID:            req.RuleID,
+		ListingIdentityID: req.ListingIdentityID,
+		OwnerID:           userInfo.ID,
+		ActorID:           userInfo.ID,
 	}
 
 	ctx := coreutils.ContextWithLogger(baseCtx)

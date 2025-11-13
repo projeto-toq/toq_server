@@ -10,6 +10,11 @@ func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.
 	listing = listingmodel.NewListing()
 
 	listing.SetID(e.ID)
+	listing.SetIdentityID(e.ListingIdentityID)
+	listing.SetUUID(e.ListingUUID)
+	if e.ActiveVersionID.Valid {
+		listing.SetActiveVersionID(e.ActiveVersionID.Int64)
+	}
 	listing.SetUserID(e.UserID)
 	listing.SetCode(e.Code)
 	listing.SetVersion(e.Version)

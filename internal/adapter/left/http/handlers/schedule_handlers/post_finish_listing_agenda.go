@@ -18,7 +18,7 @@ import (
 // @Tags		Listing Schedules
 // @Accept	json
 // @Produce	json
-// @Param	request	body	dto.ScheduleFinishAgendaRequest	true	"Finish agenda payload" Extensions(x-example={"listingId":3241})
+// @Param	request	body	dto.ScheduleFinishAgendaRequest	true	"Finish agenda payload" Extensions(x-example={"listingIdentityId":3241})
 // @Success	200	{object}	dto.APIResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse
@@ -50,9 +50,9 @@ func (h *ScheduleHandler) PostFinishListingAgenda(c *gin.Context) {
 	}
 
 	input := scheduleservices.FinishListingAgendaInput{
-		ListingID: req.ListingID,
-		OwnerID:   userInfo.ID,
-		ActorID:   userInfo.ID,
+		ListingIdentityID: req.ListingIdentityID,
+		OwnerID:           userInfo.ID,
+		ActorID:           userInfo.ID,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

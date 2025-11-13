@@ -25,8 +25,8 @@ func ScheduleOwnerSummaryToDTO(result schedulemodel.OwnerSummaryResult, page, li
 			})
 		}
 		items = append(items, dto.OwnerAgendaSummaryItemResponse{
-			ListingID: item.ListingID,
-			Entries:   summaryEntries,
+			ListingIdentityID: item.ListingIdentityID,
+			Entries:           summaryEntries,
 		})
 	}
 
@@ -121,18 +121,18 @@ func formatWeekday(day time.Weekday) string {
 // ScheduleRulesMutationToDTO converts a rule mutation result into a response payload.
 func ScheduleRulesMutationToDTO(result scheduleservices.RuleMutationResult) dto.ScheduleRulesResponse {
 	return dto.ScheduleRulesResponse{
-		ListingID: result.ListingID,
-		Timezone:  result.Timezone,
-		Rules:     scheduleRulesToDTO(result.Rules),
+		ListingIdentityID: result.ListingIdentityID,
+		Timezone:          result.Timezone,
+		Rules:             scheduleRulesToDTO(result.Rules),
 	}
 }
 
 // ScheduleRuleListToDTO converts a rule list domain result into a response payload.
 func ScheduleRuleListToDTO(result schedulemodel.RuleListResult) dto.ScheduleRulesResponse {
 	return dto.ScheduleRulesResponse{
-		ListingID: result.ListingID,
-		Timezone:  result.Timezone,
-		Rules:     scheduleRulesToDTO(result.Rules),
+		ListingIdentityID: result.ListingIdentityID,
+		Timezone:          result.Timezone,
+		Rules:             scheduleRulesToDTO(result.Rules),
 	}
 }
 

@@ -17,30 +17,30 @@ type PaginationConfig struct {
 
 // OwnerSummaryFilter constrains consolidated agenda lookups for owners.
 type OwnerSummaryFilter struct {
-	OwnerID    int64
-	ListingIDs []int64
-	Range      ScheduleRange
-	Pagination PaginationConfig
+	OwnerID            int64
+	ListingIdentityIDs []int64
+	Range              ScheduleRange
+	Pagination         PaginationConfig
 }
 
 // AgendaDetailFilter constrains detailed agenda lookups for a single listing.
 type AgendaDetailFilter struct {
-	OwnerID    int64
-	ListingID  int64
-	Range      ScheduleRange
-	Pagination PaginationConfig
+	OwnerID           int64
+	ListingIdentityID int64
+	Range             ScheduleRange
+	Pagination        PaginationConfig
 }
 
 // BlockRulesFilter constrains block rule lookups for a single listing.
 type BlockRulesFilter struct {
-	OwnerID   int64
-	ListingID int64
-	Weekdays  []time.Weekday
+	OwnerID           int64
+	ListingIdentityID int64
+	Weekdays          []time.Weekday
 }
 
 // AvailabilityFilter describes the parameters required to list free slots.
 type AvailabilityFilter struct {
-	ListingID          int64
+	ListingIdentityID  int64
 	Range              ScheduleRange
 	SlotDurationMinute uint16
 	Pagination         PaginationConfig
@@ -56,8 +56,8 @@ type SummaryEntry struct {
 
 // OwnerSummaryItem groups entries per listing for owner dashboards.
 type OwnerSummaryItem struct {
-	ListingID int64
-	Entries   []SummaryEntry
+	ListingIdentityID int64
+	Entries           []SummaryEntry
 }
 
 // OwnerSummaryResult captures the output produced by summary queries.
@@ -93,9 +93,9 @@ type AgendaDetailResult struct {
 
 // RuleListResult captures all rules configured for an agenda.
 type RuleListResult struct {
-	ListingID int64
-	Timezone  string
-	Rules     []AgendaRuleInterface
+	ListingIdentityID int64
+	Timezone          string
+	Rules             []AgendaRuleInterface
 }
 
 // AvailabilityData groups raw entries and rules so services can compute free slots.

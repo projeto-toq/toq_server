@@ -35,18 +35,18 @@ func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filt
 		args = append(args, filter.Range.To)
 	}
 
-	if len(filter.ListingIDs) > 0 {
-		placeholders := make([]string, len(filter.ListingIDs))
-		for i, id := range filter.ListingIDs {
+	if len(filter.ListingIdentityIDs) > 0 {
+		placeholders := make([]string, len(filter.ListingIdentityIDs))
+		for i, id := range filter.ListingIdentityIDs {
 			placeholders[i] = "?"
 			args = append(args, id)
 		}
-		conditions = append(conditions, fmt.Sprintf("a.listing_id IN (%s)", strings.Join(placeholders, ",")))
+		conditions = append(conditions, fmt.Sprintf("a.listing_identity_id IN (%s)", strings.Join(placeholders, ",")))
 	}
 
 	where := strings.Join(conditions, " AND ")
 
-	countQuery := fmt.Sprintf("SELECT COUNT(DISTINCT a.listing_id) FROM listing_agenda_entries e INNER JOIN listing_agendas a ON a.id = e.agenda_id WHERE %s", where)
+	countQuery := fmt.Sprintf("SELECT COUNT(DISTINCT a.listing_identity_id) FROM listing_agenda_entries e INNER JOIN listing_agendas a ON a.id = e.agenda_id WHERE %s", where)
 
 	var total int64
 	countStmt, cleanup, prepareErr := a.PrepareContext(ctx, tx, "select", countQuery)
@@ -66,11 +66,12 @@ func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filt
 	limit, offset := defaultPagination(filter.Pagination.Limit, filter.Pagination.Page, ownerSummaryMaxPageSize)
 
 	listQuery := fmt.Sprintf(`
-		SELECT DISTINCT a.listing_id
+		SELECT DISTINCT a.listing_identity_id, li.listing_uuid
 		FROM listing_agenda_entries e
 		INNER JOIN listing_agendas a ON a.id = e.agenda_id
+		INNER JOIN listing_identities li ON li.id = a.listing_identity_id
 		WHERE %s
-		ORDER BY a.listing_id
+		ORDER BY a.listing_identity_id
 		LIMIT ? OFFSET ?
 	`, where)
 
@@ -85,14 +86,21 @@ func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filt
 	defer listingRows.Close()
 
 	listingIDs := make([]int64, 0)
+	listingUUIDByID := make(map[int64]string)
 	for listingRows.Next() {
-		var id int64
-		if scanErr := listingRows.Scan(&id); scanErr != nil {
+		var (
+			id   int64
+			uuid sql.NullString
+		)
+		if scanErr := listingRows.Scan(&id, &uuid); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.schedule.owner_summary.listings_scan_error", "owner_id", filter.OwnerID, "err", scanErr)
 			return schedulemodel.OwnerSummaryResult{}, fmt.Errorf("scan owner summary listing: %w", scanErr)
 		}
 		listingIDs = append(listingIDs, id)
+		if uuid.Valid {
+			listingUUIDByID[id] = uuid.String
+		}
 	}
 
 	if rowsErr := listingRows.Err(); rowsErr != nil {
@@ -113,7 +121,10 @@ func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filt
 	items := make([]schedulemodel.OwnerSummaryItem, 0, len(listingIDs))
 	for _, id := range listingIDs {
 		entries := entriesResult[id]
-		items = append(items, schedulemodel.OwnerSummaryItem{ListingID: id, Entries: entries})
+		items = append(items, schedulemodel.OwnerSummaryItem{
+			ListingIdentityID: id,
+			Entries:           entries,
+		})
 	}
 
 	return schedulemodel.OwnerSummaryResult{Items: items, Total: total}, nil
@@ -130,7 +141,7 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, tx *sql.Tx, l
 		args = append(args, id)
 	}
 
-	conditions := []string{fmt.Sprintf("a.listing_id IN (%s)", strings.Join(placeholders, ","))}
+	conditions := []string{fmt.Sprintf("a.listing_identity_id IN (%s)", strings.Join(placeholders, ","))}
 	if !filter.Range.From.IsZero() {
 		conditions = append(conditions, "e.ends_at > ?")
 		args = append(args, filter.Range.From)
@@ -143,11 +154,11 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, tx *sql.Tx, l
 	where := strings.Join(conditions, " AND ")
 
 	query := fmt.Sprintf(`
-		SELECT e.id, e.agenda_id, e.entry_type, e.starts_at, e.ends_at, e.blocking, e.reason, e.visit_id, e.photo_booking_id, a.listing_id
+		SELECT e.id, e.agenda_id, e.entry_type, e.starts_at, e.ends_at, e.blocking, e.reason, e.visit_id, e.photo_booking_id, a.listing_identity_id
 		FROM listing_agenda_entries e
 		INNER JOIN listing_agendas a ON a.id = e.agenda_id
 		WHERE %s
-		ORDER BY a.listing_id, e.starts_at
+		ORDER BY a.listing_identity_id, e.starts_at
 	`, where)
 
 	rows, queryErr := a.QueryContext(ctx, tx, "select", query, args...)

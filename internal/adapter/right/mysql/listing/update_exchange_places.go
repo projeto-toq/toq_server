@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, listingID int64, places []listingmodel.ExchangePlaceInterface) (err error) {
+func (la *ListingAdapter) UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, listingVersionID int64, places []listingmodel.ExchangePlaceInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -23,7 +23,7 @@ func (la *ListingAdapter) UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, 
 	logger := utils.LoggerFromContext(ctx)
 
 	//remove all exchange places from listing
-	err = la.DeleteListingExchangePlaces(ctx, tx, listingID)
+	err = la.DeleteListingExchangePlaces(ctx, tx, listingVersionID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
@@ -38,7 +38,7 @@ func (la *ListingAdapter) UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, 
 
 	//insert the new exchange places
 	for _, place := range places {
-		place.SetListingID(listingID)
+		place.SetListingVersionID(listingVersionID)
 		err = la.CreateExchangePlace(ctx, tx, place)
 		if err != nil {
 			utils.SetSpanError(ctx, err)

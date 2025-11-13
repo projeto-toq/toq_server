@@ -21,18 +21,18 @@ func (a *ScheduleAdapter) InsertAgenda(ctx context.Context, tx *sql.Tx, agenda s
 
 	entity := converters.ToAgendaEntity(agenda)
 
-	query := `INSERT INTO listing_agendas (listing_id, owner_id, timezone) VALUES (?, ?, ?)`
-	result, execErr := a.ExecContext(ctx, tx, "insert", query, entity.ListingID, entity.OwnerID, entity.Timezone)
+	query := `INSERT INTO listing_agendas (listing_identity_id, owner_id, timezone) VALUES (?, ?, ?)`
+	result, execErr := a.ExecContext(ctx, tx, "insert", query, entity.ListingIdentityID, entity.OwnerID, entity.Timezone)
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
-		logger.Error("mysql.schedule.insert_agenda.exec_error", "listing_id", entity.ListingID, "err", execErr)
+		logger.Error("mysql.schedule.insert_agenda.exec_error", "listing_identity_id", entity.ListingIdentityID, "err", execErr)
 		return 0, fmt.Errorf("insert agenda: %w", execErr)
 	}
 
 	id, lastIDErr := result.LastInsertId()
 	if lastIDErr != nil {
 		utils.SetSpanError(ctx, lastIDErr)
-		logger.Error("mysql.schedule.insert_agenda.last_id_error", "listing_id", entity.ListingID, "err", lastIDErr)
+		logger.Error("mysql.schedule.insert_agenda.last_id_error", "listing_identity_id", entity.ListingIdentityID, "err", lastIDErr)
 		return 0, fmt.Errorf("agenda last insert id: %w", lastIDErr)
 	}
 

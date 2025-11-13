@@ -24,11 +24,14 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, user_id, code, version, status, zip_code, street, number, city, state, title, type, owner,
-		buildable, delivered, who_lives, description, transaction, visit, accompanying, annual_tax, monthly_tax, 
-		annual_ground_rent, monthly_ground_rent, exchange,
-		exchange_perc, sell_net, rent_net, condominium, land_size, corner, tenant_name, tenant_phone, tenant_email,
-		financing FROM listings WHERE id = ?`
+	query := `SELECT lv.id, lv.user_id, lv.code, lv.version, lv.status, lv.zip_code, lv.street, lv.number, lv.city, lv.state,
+		lv.title, lv.type, lv.owner, lv.buildable, lv.delivered, lv.who_lives, lv.description, lv.transaction, lv.visit,
+		lv.accompanying, lv.annual_tax, lv.monthly_tax, lv.annual_ground_rent, lv.monthly_ground_rent, lv.exchange,
+		lv.exchange_perc, lv.sell_net, lv.rent_net, lv.condominium, lv.land_size, lv.corner, lv.tenant_name, lv.tenant_phone,
+		lv.tenant_email, lv.financing
+		FROM listing_versions lv
+		INNER JOIN listing_identities li ON li.id = lv.listing_identity_id
+		WHERE lv.id = ? AND lv.deleted = 0 AND li.deleted = 0`
 
 	var (
 		status            uint8

@@ -250,16 +250,33 @@ func toListingResponse(item listingservices.ListListingsItem) dto.ListingRespons
 		price = listing.RentNet()
 	}
 
+	var draftVersionID *int64
+	if draft, ok := listing.DraftVersion(); ok && draft != nil {
+		if draftID := draft.ID(); draftID > 0 {
+			draftVersionID = &draftID
+		}
+	}
+
+	activeVersionID := listing.ActiveVersionID()
+	if activeVersionID == 0 {
+		activeVersionID = listing.ID()
+	}
+
 	return dto.ListingResponse{
-		ID:           listing.ID(),
-		Title:        strings.TrimSpace(listing.Title()),
-		Description:  strings.TrimSpace(listing.Description()),
-		Price:        price,
-		Status:       listing.Status().String(),
-		PropertyType: int(listing.ListingType()),
-		ZipCode:      listing.ZipCode(),
-		Number:       listing.Number(),
-		UserID:       listing.UserID(),
+		ID:                listing.ID(),
+		ListingIdentityID: listing.IdentityID(),
+		ListingUUID:       listing.UUID(),
+		ActiveVersionID:   activeVersionID,
+		DraftVersionID:    draftVersionID,
+		Version:           listing.Version(),
+		Title:             strings.TrimSpace(listing.Title()),
+		Description:       strings.TrimSpace(listing.Description()),
+		Price:             price,
+		Status:            listing.Status().String(),
+		PropertyType:      int(listing.ListingType()),
+		ZipCode:           listing.ZipCode(),
+		Number:            listing.Number(),
+		UserID:            listing.UserID(),
 	}
 }
 

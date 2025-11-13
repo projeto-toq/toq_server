@@ -19,7 +19,7 @@ import (
 // @Tags        Listing Schedules
 // @Accept      json
 // @Produce     json
-// @Param       request body dto.ScheduleRuleUpdateRequest true "Rule update payload" Extensions(x-example={"ruleId":5021,"listingId":3241,"weekDays":["MONDAY"],"rangeStart":"10:00","rangeEnd":"18:00","active":true,"timezone":"America/Sao_Paulo"})
+// @Param       request body dto.ScheduleRuleUpdateRequest true "Rule update payload" Extensions(x-example={"ruleId":5021,"listingIdentityId":3241,"weekDays":["MONDAY"],"rangeStart":"10:00","rangeEnd":"18:00","active":true,"timezone":"America/Sao_Paulo"})
 // @Success     200 {object} dto.ScheduleRulesResponse
 // @Failure     400 {object} dto.ErrorResponse
 // @Failure     401 {object} dto.ErrorResponse
@@ -63,10 +63,10 @@ func (h *ScheduleHandler) PutUpdateBlockRule(c *gin.Context) {
 	}
 
 	input := scheduleservices.UpdateRuleInput{
-		RuleID:    req.RuleID,
-		ListingID: req.ListingID,
-		OwnerID:   userInfo.ID,
-		Weekday:   weekday,
+		RuleID:            req.RuleID,
+		ListingIdentityID: req.ListingIdentityID,
+		OwnerID:           userInfo.ID,
+		Weekday:           weekday,
 		Range: scheduleservices.RuleTimeRange{
 			StartMinute: startMinute,
 			EndMinute:   endMinute,
@@ -84,9 +84,9 @@ func (h *ScheduleHandler) PutUpdateBlockRule(c *gin.Context) {
 	}
 
 	response := dto.ScheduleRulesResponse{
-		ListingID: req.ListingID,
-		Timezone:  req.Timezone,
-		Rules:     []dto.ScheduleRuleResponse{converters.ScheduleRuleToDTO(rule)},
+		ListingIdentityID: req.ListingIdentityID,
+		Timezone:          req.Timezone,
+		Rules:             []dto.ScheduleRuleResponse{converters.ScheduleRuleToDTO(rule)},
 	}
 	c.JSON(http.StatusOK, response)
 }

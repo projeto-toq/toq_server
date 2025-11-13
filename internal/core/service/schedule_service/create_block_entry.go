@@ -11,8 +11,8 @@ import (
 )
 
 func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBlockEntryInput) (schedulemodel.AgendaEntryInterface, error) {
-	if input.ListingID <= 0 {
-		return nil, utils.ValidationError("listingId", "listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return nil, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if input.OwnerID <= 0 {
 		return nil, utils.ValidationError("ownerId", "ownerId must be greater than zero")
@@ -60,13 +60,13 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.create_block_entry.get_agenda_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("schedule.create_block_entry.get_agenda_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return nil, utils.InternalError("")
 	}
 
@@ -87,7 +87,7 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 	existing, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), startsAtUTC, endsAtUTC)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.create_block_entry.list_entries_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("schedule.create_block_entry.list_entries_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return nil, utils.InternalError("")
 	}
 	for _, entry := range existing {
@@ -109,7 +109,7 @@ func (s *scheduleService) CreateBlockEntry(ctx context.Context, input CreateBloc
 	id, err := s.scheduleRepo.InsertEntry(ctx, tx, domain)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.create_block_entry.insert_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("schedule.create_block_entry.insert_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return nil, utils.InternalError("")
 	}
 	domain.SetID(id)

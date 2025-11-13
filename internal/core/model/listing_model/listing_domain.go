@@ -2,8 +2,10 @@ package listingmodel
 
 import globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
-type listing struct {
+type listingVersion struct {
 	id                      int64
+	listingIdentityID       int64
+	listingUUID             string
 	user_id                 int64
 	code                    uint32
 	version                 uint8
@@ -76,624 +78,1074 @@ type listing struct {
 	deletedValid            bool
 }
 
-func (l *listing) ID() int64 {
+func (l *listingVersion) ID() int64 {
 	return l.id
 }
 
-func (l *listing) SetID(id int64) {
+func (l *listingVersion) SetID(id int64) {
 	l.id = id
 }
 
-func (l *listing) UserID() int64 {
+func (l *listingVersion) ListingIdentityID() int64 {
+	return l.listingIdentityID
+}
+
+func (l *listingVersion) SetListingIdentityID(listingIdentityID int64) {
+	l.listingIdentityID = listingIdentityID
+}
+
+func (l *listingVersion) ListingUUID() string {
+	return l.listingUUID
+}
+
+func (l *listingVersion) SetListingUUID(listingUUID string) {
+	l.listingUUID = listingUUID
+}
+
+func (l *listingVersion) UserID() int64 {
 	return l.user_id
 }
 
-func (l *listing) SetUserID(user_id int64) {
+func (l *listingVersion) SetUserID(user_id int64) {
 	l.user_id = user_id
 }
 
-func (l *listing) Code() uint32 {
+func (l *listingVersion) Code() uint32 {
 	return l.code
 }
 
-func (l *listing) SetCode(code uint32) {
+func (l *listingVersion) SetCode(code uint32) {
 	l.code = code
 }
 
-func (l *listing) Version() uint8 {
+func (l *listingVersion) Version() uint8 {
 	return l.version
 }
 
-func (l *listing) SetVersion(version uint8) {
+func (l *listingVersion) SetVersion(version uint8) {
 	l.version = version
 }
 
-func (l *listing) Status() ListingStatus {
+func (l *listingVersion) Status() ListingStatus {
 	return l.status
 }
 
-func (l *listing) SetStatus(status ListingStatus) {
+func (l *listingVersion) SetStatus(status ListingStatus) {
 	l.status = status
 }
 
-func (l *listing) ZipCode() string {
+func (l *listingVersion) ZipCode() string {
 	return l.zip_code
 }
 
-func (l *listing) SetZipCode(zip_code string) {
+func (l *listingVersion) SetZipCode(zip_code string) {
 	l.zip_code = zip_code
 }
 
-func (l *listing) Street() string {
+func (l *listingVersion) Street() string {
 	return l.street
 }
 
-func (l *listing) SetStreet(street string) {
+func (l *listingVersion) SetStreet(street string) {
 	l.street = street
 }
 
-func (l *listing) Number() string {
+func (l *listingVersion) Number() string {
 	return l.number
 }
 
-func (l *listing) SetNumber(number string) {
+func (l *listingVersion) SetNumber(number string) {
 	l.number = number
 }
 
-func (l *listing) Complement() string {
+func (l *listingVersion) Complement() string {
 	return l.complement
 }
 
-func (l *listing) SetComplement(complement string) {
+func (l *listingVersion) SetComplement(complement string) {
 	l.complement = complement
 }
 
-func (l *listing) Neighborhood() string {
+func (l *listingVersion) Neighborhood() string {
 	return l.neighborhood
 }
 
-func (l *listing) SetNeighborhood(neighborhood string) {
+func (l *listingVersion) SetNeighborhood(neighborhood string) {
 	l.neighborhood = neighborhood
 }
 
-func (l *listing) City() string {
+func (l *listingVersion) City() string {
 	return l.city
 }
 
-func (l *listing) SetCity(city string) {
+func (l *listingVersion) SetCity(city string) {
 	l.city = city
 }
 
-func (l *listing) State() string {
+func (l *listingVersion) State() string {
 	return l.state
 }
 
-func (l *listing) SetState(state string) {
+func (l *listingVersion) SetState(state string) {
 	l.state = state
 }
 
-func (l *listing) Title() string {
+func (l *listingVersion) Title() string {
 	return l.title
 }
 
-func (l *listing) SetTitle(title string) {
+func (l *listingVersion) SetTitle(title string) {
 	l.title = title
 	l.titleValid = true
 }
 
-func (l *listing) HasTitle() bool {
+func (l *listingVersion) HasTitle() bool {
 	return l.titleValid
 }
 
-func (l *listing) UnsetTitle() {
+func (l *listingVersion) UnsetTitle() {
 	l.title = ""
 	l.titleValid = false
 }
 
-func (l *listing) ListingType() globalmodel.PropertyType {
+func (l *listingVersion) ListingType() globalmodel.PropertyType {
 	return l.listingType
 }
 
-func (l *listing) SetListingType(listingType globalmodel.PropertyType) {
+func (l *listingVersion) SetListingType(listingType globalmodel.PropertyType) {
 	l.listingType = listingType
 }
 
-func (l *listing) Owner() PropertyOwner {
+func (l *listingVersion) Owner() PropertyOwner {
 	return l.owner
 }
 
-func (l *listing) SetOwner(owner PropertyOwner) {
+func (l *listingVersion) SetOwner(owner PropertyOwner) {
 	l.owner = owner
 	l.ownerValid = true
 }
 
-func (l *listing) HasOwner() bool {
+func (l *listingVersion) HasOwner() bool {
 	return l.ownerValid
 }
 
-func (l *listing) UnsetOwner() {
+func (l *listingVersion) UnsetOwner() {
 	l.owner = 0
 	l.ownerValid = false
 }
 
-func (l *listing) Features() []FeatureInterface {
+func (l *listingVersion) Features() []FeatureInterface {
 	return l.features
 }
 
-func (l *listing) SetFeatures(features []FeatureInterface) {
+func (l *listingVersion) SetFeatures(features []FeatureInterface) {
 	l.features = features
 }
 
-func (l *listing) LandSize() float64 {
+func (l *listingVersion) LandSize() float64 {
 	return l.landSize
 }
 
-func (l *listing) SetLandSize(landsize float64) {
+func (l *listingVersion) SetLandSize(landsize float64) {
 	l.landSize = landsize
 	l.landSizeValid = true
 }
 
-func (l *listing) HasLandSize() bool {
+func (l *listingVersion) HasLandSize() bool {
 	return l.landSizeValid
 }
 
-func (l *listing) UnsetLandSize() {
+func (l *listingVersion) UnsetLandSize() {
 	l.landSize = 0
 	l.landSizeValid = false
 }
 
-func (l *listing) Corner() bool {
+func (l *listingVersion) Corner() bool {
 	return l.corner
 }
 
-func (l *listing) SetCorner(corner bool) {
+func (l *listingVersion) SetCorner(corner bool) {
 	l.corner = corner
 	l.cornerValid = true
 }
 
-func (l *listing) HasCorner() bool {
+func (l *listingVersion) HasCorner() bool {
 	return l.cornerValid
 }
 
-func (l *listing) UnsetCorner() {
+func (l *listingVersion) UnsetCorner() {
 	l.corner = false
 	l.cornerValid = false
 }
 
-func (l *listing) NonBuildable() float64 {
+func (l *listingVersion) NonBuildable() float64 {
 	return l.nonBuildable
 }
 
-func (l *listing) SetNonBuildable(nonBuildable float64) {
+func (l *listingVersion) SetNonBuildable(nonBuildable float64) {
 	l.nonBuildable = nonBuildable
 	l.nonBuildableValid = true
 }
 
-func (l *listing) HasNonBuildable() bool {
+func (l *listingVersion) HasNonBuildable() bool {
 	return l.nonBuildableValid
 }
 
-func (l *listing) UnsetNonBuildable() {
+func (l *listingVersion) UnsetNonBuildable() {
 	l.nonBuildable = 0
 	l.nonBuildableValid = false
 }
 
-func (l *listing) Buildable() float64 {
+func (l *listingVersion) Buildable() float64 {
 	return l.buildable
 }
 
-func (l *listing) SetBuildable(buildable float64) {
+func (l *listingVersion) SetBuildable(buildable float64) {
 	l.buildable = buildable
 	l.buildableValid = true
 }
 
-func (l *listing) HasBuildable() bool {
+func (l *listingVersion) HasBuildable() bool {
 	return l.buildableValid
 }
 
-func (l *listing) UnsetBuildable() {
+func (l *listingVersion) UnsetBuildable() {
 	l.buildable = 0
 	l.buildableValid = false
 }
 
-func (l *listing) Delivered() PropertyDelivered {
+func (l *listingVersion) Delivered() PropertyDelivered {
 	return l.delivered
 }
 
-func (l *listing) SetDelivered(delivered PropertyDelivered) {
+func (l *listingVersion) SetDelivered(delivered PropertyDelivered) {
 	l.delivered = delivered
 	l.deliveredValid = true
 }
 
-func (l *listing) HasDelivered() bool {
+func (l *listingVersion) HasDelivered() bool {
 	return l.deliveredValid
 }
 
-func (l *listing) UnsetDelivered() {
+func (l *listingVersion) UnsetDelivered() {
 	l.delivered = 0
 	l.deliveredValid = false
 }
 
-func (l *listing) WhoLives() WhoLives {
+func (l *listingVersion) WhoLives() WhoLives {
 	return l.whoLives
 }
 
-func (l *listing) SetWhoLives(whoLives WhoLives) {
+func (l *listingVersion) SetWhoLives(whoLives WhoLives) {
 	l.whoLives = whoLives
 	l.whoLivesValid = true
 }
 
-func (l *listing) HasWhoLives() bool {
+func (l *listingVersion) HasWhoLives() bool {
 	return l.whoLivesValid
 }
 
-func (l *listing) UnsetWhoLives() {
+func (l *listingVersion) UnsetWhoLives() {
 	l.whoLives = 0
 	l.whoLivesValid = false
 }
 
-func (l *listing) Description() string {
+func (l *listingVersion) Description() string {
 	return l.description
 }
 
-func (l *listing) SetDescription(description string) {
+func (l *listingVersion) SetDescription(description string) {
 	l.description = description
 	l.descriptionValid = true
 }
 
-func (l *listing) HasDescription() bool {
+func (l *listingVersion) HasDescription() bool {
 	return l.descriptionValid
 }
 
-func (l *listing) UnsetDescription() {
+func (l *listingVersion) UnsetDescription() {
 	l.description = ""
 	l.descriptionValid = false
 }
 
-func (l *listing) Transaction() TransactionType {
+func (l *listingVersion) Transaction() TransactionType {
 	return l.transaction
 }
 
-func (l *listing) SetTransaction(transaction TransactionType) {
+func (l *listingVersion) SetTransaction(transaction TransactionType) {
 	l.transaction = transaction
 	l.transactionValid = true
 }
 
-func (l *listing) HasTransaction() bool {
+func (l *listingVersion) HasTransaction() bool {
 	return l.transactionValid
 }
 
-func (l *listing) UnsetTransaction() {
+func (l *listingVersion) UnsetTransaction() {
 	l.transaction = 0
 	l.transactionValid = false
 }
 
-func (l *listing) SellNet() float64 {
+func (l *listingVersion) SellNet() float64 {
 	return l.sellNet
 }
 
-func (l *listing) SetSellNet(sellNet float64) {
+func (l *listingVersion) SetSellNet(sellNet float64) {
 	l.sellNet = sellNet
 	l.sellNetValid = true
 }
 
-func (l *listing) HasSellNet() bool {
+func (l *listingVersion) HasSellNet() bool {
 	return l.sellNetValid
 }
 
-func (l *listing) UnsetSellNet() {
+func (l *listingVersion) UnsetSellNet() {
 	l.sellNet = 0
 	l.sellNetValid = false
 }
 
-func (l *listing) RentNet() float64 {
+func (l *listingVersion) RentNet() float64 {
 	return l.rentNet
 }
 
-func (l *listing) SetRentNet(rentNet float64) {
+func (l *listingVersion) SetRentNet(rentNet float64) {
 	l.rentNet = rentNet
 	l.rentNetValid = true
 }
 
-func (l *listing) HasRentNet() bool {
+func (l *listingVersion) HasRentNet() bool {
 	return l.rentNetValid
 }
 
-func (l *listing) UnsetRentNet() {
+func (l *listingVersion) UnsetRentNet() {
 	l.rentNet = 0
 	l.rentNetValid = false
 }
 
-func (l *listing) Condominium() float64 {
+func (l *listingVersion) Condominium() float64 {
 	return l.condominium
 }
 
-func (l *listing) SetCondominium(condominium float64) {
+func (l *listingVersion) SetCondominium(condominium float64) {
 	l.condominium = condominium
 	l.condominiumValid = true
 }
 
-func (l *listing) HasCondominium() bool {
+func (l *listingVersion) HasCondominium() bool {
 	return l.condominiumValid
 }
 
-func (l *listing) UnsetCondominium() {
+func (l *listingVersion) UnsetCondominium() {
 	l.condominium = 0
 	l.condominiumValid = false
 }
 
-func (l *listing) AnnualTax() float64 {
+func (l *listingVersion) AnnualTax() float64 {
 	return l.annualTax
 }
 
-func (l *listing) SetAnnualTax(annualTax float64) {
+func (l *listingVersion) SetAnnualTax(annualTax float64) {
 	l.annualTax = annualTax
 	l.annualTaxValid = true
 }
 
-func (l *listing) HasAnnualTax() bool {
+func (l *listingVersion) HasAnnualTax() bool {
 	return l.annualTaxValid
 }
 
-func (l *listing) UnsetAnnualTax() {
+func (l *listingVersion) UnsetAnnualTax() {
 	l.annualTax = 0
 	l.annualTaxValid = false
 }
 
-func (l *listing) MonthlyTax() float64 {
+func (l *listingVersion) MonthlyTax() float64 {
 	return l.monthlyTax
 }
 
-func (l *listing) SetMonthlyTax(monthlyTax float64) {
+func (l *listingVersion) SetMonthlyTax(monthlyTax float64) {
 	l.monthlyTax = monthlyTax
 	l.monthlyTaxValid = true
 }
 
-func (l *listing) HasMonthlyTax() bool {
+func (l *listingVersion) HasMonthlyTax() bool {
 	return l.monthlyTaxValid
 }
 
-func (l *listing) UnsetMonthlyTax() {
+func (l *listingVersion) UnsetMonthlyTax() {
 	l.monthlyTax = 0
 	l.monthlyTaxValid = false
 }
 
-func (l *listing) AnnualGroundRent() float64 {
+func (l *listingVersion) AnnualGroundRent() float64 {
 	return l.annualGroundRent
 }
 
-func (l *listing) SetAnnualGroundRent(annualGroundRent float64) {
+func (l *listingVersion) SetAnnualGroundRent(annualGroundRent float64) {
 	l.annualGroundRent = annualGroundRent
 	l.annualGroundRentValid = true
 }
 
-func (l *listing) HasAnnualGroundRent() bool {
+func (l *listingVersion) HasAnnualGroundRent() bool {
 	return l.annualGroundRentValid
 }
 
-func (l *listing) UnsetAnnualGroundRent() {
+func (l *listingVersion) UnsetAnnualGroundRent() {
 	l.annualGroundRent = 0
 	l.annualGroundRentValid = false
 }
 
-func (l *listing) MonthlyGroundRent() float64 {
+func (l *listingVersion) MonthlyGroundRent() float64 {
 	return l.monthlyGroundRent
 }
 
-func (l *listing) SetMonthlyGroundRent(monthlyGroundRent float64) {
+func (l *listingVersion) SetMonthlyGroundRent(monthlyGroundRent float64) {
 	l.monthlyGroundRent = monthlyGroundRent
 	l.monthlyGroundRentValid = true
 }
 
-func (l *listing) HasMonthlyGroundRent() bool {
+func (l *listingVersion) HasMonthlyGroundRent() bool {
 	return l.monthlyGroundRentValid
 }
 
-func (l *listing) UnsetMonthlyGroundRent() {
+func (l *listingVersion) UnsetMonthlyGroundRent() {
 	l.monthlyGroundRent = 0
 	l.monthlyGroundRentValid = false
 }
 
-func (l *listing) Exchange() bool {
+func (l *listingVersion) Exchange() bool {
 	return l.exchange
 }
 
-func (l *listing) SetExchange(exchange bool) {
+func (l *listingVersion) SetExchange(exchange bool) {
 	l.exchange = exchange
 	l.exchangeValid = true
 }
 
-func (l *listing) HasExchange() bool {
+func (l *listingVersion) HasExchange() bool {
 	return l.exchangeValid
 }
 
-func (l *listing) UnsetExchange() {
+func (l *listingVersion) UnsetExchange() {
 	l.exchange = false
 	l.exchangeValid = false
 }
 
-func (l *listing) ExchangePercentual() float64 {
+func (l *listingVersion) ExchangePercentual() float64 {
 	return l.exchangePercentual
 }
 
-func (l *listing) SetExchangePercentual(exchangePercentual float64) {
+func (l *listingVersion) SetExchangePercentual(exchangePercentual float64) {
 	l.exchangePercentual = exchangePercentual
 	l.exchangePercentualValid = true
 }
 
-func (l *listing) HasExchangePercentual() bool {
+func (l *listingVersion) HasExchangePercentual() bool {
 	return l.exchangePercentualValid
 }
 
-func (l *listing) UnsetExchangePercentual() {
+func (l *listingVersion) UnsetExchangePercentual() {
 	l.exchangePercentual = 0
 	l.exchangePercentualValid = false
 }
 
-func (l *listing) ExchangePlaces() []ExchangePlaceInterface {
+func (l *listingVersion) ExchangePlaces() []ExchangePlaceInterface {
 	return l.exchangePlaces
 }
 
-func (l *listing) SetExchangePlaces(exchangePlaces []ExchangePlaceInterface) {
+func (l *listingVersion) SetExchangePlaces(exchangePlaces []ExchangePlaceInterface) {
 	l.exchangePlaces = exchangePlaces
 }
 
-func (l *listing) Installment() InstallmentPlan {
+func (l *listingVersion) Installment() InstallmentPlan {
 	return l.installment
 }
 
-func (l *listing) SetInstallment(installment InstallmentPlan) {
+func (l *listingVersion) SetInstallment(installment InstallmentPlan) {
 	l.installment = installment
 	l.installmentValid = true
 }
 
-func (l *listing) HasInstallment() bool {
+func (l *listingVersion) HasInstallment() bool {
 	return l.installmentValid
 }
 
-func (l *listing) UnsetInstallment() {
+func (l *listingVersion) UnsetInstallment() {
 	l.installment = 0
 	l.installmentValid = false
 }
 
-func (l *listing) Financing() bool {
+func (l *listingVersion) Financing() bool {
 	return l.financing
 }
 
-func (l *listing) SetFinancing(financing bool) {
+func (l *listingVersion) SetFinancing(financing bool) {
 	l.financing = financing
 	l.financingValid = true
 }
 
-func (l *listing) HasFinancing() bool {
+func (l *listingVersion) HasFinancing() bool {
 	return l.financingValid
 }
 
-func (l *listing) UnsetFinancing() {
+func (l *listingVersion) UnsetFinancing() {
 	l.financing = false
 	l.financingValid = false
 }
 
-func (l *listing) FinancingBlockers() []FinancingBlockerInterface {
+func (l *listingVersion) FinancingBlockers() []FinancingBlockerInterface {
 	return l.financingBlocker
 }
 
-func (l *listing) SetFinancingBlockers(financingBlocker []FinancingBlockerInterface) {
+func (l *listingVersion) SetFinancingBlockers(financingBlocker []FinancingBlockerInterface) {
 	l.financingBlocker = financingBlocker
 }
 
-func (l *listing) Guarantees() []GuaranteeInterface {
+func (l *listingVersion) Guarantees() []GuaranteeInterface {
 	return l.guarantees
 }
 
-func (l *listing) SetGuarantees(guarantees []GuaranteeInterface) {
+func (l *listingVersion) SetGuarantees(guarantees []GuaranteeInterface) {
 	l.guarantees = guarantees
 }
 
-func (l *listing) Visit() VisitType {
+func (l *listingVersion) Visit() VisitType {
 	return l.visit
 }
 
-func (l *listing) SetVisit(visit VisitType) {
+func (l *listingVersion) SetVisit(visit VisitType) {
 	l.visit = visit
 	l.visitValid = true
 }
 
-func (l *listing) HasVisit() bool {
+func (l *listingVersion) HasVisit() bool {
 	return l.visitValid
 }
 
-func (l *listing) UnsetVisit() {
+func (l *listingVersion) UnsetVisit() {
 	l.visit = 0
 	l.visitValid = false
 }
 
-func (l *listing) TenantName() string {
+func (l *listingVersion) TenantName() string {
 	return l.tenantName
 }
 
-func (l *listing) SetTenantName(tenantName string) {
+func (l *listingVersion) SetTenantName(tenantName string) {
 	l.tenantName = tenantName
 	l.tenantNameValid = true
 }
 
-func (l *listing) HasTenantName() bool {
+func (l *listingVersion) HasTenantName() bool {
 	return l.tenantNameValid
 }
 
-func (l *listing) UnsetTenantName() {
+func (l *listingVersion) UnsetTenantName() {
 	l.tenantName = ""
 	l.tenantNameValid = false
 }
 
-func (l *listing) TenantEmail() string {
+func (l *listingVersion) TenantEmail() string {
 	return l.tenantEmail
 }
 
-func (l *listing) SetTenantEmail(tenantEmail string) {
+func (l *listingVersion) SetTenantEmail(tenantEmail string) {
 	l.tenantEmail = tenantEmail
 	l.tenantEmailValid = true
 }
 
-func (l *listing) HasTenantEmail() bool {
+func (l *listingVersion) HasTenantEmail() bool {
 	return l.tenantEmailValid
 }
 
-func (l *listing) UnsetTenantEmail() {
+func (l *listingVersion) UnsetTenantEmail() {
 	l.tenantEmail = ""
 	l.tenantEmailValid = false
 }
 
-func (l *listing) TenantPhone() string {
+func (l *listingVersion) TenantPhone() string {
 	return l.tenantPhone
 }
 
-func (l *listing) SetTenantPhone(tenantPhone string) {
+func (l *listingVersion) SetTenantPhone(tenantPhone string) {
 	l.tenantPhone = tenantPhone
 	l.tenantPhoneValid = true
 }
 
-func (l *listing) HasTenantPhone() bool {
+func (l *listingVersion) HasTenantPhone() bool {
 	return l.tenantPhoneValid
 }
 
-func (l *listing) UnsetTenantPhone() {
+func (l *listingVersion) UnsetTenantPhone() {
 	l.tenantPhone = ""
 	l.tenantPhoneValid = false
 }
 
-func (l *listing) Accompanying() AccompanyingType {
+func (l *listingVersion) Accompanying() AccompanyingType {
 	return l.accompanying
 }
 
-func (l *listing) SetAccompanying(accompanying AccompanyingType) {
+func (l *listingVersion) SetAccompanying(accompanying AccompanyingType) {
 	l.accompanying = accompanying
 	l.accompanyingValid = true
 }
 
-func (l *listing) HasAccompanying() bool {
+func (l *listingVersion) HasAccompanying() bool {
 	return l.accompanyingValid
 }
 
-func (l *listing) UnsetAccompanying() {
+func (l *listingVersion) UnsetAccompanying() {
 	l.accompanying = 0
 	l.accompanyingValid = false
 }
 
-func (l *listing) Deleted() bool {
+func (l *listingVersion) Deleted() bool {
 	return l.deleted
 }
 
-func (l *listing) SetDeleted(deleted bool) {
+func (l *listingVersion) SetDeleted(deleted bool) {
 	l.deleted = deleted
 	l.deletedValid = true
 }
 
-func (l *listing) HasDeleted() bool {
+func (l *listingVersion) HasDeleted() bool {
 	return l.deletedValid
 }
 
-func (l *listing) UnsetDeleted() {
+func (l *listingVersion) UnsetDeleted() {
 	l.deleted = false
 	l.deletedValid = false
+}
+
+func (l *listingVersion) copyFrom(version ListingVersionInterface) {
+	if version == nil {
+		return
+	}
+
+	l.id = version.ID()
+	l.listingIdentityID = version.ListingIdentityID()
+	l.listingUUID = version.ListingUUID()
+	l.user_id = version.UserID()
+	l.code = version.Code()
+	l.version = version.Version()
+	l.status = version.Status()
+	l.zip_code = version.ZipCode()
+	l.street = version.Street()
+	l.number = version.Number()
+	l.complement = version.Complement()
+	l.neighborhood = version.Neighborhood()
+	l.city = version.City()
+	l.state = version.State()
+
+	if version.HasTitle() {
+		l.title = version.Title()
+		l.titleValid = true
+	} else {
+		l.title = ""
+		l.titleValid = false
+	}
+
+	l.listingType = version.ListingType()
+
+	if version.HasOwner() {
+		l.owner = version.Owner()
+		l.ownerValid = true
+	} else {
+		l.owner = 0
+		l.ownerValid = false
+	}
+
+	l.features = cloneFeatureInterfaces(version.Features())
+
+	if version.HasLandSize() {
+		l.landSize = version.LandSize()
+		l.landSizeValid = true
+	} else {
+		l.landSize = 0
+		l.landSizeValid = false
+	}
+
+	if version.HasCorner() {
+		l.corner = version.Corner()
+		l.cornerValid = true
+	} else {
+		l.corner = false
+		l.cornerValid = false
+	}
+
+	if version.HasNonBuildable() {
+		l.nonBuildable = version.NonBuildable()
+		l.nonBuildableValid = true
+	} else {
+		l.nonBuildable = 0
+		l.nonBuildableValid = false
+	}
+
+	if version.HasBuildable() {
+		l.buildable = version.Buildable()
+		l.buildableValid = true
+	} else {
+		l.buildable = 0
+		l.buildableValid = false
+	}
+
+	if version.HasDelivered() {
+		l.delivered = version.Delivered()
+		l.deliveredValid = true
+	} else {
+		l.delivered = 0
+		l.deliveredValid = false
+	}
+
+	if version.HasWhoLives() {
+		l.whoLives = version.WhoLives()
+		l.whoLivesValid = true
+	} else {
+		l.whoLives = 0
+		l.whoLivesValid = false
+	}
+
+	if version.HasDescription() {
+		l.description = version.Description()
+		l.descriptionValid = true
+	} else {
+		l.description = ""
+		l.descriptionValid = false
+	}
+
+	if version.HasTransaction() {
+		l.transaction = version.Transaction()
+		l.transactionValid = true
+	} else {
+		l.transaction = 0
+		l.transactionValid = false
+	}
+
+	if version.HasSellNet() {
+		l.sellNet = version.SellNet()
+		l.sellNetValid = true
+	} else {
+		l.sellNet = 0
+		l.sellNetValid = false
+	}
+
+	if version.HasRentNet() {
+		l.rentNet = version.RentNet()
+		l.rentNetValid = true
+	} else {
+		l.rentNet = 0
+		l.rentNetValid = false
+	}
+
+	if version.HasCondominium() {
+		l.condominium = version.Condominium()
+		l.condominiumValid = true
+	} else {
+		l.condominium = 0
+		l.condominiumValid = false
+	}
+
+	if version.HasAnnualTax() {
+		l.annualTax = version.AnnualTax()
+		l.annualTaxValid = true
+	} else {
+		l.annualTax = 0
+		l.annualTaxValid = false
+	}
+
+	if version.HasMonthlyTax() {
+		l.monthlyTax = version.MonthlyTax()
+		l.monthlyTaxValid = true
+	} else {
+		l.monthlyTax = 0
+		l.monthlyTaxValid = false
+	}
+
+	if version.HasAnnualGroundRent() {
+		l.annualGroundRent = version.AnnualGroundRent()
+		l.annualGroundRentValid = true
+	} else {
+		l.annualGroundRent = 0
+		l.annualGroundRentValid = false
+	}
+
+	if version.HasMonthlyGroundRent() {
+		l.monthlyGroundRent = version.MonthlyGroundRent()
+		l.monthlyGroundRentValid = true
+	} else {
+		l.monthlyGroundRent = 0
+		l.monthlyGroundRentValid = false
+	}
+
+	if version.HasExchange() {
+		l.exchange = version.Exchange()
+		l.exchangeValid = true
+	} else {
+		l.exchange = false
+		l.exchangeValid = false
+	}
+
+	if version.HasExchangePercentual() {
+		l.exchangePercentual = version.ExchangePercentual()
+		l.exchangePercentualValid = true
+	} else {
+		l.exchangePercentual = 0
+		l.exchangePercentualValid = false
+	}
+
+	l.exchangePlaces = cloneExchangePlaces(version.ExchangePlaces())
+
+	if version.HasInstallment() {
+		l.installment = version.Installment()
+		l.installmentValid = true
+	} else {
+		l.installment = 0
+		l.installmentValid = false
+	}
+
+	if version.HasFinancing() {
+		l.financing = version.Financing()
+		l.financingValid = true
+	} else {
+		l.financing = false
+		l.financingValid = false
+	}
+
+	l.financingBlocker = cloneFinancingBlockers(version.FinancingBlockers())
+	l.guarantees = cloneGuarantees(version.Guarantees())
+
+	if version.HasVisit() {
+		l.visit = version.Visit()
+		l.visitValid = true
+	} else {
+		l.visit = 0
+		l.visitValid = false
+	}
+
+	if version.HasTenantName() {
+		l.tenantName = version.TenantName()
+		l.tenantNameValid = true
+	} else {
+		l.tenantName = ""
+		l.tenantNameValid = false
+	}
+
+	if version.HasTenantEmail() {
+		l.tenantEmail = version.TenantEmail()
+		l.tenantEmailValid = true
+	} else {
+		l.tenantEmail = ""
+		l.tenantEmailValid = false
+	}
+
+	if version.HasTenantPhone() {
+		l.tenantPhone = version.TenantPhone()
+		l.tenantPhoneValid = true
+	} else {
+		l.tenantPhone = ""
+		l.tenantPhoneValid = false
+	}
+
+	if version.HasAccompanying() {
+		l.accompanying = version.Accompanying()
+		l.accompanyingValid = true
+	} else {
+		l.accompanying = 0
+		l.accompanyingValid = false
+	}
+
+	if version.HasDeleted() {
+		l.deleted = version.Deleted()
+		l.deletedValid = true
+	} else {
+		l.deleted = false
+		l.deletedValid = false
+	}
+}
+
+type listing struct {
+	*listingVersion
+	identityID      int64
+	uuid            string
+	activeVersionID int64
+	versions        []ListingVersionInterface
+	draftVersion    ListingVersionInterface
+}
+
+func (l *listing) IdentityID() int64 {
+	if l.identityID != 0 {
+		return l.identityID
+	}
+	if l.listingVersion != nil {
+		return l.listingVersion.ListingIdentityID()
+	}
+	return 0
+}
+
+func (l *listing) SetIdentityID(identityID int64) {
+	l.identityID = identityID
+	l.ensureListingVersion().SetListingIdentityID(identityID)
+}
+
+func (l *listing) UUID() string {
+	if l.uuid != "" {
+		return l.uuid
+	}
+	if l.listingVersion != nil {
+		return l.listingVersion.ListingUUID()
+	}
+	return ""
+}
+
+func (l *listing) SetUUID(uuid string) {
+	l.uuid = uuid
+	l.ensureListingVersion().SetListingUUID(uuid)
+}
+
+func (l *listing) ActiveVersionID() int64 {
+	if l.activeVersionID != 0 {
+		return l.activeVersionID
+	}
+	if l.listingVersion != nil {
+		return l.listingVersion.ID()
+	}
+	return 0
+}
+
+func (l *listing) SetActiveVersionID(versionID int64) {
+	l.activeVersionID = versionID
+	l.ensureListingVersion().SetID(versionID)
+}
+
+func (l *listing) ActiveVersion() ListingVersionInterface {
+	return l.listingVersion
+}
+
+func (l *listing) SetActiveVersion(version ListingVersionInterface) {
+	adopted := adoptListingVersion(version)
+	l.listingVersion = adopted
+	l.identityID = adopted.ListingIdentityID()
+	l.uuid = adopted.ListingUUID()
+	l.activeVersionID = adopted.ID()
+}
+
+func (l *listing) DraftVersion() (ListingVersionInterface, bool) {
+	if l.draftVersion == nil {
+		return nil, false
+	}
+	return l.draftVersion, true
+}
+
+func (l *listing) SetDraftVersion(version ListingVersionInterface) {
+	l.draftVersion = adoptListingVersion(version)
+}
+
+func (l *listing) ClearDraftVersion() {
+	l.draftVersion = nil
+}
+
+func (l *listing) Versions() []ListingVersionInterface {
+	if len(l.versions) == 0 {
+		return nil
+	}
+
+	versions := make([]ListingVersionInterface, len(l.versions))
+	copy(versions, l.versions)
+	return versions
+}
+
+func (l *listing) SetVersions(versions []ListingVersionInterface) {
+	l.versions = cloneListingVersions(versions)
+}
+
+func (l *listing) AddVersion(version ListingVersionInterface) {
+	l.versions = append(l.versions, adoptListingVersion(version))
+}
+
+func (l *listing) ensureListingVersion() *listingVersion {
+	if l.listingVersion == nil {
+		l.listingVersion = newListingVersion()
+	}
+	return l.listingVersion
+}
+
+func newListingVersion() *listingVersion {
+	return &listingVersion{}
+}
+
+func adoptListingVersion(version ListingVersionInterface) *listingVersion {
+	if version == nil {
+		return newListingVersion()
+	}
+
+	if internal, ok := version.(*listingVersion); ok {
+		return internal
+	}
+
+	clone := newListingVersion()
+	clone.copyFrom(version)
+	return clone
+}
+
+func cloneListingVersions(versions []ListingVersionInterface) []ListingVersionInterface {
+	if len(versions) == 0 {
+		return nil
+	}
+
+	cloned := make([]ListingVersionInterface, 0, len(versions))
+	for _, version := range versions {
+		cloned = append(cloned, adoptListingVersion(version))
+	}
+	return cloned
+}
+
+func cloneFeatureInterfaces(features []FeatureInterface) []FeatureInterface {
+	if len(features) == 0 {
+		return nil
+	}
+
+	cloned := make([]FeatureInterface, len(features))
+	copy(cloned, features)
+	return cloned
+}
+
+func cloneExchangePlaces(places []ExchangePlaceInterface) []ExchangePlaceInterface {
+	if len(places) == 0 {
+		return nil
+	}
+
+	cloned := make([]ExchangePlaceInterface, len(places))
+	copy(cloned, places)
+	return cloned
+}
+
+func cloneFinancingBlockers(blockers []FinancingBlockerInterface) []FinancingBlockerInterface {
+	if len(blockers) == 0 {
+		return nil
+	}
+
+	cloned := make([]FinancingBlockerInterface, len(blockers))
+	copy(cloned, blockers)
+	return cloned
+}
+
+func cloneGuarantees(guarantees []GuaranteeInterface) []GuaranteeInterface {
+	if len(guarantees) == 0 {
+		return nil
+	}
+
+	cloned := make([]GuaranteeInterface, len(guarantees))
+	copy(cloned, guarantees)
+	return cloned
+}
+
+func NewListing() ListingInterface {
+	activeVersion := newListingVersion()
+	return &listing{
+		listingVersion: activeVersion,
+		versions:       []ListingVersionInterface{activeVersion},
+	}
+}
+
+func NewListingVersion() ListingVersionInterface {
+	return newListingVersion()
 }

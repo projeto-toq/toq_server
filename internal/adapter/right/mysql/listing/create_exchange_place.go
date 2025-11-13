@@ -20,9 +20,9 @@ func (la *ListingAdapter) CreateExchangePlace(ctx context.Context, tx *sql.Tx, p
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	statement := `INSERT INTO exchange_places (listing_id, neighborhood, city, state) VALUES (?, ?, ?, ?);`
+	statement := `INSERT INTO exchange_places (listing_version_id, neighborhood, city, state) VALUES (?, ?, ?, ?);`
 
-	result, execErr := la.ExecContext(ctx, tx, "insert", statement, place.ListingID(), place.Neighborhood(), place.City(), place.State())
+	result, execErr := la.ExecContext(ctx, tx, "insert", statement, place.ListingVersionID(), place.Neighborhood(), place.City(), place.State())
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.listing.create_exchange_place.exec_error", "error", execErr)

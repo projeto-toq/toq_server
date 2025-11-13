@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (a *ScheduleAdapter) GetAgendaByListingID(ctx context.Context, tx *sql.Tx, listingID int64) (schedulemodel.AgendaInterface, error) {
+func (a *ScheduleAdapter) GetAgendaByListingIdentityID(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (schedulemodel.AgendaInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
@@ -21,17 +21,17 @@ func (a *ScheduleAdapter) GetAgendaByListingID(ctx context.Context, tx *sql.Tx, 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, listing_id, owner_id, timezone FROM listing_agendas WHERE listing_id = ? LIMIT 1`
+	query := `SELECT id, listing_identity_id, owner_id, timezone FROM listing_agendas WHERE listing_identity_id = ? LIMIT 1`
 
-	row := a.QueryRowContext(ctx, tx, "select", query, listingID)
+	row := a.QueryRowContext(ctx, tx, "select", query, listingIdentityID)
 
 	var agendaEntity entity.AgendaEntity
-	if err = row.Scan(&agendaEntity.ID, &agendaEntity.ListingID, &agendaEntity.OwnerID, &agendaEntity.Timezone); err != nil {
+	if err = row.Scan(&agendaEntity.ID, &agendaEntity.ListingIdentityID, &agendaEntity.OwnerID, &agendaEntity.Timezone); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.schedule.get_agenda.scan_error", "listing_id", listingID, "err", err)
+		logger.Error("mysql.schedule.get_agenda.scan_error", "listing_identity_id", listingIdentityID, "err", err)
 		return nil, fmt.Errorf("scan agenda by listing id: %w", err)
 	}
 

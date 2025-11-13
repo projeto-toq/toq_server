@@ -18,49 +18,11 @@ func (la *ListingAdapter) GetListingByID(ctx context.Context, tx *sql.Tx, listin
 
 	ctx = utils.ContextWithLogger(ctx)
 
-	query := `SELECT
-		id,
-		user_id,
-		code,
-		version,
-		status,
-		zip_code,
-		street,
-		number,
-		complement,
-		neighborhood,
-		city,
-		state,
-		title,
-		type,
-		owner,
-		land_size,
-		corner,
-		non_buildable,
-		buildable,
-		delivered,
-		who_lives,
-		description,
-		transaction,
-		sell_net,
-		rent_net,
-		condominium,
-		annual_tax,
-		monthly_tax,
-		annual_ground_rent,
-		monthly_ground_rent,
-		exchange,
-		exchange_perc,
-		installment,
-		financing,
-		visit,
-		tenant_name,
-		tenant_email,
-		tenant_phone,
-		accompanying,
-		deleted
-	FROM listings
-	WHERE id = ? AND deleted = 0;`
+	query := fmt.Sprintf(`SELECT
+%s
+FROM listing_versions lv
+INNER JOIN listing_identities li ON li.id = lv.listing_identity_id
+WHERE lv.id = ? AND lv.deleted = 0 AND li.deleted = 0;`, listingSelectColumns)
 
 	listing, err = la.GetListingByQuery(ctx, tx, query, listingID)
 	if err != nil {

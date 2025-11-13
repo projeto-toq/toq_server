@@ -5,6 +5,8 @@ type FeatureInterface interface {
 	SetID(id int64)
 	ListingID() int64
 	SetListingID(listingID int64)
+	ListingVersionID() int64
+	SetListingVersionID(listingVersionID int64)
 	FeatureID() int64
 	SetFeatureID(feature int64)
 	Quantity() uint8

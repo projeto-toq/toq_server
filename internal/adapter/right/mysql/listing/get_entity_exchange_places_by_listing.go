@@ -10,7 +10,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, tx *sql.Tx, listingID int64) (places []listingentity.EntityExchangePlace, err error) {
+func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, tx *sql.Tx, listingVersionID int64) (places []listingentity.EntityExchangePlace, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -20,9 +20,9 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM exchange_places WHERE listing_id = ?;`
+	query := `SELECT * FROM exchange_places WHERE listing_version_id = ?;`
 
-	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingID)
+	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingVersionID)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
 		logger.Error("mysql.listing.get_entity_exchange_places.query_error", "error", queryErr)
@@ -34,7 +34,7 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 		place := listingentity.EntityExchangePlace{}
 		err = rows.Scan(
 			&place.ID,
-			&place.ListingID,
+			&place.ListingVersionID,
 			&place.Neighborhood,
 			&place.City,
 			&place.State,

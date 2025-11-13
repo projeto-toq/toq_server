@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, listingID int64, features []listingmodel.FeatureInterface) (err error) {
+func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, listingVersionID int64, features []listingmodel.FeatureInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -23,7 +23,7 @@ func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, listin
 	logger := utils.LoggerFromContext(ctx)
 
 	// Remove all features from listing
-	err = la.DeleteListingFeatures(ctx, tx, listingID)
+	err = la.DeleteListingFeatures(ctx, tx, listingVersionID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
@@ -38,7 +38,7 @@ func (la *ListingAdapter) UpdateFeatures(ctx context.Context, tx *sql.Tx, listin
 
 	// Insert the new features
 	for _, feature := range features {
-		feature.SetListingID(listingID)
+		feature.SetListingVersionID(listingVersionID)
 		err = la.CreateFeature(ctx, tx, feature)
 		if err != nil {
 			utils.SetSpanError(ctx, err)

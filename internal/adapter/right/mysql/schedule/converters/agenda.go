@@ -9,7 +9,7 @@ import (
 func ToAgendaModel(e entity.AgendaEntity) schedulemodel.AgendaInterface {
 	agenda := schedulemodel.NewAgenda()
 	agenda.SetID(e.ID)
-	agenda.SetListingID(e.ListingID)
+	agenda.SetListingIdentityID(e.ListingIdentityID)
 	agenda.SetOwnerID(e.OwnerID)
 	agenda.SetTimezone(e.Timezone)
 	return agenda
@@ -18,9 +18,9 @@ func ToAgendaModel(e entity.AgendaEntity) schedulemodel.AgendaInterface {
 // ToAgendaEntity converts the domain object into its persistence shape.
 func ToAgendaEntity(model schedulemodel.AgendaInterface) entity.AgendaEntity {
 	return entity.AgendaEntity{
-		ID:        model.ID(),
-		ListingID: model.ListingID(),
-		OwnerID:   model.OwnerID(),
-		Timezone:  model.Timezone(),
+		ID:                model.ID(),
+		ListingIdentityID: model.ListingIdentityID(),
+		OwnerID:           model.OwnerID(),
+		Timezone:          model.Timezone(),
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	listingconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/converters"
-	listingentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/entity"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -30,107 +29,69 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		filter.Limit = 20
 	}
 
-	conditions := []string{"l.deleted = 0"}
+	conditions := []string{"lv.deleted = 0", "li.deleted = 0"}
 	args := make([]any, 0)
 
 	if filter.Status != nil {
-		conditions = append(conditions, "l.status = ?")
+		conditions = append(conditions, "lv.status = ?")
 		args = append(args, int(*filter.Status))
 	}
 	if filter.Code != nil {
-		conditions = append(conditions, "l.code = ?")
+		conditions = append(conditions, "lv.code = ?")
 		args = append(args, int64(*filter.Code))
 	}
 	if filter.Title != "" {
-		conditions = append(conditions, "(COALESCE(l.title, '') LIKE ? OR COALESCE(l.description, '') LIKE ?)")
+		conditions = append(conditions, "(COALESCE(lv.title, '') LIKE ? OR COALESCE(lv.description, '') LIKE ?)")
 		args = append(args, filter.Title, filter.Title)
 	}
 	if filter.ZipCode != "" {
-		conditions = append(conditions, "l.zip_code LIKE ?")
+		conditions = append(conditions, "lv.zip_code LIKE ?")
 		args = append(args, filter.ZipCode)
 	}
 	if filter.City != "" {
-		conditions = append(conditions, "l.city LIKE ?")
+		conditions = append(conditions, "lv.city LIKE ?")
 		args = append(args, filter.City)
 	}
 	if filter.Neighborhood != "" {
-		conditions = append(conditions, "l.neighborhood LIKE ?")
+		conditions = append(conditions, "lv.neighborhood LIKE ?")
 		args = append(args, filter.Neighborhood)
 	}
 	if filter.UserID != nil {
-		conditions = append(conditions, "l.user_id = ?")
+		conditions = append(conditions, "lv.user_id = ?")
 		args = append(args, *filter.UserID)
 	}
 
 	if filter.MinSellPrice != nil {
-		conditions = append(conditions, "COALESCE(l.sell_net, 0) >= ?")
+		conditions = append(conditions, "COALESCE(lv.sell_net, 0) >= ?")
 		args = append(args, *filter.MinSellPrice)
 	}
 	if filter.MaxSellPrice != nil {
-		conditions = append(conditions, "COALESCE(l.sell_net, 0) <= ?")
+		conditions = append(conditions, "COALESCE(lv.sell_net, 0) <= ?")
 		args = append(args, *filter.MaxSellPrice)
 	}
 	if filter.MinRentPrice != nil {
-		conditions = append(conditions, "COALESCE(l.rent_net, 0) >= ?")
+		conditions = append(conditions, "COALESCE(lv.rent_net, 0) >= ?")
 		args = append(args, *filter.MinRentPrice)
 	}
 	if filter.MaxRentPrice != nil {
-		conditions = append(conditions, "COALESCE(l.rent_net, 0) <= ?")
+		conditions = append(conditions, "COALESCE(lv.rent_net, 0) <= ?")
 		args = append(args, *filter.MaxRentPrice)
 	}
 	if filter.MinLandSize != nil {
-		conditions = append(conditions, "COALESCE(l.land_size, 0) >= ?")
+		conditions = append(conditions, "COALESCE(lv.land_size, 0) >= ?")
 		args = append(args, *filter.MinLandSize)
 	}
 	if filter.MaxLandSize != nil {
-		conditions = append(conditions, "COALESCE(l.land_size, 0) <= ?")
+		conditions = append(conditions, "COALESCE(lv.land_size, 0) <= ?")
 		args = append(args, *filter.MaxLandSize)
 	}
 
 	whereClause := "WHERE " + strings.Join(conditions, " AND ")
 
-	baseSelect := `SELECT
-		l.id,
-		l.user_id,
-		l.code,
-		l.version,
-		l.status,
-		l.zip_code,
-		l.street,
-		l.number,
-		l.complement,
-		l.neighborhood,
-		l.city,
-		l.state,
-		l.title,
-		l.type,
-		l.owner,
-		l.land_size,
-		l.corner,
-		l.non_buildable,
-		l.buildable,
-		l.delivered,
-		l.who_lives,
-		l.description,
-		l.transaction,
-		l.sell_net,
-		l.rent_net,
-		l.condominium,
-		l.annual_tax,
-		l.monthly_tax,
-		l.annual_ground_rent,
-		l.monthly_ground_rent,
-		l.exchange,
-		l.exchange_perc,
-		l.installment,
-		l.financing,
-	l.visit,
-	l.tenant_name,
-	l.tenant_email,
-	l.tenant_phone,
-	l.accompanying,
-	l.deleted
-	FROM listings l`
+	baseSelect := fmt.Sprintf(`SELECT
+%s
+FROM listing_versions lv
+INNER JOIN listing_identities li ON li.id = lv.listing_identity_id`, listingSelectColumns)
 
 	listQuery := baseSelect + " " + whereClause + " ORDER BY l.id DESC LIMIT ? OFFSET ?"
 	listArgs := append([]any{}, args...)
@@ -148,51 +109,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	result := listingrepository.ListListingsResult{}
 
 	for rows.Next() {
-		entity := listingentity.ListingEntity{}
-		scanErr := rows.Scan(
-			&entity.ID,
-			&entity.UserID,
-			&entity.Code,
-			&entity.Version,
-			&entity.Status,
-			&entity.ZipCode,
-			&entity.Street,
-			&entity.Number,
-			&entity.Complement,
-			&entity.Neighborhood,
-			&entity.City,
-			&entity.State,
-			&entity.Title,
-			&entity.ListingType,
-			&entity.Owner,
-			&entity.LandSize,
-			&entity.Corner,
-			&entity.NonBuildable,
-			&entity.Buildable,
-			&entity.Delivered,
-			&entity.WhoLives,
-			&entity.Description,
-			&entity.Transaction,
-			&entity.SellNet,
-			&entity.RentNet,
-			&entity.Condominium,
-			&entity.AnnualTax,
-			&entity.MonthlyTax,
-			&entity.AnnualGroundRent,
-			&entity.MonthlyGroundRent,
-			&entity.Exchange,
-			&entity.ExchangePercentual,
-			&entity.Installment,
-			&entity.Financing,
-			&entity.Visit,
-			&entity.TenantName,
-			&entity.TenantEmail,
-			&entity.TenantPhone,
-			&entity.Accompanying,
-			&entity.Deleted,
-			// &entity.CreatedAt,
-			// &entity.UpdatedAt,
-		)
+		entity, scanErr := scanListingEntity(rows)
 		if scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.listing.list.scan_error", "error", scanErr)
@@ -213,7 +130,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		return listingrepository.ListListingsResult{}, fmt.Errorf("iterate listing rows: %w", err)
 	}
 
-	countQuery := "SELECT COUNT(*) FROM listings l " + whereClause
+	countQuery := "SELECT COUNT(*) FROM listing_versions lv INNER JOIN listing_identities li ON li.id = lv.listing_identity_id " + whereClause
 	var total int64
 	if countErr := la.QueryRowContext(ctx, tx, "select", countQuery, args...).Scan(&total); countErr != nil {
 		utils.SetSpanError(ctx, countErr)

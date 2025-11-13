@@ -1,7 +1,7 @@
 package listingentity
 
 type EntityFinancingBlocker struct {
-	ID        int64
-	ListingID int64
-	Blocker   uint8
+	ID               int64
+	ListingVersionID int64
+	Blocker          uint8
 }

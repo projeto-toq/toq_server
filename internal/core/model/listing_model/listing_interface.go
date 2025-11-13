@@ -2,9 +2,13 @@ package listingmodel
 
 import globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 
-type ListingInterface interface {
+type ListingVersionInterface interface {
 	ID() int64
 	SetID(id int64)
+	ListingIdentityID() int64
+	SetListingIdentityID(listingIdentityID int64)
+	ListingUUID() string
+	SetListingUUID(listingUUID string)
 	UserID() int64
 	SetUserID(userID int64)
 	Code() uint32
@@ -147,6 +151,21 @@ type ListingInterface interface {
 	UnsetDeleted()
 }
 
-func NewListing() ListingInterface {
-	return &listing{}
+type ListingInterface interface {
+	ListingVersionInterface
+
+	IdentityID() int64
+	SetIdentityID(identityID int64)
+	UUID() string
+	SetUUID(uuid string)
+	ActiveVersionID() int64
+	SetActiveVersionID(versionID int64)
+	ActiveVersion() ListingVersionInterface
+	SetActiveVersion(version ListingVersionInterface)
+	DraftVersion() (ListingVersionInterface, bool)
+	SetDraftVersion(version ListingVersionInterface)
+	ClearDraftVersion()
+	Versions() []ListingVersionInterface
+	SetVersions(versions []ListingVersionInterface)
+	AddVersion(version ListingVersionInterface)
 }

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/google/uuid"
+
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -55,28 +57,58 @@ func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateL
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
+	listingUUID := strings.TrimSpace(input.ListingUUID)
+	if listingUUID == "" {
+		return utils.ValidationError("listingUuid", "listingUuid is required")
+	}
+	if _, parseErr := uuid.Parse(listingUUID); parseErr != nil {
+		return utils.ValidationError("listingUuid", "listingUuid must be a valid UUID")
+	}
+
+	var listingVersionID int64
+
 	tx, err := ls.gsi.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("listing.end_update.tx_start_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("listing.end_update.tx_start_error", "err", err, "listing_uuid", listingUUID)
 		return utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("listing.end_update.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+				logger.Error("listing.end_update.tx_rollback_error", "err", rbErr, "listing_uuid", listingUUID, "listing_version_id", listingVersionID)
 			}
 		}
 	}()
 
-	snapshot, err := ls.listingRepository.GetListingForEndUpdate(ctx, tx, input.ListingID)
+	identity, identityErr := ls.listingRepository.GetListingIdentityByUUID(ctx, tx, listingUUID)
+	if identityErr != nil {
+		if errors.Is(identityErr, sql.ErrNoRows) {
+			return utils.NotFoundError("listing")
+		}
+		utils.SetSpanError(ctx, identityErr)
+		logger.Error("listing.end_update.identity_fetch_error", "err", identityErr, "listing_uuid", listingUUID)
+		return utils.InternalError("")
+	}
+
+	if identity.Deleted {
+		return utils.BadRequest("Listing is not available")
+	}
+
+	listingVersionID = identity.ActiveVersionID.Int64
+	if !identity.ActiveVersionID.Valid || listingVersionID <= 0 {
+		logger.Warn("listing.end_update.missing_active_version", "listing_uuid", listingUUID, "listing_identity_id", identity.ID)
+		return utils.ConflictError("Listing does not have an active version to end update")
+	}
+
+	snapshot, err := ls.listingRepository.GetListingForEndUpdate(ctx, tx, listingVersionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return utils.NotFoundError("listing")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("listing.end_update.fetch_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("listing.end_update.fetch_error", "err", err, "listing_uuid", listingUUID, "listing_version_id", listingVersionID)
 		return utils.InternalError("")
 	}
 
@@ -97,13 +129,13 @@ func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateL
 		return verr
 	}
 
-	updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, input.ListingID, listingmodel.StatusPendingAvailability, listingmodel.StatusDraft)
+	updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, listingVersionID, listingmodel.StatusPendingAvailability, listingmodel.StatusDraft)
 	if updateErr != nil {
 		if errors.Is(updateErr, sql.ErrNoRows) {
 			return utils.ConflictError("Listing status changed while finishing update")
 		}
 		utils.SetSpanError(ctx, updateErr)
-		logger.Error("listing.end_update.update_status_error", "err", updateErr, "listing_id", input.ListingID)
+		logger.Error("listing.end_update.update_status_error", "err", updateErr, "listing_uuid", listingUUID, "listing_version_id", listingVersionID)
 		return utils.InternalError("")
 	}
 
@@ -113,24 +145,24 @@ func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateL
 
 	timezone := resolveListingTimezone(snapshot)
 	agendaInput := scheduleservices.CreateDefaultAgendaInput{
-		ListingID: input.ListingID,
-		OwnerID:   userID,
-		Timezone:  timezone,
-		ActorID:   userID,
+		ListingIdentityID: identity.ID,
+		OwnerID:           userID,
+		Timezone:          timezone,
+		ActorID:           userID,
 	}
 	if _, agendaErr := ls.scheduleService.CreateDefaultAgendaWithTx(ctx, tx, agendaInput); agendaErr != nil {
 		utils.SetSpanError(ctx, agendaErr)
-		logger.Error("listing.end_update.create_default_agenda_error", "err", agendaErr, "listing_id", input.ListingID)
+		logger.Error("listing.end_update.create_default_agenda_error", "err", agendaErr, "listing_uuid", listingUUID, "listing_identity_id", identity.ID)
 		return agendaErr
 	}
 
 	if err = ls.gsi.CommitTransaction(ctx, tx); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("listing.end_update.tx_commit_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("listing.end_update.tx_commit_error", "err", err, "listing_uuid", listingUUID, "listing_version_id", listingVersionID)
 		return utils.InternalError("")
 	}
 
-	logger.Info("listing.end_update.completed", "listing_id", input.ListingID, "new_status", listingmodel.StatusPendingPhotoScheduling.String())
+	logger.Info("listing.end_update.completed", "listing_uuid", listingUUID, "listing_version_id", listingVersionID, "new_status", listingmodel.StatusPendingPhotoScheduling.String())
 
 	return nil
 }

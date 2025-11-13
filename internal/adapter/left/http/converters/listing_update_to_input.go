@@ -14,8 +14,8 @@ import (
 // mantendo a distinção entre campos omitidos, vazios e nulos.
 func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.UpdateListingInput, error) {
 	var listingID int64
-	if req.ID.IsPresent() && !req.ID.IsNull() {
-		if id, ok := req.ID.Value(); ok {
+	if req.ListingVersionID.IsPresent() && !req.ListingVersionID.IsNull() {
+		if id, ok := req.ListingVersionID.Value(); ok {
 			listingID = id
 		}
 	}

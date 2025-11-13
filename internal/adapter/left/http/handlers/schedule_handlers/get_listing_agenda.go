@@ -18,7 +18,7 @@ import (
 // @Description	Returns all agenda entries for a specific listing owned by the authenticated user.
 // @Tags		Listing Schedules
 // @Produce	json
-// @Param	listingId	query	int64	true	"Listing identifier" example(3241)
+// @Param	listingIdentityId	query	int64	true	"Listing identity identifier" example(3241)
 // @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)" example(2025-01-01T00:00:00Z)
 // @Param	rangeTo	query	string	false	"End of time range (RFC3339)" example(2025-01-07T23:59:59Z)
 // @Param	page	query	int	false	"Page number" example(1)
@@ -62,10 +62,10 @@ func (h *ScheduleHandler) GetListingAgenda(c *gin.Context) {
 	pagination := sanitizeSchedulePagination(dto.SchedulePaginationRequest{Page: req.Page, Limit: req.Limit})
 
 	filter := schedulemodel.AgendaDetailFilter{
-		OwnerID:    userInfo.ID,
-		ListingID:  req.ListingID,
-		Range:      rangeFilter,
-		Pagination: pagination,
+		OwnerID:           userInfo.ID,
+		ListingIdentityID: req.ListingIdentityID,
+		Range:             rangeFilter,
+		Pagination:        pagination,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

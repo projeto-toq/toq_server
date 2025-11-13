@@ -18,7 +18,7 @@ import (
 // @Description	Returns the available slots for a listing within the provided time range.
 // @Tags		Listing Schedules
 // @Produce	json
-// @Param	listingId	query	int64	true	"Listing identifier"
+// @Param	listingIdentityId	query	int64	true	"Listing identity identifier"
 // @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)"
 // @Param	rangeTo	query	string	false	"End of time range (RFC3339)"
 // @Param	slotDurationMinute	query	int	false	"Desired slot duration in minutes"
@@ -61,7 +61,7 @@ func (h *ScheduleHandler) GetListingAvailability(c *gin.Context) {
 	pagination := sanitizeSchedulePagination(dto.SchedulePaginationRequest{Page: req.Page, Limit: req.Limit})
 
 	filter := schedulemodel.AvailabilityFilter{
-		ListingID:          req.ListingID,
+		ListingIdentityID:  req.ListingIdentityID,
 		Range:              rangeFilter,
 		SlotDurationMinute: req.SlotDurationMinute,
 		Pagination:         pagination,

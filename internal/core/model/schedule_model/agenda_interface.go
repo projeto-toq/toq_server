@@ -4,8 +4,8 @@ package schedulemodel
 type AgendaInterface interface {
 	ID() uint64
 	SetID(id uint64)
-	ListingID() int64
-	SetListingID(listingID int64)
+	ListingIdentityID() int64
+	SetListingIdentityID(listingIdentityID int64)
 	OwnerID() int64
 	SetOwnerID(ownerID int64)
 	Timezone() string

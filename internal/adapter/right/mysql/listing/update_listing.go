@@ -20,7 +20,7 @@ func (la *ListingAdapter) UpdateListing(ctx context.Context, tx *sql.Tx, listing
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `UPDATE listings SET
+	query := `UPDATE listing_versions SET
 			user_id = ?, code = ?, version = ?, status = ?, zip_code = ?, street = ?, number = ?, complement = ?, neighborhood = ?, city = ?, state = ?, title = ?,
 				type = ?, owner = ?, land_size = ?, corner = ?, non_buildable = ?, buildable = ?, delivered = ?, who_lives = ?, description = ?,
 				transaction = ?, sell_net = ?, rent_net = ?, condominium = ?, annual_tax = ?, monthly_tax = ?, annual_ground_rent = ?, monthly_ground_rent = ?, exchange = ?, exchange_perc = ?,

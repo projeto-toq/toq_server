@@ -10,7 +10,7 @@ import (
 
 // ScheduleRepositoryInterface defines persistence operations for listing agendas.
 type ScheduleRepositoryInterface interface {
-	GetAgendaByListingID(ctx context.Context, tx *sql.Tx, listingID int64) (schedulemodel.AgendaInterface, error)
+	GetAgendaByListingIdentityID(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (schedulemodel.AgendaInterface, error)
 	InsertAgenda(ctx context.Context, tx *sql.Tx, agenda schedulemodel.AgendaInterface) (uint64, error)
 	InsertRules(ctx context.Context, tx *sql.Tx, rules []schedulemodel.AgendaRuleInterface) error
 	DeleteRulesByAgenda(ctx context.Context, tx *sql.Tx, agendaID uint64) error

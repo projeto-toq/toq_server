@@ -9,6 +9,14 @@ import (
 )
 
 type ListingRepoPortInterface interface {
+	// Version-aware operations (Phase 2)
+	CreateListingIdentity(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) error
+	CreateListingVersion(ctx context.Context, tx *sql.Tx, version listingmodel.ListingVersionInterface) error
+	SetListingActiveVersion(ctx context.Context, tx *sql.Tx, identityID int64, versionID int64) error
+	GetListingIdentityByUUID(ctx context.Context, tx *sql.Tx, listingUUID string) (ListingIdentityRecord, error)
+	GetListingVersionByID(ctx context.Context, tx *sql.Tx, versionID int64) (listingmodel.ListingInterface, error)
+	ListListingVersions(ctx context.Context, tx *sql.Tx, filter ListListingVersionsFilter) ([]ListingVersionSummary, error)
+
 	CreateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error)
 	CreateExchangePlace(ctx context.Context, tx *sql.Tx, place listingmodel.ExchangePlaceInterface) (err error)
 	CreateFeature(ctx context.Context, tx *sql.Tx, feature listingmodel.FeatureInterface) (err error)
@@ -45,6 +53,25 @@ type ListingRepoPortInterface interface {
 	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
 
 	UpdateListingStatus(ctx context.Context, tx *sql.Tx, listingID int64, newStatus listingmodel.ListingStatus, expectedCurrent listingmodel.ListingStatus) error
+}
+
+type ListingIdentityRecord struct {
+	ID              int64
+	UUID            string
+	UserID          int64
+	Code            uint32
+	ActiveVersionID sql.NullInt64
+	Deleted         bool
+}
+
+type ListListingVersionsFilter struct {
+	ListingIdentityID int64
+	IncludeDeleted    bool
+}
+
+type ListingVersionSummary struct {
+	Version  listingmodel.ListingVersionInterface
+	IsActive bool
 }
 
 type ListListingsFilter struct {

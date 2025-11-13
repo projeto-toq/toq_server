@@ -23,8 +23,8 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	conditions := []string{"a.owner_id = ?", "a.listing_id = ?"}
-	args := []any{filter.OwnerID, filter.ListingID}
+	conditions := []string{"a.owner_id = ?", "a.listing_identity_id = ?"}
+	args := []any{filter.OwnerID, filter.ListingIdentityID}
 
 	if !filter.Range.From.IsZero() {
 		conditions = append(conditions, "e.ends_at > ?")
@@ -42,7 +42,7 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 	var total int64
 	if scanErr := a.QueryRowContext(ctx, tx, "select", countQuery, args...).Scan(&total); scanErr != nil {
 		utils.SetSpanError(ctx, scanErr)
-		logger.Error("mysql.schedule.agenda_detail.count_error", "listing_id", filter.ListingID, "err", scanErr)
+		logger.Error("mysql.schedule.agenda_detail.count_error", "listing_identity_id", filter.ListingIdentityID, "err", scanErr)
 		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("count agenda entries: %w", scanErr)
 	}
 
@@ -62,7 +62,7 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 	rows, queryErr := a.QueryContext(ctx, tx, "select", query, argsWithPagination...)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
-		logger.Error("mysql.schedule.agenda_detail.query_error", "listing_id", filter.ListingID, "err", queryErr)
+		logger.Error("mysql.schedule.agenda_detail.query_error", "listing_identity_id", filter.ListingIdentityID, "err", queryErr)
 		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("query agenda entries: %w", queryErr)
 	}
 	defer rows.Close()
@@ -72,7 +72,7 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 		var entryEntity entity.EntryEntity
 		if scanErr := rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
-			logger.Error("mysql.schedule.agenda_detail.scan_error", "listing_id", filter.ListingID, "err", scanErr)
+			logger.Error("mysql.schedule.agenda_detail.scan_error", "listing_identity_id", filter.ListingIdentityID, "err", scanErr)
 			return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("scan agenda entry: %w", scanErr)
 		}
 		entries = append(entries, converters.ToEntryModel(entryEntity))
@@ -80,7 +80,7 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 
 	if rowsErr := rows.Err(); rowsErr != nil {
 		utils.SetSpanError(ctx, rowsErr)
-		logger.Error("mysql.schedule.agenda_detail.rows_error", "listing_id", filter.ListingID, "err", rowsErr)
+		logger.Error("mysql.schedule.agenda_detail.rows_error", "listing_identity_id", filter.ListingIdentityID, "err", rowsErr)
 		return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("iterate agenda entries: %w", rowsErr)
 	}
 

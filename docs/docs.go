@@ -5432,82 +5432,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/listings/end-update": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Validates all required listing attributes and transitions status to photo scheduling.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings"
-                ],
-                "summary": "Finalize listing update",
-                "parameters": [
-                    {
-                        "x-example": "{\"listingId\":98765}",
-                        "description": "Listing identifier",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Listing not found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/listings/features/base": {
             "get": {
                 "security": [
@@ -5883,6 +5807,230 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/versions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all versions attached to a listing identity, indicating which one is active.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "List listing versions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 1024,
+                        "description": "Listing identity identifier",
+                        "name": "listingIdentityId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Include soft-deleted versions",
+                        "name": "includeDeleted",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/versions/discard": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a draft listing version and its satellite entities, keeping the active version untouched.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Discard draft listing version",
+                "parameters": [
+                    {
+                        "x-example": "{\"versionId\":12345}",
+                        "description": "Listing draft version identifier",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing version not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/versions/promote": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Promotes a draft listing version to become the active version for its identity, preserving historical records.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Promote listing version",
+                "parameters": [
+                    {
+                        "x-example": "{\"versionId\":12345}",
+                        "description": "Listing version identifier",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing version not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -6743,8 +6891,8 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "example": 3241,
-                        "description": "Listing identifier",
-                        "name": "listingId",
+                        "description": "Listing identity identifier",
+                        "name": "listingIdentityId",
                         "in": "query",
                         "required": true
                     },
@@ -6842,8 +6990,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Listing identifier",
-                        "name": "listingId",
+                        "description": "Listing identity identifier",
+                        "name": "listingIdentityId",
                         "in": "query",
                         "required": true
                     },
@@ -6937,8 +7085,8 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "example": 3241,
-                        "description": "Listing identifier",
-                        "name": "listingId",
+                        "description": "Listing identity identifier",
+                        "name": "listingIdentityId",
                         "in": "query",
                         "required": true
                     },
@@ -7012,7 +7160,7 @@ const docTemplate = `{
                 "summary": "Update a recurring block rule",
                 "parameters": [
                     {
-                        "x-example": "{\"ruleId\":5021,\"listingId\":3241,\"weekDays\":[\"MONDAY\"],\"rangeStart\":\"10:00\",\"rangeEnd\":\"18:00\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"ruleId\":5021,\"listingIdentityId\":3241,\"weekDays\":[\"MONDAY\"],\"rangeStart\":\"10:00\",\"rangeEnd\":\"18:00\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Rule update payload",
                         "name": "request",
                         "in": "body",
@@ -7086,7 +7234,7 @@ const docTemplate = `{
                 "summary": "Create recurring block rules",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":3241,\"weekDays\":[\"MONDAY\",\"TUESDAY\"],\"rangeStart\":\"00:00\",\"rangeEnd\":\"07:59\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
+                        "x-example": "{\"listingIdentityId\":3241,\"weekDays\":[\"MONDAY\",\"TUESDAY\"],\"rangeStart\":\"00:00\",\"rangeEnd\":\"07:59\",\"active\":true,\"timezone\":\"America/Sao_Paulo\"}",
                         "description": "Rule creation payload",
                         "name": "request",
                         "in": "body",
@@ -7160,7 +7308,7 @@ const docTemplate = `{
                 "summary": "Delete a recurring block rule",
                 "parameters": [
                     {
-                        "x-example": "{\"ruleId\":5021,\"listingId\":3241}",
+                        "x-example": "{\"ruleId\":5021,\"listingIdentityId\":3241}",
                         "description": "Rule deletion payload",
                         "name": "request",
                         "in": "body",
@@ -7227,7 +7375,7 @@ const docTemplate = `{
                 "summary": "Confirm listing agenda creation",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":3241}",
+                        "x-example": "{\"listingIdentityId\":3241}",
                         "description": "Finish agenda payload",
                         "name": "request",
                         "in": "body",
@@ -7305,8 +7453,8 @@ const docTemplate = `{
                             "type": "integer"
                         },
                         "collectionFormat": "multi",
-                        "description": "Listing identifiers",
-                        "name": "listingIds",
+                        "description": "Listing identity identifiers",
+                        "name": "listingIdentityIds",
                         "in": "query"
                     },
                     {
@@ -9776,18 +9924,19 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingRequest": {
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionRequest": {
             "type": "object",
             "required": [
-                "listingId"
+                "versionId"
             ],
             "properties": {
-                "listingId": {
-                    "type": "integer"
+                "versionId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingResponse": {
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -10184,6 +10333,23 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsResponse": {
+            "type": "object",
+            "properties": {
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "listingUuid": {
+                    "type": "string"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse"
+                    }
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse": {
             "type": "object",
             "properties": {
@@ -10382,6 +10548,9 @@ const docTemplate = `{
                 "accompanying": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
                 },
+                "activeVersionId": {
+                    "type": "integer"
+                },
                 "annualGroundRent": {
                     "type": "number"
                 },
@@ -10414,6 +10583,9 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string"
+                },
+                "draftVersionId": {
+                    "type": "integer"
                 },
                 "exchange": {
                     "type": "boolean"
@@ -10456,6 +10628,12 @@ const docTemplate = `{
                 },
                 "landSize": {
                     "type": "number"
+                },
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "listingUuid": {
+                    "type": "string"
                 },
                 "monthlyGroundRent": {
                     "type": "number"
@@ -10540,6 +10718,9 @@ const docTemplate = `{
                 "listingId": {
                     "type": "integer"
                 },
+                "listingVersionId": {
+                    "type": "integer"
+                },
                 "neighborhood": {
                     "type": "string"
                 },
@@ -10573,6 +10754,9 @@ const docTemplate = `{
                 },
                 "listingId": {
                     "type": "integer"
+                },
+                "listingVersionId": {
+                    "type": "integer"
                 }
             }
         },
@@ -10586,6 +10770,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "listingId": {
+                    "type": "integer"
+                },
+                "listingVersionId": {
                     "type": "integer"
                 },
                 "priority": {
@@ -10610,14 +10797,26 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse": {
             "type": "object",
             "properties": {
+                "activeVersionId": {
+                    "type": "integer"
+                },
                 "complexId": {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 },
+                "draftVersionId": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "listingUuid": {
+                    "type": "string"
                 },
                 "number": {
                     "type": "string"
@@ -10637,8 +10836,37 @@ const docTemplate = `{
                 "userId": {
                     "type": "integer"
                 },
+                "version": {
+                    "type": "integer"
+                },
                 "zipCode": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "listingUuid": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
                 }
             }
         },
@@ -10668,7 +10896,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse"
                     }
                 },
-                "listingId": {
+                "listingIdentityId": {
                     "type": "integer"
                 }
             }
@@ -10844,6 +11072,29 @@ const docTemplate = `{
                 },
                 "timezone": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionRequest": {
+            "type": "object",
+            "required": [
+                "versionId"
+            ],
+            "properties": {
+                "versionId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -11064,10 +11315,10 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleFinishAgendaRequest": {
             "type": "object",
             "required": [
-                "listingId"
+                "listingIdentityId"
             ],
             "properties": {
-                "listingId": {
+                "listingIdentityId": {
                     "type": "integer",
                     "example": 3241
                 }
@@ -11076,11 +11327,11 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleDeleteRequest": {
             "type": "object",
             "required": [
-                "listingId",
+                "listingIdentityId",
                 "ruleId"
             ],
             "properties": {
-                "listingId": {
+                "listingIdentityId": {
                     "type": "integer",
                     "example": 3241
                 },
@@ -11093,7 +11344,7 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleRequest": {
             "type": "object",
             "required": [
-                "listingId",
+                "listingIdentityId",
                 "rangeEnd",
                 "rangeStart",
                 "timezone",
@@ -11103,7 +11354,7 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
-                "listingId": {
+                "listingIdentityId": {
                     "type": "integer",
                     "example": 3241
                 },
@@ -11154,7 +11405,7 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleUpdateRequest": {
             "type": "object",
             "required": [
-                "listingId",
+                "listingIdentityId",
                 "rangeEnd",
                 "rangeStart",
                 "ruleId",
@@ -11165,7 +11416,7 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
-                "listingId": {
+                "listingIdentityId": {
                     "type": "integer",
                     "example": 3241
                 },
@@ -11199,7 +11450,7 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRulesResponse": {
             "type": "object",
             "properties": {
-                "listingId": {
+                "listingIdentityId": {
                     "type": "integer"
                 },
                 "rules": {
@@ -11304,7 +11555,22 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StartListingResponse": {
             "type": "object",
             "properties": {
+                "activeVersionId": {
+                    "type": "integer"
+                },
                 "id": {
+                    "type": "integer"
+                },
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "listingUuid": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "integer"
                 }
             }
@@ -11392,14 +11658,14 @@ const docTemplate = `{
                 "guarantees": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest"
                 },
-                "id": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64"
-                },
                 "installment": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "landSize": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
+                },
+                "listingVersionId": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64"
                 },
                 "monthlyGroundRent": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"

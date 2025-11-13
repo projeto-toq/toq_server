@@ -1,9 +1,39 @@
+````markdown
 # toq_server
 TOQ Server is an HTTP API server for the TOQ App, built with Go, Gin, and a hexagonal architecture. It exposes REST endpoints under `/api/v2`, with centralized error handling, tracing, metrics, and clean DI via factories.
 
 Developer docs:
 - See `docs/toq_server_go_guide.md` — Global Go developer guide (architecture, DI, repos/DTOs/handlers, logging, tracing, errors, transactions, checklists).
 - S3 credentials now depend on the AWS credential chain (instance profile, environment variables). Do not commit static keys; use `TOQ_S3_*` environment variables only for local overrides.
+
+## Listing Versioning System
+
+TOQ Server implements a **version-aware listing architecture** to preserve history and enable non-destructive edits:
+
+### Core Concepts
+- **Listing Identity** (`listing_identities`): Represents a unique property identified by UUID. Contains shared metadata (user_id, code, active_version_id).
+- **Listing Version** (`listing_versions`): Each modification creates a new version linked to the identity. Draft versions can be promoted to active while preserving complete history.
+- **Active Version**: Only one version per identity is active at a time. Status changes (pending, approved, published) apply to the active version.
+- **Edit Workflow**: To modify an active listing, create a new draft version, validate it, and promote via `POST /listings/versions/promote`.
+
+### Key Endpoints
+- `POST /listings` - Creates new listing identity with initial version (v1 draft)
+- `PUT /listings` - Updates current draft version
+- `GET /listings/versions?listingIdentityId={id}` - Lists all versions
+- `POST /listings/versions/promote` - Promotes draft to active
+- `DELETE /listings/versions/discard` - Discards unpromoted draft
+
+### Database Schema
+```
+listing_identities (UUID, user_id, code, active_version_id)
+    └── listing_versions (identity_id, version, status, property_data...)
+            └── features (version_id, ...)
+            └── guarantees (version_id, ...)
+            └── exchange_places (version_id, ...)
+            └── financing_blockers (version_id, ...)
+```
+
+For complete flow details, see `docs/procedimento_de_criação_de_novo_anuncio.md`.
 
 ## Execução em duas instâncias (nohup + F5)
 - **Instância principal (nohup)**: execute `nohup ./bin/toq_server &` sem variáveis extras. O servidor sobe com `ENVIRONMENT=homo`, porta `:8080`, workers em execução e telemetria/exporters habilitados (OTLP + Prometheus + Loki).

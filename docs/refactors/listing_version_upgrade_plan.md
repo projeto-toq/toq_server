@@ -59,7 +59,23 @@ O objetivo é introduzir versionamento integral dos listings, mantendo observabi
 - [x] Fase 2 — Ports e Adapters
 - [x] Fase 3 — Services
 - [x] Fase 4 — Handlers & DTOs
-- [ ] Fase 5 — Integrações
-- [ ] Fase 6 — Documentação & Cleanup
+- [x] Fase 5 — Integrações
+- [x] Fase 6 — Documentação & Cleanup
 
 Cada fase concluída deve marcar a checkbox correspondente (commit separado preferencialmente) e incluir um bloco "Notas de Migração" no PR.
+
+## Resumo de Conclusão — Fase 6
+
+**Documentação atualizada:**
+- `docs/procedimento_de_criação_de_novo_anuncio.md`: Adicionado "Conceito de Versionamento" explicando identities, versions, fluxo de edição e novos endpoints.
+- `README.md`: Adicionada seção "Listing Versioning System" com conceitos fundamentais, endpoints principais, diagrama de schema e fluxo de trabalho.
+
+**Limpeza de código:**
+- Removidos chamadas duplicadas `SetListingID()` em `update_listing.go` — agora usa exclusivamente `SetListingVersionID()`.
+- Métodos legados `ListingID()`/`SetListingID()` em entidades satélites mantidos com comentários atualizados explicando que servem para compatibilidade de API via DTOs e só devem ser removidos quando houver versionamento de API.
+
+**Validação de conformidade:**
+- Código revisado contra seções 13 e 14 do guia (`docs/toq_server_go_guide.md`): confirmado uso correto de tracing, logging, tratamento de erros e transações.
+- Build e lint executados com sucesso (`make lint` passou; `go fmt` aplicou formatações automáticas).
+
+**Status:** Todas as 6 fases do plano de versionamento estão concluídas. O sistema está pronto para migração de banco de dados e deploy.

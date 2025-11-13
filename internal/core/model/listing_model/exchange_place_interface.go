@@ -5,6 +5,8 @@ type ExchangePlaceInterface interface {
 	SetID(id int64)
 	ListingID() int64
 	SetListingID(listingID int64)
+	ListingVersionID() int64
+	SetListingVersionID(listingVersionID int64)
 	Neighborhood() string
 	SetNeighborhood(neighborhood string)
 	City() string

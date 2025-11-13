@@ -62,7 +62,7 @@ func (s *scheduleService) CreateDefaultAgendaWithTx(ctx context.Context, tx *sql
 	if tx == nil {
 		ctx = utils.ContextWithLogger(ctx)
 		logger := utils.LoggerFromContext(ctx)
-		logger.Error("schedule.create_default_agenda.missing_tx", "listing_id", input.ListingID)
+		logger.Error("schedule.create_default_agenda.missing_tx", "listing_identity_id", input.ListingIdentityID)
 		return nil, utils.InternalError("")
 	}
 	if err := validateDefaultAgendaInput(input); err != nil {
@@ -83,18 +83,18 @@ func (s *scheduleService) CreateDefaultAgendaWithTx(ctx context.Context, tx *sql
 func (s *scheduleService) createDefaultAgendaTx(ctx context.Context, tx *sql.Tx, input CreateDefaultAgendaInput) (schedulemodel.AgendaInterface, error) {
 	logger := utils.LoggerFromContext(ctx)
 
-	existing, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
+	existing, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if err == nil && existing != nil {
 		return existing, nil
 	}
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.create_default_agenda.get_agenda_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("schedule.create_default_agenda.get_agenda_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return nil, utils.InternalError("")
 	}
 
 	agenda := schedulemodel.NewAgenda()
-	agenda.SetListingID(input.ListingID)
+	agenda.SetListingIdentityID(input.ListingIdentityID)
 	agenda.SetOwnerID(input.OwnerID)
 	if loc, _ := utils.ResolveLocation("timezone", input.Timezone); loc != nil {
 		agenda.SetTimezone(loc.String())
@@ -105,7 +105,7 @@ func (s *scheduleService) createDefaultAgendaTx(ctx context.Context, tx *sql.Tx,
 	id, err := s.scheduleRepo.InsertAgenda(ctx, tx, agenda)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.create_default_agenda.insert_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("schedule.create_default_agenda.insert_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return nil, utils.InternalError("")
 	}
 	agenda.SetID(id)
@@ -114,7 +114,7 @@ func (s *scheduleService) createDefaultAgendaTx(ctx context.Context, tx *sql.Tx,
 	if len(rules) > 0 {
 		if err := s.scheduleRepo.InsertRules(ctx, tx, rules); err != nil {
 			utils.SetSpanError(ctx, err)
-			logger.Error("schedule.create_default_agenda.rules_error", "listing_id", input.ListingID, "err", err)
+			logger.Error("schedule.create_default_agenda.rules_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 			return nil, utils.InternalError("")
 		}
 	}
@@ -123,8 +123,8 @@ func (s *scheduleService) createDefaultAgendaTx(ctx context.Context, tx *sql.Tx,
 }
 
 func validateDefaultAgendaInput(input CreateDefaultAgendaInput) *utils.HTTPError {
-	if input.ListingID <= 0 {
-		return utils.ValidationError("listingId", "listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if input.OwnerID <= 0 {
 		return utils.ValidationError("ownerId", "ownerId must be greater than zero")

@@ -10,7 +10,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sql.Tx, listingID int64) (features []listingentity.EntityFeature, err error) {
+func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sql.Tx, listingVersionID int64) (features []listingentity.EntityFeature, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -20,9 +20,9 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM features WHERE listing_id = ?;`
+	query := `SELECT * FROM features WHERE listing_version_id = ?;`
 
-	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingID)
+	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingVersionID)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
 		logger.Error("mysql.listing.get_entity_features.query_error", "error", queryErr)
@@ -34,7 +34,7 @@ func (la *ListingAdapter) GetEntityFeaturesByListing(ctx context.Context, tx *sq
 		feature := listingentity.EntityFeature{}
 		err = rows.Scan(
 			&feature.ID,
-			&feature.ListingID,
+			&feature.ListingVersionID,
 			&feature.FeatureID,
 			&feature.Quantity,
 		)

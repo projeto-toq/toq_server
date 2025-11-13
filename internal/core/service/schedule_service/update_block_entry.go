@@ -14,8 +14,8 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 	if input.EntryID == 0 {
 		return nil, utils.ValidationError("entryId", "entryId must be greater than zero")
 	}
-	if input.ListingID <= 0 {
-		return nil, utils.ValidationError("listingId", "listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return nil, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if input.OwnerID <= 0 {
 		return nil, utils.ValidationError("ownerId", "ownerId must be greater than zero")
@@ -63,13 +63,13 @@ func (s *scheduleService) UpdateBlockEntry(ctx context.Context, input UpdateBloc
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.update_block_entry.get_agenda_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("schedule.update_block_entry.get_agenda_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return nil, utils.InternalError("")
 	}
 

@@ -18,7 +18,7 @@ import (
 // @Description Returns the recurring blocking rules configured for a listing owned by the authenticated user.
 // @Tags        Listing Schedules
 // @Produce     json
-// @Param       listingId query int64  true  "Listing identifier" example(3241)
+// @Param       listingIdentityId query int64  true  "Listing identity identifier" example(3241)
 // @Param       weekDays  query []string false "Weekdays filter" collectionFormat(multi) example(MONDAY)
 // @Success     200 {object} dto.ScheduleRulesResponse
 // @Failure     400 {object} dto.ErrorResponse
@@ -50,9 +50,9 @@ func (h *ScheduleHandler) GetListingBlockRules(c *gin.Context) {
 	}
 
 	filter := schedulemodel.BlockRulesFilter{
-		OwnerID:   userInfo.ID,
-		ListingID: req.ListingID,
-		Weekdays:  weekdays,
+		OwnerID:           userInfo.ID,
+		ListingIdentityID: req.ListingIdentityID,
+		Weekdays:          weekdays,
 	}
 
 	ctx := coreutils.ContextWithLogger(baseCtx)

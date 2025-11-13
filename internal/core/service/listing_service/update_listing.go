@@ -102,7 +102,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 			existing.SetFeatures(nil)
 		} else if features, ok := input.Features.Value(); ok {
 			for _, feature := range features {
-				feature.SetListingID(existing.ID())
+				feature.SetListingVersionID(existing.ID())
 			}
 			existing.SetFeatures(features)
 		}
@@ -276,7 +276,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 			existing.SetExchangePlaces(nil)
 		} else if places, ok := input.ExchangePlaces.Value(); ok {
 			for _, place := range places {
-				place.SetListingID(existing.ID())
+				place.SetListingVersionID(existing.ID())
 			}
 			existing.SetExchangePlaces(places)
 		}
@@ -314,7 +314,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 				}
 				blocker := listingmodel.NewFinancingBlocker()
 				blocker.SetBlocker(listingmodel.FinancingBlocker(resolvedID))
-				blocker.SetListingID(existing.ID())
+				blocker.SetListingVersionID(existing.ID())
 				blockers = append(blockers, blocker)
 			}
 			existing.SetFinancingBlockers(blockers)
@@ -334,7 +334,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 				guarantee := listingmodel.NewGuarantee()
 				guarantee.SetPriority(update.Priority)
 				guarantee.SetGuarantee(listingmodel.GuaranteeType(resolvedID))
-				guarantee.SetListingID(existing.ID())
+				guarantee.SetListingVersionID(existing.ID())
 				guarantees = append(guarantees, guarantee)
 			}
 			existing.SetGuarantees(guarantees)

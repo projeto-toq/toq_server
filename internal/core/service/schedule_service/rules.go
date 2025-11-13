@@ -11,8 +11,8 @@ import (
 )
 
 func (s *scheduleService) CreateRules(ctx context.Context, input CreateRuleInput) (RuleMutationResult, error) {
-	if input.ListingID <= 0 {
-		return RuleMutationResult{}, utils.ValidationError("listingId", "listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return RuleMutationResult{}, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if input.OwnerID <= 0 {
 		return RuleMutationResult{}, utils.ValidationError("ownerId", "ownerId must be greater than zero")
@@ -39,7 +39,7 @@ func (s *scheduleService) CreateRules(ctx context.Context, input CreateRuleInput
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("schedule.rules.create.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.create.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return RuleMutationResult{}, utils.InternalError("")
 	}
 
@@ -48,18 +48,18 @@ func (s *scheduleService) CreateRules(ctx context.Context, input CreateRuleInput
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("schedule.rules.create.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+				logger.Error("schedule.rules.create.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 			}
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return RuleMutationResult{}, utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.create.get_agenda_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.create.get_agenda_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return RuleMutationResult{}, utils.InternalError("")
 	}
 
@@ -70,7 +70,7 @@ func (s *scheduleService) CreateRules(ctx context.Context, input CreateRuleInput
 	existingRules, err := s.scheduleRepo.ListRulesByAgenda(ctx, tx, agenda.ID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.create.list_rules_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.create.list_rules_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return RuleMutationResult{}, utils.InternalError("")
 	}
 
@@ -94,27 +94,27 @@ func (s *scheduleService) CreateRules(ctx context.Context, input CreateRuleInput
 
 	if err := s.scheduleRepo.InsertRules(ctx, tx, newRules); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.create.insert_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.create.insert_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return RuleMutationResult{}, utils.InternalError("")
 	}
 
 	if cmErr := s.globalService.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		logger.Error("schedule.rules.create.tx_commit_error", "err", cmErr, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.create.tx_commit_error", "err", cmErr, "listing_identity_id", input.ListingIdentityID)
 		return RuleMutationResult{}, utils.InternalError("")
 	}
 
 	committed = true
 
-	return RuleMutationResult{ListingID: input.ListingID, Timezone: agenda.Timezone(), Rules: newRules}, nil
+	return RuleMutationResult{ListingIdentityID: input.ListingIdentityID, Timezone: agenda.Timezone(), Rules: newRules}, nil
 }
 
 func (s *scheduleService) UpdateRule(ctx context.Context, input UpdateRuleInput) (schedulemodel.AgendaRuleInterface, error) {
 	if input.RuleID == 0 {
 		return nil, utils.ValidationError("ruleId", "ruleId must be greater than zero")
 	}
-	if input.ListingID <= 0 {
-		return nil, utils.ValidationError("listingId", "listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return nil, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if input.OwnerID <= 0 {
 		return nil, utils.ValidationError("ownerId", "ownerId must be greater than zero")
@@ -138,7 +138,7 @@ func (s *scheduleService) UpdateRule(ctx context.Context, input UpdateRuleInput)
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("schedule.rules.update.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.update.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return nil, utils.InternalError("")
 	}
 
@@ -147,18 +147,18 @@ func (s *scheduleService) UpdateRule(ctx context.Context, input UpdateRuleInput)
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("schedule.rules.update.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+				logger.Error("schedule.rules.update.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 			}
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.update.get_agenda_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.update.get_agenda_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return nil, utils.InternalError("")
 	}
 
@@ -183,7 +183,7 @@ func (s *scheduleService) UpdateRule(ctx context.Context, input UpdateRuleInput)
 	existingRules, err := s.scheduleRepo.ListRulesByAgenda(ctx, tx, agenda.ID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.update.list_rules_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.update.list_rules_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return nil, utils.InternalError("")
 	}
 
@@ -218,8 +218,8 @@ func (s *scheduleService) DeleteRule(ctx context.Context, input DeleteRuleInput)
 	if input.RuleID == 0 {
 		return utils.ValidationError("ruleId", "ruleId must be greater than zero")
 	}
-	if input.ListingID <= 0 {
-		return utils.ValidationError("listingId", "listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if input.OwnerID <= 0 {
 		return utils.ValidationError("ownerId", "ownerId must be greater than zero")
@@ -240,7 +240,7 @@ func (s *scheduleService) DeleteRule(ctx context.Context, input DeleteRuleInput)
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("schedule.rules.delete.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.delete.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return utils.InternalError("")
 	}
 
@@ -249,18 +249,18 @@ func (s *scheduleService) DeleteRule(ctx context.Context, input DeleteRuleInput)
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("schedule.rules.delete.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+				logger.Error("schedule.rules.delete.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 			}
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.delete.get_agenda_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("schedule.rules.delete.get_agenda_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return utils.InternalError("")
 	}
 
@@ -298,9 +298,9 @@ func (s *scheduleService) DeleteRule(ctx context.Context, input DeleteRuleInput)
 	return nil
 }
 
-func (s *scheduleService) ListRules(ctx context.Context, listingID, ownerID int64) (schedulemodel.RuleListResult, error) {
-	if listingID <= 0 {
-		return schedulemodel.RuleListResult{}, utils.ValidationError("listingId", "listingId must be greater than zero")
+func (s *scheduleService) ListRules(ctx context.Context, listingIdentityID, ownerID int64) (schedulemodel.RuleListResult, error) {
+	if listingIdentityID <= 0 {
+		return schedulemodel.RuleListResult{}, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if ownerID <= 0 {
 		return schedulemodel.RuleListResult{}, utils.ValidationError("ownerId", "ownerId must be greater than zero")
@@ -318,23 +318,23 @@ func (s *scheduleService) ListRules(ctx context.Context, listingID, ownerID int6
 	tx, txErr := s.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("schedule.rules.list.tx_start_error", "err", txErr, "listing_id", listingID)
+		logger.Error("schedule.rules.list.tx_start_error", "err", txErr, "listing_identity_id", listingIdentityID)
 		return schedulemodel.RuleListResult{}, utils.InternalError("")
 	}
 	defer func() {
 		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
-			logger.Error("schedule.rules.list.tx_rollback_error", "err", rbErr, "listing_id", listingID)
+			logger.Error("schedule.rules.list.tx_rollback_error", "err", rbErr, "listing_identity_id", listingIdentityID)
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, listingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, listingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return schedulemodel.RuleListResult{}, utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.list.get_agenda_error", "err", err, "listing_id", listingID)
+		logger.Error("schedule.rules.list.get_agenda_error", "err", err, "listing_identity_id", listingIdentityID)
 		return schedulemodel.RuleListResult{}, utils.InternalError("")
 	}
 
@@ -345,11 +345,11 @@ func (s *scheduleService) ListRules(ctx context.Context, listingID, ownerID int6
 	rules, err := s.scheduleRepo.ListRulesByAgenda(ctx, tx, agenda.ID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.rules.list.repo_error", "err", err, "listing_id", listingID)
+		logger.Error("schedule.rules.list.repo_error", "err", err, "listing_identity_id", listingIdentityID)
 		return schedulemodel.RuleListResult{}, utils.InternalError("")
 	}
 
-	return schedulemodel.RuleListResult{ListingID: listingID, Timezone: agenda.Timezone(), Rules: rules}, nil
+	return schedulemodel.RuleListResult{ListingIdentityID: listingIdentityID, Timezone: agenda.Timezone(), Rules: rules}, nil
 }
 
 func validateRuleRangeMinutes(rng RuleTimeRange) *utils.HTTPError {

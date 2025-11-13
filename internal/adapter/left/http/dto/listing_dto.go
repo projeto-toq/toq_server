@@ -45,7 +45,12 @@ type StartListingRequest struct {
 
 // StartListingResponse represents response for starting a new listing
 type StartListingResponse struct {
-	ID int64 `json:"id"`
+	ID                int64  `json:"id"`
+	ListingIdentityID int64  `json:"listingIdentityId"`
+	ListingUUID       string `json:"listingUuid"`
+	ActiveVersionID   int64  `json:"activeVersionId"`
+	Version           uint8  `json:"version"`
+	Status            string `json:"status"`
 }
 
 // GetListingDetailRequest representa a requisição para obter os detalhes completos de um listing.
@@ -76,31 +81,38 @@ type ListingFeatureResponse struct {
 
 // ListingExchangePlaceResponse expõe um local aceito para permuta.
 type ListingExchangePlaceResponse struct {
-	ID           int64  `json:"id"`
-	ListingID    int64  `json:"listingId"`
-	Neighborhood string `json:"neighborhood"`
-	City         string `json:"city"`
-	State        string `json:"state"`
+	ID               int64  `json:"id"`
+	ListingID        int64  `json:"listingId"`
+	ListingVersionID int64  `json:"listingVersionId"`
+	Neighborhood     string `json:"neighborhood"`
+	City             string `json:"city"`
+	State            string `json:"state"`
 }
 
 // ListingFinancingBlockerResponse representa um impeditivo de financiamento associado ao listing.
 type ListingFinancingBlockerResponse struct {
-	ID        int64               `json:"id"`
-	ListingID int64               `json:"listingId"`
-	Blocker   CatalogItemResponse `json:"blocker"`
+	ID               int64               `json:"id"`
+	ListingID        int64               `json:"listingId"`
+	ListingVersionID int64               `json:"listingVersionId"`
+	Blocker          CatalogItemResponse `json:"blocker"`
 }
 
 // ListingGuaranteeResponse representa uma garantia aceita no listing.
 type ListingGuaranteeResponse struct {
-	ID        int64               `json:"id"`
-	ListingID int64               `json:"listingId"`
-	Priority  uint8               `json:"priority"`
-	Guarantee CatalogItemResponse `json:"guarantee"`
+	ID               int64               `json:"id"`
+	ListingID        int64               `json:"listingId"`
+	ListingVersionID int64               `json:"listingVersionId"`
+	Priority         uint8               `json:"priority"`
+	Guarantee        CatalogItemResponse `json:"guarantee"`
 }
 
 // ListingDetailResponse agrega todos os campos do listing.
 type ListingDetailResponse struct {
 	ID                 int64                             `json:"id"`
+	ListingIdentityID  int64                             `json:"listingIdentityId"`
+	ListingUUID        string                            `json:"listingUuid"`
+	ActiveVersionID    int64                             `json:"activeVersionId"`
+	DraftVersionID     *int64                            `json:"draftVersionId,omitempty"`
 	UserID             int64                             `json:"userId"`
 	Code               uint32                            `json:"code"`
 	Version            uint8                             `json:"version"`
@@ -191,7 +203,7 @@ type ListingDetailResponse struct {
 //	  "accompanying": "assistant"
 //	}
 type UpdateListingRequest struct {
-	ID                 coreutils.Optional[int64]                               `json:"id"`
+	ListingVersionID   coreutils.Optional[int64]                               `json:"listingVersionId"`
 	Owner              coreutils.Optional[string]                              `json:"owner"`
 	Features           coreutils.Optional[[]UpdateListingFeatureRequest]       `json:"features"`
 	LandSize           coreutils.Optional[float64]                             `json:"landSize"`
@@ -230,15 +242,50 @@ type UpdateListingResponse struct {
 	Message string `json:"message"`
 }
 
-// EndUpdateListingRequest representa o payload para finalizar a atualização de um listing.
-type EndUpdateListingRequest struct {
-	ListingID int64 `json:"listingId" binding:"required"`
+// PromoteListingVersionRequest encapsula a versão a ser promovida para ativa.
+type PromoteListingVersionRequest struct {
+	VersionID int64 `json:"versionId" binding:"required,min=1"`
 }
 
-// EndUpdateListingResponse representa a resposta ao finalizar a atualização de um listing.
-type EndUpdateListingResponse struct {
+// PromoteListingVersionResponse confirma a promoção de versão.
+type PromoteListingVersionResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
+}
+
+// DiscardDraftVersionRequest identifica o draft que deve ser descartado.
+type DiscardDraftVersionRequest struct {
+	VersionID int64 `json:"versionId" binding:"required,min=1"`
+}
+
+// DiscardDraftVersionResponse confirma o descarte de um draft de anúncio.
+type DiscardDraftVersionResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+// ListListingVersionsRequest captura o filtro para consulta de versões de um listing.
+type ListListingVersionsRequest struct {
+	ListingIdentityID int64 `form:"listingIdentityId" binding:"required,min=1"`
+	IncludeDeleted    bool  `form:"includeDeleted"`
+}
+
+// ListingVersionSummaryResponse expõe metadados de uma versão específica do listing.
+type ListingVersionSummaryResponse struct {
+	ID                int64  `json:"id"`
+	ListingIdentityID int64  `json:"listingIdentityId"`
+	ListingUUID       string `json:"listingUuid"`
+	Version           uint8  `json:"version"`
+	Status            string `json:"status"`
+	Title             string `json:"title,omitempty"`
+	IsActive          bool   `json:"isActive"`
+}
+
+// ListListingVersionsResponse agrega metadados de versões vinculadas a uma identidade de listing.
+type ListListingVersionsResponse struct {
+	ListingIdentityID int64                           `json:"listingIdentityId"`
+	ListingUUID       string                          `json:"listingUuid"`
+	Versions          []ListingVersionSummaryResponse `json:"versions"`
 }
 
 // DeleteListingResponse represents response for deleting a listing
@@ -290,16 +337,21 @@ type BaseFeature struct {
 
 // ListingResponse represents a listing in responses
 type ListingResponse struct {
-	ID           int64   `json:"id"`
-	Title        string  `json:"title"`
-	Description  string  `json:"description"`
-	Price        float64 `json:"price"`
-	Status       string  `json:"status"`
-	PropertyType int     `json:"propertyType"`
-	ZipCode      string  `json:"zipCode"`
-	Number       string  `json:"number"`
-	UserID       int64   `json:"userId"`
-	ComplexID    string  `json:"complexId,omitempty"`
+	ID                int64   `json:"id"`
+	ListingIdentityID int64   `json:"listingIdentityId"`
+	ListingUUID       string  `json:"listingUuid"`
+	ActiveVersionID   int64   `json:"activeVersionId"`
+	DraftVersionID    *int64  `json:"draftVersionId,omitempty"`
+	Version           uint8   `json:"version"`
+	Title             string  `json:"title"`
+	Description       string  `json:"description"`
+	Price             float64 `json:"price"`
+	Status            string  `json:"status"`
+	PropertyType      int     `json:"propertyType"`
+	ZipCode           string  `json:"zipCode"`
+	Number            string  `json:"number"`
+	UserID            int64   `json:"userId"`
+	ComplexID         string  `json:"complexId,omitempty"`
 }
 
 // AddListingPhotosRequest represents request for adding photos to a listing

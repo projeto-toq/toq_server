@@ -15,8 +15,8 @@ func (s *scheduleService) ListAgendaEntries(ctx context.Context, filter schedule
 	if filter.OwnerID <= 0 {
 		return schedulemodel.AgendaDetailResult{}, utils.ValidationError("ownerId", "ownerId must be greater than zero")
 	}
-	if filter.ListingID <= 0 {
-		return schedulemodel.AgendaDetailResult{}, utils.ValidationError("listingId", "listingId must be greater than zero")
+	if filter.ListingIdentityID <= 0 {
+		return schedulemodel.AgendaDetailResult{}, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if err := validateRange(filter.Range.From, filter.Range.To); err != nil {
 		return schedulemodel.AgendaDetailResult{}, err
@@ -34,23 +34,23 @@ func (s *scheduleService) ListAgendaEntries(ctx context.Context, filter schedule
 	tx, txErr := s.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("schedule.list_agenda_entries.tx_start_error", "err", txErr, "listing_id", filter.ListingID)
+		logger.Error("schedule.list_agenda_entries.tx_start_error", "err", txErr, "listing_identity_id", filter.ListingIdentityID)
 		return schedulemodel.AgendaDetailResult{}, utils.InternalError("")
 	}
 	defer func() {
 		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
-			logger.Error("schedule.list_agenda_entries.tx_rollback_error", "err", rbErr, "listing_id", filter.ListingID)
+			logger.Error("schedule.list_agenda_entries.tx_rollback_error", "err", rbErr, "listing_identity_id", filter.ListingIdentityID)
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, filter.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, filter.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return schedulemodel.AgendaDetailResult{}, utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.list_agenda_entries.get_agenda_error", "listing_id", filter.ListingID, "err", err)
+		logger.Error("schedule.list_agenda_entries.get_agenda_error", "listing_identity_id", filter.ListingIdentityID, "err", err)
 		return schedulemodel.AgendaDetailResult{}, utils.InternalError("")
 	}
 
@@ -74,7 +74,7 @@ func (s *scheduleService) ListAgendaEntries(ctx context.Context, filter schedule
 	entries, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), fromUTC, toUTC)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.list_agenda_entries.list_entries_error", "listing_id", filter.ListingID, "err", err)
+		logger.Error("schedule.list_agenda_entries.list_entries_error", "listing_identity_id", filter.ListingIdentityID, "err", err)
 		return schedulemodel.AgendaDetailResult{}, utils.InternalError("")
 	}
 
@@ -86,7 +86,7 @@ func (s *scheduleService) ListAgendaEntries(ctx context.Context, filter schedule
 	rules, err := s.scheduleRepo.ListRulesByAgenda(ctx, tx, agenda.ID())
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.list_agenda_entries.rules_error", "listing_id", filter.ListingID, "err", err)
+		logger.Error("schedule.list_agenda_entries.rules_error", "listing_identity_id", filter.ListingIdentityID, "err", err)
 		return schedulemodel.AgendaDetailResult{}, utils.InternalError("")
 	}
 

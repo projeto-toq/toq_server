@@ -19,7 +19,7 @@ import (
 // @Tags        Listing Schedules
 // @Accept      json
 // @Produce     json
-// @Param       request body dto.ScheduleRuleRequest true "Rule creation payload" Extensions(x-example={"listingId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"00:00","rangeEnd":"07:59","active":true,"timezone":"America/Sao_Paulo"})
+// @Param       request body dto.ScheduleRuleRequest true "Rule creation payload" Extensions(x-example={"listingIdentityId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"00:00","rangeEnd":"07:59","active":true,"timezone":"America/Sao_Paulo"})
 // @Success     200 {object} dto.ScheduleRulesResponse
 // @Failure     400 {object} dto.ErrorResponse
 // @Failure     401 {object} dto.ErrorResponse
@@ -63,9 +63,9 @@ func (h *ScheduleHandler) PostCreateBlockRule(c *gin.Context) {
 	}
 
 	input := scheduleservices.CreateRuleInput{
-		ListingID: req.ListingID,
-		OwnerID:   userInfo.ID,
-		Weekdays:  weekdays,
+		ListingIdentityID: req.ListingIdentityID,
+		OwnerID:           userInfo.ID,
+		Weekdays:          weekdays,
 		Range: scheduleservices.RuleTimeRange{
 			StartMinute: startMinute,
 			EndMinute:   endMinute,

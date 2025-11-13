@@ -282,11 +282,13 @@ func RegisterListingRoutes(
 		listings.POST("/photo-session/cancel", listingHandler.CancelPhotoSession)
 
 		// Individual listing operations
-		listings.GET("/detail", listingHandler.GetListing)                                                       // GetListing
-		listings.GET("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })        // GetListing
-		listings.PUT("", listingHandler.UpdateListing)                                                           // UpdateListing
-		listings.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })     // DeleteListing
-		listings.POST("/end-update", listingHandler.EndUpdateListing)                                            // EndUpdateListing
+		listings.GET("/detail", listingHandler.GetListing)                                                   // GetListing
+		listings.GET("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // GetListing
+		listings.PUT("", listingHandler.UpdateListing)                                                       // UpdateListing
+		listings.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // DeleteListing
+		listings.POST("/versions/promote", listingHandler.PromoteListingVersion)
+		listings.POST("/versions/discard", listingHandler.DiscardDraftVersion)
+		listings.GET("/versions", listingHandler.ListListingVersions)
 		listings.GET("/:id/status", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetListingStatus
 
 		// Owner operations

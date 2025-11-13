@@ -9,7 +9,7 @@ import (
 )
 
 func (a *ScheduleAdapter) GetAvailabilityData(ctx context.Context, tx *sql.Tx, filter schedulemodel.AvailabilityFilter) (schedulemodel.AvailabilityData, error) {
-	agenda, err := a.GetAgendaByListingID(ctx, tx, filter.ListingID)
+	agenda, err := a.GetAgendaByListingIdentityID(ctx, tx, filter.ListingIdentityID)
 	if err != nil {
 		return schedulemodel.AvailabilityData{}, fmt.Errorf("get agenda for availability: %w", err)
 	}

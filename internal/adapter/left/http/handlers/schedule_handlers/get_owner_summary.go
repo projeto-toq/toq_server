@@ -18,7 +18,7 @@ import (
 // @Description	Returns a consolidated view of agenda entries for all listings owned by the authenticated user.
 // @Tags		Listing Schedules
 // @Produce	json
-// @Param	listingIds	query	[]int64	false	"Listing identifiers" collectionFormat(multi)
+// @Param	listingIdentityIds	query	[]int64	false	"Listing identity identifiers" collectionFormat(multi)
 // @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)"
 // @Param	rangeTo	query	string	false	"End of time range (RFC3339)"
 // @Param	page	query	int	false	"Page number"
@@ -60,10 +60,10 @@ func (h *ScheduleHandler) GetOwnerSummary(c *gin.Context) {
 	pagination := sanitizeSchedulePagination(dto.SchedulePaginationRequest{Page: req.Page, Limit: req.Limit})
 
 	filter := schedulemodel.OwnerSummaryFilter{
-		OwnerID:    userInfo.ID,
-		ListingIDs: req.ListingIDs,
-		Range:      rangeFilter,
-		Pagination: pagination,
+		OwnerID:            userInfo.ID,
+		ListingIdentityIDs: req.ListingIdentityIDs,
+		Range:              rangeFilter,
+		Pagination:         pagination,
 	}
 
 	ctx = coreutils.ContextWithLogger(ctx)

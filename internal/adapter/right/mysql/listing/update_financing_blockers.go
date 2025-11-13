@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, listingID int64, blockers []listingmodel.FinancingBlockerInterface) (err error) {
+func (la *ListingAdapter) UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, listingVersionID int64, blockers []listingmodel.FinancingBlockerInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -23,7 +23,7 @@ func (la *ListingAdapter) UpdateFinancingBlockers(ctx context.Context, tx *sql.T
 	logger := utils.LoggerFromContext(ctx)
 
 	// Remove all blocker from listing
-	err = la.DeleteListingFinancingBlockers(ctx, tx, listingID)
+	err = la.DeleteListingFinancingBlockers(ctx, tx, listingVersionID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
@@ -38,7 +38,7 @@ func (la *ListingAdapter) UpdateFinancingBlockers(ctx context.Context, tx *sql.T
 
 	// Insert the new blokers
 	for _, blocker := range blockers {
-		blocker.SetListingID(listingID)
+		blocker.SetListingVersionID(listingVersionID)
 		err = la.CreateFinancingBlocker(ctx, tx, blocker)
 		if err != nil {
 			utils.SetSpanError(ctx, err)

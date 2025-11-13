@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/google/uuid"
+
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -65,6 +67,8 @@ func (ls *listingService) StartListing(ctx context.Context, input StartListingIn
 }
 
 func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input StartListingInput) (listing listingmodel.ListingInterface, err error) {
+	logger := utils.LoggerFromContext(ctx)
+
 	zipCode := strings.TrimSpace(input.ZipCode)
 	normalizedZip, normErr := validators.NormalizeCEP(zipCode)
 	if normErr != nil {
@@ -121,6 +125,7 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 	}
 
 	listing = listingmodel.NewListing()
+	listing.SetUUID(uuid.NewString())
 	listing.SetUserID(userID)
 	listing.SetCode(code)
 	listing.SetVersion(1)
@@ -158,10 +163,27 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 	listing.SetState(cepState)
 	listing.SetDeleted(false)
 
-	//create the listing
-	err = ls.listingRepository.CreateListing(ctx, tx, listing)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
+	if identityErr := ls.listingRepository.CreateListingIdentity(ctx, tx, listing); identityErr != nil {
+		utils.SetSpanError(ctx, identityErr)
+		logger.Error("listing.start.create_identity_error", "err", identityErr)
+		return nil, utils.InternalError("")
+	}
+
+	activeVersion := listing.ActiveVersion()
+	activeVersion.SetListingIdentityID(listing.IdentityID())
+	activeVersion.SetListingUUID(listing.UUID())
+
+	if versionErr := ls.listingRepository.CreateListingVersion(ctx, tx, activeVersion); versionErr != nil {
+		utils.SetSpanError(ctx, versionErr)
+		logger.Error("listing.start.create_version_error", "err", versionErr, "identity_id", listing.IdentityID())
+		return nil, utils.InternalError("")
+	}
+
+	listing.SetActiveVersionID(activeVersion.ID())
+
+	if setErr := ls.listingRepository.SetListingActiveVersion(ctx, tx, listing.IdentityID(), listing.ActiveVersionID()); setErr != nil {
+		utils.SetSpanError(ctx, setErr)
+		logger.Error("listing.start.set_active_error", "err", setErr, "identity_id", listing.IdentityID(), "version_id", listing.ActiveVersionID())
 		return nil, utils.InternalError("")
 	}
 

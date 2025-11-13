@@ -8,10 +8,10 @@ import (
 
 // CreateDefaultAgendaInput carries the data required to bootstrap a new agenda.
 type CreateDefaultAgendaInput struct {
-	ListingID int64
-	OwnerID   int64
-	Timezone  string
-	ActorID   int64
+	ListingIdentityID int64
+	OwnerID           int64
+	Timezone          string
+	ActorID           int64
 }
 
 // RuleTimeRange represents a window in minutes for recurring rules.
@@ -22,65 +22,65 @@ type RuleTimeRange struct {
 
 // CreateRuleInput captures data required to persist new recurring rules.
 type CreateRuleInput struct {
-	ListingID int64
-	OwnerID   int64
-	Weekdays  []time.Weekday
-	Range     RuleTimeRange
-	Active    bool
-	Timezone  string
-	ActorID   int64
+	ListingIdentityID int64
+	OwnerID           int64
+	Weekdays          []time.Weekday
+	Range             RuleTimeRange
+	Active            bool
+	Timezone          string
+	ActorID           int64
 }
 
 // UpdateRuleInput carries information to update an existing recurring rule.
 type UpdateRuleInput struct {
-	RuleID    uint64
-	ListingID int64
-	OwnerID   int64
-	Weekday   time.Weekday
-	Range     RuleTimeRange
-	Active    bool
-	Timezone  string
-	ActorID   int64
+	RuleID            uint64
+	ListingIdentityID int64
+	OwnerID           int64
+	Weekday           time.Weekday
+	Range             RuleTimeRange
+	Active            bool
+	Timezone          string
+	ActorID           int64
 }
 
 // DeleteRuleInput captures identifiers required to remove a recurring rule.
 type DeleteRuleInput struct {
-	RuleID    uint64
-	ListingID int64
-	OwnerID   int64
-	ActorID   int64
+	RuleID            uint64
+	ListingIdentityID int64
+	OwnerID           int64
+	ActorID           int64
 }
 
 // CreateBlockEntryInput captures the information to create a blocking entry.
 type CreateBlockEntryInput struct {
-	ListingID int64
-	OwnerID   int64
-	EntryType schedulemodel.EntryType
-	StartsAt  time.Time
-	EndsAt    time.Time
-	Reason    string
-	ActorID   int64
-	Timezone  string
+	ListingIdentityID int64
+	OwnerID           int64
+	EntryType         schedulemodel.EntryType
+	StartsAt          time.Time
+	EndsAt            time.Time
+	Reason            string
+	ActorID           int64
+	Timezone          string
 }
 
 // UpdateBlockEntryInput represents the payload to update an existing blocking entry.
 type UpdateBlockEntryInput struct {
-	EntryID   uint64
-	ListingID int64
-	OwnerID   int64
-	EntryType schedulemodel.EntryType
-	StartsAt  time.Time
-	EndsAt    time.Time
-	Reason    string
-	ActorID   int64
-	Timezone  string
+	EntryID           uint64
+	ListingIdentityID int64
+	OwnerID           int64
+	EntryType         schedulemodel.EntryType
+	StartsAt          time.Time
+	EndsAt            time.Time
+	Reason            string
+	ActorID           int64
+	Timezone          string
 }
 
 // DeleteEntryInput carries the identifiers required to remove an entry.
 type DeleteEntryInput struct {
-	EntryID   uint64
-	ListingID int64
-	OwnerID   int64
+	EntryID           uint64
+	ListingIdentityID int64
+	OwnerID           int64
 }
 
 // AvailabilitySlot represents a continuous free window available for booking.
@@ -98,14 +98,14 @@ type AvailabilityResult struct {
 
 // RuleMutationResult aggregates results after creating or updating rules.
 type RuleMutationResult struct {
-	ListingID int64
-	Timezone  string
-	Rules     []schedulemodel.AgendaRuleInterface
+	ListingIdentityID int64
+	Timezone          string
+	Rules             []schedulemodel.AgendaRuleInterface
 }
 
 // FinishListingAgendaInput encapsulates data to finish the agenda creation workflow.
 type FinishListingAgendaInput struct {
-	ListingID int64
-	OwnerID   int64
-	ActorID   int64
+	ListingIdentityID int64
+	OwnerID           int64
+	ActorID           int64
 }

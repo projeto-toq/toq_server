@@ -20,9 +20,9 @@ func (la *ListingAdapter) CreateFinancingBlocker(ctx context.Context, tx *sql.Tx
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	statement := `INSERT INTO financing_blockers (listing_id, blocker) VALUES (?, ?);`
+	statement := `INSERT INTO financing_blockers (listing_version_id, blocker) VALUES (?, ?);`
 
-	result, execErr := la.ExecContext(ctx, tx, "insert", statement, blocker.ListingID(), blocker.Blocker())
+	result, execErr := la.ExecContext(ctx, tx, "insert", statement, blocker.ListingVersionID(), blocker.Blocker())
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.listing.create_financing_blocker.exec_error", "error", execErr)

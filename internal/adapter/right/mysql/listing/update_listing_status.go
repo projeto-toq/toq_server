@@ -19,7 +19,7 @@ func (la *ListingAdapter) UpdateListingStatus(ctx context.Context, tx *sql.Tx, l
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `UPDATE listings SET status = ? WHERE id = ? AND status = ?`
+	query := `UPDATE listing_versions SET status = ? WHERE id = ? AND status = ? AND deleted = 0`
 	defer la.ObserveOnComplete("update", query)()
 
 	result, err := tx.ExecContext(ctx, query, newStatus, listingID, expectedCurrent)

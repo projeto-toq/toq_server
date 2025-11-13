@@ -15,6 +15,9 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 
 	resp := dto.ListingDetailResponse{
 		ID:                 listing.ID(),
+		ListingIdentityID:  listing.IdentityID(),
+		ListingUUID:        listing.UUID(),
+		ActiveVersionID:    listing.ActiveVersionID(),
 		UserID:             listing.UserID(),
 		Code:               listing.Code(),
 		Version:            listing.Version(),
@@ -80,31 +83,44 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 	resp.ExchangePlaces = make([]dto.ListingExchangePlaceResponse, 0, len(exchangePlaces))
 	for _, place := range exchangePlaces {
 		resp.ExchangePlaces = append(resp.ExchangePlaces, dto.ListingExchangePlaceResponse{
-			ID:           place.ID(),
-			ListingID:    place.ListingID(),
-			Neighborhood: strings.TrimSpace(place.Neighborhood()),
-			City:         strings.TrimSpace(place.City()),
-			State:        strings.TrimSpace(place.State()),
+			ID:               place.ID(),
+			ListingID:        place.ListingID(),
+			ListingVersionID: place.ListingVersionID(),
+			Neighborhood:     strings.TrimSpace(place.Neighborhood()),
+			City:             strings.TrimSpace(place.City()),
+			State:            strings.TrimSpace(place.State()),
 		})
 	}
 
 	resp.FinancingBlockers = make([]dto.ListingFinancingBlockerResponse, 0, len(detail.FinancingBlockers))
 	for _, blocker := range detail.FinancingBlockers {
 		resp.FinancingBlockers = append(resp.FinancingBlockers, dto.ListingFinancingBlockerResponse{
-			ID:        blocker.Item.ID(),
-			ListingID: blocker.Item.ListingID(),
-			Blocker:   catalogDetailToDTOWithFallback(blocker.Catalog, uint8(blocker.Item.Blocker())),
+			ID:               blocker.Item.ID(),
+			ListingID:        blocker.Item.ListingID(),
+			ListingVersionID: blocker.Item.ListingVersionID(),
+			Blocker:          catalogDetailToDTOWithFallback(blocker.Catalog, uint8(blocker.Item.Blocker())),
 		})
 	}
 
 	resp.Guarantees = make([]dto.ListingGuaranteeResponse, 0, len(detail.Guarantees))
 	for _, guarantee := range detail.Guarantees {
 		resp.Guarantees = append(resp.Guarantees, dto.ListingGuaranteeResponse{
-			ID:        guarantee.Item.ID(),
-			ListingID: guarantee.Item.ListingID(),
-			Priority:  guarantee.Item.Priority(),
-			Guarantee: catalogDetailToDTOWithFallback(guarantee.Catalog, uint8(guarantee.Item.Guarantee())),
+			ID:               guarantee.Item.ID(),
+			ListingID:        guarantee.Item.ListingID(),
+			ListingVersionID: guarantee.Item.ListingVersionID(),
+			Priority:         guarantee.Item.Priority(),
+			Guarantee:        catalogDetailToDTOWithFallback(guarantee.Catalog, uint8(guarantee.Item.Guarantee())),
 		})
+	}
+
+	if draftVersion, ok := listing.DraftVersion(); ok && draftVersion != nil {
+		if draftID := draftVersion.ID(); draftID > 0 {
+			resp.DraftVersionID = &draftID
+		}
+	}
+
+	if resp.ActiveVersionID == 0 {
+		resp.ActiveVersionID = listing.ID()
 	}
 
 	return resp

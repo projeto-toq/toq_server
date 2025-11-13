@@ -982,14 +982,15 @@ definitions:
     required:
     - timeOffId
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingRequest:
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionRequest:
     properties:
-      listingId:
+      versionId:
+        minimum: 1
         type: integer
     required:
-    - listingId
+    - versionId
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingResponse:
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionResponse:
     properties:
       message:
         type: string
@@ -1253,6 +1254,17 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsResponse:
+    properties:
+      listingIdentityId:
+        type: integer
+      listingUuid:
+        type: string
+      versions:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse'
+        type: array
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse:
     properties:
       data:
@@ -1384,6 +1396,8 @@ definitions:
     properties:
       accompanying:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      activeVersionId:
+        type: integer
       annualGroundRent:
         type: number
       annualTax:
@@ -1406,6 +1420,8 @@ definitions:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
       description:
         type: string
+      draftVersionId:
+        type: integer
       exchange:
         type: boolean
       exchangePercentual:
@@ -1434,6 +1450,10 @@ definitions:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
       landSize:
         type: number
+      listingIdentityId:
+        type: integer
+      listingUuid:
+        type: string
       monthlyGroundRent:
         type: number
       monthlyTax:
@@ -1489,6 +1509,8 @@ definitions:
         type: integer
       listingId:
         type: integer
+      listingVersionId:
+        type: integer
       neighborhood:
         type: string
       state:
@@ -1511,6 +1533,8 @@ definitions:
         type: integer
       listingId:
         type: integer
+      listingVersionId:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingGuaranteeResponse:
     properties:
@@ -1519,6 +1543,8 @@ definitions:
       id:
         type: integer
       listingId:
+        type: integer
+      listingVersionId:
         type: integer
       priority:
         type: integer
@@ -1534,12 +1560,20 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse:
     properties:
+      activeVersionId:
+        type: integer
       complexId:
         type: string
       description:
         type: string
+      draftVersionId:
+        type: integer
       id:
         type: integer
+      listingIdentityId:
+        type: integer
+      listingUuid:
+        type: string
       number:
         type: string
       price:
@@ -1552,8 +1586,27 @@ definitions:
         type: string
       userId:
         type: integer
+      version:
+        type: integer
       zipCode:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse:
+    properties:
+      id:
+        type: integer
+      isActive:
+        type: boolean
+      listingIdentityId:
+        type: integer
+      listingUuid:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      version:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse:
     properties:
@@ -1572,7 +1625,7 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse'
         type: array
-      listingId:
+      listingIdentityId:
         type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryResponse:
@@ -1693,6 +1746,21 @@ definitions:
         type: string
       timezone:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionRequest:
+    properties:
+      versionId:
+        minimum: 1
+        type: integer
+    required:
+    - versionId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption:
     properties:
@@ -1836,29 +1904,29 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleFinishAgendaRequest:
     properties:
-      listingId:
+      listingIdentityId:
         example: 3241
         type: integer
     required:
-    - listingId
+    - listingIdentityId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleDeleteRequest:
     properties:
-      listingId:
+      listingIdentityId:
         example: 3241
         type: integer
       ruleId:
         example: 9801
         type: integer
     required:
-    - listingId
+    - listingIdentityId
     - ruleId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleRequest:
     properties:
       active:
         type: boolean
-      listingId:
+      listingIdentityId:
         example: 3241
         type: integer
       rangeEnd:
@@ -1878,7 +1946,7 @@ definitions:
           type: string
         type: array
     required:
-    - listingId
+    - listingIdentityId
     - rangeEnd
     - rangeStart
     - timezone
@@ -1901,7 +1969,7 @@ definitions:
     properties:
       active:
         type: boolean
-      listingId:
+      listingIdentityId:
         example: 3241
         type: integer
       rangeEnd:
@@ -1923,7 +1991,7 @@ definitions:
           type: string
         type: array
     required:
-    - listingId
+    - listingIdentityId
     - rangeEnd
     - rangeStart
     - ruleId
@@ -1932,7 +2000,7 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRulesResponse:
     properties:
-      listingId:
+      listingIdentityId:
         type: integer
       rules:
         items:
@@ -2004,7 +2072,17 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StartListingResponse:
     properties:
+      activeVersionId:
+        type: integer
       id:
+        type: integer
+      listingIdentityId:
+        type: integer
+      listingUuid:
+        type: string
+      status:
+        type: string
+      version:
         type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleResponse:
@@ -2062,12 +2140,12 @@ definitions:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_string'
       guarantees:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest'
-      id:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64'
       installment:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string'
       landSize:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
+      listingVersionId:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64'
       monthlyGroundRent:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64'
       monthlyTax:
@@ -6174,56 +6252,6 @@ paths:
       summary: Get listing detail
       tags:
       - Listings
-  /listings/end-update:
-    post:
-      consumes:
-      - application/json
-      description: Validates all required listing attributes and transitions status
-        to photo scheduling.
-      parameters:
-      - description: Listing identifier
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingRequest'
-        x-example: '{"listingId":98765}'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.EndUpdateListingResponse'
-        "400":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Listing not found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Finalize listing update
-      tags:
-      - Listings
   /listings/features/base:
     get:
       consumes:
@@ -6478,6 +6506,154 @@ paths:
       summary: List available photographer slots
       tags:
       - Listing Photo Sessions
+  /listings/versions:
+    get:
+      description: Returns all versions attached to a listing identity, indicating
+        which one is active.
+      parameters:
+      - description: Listing identity identifier
+        example: 1024
+        in: query
+        name: listingIdentityId
+        required: true
+        type: integer
+      - default: false
+        description: Include soft-deleted versions
+        in: query
+        name: includeDeleted
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List listing versions
+      tags:
+      - Listings
+  /listings/versions/discard:
+    post:
+      consumes:
+      - application/json
+      description: Deletes a draft listing version and its satellite entities, keeping
+        the active version untouched.
+      parameters:
+      - description: Listing draft version identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionRequest'
+        x-example: '{"versionId":12345}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing version not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Discard draft listing version
+      tags:
+      - Listings
+  /listings/versions/promote:
+    post:
+      consumes:
+      - application/json
+      description: Promotes a draft listing version to become the active version for
+        its identity, preserving historical records.
+      parameters:
+      - description: Listing version identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionRequest'
+        x-example: '{"versionId":12345}'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing version not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Promote listing version
+      tags:
+      - Listings
   /photographer/agenda:
     get:
       description: Retrieves the photographer's agenda, including available and blocked
@@ -7039,10 +7215,10 @@ paths:
       description: Returns all agenda entries for a specific listing owned by the
         authenticated user.
       parameters:
-      - description: Listing identifier
+      - description: Listing identity identifier
         example: 3241
         in: query
-        name: listingId
+        name: listingIdentityId
         required: true
         type: integer
       - description: Start of time range (RFC3339)
@@ -7107,9 +7283,9 @@ paths:
       description: Returns the available slots for a listing within the provided time
         range.
       parameters:
-      - description: Listing identifier
+      - description: Listing identity identifier
         in: query
-        name: listingId
+        name: listingIdentityId
         required: true
         type: integer
       - description: Start of time range (RFC3339)
@@ -7176,7 +7352,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleDeleteRequest'
-        x-example: '{"ruleId":5021,"listingId":3241}'
+        x-example: '{"ruleId":5021,"listingIdentityId":3241}'
       produces:
       - application/json
       responses:
@@ -7211,10 +7387,10 @@ paths:
       description: Returns the recurring blocking rules configured for a listing owned
         by the authenticated user.
       parameters:
-      - description: Listing identifier
+      - description: Listing identity identifier
         example: 3241
         in: query
-        name: listingId
+        name: listingIdentityId
         required: true
         type: integer
       - collectionFormat: multi
@@ -7268,7 +7444,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleRequest'
-        x-example: '{"listingId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"00:00","rangeEnd":"07:59","active":true,"timezone":"America/Sao_Paulo"}'
+        x-example: '{"listingIdentityId":3241,"weekDays":["MONDAY","TUESDAY"],"rangeStart":"00:00","rangeEnd":"07:59","active":true,"timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:
@@ -7316,7 +7492,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleRuleUpdateRequest'
-        x-example: '{"ruleId":5021,"listingId":3241,"weekDays":["MONDAY"],"rangeStart":"10:00","rangeEnd":"18:00","active":true,"timezone":"America/Sao_Paulo"}'
+        x-example: '{"ruleId":5021,"listingIdentityId":3241,"weekDays":["MONDAY"],"rangeStart":"10:00","rangeEnd":"18:00","active":true,"timezone":"America/Sao_Paulo"}'
       produces:
       - application/json
       responses:
@@ -7366,7 +7542,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleFinishAgendaRequest'
-        x-example: '{"listingId":3241}'
+        x-example: '{"listingIdentityId":3241}'
       produces:
       - application/json
       responses:
@@ -7409,11 +7585,11 @@ paths:
         owned by the authenticated user.
       parameters:
       - collectionFormat: multi
-        description: Listing identifiers
+        description: Listing identity identifiers
         in: query
         items:
           type: integer
-        name: listingIds
+        name: listingIdentityIds
         type: array
       - description: Start of time range (RFC3339)
         in: query

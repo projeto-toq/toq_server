@@ -12,8 +12,8 @@ func (s *scheduleService) DeleteBlockEntry(ctx context.Context, input DeleteEntr
 	if input.EntryID == 0 {
 		return utils.ValidationError("entryId", "entryId must be greater than zero")
 	}
-	if input.ListingID <= 0 {
-		return utils.ValidationError("listingId", "listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if input.OwnerID <= 0 {
 		return utils.ValidationError("ownerId", "ownerId must be greater than zero")
@@ -45,13 +45,13 @@ func (s *scheduleService) DeleteBlockEntry(ctx context.Context, input DeleteEntr
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, input.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return utils.NotFoundError("Agenda")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.delete_block_entry.get_agenda_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("schedule.delete_block_entry.get_agenda_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return utils.InternalError("")
 	}
 

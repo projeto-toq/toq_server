@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) UpdateGuarantees(ctx context.Context, tx *sql.Tx, listingID int64, guarantees []listingmodel.GuaranteeInterface) (err error) {
+func (la *ListingAdapter) UpdateGuarantees(ctx context.Context, tx *sql.Tx, listingVersionID int64, guarantees []listingmodel.GuaranteeInterface) (err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return
@@ -23,7 +23,7 @@ func (la *ListingAdapter) UpdateGuarantees(ctx context.Context, tx *sql.Tx, list
 	logger := utils.LoggerFromContext(ctx)
 
 	// Remove all guarantees from listing
-	err = la.DeleteListingGuarantees(ctx, tx, listingID)
+	err = la.DeleteListingGuarantees(ctx, tx, listingVersionID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			utils.SetSpanError(ctx, err)
@@ -38,7 +38,7 @@ func (la *ListingAdapter) UpdateGuarantees(ctx context.Context, tx *sql.Tx, list
 
 	// Insert the new guarrantees
 	for _, guarantee := range guarantees {
-		guarantee.SetListingID(listingID)
+		guarantee.SetListingVersionID(listingVersionID)
 		err = la.CreateGuarantee(ctx, tx, guarantee)
 		if err != nil {
 			utils.SetSpanError(ctx, err)

@@ -14,8 +14,8 @@ type dailyAvailability struct {
 }
 
 func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemodel.AvailabilityFilter) (AvailabilityResult, error) {
-	if filter.ListingID <= 0 {
-		return AvailabilityResult{}, utils.ValidationError("listingId", "listingId must be greater than zero")
+	if filter.ListingIdentityID <= 0 {
+		return AvailabilityResult{}, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 	if filter.Range.From.IsZero() || filter.Range.To.IsZero() {
 		return AvailabilityResult{}, utils.ValidationError("range", "from and to must be provided")
@@ -46,10 +46,10 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 		}
 	}()
 
-	agenda, err := s.scheduleRepo.GetAgendaByListingID(ctx, tx, filter.ListingID)
+	agenda, err := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, filter.ListingIdentityID)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.get_availability.get_agenda_error", "listing_id", filter.ListingID, "err", err)
+		logger.Error("schedule.get_availability.get_agenda_error", "listing_identity_id", filter.ListingIdentityID, "err", err)
 		return AvailabilityResult{}, utils.InternalError("")
 	}
 
@@ -69,7 +69,7 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 	data, err := s.scheduleRepo.GetAvailabilityData(ctx, tx, repoFilter)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("schedule.get_availability.repo_error", "listing_id", filter.ListingID, "err", err)
+		logger.Error("schedule.get_availability.repo_error", "listing_identity_id", filter.ListingIdentityID, "err", err)
 		return AvailabilityResult{}, utils.InternalError("")
 	}
 
