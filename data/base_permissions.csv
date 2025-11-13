@@ -48,7 +48,7 @@ id;name;action;description;is_active
 47;"HTTP Admin Create Role Permission";"POST:/api/v2/admin/role-permissions";"Permite criar relações role-permission";1
 48;"HTTP Admin Update Role Permission";"PUT:/api/v2/admin/role-permissions";"Permite atualizar relações role-permission";1
 49;"HTTP Admin Delete Role Permission";"DELETE:/api/v2/admin/role-permissions";"Permite excluir relações role-permission";1
-50;"HTTP End Update Listing";"POST:/api/v2/listings/end-update";"Permite finalizar atualização de listing";1
+50;"HTTP Listing Version Promote";"POST:/api/v2/listings/versions/promote";"Permite finalizar atualização de listing passando a versão ativa";1
 51;"HTTP Get Listing Detail";"GET:/api/v2/listings/detail";"Permite consultar detalhes completos de um listing";1
 52;"HTTP Admin Get Complexes";"GET:/api/v2/admin/complexes";"Permite listar complexos no painel admin";1
 53;"HTTP Admin Create Complex";"POST:/api/v2/admin/complexes";"Permite criar novos complexos no painel admin";1
@@ -88,7 +88,7 @@ id;name;action;description;is_active
 87;"HTTP Admin List Holiday Dates";"GET:/api/v2/admin/holidays/dates";"Permite listar datas de feriados";1
 88;"HTTP Admin Delete Holiday Date";"DELETE:/api/v2/admin/holidays/dates";"Permite deletar datas de feriados";1
 89;"HTTP Get Listings";"GET:/api/v2/listings";"Permite listar listings utilizando regras de escopo";1
-90;"HTTP Schedule Finish Listing Agenda";"POST:/api/v2/schedules/listing/finish";"Permite finalizar o processo de criação da agenda do listing";1
+90;"HTTP Schedule  Finish Listing Agenda";"POST:/api/v2/schedules/listing/finish";"Permite finalizar o processo de criação da agenda do listing";1
 91;"HTTP Listing Photo Session Slots";"GET:/api/v2/listings/photo-session/slots";"Permite consultar slots de sessão de fotos de um listing";1
 92;"HTTP Listing Request Photo Session";"POST:/api/v2/listings/photo-session/reserve";"Permite solicitar sessão de fotos para um listing";1
 93;"HTTP Listing Confirm Photo Session";"POST:/api/v2/listings/photo-session/confirm";"Permite confirmar sessão de fotos para um listing";1
@@ -108,3 +108,5 @@ id;name;action;description;is_active
 107;"HTTP Photographer Create Photographer Time Off";"POST:/api/v2/photographer/agenda/time-off";"Permite criar um período de indisponibilidade para um fotógrafo";1
 108;"HTTP Schedule Listing";"GET:/api/v2/schedules/listing";"Permite consultar entradas da agenda de um listing";1
 109;"HTTP Schedule Listing Block";"GET:/api/v2/schedules/listing/block";"Permite listar bloqueios na agenda de um listing";1
+110;"HTTP Listing Version Discard";"POST:/api/v2/listings/versions/discard";"Permite descartar versão draft de listing";1
+111;"HTTP List Listing Versions";"POST:/api/v2/listings/versions";"Permite listar versões de um listing";1

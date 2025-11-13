@@ -264,28 +264,71 @@ type DiscardDraftVersionResponse struct {
 	Message string `json:"message"`
 }
 
-// ListListingVersionsRequest captura o filtro para consulta de versões de um listing.
+// ListListingVersionsRequest captures filters for querying versions of a listing identity
+//
+// This DTO is used to retrieve all version history for a specific listing.
+// The listing identity ID is mandatory, while the includeDeleted flag is optional.
+//
+// Business Rules:
+//   - listingIdentityId must be a valid, existing listing identity ID
+//   - includeDeleted defaults to false (only active versions returned)
+//   - Returns all versions ordered by version number descending
 type ListListingVersionsRequest struct {
-	ListingIdentityID int64 `form:"listingIdentityId" binding:"required,min=1"`
-	IncludeDeleted    bool  `form:"includeDeleted"`
+	// ListingIdentityID is the unique identifier of the listing identity
+	// Required field to identify which listing's versions should be retrieved
+	// Must be greater than 0
+	// Example: 1024
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required,min=1" example:"1024"`
+
+	// IncludeDeleted determines whether soft-deleted versions should be included in results
+	// When true, returns both active and soft-deleted versions
+	// When false (default), returns only active versions (deleted = 0)
+	// Example: false
+	IncludeDeleted bool `json:"includeDeleted" binding:"omitempty" example:"false"`
 }
 
-// ListingVersionSummaryResponse expõe metadados de uma versão específica do listing.
+// ListingVersionSummaryResponse exposes metadata for a specific listing version
+//
+// Represents a single version in the listing's history, including its status and active flag.
 type ListingVersionSummaryResponse struct {
-	ID                int64  `json:"id"`
-	ListingIdentityID int64  `json:"listingIdentityId"`
-	ListingUUID       string `json:"listingUuid"`
-	Version           uint8  `json:"version"`
-	Status            string `json:"status"`
-	Title             string `json:"title,omitempty"`
-	IsActive          bool   `json:"isActive"`
+	// ID is the unique identifier for this specific version
+	ID int64 `json:"id" example:"5001"`
+
+	// ListingIdentityID is the parent listing identity this version belongs to
+	ListingIdentityID int64 `json:"listingIdentityId" example:"1024"`
+
+	// ListingUUID is the immutable UUID for the listing identity
+	ListingUUID string `json:"listingUuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+
+	// Version is the sequential version number (1, 2, 3, ...)
+	Version uint8 `json:"version" example:"2"`
+
+	// Status indicates the current lifecycle state of this version
+	// Possible values: "DRAFT", "ACTIVE", "INACTIVE", "DELETED"
+	Status string `json:"status" example:"ACTIVE"`
+
+	// Title is the listing title for this version (may be empty for drafts)
+	Title string `json:"title,omitempty" example:"Apartamento 3 dormitórios na Vila Mariana"`
+
+	// IsActive indicates if this version is currently the active one
+	// Only one version per listing identity should have IsActive = true
+	IsActive bool `json:"isActive" example:"true"`
 }
 
-// ListListingVersionsResponse agrega metadados de versões vinculadas a uma identidade de listing.
+// ListListingVersionsResponse aggregates version metadata for a listing identity
+//
+// Returns complete version history with the active version flagged.
+// Versions are ordered by version number descending (newest first).
 type ListListingVersionsResponse struct {
-	ListingIdentityID int64                           `json:"listingIdentityId"`
-	ListingUUID       string                          `json:"listingUuid"`
-	Versions          []ListingVersionSummaryResponse `json:"versions"`
+	// ListingIdentityID is the identity whose versions are being returned
+	ListingIdentityID int64 `json:"listingIdentityId" example:"1024"`
+
+	// ListingUUID is the immutable UUID for this listing identity
+	ListingUUID string `json:"listingUuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+
+	// Versions contains the list of all versions for this listing
+	// Array is ordered by version number descending
+	Versions []ListingVersionSummaryResponse `json:"versions"`
 }
 
 // DeleteListingResponse represents response for deleting a listing

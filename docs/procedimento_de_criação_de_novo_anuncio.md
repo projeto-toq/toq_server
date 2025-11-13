@@ -27,7 +27,7 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 
 ## Endpoints de Versionamento
 
-- **GET** `/listings/versions?listingIdentityId={id}` - Lista todas as versões de um listing
+- **POST** `/listings/versions` - Lista todas as versões de um listing (body: `{"listingIdentityId": <id>, "includeDeleted": false}`)
 - **POST** `/listings/versions/promote` - Promove versão draft para ativa
 - **DELETE** `/listings/versions/discard` - Descarta versão draft não promovida
 5 - GET/POST/PUT/DELETE `/schedules/listing/**` altera a agenda básica do imóvel, através de bloqueios semanais para definir quando o proprietário autoriza visitas

@@ -6,16 +6,11 @@
 
 ## 🎯 Solicitação
 
-A criação de listings no TOQ Server deve ser alterada para que caso o usuário deseje efetua alguma alteração no listing, seja criado uma nova versão do listing, ao invés de atualizar a versão existente.
-Sobre esta nova versão do listing que é criada como draft, deve ser feita a validação através do endpoint de validação de listing, e caso esteja tudo correto, o usuário poderá tornar esta nova versão do listing, como a versão ativa do listing. Isto garante a preservação do histórico e do ciclo de vida do listing. Por exemplo, se o listing na V1 está no estado de 	StatusPendingPhotoScheduling, e o usuário deseja alterar alguma informação do listing, uma nova versão V2 será criada como draft. O usuário poderá então validar a V2, e caso esteja tudo correto, poderá promover a V2 para ser a versão ativa do listing que deverá manter o estado de 	StatusPendingPhotoScheduling. Assim, o histórico do listing permanece intacto, e o ciclo de vida é preservado.
-Este processo precisa preservar as foreignkeys e relacionamentos existentes, como guarantias, features, exchange_places etc. entre versoes do mesmo listing.
-Uma abordagem possível seria alterar o modelo de listing para, além do campo version que já existe, ter um campo uuid que identifique o grupo de versões do listing, e um campo active_version que identifica a versão activa dentro deste grupo. Assim, todas as versões do mesmo listing teriam o mesmo uuid, mas version_number diferentes (1, 2, 3, ...) mas só uma avtive_version. Isto permite inclusive retroceder a uma versão anterior. O endpoint de criação de listing então criaria um novo registro com o mesmo uuid e version_number incrementado gerenciando active_version.
-As tabelas satelites que possuem foreign keys para listing precisariam referenciar o uuid e version_number para manter a integridade referencial e nÃo mais ter FK direta para o id do listing.
+Após a ultima refatoraçÃo o endpoint GET /listings/versions está passando o ID do listing no path, quando o correto seria passar no body e ser um POST ao invés do GET
 
 
 Assim:
 1. Analise o código atual model, service, handler, repository, dto, converter relacionado ao listing e identifique a melhor forma de implementar a mudança.
-   1.1) atenção especial as tabelas satelites de listing que possuem foreign keys para listing.
 2. Proponha um plano detalhado de implementação, incluindo:
    - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
    - Code Skeletons: esqueletos para cada arquivo novo/alterado (handlers, services, repositories, DTOs, entities, converters) conforme templates da Seção 8 do guia.
@@ -24,9 +19,6 @@ Assim:
    - Checklist de Conformidade: validação contra seções específicas do guia.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
 4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os listings serão apagados.
-5. Não implemente alterações no script de DB, esta tarefa será feita manualmente pela equipe de DBA.
-   5.1. o modelo de dados atual pode ser consultado em scripts/db_creation.sql;
-   5.2. apresente as alteraçoes necessárias no modelo de dados para que a equipe de DBA possa implementar.
 
 ---
 

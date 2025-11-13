@@ -1254,13 +1254,42 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsRequest:
+    properties:
+      includeDeleted:
+        description: |-
+          IncludeDeleted determines whether soft-deleted versions should be included in results
+          When true, returns both active and soft-deleted versions
+          When false (default), returns only active versions (deleted = 0)
+          Example: false
+        example: false
+        type: boolean
+      listingIdentityId:
+        description: |-
+          ListingIdentityID is the unique identifier of the listing identity
+          Required field to identify which listing's versions should be retrieved
+          Must be greater than 0
+          Example: 1024
+        example: 1024
+        minimum: 1
+        type: integer
+    required:
+    - listingIdentityId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsResponse:
     properties:
       listingIdentityId:
+        description: ListingIdentityID is the identity whose versions are being returned
+        example: 1024
         type: integer
       listingUuid:
+        description: ListingUUID is the immutable UUID for this listing identity
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       versions:
+        description: |-
+          Versions contains the list of all versions for this listing
+          Array is ordered by version number descending
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse'
         type: array
@@ -1594,18 +1623,38 @@ definitions:
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse:
     properties:
       id:
+        description: ID is the unique identifier for this specific version
+        example: 5001
         type: integer
       isActive:
+        description: |-
+          IsActive indicates if this version is currently the active one
+          Only one version per listing identity should have IsActive = true
+        example: true
         type: boolean
       listingIdentityId:
+        description: ListingIdentityID is the parent listing identity this version
+          belongs to
+        example: 1024
         type: integer
       listingUuid:
+        description: ListingUUID is the immutable UUID for the listing identity
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       status:
+        description: |-
+          Status indicates the current lifecycle state of this version
+          Possible values: "DRAFT", "ACTIVE", "INACTIVE", "DELETED"
+        example: ACTIVE
         type: string
       title:
+        description: Title is the listing title for this version (may be empty for
+          drafts)
+        example: Apartamento 3 dormitórios na Vila Mariana
         type: string
       version:
+        description: Version is the sequential version number (1, 2, 3, ...)
+        example: 2
         type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse:
@@ -6507,51 +6556,54 @@ paths:
       tags:
       - Listing Photo Sessions
   /listings/versions:
-    get:
-      description: Returns all versions attached to a listing identity, indicating
-        which one is active.
+    post:
+      consumes:
+      - application/json
+      description: Retrieves all versions attached to a listing identity, indicating
+        which one is currently active.
       parameters:
-      - description: Listing identity identifier
-        example: 1024
-        in: query
-        name: listingIdentityId
+      - description: Bearer token for authentication
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        in: header
+        name: Authorization
         required: true
-        type: integer
-      - default: false
-        description: Include soft-deleted versions
-        in: query
-        name: includeDeleted
-        type: boolean
+        type: string
+      - description: Listing identity ID and filter options
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: List of versions with active flag
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsResponse'
         "400":
-          description: Validation error
+          description: Invalid request body or validation error
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "401":
-          description: Unauthorized
+          description: Unauthorized (missing or invalid token)
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "403":
-          description: Forbidden
+          description: Forbidden (insufficient permissions)
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "404":
-          description: Listing not found
+          description: Listing identity not found
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
-          description: Internal error
+          description: Internal server error
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: List listing versions
+      summary: List listing versions by identity ID
       tags:
       - Listings
   /listings/versions/discard:
