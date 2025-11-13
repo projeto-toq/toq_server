@@ -128,7 +128,9 @@ type ListingDetailResponse struct {
 	RentNet            float64                           `json:"rentNet"`
 	Condominium        float64                           `json:"condominium"`
 	AnnualTax          float64                           `json:"annualTax"`
+	MonthlyTax         float64                           `json:"monthlyTax"`
 	AnnualGroundRent   float64                           `json:"annualGroundRent"`
+	MonthlyGroundRent  float64                           `json:"monthlyGroundRent"`
 	Exchange           bool                              `json:"exchange"`
 	ExchangePercentual float64                           `json:"exchangePercentual"`
 	ExchangePlaces     []ListingExchangePlaceResponse    `json:"exchangePlaces,omitempty"`
@@ -204,8 +206,10 @@ type UpdateListingRequest struct {
 	SellNet            coreutils.Optional[float64]                             `json:"sellNet"`
 	RentNet            coreutils.Optional[float64]                             `json:"rentNet"`
 	Condominium        coreutils.Optional[float64]                             `json:"condominium"`
-	AnnualTax          coreutils.Optional[float64]                             `json:"annualTax"`
-	AnnualGroundRent   coreutils.Optional[float64]                             `json:"annualGroundRent"`
+	AnnualTax          coreutils.Optional[float64]                             `json:"annualTax" description:"Annual IPTU (property tax). Mutually exclusive with monthlyTax."`
+	MonthlyTax         coreutils.Optional[float64]                             `json:"monthlyTax" description:"Monthly IPTU (property tax). Mutually exclusive with annualTax."`
+	AnnualGroundRent   coreutils.Optional[float64]                             `json:"annualGroundRent" description:"Annual Laudêmio (ground rent). Mutually exclusive with monthlyGroundRent."`
+	MonthlyGroundRent  coreutils.Optional[float64]                             `json:"monthlyGroundRent" description:"Monthly Laudêmio (ground rent). Mutually exclusive with annualGroundRent."`
 	Exchange           coreutils.Optional[bool]                                `json:"exchange"`
 	ExchangePercentual coreutils.Optional[float64]                             `json:"exchangePercentual"`
 	ExchangePlaces     coreutils.Optional[[]UpdateListingExchangePlaceRequest] `json:"exchangePlaces"`

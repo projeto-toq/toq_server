@@ -94,10 +94,20 @@ func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.
 	} else {
 		listing.UnsetAnnualTax()
 	}
+	if e.MonthlyTax.Valid {
+		listing.SetMonthlyTax(e.MonthlyTax.Float64)
+	} else {
+		listing.UnsetMonthlyTax()
+	}
 	if e.AnnualGroundRent.Valid {
 		listing.SetAnnualGroundRent(e.AnnualGroundRent.Float64)
 	} else {
 		listing.UnsetAnnualGroundRent()
+	}
+	if e.MonthlyGroundRent.Valid {
+		listing.SetMonthlyGroundRent(e.MonthlyGroundRent.Float64)
+	} else {
+		listing.UnsetMonthlyGroundRent()
 	}
 	if e.Exchange.Valid {
 		listing.SetExchange(e.Exchange.Int16 == 1)

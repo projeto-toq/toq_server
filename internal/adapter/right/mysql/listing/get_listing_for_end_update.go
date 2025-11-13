@@ -25,38 +25,42 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, user_id, code, version, status, zip_code, street, number, city, state, title, type, owner,
-		buildable, delivered, who_lives, description, transaction, visit, accompanying, annual_tax, exchange,
+		buildable, delivered, who_lives, description, transaction, visit, accompanying, annual_tax, monthly_tax, 
+		annual_ground_rent, monthly_ground_rent, exchange,
 		exchange_perc, sell_net, rent_net, condominium, land_size, corner, tenant_name, tenant_phone, tenant_email,
 		financing FROM listings WHERE id = ?`
 
 	var (
-		status       uint8
-		listingType  uint16
-		street       sql.NullString
-		number       sql.NullString
-		city         sql.NullString
-		state        sql.NullString
-		title        sql.NullString
-		owner        sql.NullInt16
-		buildable    sql.NullFloat64
-		delivered    sql.NullInt16
-		whoLives     sql.NullInt16
-		description  sql.NullString
-		transaction  sql.NullInt16
-		visit        sql.NullInt16
-		accompanying sql.NullInt16
-		annualTax    sql.NullFloat64
-		exchange     sql.NullInt16
-		exchangePerc sql.NullFloat64
-		saleNet      sql.NullFloat64
-		rentNet      sql.NullFloat64
-		condominium  sql.NullFloat64
-		landSize     sql.NullFloat64
-		corner       sql.NullInt16
-		tenantName   sql.NullString
-		tenantPhone  sql.NullString
-		tenantEmail  sql.NullString
-		financing    sql.NullInt16
+		status            uint8
+		listingType       uint16
+		street            sql.NullString
+		number            sql.NullString
+		city              sql.NullString
+		state             sql.NullString
+		title             sql.NullString
+		owner             sql.NullInt16
+		buildable         sql.NullFloat64
+		delivered         sql.NullInt16
+		whoLives          sql.NullInt16
+		description       sql.NullString
+		transaction       sql.NullInt16
+		visit             sql.NullInt16
+		accompanying      sql.NullInt16
+		annualTax         sql.NullFloat64
+		monthlyTax        sql.NullFloat64
+		annualGroundRent  sql.NullFloat64
+		monthlyGroundRent sql.NullFloat64
+		exchange          sql.NullInt16
+		exchangePerc      sql.NullFloat64
+		saleNet           sql.NullFloat64
+		rentNet           sql.NullFloat64
+		condominium       sql.NullFloat64
+		landSize          sql.NullFloat64
+		corner            sql.NullInt16
+		tenantName        sql.NullString
+		tenantPhone       sql.NullString
+		tenantEmail       sql.NullString
+		financing         sql.NullInt16
 	)
 
 	row := la.QueryRowContext(ctx, tx, "select", query, listingID)
@@ -82,6 +86,9 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		&visit,
 		&accompanying,
 		&annualTax,
+		&monthlyTax,
+		&annualGroundRent,
+		&monthlyGroundRent,
 		&exchange,
 		&exchangePerc,
 		&saleNet,
@@ -119,6 +126,9 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	data.Visit = visit
 	data.Accompanying = accompanying
 	data.AnnualTax = annualTax
+	data.MonthlyTax = monthlyTax
+	data.AnnualGroundRent = annualGroundRent
+	data.MonthlyGroundRent = monthlyGroundRent
 	data.Exchange = exchange
 	data.ExchangePercentual = exchangePerc
 	data.SaleNet = saleNet

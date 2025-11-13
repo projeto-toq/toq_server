@@ -169,11 +169,27 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		}
 	}
 
+	if req.MonthlyTax.IsPresent() {
+		if req.MonthlyTax.IsNull() {
+			input.MonthlyTax = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.MonthlyTax.Value(); ok {
+			input.MonthlyTax = coreutils.NewOptionalValue(value)
+		}
+	}
+
 	if req.AnnualGroundRent.IsPresent() {
 		if req.AnnualGroundRent.IsNull() {
 			input.AnnualGroundRent = coreutils.NewOptionalNull[float64]()
 		} else if value, ok := req.AnnualGroundRent.Value(); ok {
 			input.AnnualGroundRent = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.MonthlyGroundRent.IsPresent() {
+		if req.MonthlyGroundRent.IsNull() {
+			input.MonthlyGroundRent = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.MonthlyGroundRent.Value(); ok {
+			input.MonthlyGroundRent = coreutils.NewOptionalValue(value)
 		}
 	}
 

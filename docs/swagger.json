@@ -5147,7 +5147,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Allows partial updates for draft listings. Omitted fields remain unchanged; present fields (including null/empty) overwrite stored values.",
+                "description": "Allows partial updates for draft listings. Omitted fields remain unchanged; present fields (including null/empty) overwrite stored values. **IMPORTANT TAX RULES**: (1) IPTU (property tax) requires exactly ONE field: either `annualTax` OR `monthlyTax`, never both simultaneously. (2) Laudêmio (ground rent) is optional but if provided, use either `annualGroundRent` OR `monthlyGroundRent`, never both.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5160,7 +5160,7 @@
                 "summary": "Update a listing",
                 "parameters": [
                     {
-                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"annualTax\":3400.75,\"annualGroundRent\":1800,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+5511912345678\",\"title\":\"Oportunidade\",\"accompanying\":\"assistant\"}",
+                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"monthlyTax\":283.40,\"monthlyGroundRent\":150,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+5511912345678\",\"title\":\"Oportunidade\",\"accompanying\":\"assistant\"}",
                         "description": "Payload for update (ID must be provided in the body)",
                         "name": "request",
                         "in": "body",
@@ -5203,6 +5203,12 @@
                     },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Tax field conflict: both annual and monthly values provided for IPTU or Laudêmio",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -10444,6 +10450,12 @@
                 "landSize": {
                     "type": "number"
                 },
+                "monthlyGroundRent": {
+                    "type": "number"
+                },
+                "monthlyTax": {
+                    "type": "number"
+                },
                 "neighborhood": {
                     "type": "string"
                 },
@@ -11380,6 +11392,12 @@
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
                 },
                 "landSize": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
+                },
+                "monthlyGroundRent": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
+                },
+                "monthlyTax": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
                 },
                 "nonBuildable": {

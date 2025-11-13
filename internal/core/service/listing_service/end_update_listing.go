@@ -190,9 +190,29 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 	if !data.Accompanying.Valid {
 		return utils.BadRequest("Accompanying type is required")
 	}
-	if !data.AnnualTax.Valid {
-		return utils.BadRequest("Annual tax is required")
+
+	// Validate IPTU (property tax): AT LEAST ONE must be provided, but NOT BOTH
+	// Business rule: Frontend chooses to send either annual OR monthly, never both
+	hasAnnualTax := data.AnnualTax.Valid
+	hasMonthlyTax := data.MonthlyTax.Valid
+
+	if !hasAnnualTax && !hasMonthlyTax {
+		return utils.BadRequest("IPTU is required: provide either annual_tax or monthly_tax")
 	}
+
+	if hasAnnualTax && hasMonthlyTax {
+		return utils.BadRequest("IPTU conflict: cannot provide both annual_tax and monthly_tax simultaneously")
+	}
+
+	// Validate Laudêmio (ground rent): BOTH are optional, but NOT BOTH simultaneously
+	// Business rule: Laudêmio may not exist for all properties
+	hasAnnualGroundRent := data.AnnualGroundRent.Valid
+	hasMonthlyGroundRent := data.MonthlyGroundRent.Valid
+
+	if hasAnnualGroundRent && hasMonthlyGroundRent {
+		return utils.BadRequest("Laudêmio conflict: cannot provide both annual_ground_rent and monthly_ground_rent simultaneously")
+	}
+
 	if data.FeaturesCount == 0 {
 		return utils.BadRequest("Listing must include features")
 	}

@@ -45,8 +45,12 @@ type listing struct {
 	condominiumValid        bool
 	annualTax               float64
 	annualTaxValid          bool
+	monthlyTax              float64
+	monthlyTaxValid         bool
 	annualGroundRent        float64
 	annualGroundRentValid   bool
+	monthlyGroundRent       float64
+	monthlyGroundRentValid  bool
 	exchange                bool
 	exchangeValid           bool
 	exchangePercentual      float64
@@ -436,6 +440,24 @@ func (l *listing) UnsetAnnualTax() {
 	l.annualTaxValid = false
 }
 
+func (l *listing) MonthlyTax() float64 {
+	return l.monthlyTax
+}
+
+func (l *listing) SetMonthlyTax(monthlyTax float64) {
+	l.monthlyTax = monthlyTax
+	l.monthlyTaxValid = true
+}
+
+func (l *listing) HasMonthlyTax() bool {
+	return l.monthlyTaxValid
+}
+
+func (l *listing) UnsetMonthlyTax() {
+	l.monthlyTax = 0
+	l.monthlyTaxValid = false
+}
+
 func (l *listing) AnnualGroundRent() float64 {
 	return l.annualGroundRent
 }
@@ -452,6 +474,24 @@ func (l *listing) HasAnnualGroundRent() bool {
 func (l *listing) UnsetAnnualGroundRent() {
 	l.annualGroundRent = 0
 	l.annualGroundRentValid = false
+}
+
+func (l *listing) MonthlyGroundRent() float64 {
+	return l.monthlyGroundRent
+}
+
+func (l *listing) SetMonthlyGroundRent(monthlyGroundRent float64) {
+	l.monthlyGroundRent = monthlyGroundRent
+	l.monthlyGroundRentValid = true
+}
+
+func (l *listing) HasMonthlyGroundRent() bool {
+	return l.monthlyGroundRentValid
+}
+
+func (l *listing) UnsetMonthlyGroundRent() {
+	l.monthlyGroundRent = 0
+	l.monthlyGroundRentValid = false
 }
 
 func (l *listing) Exchange() bool {

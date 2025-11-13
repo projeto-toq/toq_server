@@ -14,17 +14,18 @@ import (
 // UpdateListing updates an existing listing.
 //
 //	@Summary	Update a listing
-//	@Description	Allows partial updates for draft listings. Omitted fields remain unchanged; present fields (including null/empty) overwrite stored values.
+//	@Description	Allows partial updates for draft listings. Omitted fields remain unchanged; present fields (including null/empty) overwrite stored values. **IMPORTANT TAX RULES**: (1) IPTU (property tax) requires exactly ONE field: either `annualTax` OR `monthlyTax`, never both simultaneously. (2) Laudêmio (ground rent) is optional but if provided, use either `annualGroundRent` OR `monthlyGroundRent`, never both.
 //	@Tags		Listings
 //	@Accept		json
 //	@Produce	json
-//	@Param	request	body	dto.UpdateListingRequest	true	"Payload for update (ID must be provided in the body)" Extensions(x-example={"id":98765,"owner":"myself","features":[{"featureId":101,"quantity":2},{"featureId":205,"quantity":1}],"landSize":423.5,"corner":true,"nonBuildable":12.75,"buildable":410.75,"delivered":"furnished","whoLives":"tenant","description":"Apartamento amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"annualTax":3400.75,"annualGroundRent":1800,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+5511912345678","title":"Oportunidade","accompanying":"assistant"})
+//	@Param	request	body	dto.UpdateListingRequest	true	"Payload for update (ID must be provided in the body)" Extensions(x-example={"id":98765,"owner":"myself","features":[{"featureId":101,"quantity":2},{"featureId":205,"quantity":1}],"landSize":423.5,"corner":true,"nonBuildable":12.75,"buildable":410.75,"delivered":"furnished","whoLives":"tenant","description":"Apartamento amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"monthlyTax":283.40,"monthlyGroundRent":150,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+5511912345678","title":"Oportunidade","accompanying":"assistant"})
 //	@Success	200	{object}	dto.UpdateListingResponse
 //	@Failure	400	{object}	dto.ErrorResponse	"Invalid payload"
 //	@Failure	401	{object}	dto.ErrorResponse	"Unauthorized"
 //	@Failure	403	{object}	dto.ErrorResponse	"Forbidden"
 //	@Failure	404	{object}	dto.ErrorResponse	"Not found"
 //	@Failure	409	{object}	dto.ErrorResponse	"Conflict"
+//	@Failure	422	{object}	dto.ErrorResponse	"Tax field conflict: both annual and monthly values provided for IPTU or Laudêmio"
 //	@Failure	500	{object}	dto.ErrorResponse	"Internal error"
 //	@Router		/listings [put]
 //	@Security	BearerAuth

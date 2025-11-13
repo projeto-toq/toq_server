@@ -220,7 +220,9 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listings` (
   `rent_net` DECIMAL(9,2) NULL DEFAULT NULL,
   `condominium` DECIMAL(9,2) NULL DEFAULT NULL,
   `annual_tax` DECIMAL(9,2) NULL DEFAULT NULL,
+  `monthly_tax` DECIMAL(10,2) NULL,
   `annual_ground_rent` DECIMAL(9,2) NULL DEFAULT NULL,
+  `monthly_ground_rent` DECIMAL(10,2) NULL,
   `exchange` TINYINT UNSIGNED NULL DEFAULT NULL,
   `exchange_perc` TINYINT UNSIGNED NULL DEFAULT NULL,
   `installment` TINYINT UNSIGNED NULL DEFAULT NULL,
@@ -936,7 +938,7 @@ COMMIT;
 -- -----------------------------------------------------
 START TRANSACTION;
 USE `toq_db`;
-INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `password`, `opt_status`, `last_activity_at`, `deleted`, `blocked_until`, `permanently_blocked`) VALUES (1, 'Administrador', 'Admin', '52642435000133', NULL, NULL, NULL, '2023-10-24', '+551152413731', 'toq@toq.app.br', '06472001', 'Av Copacabana', '268', 'sala 2305 - 23 andar', 'Dezoito do forte', 'Barueri', 'SP', '$2a$10$OCEwz031FBlA6SWP7JGULOY2DqJwlD665cXORNFzfKFB2WeQ7/aQa', 1, '2025-08-29 00:00:00.000000', 0, NULL, DEFAULT);
+INSERT INTO `toq_db`.`users` (`id`, `full_name`, `nick_name`, `national_id`, `creci_number`, `creci_state`, `creci_validity`, `born_at`, `phone_number`, `email`, `zip_code`, `street`, `number`, `complement`, `neighborhood`, `city`, `state`, `password`, `opt_status`, `last_activity_at`, `deleted`, `blocked_until`, `permanently_blocked`) VALUES (1, 'Administrador', 'Admin', '52642435000133', NULL, NULL, NULL, '2023-10-24', '+551152413731', 'toq@toq.app.br', '06472001', 'Av Copacabana', '268', 'sala 2305 - 23 andar', 'Dezoito do forte', 'Barueri', 'SP', '$2a$10$OCEwz031FBlA6SWP7JGULOY2DqJwlD665cXORNFzfKFB2WeQ7/aQa', 1, '2025-08-29 00:00:00.000000', 0, NULL, 0);
 
 COMMIT;
 

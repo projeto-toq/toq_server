@@ -23,9 +23,9 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 	query := `INSERT INTO listings (
 			user_id, code, version, status, zip_code, street, number, complement, neighborhood, city, state, title,
 			type, owner, land_size, corner, non_buildable, buildable, delivered, who_lives, description,
-				transaction, sell_net, rent_net, condominium, annual_tax, annual_ground_rent, exchange, exchange_perc,
+				transaction, sell_net, rent_net, condominium, annual_tax, monthly_tax, annual_ground_rent, monthly_ground_rent, exchange, exchange_perc,
 				installment, financing, visit, tenant_name, tenant_email, tenant_phone, accompanying, deleted)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	street := sql.NullString{String: listing.Street(), Valid: listing.Street() != ""}
 	number := sql.NullString{String: listing.Number(), Valid: true}
@@ -90,9 +90,17 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 	if listing.HasAnnualTax() {
 		annualTax = sql.NullFloat64{Float64: listing.AnnualTax(), Valid: true}
 	}
+	monthlyTax := sql.NullFloat64{}
+	if listing.HasMonthlyTax() {
+		monthlyTax = sql.NullFloat64{Float64: listing.MonthlyTax(), Valid: true}
+	}
 	annualGroundRent := sql.NullFloat64{}
 	if listing.HasAnnualGroundRent() {
 		annualGroundRent = sql.NullFloat64{Float64: listing.AnnualGroundRent(), Valid: true}
+	}
+	monthlyGroundRent := sql.NullFloat64{}
+	if listing.HasMonthlyGroundRent() {
+		monthlyGroundRent = sql.NullFloat64{Float64: listing.MonthlyGroundRent(), Valid: true}
 	}
 	exchange := sql.NullBool{}
 	if listing.HasExchange() {
@@ -133,7 +141,11 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 	deletedValue := listing.Deleted()
 
 	result, execErr := la.ExecContext(ctx, tx, "insert", query,
-		listing.UserID(), listing.Code(), listing.Version(), listing.Status(), listing.ZipCode(),
+		listing.UserID(),
+		listing.Code(),
+		listing.Version(),
+		listing.Status(),
+		listing.ZipCode(),
 		street,
 		number,
 		complement,
@@ -155,7 +167,9 @@ func (la *ListingAdapter) CreateListing(ctx context.Context, tx *sql.Tx, listing
 		rentNet,
 		condominium,
 		annualTax,
+		monthlyTax,
 		annualGroundRent,
+		monthlyGroundRent,
 		exchange,
 		exchangePercentual,
 		installment,

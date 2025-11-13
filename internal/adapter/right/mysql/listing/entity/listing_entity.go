@@ -35,7 +35,9 @@ type ListingEntity struct {
 	RentNet            sql.NullFloat64
 	Condominium        sql.NullFloat64
 	AnnualTax          sql.NullFloat64
+	MonthlyTax         sql.NullFloat64
 	AnnualGroundRent   sql.NullFloat64
+	MonthlyGroundRent  sql.NullFloat64
 	Exchange           sql.NullInt16
 	ExchangePercentual sql.NullFloat64
 	ExchangePlaces     []EntityExchangePlace

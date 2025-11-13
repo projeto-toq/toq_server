@@ -6,16 +6,20 @@
 
 ## 🎯 Solicitação
 
-É necessário alterar o nome do bucket onde os arquivos de mídia dos usuários são armazenados. Atualmente, o bucket é chamado `toq-app-media` e deve ser chamado `toq-user-medias`.
-O bucket já está criado na AWS e a aplicação possui as permissões necessárias para acessá-lo.
+Houve uma alteraçÃo na regra de negócio referente ao IPTU (annual_tax da tabela listing) e Laudemio (annual_groud_rent da tabela listing). Atualmente existe somente o campo annual_tax e annual_groud_rent, que representa o valor anual do IPTU e Laudêmio respectivamente. A nova regra exige a adição de dois novos campos mensais: monthly_tax e monthly_ground_rent.
+Com estes novos campos, a regra de validação, que é executada em validateListingBeforeEndUpdate, será que o IPTU deve ter ao menos 1 dos campos preenchidos (annual_tax ou monthly_tax), pois se ambos forem preenchidos haverá conflito. A decisão de qual campo enviar ficará a cargo do frontend. No caso do Laudemio, nem sempre existe, então ambos os campos ficarão opcionais, mas nunca os dois poderão ser preenchidos simultaneamente.
+
 
 Assim:
-1. Analise o código atual no adapter de armazenamento S3.
-2. Identifique todos os pontos onde o nome do bucket é referenciado.
-3. Proponha um plano detalhado para alterar o nome do bucket para `toq-user-medias`, garantindo que todas as funcionalidades relacionadas ao upload, download e gerenciamento de arquivos de mídia dos usuários continuem funcionando corretamente.
-4. Forneça code skeletons para as alterações propostas, incluindo handlers, services, repositories, DTOs, entities e converters, conforme aplicável.
-5. Garanta que o plano siga todas as regras de arquitetura, padrões de código, observabilidade e documentação do projeto.
-6. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os usuários serão apagados.
+1. Analise o código atual model, service, handler, repository, dto, converter relacionado ao listing e identifique a melhor forma de implementar a mudança.
+2. Proponha um plano detalhado de implementação, incluindo:
+   - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
+   - Code Skeletons: esqueletos para cada arquivo novo/alterado (handlers, services, repositories, DTOs, entities, converters) conforme templates da Seção 8 do guia.
+   - Estrutura de Diretórios: organização final seguindo a Regra de Espelhamento (Seção 2.1 do guia).
+   - Ordem de Execução: etapas numeradas com dependências.
+   - Checklist de Conformidade: validação contra seções específicas do guia.
+3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
+4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os listings serão apagados.
 
 ---
 

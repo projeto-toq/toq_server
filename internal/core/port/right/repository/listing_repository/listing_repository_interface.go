@@ -97,6 +97,9 @@ type ListingEndUpdateData struct {
 	Visit                  sql.NullInt16
 	Accompanying           sql.NullInt16
 	AnnualTax              sql.NullFloat64
+	MonthlyTax             sql.NullFloat64
+	AnnualGroundRent       sql.NullFloat64
+	MonthlyGroundRent      sql.NullFloat64
 	Exchange               sql.NullInt16
 	ExchangePercentual     sql.NullFloat64
 	SaleNet                sql.NullFloat64

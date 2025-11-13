@@ -231,11 +231,27 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		}
 	}
 
+	if input.MonthlyTax.IsPresent() {
+		if input.MonthlyTax.IsNull() {
+			existing.UnsetMonthlyTax()
+		} else if value, ok := input.MonthlyTax.Value(); ok {
+			existing.SetMonthlyTax(value)
+		}
+	}
+
 	if input.AnnualGroundRent.IsPresent() {
 		if input.AnnualGroundRent.IsNull() {
 			existing.UnsetAnnualGroundRent()
 		} else if value, ok := input.AnnualGroundRent.Value(); ok {
 			existing.SetAnnualGroundRent(value)
+		}
+	}
+
+	if input.MonthlyGroundRent.IsPresent() {
+		if input.MonthlyGroundRent.IsNull() {
+			existing.UnsetMonthlyGroundRent()
+		} else if value, ok := input.MonthlyGroundRent.Value(); ok {
+			existing.SetMonthlyGroundRent(value)
 		}
 	}
 

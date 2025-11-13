@@ -87,10 +87,18 @@ type ListingInterface interface {
 	SetAnnualTax(annualTax float64)
 	HasAnnualTax() bool
 	UnsetAnnualTax()
+	MonthlyTax() float64
+	SetMonthlyTax(monthlyTax float64)
+	HasMonthlyTax() bool
+	UnsetMonthlyTax()
 	AnnualGroundRent() float64
 	SetAnnualGroundRent(annualGroundRent float64)
 	HasAnnualGroundRent() bool
 	UnsetAnnualGroundRent()
+	MonthlyGroundRent() float64
+	SetMonthlyGroundRent(monthlyGroundRent float64)
+	HasMonthlyGroundRent() bool
+	UnsetMonthlyGroundRent()
 	Exchange() bool
 	SetExchange(exchange bool)
 	HasExchange() bool
