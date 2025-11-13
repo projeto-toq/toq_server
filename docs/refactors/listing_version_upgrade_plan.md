@@ -26,6 +26,12 @@ O objetivo é introduzir versionamento integral dos listings, mantendo observabi
 - Implementar adapters MySQL seguindo a Regra de Espelhamento, criando novos arquivos (`create_listing_version.go`, `promote_listing_version.go`, etc.).
 - Ajustar entidades MySQL para refletir `listing_versions` e novos FKs; preparar conversores.
 - Inserir MIGRATION NOTES para DBAs (sem tocar em `scripts/db_creation.sql`).
+  - **Notas de Migração:**
+    - Criar tabela `listing_identities` com colunas `id` (PK), `listing_uuid` (UUID), `user_id`, `code`, `active_version_id` (FK opcional para `listing_versions`), campos de auditoria e flag `deleted`.
+    - Renomear/duplicar a tabela atual de `listings` para `listing_versions`, adicionando coluna obrigatória `listing_identity_id` (FK para `listing_identities`) e flag `deleted`; preservar demais colunas.
+    - Atualizar tabelas satélite (`features`, `exchange_places`, `financing_blockers`, `guarantees`) para referenciar `listing_version_id` em vez de `listing_id`, garantindo `ON DELETE CASCADE` consistente.
+    - Criar índices: `UNIQUE (listing_uuid)` em `listing_identities` e índice composto `(listing_identity_id, version)` em `listing_versions`.
+    - Atualizar views/consultas dependentes para o novo relacionamento `listing_identities ↔ listing_versions`.
 
 ### Fase 3 — Services
 - Atualizar `StartListing`, `UpdateListing`, `EndUpdateListing` (renomear para `PromoteListingVersion`) e novos serviços (`DiscardDraftVersion`, `ListListingVersions`).
@@ -44,15 +50,15 @@ O objetivo é introduzir versionamento integral dos listings, mantendo observabi
 - Ajustar caches ou adaptadores que persistem `listing_id` para trabalhar com `listing_uuid`/`version`.
 
 ### Fase 6 — Documentação e Cleanup
-- Atualizar docs (`README`, guias internos) com novo fluxo de versionamento.
+- Atualizar docs (`README`,`procedimento_de_criação_de_novo_anuncio.md`) com novo fluxo de versionamento.
 - Remover código legado/tags TODO utilizados como ponte.
 - Confirmar build final e executar checklist das seções 13/14 do guia.
 
 ## Controle de Progresso
-- [ ] Fase 1 — Modelos e Interfaces
-- [ ] Fase 2 — Ports e Adapters
-- [ ] Fase 3 — Services
-- [ ] Fase 4 — Handlers & DTOs
+- [x] Fase 1 — Modelos e Interfaces
+- [x] Fase 2 — Ports e Adapters
+- [x] Fase 3 — Services
+- [x] Fase 4 — Handlers & DTOs
 - [ ] Fase 5 — Integrações
 - [ ] Fase 6 — Documentação & Cleanup
 
