@@ -6,24 +6,34 @@
 
 ## 🎯 Solicitação
 
-o processo de criação e atualização de versões de listings deve ser modificado para:
-1) o endpoint de criação de listing POST /listings deve ser usado APENAS para criar a versão inicial (versão 1) em status DRAFT
-   1.1. deve haver validação se existe uma versão ativa (não-expirada/não-fechada) para o listingIdentityId; ou se existe um listing par ao endereço selecionado, se existir, retornar erro 409 
-2) sobre esta versÃo inciail, o endpoint PUT /listings faz todas as atualizações, sempre verificando que a versão está em status DRAFT
-3) ao terminar as atualizações o endpoint POST /listings/versions/promote deve ser chamado para promover a versão DRAFT para:
-   3.1 - Se for a primeira versão (v1), muda o status para `StatusPendingAvailability` e cria a agenda básica do imóvel
-	3.2 - Se for uma versão posterior, mantém o status da versão ativa anterior (preserva o ciclo de vida do listing)
-4) para criar uma nova versão DRAFT a partir de uma versão ativa existente, deve ser usado o novo endpoint POST /listings/versions/draft
-   4.1 - este endpoint deve validar se a versão ativa está em um dos status permitidos para cópia (ver regras abaixo)
-   4.2 - se já existir uma versão DRAFT não-promovida, retornar o versionId desta versão
-   4.3 - caso contrário, criar uma nova versão DRAFT, copiando todos os dados da versão ativa (incluindo entidades satélite: features, exchange_places, financing_blockers, guarantees, etc)
-   4.4 - retornar o versionId e status da nova versão DRAFT criada
+é necessário incluir novos campos no modelo de Listing para suportar diferentes tipos de propriedades imobiliárias. Abaixo estão os campos a serem adicionados, juntamente com seus tipos e regras de validação:
 
-### Regras de Cópia de Versão Ativa para DRAFT
-- permitir cópia APENAS de: StatusSuspended, StatusRejectedByOwner, StatusPendingPhotoProcessing, StatusPhotosScheduled, StatusPendingPhotoConfirmation, StatusPendingPhotoScheduling, StatusPendingAvailability;
-- bloquear StatusPublished com mensagem "Listing is published. Suspend it via status update before creating a draft version";
-- bloquear StatusUnderNegotiation/StatusPendingAdminReview/StatusPendingOwnerApproval com "Listing is locked in workflow and cannot be copied";
-- bloquear StatusExpired/StatusArchived/StatusClosed com "Listing is permanently closed and cannot be edited"
+- PREVISÃO DE CONCLUSÃO ==> só interessa mes e ano. Regra: obrigatório quando casa em construção
+- QUADRA ==> varchar(50) ==> Regra: obrigatório quando terreno
+- LOTE ==> varchar (50)==> Regra: obrigatório quando terreno comercial ou residencial
+- FRENTE ==> float ==> Regra: opcional quando terreno comercial ou residencial
+- LADO ==> float ==> Regra: opcional quando terreno comercial ou residencial
+- FUNDOS ==> float ==> Regra: opcional quando terreno comercial ou residencial
+- TIPO TERRENO;==>enum {ACLIVE LEVE,ACLIVE,PLANO,DECLIVE,DECLIVE LEVE} ==>Regra: obrigatório quando terreno comercial ou residencial
+- KMZ DO TERRENO;==> qual o tipo de campo? ==> Regra: opcional quando terreno comercial 
+- TEM KMZ?;==> boolean ==> Regra: obrigatório quando terreno comercial 
+- QUANTIDADE DE ANDARES ==> int ==> obrigatório quando predio 
+- TORRE/BLOCO;==> varchar(100) ==> Regra: obrigatório quando apartamento ou sala ou laje ==> ja existe no complex_towers e deve ser coincidente com esse campo
+- ANDAR; varchar(10) ==> Regra: obrigatório quando apartamento ou sala ou laje
+- unidade;varchar(10) ==> Regra: obrigatório quando apartamento ou sala ou laje
+- METRAGEM DE ÁREA FABRIL;==> float ==> Regra: Obrigatório quando galpão
+- setor de atuaçÃo == > enum(FABRIL, INDUSTRIAL, E LOGÍSTICO) ==> Regra: Obrigatório quando galpão
+- CABINE PRIMÁRIA (MEU GALPÃO POSSUI CABINES);==> boolean ==> obrigatório quando galpão
+- CABINE_kva;==> varchar(50) ==> obrigatório quando galpão e possui cabine
+- TÉRREO;==> int ==> obrigatório quando galpão
+- ADICIONAR OUTROS PAVIMENTOS;==> tabela adiconal com: NOME Varchar(50), ORDEM int E ALTURA float
+- RESISTÊNCIA DO PISO;==> float ==> obrigatório quando galpão
+- ZONEAMENTO;==> varchar(50) ==> obrigatório quando galpão
+- tem ÁREA PARA ESCRITÓRIO;==> boolean ==> obrigatório quando galpão
+- ÁREA PARA ESCRITÓRIO;==> flaot ==> obrigatório quando galpão e tem area para escritorio
+- NÃO HÁ ÁREA PARA ESCRITÓRIO?; ==> boolean ==> obrigatório quando galpão
+- METRAGEM DO MEZANINO;==> float ==> obrigatório quando loja e tem mezanino
+- HÁ MEZANINO?;==> boolean ==> obrigatório quando loja
 
 
 Assim:
@@ -36,7 +46,7 @@ Assim:
    - Checklist de Conformidade: validação contra seções específicas do guia.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
 4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os listings serão apagados.
-5. Verifique se os endpoints podem ter uma nomenclatura melhor, mas mantenha os verbos HTTP conforme descrito.
+5. verifique nomes coerentes e com o padrão do projeto, em ingles
 
 ---
 

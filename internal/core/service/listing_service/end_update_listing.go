@@ -355,6 +355,99 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 		}
 	}
 
+	// Property-type specific validations
+	for _, option := range propertyOptions {
+		switch option.Code {
+		case 256: // Casa em Construção
+			if !data.CompletionForecast.Valid || strings.TrimSpace(data.CompletionForecast.String) == "" {
+				return utils.BadRequest("Completion forecast (YYYY-MM) is required for Casa em Construção")
+			}
+
+		case 16, 32, 64, 128, 512: // All Terreno types (Urbano, Rural, Industrial, Comercial, Residencial)
+			if !data.LandBlock.Valid || strings.TrimSpace(data.LandBlock.String) == "" {
+				return utils.BadRequest("Land block is required for Terreno properties")
+			}
+
+			// Terreno Comercial (64) or Terreno Residencial (512)
+			if option.Code == 64 || option.Code == 512 {
+				if !data.LandLot.Valid || strings.TrimSpace(data.LandLot.String) == "" {
+					return utils.BadRequest("Land lot is required for Terreno Comercial/Residencial")
+				}
+				if !data.LandTerrainType.Valid {
+					return utils.BadRequest("Land terrain type is required for Terreno Comercial/Residencial")
+				}
+				if !data.HasKmz.Valid {
+					return utils.BadRequest("HasKmz flag is required for Terreno Comercial/Residencial")
+				}
+				// If has_kmz is true, kmz_file is required (only for Comercial)
+				if option.Code == 64 && data.HasKmz.Valid && data.HasKmz.Int16 == 1 {
+					if !data.KmzFile.Valid || strings.TrimSpace(data.KmzFile.String) == "" {
+						return utils.BadRequest("KMZ file path is required when HasKmz is true for Terreno Comercial")
+					}
+				}
+			}
+
+		case 1024: // Prédio
+			if !data.BuildingFloors.Valid {
+				return utils.BadRequest("Building floors count is required for Prédio")
+			}
+
+		case 1, 2, 4: // Apartamento (1), Sala (2), Laje Corporativa (4)
+			if !data.UnitTower.Valid || strings.TrimSpace(data.UnitTower.String) == "" {
+				return utils.BadRequest("Unit tower is required for Apartamento/Sala/Laje")
+			}
+			if !data.UnitFloor.Valid || strings.TrimSpace(data.UnitFloor.String) == "" {
+				return utils.BadRequest("Unit floor is required for Apartamento/Sala/Laje")
+			}
+			if !data.UnitNumber.Valid || strings.TrimSpace(data.UnitNumber.String) == "" {
+				return utils.BadRequest("Unit number is required for Apartamento/Sala/Laje")
+			}
+
+		case 2048: // Galpão (Industrial/Logístico)
+			if !data.WarehouseManufacturingArea.Valid {
+				return utils.BadRequest("Warehouse manufacturing area is required for Galpão")
+			}
+			if !data.WarehouseSector.Valid {
+				return utils.BadRequest("Warehouse sector is required for Galpão")
+			}
+			if !data.WarehouseHasPrimaryCabin.Valid {
+				return utils.BadRequest("Warehouse has primary cabin flag is required for Galpão")
+			}
+			if data.WarehouseHasPrimaryCabin.Valid && data.WarehouseHasPrimaryCabin.Int16 == 1 {
+				if !data.WarehouseCabinKva.Valid || strings.TrimSpace(data.WarehouseCabinKva.String) == "" {
+					return utils.BadRequest("Warehouse cabin KVA is required when has primary cabin is true for Galpão")
+				}
+			}
+			if !data.WarehouseGroundFloor.Valid {
+				return utils.BadRequest("Warehouse ground floor height is required for Galpão")
+			}
+			if !data.WarehouseFloorResistance.Valid {
+				return utils.BadRequest("Warehouse floor resistance is required for Galpão")
+			}
+			if !data.WarehouseZoning.Valid || strings.TrimSpace(data.WarehouseZoning.String) == "" {
+				return utils.BadRequest("Warehouse zoning is required for Galpão")
+			}
+			if !data.WarehouseHasOfficeArea.Valid {
+				return utils.BadRequest("Warehouse has office area flag is required for Galpão")
+			}
+			if data.WarehouseHasOfficeArea.Valid && data.WarehouseHasOfficeArea.Int16 == 1 {
+				if !data.WarehouseOfficeArea.Valid {
+					return utils.BadRequest("Warehouse office area is required when has office area is true for Galpão")
+				}
+			}
+
+		case 8: // Loja
+			if !data.StoreHasMezzanine.Valid {
+				return utils.BadRequest("Store has mezzanine flag is required for Loja")
+			}
+			if data.StoreHasMezzanine.Valid && data.StoreHasMezzanine.Int16 == 1 {
+				if !data.StoreMezzanineArea.Valid {
+					return utils.BadRequest("Store mezzanine area is required when has mezzanine is true for Loja")
+				}
+			}
+		}
+	}
+
 	return nil
 }
 

@@ -165,18 +165,59 @@ type ListingDetailResponse struct {
 	Visit              *CatalogItemResponse              `json:"visit,omitempty"`
 	TenantName         string                            `json:"tenantName"`
 	TenantEmail        string                            `json:"tenantEmail"`
-	TenantPhone        string                            `json:"tenantPhone"`
-	Accompanying       *CatalogItemResponse              `json:"accompanying,omitempty"`
-	PhotoSessionID     *uint64                           `json:"photoSessionId,omitempty"`
-	Deleted            bool                              `json:"deleted"`
+	TenantPhone                string                            `json:"tenantPhone"`
+	Accompanying               *CatalogItemResponse              `json:"accompanying,omitempty"`
+	PhotoSessionID             *uint64                           `json:"photoSessionId,omitempty"`
+	Deleted                    bool                              `json:"deleted"`
+	CompletionForecast         string                            `json:"completionForecast,omitempty" example:"2026-06"`
+	LandBlock                  string                            `json:"landBlock,omitempty" example:"A"`
+	LandLot                    string                            `json:"landLot,omitempty" example:"15"`
+	LandFront                  float64                           `json:"landFront,omitempty" example:"12.5"`
+	LandSide                   float64                           `json:"landSide,omitempty" example:"30.0"`
+	LandBack                   float64                           `json:"landBack,omitempty" example:"12.5"`
+	LandTerrainType            *CatalogItemResponse              `json:"landTerrainType,omitempty"`
+	HasKmz                     bool                              `json:"hasKmz,omitempty"`
+	KmzFile                    string                            `json:"kmzFile,omitempty" example:"https://storage.exemplo.com/terrenos/lote15.kmz"`
+	BuildingFloors             int16                             `json:"buildingFloors,omitempty" example:"8"`
+	UnitTower                  string                            `json:"unitTower,omitempty" example:"Torre B"`
+	UnitFloor                  int16                             `json:"unitFloor,omitempty" example:"5"`
+	UnitNumber                 string                            `json:"unitNumber,omitempty" example:"502"`
+	WarehouseManufacturingArea float64                           `json:"warehouseManufacturingArea,omitempty" example:"850.5"`
+	WarehouseSector            *CatalogItemResponse              `json:"warehouseSector,omitempty"`
+	WarehouseHasPrimaryCabin   bool                              `json:"warehouseHasPrimaryCabin,omitempty"`
+	WarehouseCabinKva          float64                           `json:"warehouseCabinKva,omitempty" example:"150.0"`
+	WarehouseGroundFloor       float64                           `json:"warehouseGroundFloor,omitempty" example:"4.2"`
+	WarehouseFloorResistance   float64                           `json:"warehouseFloorResistance,omitempty" example:"2500.0"`
+	WarehouseZoning            string                            `json:"warehouseZoning,omitempty" example:"ZI-2"`
+	WarehouseHasOfficeArea     bool                              `json:"warehouseHasOfficeArea,omitempty"`
+	WarehouseOfficeArea        float64                           `json:"warehouseOfficeArea,omitempty" example:"120.0"`
+	WarehouseAdditionalFloors  []WarehouseAdditionalFloorDTO     `json:"warehouseAdditionalFloors,omitempty"`
+	StoreHasMezzanine          bool                              `json:"storeHasMezzanine,omitempty"`
+	StoreMezzanineArea         float64                           `json:"storeMezzanineArea,omitempty" example:"45.0"`
+}
+
+// WarehouseAdditionalFloorDTO represents additional floors in warehouses beyond ground floor.
+//
+// @Description Additional floor information for warehouses (mezanino, second floor, etc.)
+// @property floorName string true "Name/identifier of the floor" example("Mezanino")
+// @property floorOrder integer true "Ordering position (1=first above ground, 2=second, etc.)" example(1)
+// @property floorHeight number true "Ceiling height in meters" example(3.5)
+type WarehouseAdditionalFloorDTO struct {
+	FloorName   string  `json:"floorName" example:"Mezanino" description:"Name/identifier of the floor"`
+	FloorOrder  int     `json:"floorOrder" example:"1" description:"Ordering position (1=first above ground, 2=second, etc.)"`
+	FloorHeight float64 `json:"floorHeight" example:"3.5" description:"Ceiling height in meters"`
 }
 
 // UpdateListingRequest represents request for updating a listing.
 //
+// @Description Request payload for updating draft listing. Omitted fields remain unchanged; present fields (including null) overwrite stored values.
+// @Description Property-specific required fields (validated on promote): Casa em Construção requires completionForecast; All Terrenos require landBlock; Terreno Comercial/Residencial require landLot, landTerrainType, hasKmz (kmzFile required if hasKmz=true); Prédio requires buildingFloors; Apartamento/Sala/Laje require unitTower, unitFloor, unitNumber; Galpão requires warehouseManufacturingArea, warehouseSector, warehouseHasPrimaryCabin (warehouseCabinKva required if true), warehouseGroundFloor, warehouseFloorResistance, warehouseZoning, warehouseHasOfficeArea (warehouseOfficeArea required if true); Loja requires storeHasMezzanine (storeMezzanineArea required if true).
+//
 // Exemplo completo de payload (todos os campos preenchidos):
 //
 //	{
-//	  "id": 98765,
+//	  "listingIdentityId": 1024,
+//	  "listingVersionId": 5001,
 //	  "owner": "myself",
 //	  "features": [
 //	    {"featureId": 101, "quantity": 2},
@@ -212,7 +253,36 @@ type ListingDetailResponse struct {
 //	  "tenantName": "Joao da Silva",
 //	  "tenantEmail": "joao.silva@example.com",
 //	  "tenantPhone": "+5511912345678",
-//	  "accompanying": "assistant"
+//	  "title": "Apartamento 3 dormitorios com piscina",
+//	  "accompanying": "assistant",
+//	  "completionForecast": "2026-06",
+//	  "landBlock": "A",
+//	  "landLot": "15",
+//	  "landFront": 12.5,
+//	  "landSide": 30.0,
+//	  "landBack": 12.5,
+//	  "landTerrainType": "plano",
+//	  "hasKmz": true,
+//	  "kmzFile": "https://storage.exemplo.com/terrenos/lote15.kmz",
+//	  "buildingFloors": 8,
+//	  "unitTower": "Torre B",
+//	  "unitFloor": 5,
+//	  "unitNumber": "502",
+//	  "warehouseManufacturingArea": 850.5,
+//	  "warehouseSector": "industrial",
+//	  "warehouseHasPrimaryCabin": true,
+//	  "warehouseCabinKva": 150.0,
+//	  "warehouseGroundFloor": 4.2,
+//	  "warehouseFloorResistance": 2500.0,
+//	  "warehouseZoning": "ZI-2",
+//	  "warehouseHasOfficeArea": true,
+//	  "warehouseOfficeArea": 120.0,
+//	  "warehouseAdditionalFloors": [
+//	    {"floorName": "Mezanino", "floorOrder": 1, "floorHeight": 3.5},
+//	    {"floorName": "Segundo Piso", "floorOrder": 2, "floorHeight": 3.2}
+//	  ],
+//	  "storeHasMezzanine": true,
+//	  "storeMezzanineArea": 45.0
 //	}
 type UpdateListingRequest struct {
 	ListingIdentityID  coreutils.Optional[int64]                               `json:"listingIdentityId" binding:"required" example:"1024"`
@@ -245,8 +315,33 @@ type UpdateListingRequest struct {
 	Visit              coreutils.Optional[string]                              `json:"visit"`
 	TenantName         coreutils.Optional[string]                              `json:"tenantName"`
 	TenantEmail        coreutils.Optional[string]                              `json:"tenantEmail"`
-	TenantPhone        coreutils.Optional[string]                              `json:"tenantPhone" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
-	Accompanying       coreutils.Optional[string]                              `json:"accompanying"`
+	TenantPhone                 coreutils.Optional[string]                              `json:"tenantPhone" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
+	Accompanying                coreutils.Optional[string]                              `json:"accompanying"`
+	CompletionForecast          coreutils.Optional[string]                              `json:"completionForecast" example:"2026-06" description:"Completion forecast for properties under construction (YYYY-MM format)"`
+	LandBlock                   coreutils.Optional[string]                              `json:"landBlock" example:"A" description:"Block identifier for land properties"`
+	LandLot                     coreutils.Optional[string]                              `json:"landLot" example:"15" description:"Lot number for land properties"`
+	LandFront                   coreutils.Optional[float64]                             `json:"landFront" example:"12.5" description:"Front dimension in meters for land properties"`
+	LandSide                    coreutils.Optional[float64]                             `json:"landSide" example:"30.0" description:"Side dimension in meters for land properties"`
+	LandBack                    coreutils.Optional[float64]                             `json:"landBack" example:"12.5" description:"Back dimension in meters for land properties"`
+	LandTerrainType             coreutils.Optional[string]                              `json:"landTerrainType" example:"plano" description:"Terrain type: plano, aclive, declive, irregular, misto"`
+	HasKmz                      coreutils.Optional[bool]                                `json:"hasKmz" description:"Indicates if KMZ file is available for land properties"`
+	KmzFile                     coreutils.Optional[string]                              `json:"kmzFile" example:"https://storage.exemplo.com/terrenos/lote15.kmz" description:"URL to KMZ file for land properties"`
+	BuildingFloors              coreutils.Optional[int16]                               `json:"buildingFloors" example:"8" description:"Total number of floors in building"`
+	UnitTower                   coreutils.Optional[string]                              `json:"unitTower" example:"Torre B" description:"Tower identifier for apartment/commercial units"`
+	UnitFloor                   coreutils.Optional[int16]                               `json:"unitFloor" example:"5" description:"Floor number where unit is located"`
+	UnitNumber                  coreutils.Optional[string]                              `json:"unitNumber" example:"502" description:"Unit number/identifier"`
+	WarehouseManufacturingArea  coreutils.Optional[float64]                             `json:"warehouseManufacturingArea" example:"850.5" description:"Manufacturing/production area in square meters for warehouses"`
+	WarehouseSector             coreutils.Optional[string]                              `json:"warehouseSector" example:"industrial" description:"Warehouse sector: industrial, logistico, comercial"`
+	WarehouseHasPrimaryCabin    coreutils.Optional[bool]                                `json:"warehouseHasPrimaryCabin" description:"Indicates if warehouse has primary electrical cabin"`
+	WarehouseCabinKva           coreutils.Optional[float64]                             `json:"warehouseCabinKva" example:"150.0" description:"Primary cabin power in KVA"`
+	WarehouseGroundFloor        coreutils.Optional[float64]                             `json:"warehouseGroundFloor" example:"4.2" description:"Ground floor ceiling height in meters"`
+	WarehouseFloorResistance    coreutils.Optional[float64]                             `json:"warehouseFloorResistance" example:"2500.0" description:"Floor resistance in kg/m²"`
+	WarehouseZoning             coreutils.Optional[string]                              `json:"warehouseZoning" example:"ZI-2" description:"Zoning classification for warehouse"`
+	WarehouseHasOfficeArea      coreutils.Optional[bool]                                `json:"warehouseHasOfficeArea" description:"Indicates if warehouse has office area"`
+	WarehouseOfficeArea         coreutils.Optional[float64]                             `json:"warehouseOfficeArea" example:"120.0" description:"Office area in square meters"`
+	WarehouseAdditionalFloors   coreutils.Optional[[]WarehouseAdditionalFloorDTO]       `json:"warehouseAdditionalFloors" description:"Additional floors beyond ground floor in warehouses"`
+	StoreHasMezzanine           coreutils.Optional[bool]                                `json:"storeHasMezzanine" description:"Indicates if store has mezzanine"`
+	StoreMezzanineArea          coreutils.Optional[float64]                             `json:"storeMezzanineArea" example:"45.0" description:"Mezzanine area in square meters for stores"`
 }
 
 // UpdateListingResponse represents response for updating a listing

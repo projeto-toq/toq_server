@@ -149,6 +149,105 @@ type ListingVersionInterface interface {
 	SetDeleted(deleted bool)
 	HasDeleted() bool
 	UnsetDeleted()
+	// New property-specific fields
+	CompletionForecast() string
+	SetCompletionForecast(completionForecast string)
+	HasCompletionForecast() bool
+	UnsetCompletionForecast()
+	LandBlock() string
+	SetLandBlock(landBlock string)
+	HasLandBlock() bool
+	UnsetLandBlock()
+	LandLot() string
+	SetLandLot(landLot string)
+	HasLandLot() bool
+	UnsetLandLot()
+	LandFront() float64
+	SetLandFront(landFront float64)
+	HasLandFront() bool
+	UnsetLandFront()
+	LandSide() float64
+	SetLandSide(landSide float64)
+	HasLandSide() bool
+	UnsetLandSide()
+	LandBack() float64
+	SetLandBack(landBack float64)
+	HasLandBack() bool
+	UnsetLandBack()
+	LandTerrainType() LandTerrainType
+	SetLandTerrainType(landTerrainType LandTerrainType)
+	HasLandTerrainType() bool
+	UnsetLandTerrainType()
+	HasKmz() bool
+	SetHasKmz(hasKmz bool)
+	HasHasKmz() bool
+	UnsetHasKmz()
+	KmzFile() string
+	SetKmzFile(kmzFile string)
+	HasKmzFile() bool
+	UnsetKmzFile()
+	BuildingFloors() int
+	SetBuildingFloors(buildingFloors int)
+	HasBuildingFloors() bool
+	UnsetBuildingFloors()
+	UnitTower() string
+	SetUnitTower(unitTower string)
+	HasUnitTower() bool
+	UnsetUnitTower()
+	UnitFloor() string
+	SetUnitFloor(unitFloor string)
+	HasUnitFloor() bool
+	UnsetUnitFloor()
+	UnitNumber() string
+	SetUnitNumber(unitNumber string)
+	HasUnitNumber() bool
+	UnsetUnitNumber()
+	WarehouseManufacturingArea() float64
+	SetWarehouseManufacturingArea(warehouseManufacturingArea float64)
+	HasWarehouseManufacturingArea() bool
+	UnsetWarehouseManufacturingArea()
+	WarehouseSector() WarehouseSector
+	SetWarehouseSector(warehouseSector WarehouseSector)
+	HasWarehouseSector() bool
+	UnsetWarehouseSector()
+	WarehouseHasPrimaryCabin() bool
+	SetWarehouseHasPrimaryCabin(warehouseHasPrimaryCabin bool)
+	HasWarehouseHasPrimaryCabin() bool
+	UnsetWarehouseHasPrimaryCabin()
+	WarehouseCabinKva() string
+	SetWarehouseCabinKva(warehouseCabinKva string)
+	HasWarehouseCabinKva() bool
+	UnsetWarehouseCabinKva()
+	WarehouseGroundFloor() int
+	SetWarehouseGroundFloor(warehouseGroundFloor int)
+	HasWarehouseGroundFloor() bool
+	UnsetWarehouseGroundFloor()
+	WarehouseFloorResistance() float64
+	SetWarehouseFloorResistance(warehouseFloorResistance float64)
+	HasWarehouseFloorResistance() bool
+	UnsetWarehouseFloorResistance()
+	WarehouseZoning() string
+	SetWarehouseZoning(warehouseZoning string)
+	HasWarehouseZoning() bool
+	UnsetWarehouseZoning()
+	WarehouseHasOfficeArea() bool
+	SetWarehouseHasOfficeArea(warehouseHasOfficeArea bool)
+	HasWarehouseHasOfficeArea() bool
+	UnsetWarehouseHasOfficeArea()
+	WarehouseOfficeArea() float64
+	SetWarehouseOfficeArea(warehouseOfficeArea float64)
+	HasWarehouseOfficeArea() bool
+	UnsetWarehouseOfficeArea()
+	StoreHasMezzanine() bool
+	SetStoreHasMezzanine(storeHasMezzanine bool)
+	HasStoreHasMezzanine() bool
+	UnsetStoreHasMezzanine()
+	StoreMezzanineArea() float64
+	SetStoreMezzanineArea(storeMezzanineArea float64)
+	HasStoreMezzanineArea() bool
+	UnsetStoreMezzanineArea()
+	WarehouseAdditionalFloors() []WarehouseAdditionalFloorInterface
+	SetWarehouseAdditionalFloors(warehouseAdditionalFloors []WarehouseAdditionalFloorInterface)
 }
 
 type ListingInterface interface {

@@ -73,6 +73,19 @@ func (la *ListingAdapter) CloneListingVersionSatellites(ctx context.Context, tx 
 		return fmt.Errorf("clone guarantees: %w", err)
 	}
 
+	// Clone warehouse_additional_floors
+	warehouseFloorsQuery := `
+		INSERT INTO warehouse_additional_floors (listing_version_id, floor_name, floor_order, floor_height)
+		SELECT ?, floor_name, floor_order, floor_height
+		FROM warehouse_additional_floors
+		WHERE listing_version_id = ?
+	`
+	if _, err := la.ExecContext(ctx, tx, "insert", warehouseFloorsQuery, targetVersionID, sourceVersionID); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("mysql.listing.clone_satellites.warehouse_floors_error", "error", err, "source", sourceVersionID, "target", targetVersionID)
+		return fmt.Errorf("clone warehouse additional floors: %w", err)
+	}
+
 	logger.Info("listing.clone_satellites.success", "source_version_id", sourceVersionID, "target_version_id", targetVersionID)
 	return nil
 }

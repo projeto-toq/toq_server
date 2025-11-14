@@ -10708,6 +10708,10 @@ const docTemplate = `{
                 "buildable": {
                     "type": "number"
                 },
+                "buildingFloors": {
+                    "type": "integer",
+                    "example": 8
+                },
                 "city": {
                     "type": "string"
                 },
@@ -10716,6 +10720,10 @@ const docTemplate = `{
                 },
                 "complement": {
                     "type": "string"
+                },
+                "completionForecast": {
+                    "type": "string",
+                    "example": "2026-06"
                 },
                 "condominium": {
                     "type": "number"
@@ -10768,14 +10776,44 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingGuaranteeResponse"
                     }
                 },
+                "hasKmz": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "integer"
                 },
                 "installment": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
                 },
+                "kmzFile": {
+                    "type": "string",
+                    "example": "https://storage.exemplo.com/terrenos/lote15.kmz"
+                },
+                "landBack": {
+                    "type": "number",
+                    "example": 12.5
+                },
+                "landBlock": {
+                    "type": "string",
+                    "example": "A"
+                },
+                "landFront": {
+                    "type": "number",
+                    "example": 12.5
+                },
+                "landLot": {
+                    "type": "string",
+                    "example": "15"
+                },
+                "landSide": {
+                    "type": "number",
+                    "example": 30
+                },
                 "landSize": {
                     "type": "number"
+                },
+                "landTerrainType": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
                 },
                 "listingIdentityId": {
                     "type": "integer"
@@ -10819,6 +10857,13 @@ const docTemplate = `{
                 "status": {
                     "type": "string"
                 },
+                "storeHasMezzanine": {
+                    "type": "boolean"
+                },
+                "storeMezzanineArea": {
+                    "type": "number",
+                    "example": 45
+                },
                 "street": {
                     "type": "string"
                 },
@@ -10837,6 +10882,18 @@ const docTemplate = `{
                 "transaction": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
                 },
+                "unitFloor": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "unitNumber": {
+                    "type": "string",
+                    "example": "502"
+                },
+                "unitTower": {
+                    "type": "string",
+                    "example": "Torre B"
+                },
                 "userId": {
                     "type": "integer"
                 },
@@ -10845,6 +10902,45 @@ const docTemplate = `{
                 },
                 "visit": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "warehouseAdditionalFloors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO"
+                    }
+                },
+                "warehouseCabinKva": {
+                    "type": "number",
+                    "example": 150
+                },
+                "warehouseFloorResistance": {
+                    "type": "number",
+                    "example": 2500
+                },
+                "warehouseGroundFloor": {
+                    "type": "number",
+                    "example": 4.2
+                },
+                "warehouseHasOfficeArea": {
+                    "type": "boolean"
+                },
+                "warehouseHasPrimaryCabin": {
+                    "type": "boolean"
+                },
+                "warehouseManufacturingArea": {
+                    "type": "number",
+                    "example": 850.5
+                },
+                "warehouseOfficeArea": {
+                    "type": "number",
+                    "example": 120
+                },
+                "warehouseSector": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
+                },
+                "warehouseZoning": {
+                    "type": "string",
+                    "example": "ZI-2"
                 },
                 "whoLives": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
@@ -12170,6 +12266,24 @@ const docTemplate = `{
                 "valid": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO": {
+            "description": "Additional floor information for warehouses (mezanino, second floor, etc.)",
+            "type": "object",
+            "properties": {
+                "floorHeight": {
+                    "type": "number",
+                    "example": 3.5
+                },
+                "floorName": {
+                    "type": "string",
+                    "example": "Mezanino"
+                },
+                "floorOrder": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },

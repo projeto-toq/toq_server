@@ -321,5 +321,221 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		}
 	}
 
+	if req.CompletionForecast.IsPresent() {
+		if req.CompletionForecast.IsNull() {
+			input.CompletionForecast = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.CompletionForecast.Value(); ok {
+			input.CompletionForecast = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
+	if req.LandBlock.IsPresent() {
+		if req.LandBlock.IsNull() {
+			input.LandBlock = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.LandBlock.Value(); ok {
+			input.LandBlock = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
+	if req.LandLot.IsPresent() {
+		if req.LandLot.IsNull() {
+			input.LandLot = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.LandLot.Value(); ok {
+			input.LandLot = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
+	if req.LandFront.IsPresent() {
+		if req.LandFront.IsNull() {
+			input.LandFront = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.LandFront.Value(); ok {
+			input.LandFront = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.LandSide.IsPresent() {
+		if req.LandSide.IsNull() {
+			input.LandSide = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.LandSide.Value(); ok {
+			input.LandSide = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.LandBack.IsPresent() {
+		if req.LandBack.IsNull() {
+			input.LandBack = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.LandBack.Value(); ok {
+			input.LandBack = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.LandTerrainType.IsPresent() {
+		if req.LandTerrainType.IsNull() {
+			input.LandTerrainType = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
+		} else if value, ok := req.LandTerrainType.Value(); ok {
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("landTerrainType slug deve ser informado")
+			}
+			input.LandTerrainType = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
+		}
+	}
+
+	if req.HasKmz.IsPresent() {
+		if req.HasKmz.IsNull() {
+			input.HasKmz = coreutils.NewOptionalNull[bool]()
+		} else if value, ok := req.HasKmz.Value(); ok {
+			input.HasKmz = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.KmzFile.IsPresent() {
+		if req.KmzFile.IsNull() {
+			input.KmzFile = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.KmzFile.Value(); ok {
+			input.KmzFile = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
+	if req.BuildingFloors.IsPresent() {
+		if req.BuildingFloors.IsNull() {
+			input.BuildingFloors = coreutils.NewOptionalNull[int16]()
+		} else if value, ok := req.BuildingFloors.Value(); ok {
+			input.BuildingFloors = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.UnitTower.IsPresent() {
+		if req.UnitTower.IsNull() {
+			input.UnitTower = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.UnitTower.Value(); ok {
+			input.UnitTower = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
+	if req.UnitFloor.IsPresent() {
+		if req.UnitFloor.IsNull() {
+			input.UnitFloor = coreutils.NewOptionalNull[int16]()
+		} else if value, ok := req.UnitFloor.Value(); ok {
+			input.UnitFloor = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.UnitNumber.IsPresent() {
+		if req.UnitNumber.IsNull() {
+			input.UnitNumber = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.UnitNumber.Value(); ok {
+			input.UnitNumber = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
+	if req.WarehouseManufacturingArea.IsPresent() {
+		if req.WarehouseManufacturingArea.IsNull() {
+			input.WarehouseManufacturingArea = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.WarehouseManufacturingArea.Value(); ok {
+			input.WarehouseManufacturingArea = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.WarehouseSector.IsPresent() {
+		if req.WarehouseSector.IsNull() {
+			input.WarehouseSector = coreutils.NewOptionalNull[listingservices.CatalogSelection]()
+		} else if value, ok := req.WarehouseSector.Value(); ok {
+			slug := strings.TrimSpace(value)
+			if slug == "" {
+				return input, fmt.Errorf("warehouseSector slug deve ser informado")
+			}
+			input.WarehouseSector = coreutils.NewOptionalValue(listingservices.NewCatalogSelectionFromSlug(slug))
+		}
+	}
+
+	if req.WarehouseHasPrimaryCabin.IsPresent() {
+		if req.WarehouseHasPrimaryCabin.IsNull() {
+			input.WarehouseHasPrimaryCabin = coreutils.NewOptionalNull[bool]()
+		} else if value, ok := req.WarehouseHasPrimaryCabin.Value(); ok {
+			input.WarehouseHasPrimaryCabin = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.WarehouseCabinKva.IsPresent() {
+		if req.WarehouseCabinKva.IsNull() {
+			input.WarehouseCabinKva = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.WarehouseCabinKva.Value(); ok {
+			input.WarehouseCabinKva = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.WarehouseGroundFloor.IsPresent() {
+		if req.WarehouseGroundFloor.IsNull() {
+			input.WarehouseGroundFloor = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.WarehouseGroundFloor.Value(); ok {
+			input.WarehouseGroundFloor = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.WarehouseFloorResistance.IsPresent() {
+		if req.WarehouseFloorResistance.IsNull() {
+			input.WarehouseFloorResistance = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.WarehouseFloorResistance.Value(); ok {
+			input.WarehouseFloorResistance = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.WarehouseZoning.IsPresent() {
+		if req.WarehouseZoning.IsNull() {
+			input.WarehouseZoning = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.WarehouseZoning.Value(); ok {
+			input.WarehouseZoning = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
+	if req.WarehouseHasOfficeArea.IsPresent() {
+		if req.WarehouseHasOfficeArea.IsNull() {
+			input.WarehouseHasOfficeArea = coreutils.NewOptionalNull[bool]()
+		} else if value, ok := req.WarehouseHasOfficeArea.Value(); ok {
+			input.WarehouseHasOfficeArea = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.WarehouseOfficeArea.IsPresent() {
+		if req.WarehouseOfficeArea.IsNull() {
+			input.WarehouseOfficeArea = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.WarehouseOfficeArea.Value(); ok {
+			input.WarehouseOfficeArea = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.WarehouseAdditionalFloors.IsPresent() {
+		if req.WarehouseAdditionalFloors.IsNull() {
+			input.WarehouseAdditionalFloors = coreutils.NewOptionalNull[[]listingmodel.WarehouseAdditionalFloorInterface]()
+		} else if floorsReq, ok := req.WarehouseAdditionalFloors.Value(); ok {
+			floors := make([]listingmodel.WarehouseAdditionalFloorInterface, 0, len(floorsReq))
+			for _, floorReq := range floorsReq {
+				floor := listingmodel.NewWarehouseAdditionalFloor()
+				floor.SetFloorName(strings.TrimSpace(floorReq.FloorName))
+				floor.SetFloorOrder(floorReq.FloorOrder)
+				floor.SetFloorHeight(floorReq.FloorHeight)
+				floors = append(floors, floor)
+			}
+			input.WarehouseAdditionalFloors = coreutils.NewOptionalValue(floors)
+		}
+	}
+
+	if req.StoreHasMezzanine.IsPresent() {
+		if req.StoreHasMezzanine.IsNull() {
+			input.StoreHasMezzanine = coreutils.NewOptionalNull[bool]()
+		} else if value, ok := req.StoreHasMezzanine.Value(); ok {
+			input.StoreHasMezzanine = coreutils.NewOptionalValue(value)
+		}
+	}
+
+	if req.StoreMezzanineArea.IsPresent() {
+		if req.StoreMezzanineArea.IsNull() {
+			input.StoreMezzanineArea = coreutils.NewOptionalNull[float64]()
+		} else if value, ok := req.StoreMezzanineArea.Value(); ok {
+			input.StoreMezzanineArea = coreutils.NewOptionalValue(value)
+		}
+	}
+
 	return input, nil
 }

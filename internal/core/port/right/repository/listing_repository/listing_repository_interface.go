@@ -23,16 +23,19 @@ type ListingRepoPortInterface interface {
 	CreateFeature(ctx context.Context, tx *sql.Tx, feature listingmodel.FeatureInterface) (err error)
 	CreateGuarantee(ctx context.Context, tx *sql.Tx, guarantee listingmodel.GuaranteeInterface) (err error)
 	CreateFinancingBlocker(ctx context.Context, tx *sql.Tx, blocker listingmodel.FinancingBlockerInterface) (err error)
+	CreateWarehouseAdditionalFloor(ctx context.Context, tx *sql.Tx, floor listingmodel.WarehouseAdditionalFloorInterface) (err error)
 
 	UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, listingVersionID int64, places []listingmodel.ExchangePlaceInterface) (err error)
 	UpdateFeatures(ctx context.Context, tx *sql.Tx, listingVersionID int64, features []listingmodel.FeatureInterface) (err error)
 	UpdateGuarantees(ctx context.Context, tx *sql.Tx, listingVersionID int64, guarantees []listingmodel.GuaranteeInterface) (err error)
 	UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, listingVersionID int64, blockers []listingmodel.FinancingBlockerInterface) (err error)
+	UpdateWarehouseAdditionalFloors(ctx context.Context, tx *sql.Tx, listingVersionID int64, floors []listingmodel.WarehouseAdditionalFloorInterface) (err error)
 
 	DeleteListingExchangePlaces(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
 	DeleteListingFeatures(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
 	DeleteListingGuarantees(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
 	DeleteListingFinancingBlockers(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
+	DeleteListingWarehouseAdditionalFloors(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
 
 	// Utilities
 	GetListingCode(ctx context.Context, tx *sql.Tx) (code uint32, err error)
@@ -141,12 +144,36 @@ type ListingEndUpdateData struct {
 	Condominium            sql.NullFloat64
 	LandSize               sql.NullFloat64
 	Corner                 sql.NullInt16
-	TenantName             sql.NullString
-	TenantPhone            sql.NullString
-	TenantEmail            sql.NullString
-	Financing              sql.NullInt16
-	FeaturesCount          int
-	ExchangePlacesCount    int
-	FinancingBlockersCount int
-	GuaranteesCount        int
+	TenantName                 sql.NullString
+	TenantPhone                sql.NullString
+	TenantEmail                sql.NullString
+	Financing                  sql.NullInt16
+	CompletionForecast         sql.NullString
+	LandBlock                  sql.NullString
+	LandLot                    sql.NullString
+	LandFront                  sql.NullFloat64
+	LandSide                   sql.NullFloat64
+	LandBack                   sql.NullFloat64
+	LandTerrainType            sql.NullInt16
+	HasKmz                     sql.NullInt16
+	KmzFile                    sql.NullString
+	BuildingFloors             sql.NullInt16
+	UnitTower                  sql.NullString
+	UnitFloor                  sql.NullString
+	UnitNumber                 sql.NullString
+	WarehouseManufacturingArea sql.NullFloat64
+	WarehouseSector            sql.NullInt16
+	WarehouseHasPrimaryCabin   sql.NullInt16
+	WarehouseCabinKva          sql.NullString
+	WarehouseGroundFloor       sql.NullInt16
+	WarehouseFloorResistance   sql.NullFloat64
+	WarehouseZoning            sql.NullString
+	WarehouseHasOfficeArea     sql.NullInt16
+	WarehouseOfficeArea        sql.NullFloat64
+	StoreHasMezzanine          sql.NullInt16
+	StoreMezzanineArea         sql.NullFloat64
+	FeaturesCount              int
+	ExchangePlacesCount        int
+	FinancingBlockersCount     int
+	GuaranteesCount            int
 }

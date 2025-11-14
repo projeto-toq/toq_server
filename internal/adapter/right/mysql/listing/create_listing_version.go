@@ -64,8 +64,32 @@ func (la *ListingAdapter) CreateListingVersion(ctx context.Context, tx *sql.Tx, 
         tenant_email,
         tenant_phone,
         accompanying,
-        deleted
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        deleted,
+        completion_forecast,
+        land_block,
+        land_lot,
+        land_front,
+        land_side,
+        land_back,
+        land_terrain_type,
+        has_kmz,
+        kmz_file,
+        building_floors,
+        unit_tower,
+        unit_floor,
+        unit_number,
+        warehouse_manufacturing_area,
+        warehouse_sector,
+        warehouse_has_primary_cabin,
+        warehouse_cabin_kva,
+        warehouse_ground_floor,
+        warehouse_floor_resistance,
+        warehouse_zoning,
+        warehouse_has_office_area,
+        warehouse_office_area,
+        store_has_mezzanine,
+        store_mezzanine_area
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	street := sql.NullString{String: version.Street(), Valid: version.Street() != ""}
 	number := sql.NullString{String: version.Number(), Valid: true}
@@ -208,6 +232,127 @@ func (la *ListingAdapter) CreateListingVersion(ctx context.Context, tx *sql.Tx, 
 
 	deletedValue := version.Deleted()
 
+	// New property-specific fields
+	completionForecast := sql.NullString{}
+	if version.HasCompletionForecast() {
+		completionForecast = sql.NullString{String: version.CompletionForecast(), Valid: true}
+	}
+
+	landBlock := sql.NullString{}
+	if version.HasLandBlock() {
+		landBlock = sql.NullString{String: version.LandBlock(), Valid: true}
+	}
+
+	landLot := sql.NullString{}
+	if version.HasLandLot() {
+		landLot = sql.NullString{String: version.LandLot(), Valid: true}
+	}
+
+	landFront := sql.NullFloat64{}
+	if version.HasLandFront() {
+		landFront = sql.NullFloat64{Float64: version.LandFront(), Valid: true}
+	}
+
+	landSide := sql.NullFloat64{}
+	if version.HasLandSide() {
+		landSide = sql.NullFloat64{Float64: version.LandSide(), Valid: true}
+	}
+
+	landBack := sql.NullFloat64{}
+	if version.HasLandBack() {
+		landBack = sql.NullFloat64{Float64: version.LandBack(), Valid: true}
+	}
+
+	landTerrainType := sql.NullInt64{}
+	if version.HasLandTerrainType() {
+		landTerrainType = sql.NullInt64{Int64: int64(version.LandTerrainType()), Valid: true}
+	}
+
+	hasKmz := sql.NullBool{}
+	if version.HasHasKmz() {
+		hasKmz = sql.NullBool{Bool: version.HasKmz(), Valid: true}
+	}
+
+	kmzFile := sql.NullString{}
+	if version.HasKmzFile() {
+		kmzFile = sql.NullString{String: version.KmzFile(), Valid: true}
+	}
+
+	buildingFloors := sql.NullInt64{}
+	if version.HasBuildingFloors() {
+		buildingFloors = sql.NullInt64{Int64: int64(version.BuildingFloors()), Valid: true}
+	}
+
+	unitTower := sql.NullString{}
+	if version.HasUnitTower() {
+		unitTower = sql.NullString{String: version.UnitTower(), Valid: true}
+	}
+
+	unitFloor := sql.NullString{}
+	if version.HasUnitFloor() {
+		unitFloor = sql.NullString{String: version.UnitFloor(), Valid: true}
+	}
+
+	unitNumber := sql.NullString{}
+	if version.HasUnitNumber() {
+		unitNumber = sql.NullString{String: version.UnitNumber(), Valid: true}
+	}
+
+	warehouseManufacturingArea := sql.NullFloat64{}
+	if version.HasWarehouseManufacturingArea() {
+		warehouseManufacturingArea = sql.NullFloat64{Float64: version.WarehouseManufacturingArea(), Valid: true}
+	}
+
+	warehouseSector := sql.NullInt64{}
+	if version.HasWarehouseSector() {
+		warehouseSector = sql.NullInt64{Int64: int64(version.WarehouseSector()), Valid: true}
+	}
+
+	warehouseHasPrimaryCabin := sql.NullBool{}
+	if version.HasWarehouseHasPrimaryCabin() {
+		warehouseHasPrimaryCabin = sql.NullBool{Bool: version.WarehouseHasPrimaryCabin(), Valid: true}
+	}
+
+	warehouseCabinKva := sql.NullString{}
+	if version.HasWarehouseCabinKva() {
+		warehouseCabinKva = sql.NullString{String: version.WarehouseCabinKva(), Valid: true}
+	}
+
+	warehouseGroundFloor := sql.NullInt64{}
+	if version.HasWarehouseGroundFloor() {
+		warehouseGroundFloor = sql.NullInt64{Int64: int64(version.WarehouseGroundFloor()), Valid: true}
+	}
+
+	warehouseFloorResistance := sql.NullFloat64{}
+	if version.HasWarehouseFloorResistance() {
+		warehouseFloorResistance = sql.NullFloat64{Float64: version.WarehouseFloorResistance(), Valid: true}
+	}
+
+	warehouseZoning := sql.NullString{}
+	if version.HasWarehouseZoning() {
+		warehouseZoning = sql.NullString{String: version.WarehouseZoning(), Valid: true}
+	}
+
+	warehouseHasOfficeArea := sql.NullBool{}
+	if version.HasWarehouseHasOfficeArea() {
+		warehouseHasOfficeArea = sql.NullBool{Bool: version.WarehouseHasOfficeArea(), Valid: true}
+	}
+
+	warehouseOfficeArea := sql.NullFloat64{}
+	if version.HasWarehouseOfficeArea() {
+		warehouseOfficeArea = sql.NullFloat64{Float64: version.WarehouseOfficeArea(), Valid: true}
+	}
+
+	storeHasMezzanine := sql.NullBool{}
+	if version.HasStoreHasMezzanine() {
+		storeHasMezzanine = sql.NullBool{Bool: version.StoreHasMezzanine(), Valid: true}
+	}
+
+	storeMezzanineArea := sql.NullFloat64{}
+	if version.HasStoreMezzanineArea() {
+		storeMezzanineArea = sql.NullFloat64{Float64: version.StoreMezzanineArea(), Valid: true}
+	}
+
 	result, execErr := la.ExecContext(ctx, tx, "insert", query,
 		listingIdentityID,
 		version.UserID(),
@@ -249,6 +394,30 @@ func (la *ListingAdapter) CreateListingVersion(ctx context.Context, tx *sql.Tx, 
 		tenantPhone,
 		accompanying,
 		deletedValue,
+		completionForecast,
+		landBlock,
+		landLot,
+		landFront,
+		landSide,
+		landBack,
+		landTerrainType,
+		hasKmz,
+		kmzFile,
+		buildingFloors,
+		unitTower,
+		unitFloor,
+		unitNumber,
+		warehouseManufacturingArea,
+		warehouseSector,
+		warehouseHasPrimaryCabin,
+		warehouseCabinKva,
+		warehouseGroundFloor,
+		warehouseFloorResistance,
+		warehouseZoning,
+		warehouseHasOfficeArea,
+		warehouseOfficeArea,
+		storeHasMezzanine,
+		storeMezzanineArea,
 	)
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)

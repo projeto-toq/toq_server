@@ -69,6 +69,89 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 	resp.Installment = catalogDetailToPointer(detail.Installment, uint8(listing.Installment()))
 	resp.Visit = catalogDetailToPointer(detail.Visit, uint8(listing.Visit()))
 	resp.Accompanying = catalogDetailToPointer(detail.Accompanying, uint8(listing.Accompanying()))
+	resp.LandTerrainType = catalogDetailToPointer(detail.LandTerrainType, uint8(listing.LandTerrainType()))
+	resp.WarehouseSector = catalogDetailToPointer(detail.WarehouseSector, uint8(listing.WarehouseSector()))
+
+	if listing.HasCompletionForecast() {
+		resp.CompletionForecast = listing.CompletionForecast()
+	}
+	if listing.HasLandBlock() {
+		resp.LandBlock = listing.LandBlock()
+	}
+	if listing.HasLandLot() {
+		resp.LandLot = listing.LandLot()
+	}
+	if listing.HasLandFront() {
+		resp.LandFront = listing.LandFront()
+	}
+	if listing.HasLandSide() {
+		resp.LandSide = listing.LandSide()
+	}
+	if listing.HasLandBack() {
+		resp.LandBack = listing.LandBack()
+	}
+	if listing.HasHasKmz() {
+		resp.HasKmz = listing.HasKmz()
+	}
+	if listing.HasKmzFile() {
+		resp.KmzFile = listing.KmzFile()
+	}
+	if listing.HasBuildingFloors() {
+		resp.BuildingFloors = int16(listing.BuildingFloors())
+	}
+	if listing.HasUnitTower() {
+		resp.UnitTower = listing.UnitTower()
+	}
+	if listing.HasUnitFloor() {
+		resp.UnitFloor = 0 // Need to parse string to int16
+		// TODO: parse listing.UnitFloor() string to int16
+	}
+	if listing.HasUnitNumber() {
+		resp.UnitNumber = listing.UnitNumber()
+	}
+	if listing.HasWarehouseManufacturingArea() {
+		resp.WarehouseManufacturingArea = listing.WarehouseManufacturingArea()
+	}
+	if listing.HasWarehouseHasPrimaryCabin() {
+		resp.WarehouseHasPrimaryCabin = listing.WarehouseHasPrimaryCabin()
+	}
+	if listing.HasWarehouseCabinKva() {
+		// WarehouseCabinKva is string in domain, float64 in DTO
+		resp.WarehouseCabinKva = 0 // TODO: parse string to float64
+	}
+	if listing.HasWarehouseGroundFloor() {
+		resp.WarehouseGroundFloor = float64(listing.WarehouseGroundFloor())
+	}
+	if listing.HasWarehouseFloorResistance() {
+		resp.WarehouseFloorResistance = listing.WarehouseFloorResistance()
+	}
+	if listing.HasWarehouseZoning() {
+		resp.WarehouseZoning = listing.WarehouseZoning()
+	}
+	if listing.HasWarehouseHasOfficeArea() {
+		resp.WarehouseHasOfficeArea = listing.WarehouseHasOfficeArea()
+	}
+	if listing.HasWarehouseOfficeArea() {
+		resp.WarehouseOfficeArea = listing.WarehouseOfficeArea()
+	}
+	if listing.HasStoreHasMezzanine() {
+		resp.StoreHasMezzanine = listing.StoreHasMezzanine()
+	}
+	if listing.HasStoreMezzanineArea() {
+		resp.StoreMezzanineArea = listing.StoreMezzanineArea()
+	}
+
+	warehouseFloors := listing.WarehouseAdditionalFloors()
+	if len(warehouseFloors) > 0 {
+		resp.WarehouseAdditionalFloors = make([]dto.WarehouseAdditionalFloorDTO, 0, len(warehouseFloors))
+		for _, floor := range warehouseFloors {
+			resp.WarehouseAdditionalFloors = append(resp.WarehouseAdditionalFloors, dto.WarehouseAdditionalFloorDTO{
+				FloorName:   floor.FloorName(),
+				FloorOrder:  floor.FloorOrder(),
+				FloorHeight: floor.FloorHeight(),
+			})
+		}
+	}
 
 	resp.Features = make([]dto.ListingFeatureResponse, 0, len(detail.Features))
 	for _, feature := range detail.Features {

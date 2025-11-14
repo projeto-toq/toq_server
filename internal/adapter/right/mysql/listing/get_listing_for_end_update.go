@@ -28,7 +28,11 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		lv.title, lv.type, lv.owner, lv.buildable, lv.delivered, lv.who_lives, lv.description, lv.transaction, lv.visit,
 		lv.accompanying, lv.annual_tax, lv.monthly_tax, lv.annual_ground_rent, lv.monthly_ground_rent, lv.exchange,
 		lv.exchange_perc, lv.sell_net, lv.rent_net, lv.condominium, lv.land_size, lv.corner, lv.tenant_name, lv.tenant_phone,
-		lv.tenant_email, lv.financing
+		lv.tenant_email, lv.financing, lv.completion_forecast, lv.land_block, lv.land_lot, lv.land_front, lv.land_side,
+		lv.land_back, lv.land_terrain_type, lv.has_kmz, lv.kmz_file, lv.building_floors, lv.unit_tower, lv.unit_floor,
+		lv.unit_number, lv.warehouse_manufacturing_area, lv.warehouse_sector, lv.warehouse_has_primary_cabin,
+		lv.warehouse_cabin_kva, lv.warehouse_ground_floor, lv.warehouse_floor_resistance, lv.warehouse_zoning,
+		lv.warehouse_has_office_area, lv.warehouse_office_area, lv.store_has_mezzanine, lv.store_mezzanine_area
 		FROM listing_versions lv
 		INNER JOIN listing_identities li ON li.id = lv.listing_identity_id
 		WHERE lv.id = ? AND lv.deleted = 0 AND li.deleted = 0`
@@ -64,6 +68,30 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		tenantPhone       sql.NullString
 		tenantEmail       sql.NullString
 		financing         sql.NullInt16
+		completionForecast         sql.NullString
+		landBlock                  sql.NullString
+		landLot                    sql.NullString
+		landFront                  sql.NullFloat64
+		landSide                   sql.NullFloat64
+		landBack                   sql.NullFloat64
+		landTerrainType            sql.NullInt16
+		hasKmz                     sql.NullInt16
+		kmzFile                    sql.NullString
+		buildingFloors             sql.NullInt16
+		unitTower                  sql.NullString
+		unitFloor                  sql.NullString
+		unitNumber                 sql.NullString
+		warehouseManufacturingArea sql.NullFloat64
+		warehouseSector            sql.NullInt16
+		warehouseHasPrimaryCabin   sql.NullInt16
+		warehouseCabinKva          sql.NullString
+		warehouseGroundFloor       sql.NullInt16
+		warehouseFloorResistance   sql.NullFloat64
+		warehouseZoning            sql.NullString
+		warehouseHasOfficeArea     sql.NullInt16
+		warehouseOfficeArea        sql.NullFloat64
+		storeHasMezzanine          sql.NullInt16
+		storeMezzanineArea         sql.NullFloat64
 	)
 
 	row := la.QueryRowContext(ctx, tx, "select", query, listingID)
@@ -103,6 +131,30 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		&tenantPhone,
 		&tenantEmail,
 		&financing,
+		&completionForecast,
+		&landBlock,
+		&landLot,
+		&landFront,
+		&landSide,
+		&landBack,
+		&landTerrainType,
+		&hasKmz,
+		&kmzFile,
+		&buildingFloors,
+		&unitTower,
+		&unitFloor,
+		&unitNumber,
+		&warehouseManufacturingArea,
+		&warehouseSector,
+		&warehouseHasPrimaryCabin,
+		&warehouseCabinKva,
+		&warehouseGroundFloor,
+		&warehouseFloorResistance,
+		&warehouseZoning,
+		&warehouseHasOfficeArea,
+		&warehouseOfficeArea,
+		&storeHasMezzanine,
+		&storeMezzanineArea,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -143,6 +195,30 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	data.TenantPhone = tenantPhone
 	data.TenantEmail = tenantEmail
 	data.Financing = financing
+	data.CompletionForecast = completionForecast
+	data.LandBlock = landBlock
+	data.LandLot = landLot
+	data.LandFront = landFront
+	data.LandSide = landSide
+	data.LandBack = landBack
+	data.LandTerrainType = landTerrainType
+	data.HasKmz = hasKmz
+	data.KmzFile = kmzFile
+	data.BuildingFloors = buildingFloors
+	data.UnitTower = unitTower
+	data.UnitFloor = unitFloor
+	data.UnitNumber = unitNumber
+	data.WarehouseManufacturingArea = warehouseManufacturingArea
+	data.WarehouseSector = warehouseSector
+	data.WarehouseHasPrimaryCabin = warehouseHasPrimaryCabin
+	data.WarehouseCabinKva = warehouseCabinKva
+	data.WarehouseGroundFloor = warehouseGroundFloor
+	data.WarehouseFloorResistance = warehouseFloorResistance
+	data.WarehouseZoning = warehouseZoning
+	data.WarehouseHasOfficeArea = warehouseHasOfficeArea
+	data.WarehouseOfficeArea = warehouseOfficeArea
+	data.StoreHasMezzanine = storeHasMezzanine
+	data.StoreMezzanineArea = storeMezzanineArea
 
 	features, ferr := la.GetEntityFeaturesByListing(ctx, tx, data.ListingID)
 	if ferr != nil && !errors.Is(ferr, sql.ErrNoRows) {

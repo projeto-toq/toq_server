@@ -89,6 +89,8 @@ type FinancingBlocker uint8
 type VisitType uint8
 type AccompanyingType uint8
 type GuaranteeType uint8
+type LandTerrainType uint8
+type WarehouseSector uint8
 
 const (
 	CatalogCategoryPropertyOwner     = "property_owner"
@@ -100,4 +102,6 @@ const (
 	CatalogCategoryVisitType         = "visit_type"
 	CatalogCategoryAccompanyingType  = "accompanying_type"
 	CatalogCategoryGuaranteeType     = "guarantee_type"
+	CatalogCategoryLandTerrainType   = "land_terrain_type"
+	CatalogCategoryWarehouseSector   = "warehouse_sector"
 )

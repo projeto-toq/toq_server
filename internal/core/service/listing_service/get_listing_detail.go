@@ -39,18 +39,20 @@ type GuaranteeDetail struct {
 
 // ListingDetailOutput encapsula o listing e metadados associados.
 type ListingDetailOutput struct {
-	Listing           listingmodel.ListingInterface
-	Features          []FeatureDetail
-	Owner             *CatalogValueDetail
-	Delivered         *CatalogValueDetail
-	WhoLives          *CatalogValueDetail
-	Transaction       *CatalogValueDetail
-	Installment       *CatalogValueDetail
-	Visit             *CatalogValueDetail
-	Accompanying      *CatalogValueDetail
-	FinancingBlockers []FinancingBlockerDetail
-	Guarantees        []GuaranteeDetail
-	PhotoSessionID    *uint64
+	Listing            listingmodel.ListingInterface
+	Features           []FeatureDetail
+	Owner              *CatalogValueDetail
+	Delivered          *CatalogValueDetail
+	WhoLives           *CatalogValueDetail
+	Transaction        *CatalogValueDetail
+	Installment        *CatalogValueDetail
+	Visit              *CatalogValueDetail
+	Accompanying       *CatalogValueDetail
+	LandTerrainType    *CatalogValueDetail
+	WarehouseSector    *CatalogValueDetail
+	FinancingBlockers  []FinancingBlockerDetail
+	Guarantees         []GuaranteeDetail
+	PhotoSessionID     *uint64
 }
 
 // GetListingDetail retorna todos os dados de um listing específico.
@@ -245,6 +247,18 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		return output, derr
 	}
 	output.Accompanying = accompanyingDetail
+
+	landTerrainTypeDetail, derr := ls.fetchCatalogValueDetail(ctx, tx, listingmodel.CatalogCategoryLandTerrainType, uint8(listing.LandTerrainType()), cache)
+	if derr != nil {
+		return output, derr
+	}
+	output.LandTerrainType = landTerrainTypeDetail
+
+	warehouseSectorDetail, derr := ls.fetchCatalogValueDetail(ctx, tx, listingmodel.CatalogCategoryWarehouseSector, uint8(listing.WarehouseSector()), cache)
+	if derr != nil {
+		return output, derr
+	}
+	output.WarehouseSector = warehouseSectorDetail
 
 	if blockers := listing.FinancingBlockers(); len(blockers) > 0 {
 		details := make([]FinancingBlockerDetail, 0, len(blockers))

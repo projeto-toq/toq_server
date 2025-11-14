@@ -168,5 +168,128 @@ func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.
 		listing.UnsetDeleted()
 	}
 
+	// New property-specific fields
+	if e.CompletionForecast.Valid {
+		listing.SetCompletionForecast(e.CompletionForecast.String)
+	} else {
+		listing.UnsetCompletionForecast()
+	}
+	if e.LandBlock.Valid {
+		listing.SetLandBlock(e.LandBlock.String)
+	} else {
+		listing.UnsetLandBlock()
+	}
+	if e.LandLot.Valid {
+		listing.SetLandLot(e.LandLot.String)
+	} else {
+		listing.UnsetLandLot()
+	}
+	if e.LandFront.Valid {
+		listing.SetLandFront(e.LandFront.Float64)
+	} else {
+		listing.UnsetLandFront()
+	}
+	if e.LandSide.Valid {
+		listing.SetLandSide(e.LandSide.Float64)
+	} else {
+		listing.UnsetLandSide()
+	}
+	if e.LandBack.Valid {
+		listing.SetLandBack(e.LandBack.Float64)
+	} else {
+		listing.UnsetLandBack()
+	}
+	if e.LandTerrainType.Valid {
+		listing.SetLandTerrainType(listingmodel.LandTerrainType(uint8(e.LandTerrainType.Int16)))
+	} else {
+		listing.UnsetLandTerrainType()
+	}
+	if e.HasKmz.Valid {
+		listing.SetHasKmz(e.HasKmz.Int16 == 1)
+	} else {
+		listing.UnsetHasKmz()
+	}
+	if e.KmzFile.Valid {
+		listing.SetKmzFile(e.KmzFile.String)
+	} else {
+		listing.UnsetKmzFile()
+	}
+	if e.BuildingFloors.Valid {
+		listing.SetBuildingFloors(int(e.BuildingFloors.Int16))
+	} else {
+		listing.UnsetBuildingFloors()
+	}
+	if e.UnitTower.Valid {
+		listing.SetUnitTower(e.UnitTower.String)
+	} else {
+		listing.UnsetUnitTower()
+	}
+	if e.UnitFloor.Valid {
+		listing.SetUnitFloor(e.UnitFloor.String)
+	} else {
+		listing.UnsetUnitFloor()
+	}
+	if e.UnitNumber.Valid {
+		listing.SetUnitNumber(e.UnitNumber.String)
+	} else {
+		listing.UnsetUnitNumber()
+	}
+	if e.WarehouseManufacturingArea.Valid {
+		listing.SetWarehouseManufacturingArea(e.WarehouseManufacturingArea.Float64)
+	} else {
+		listing.UnsetWarehouseManufacturingArea()
+	}
+	if e.WarehouseSector.Valid {
+		listing.SetWarehouseSector(listingmodel.WarehouseSector(uint8(e.WarehouseSector.Int16)))
+	} else {
+		listing.UnsetWarehouseSector()
+	}
+	if e.WarehouseHasPrimaryCabin.Valid {
+		listing.SetWarehouseHasPrimaryCabin(e.WarehouseHasPrimaryCabin.Int16 == 1)
+	} else {
+		listing.UnsetWarehouseHasPrimaryCabin()
+	}
+	if e.WarehouseCabinKva.Valid {
+		listing.SetWarehouseCabinKva(e.WarehouseCabinKva.String)
+	} else {
+		listing.UnsetWarehouseCabinKva()
+	}
+	if e.WarehouseGroundFloor.Valid {
+		listing.SetWarehouseGroundFloor(int(e.WarehouseGroundFloor.Int16))
+	} else {
+		listing.UnsetWarehouseGroundFloor()
+	}
+	if e.WarehouseFloorResistance.Valid {
+		listing.SetWarehouseFloorResistance(e.WarehouseFloorResistance.Float64)
+	} else {
+		listing.UnsetWarehouseFloorResistance()
+	}
+	if e.WarehouseZoning.Valid {
+		listing.SetWarehouseZoning(e.WarehouseZoning.String)
+	} else {
+		listing.UnsetWarehouseZoning()
+	}
+	if e.WarehouseHasOfficeArea.Valid {
+		listing.SetWarehouseHasOfficeArea(e.WarehouseHasOfficeArea.Int16 == 1)
+	} else {
+		listing.UnsetWarehouseHasOfficeArea()
+	}
+	if e.WarehouseOfficeArea.Valid {
+		listing.SetWarehouseOfficeArea(e.WarehouseOfficeArea.Float64)
+	} else {
+		listing.UnsetWarehouseOfficeArea()
+	}
+	if e.StoreHasMezzanine.Valid {
+		listing.SetStoreHasMezzanine(e.StoreHasMezzanine.Int16 == 1)
+	} else {
+		listing.UnsetStoreHasMezzanine()
+	}
+	if e.StoreMezzanineArea.Valid {
+		listing.SetStoreMezzanineArea(e.StoreMezzanineArea.Float64)
+	} else {
+		listing.UnsetStoreMezzanineArea()
+	}
+	listing.SetWarehouseAdditionalFloors(e.WarehouseAdditionalFloorsToDomain())
+
 	return
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
@@ -429,6 +430,217 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		}
 	}
 
+	if input.CompletionForecast.IsPresent() {
+		if input.CompletionForecast.IsNull() {
+			existing.UnsetCompletionForecast()
+		} else if value, ok := input.CompletionForecast.Value(); ok {
+			existing.SetCompletionForecast(strings.TrimSpace(value))
+		}
+	}
+
+	if input.LandBlock.IsPresent() {
+		if input.LandBlock.IsNull() {
+			existing.UnsetLandBlock()
+		} else if value, ok := input.LandBlock.Value(); ok {
+			existing.SetLandBlock(strings.TrimSpace(value))
+		}
+	}
+
+	if input.LandLot.IsPresent() {
+		if input.LandLot.IsNull() {
+			existing.UnsetLandLot()
+		} else if value, ok := input.LandLot.Value(); ok {
+			existing.SetLandLot(strings.TrimSpace(value))
+		}
+	}
+
+	if input.LandFront.IsPresent() {
+		if input.LandFront.IsNull() {
+			existing.UnsetLandFront()
+		} else if value, ok := input.LandFront.Value(); ok {
+			existing.SetLandFront(value)
+		}
+	}
+
+	if input.LandSide.IsPresent() {
+		if input.LandSide.IsNull() {
+			existing.UnsetLandSide()
+		} else if value, ok := input.LandSide.Value(); ok {
+			existing.SetLandSide(value)
+		}
+	}
+
+	if input.LandBack.IsPresent() {
+		if input.LandBack.IsNull() {
+			existing.UnsetLandBack()
+		} else if value, ok := input.LandBack.Value(); ok {
+			existing.SetLandBack(value)
+		}
+	}
+
+	if input.LandTerrainType.IsPresent() {
+		if input.LandTerrainType.IsNull() {
+			existing.UnsetLandTerrainType()
+		} else if selection, ok := input.LandTerrainType.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryLandTerrainType, "landTerrainType", selection)
+			if resolveErr != nil {
+				return resolveErr
+			}
+			existing.SetLandTerrainType(listingmodel.LandTerrainType(resolvedID))
+		}
+	}
+
+	if input.HasKmz.IsPresent() {
+		if input.HasKmz.IsNull() {
+			existing.UnsetHasKmz()
+		} else if value, ok := input.HasKmz.Value(); ok {
+			existing.SetHasKmz(value)
+		}
+	}
+
+	if input.KmzFile.IsPresent() {
+		if input.KmzFile.IsNull() {
+			existing.UnsetKmzFile()
+		} else if value, ok := input.KmzFile.Value(); ok {
+			existing.SetKmzFile(strings.TrimSpace(value))
+		}
+	}
+
+	if input.BuildingFloors.IsPresent() {
+		if input.BuildingFloors.IsNull() {
+			existing.UnsetBuildingFloors()
+		} else if value, ok := input.BuildingFloors.Value(); ok {
+			existing.SetBuildingFloors(int(value))
+		}
+	}
+
+	if input.UnitTower.IsPresent() {
+		if input.UnitTower.IsNull() {
+			existing.UnsetUnitTower()
+		} else if value, ok := input.UnitTower.Value(); ok {
+			existing.SetUnitTower(strings.TrimSpace(value))
+		}
+	}
+
+	if input.UnitFloor.IsPresent() {
+		if input.UnitFloor.IsNull() {
+			existing.UnsetUnitFloor()
+		} else if value, ok := input.UnitFloor.Value(); ok {
+			existing.SetUnitFloor(strings.TrimSpace(fmt.Sprintf("%d", value)))
+		}
+	}
+
+	if input.UnitNumber.IsPresent() {
+		if input.UnitNumber.IsNull() {
+			existing.UnsetUnitNumber()
+		} else if value, ok := input.UnitNumber.Value(); ok {
+			existing.SetUnitNumber(strings.TrimSpace(value))
+		}
+	}
+
+	if input.WarehouseManufacturingArea.IsPresent() {
+		if input.WarehouseManufacturingArea.IsNull() {
+			existing.UnsetWarehouseManufacturingArea()
+		} else if value, ok := input.WarehouseManufacturingArea.Value(); ok {
+			existing.SetWarehouseManufacturingArea(value)
+		}
+	}
+
+	if input.WarehouseSector.IsPresent() {
+		if input.WarehouseSector.IsNull() {
+			existing.UnsetWarehouseSector()
+		} else if selection, ok := input.WarehouseSector.Value(); ok {
+			resolvedID, resolveErr := ls.resolveCatalogValue(ctx, tx, listingmodel.CatalogCategoryWarehouseSector, "warehouseSector", selection)
+			if resolveErr != nil {
+				return resolveErr
+			}
+			existing.SetWarehouseSector(listingmodel.WarehouseSector(resolvedID))
+		}
+	}
+
+	if input.WarehouseHasPrimaryCabin.IsPresent() {
+		if input.WarehouseHasPrimaryCabin.IsNull() {
+			existing.UnsetWarehouseHasPrimaryCabin()
+		} else if value, ok := input.WarehouseHasPrimaryCabin.Value(); ok {
+			existing.SetWarehouseHasPrimaryCabin(value)
+		}
+	}
+
+	if input.WarehouseCabinKva.IsPresent() {
+		if input.WarehouseCabinKva.IsNull() {
+			existing.UnsetWarehouseCabinKva()
+		} else if value, ok := input.WarehouseCabinKva.Value(); ok {
+			existing.SetWarehouseCabinKva(strings.TrimSpace(fmt.Sprintf("%.2f", value)))
+		}
+	}
+
+	if input.WarehouseGroundFloor.IsPresent() {
+		if input.WarehouseGroundFloor.IsNull() {
+			existing.UnsetWarehouseGroundFloor()
+		} else if value, ok := input.WarehouseGroundFloor.Value(); ok {
+			existing.SetWarehouseGroundFloor(int(value))
+		}
+	}
+
+	if input.WarehouseFloorResistance.IsPresent() {
+		if input.WarehouseFloorResistance.IsNull() {
+			existing.UnsetWarehouseFloorResistance()
+		} else if value, ok := input.WarehouseFloorResistance.Value(); ok {
+			existing.SetWarehouseFloorResistance(value)
+		}
+	}
+
+	if input.WarehouseZoning.IsPresent() {
+		if input.WarehouseZoning.IsNull() {
+			existing.UnsetWarehouseZoning()
+		} else if value, ok := input.WarehouseZoning.Value(); ok {
+			existing.SetWarehouseZoning(strings.TrimSpace(value))
+		}
+	}
+
+	if input.WarehouseHasOfficeArea.IsPresent() {
+		if input.WarehouseHasOfficeArea.IsNull() {
+			existing.UnsetWarehouseHasOfficeArea()
+		} else if value, ok := input.WarehouseHasOfficeArea.Value(); ok {
+			existing.SetWarehouseHasOfficeArea(value)
+		}
+	}
+
+	if input.WarehouseOfficeArea.IsPresent() {
+		if input.WarehouseOfficeArea.IsNull() {
+			existing.UnsetWarehouseOfficeArea()
+		} else if value, ok := input.WarehouseOfficeArea.Value(); ok {
+			existing.SetWarehouseOfficeArea(value)
+		}
+	}
+
+	if input.WarehouseAdditionalFloors.IsPresent() {
+		if input.WarehouseAdditionalFloors.IsNull() {
+			existing.SetWarehouseAdditionalFloors(nil)
+		} else if floors, ok := input.WarehouseAdditionalFloors.Value(); ok {
+			for _, floor := range floors {
+				floor.SetListingVersionID(existing.ID())
+			}
+			existing.SetWarehouseAdditionalFloors(floors)
+		}
+	}
+
+	if input.StoreHasMezzanine.IsPresent() {
+		if input.StoreHasMezzanine.IsNull() {
+			existing.UnsetStoreHasMezzanine()
+		} else if value, ok := input.StoreHasMezzanine.Value(); ok {
+			existing.SetStoreHasMezzanine(value)
+		}
+	}
+
+	if input.StoreMezzanineArea.IsPresent() {
+		if input.StoreMezzanineArea.IsNull() {
+			existing.UnsetStoreMezzanineArea()
+		} else if value, ok := input.StoreMezzanineArea.Value(); ok {
+			existing.SetStoreMezzanineArea(value)
+		}
+	}
+
 	// Update satellite tables
 	if input.Features.IsPresent() {
 		err = ls.listingRepository.UpdateFeatures(ctx, tx, existing.ID(), existing.Features())
@@ -463,6 +675,15 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 			utils.SetSpanError(ctx, err)
 			logger.Error("listing.update.update_guarantees_error", "err", err, "version_id", existing.ID())
 			return utils.InternalError("Failed to update guarantees")
+		}
+	}
+
+	if input.WarehouseAdditionalFloors.IsPresent() {
+		err = ls.listingRepository.UpdateWarehouseAdditionalFloors(ctx, tx, existing.ID(), existing.WarehouseAdditionalFloors())
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("listing.update.update_warehouse_additional_floors_error", "err", err, "version_id", existing.ID())
+			return utils.InternalError("Failed to update warehouse additional floors")
 		}
 	}
 

@@ -1455,11 +1455,17 @@ definitions:
         type: number
       buildable:
         type: number
+      buildingFloors:
+        example: 8
+        type: integer
       city:
         type: string
       code:
         type: integer
       complement:
+        type: string
+      completionForecast:
+        example: 2026-06
         type: string
       condominium:
         type: number
@@ -1495,12 +1501,34 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingGuaranteeResponse'
         type: array
+      hasKmz:
+        type: boolean
       id:
         type: integer
       installment:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      kmzFile:
+        example: https://storage.exemplo.com/terrenos/lote15.kmz
+        type: string
+      landBack:
+        example: 12.5
+        type: number
+      landBlock:
+        example: A
+        type: string
+      landFront:
+        example: 12.5
+        type: number
+      landLot:
+        example: "15"
+        type: string
+      landSide:
+        example: 30
+        type: number
       landSize:
         type: number
+      landTerrainType:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
       listingIdentityId:
         type: integer
       listingUuid:
@@ -1529,6 +1557,11 @@ definitions:
         type: string
       status:
         type: string
+      storeHasMezzanine:
+        type: boolean
+      storeMezzanineArea:
+        example: 45
+        type: number
       street:
         type: string
       tenantEmail:
@@ -1541,12 +1574,49 @@ definitions:
         type: string
       transaction:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      unitFloor:
+        example: 5
+        type: integer
+      unitNumber:
+        example: "502"
+        type: string
+      unitTower:
+        example: Torre B
+        type: string
       userId:
         type: integer
       version:
         type: integer
       visit:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      warehouseAdditionalFloors:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO'
+        type: array
+      warehouseCabinKva:
+        example: 150
+        type: number
+      warehouseFloorResistance:
+        example: 2500
+        type: number
+      warehouseGroundFloor:
+        example: 4.2
+        type: number
+      warehouseHasOfficeArea:
+        type: boolean
+      warehouseHasPrimaryCabin:
+        type: boolean
+      warehouseManufacturingArea:
+        example: 850.5
+        type: number
+      warehouseOfficeArea:
+        example: 120
+        type: number
+      warehouseSector:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      warehouseZoning:
+        example: ZI-2
+        type: string
       whoLives:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
       zipCode:
@@ -2458,6 +2528,20 @@ definitions:
       valid:
         example: true
         type: boolean
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO:
+    description: Additional floor information for warehouses (mezanino, second floor,
+      etc.)
+    properties:
+      floorHeight:
+        example: 3.5
+        type: number
+      floorName:
+        example: Mezanino
+        type: string
+      floorOrder:
+        example: 1
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource:
     enum:

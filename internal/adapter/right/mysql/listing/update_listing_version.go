@@ -29,7 +29,14 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 			description = ?, transaction = ?, sell_net = ?, rent_net = ?, condominium = ?,
 			annual_tax = ?, monthly_tax = ?, annual_ground_rent = ?, monthly_ground_rent = ?,
 			exchange = ?, exchange_perc = ?, installment = ?, financing = ?, visit = ?,
-			tenant_name = ?, tenant_email = ?, tenant_phone = ?, accompanying = ?
+			tenant_name = ?, tenant_email = ?, tenant_phone = ?, accompanying = ?,
+			completion_forecast = ?, land_block = ?, land_lot = ?, land_front = ?, land_side = ?,
+			land_back = ?, land_terrain_type = ?, has_kmz = ?, kmz_file = ?, building_floors = ?,
+			unit_tower = ?, unit_floor = ?, unit_number = ?, warehouse_manufacturing_area = ?,
+			warehouse_sector = ?, warehouse_has_primary_cabin = ?, warehouse_cabin_kva = ?,
+			warehouse_ground_floor = ?, warehouse_floor_resistance = ?, warehouse_zoning = ?,
+			warehouse_has_office_area = ?, warehouse_office_area = ?, store_has_mezzanine = ?,
+			store_mezzanine_area = ?
 		WHERE id = ? AND deleted = 0
 	`
 
@@ -37,6 +44,11 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 	var owner, landSize, corner, nonBuildable, buildable, delivered, whoLives, transaction interface{}
 	var sellNet, rentNet, condominium, annualTax, monthlyTax, annualGroundRent, monthlyGroundRent interface{}
 	var exchange, exchangePerc, installment, financing, visit, accompanying interface{}
+	var completionForecast, landBlock, landLot, landFront, landSide, landBack, landTerrainType interface{}
+	var hasKmz, kmzFile, buildingFloors, unitTower, unitFloor, unitNumber interface{}
+	var warehouseManufacturingArea, warehouseSector, warehouseHasPrimaryCabin, warehouseCabinKva interface{}
+	var warehouseGroundFloor, warehouseFloorResistance, warehouseZoning interface{}
+	var warehouseHasOfficeArea, warehouseOfficeArea, storeHasMezzanine, storeMezzanineArea interface{}
 
 	// Required string fields - always set
 	street := version.Street()
@@ -123,6 +135,78 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 	if version.HasAccompanying() {
 		accompanying = uint8(version.Accompanying())
 	}
+	if version.HasCompletionForecast() {
+		completionForecast = version.CompletionForecast()
+	}
+	if version.HasLandBlock() {
+		landBlock = version.LandBlock()
+	}
+	if version.HasLandLot() {
+		landLot = version.LandLot()
+	}
+	if version.HasLandFront() {
+		landFront = version.LandFront()
+	}
+	if version.HasLandSide() {
+		landSide = version.LandSide()
+	}
+	if version.HasLandBack() {
+		landBack = version.LandBack()
+	}
+	if version.HasLandTerrainType() {
+		landTerrainType = uint8(version.LandTerrainType())
+	}
+	if version.HasHasKmz() {
+		hasKmz = version.HasKmz()
+	}
+	if version.HasKmzFile() {
+		kmzFile = version.KmzFile()
+	}
+	if version.HasBuildingFloors() {
+		buildingFloors = version.BuildingFloors()
+	}
+	if version.HasUnitTower() {
+		unitTower = version.UnitTower()
+	}
+	if version.HasUnitFloor() {
+		unitFloor = version.UnitFloor()
+	}
+	if version.HasUnitNumber() {
+		unitNumber = version.UnitNumber()
+	}
+	if version.HasWarehouseManufacturingArea() {
+		warehouseManufacturingArea = version.WarehouseManufacturingArea()
+	}
+	if version.HasWarehouseSector() {
+		warehouseSector = uint8(version.WarehouseSector())
+	}
+	if version.HasWarehouseHasPrimaryCabin() {
+		warehouseHasPrimaryCabin = version.WarehouseHasPrimaryCabin()
+	}
+	if version.HasWarehouseCabinKva() {
+		warehouseCabinKva = version.WarehouseCabinKva()
+	}
+	if version.HasWarehouseGroundFloor() {
+		warehouseGroundFloor = version.WarehouseGroundFloor()
+	}
+	if version.HasWarehouseFloorResistance() {
+		warehouseFloorResistance = version.WarehouseFloorResistance()
+	}
+	if version.HasWarehouseZoning() {
+		warehouseZoning = version.WarehouseZoning()
+	}
+	if version.HasWarehouseHasOfficeArea() {
+		warehouseHasOfficeArea = version.WarehouseHasOfficeArea()
+	}
+	if version.HasWarehouseOfficeArea() {
+		warehouseOfficeArea = version.WarehouseOfficeArea()
+	}
+	if version.HasStoreHasMezzanine() {
+		storeHasMezzanine = version.StoreHasMezzanine()
+	}
+	if version.HasStoreMezzanineArea() {
+		storeMezzanineArea = version.StoreMezzanineArea()
+	}
 
 	_, execErr := la.ExecContext(ctx, tx, "update", query,
 		uint8(version.Status()), title, version.ZipCode(), street, version.Number(), complement,
@@ -132,6 +216,13 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 		annualTax, monthlyTax, annualGroundRent, monthlyGroundRent,
 		exchange, exchangePerc, installment, financing, visit,
 		tenantName, tenantEmail, tenantPhone, accompanying,
+		completionForecast, landBlock, landLot, landFront, landSide,
+		landBack, landTerrainType, hasKmz, kmzFile, buildingFloors,
+		unitTower, unitFloor, unitNumber, warehouseManufacturingArea,
+		warehouseSector, warehouseHasPrimaryCabin, warehouseCabinKva,
+		warehouseGroundFloor, warehouseFloorResistance, warehouseZoning,
+		warehouseHasOfficeArea, warehouseOfficeArea, storeHasMezzanine,
+		storeMezzanineArea,
 		version.ID(),
 	)
 

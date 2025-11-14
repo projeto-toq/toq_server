@@ -72,10 +72,60 @@ type listingVersion struct {
 	tenantEmailValid        bool
 	tenantPhone             string
 	tenantPhoneValid        bool
-	accompanying            AccompanyingType
-	accompanyingValid       bool
-	deleted                 bool
-	deletedValid            bool
+	accompanying                       AccompanyingType
+	accompanyingValid                  bool
+	deleted                            bool
+	deletedValid                       bool
+	// New property-specific fields
+	completionForecast                 string
+	completionForecastValid            bool
+	landBlock                          string
+	landBlockValid                     bool
+	landLot                            string
+	landLotValid                       bool
+	landFront                          float64
+	landFrontValid                     bool
+	landSide                           float64
+	landSideValid                      bool
+	landBack                           float64
+	landBackValid                      bool
+	landTerrainType                    LandTerrainType
+	landTerrainTypeValid               bool
+	hasKmz                             bool
+	hasKmzValid                        bool
+	kmzFile                            string
+	kmzFileValid                       bool
+	buildingFloors                     int
+	buildingFloorsValid                bool
+	unitTower                          string
+	unitTowerValid                     bool
+	unitFloor                          string
+	unitFloorValid                     bool
+	unitNumber                         string
+	unitNumberValid                    bool
+	warehouseManufacturingArea         float64
+	warehouseManufacturingAreaValid    bool
+	warehouseSector                    WarehouseSector
+	warehouseSectorValid               bool
+	warehouseHasPrimaryCabin           bool
+	warehouseHasPrimaryCabinValid      bool
+	warehouseCabinKva                  string
+	warehouseCabinKvaValid             bool
+	warehouseGroundFloor               int
+	warehouseGroundFloorValid          bool
+	warehouseFloorResistance           float64
+	warehouseFloorResistanceValid      bool
+	warehouseZoning                    string
+	warehouseZoningValid               bool
+	warehouseHasOfficeArea             bool
+	warehouseHasOfficeAreaValid        bool
+	warehouseOfficeArea                float64
+	warehouseOfficeAreaValid           bool
+	storeHasMezzanine                  bool
+	storeHasMezzanineValid             bool
+	storeMezzanineArea                 float64
+	storeMezzanineAreaValid            bool
+	warehouseAdditionalFloors          []WarehouseAdditionalFloorInterface
 }
 
 func (l *listingVersion) ID() int64 {
@@ -716,6 +766,471 @@ func (l *listingVersion) UnsetDeleted() {
 	l.deletedValid = false
 }
 
+// CompletionForecast represents completion forecast for properties under construction (month/year).
+func (l *listingVersion) CompletionForecast() string {
+	return l.completionForecast
+}
+
+func (l *listingVersion) SetCompletionForecast(completionForecast string) {
+	l.completionForecast = completionForecast
+	l.completionForecastValid = true
+}
+
+func (l *listingVersion) HasCompletionForecast() bool {
+	return l.completionForecastValid
+}
+
+func (l *listingVersion) UnsetCompletionForecast() {
+	l.completionForecast = ""
+	l.completionForecastValid = false
+}
+
+// LandBlock represents the block identifier for land properties.
+func (l *listingVersion) LandBlock() string {
+	return l.landBlock
+}
+
+func (l *listingVersion) SetLandBlock(landBlock string) {
+	l.landBlock = landBlock
+	l.landBlockValid = true
+}
+
+func (l *listingVersion) HasLandBlock() bool {
+	return l.landBlockValid
+}
+
+func (l *listingVersion) UnsetLandBlock() {
+	l.landBlock = ""
+	l.landBlockValid = false
+}
+
+// LandLot represents the lot identifier for commercial/residential land.
+func (l *listingVersion) LandLot() string {
+	return l.landLot
+}
+
+func (l *listingVersion) SetLandLot(landLot string) {
+	l.landLot = landLot
+	l.landLotValid = true
+}
+
+func (l *listingVersion) HasLandLot() bool {
+	return l.landLotValid
+}
+
+func (l *listingVersion) UnsetLandLot() {
+	l.landLot = ""
+	l.landLotValid = false
+}
+
+// LandFront represents the front dimension in meters for commercial/residential land.
+func (l *listingVersion) LandFront() float64 {
+	return l.landFront
+}
+
+func (l *listingVersion) SetLandFront(landFront float64) {
+	l.landFront = landFront
+	l.landFrontValid = true
+}
+
+func (l *listingVersion) HasLandFront() bool {
+	return l.landFrontValid
+}
+
+func (l *listingVersion) UnsetLandFront() {
+	l.landFront = 0
+	l.landFrontValid = false
+}
+
+// LandSide represents the side dimension in meters for commercial/residential land.
+func (l *listingVersion) LandSide() float64 {
+	return l.landSide
+}
+
+func (l *listingVersion) SetLandSide(landSide float64) {
+	l.landSide = landSide
+	l.landSideValid = true
+}
+
+func (l *listingVersion) HasLandSide() bool {
+	return l.landSideValid
+}
+
+func (l *listingVersion) UnsetLandSide() {
+	l.landSide = 0
+	l.landSideValid = false
+}
+
+// LandBack represents the back dimension in meters for commercial/residential land.
+func (l *listingVersion) LandBack() float64 {
+	return l.landBack
+}
+
+func (l *listingVersion) SetLandBack(landBack float64) {
+	l.landBack = landBack
+	l.landBackValid = true
+}
+
+func (l *listingVersion) HasLandBack() bool {
+	return l.landBackValid
+}
+
+func (l *listingVersion) UnsetLandBack() {
+	l.landBack = 0
+	l.landBackValid = false
+}
+
+// LandTerrainType represents the terrain type (uphill, flat, downhill, etc.).
+func (l *listingVersion) LandTerrainType() LandTerrainType {
+	return l.landTerrainType
+}
+
+func (l *listingVersion) SetLandTerrainType(landTerrainType LandTerrainType) {
+	l.landTerrainType = landTerrainType
+	l.landTerrainTypeValid = true
+}
+
+func (l *listingVersion) HasLandTerrainType() bool {
+	return l.landTerrainTypeValid
+}
+
+func (l *listingVersion) UnsetLandTerrainType() {
+	l.landTerrainType = 0
+	l.landTerrainTypeValid = false
+}
+
+// HasKmz indicates whether a KMZ file is available for the land.
+func (l *listingVersion) HasKmz() bool {
+	return l.hasKmz
+}
+
+func (l *listingVersion) SetHasKmz(hasKmz bool) {
+	l.hasKmz = hasKmz
+	l.hasKmzValid = true
+}
+
+func (l *listingVersion) HasHasKmz() bool {
+	return l.hasKmzValid
+}
+
+func (l *listingVersion) UnsetHasKmz() {
+	l.hasKmz = false
+	l.hasKmzValid = false
+}
+
+// KmzFile represents the KMZ file path or URL.
+func (l *listingVersion) KmzFile() string {
+	return l.kmzFile
+}
+
+func (l *listingVersion) SetKmzFile(kmzFile string) {
+	l.kmzFile = kmzFile
+	l.kmzFileValid = true
+}
+
+func (l *listingVersion) HasKmzFile() bool {
+	return l.kmzFileValid
+}
+
+func (l *listingVersion) UnsetKmzFile() {
+	l.kmzFile = ""
+	l.kmzFileValid = false
+}
+
+// BuildingFloors represents the number of floors in a building.
+func (l *listingVersion) BuildingFloors() int {
+	return l.buildingFloors
+}
+
+func (l *listingVersion) SetBuildingFloors(buildingFloors int) {
+	l.buildingFloors = buildingFloors
+	l.buildingFloorsValid = true
+}
+
+func (l *listingVersion) HasBuildingFloors() bool {
+	return l.buildingFloorsValid
+}
+
+func (l *listingVersion) UnsetBuildingFloors() {
+	l.buildingFloors = 0
+	l.buildingFloorsValid = false
+}
+
+// UnitTower represents the tower/block identifier for apartment/office/laje.
+func (l *listingVersion) UnitTower() string {
+	return l.unitTower
+}
+
+func (l *listingVersion) SetUnitTower(unitTower string) {
+	l.unitTower = unitTower
+	l.unitTowerValid = true
+}
+
+func (l *listingVersion) HasUnitTower() bool {
+	return l.unitTowerValid
+}
+
+func (l *listingVersion) UnsetUnitTower() {
+	l.unitTower = ""
+	l.unitTowerValid = false
+}
+
+// UnitFloor represents the floor identifier for apartment/office/laje.
+func (l *listingVersion) UnitFloor() string {
+	return l.unitFloor
+}
+
+func (l *listingVersion) SetUnitFloor(unitFloor string) {
+	l.unitFloor = unitFloor
+	l.unitFloorValid = true
+}
+
+func (l *listingVersion) HasUnitFloor() bool {
+	return l.unitFloorValid
+}
+
+func (l *listingVersion) UnsetUnitFloor() {
+	l.unitFloor = ""
+	l.unitFloorValid = false
+}
+
+// UnitNumber represents the unit number for apartment/office/laje.
+func (l *listingVersion) UnitNumber() string {
+	return l.unitNumber
+}
+
+func (l *listingVersion) SetUnitNumber(unitNumber string) {
+	l.unitNumber = unitNumber
+	l.unitNumberValid = true
+}
+
+func (l *listingVersion) HasUnitNumber() bool {
+	return l.unitNumberValid
+}
+
+func (l *listingVersion) UnsetUnitNumber() {
+	l.unitNumber = ""
+	l.unitNumberValid = false
+}
+
+// WarehouseManufacturingArea represents the manufacturing area in m² for warehouse.
+func (l *listingVersion) WarehouseManufacturingArea() float64 {
+	return l.warehouseManufacturingArea
+}
+
+func (l *listingVersion) SetWarehouseManufacturingArea(warehouseManufacturingArea float64) {
+	l.warehouseManufacturingArea = warehouseManufacturingArea
+	l.warehouseManufacturingAreaValid = true
+}
+
+func (l *listingVersion) HasWarehouseManufacturingArea() bool {
+	return l.warehouseManufacturingAreaValid
+}
+
+func (l *listingVersion) UnsetWarehouseManufacturingArea() {
+	l.warehouseManufacturingArea = 0
+	l.warehouseManufacturingAreaValid = false
+}
+
+// WarehouseSector represents the warehouse sector (manufacturing, industrial, logistics).
+func (l *listingVersion) WarehouseSector() WarehouseSector {
+	return l.warehouseSector
+}
+
+func (l *listingVersion) SetWarehouseSector(warehouseSector WarehouseSector) {
+	l.warehouseSector = warehouseSector
+	l.warehouseSectorValid = true
+}
+
+func (l *listingVersion) HasWarehouseSector() bool {
+	return l.warehouseSectorValid
+}
+
+func (l *listingVersion) UnsetWarehouseSector() {
+	l.warehouseSector = 0
+	l.warehouseSectorValid = false
+}
+
+// WarehouseHasPrimaryCabin indicates whether warehouse has primary cabin.
+func (l *listingVersion) WarehouseHasPrimaryCabin() bool {
+	return l.warehouseHasPrimaryCabin
+}
+
+func (l *listingVersion) SetWarehouseHasPrimaryCabin(warehouseHasPrimaryCabin bool) {
+	l.warehouseHasPrimaryCabin = warehouseHasPrimaryCabin
+	l.warehouseHasPrimaryCabinValid = true
+}
+
+func (l *listingVersion) HasWarehouseHasPrimaryCabin() bool {
+	return l.warehouseHasPrimaryCabinValid
+}
+
+func (l *listingVersion) UnsetWarehouseHasPrimaryCabin() {
+	l.warehouseHasPrimaryCabin = false
+	l.warehouseHasPrimaryCabinValid = false
+}
+
+// WarehouseCabinKva represents the primary cabin KVA specification.
+func (l *listingVersion) WarehouseCabinKva() string {
+	return l.warehouseCabinKva
+}
+
+func (l *listingVersion) SetWarehouseCabinKva(warehouseCabinKva string) {
+	l.warehouseCabinKva = warehouseCabinKva
+	l.warehouseCabinKvaValid = true
+}
+
+func (l *listingVersion) HasWarehouseCabinKva() bool {
+	return l.warehouseCabinKvaValid
+}
+
+func (l *listingVersion) UnsetWarehouseCabinKva() {
+	l.warehouseCabinKva = ""
+	l.warehouseCabinKvaValid = false
+}
+
+// WarehouseGroundFloor represents the ground floor height in meters.
+func (l *listingVersion) WarehouseGroundFloor() int {
+	return l.warehouseGroundFloor
+}
+
+func (l *listingVersion) SetWarehouseGroundFloor(warehouseGroundFloor int) {
+	l.warehouseGroundFloor = warehouseGroundFloor
+	l.warehouseGroundFloorValid = true
+}
+
+func (l *listingVersion) HasWarehouseGroundFloor() bool {
+	return l.warehouseGroundFloorValid
+}
+
+func (l *listingVersion) UnsetWarehouseGroundFloor() {
+	l.warehouseGroundFloor = 0
+	l.warehouseGroundFloorValid = false
+}
+
+// WarehouseFloorResistance represents the floor resistance in kg/m².
+func (l *listingVersion) WarehouseFloorResistance() float64 {
+	return l.warehouseFloorResistance
+}
+
+func (l *listingVersion) SetWarehouseFloorResistance(warehouseFloorResistance float64) {
+	l.warehouseFloorResistance = warehouseFloorResistance
+	l.warehouseFloorResistanceValid = true
+}
+
+func (l *listingVersion) HasWarehouseFloorResistance() bool {
+	return l.warehouseFloorResistanceValid
+}
+
+func (l *listingVersion) UnsetWarehouseFloorResistance() {
+	l.warehouseFloorResistance = 0
+	l.warehouseFloorResistanceValid = false
+}
+
+// WarehouseZoning represents the zoning classification.
+func (l *listingVersion) WarehouseZoning() string {
+	return l.warehouseZoning
+}
+
+func (l *listingVersion) SetWarehouseZoning(warehouseZoning string) {
+	l.warehouseZoning = warehouseZoning
+	l.warehouseZoningValid = true
+}
+
+func (l *listingVersion) HasWarehouseZoning() bool {
+	return l.warehouseZoningValid
+}
+
+func (l *listingVersion) UnsetWarehouseZoning() {
+	l.warehouseZoning = ""
+	l.warehouseZoningValid = false
+}
+
+// WarehouseHasOfficeArea indicates whether warehouse has office area.
+func (l *listingVersion) WarehouseHasOfficeArea() bool {
+	return l.warehouseHasOfficeArea
+}
+
+func (l *listingVersion) SetWarehouseHasOfficeArea(warehouseHasOfficeArea bool) {
+	l.warehouseHasOfficeArea = warehouseHasOfficeArea
+	l.warehouseHasOfficeAreaValid = true
+}
+
+func (l *listingVersion) HasWarehouseHasOfficeArea() bool {
+	return l.warehouseHasOfficeAreaValid
+}
+
+func (l *listingVersion) UnsetWarehouseHasOfficeArea() {
+	l.warehouseHasOfficeArea = false
+	l.warehouseHasOfficeAreaValid = false
+}
+
+// WarehouseOfficeArea represents the office area in m².
+func (l *listingVersion) WarehouseOfficeArea() float64 {
+	return l.warehouseOfficeArea
+}
+
+func (l *listingVersion) SetWarehouseOfficeArea(warehouseOfficeArea float64) {
+	l.warehouseOfficeArea = warehouseOfficeArea
+	l.warehouseOfficeAreaValid = true
+}
+
+func (l *listingVersion) HasWarehouseOfficeArea() bool {
+	return l.warehouseOfficeAreaValid
+}
+
+func (l *listingVersion) UnsetWarehouseOfficeArea() {
+	l.warehouseOfficeArea = 0
+	l.warehouseOfficeAreaValid = false
+}
+
+// StoreHasMezzanine indicates whether store has mezzanine.
+func (l *listingVersion) StoreHasMezzanine() bool {
+	return l.storeHasMezzanine
+}
+
+func (l *listingVersion) SetStoreHasMezzanine(storeHasMezzanine bool) {
+	l.storeHasMezzanine = storeHasMezzanine
+	l.storeHasMezzanineValid = true
+}
+
+func (l *listingVersion) HasStoreHasMezzanine() bool {
+	return l.storeHasMezzanineValid
+}
+
+func (l *listingVersion) UnsetStoreHasMezzanine() {
+	l.storeHasMezzanine = false
+	l.storeHasMezzanineValid = false
+}
+
+// StoreMezzanineArea represents the mezzanine area in m².
+func (l *listingVersion) StoreMezzanineArea() float64 {
+	return l.storeMezzanineArea
+}
+
+func (l *listingVersion) SetStoreMezzanineArea(storeMezzanineArea float64) {
+	l.storeMezzanineArea = storeMezzanineArea
+	l.storeMezzanineAreaValid = true
+}
+
+func (l *listingVersion) HasStoreMezzanineArea() bool {
+	return l.storeMezzanineAreaValid
+}
+
+func (l *listingVersion) UnsetStoreMezzanineArea() {
+	l.storeMezzanineArea = 0
+	l.storeMezzanineAreaValid = false
+}
+
+// WarehouseAdditionalFloors represents additional floors for warehouse properties.
+func (l *listingVersion) WarehouseAdditionalFloors() []WarehouseAdditionalFloorInterface {
+	return l.warehouseAdditionalFloors
+}
+
+func (l *listingVersion) SetWarehouseAdditionalFloors(warehouseAdditionalFloors []WarehouseAdditionalFloorInterface) {
+	l.warehouseAdditionalFloors = warehouseAdditionalFloors
+}
+
 func (l *listingVersion) copyFrom(version ListingVersionInterface) {
 	if version == nil {
 		return
@@ -960,6 +1475,201 @@ func (l *listingVersion) copyFrom(version ListingVersionInterface) {
 		l.deleted = false
 		l.deletedValid = false
 	}
+
+	// New property-specific fields
+	if version.HasCompletionForecast() {
+		l.completionForecast = version.CompletionForecast()
+		l.completionForecastValid = true
+	} else {
+		l.completionForecast = ""
+		l.completionForecastValid = false
+	}
+
+	if version.HasLandBlock() {
+		l.landBlock = version.LandBlock()
+		l.landBlockValid = true
+	} else {
+		l.landBlock = ""
+		l.landBlockValid = false
+	}
+
+	if version.HasLandLot() {
+		l.landLot = version.LandLot()
+		l.landLotValid = true
+	} else {
+		l.landLot = ""
+		l.landLotValid = false
+	}
+
+	if version.HasLandFront() {
+		l.landFront = version.LandFront()
+		l.landFrontValid = true
+	} else {
+		l.landFront = 0
+		l.landFrontValid = false
+	}
+
+	if version.HasLandSide() {
+		l.landSide = version.LandSide()
+		l.landSideValid = true
+	} else {
+		l.landSide = 0
+		l.landSideValid = false
+	}
+
+	if version.HasLandBack() {
+		l.landBack = version.LandBack()
+		l.landBackValid = true
+	} else {
+		l.landBack = 0
+		l.landBackValid = false
+	}
+
+	if version.HasLandTerrainType() {
+		l.landTerrainType = version.LandTerrainType()
+		l.landTerrainTypeValid = true
+	} else {
+		l.landTerrainType = 0
+		l.landTerrainTypeValid = false
+	}
+
+	if version.HasHasKmz() {
+		l.hasKmz = version.HasKmz()
+		l.hasKmzValid = true
+	} else {
+		l.hasKmz = false
+		l.hasKmzValid = false
+	}
+
+	if version.HasKmzFile() {
+		l.kmzFile = version.KmzFile()
+		l.kmzFileValid = true
+	} else {
+		l.kmzFile = ""
+		l.kmzFileValid = false
+	}
+
+	if version.HasBuildingFloors() {
+		l.buildingFloors = version.BuildingFloors()
+		l.buildingFloorsValid = true
+	} else {
+		l.buildingFloors = 0
+		l.buildingFloorsValid = false
+	}
+
+	if version.HasUnitTower() {
+		l.unitTower = version.UnitTower()
+		l.unitTowerValid = true
+	} else {
+		l.unitTower = ""
+		l.unitTowerValid = false
+	}
+
+	if version.HasUnitFloor() {
+		l.unitFloor = version.UnitFloor()
+		l.unitFloorValid = true
+	} else {
+		l.unitFloor = ""
+		l.unitFloorValid = false
+	}
+
+	if version.HasUnitNumber() {
+		l.unitNumber = version.UnitNumber()
+		l.unitNumberValid = true
+	} else {
+		l.unitNumber = ""
+		l.unitNumberValid = false
+	}
+
+	if version.HasWarehouseManufacturingArea() {
+		l.warehouseManufacturingArea = version.WarehouseManufacturingArea()
+		l.warehouseManufacturingAreaValid = true
+	} else {
+		l.warehouseManufacturingArea = 0
+		l.warehouseManufacturingAreaValid = false
+	}
+
+	if version.HasWarehouseSector() {
+		l.warehouseSector = version.WarehouseSector()
+		l.warehouseSectorValid = true
+	} else {
+		l.warehouseSector = 0
+		l.warehouseSectorValid = false
+	}
+
+	if version.HasWarehouseHasPrimaryCabin() {
+		l.warehouseHasPrimaryCabin = version.WarehouseHasPrimaryCabin()
+		l.warehouseHasPrimaryCabinValid = true
+	} else {
+		l.warehouseHasPrimaryCabin = false
+		l.warehouseHasPrimaryCabinValid = false
+	}
+
+	if version.HasWarehouseCabinKva() {
+		l.warehouseCabinKva = version.WarehouseCabinKva()
+		l.warehouseCabinKvaValid = true
+	} else {
+		l.warehouseCabinKva = ""
+		l.warehouseCabinKvaValid = false
+	}
+
+	if version.HasWarehouseGroundFloor() {
+		l.warehouseGroundFloor = version.WarehouseGroundFloor()
+		l.warehouseGroundFloorValid = true
+	} else {
+		l.warehouseGroundFloor = 0
+		l.warehouseGroundFloorValid = false
+	}
+
+	if version.HasWarehouseFloorResistance() {
+		l.warehouseFloorResistance = version.WarehouseFloorResistance()
+		l.warehouseFloorResistanceValid = true
+	} else {
+		l.warehouseFloorResistance = 0
+		l.warehouseFloorResistanceValid = false
+	}
+
+	if version.HasWarehouseZoning() {
+		l.warehouseZoning = version.WarehouseZoning()
+		l.warehouseZoningValid = true
+	} else {
+		l.warehouseZoning = ""
+		l.warehouseZoningValid = false
+	}
+
+	if version.HasWarehouseHasOfficeArea() {
+		l.warehouseHasOfficeArea = version.WarehouseHasOfficeArea()
+		l.warehouseHasOfficeAreaValid = true
+	} else {
+		l.warehouseHasOfficeArea = false
+		l.warehouseHasOfficeAreaValid = false
+	}
+
+	if version.HasWarehouseOfficeArea() {
+		l.warehouseOfficeArea = version.WarehouseOfficeArea()
+		l.warehouseOfficeAreaValid = true
+	} else {
+		l.warehouseOfficeArea = 0
+		l.warehouseOfficeAreaValid = false
+	}
+
+	if version.HasStoreHasMezzanine() {
+		l.storeHasMezzanine = version.StoreHasMezzanine()
+		l.storeHasMezzanineValid = true
+	} else {
+		l.storeHasMezzanine = false
+		l.storeHasMezzanineValid = false
+	}
+
+	if version.HasStoreMezzanineArea() {
+		l.storeMezzanineArea = version.StoreMezzanineArea()
+		l.storeMezzanineAreaValid = true
+	} else {
+		l.storeMezzanineArea = 0
+		l.storeMezzanineAreaValid = false
+	}
+
+	l.warehouseAdditionalFloors = cloneWarehouseAdditionalFloors(version.WarehouseAdditionalFloors())
 }
 
 type listing struct {
@@ -1135,6 +1845,16 @@ func cloneGuarantees(guarantees []GuaranteeInterface) []GuaranteeInterface {
 
 	cloned := make([]GuaranteeInterface, len(guarantees))
 	copy(cloned, guarantees)
+	return cloned
+}
+
+func cloneWarehouseAdditionalFloors(floors []WarehouseAdditionalFloorInterface) []WarehouseAdditionalFloorInterface {
+	if len(floors) == 0 {
+		return nil
+	}
+
+	cloned := make([]WarehouseAdditionalFloorInterface, len(floors))
+	copy(cloned, floors)
 	return cloned
 }
 

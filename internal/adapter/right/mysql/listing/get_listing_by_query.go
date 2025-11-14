@@ -54,7 +54,31 @@ const listingSelectColumns = `
 		lv.tenant_email,
 		lv.tenant_phone,
 		lv.accompanying,
-		lv.deleted`
+		lv.deleted,
+		lv.completion_forecast,
+		lv.land_block,
+		lv.land_lot,
+		lv.land_front,
+		lv.land_side,
+		lv.land_back,
+		lv.land_terrain_type,
+		lv.has_kmz,
+		lv.kmz_file,
+		lv.building_floors,
+		lv.unit_tower,
+		lv.unit_floor,
+		lv.unit_number,
+		lv.warehouse_manufacturing_area,
+		lv.warehouse_sector,
+		lv.warehouse_has_primary_cabin,
+		lv.warehouse_cabin_kva,
+		lv.warehouse_ground_floor,
+		lv.warehouse_floor_resistance,
+		lv.warehouse_zoning,
+		lv.warehouse_has_office_area,
+		lv.warehouse_office_area,
+		lv.store_has_mezzanine,
+		lv.store_mezzanine_area`
 
 type rowScanner interface {
 	Scan(dest ...any) error
@@ -106,6 +130,30 @@ func scanListingEntity(row rowScanner) (listingentity.ListingEntity, error) {
 		&entity.TenantPhone,
 		&entity.Accompanying,
 		&entity.Deleted,
+		&entity.CompletionForecast,
+		&entity.LandBlock,
+		&entity.LandLot,
+		&entity.LandFront,
+		&entity.LandSide,
+		&entity.LandBack,
+		&entity.LandTerrainType,
+		&entity.HasKmz,
+		&entity.KmzFile,
+		&entity.BuildingFloors,
+		&entity.UnitTower,
+		&entity.UnitFloor,
+		&entity.UnitNumber,
+		&entity.WarehouseManufacturingArea,
+		&entity.WarehouseSector,
+		&entity.WarehouseHasPrimaryCabin,
+		&entity.WarehouseCabinKva,
+		&entity.WarehouseGroundFloor,
+		&entity.WarehouseFloorResistance,
+		&entity.WarehouseZoning,
+		&entity.WarehouseHasOfficeArea,
+		&entity.WarehouseOfficeArea,
+		&entity.StoreHasMezzanine,
+		&entity.StoreMezzanineArea,
 	); err != nil {
 		return listingentity.ListingEntity{}, err
 	}
@@ -157,6 +205,12 @@ func (la *ListingAdapter) GetListingByQuery(ctx context.Context, tx *sql.Tx, que
 		return
 	}
 	entityListing.FinancingBlocker = entityFinancingBlockers
+
+	entityWarehouseFloors, err := la.GetEntityWarehouseAdditionalFloorsByListing(ctx, tx, entityListing.ID)
+	if err != nil {
+		return
+	}
+	entityListing.WarehouseAdditionalFloors = entityWarehouseFloors
 
 	listing = listingconverters.ListingEntityToDomain(entityListing)
 	return
