@@ -44,13 +44,14 @@ type StartListingRequest struct {
 }
 
 // StartListingResponse represents response for starting a new listing
+//
+// @Description Response after creating a new listing. Use listingIdentityId and listingVersionId for subsequent PUT /listing updates.
 type StartListingResponse struct {
-	ID                int64  `json:"id"`
-	ListingIdentityID int64  `json:"listingIdentityId"`
-	ListingUUID       string `json:"listingUuid"`
-	ActiveVersionID   int64  `json:"activeVersionId"`
-	Version           uint8  `json:"version"`
-	Status            string `json:"status"`
+	ListingVersionID  int64  `json:"listingVersionId" example:"5001"`
+	ListingIdentityID int64  `json:"listingIdentityId" example:"1024"`
+	ListingUUID       string `json:"listingUuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Version           uint8  `json:"version" example:"1"`
+	Status            string `json:"status" example:"DRAFT"`
 }
 
 // CreateDraftVersionRequest represents request for creating a draft version from active listing

@@ -70,10 +70,9 @@ func (lh *ListingHandler) StartListing(c *gin.Context) {
 
 	// Success response
 	c.JSON(http.StatusCreated, dto.StartListingResponse{
-		ID:                listing.ID(),
+		ListingVersionID:  listing.ID(),
 		ListingIdentityID: listing.IdentityID(),
 		ListingUUID:       listing.UUID(),
-		ActiveVersionID:   listing.ActiveVersionID(),
 		Version:           listing.Version(),
 		Status:            listing.Status().String(),
 	})

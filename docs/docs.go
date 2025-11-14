@@ -11818,25 +11818,28 @@ const docTemplate = `{
             }
         },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StartListingResponse": {
+            "description": "Response after creating a new listing. Use listingIdentityId and listingVersionId for subsequent PUT /listing updates.",
             "type": "object",
             "properties": {
-                "activeVersionId": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "integer"
-                },
                 "listingIdentityId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1024
                 },
                 "listingUuid": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "listingVersionId": {
+                    "type": "integer",
+                    "example": 5001
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "DRAFT"
                 },
                 "version": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },

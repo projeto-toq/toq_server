@@ -2218,18 +2218,23 @@ definitions:
     - zipCode
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.StartListingResponse:
+    description: Response after creating a new listing. Use listingIdentityId and
+      listingVersionId for subsequent PUT /listing updates.
     properties:
-      activeVersionId:
-        type: integer
-      id:
-        type: integer
       listingIdentityId:
+        example: 1024
         type: integer
       listingUuid:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
+      listingVersionId:
+        example: 5001
+        type: integer
       status:
+        example: DRAFT
         type: string
       version:
+        example: 1
         type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.SwitchUserRoleResponse:
