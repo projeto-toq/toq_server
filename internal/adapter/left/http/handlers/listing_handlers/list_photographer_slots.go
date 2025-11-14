@@ -31,7 +31,7 @@ const (
 //	@Param     page      query    int    false "Page number" default(1)
 //	@Param     size      query    int    false "Page size" default(20)
 //	@Param     sort      query    string false "Sort order" Enums(start_asc,start_desc,photographer_asc,photographer_desc) default(start_asc)
-//	@Param     listingId query    int    true  "Listing identifier" example(1001)
+//	@Param     listingIdentityId query    int    true  "Listing identifier" example(1024)
 //	@Param     timezone  query    string true  "Listing timezone" example(America/Sao_Paulo)
 //	@Success   200 {object} dto.ListPhotographerSlotsResponse
 //	@Failure   400 {object} dto.ErrorResponse "Invalid filters"
@@ -101,14 +101,14 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 	}
 
 	input := listingservices.ListPhotographerSlotsInput{
-		From:      fromPtr,
-		To:        toPtr,
-		Period:    periodPtr,
-		Page:      request.Page,
-		Size:      request.Size,
-		Sort:      strings.TrimSpace(request.Sort),
-		ListingID: request.ListingID,
-		Location:  loc,
+		From:              fromPtr,
+		To:                toPtr,
+		Period:            periodPtr,
+		Page:              request.Page,
+		Size:              request.Size,
+		Sort:              strings.TrimSpace(request.Sort),
+		ListingIdentityID: request.ListingIdentityID,
+		Location:          loc,
 	}
 
 	output, err := lh.listingService.ListPhotographerSlots(ctx, input)

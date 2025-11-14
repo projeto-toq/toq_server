@@ -18,7 +18,7 @@ import (
 //	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
-//	@Param     request body      dto.ReservePhotoSessionRequest true "Reservation request" Extensions(x-example={"listingId":1001,"slotId":2002})
+//	@Param     request body      dto.ReservePhotoSessionRequest true "Reservation request" Extensions(x-example={"listingIdentityId":1024,"slotId":2002})
 //	@Success   200     {object} dto.ReservePhotoSessionResponse "Reservation created"
 //	@Failure   400     {object} dto.ErrorResponse "Invalid payload"
 //	@Failure   401     {object} dto.ErrorResponse "Unauthorized"
@@ -48,14 +48,14 @@ func (lh *ListingHandler) ReservePhotoSession(c *gin.Context) {
 		return
 	}
 
-	if request.ListingID <= 0 || request.SlotID == 0 {
-		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "listingId and slotId are required")
+	if request.ListingIdentityID <= 0 || request.SlotID == 0 {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "listingIdentityId and slotId are required")
 		return
 	}
 
 	input := listingservices.ReservePhotoSessionInput{
-		ListingID: request.ListingID,
-		SlotID:    request.SlotID,
+		ListingIdentityID: request.ListingIdentityID,
+		SlotID:            request.SlotID,
 	}
 
 	output, err := lh.listingService.ReservePhotoSession(ctx, input)

@@ -94,6 +94,21 @@ func (ls *listingService) createDraftVersion(ctx context.Context, tx *sql.Tx, in
 		return output, utils.InternalError("")
 	}
 
+	// Validate ownership
+	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
+	if uidErr != nil {
+		return output, uidErr
+	}
+
+	if activeVersion.UserID() != userID {
+		logger.Warn("unauthorized_create_draft_attempt",
+			"listing_identity_id", input.ListingIdentityID,
+			"listing_version_id", activeVersion.ID(),
+			"requester_user_id", userID,
+			"owner_user_id", activeVersion.UserID())
+		return output, utils.AuthorizationError("not the listing owner")
+	}
+
 	// Validate active version status
 	if validErr := ls.validateStatusForDraftCreation(activeVersion.Status()); validErr != nil {
 		return output, validErr

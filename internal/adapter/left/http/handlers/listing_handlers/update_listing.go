@@ -18,7 +18,7 @@ import (
 //	@Tags		Listings
 //	@Accept		json
 //	@Produce	json
-//	@Param	request	body	dto.UpdateListingRequest	true	"Payload for update (ID must be provided in the body)" Extensions(x-example={"id":98765,"owner":"myself","features":[{"featureId":101,"quantity":2},{"featureId":205,"quantity":1}],"landSize":423.5,"corner":true,"nonBuildable":12.75,"buildable":410.75,"delivered":"furnished","whoLives":"tenant","description":"Apartamento amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"monthlyTax":283.40,"monthlyGroundRent":150,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+5511912345678","title":"Oportunidade","accompanying":"assistant"})
+//	@Param	request	body	dto.UpdateListingRequest	true	"Payload for update (listingIdentityId and listingVersionId are required)" Extensions(x-example={"listingIdentityId":1024,"listingVersionId":5001,"owner":"myself","features":[{"featureId":101,"quantity":2},{"featureId":205,"quantity":1}],"landSize":423.5,"corner":true,"nonBuildable":12.75,"buildable":410.75,"delivered":"furnished","whoLives":"tenant","description":"Apartamento amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"monthlyTax":283.40,"monthlyGroundRent":150,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+5511912345678","title":"Oportunidade","accompanying":"assistant"})
 //	@Success	200	{object}	dto.UpdateListingResponse
 //	@Failure	400	{object}	dto.ErrorResponse	"Invalid payload"
 //	@Failure	401	{object}	dto.ErrorResponse	"Unauthorized"
@@ -43,6 +43,18 @@ func (lh *ListingHandler) UpdateListing(c *gin.Context) {
 		return
 	}
 
+	// Validate listingIdentityId
+	if !request.ListingIdentityID.IsPresent() || request.ListingIdentityID.IsNull() {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_IDENTITY_ID", "listingIdentityId must be provided in the request body")
+		return
+	}
+	identityID, ok := request.ListingIdentityID.Value()
+	if !ok || identityID <= 0 {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_IDENTITY_ID", "listingIdentityId is invalid")
+		return
+	}
+
+	// Validate listingVersionId
 	if !request.ListingVersionID.IsPresent() || request.ListingVersionID.IsNull() {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "MISSING_VERSION_ID", "listingVersionId must be provided in the request body")
 		return
@@ -59,6 +71,7 @@ func (lh *ListingHandler) UpdateListing(c *gin.Context) {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", err.Error())
 		return
 	}
+	input.ListingIdentityID = identityID
 	input.VersionID = versionID
 
 	if err := lh.listingService.UpdateListing(baseCtx, input); err != nil {

@@ -13,6 +13,7 @@ type ListingRepoPortInterface interface {
 	CreateListingIdentity(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) error
 	CreateListingVersion(ctx context.Context, tx *sql.Tx, version listingmodel.ListingVersionInterface) error
 	SetListingActiveVersion(ctx context.Context, tx *sql.Tx, identityID int64, versionID int64) error
+	GetListingIdentityByID(ctx context.Context, tx *sql.Tx, identityID int64) (ListingIdentityRecord, error)
 	GetListingIdentityByUUID(ctx context.Context, tx *sql.Tx, listingUUID string) (ListingIdentityRecord, error)
 	GetListingVersionByID(ctx context.Context, tx *sql.Tx, versionID int64) (listingmodel.ListingInterface, error)
 	ListListingVersions(ctx context.Context, tx *sql.Tx, filter ListListingVersionsFilter) ([]ListingVersionSummary, error)

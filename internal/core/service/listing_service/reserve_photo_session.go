@@ -13,8 +13,8 @@ import (
 )
 
 func (ls *listingService) ReservePhotoSession(ctx context.Context, input ReservePhotoSessionInput) (output ReservePhotoSessionOutput, err error) {
-	if input.ListingID <= 0 || input.SlotID == 0 {
-		return output, utils.BadRequest("listingId and slotId are required")
+	if input.ListingIdentityID <= 0 || input.SlotID == 0 {
+		return output, utils.BadRequest("listingIdentityId and slotID are required")
 	}
 
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
@@ -46,23 +46,35 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		}
 	}()
 
-	// Load listing to validate status
-	listing, err := ls.listingRepository.GetListingVersionByID(ctx, tx, input.ListingID)
+	// Get listing identity to validate ownership BEFORE fetching active version
+	identity, err := ls.listingRepository.GetListingIdentityByID(ctx, tx, input.ListingIdentityID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return output, utils.NotFoundError("listing")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.photo_session.reserve.get_identity_error", "err", err, "identity_id", input.ListingIdentityID)
+		return output, utils.InternalError("")
+	}
+
+	// Validate ownership using identity
+	if identity.UserID != userID {
+		logger.Warn("unauthorized_reserve_attempt",
+			"listing_identity_id", input.ListingIdentityID,
+			"requester_user_id", userID,
+			"owner_user_id", identity.UserID)
+		return output, utils.AuthorizationError("listing does not belong to current user")
+	}
+
+	// Load active listing version to validate status
+	listing, err := ls.listingRepository.GetActiveListingVersion(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return output, utils.NotFoundError("Listing")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("listing.photo_session.reserve.get_listing_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("listing.photo_session.reserve.get_listing_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return output, utils.InternalError("")
-	}
-
-	if listing.Deleted() {
-		return output, utils.BadRequest("listing is not available")
-	}
-
-	if listing.UserID() != userID {
-		return output, utils.AuthorizationError("listing does not belong to current user")
 	}
 
 	if listing.Status() == listingmodel.StatusPendingPhotoConfirmation {
@@ -81,7 +93,7 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 	tx = nil
 
 	reserveOutput, reserveErr := ls.photoSessionSvc.ReservePhotoSession(ctx, photosessionservices.ReserveSessionInput{
-		ListingID: input.ListingID,
+		ListingID: listing.ID(),
 		SlotID:    input.SlotID,
 		UserID:    userID,
 	})
@@ -110,7 +122,7 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		photographerPhone = phone
 	}
 
-	logger.Info("listing.photo_session.reserve.success", "listing_id", input.ListingID, "slot_id", input.SlotID, "booking_id", reserveOutput.PhotoSessionID, "user_id", userID)
+	logger.Info("listing.photo_session.reserve.success", "listing_identity_id", input.ListingIdentityID, "listing_version_id", listing.ID(), "slot_id", input.SlotID, "booking_id", reserveOutput.PhotoSessionID, "user_id", userID)
 
 	ls.sendPhotographerReservationSMS(ctx, photographerPhone, reserveOutput.SlotStart, reserveOutput.SlotEnd, listing.Code())
 

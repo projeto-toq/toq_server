@@ -15,14 +15,14 @@ const (
 
 // ListPhotographerSlotsInput carries filtering and pagination data for slot listing.
 type ListPhotographerSlotsInput struct {
-	From      *time.Time
-	To        *time.Time
-	Period    *photosessionmodel.SlotPeriod
-	Page      int
-	Size      int
-	Sort      string
-	ListingID int64
-	Location  *time.Location
+	From              *time.Time
+	To                *time.Time
+	Period            *photosessionmodel.SlotPeriod
+	Page              int
+	Size              int
+	Sort              string
+	ListingIdentityID int64
+	Location          *time.Location
 }
 
 // ListPhotographerSlotsOutput bundles slots and pagination metadata.
@@ -35,8 +35,8 @@ type ListPhotographerSlotsOutput struct {
 
 // ReservePhotoSessionInput holds identifiers needed to reserve a slot.
 type ReservePhotoSessionInput struct {
-	ListingID int64
-	SlotID    uint64
+	ListingIdentityID int64
+	SlotID            uint64
 }
 
 // ReservePhotoSessionOutput returns metadata about the reserved slot.

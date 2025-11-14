@@ -90,6 +90,21 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		return output, utils.InternalError("")
 	}
 
+	// Validate ownership
+	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
+	if uidErr != nil {
+		return output, uidErr
+	}
+
+	if listing.UserID() != userID {
+		logger.Warn("unauthorized_detail_access_attempt",
+			"listing_id", listingID,
+			"listing_identity_id", listing.IdentityID(),
+			"requester_user_id", userID,
+			"owner_user_id", listing.UserID())
+		return output, utils.AuthorizationError("not authorized to access this listing")
+	}
+
 	versionSummaries, listErr := ls.listingRepository.ListListingVersions(ctx, tx, listingrepository.ListListingVersionsFilter{
 		ListingIdentityID: listing.IdentityID(),
 		IncludeDeleted:    false,

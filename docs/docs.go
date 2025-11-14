@@ -5167,8 +5167,8 @@ const docTemplate = `{
                 "summary": "Update a listing",
                 "parameters": [
                     {
-                        "x-example": "{\"id\":98765,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"monthlyTax\":283.40,\"monthlyGroundRent\":150,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+5511912345678\",\"title\":\"Oportunidade\",\"accompanying\":\"assistant\"}",
-                        "description": "Payload for update (ID must be provided in the body)",
+                        "x-example": "{\"listingIdentityId\":1024,\"listingVersionId\":5001,\"owner\":\"myself\",\"features\":[{\"featureId\":101,\"quantity\":2},{\"featureId\":205,\"quantity\":1}],\"landSize\":423.5,\"corner\":true,\"nonBuildable\":12.75,\"buildable\":410.75,\"delivered\":\"furnished\",\"whoLives\":\"tenant\",\"description\":\"Apartamento amplo com vista panoramica\",\"transaction\":\"sale\",\"sellNet\":1200000,\"rentNet\":8500,\"condominium\":1200.5,\"monthlyTax\":283.40,\"monthlyGroundRent\":150,\"exchange\":true,\"exchangePercentual\":50,\"exchangePlaces\":[{\"neighborhood\":\"Vila Mariana\",\"city\":\"Sao Paulo\",\"state\":\"SP\"},{\"neighborhood\":\"Centro\",\"city\":\"Campinas\",\"state\":\"SP\"}],\"installment\":\"short_term\",\"financing\":true,\"financingBlockers\":[\"pending_probate\",\"other\"],\"guarantees\":[{\"priority\":1,\"guarantee\":\"security_deposit\"},{\"priority\":2,\"guarantee\":\"surety_bond\"}],\"visit\":\"client\",\"tenantName\":\"Joao da Silva\",\"tenantEmail\":\"joao.silva@example.com\",\"tenantPhone\":\"+5511912345678\",\"title\":\"Oportunidade\",\"accompanying\":\"assistant\"}",
+                        "description": "Payload for update (listingIdentityId and listingVersionId are required)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -5641,7 +5641,7 @@ const docTemplate = `{
                 "summary": "Reserve a photo session slot",
                 "parameters": [
                     {
-                        "x-example": "{\"listingId\":1001,\"slotId\":2002}",
+                        "x-example": "{\"listingIdentityId\":1024,\"slotId\":2002}",
                         "description": "Reservation request",
                         "name": "request",
                         "in": "body",
@@ -5771,9 +5771,9 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "example": 1001,
+                        "example": 1024,
                         "description": "Listing identifier",
-                        "name": "listingId",
+                        "name": "listingIdentityId",
                         "in": "query",
                         "required": true
                     },
@@ -5917,7 +5917,7 @@ const docTemplate = `{
                 "summary": "Discard draft listing version",
                 "parameters": [
                     {
-                        "x-example": "{\"versionId\":12345}",
+                        "x-example": "{\"listingIdentityId\":1024,\"versionId\":5001}",
                         "description": "Listing draft version identifier",
                         "name": "request",
                         "in": "body",
@@ -6080,7 +6080,7 @@ const docTemplate = `{
                 "summary": "Promote listing version",
                 "parameters": [
                     {
-                        "x-example": "{\"versionId\":12345}",
+                        "x-example": "{\"listingIdentityId\":1024,\"versionId\":5001}",
                         "description": "Listing version identifier",
                         "name": "request",
                         "in": "body",
@@ -10044,12 +10044,19 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DiscardDraftVersionRequest": {
             "type": "object",
             "required": [
+                "listingIdentityId",
                 "versionId"
             ],
             "properties": {
+                "listingIdentityId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1024
+                },
                 "versionId": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "example": 5001
                 }
             }
         },
@@ -11233,12 +11240,19 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionRequest": {
             "type": "object",
             "required": [
+                "listingIdentityId",
                 "versionId"
             ],
             "properties": {
+                "listingIdentityId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1024
+                },
                 "versionId": {
                     "type": "integer",
-                    "minimum": 1
+                    "minimum": 1,
+                    "example": 5001
                 }
             }
         },
@@ -11360,13 +11374,13 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ReservePhotoSessionRequest": {
             "type": "object",
             "required": [
-                "listingId",
+                "listingIdentityId",
                 "slotId"
             ],
             "properties": {
-                "listingId": {
+                "listingIdentityId": {
                     "type": "integer",
-                    "example": 1001
+                    "example": 1024
                 },
                 "slotId": {
                     "type": "integer",
@@ -11766,102 +11780,7 @@ const docTemplate = `{
             }
         },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest": {
-            "type": "object",
-            "properties": {
-                "accompanying": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "annualGroundRent": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "annualTax": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "buildable": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "condominium": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "corner": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool"
-                },
-                "delivered": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "description": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "exchange": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool"
-                },
-                "exchangePercentual": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "exchangePlaces": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingExchangePlaceRequest"
-                },
-                "features": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingFeatureRequest"
-                },
-                "financing": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool"
-                },
-                "financingBlockers": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_string"
-                },
-                "guarantees": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest"
-                },
-                "installment": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "landSize": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "listingVersionId": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64"
-                },
-                "monthlyGroundRent": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "monthlyTax": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "nonBuildable": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "owner": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "rentNet": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "sellNet": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64"
-                },
-                "tenantEmail": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "tenantName": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "tenantPhone": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "title": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "transaction": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "visit": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                },
-                "whoLives": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_utils.Optional-string"
-                }
-            }
+            "type": "object"
         },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingResponse": {
             "type": "object",
@@ -12381,22 +12300,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingExchangePlaceRequest": {
-            "type": "object"
-        },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingFeatureRequest": {
-            "type": "object"
-        },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_github_com_projeto-toq_toq_server_internal_adapter_left_http_dto_UpdateListingGuaranteeRequest": {
-            "type": "object"
-        },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-array_string": {
-            "type": "object"
-        },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool": {
-            "type": "object"
-        },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-float64": {
             "type": "object"
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64": {

@@ -13,14 +13,7 @@ import (
 // UpdateListingRequestToInput converte o DTO de update em um input para o service,
 // mantendo a distinção entre campos omitidos, vazios e nulos.
 func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.UpdateListingInput, error) {
-	var listingID int64
-	if req.ListingVersionID.IsPresent() && !req.ListingVersionID.IsNull() {
-		if id, ok := req.ListingVersionID.Value(); ok {
-			listingID = id
-		}
-	}
-
-	input := listingservices.UpdateListingInput{ID: listingID}
+	input := listingservices.UpdateListingInput{}
 
 	if req.Owner.IsPresent() {
 		if req.Owner.IsNull() {

@@ -21,6 +21,10 @@ func (ls *listingService) PromoteListingVersion(ctx context.Context, input Promo
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
+	// Validate required fields
+	if input.ListingIdentityID == 0 {
+		return utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
+	}
 	if input.VersionID <= 0 {
 		return utils.ValidationError("versionId", "versionId must be greater than zero")
 	}
@@ -40,9 +44,31 @@ func (ls *listingService) PromoteListingVersion(ctx context.Context, input Promo
 		}
 	}()
 
+	// Get user ID early for ownership validation
 	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
 	if uidErr != nil {
 		return uidErr
+	}
+
+	// Get listing identity to validate ownership BEFORE fetching version
+	identity, err := ls.listingRepository.GetListingIdentityByID(ctx, tx, input.ListingIdentityID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.NotFoundError("listing")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.promote.get_identity_error", "err", err, "identity_id", input.ListingIdentityID)
+		return utils.InternalError("")
+	}
+
+	// Validate ownership using identity
+	if identity.UserID != userID {
+		logger.Warn("unauthorized_promote_attempt",
+			"listing_identity_id", input.ListingIdentityID,
+			"listing_version_id", input.VersionID,
+			"requester_user_id", userID,
+			"owner_user_id", identity.UserID)
+		return utils.AuthorizationError("Only listing owner can promote version")
 	}
 
 	listingVersionID := input.VersionID
@@ -57,8 +83,14 @@ func (ls *listingService) PromoteListingVersion(ctx context.Context, input Promo
 		return utils.InternalError("")
 	}
 
-	if snapshot.UserID != userID {
-		return utils.AuthorizationError("Only listing owner can promote version")
+	// Verify version belongs to the identity
+	if snapshot.ListingID != input.ListingIdentityID {
+		logger.Warn("version_identity_mismatch_promote",
+			"listing_identity_id", input.ListingIdentityID,
+			"listing_version_id", input.VersionID,
+			"version_actual_identity_id", snapshot.ListingID,
+			"requester_user_id", userID)
+		return utils.BadRequest("version does not belong to specified listing")
 	}
 
 	if snapshot.Status != listingmodel.StatusDraft {

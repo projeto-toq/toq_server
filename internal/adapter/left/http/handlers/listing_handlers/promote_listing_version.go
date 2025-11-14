@@ -18,7 +18,7 @@ import (
 // @Tags       Listings
 // @Accept     json
 // @Produce    json
-// @Param      request body dto.PromoteListingVersionRequest true "Listing version identifier" Extensions(x-example={"versionId":12345})
+// @Param      request body dto.PromoteListingVersionRequest true "Listing version identifier" Extensions(x-example={"listingIdentityId":1024,"versionId":5001})
 // @Success    200 {object} dto.PromoteListingVersionResponse
 // @Failure    400 {object} dto.ErrorResponse "Validation error"
 // @Failure    401 {object} dto.ErrorResponse "Unauthorized"
@@ -48,7 +48,10 @@ func (lh *ListingHandler) PromoteListingVersion(c *gin.Context) {
 		return
 	}
 
-	input := listingservices.PromoteListingVersionInput{VersionID: request.VersionID}
+	input := listingservices.PromoteListingVersionInput{
+		ListingIdentityID: request.ListingIdentityID,
+		VersionID:         request.VersionID,
+	}
 	if err := lh.listingService.PromoteListingVersion(ctx, input); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

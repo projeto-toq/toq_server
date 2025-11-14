@@ -215,7 +215,8 @@ type ListingDetailResponse struct {
 //	  "accompanying": "assistant"
 //	}
 type UpdateListingRequest struct {
-	ListingVersionID   coreutils.Optional[int64]                               `json:"listingVersionId"`
+	ListingIdentityID  coreutils.Optional[int64]                               `json:"listingIdentityId" binding:"required" example:"1024"`
+	ListingVersionID   coreutils.Optional[int64]                               `json:"listingVersionId" binding:"required" example:"5001"`
 	Owner              coreutils.Optional[string]                              `json:"owner"`
 	Features           coreutils.Optional[[]UpdateListingFeatureRequest]       `json:"features"`
 	LandSize           coreutils.Optional[float64]                             `json:"landSize"`
@@ -256,7 +257,8 @@ type UpdateListingResponse struct {
 
 // PromoteListingVersionRequest encapsula a versão a ser promovida para ativa.
 type PromoteListingVersionRequest struct {
-	VersionID int64 `json:"versionId" binding:"required,min=1"`
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required,min=1" example:"1024"`
+	VersionID         int64 `json:"versionId" binding:"required,min=1" example:"5001"`
 }
 
 // PromoteListingVersionResponse confirma a promoção de versão.
@@ -267,7 +269,8 @@ type PromoteListingVersionResponse struct {
 
 // DiscardDraftVersionRequest identifica o draft que deve ser descartado.
 type DiscardDraftVersionRequest struct {
-	VersionID int64 `json:"versionId" binding:"required,min=1"`
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required,min=1" example:"1024"`
+	VersionID         int64 `json:"versionId" binding:"required,min=1" example:"5001"`
 }
 
 // DiscardDraftVersionResponse confirma o descarte de um draft de anúncio.
@@ -541,14 +544,14 @@ type ListingCatalogRestoreRequest struct {
 
 // ListPhotographerSlotsRequest define filtros e paginação para consulta de slots.
 type ListPhotographerSlotsRequest struct {
-	From      string `form:"from" binding:"omitempty" example:"2025-10-20"`
-	To        string `form:"to" binding:"omitempty" example:"2025-10-31"`
-	Period    string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
-	Page      int    `form:"page,default=1" binding:"min=1"`
-	Size      int    `form:"size,default=20" binding:"min=1,max=100"`
-	Sort      string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc date_asc date_desc"`
-	ListingID int64  `form:"listingId" binding:"required,min=1" example:"1001"`
-	Timezone  string `form:"timezone" binding:"required" example:"America/Sao_Paulo"`
+	From              string `form:"from" binding:"omitempty" example:"2025-10-20"`
+	To                string `form:"to" binding:"omitempty" example:"2025-10-31"`
+	Period            string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
+	Page              int    `form:"page,default=1" binding:"min=1"`
+	Size              int    `form:"size,default=20" binding:"min=1,max=100"`
+	Sort              string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc date_asc date_desc"`
+	ListingIdentityID int64  `form:"listingIdentityId" binding:"required,min=1" example:"1024"`
+	Timezone          string `form:"timezone" binding:"required" example:"America/Sao_Paulo"`
 }
 
 // PhotographerSlotResponse representa um slot disponível na agenda dos fotógrafos.
@@ -569,8 +572,8 @@ type ListPhotographerSlotsResponse struct {
 
 // ReservePhotoSessionRequest representa o corpo para reservar um slot.
 type ReservePhotoSessionRequest struct {
-	ListingID int64  `json:"listingId" binding:"required" example:"1001"`
-	SlotID    uint64 `json:"slotId" binding:"required" example:"2002"`
+	ListingIdentityID int64  `json:"listingIdentityId" binding:"required" example:"1024"`
+	SlotID            uint64 `json:"slotId" binding:"required" example:"2002"`
 }
 
 // ReservePhotoSessionResponse retorna dados da reserva temporária.

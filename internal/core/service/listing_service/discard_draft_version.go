@@ -20,6 +20,14 @@ func (ls *listingService) DiscardDraftVersion(ctx context.Context, input Discard
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
+	// Validate required fields
+	if input.ListingIdentityID == 0 {
+		return utils.BadRequest("listingIdentityId is required")
+	}
+	if input.VersionID == 0 {
+		return utils.BadRequest("versionId is required")
+	}
+
 	tx, err := ls.gsi.StartTransaction(ctx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -35,6 +43,34 @@ func (ls *listingService) DiscardDraftVersion(ctx context.Context, input Discard
 		}
 	}()
 
+	// Get user ID early for ownership validation
+	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
+	if uidErr != nil {
+		return uidErr
+	}
+
+	// Get listing identity to validate ownership BEFORE fetching version
+	identity, err := ls.listingRepository.GetListingIdentityByID(ctx, tx, input.ListingIdentityID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.NotFoundError("listing")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.discard.get_identity_error", "err", err, "identity_id", input.ListingIdentityID)
+		return utils.InternalError("")
+	}
+
+	// Validate ownership using identity
+	if identity.UserID != userID {
+		logger.Warn("unauthorized_discard_attempt",
+			"listing_identity_id", input.ListingIdentityID,
+			"listing_version_id", input.VersionID,
+			"requester_user_id", userID,
+			"owner_user_id", identity.UserID)
+		return utils.AuthorizationError("Only listing owner can discard a draft version")
+	}
+
+	// Now get the specific version
 	draft, err := ls.listingRepository.GetListingVersionByID(ctx, tx, input.VersionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -45,21 +81,22 @@ func (ls *listingService) DiscardDraftVersion(ctx context.Context, input Discard
 		return utils.InternalError("")
 	}
 
+	// Verify version belongs to the identity
+	if draft.IdentityID() != input.ListingIdentityID {
+		logger.Warn("version_identity_mismatch_discard",
+			"listing_identity_id", input.ListingIdentityID,
+			"listing_version_id", input.VersionID,
+			"version_actual_identity_id", draft.IdentityID(),
+			"requester_user_id", userID)
+		return utils.BadRequest("version does not belong to specified listing")
+	}
+
 	if draft.Status() != listingmodel.StatusDraft {
 		return utils.ConflictError("Only draft versions can be discarded")
 	}
 
 	if draft.ActiveVersionID() == draft.ID() {
 		return utils.ConflictError("Cannot discard the active listing version")
-	}
-
-	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
-	if uidErr != nil {
-		return uidErr
-	}
-
-	if draft.UserID() != userID {
-		return utils.AuthorizationError("Only listing owner can discard a draft version")
 	}
 
 	draft.SetDeleted(true)

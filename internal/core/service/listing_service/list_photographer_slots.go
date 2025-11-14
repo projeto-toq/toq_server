@@ -29,8 +29,8 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		return output, userErr
 	}
 
-	if input.ListingID <= 0 {
-		return output, utils.BadRequest("listingId must be greater than zero")
+	if input.ListingIdentityID <= 0 {
+		return output, utils.BadRequest("listingIdentityId must be greater than zero")
 	}
 
 	loc := input.Location
@@ -53,14 +53,14 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		}
 	}()
 
-	// Load listing to extract timezone
-	listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, input.ListingID)
+	// Load active listing version to validate eligibility
+	listing, repoErr := ls.listingRepository.GetActiveListingVersion(ctx, tx, input.ListingIdentityID)
 	if repoErr != nil {
 		if errors.Is(repoErr, sql.ErrNoRows) {
 			return output, utils.NotFoundError("Listing")
 		}
 		utils.SetSpanError(ctx, repoErr)
-		logger.Error("listing.photo_session.list_slots.get_listing_error", "err", repoErr, "listing_id", input.ListingID)
+		logger.Error("listing.photo_session.list_slots.get_listing_error", "err", repoErr, "listing_identity_id", input.ListingIdentityID)
 		return output, utils.InternalError("")
 	}
 
@@ -113,7 +113,7 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		Size:      size,
 		Sort:      sortKey,
 		Location:  loc,
-		ListingID: input.ListingID,
+		ListingID: listing.ID(),
 	}
 
 	availability, svcErr := ls.photoSessionSvc.ListAvailability(ctx, availabilityInput)

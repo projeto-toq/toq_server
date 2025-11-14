@@ -19,7 +19,7 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 	2.3 - Utilizar POST `/auth/validate/cep` para obter o endereço completo permitindo ao usuário ajustes de complemento e bairro
 	
 3 - PUT `/listings` - Quantos necessários para preencher todos os dados do anuncio. Neste momento nenhuma validação é feita, apenas grava os dados informados.
-	3.1 - **REQUER** campo `versionId` no body (obrigatório para identificar qual versão está sendo editada)
+	3.1 - **REQUER** campos `listingIdentityId` (int64) e `versionId` (int64) no body (obrigatórios para identificar o listing e qual versão está sendo editada)
 	3.2 - Valida se a versão está em `StatusDraft` (retorna 409 Conflict caso contrário)
 	3.3 - Atualiza a versão draft atual (v1 ou versão draft criada posteriormente)
 	3.4 - Utilizar GET `/listings/catalog` para obter Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.
@@ -27,25 +27,43 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 	3.6 - Utilizar GET `/complex/sizes` para obter os tamanhos das plantas padrão para edificios. Mas o usuário pode digitar o que quiser
 
 3.5 - POST `/listings/versions/draft` - Cria nova versão draft a partir da versão ativa (para editar listing já publicado)
-	3.5.1 - **Status permitidos para criar draft**: `StatusPendingAvailability` (2), `StatusPendingPhotoScheduling` (3), `StatusPendingPhotoConfirmation` (4), `StatusPhotosScheduled` (5), `StatusPendingPhotoProcessing` (6), `StatusPendingAdminReview` (8), `StatusSuspended` (14)
-	3.5.2 - **Status Published (10)**: Retorna 409 Conflict - "Cannot create draft from published listing"
-	3.5.3 - **Status UnderOffer/UnderNegotiation (11/12) ou StatusRejectedByOwner (9)**: Retorna 423 Locked - "Listing is locked for draft creation"
-	3.5.4 - **Status Closed/Expired/Archived (13/15/16)**: Retorna 410 Gone - "Listing is finalized"
-	3.5.5 - Copia todos os campos mutáveis e entidades satélite (features, exchange_places, guarantees, financing_blockers) da versão ativa
-	3.5.6 - Apenas 1 draft pode coexistir com 1 versão ativa por identity
+	3.5.1 - **REQUER** campo `listingIdentityId` (int64) no body
+	3.5.2 - **Status permitidos para criar draft**: `StatusPendingAvailability` (2), `StatusPendingPhotoScheduling` (3), `StatusPendingPhotoConfirmation` (4), `StatusPhotosScheduled` (5), `StatusPendingPhotoProcessing` (6), `StatusPendingAdminReview` (8), `StatusSuspended` (14)
+	3.5.3 - **Status Published (10)**: Retorna 409 Conflict - "Cannot create draft from published listing"
+	3.5.4 - **Status UnderOffer/UnderNegotiation (11/12) ou StatusRejectedByOwner (9)**: Retorna 423 Locked - "Listing is locked for draft creation"
+	3.5.5 - **Status Closed/Expired/Archived (13/15/16)**: Retorna 410 Gone - "Listing is finalized"
+	3.5.6 - Copia todos os campos mutáveis e entidades satélite (features, exchange_places, guarantees, financing_blockers) da versão ativa
+	3.5.7 - Apenas 1 draft pode coexistir com 1 versão ativa por identity
 
 4 - POST `/listings/versions/promote` - Efetua todas as validações e caso esteja tudo bem, promove a versão draft para ativa
-	4.1 - **Se for a primeira versão (v1)**: Muda o status para `StatusPendingAvailability` e cria a agenda básica do imóvel
-	4.2 - **Se for uma versão posterior (v>1)**: Herda o status da versão ativa anterior (preserva o ciclo de vida do listing)
-	4.3 - Atualiza o campo `active_version_id` na listing identity para apontar para a nova versão ativa
-	4.4 - Abaixo as regras de validação atuais, informando campos obrigatório por situação
+	4.1 - **REQUER** campos `listingIdentityId` (int64) e `versionId` (int64) no body
+	4.2 - **Se for a primeira versão (v1)**: Muda o status para `StatusPendingAvailability` e cria a agenda básica do imóvel
+	4.3 - **Se for uma versão posterior (v>1)**: Herda o status da versão ativa anterior (preserva o ciclo de vida do listing)
+	4.4 - Atualiza o campo `active_version_id` na listing identity para apontar para a nova versão ativa
+	4.5 - Abaixo as regras de validação atuais, informando campos obrigatório por situação
 
 ## Endpoints de Versionamento
 
-- **POST** `/listings/versions/draft` - Cria nova versão draft a partir da versão ativa atual (body: `{"listingIdentityId": "<uuid>"}`)
-- **POST** `/listings/versions` - Lista todas as versões de um listing (body: `{"listingIdentityId": "<uuid>", "includeDeleted": false}`)
-- **POST** `/listings/versions/promote` - Promove versão draft para ativa (body: `{"versionId": <id>}`)
-- **DELETE** `/listings/versions/discard` - Descarta versão draft não promovida (body: `{"versionId": <id>}`)
+- **POST** `/listings/versions/draft` - Cria nova versão draft a partir da versão ativa atual (body: `{"listingIdentityId": 1024}`)
+- **POST** `/listings/versions` - Lista todas as versões de um listing (body: `{"listingIdentityId": 1024, "includeDeleted": false}`)
+- **POST** `/listings/versions/promote` - Promove versão draft para ativa (body: `{"listingIdentityId": 1024, "versionId": 5001}`)
+- **DELETE** `/listings/versions/discard` - Descarta versão draft não promovida (body: `{"listingIdentityId": 1024, "versionId": 5001}`)
+
+## Hierarquia de Validação
+
+Todos os endpoints de listing seguem o seguinte padrão de validação para garantir segurança e consistência:
+
+1. **Validar `listingIdentityId`**: Verificar se o ID da identity foi fornecido e é válido
+2. **Buscar Identity**: Localizar o registro `listing_identity` correspondente no banco
+3. **Validar Ownership**: Comparar `identity.user_id` com o `user_id` do contexto autenticado
+   - Se divergir: registrar log de auditoria `unauthorized_<operation>_attempt` com campos `listing_identity_id`, `listing_version_id` (se aplicável), `requester_user_id`, `owner_user_id`
+   - Retornar HTTP 403 Forbidden com mensagem "not the listing owner"
+4. **Buscar Version**: Localizar a versão específica (`versionId`) ou a versão ativa conforme o endpoint
+5. **Verificar Relacionamento**: Confirmar que `version.identity_id == input.listingIdentityId`
+   - Se divergir: retornar HTTP 400 Bad Request com mensagem "version does not belong to this listing"
+6. **Validar Regras de Negócio**: Executar validações específicas do endpoint (status, campos obrigatórios, etc.)
+
+Esta hierarquia previne ambiguidade na identificação de listings e garante que usuários não possam acessar ou modificar listings de terceiros.
 
 5 - GET/POST/PUT/DELETE `/schedules/listing/**` altera a agenda básica do imóvel, através de bloqueios semanais para definir quando o proprietário autoriza visitas
 
@@ -53,11 +71,13 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 	6.1 - GET `/schedules/owner/summary` apresenta a agenda consolidada do proprietário, caso tenha mais de um imóvel.
 
 7 - GET `/listings/photo-session/slots` apresenta as disponibilidades de fotografo para a sessão de fotos do imóvel. Usuário seleciona uma.
-	7.1 - GET/POST/PUT/DELETE de `/photographer/service-area/**` permite que o fotografo defina a sua área de atuação (cidade e estado)
-	7.2 - GET/POST/PUT/DELETE de `/photographer/agenda/time-off/**` permite que o fotografo bloqueie horários de sua agenda, não permitido que proprietário agende sessão de fotos
+	7.1 - **REQUER** query param `listingIdentityId` (int64) para identificar o listing
+	7.2 - GET/POST/PUT/DELETE de `/photographer/service-area/**` permite que o fotografo defina a sua área de atuação (cidade e estado)
+	7.3 - GET/POST/PUT/DELETE de `/photographer/agenda/time-off/**` permite que o fotografo bloqueie horários de sua agenda, não permitido que proprietário agende sessão de fotos
 
 8 - POST `/listings/photo-session/reserve` solicita o slot escolhido pelo usuário. Status muda para `StatusPendingPhotoConfirmation`
-	8.1 - O fotografo é avisado por push notification
+	8.1 - **REQUER** campos `listingIdentityId` (int64) e `slotId` (int64) no body
+	8.2 - O fotografo é avisado por push notification
 
 9 - POST `/photographer/sessions/status` 0 fotografo confirma o aceite ou a recusa da sessão de fotos solicitada ==> esta etapa está configurada para não ser executada e ser autoaprovada pelo sistema
 	9.1 - Caso aceite, o status do listing muda para `StatusPhotosScheduled`

@@ -55,38 +55,65 @@ func (ls *listingService) UpdateListing(ctx context.Context, input UpdateListing
 func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input UpdateListingInput) (err error) {
 	logger := utils.LoggerFromContext(ctx)
 
-	// Determine which ID to use (prefer VersionID over deprecated ID)
-	versionID := input.VersionID
-	if versionID == 0 {
-		versionID = input.ID
+	// Validate required fields
+	if input.ListingIdentityID == 0 {
+		return utils.BadRequest("listingIdentityId is required")
 	}
-	if versionID == 0 {
+	if input.VersionID == 0 {
 		return utils.BadRequest("versionId is required")
 	}
 
-	// Get the listing version
-	existing, err := ls.listingRepository.GetListingVersionByID(ctx, tx, versionID)
+	// Get user ID early for ownership validation
+	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
+	if uidErr != nil {
+		return uidErr
+	}
+
+	// Get listing identity to validate ownership BEFORE fetching version
+	identity, err := ls.listingRepository.GetListingIdentityByID(ctx, tx, input.ListingIdentityID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.NotFoundError("listing")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.update.get_identity_error", "err", err, "identity_id", input.ListingIdentityID)
+		return utils.InternalError("")
+	}
+
+	// Validate ownership using identity
+	if identity.UserID != userID {
+		logger.Warn("unauthorized_update_attempt",
+			"listing_identity_id", input.ListingIdentityID,
+			"listing_version_id", input.VersionID,
+			"requester_user_id", userID,
+			"owner_user_id", identity.UserID)
+		return utils.AuthorizationError("not the listing owner")
+	}
+
+	// Now get the specific version
+	existing, err := ls.listingRepository.GetListingVersionByID(ctx, tx, input.VersionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return utils.NotFoundError("listing version")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("listing.update.get_version_error", "err", err, "version_id", versionID)
+		logger.Error("listing.update.get_version_error", "err", err, "version_id", input.VersionID)
 		return utils.InternalError("")
+	}
+
+	// Verify version belongs to the identity
+	if existing.IdentityID() != input.ListingIdentityID {
+		logger.Warn("version_identity_mismatch",
+			"listing_identity_id", input.ListingIdentityID,
+			"listing_version_id", input.VersionID,
+			"version_actual_identity_id", existing.IdentityID(),
+			"requester_user_id", userID)
+		return utils.BadRequest("version does not belong to specified listing")
 	}
 
 	// Check if the listing is in draft status
 	if existing.Status() != listingmodel.StatusDraft {
 		return utils.ConflictError("listing cannot be updated unless in draft status")
-	}
-
-	// Check if the user is the owner of the listing
-	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
-	if uidErr != nil {
-		return uidErr
-	}
-	if existing.UserID() != userID {
-		return utils.AuthorizationError("not the listing owner")
 	}
 
 	//update only the allowed fields respeitando campos opcionais
@@ -406,7 +433,7 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	err = ls.listingRepository.UpdateListingVersion(ctx, tx, existing)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("listing.update.update_version_error", "err", err, "version_id", versionID)
+		logger.Error("listing.update.update_version_error", "err", err, "version_id", input.VersionID)
 		return utils.InternalError("Failed to update listing")
 	}
 
