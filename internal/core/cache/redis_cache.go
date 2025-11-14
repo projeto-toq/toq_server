@@ -64,6 +64,10 @@ func NewRedisCache(redisURL string, globalService globalservice.GlobalServiceInt
 		return nil, fmt.Errorf("failed to parse Redis URL: %w", err)
 	}
 
+	// Força Protocol 2 (RESP2) para evitar warning de maint_notifications
+	// Redis 8.0.5 com RESP3 tenta usar maint_notifications que não está disponível
+	opts.Protocol = 2
+
 	client := redis.NewClient(opts)
 
 	if err := redisotel.InstrumentTracing(client); err != nil {
