@@ -249,6 +249,30 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_versions` (
   `tenant_email` VARCHAR(45) NULL DEFAULT NULL,
   `tenant_phone` VARCHAR(25) NULL DEFAULT NULL,
   `accompanying` TINYINT UNSIGNED NULL DEFAULT NULL,
+  `completion_forecast` DATE NULL,
+  `land_block` VARCHAR(50) NULL,
+  `land_lot` VARCHAR(50) NULL,
+  `land_front` DECIMAL(10,2) NULL,
+  `land_side` DECIMAL(10,2) NULL,
+  `land_back` DECIMAL(10,2) NULL,
+  `land_terrain_type` TINYINT UNSIGNED NULL,
+  `has_kmz` TINYINT NULL,
+  `kmz_file` VARCHAR(255) NULL,
+  `building_floors` TINYINT UNSIGNED NULL,
+  `unit_tower` VARCHAR(100) NULL,
+  `unit_floor` VARCHAR(10) NULL,
+  `unit_number` VARCHAR(10) NULL,
+  `warehouse_manufacturing_area` DECIMAL(10,2) NULL,
+  `warehouse_sector` TINYINT UNSIGNED NULL,
+  `warehouse_has_primary_cabin` TINYINT NULL,
+  `warehouse_cabin_kva` VARCHAR(50) NULL,
+  `warehouse_ground_floor` TINYINT UNSIGNED NULL,
+  `warehouse_floor_resistance` DECIMAL(10,2) NULL,
+  `warehouse_zoning` VARCHAR(50) NULL,
+  `warehouse_has_office_area` TINYINT NULL,
+  `warehouse_office_area` DECIMAL(10,2) NULL,
+  `store_has_mezzanine` TINYINT NULL,
+  `store_mezzanine_area` DECIMAL(10,2) NULL,
   `deleted` TINYINT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `CODE` (`code` ASC, `version` ASC) VISIBLE,
@@ -789,7 +813,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_photo_session_bookings` (
   `agenda_entry_id` INT UNSIGNED NOT NULL,
   `starts_at` DATETIME(6) NOT NULL,
   `ends_at` DATETIME(6) NOT NULL,
-  `status` ENUM('PENDING_APPROVAL', 'ACCEPTED,REJECTED', 'ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NOT NULL,
+  `status` ENUM('PENDING_APPROVAL', 'ACCEPTED', 'REJECTED', 'ACTIVE', 'RESCHEDULED', 'CANCELLED', 'DONE') NOT NULL,
   `reason` VARCHAR(255) NULL,
   `reservation_token` VARCHAR(36) NULL,
   `reserved_until` DATETIME(6) NOT NULL DEFAULT (DATE_ADD(CURRENT_TIMESTAMP(6), INTERVAL 3 DAY)),
@@ -832,6 +856,27 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_service_areas` (
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
     ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`warehouse_additional_floors`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`warehouse_additional_floors` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`warehouse_additional_floors` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `listing_version_id` INT UNSIGNED NOT NULL,
+  `floor_name` VARCHAR(50) NOT NULL,
+  `floor_order` INT NOT NULL,
+  `floor_height` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_warehouse_floors_listing_version _idx` (`listing_version_id` ASC) VISIBLE,
+  CONSTRAINT `fk_warehouse_floors_listing_version `
+    FOREIGN KEY (`listing_version_id`)
+    REFERENCES `toq_db`.`listing_versions` (`id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 

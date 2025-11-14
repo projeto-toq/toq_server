@@ -34,3 +34,11 @@ id;category;numeric_value;slug;label;description;is_active
 33;guarantee_type;1;security_deposit;Security Deposit;;1
 34;guarantee_type;2;surety_bond;Surety Bond;;1
 35;guarantee_type;3;rental_insurance_bond;Rental Insurance Bond;;1
+36;land_terrain_type;1;slight_uphill;Aclive Leve;Terrain with slight upward slope;1
+37;land_terrain_type;2;uphill;Aclive;Terrain with upward slope;1
+38;land_terrain_type;3;flat;Plano;Flat terrain;1
+39;land_terrain_type;4;downhill;Declive;Terrain with downward slope;1
+40;land_terrain_type;5;slight_downhill;Declive Leve;Terrain with slight downward slope;1
+41;warehouse_sector;1;manufacturing;Fabril;Manufacturing/production warehouse sector;1
+42;warehouse_sector;2;industrial;Industrial;Industrial warehouse sector;1
+43;warehouse_sector;3;logistics;Logístico;Logistics/distribution warehouse sector;1
