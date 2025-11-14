@@ -35,7 +35,7 @@ func (ls *listingService) DiscardDraftVersion(ctx context.Context, input Discard
 		}
 	}()
 
-	draft, err := ls.listingRepository.GetListingByID(ctx, tx, input.VersionID)
+	draft, err := ls.listingRepository.GetListingVersionByID(ctx, tx, input.VersionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return utils.NotFoundError("listing version")
@@ -64,7 +64,7 @@ func (ls *listingService) DiscardDraftVersion(ctx context.Context, input Discard
 
 	draft.SetDeleted(true)
 
-	if updateErr := ls.listingRepository.UpdateListing(ctx, tx, draft); updateErr != nil && !errors.Is(updateErr, sql.ErrNoRows) {
+	if updateErr := ls.listingRepository.UpdateListingVersion(ctx, tx, draft); updateErr != nil && !errors.Is(updateErr, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, updateErr)
 		logger.Error("listing.discard.update_error", "err", updateErr, "version_id", draft.ID())
 		return utils.InternalError("")

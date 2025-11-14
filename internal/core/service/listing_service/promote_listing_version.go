@@ -7,7 +7,6 @@ import (
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
-	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -70,29 +69,27 @@ func (ls *listingService) PromoteListingVersion(ctx context.Context, input Promo
 		return verr
 	}
 
-	// Retrieve all versions for this identity to find the current active version
-	versionSummaries, listErr := ls.listingRepository.ListListingVersions(ctx, tx, listingrepository.ListListingVersionsFilter{
-		ListingIdentityID: snapshot.ListingID,
-		IncludeDeleted:    false,
-	})
-	if listErr != nil {
-		utils.SetSpanError(ctx, listErr)
-		logger.Error("listing.promote.list_versions_error", "err", listErr, "listing_identity_id", snapshot.ListingID)
-		return utils.InternalError("")
-	}
-
-	var currentActiveVersion listingmodel.ListingVersionInterface
-	for _, summary := range versionSummaries {
-		if summary.IsActive && summary.Version != nil {
-			currentActiveVersion = summary.Version
-			break
+	// Determine target status based on version number
+	var targetStatus listingmodel.ListingStatus
+	if snapshot.Version == 1 {
+		// V1 promotion: Always start at PendingAvailability
+		targetStatus = listingmodel.StatusPendingAvailability
+	} else {
+		// V>1 promotion: Inherit status from previous active version
+		previousStatus, statusErr := ls.listingRepository.GetPreviousActiveVersionStatus(ctx, tx, snapshot.ListingID)
+		if statusErr != nil {
+			if errors.Is(statusErr, sql.ErrNoRows) {
+				// Fallback: no previous active version found, use PendingAvailability
+				logger.Warn("listing.promote.no_previous_active", "listing_identity_id", snapshot.ListingID, "version", snapshot.Version)
+				targetStatus = listingmodel.StatusPendingAvailability
+			} else {
+				utils.SetSpanError(ctx, statusErr)
+				logger.Error("listing.promote.get_previous_status_error", "err", statusErr, "listing_identity_id", snapshot.ListingID)
+				return utils.InternalError("")
+			}
+		} else {
+			targetStatus = previousStatus
 		}
-	}
-
-	// Determine target status based on current active version status
-	targetStatus := listingmodel.StatusPendingAvailability
-	if currentActiveVersion != nil {
-		targetStatus = currentActiveVersion.Status()
 	}
 
 	updateErr := ls.listingRepository.UpdateListingStatus(ctx, tx, listingVersionID, targetStatus, listingmodel.StatusDraft)
@@ -116,8 +113,8 @@ func (ls *listingService) PromoteListingVersion(ctx context.Context, input Promo
 		return auditErr
 	}
 
-	// If target status is PendingAvailability (meaning this is the first version or we're starting fresh), create agenda
-	if targetStatus == listingmodel.StatusPendingAvailability {
+	// If V1 or target status is PendingAvailability, create default agenda
+	if snapshot.Version == 1 || targetStatus == listingmodel.StatusPendingAvailability {
 		timezone := resolveListingTimezone(snapshot)
 		agendaInput := scheduleservices.CreateDefaultAgendaInput{
 			ListingIdentityID: snapshot.ListingID,

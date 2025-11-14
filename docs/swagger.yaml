@@ -922,6 +922,22 @@ definitions:
       tokens:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateDraftVersionRequest:
+    properties:
+      listingIdentityId:
+        type: integer
+    required:
+    - listingIdentityId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateDraftVersionResponse:
+    properties:
+      status:
+        type: string
+      version:
+        type: integer
+      versionId:
+        type: integer
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateOwnerRequest:
     properties:
       deviceToken:
@@ -6654,6 +6670,62 @@ paths:
       security:
       - BearerAuth: []
       summary: Discard draft listing version
+      tags:
+      - Listings
+  /listings/versions/draft:
+    post:
+      consumes:
+      - application/json
+      description: Create a new draft version from the current active listing version
+      parameters:
+      - description: Draft version creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateDraftVersionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateDraftVersionResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Active version not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Draft already exists or listing is published
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "410":
+          description: Listing is permanently closed
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "423":
+          description: Listing is locked in workflow
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create draft version
       tags:
       - Listings
   /listings/versions/promote:

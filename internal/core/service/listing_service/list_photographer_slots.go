@@ -53,7 +53,8 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 		}
 	}()
 
-	listing, repoErr := ls.listingRepository.GetListingByID(ctx, tx, input.ListingID)
+	// Load listing to extract timezone
+	listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, input.ListingID)
 	if repoErr != nil {
 		if errors.Is(repoErr, sql.ErrNoRows) {
 			return output, utils.NotFoundError("Listing")

@@ -7,6 +7,7 @@ type ListingHandlerPort interface {
 	// Listing management
 	GetAllListings(c *gin.Context)
 	StartListing(c *gin.Context)
+	CreateDraftVersion(c *gin.Context)
 	SearchListing(c *gin.Context)
 	PostOptions(c *gin.Context)
 	GetBaseFeatures(c *gin.Context)

@@ -87,7 +87,7 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 		}
 	}()
 
-	listing, listingErr := s.listingRepo.GetListingByID(ctx, tx, input.ListingID)
+	listing, listingErr := s.listingRepo.GetListingVersionByID(ctx, tx, input.ListingID)
 	if listingErr != nil {
 		if errors.Is(listingErr, sql.ErrNoRows) {
 			return ListAvailabilityOutput{}, utils.NotFoundError("Listing")

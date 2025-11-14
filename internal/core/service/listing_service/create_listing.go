@@ -15,8 +15,8 @@ import (
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
-// StartListingInput carries the data required to create a new listing.
-type StartListingInput struct {
+// CreateListingInput carries the data required to create a new listing.
+type CreateListingInput struct {
 	ZipCode      string
 	Number       string
 	City         string
@@ -27,7 +27,7 @@ type StartListingInput struct {
 	PropertyType globalmodel.PropertyType
 }
 
-func (ls *listingService) StartListing(ctx context.Context, input StartListingInput) (listing listingmodel.ListingInterface, err error) {
+func (ls *listingService) CreateListing(ctx context.Context, input CreateListingInput) (listing listingmodel.ListingInterface, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return listing, utils.InternalError("")
@@ -40,34 +40,40 @@ func (ls *listingService) StartListing(ctx context.Context, input StartListingIn
 	tx, txErr := ls.gsi.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("listing.start.tx_start_error", "err", txErr)
+		logger.Error("listing.create.tx_start_error", "err", txErr)
 		return listing, utils.InternalError("")
 	}
 	defer func() {
 		if err != nil {
 			if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("listing.start.tx_rollback_error", "err", rbErr)
+				logger.Error("listing.create.tx_rollback_error", "err", rbErr)
 			}
 		}
 	}()
 
-	listing, err = ls.startListing(ctx, tx, input)
+	listing, err = ls.createListing(ctx, tx, input)
 	if err != nil {
 		return
 	}
 
 	if cmErr := ls.gsi.CommitTransaction(ctx, tx); cmErr != nil {
 		utils.SetSpanError(ctx, cmErr)
-		logger.Error("listing.start.tx_commit_error", "err", cmErr)
+		logger.Error("listing.create.tx_commit_error", "err", cmErr)
 		return listing, utils.InternalError("")
 	}
 
 	return
 }
 
-func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input StartListingInput) (listing listingmodel.ListingInterface, err error) {
+func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input CreateListingInput) (listing listingmodel.ListingInterface, err error) {
 	logger := utils.LoggerFromContext(ctx)
+
+	// Get the user doing the request
+	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
+	if uidErr != nil {
+		return nil, uidErr
+	}
 
 	zipCode := strings.TrimSpace(input.ZipCode)
 	normalizedZip, normErr := validators.NormalizeCEP(zipCode)
@@ -79,13 +85,25 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 	propertyType := input.PropertyType
 
 	exist := true
-	//check if the zipCode and number there is not already a listing
-	_, err = ls.listingRepository.GetListingByZipNumber(ctx, tx, zipCode, number)
+	// Check if user already has an active listing
+	hasActiveListing, checkErr := ls.listingRepository.CheckActiveListingExists(ctx, tx, userID)
+	if checkErr != nil {
+		utils.SetSpanError(ctx, checkErr)
+		logger.Error("listing.create.check_active_error", "err", checkErr, "user_id", userID)
+		return nil, utils.InternalError("")
+	}
+	if hasActiveListing {
+		return nil, utils.ConflictError("User already has an active listing")
+	}
+
+	// Check if listing already exists for this address
+	_, err = ls.listingRepository.GetListingVersionByAddress(ctx, tx, zipCode, number)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			exist = false
 		} else {
 			utils.SetSpanError(ctx, err)
+			logger.Error("listing.create.check_address_error", "err", err, "zip", zipCode, "number", number)
 			return nil, utils.InternalError("")
 		}
 	}
@@ -107,7 +125,7 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 	}
 	if !allowed {
 		logger := utils.LoggerFromContext(ctx)
-		logger.Warn("listing.start.not_allowed_property_type", "zip", zipCode, "number", number, "property_type", propertyType)
+		logger.Warn("listing.create.not_allowed_property_type", "zip", zipCode, "number", number, "property_type", propertyType)
 		return nil, utils.BadRequest("Property type not allowed for this area")
 	}
 
@@ -116,12 +134,6 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
-	}
-
-	//get the user doing the request
-	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
-	if uidErr != nil {
-		return nil, uidErr
 	}
 
 	listing = listingmodel.NewListing()
@@ -165,7 +177,7 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 
 	if identityErr := ls.listingRepository.CreateListingIdentity(ctx, tx, listing); identityErr != nil {
 		utils.SetSpanError(ctx, identityErr)
-		logger.Error("listing.start.create_identity_error", "err", identityErr)
+		logger.Error("listing.create.create_identity_error", "err", identityErr)
 		return nil, utils.InternalError("")
 	}
 
@@ -175,7 +187,7 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 
 	if versionErr := ls.listingRepository.CreateListingVersion(ctx, tx, activeVersion); versionErr != nil {
 		utils.SetSpanError(ctx, versionErr)
-		logger.Error("listing.start.create_version_error", "err", versionErr, "identity_id", listing.IdentityID())
+		logger.Error("listing.create.create_version_error", "err", versionErr, "identity_id", listing.IdentityID())
 		return nil, utils.InternalError("")
 	}
 
@@ -183,7 +195,7 @@ func (ls *listingService) startListing(ctx context.Context, tx *sql.Tx, input St
 
 	if setErr := ls.listingRepository.SetListingActiveVersion(ctx, tx, listing.IdentityID(), listing.ActiveVersionID()); setErr != nil {
 		utils.SetSpanError(ctx, setErr)
-		logger.Error("listing.start.set_active_error", "err", setErr, "identity_id", listing.IdentityID(), "version_id", listing.ActiveVersionID())
+		logger.Error("listing.create.set_active_error", "err", setErr, "identity_id", listing.IdentityID(), "version_id", listing.ActiveVersionID())
 		return nil, utils.InternalError("")
 	}
 
@@ -199,7 +211,7 @@ func (ls *listingService) isPropertyTypeAllowed(ctx context.Context, allowedType
 	requested := ls.DecodePropertyTypes(ctx, propertyType)
 	if len(requested) != 1 {
 		logger := utils.LoggerFromContext(ctx)
-		logger.Warn("listing.start.invalid_property_type_format")
+		logger.Warn("listing.create.invalid_property_type_format")
 		return false, utils.BadRequest("propertyType must be a single type")
 	}
 	alloweds := ls.DecodePropertyTypes(ctx, allowedTypes)

@@ -188,13 +188,30 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`listings`
+-- Table `toq_db`.`listing_identities`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`listings` ;
+DROP TABLE IF EXISTS `toq_db`.`listing_identities` ;
 
-CREATE TABLE IF NOT EXISTS `toq_db`.`listings` (
+CREATE TABLE IF NOT EXISTS `toq_db`.`listing_identities` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `listing_uuid` VARCHAR(36) NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `code` MEDIUMINT NOT NULL,
+  `active_version_id` INT UNSIGNED NULL,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`listing_versions`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`listing_versions` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`listing_versions` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
+  `listing_identity_id` INT UNSIGNED NOT NULL,
   `code` MEDIUMINT UNSIGNED NOT NULL,
   `version` TINYINT UNSIGNED NOT NULL,
   `status` TINYINT UNSIGNED NOT NULL,
@@ -236,10 +253,16 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listings` (
   PRIMARY KEY (`id`),
   INDEX `CODE` (`code` ASC, `version` ASC) VISIBLE,
   INDEX `fk_listings_user_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_listing_identities_idx` (`listing_identity_id` ASC) VISIBLE,
   CONSTRAINT `fk_listings_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `toq_db`.`users` (`id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_listing_identities`
+    FOREIGN KEY (`listing_identity_id`)
+    REFERENCES `toq_db`.`listing_identities` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -383,16 +406,16 @@ DROP TABLE IF EXISTS `toq_db`.`features` ;
 
 CREATE TABLE IF NOT EXISTS `toq_db`.`features` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` INT UNSIGNED NOT NULL,
+  `listing_version_id` INT UNSIGNED NOT NULL,
   `feature_id` INT UNSIGNED NOT NULL,
   `qty` TINYINT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_features_listing_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_features_listing_idx` (`listing_version_id` ASC) VISIBLE,
   INDEX `fk_features_base_idx` (`feature_id` ASC) VISIBLE,
   CONSTRAINT `fk_features_listing`
-    FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
-    ON DELETE NO ACTION
+    FOREIGN KEY (`listing_version_id`)
+    REFERENCES `toq_db`.`listing_versions` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_features_base`
     FOREIGN KEY (`feature_id`)
@@ -409,15 +432,15 @@ DROP TABLE IF EXISTS `toq_db`.`guarantees` ;
 
 CREATE TABLE IF NOT EXISTS `toq_db`.`guarantees` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` INT UNSIGNED NOT NULL,
+  `listing_version_id` INT UNSIGNED NOT NULL,
   `priority` TINYINT UNSIGNED NOT NULL,
   `guarantee` TINYINT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_features_listing_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_features_listing_idx` (`listing_version_id` ASC) VISIBLE,
   CONSTRAINT `fk_features_guarantee`
-    FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
-    ON DELETE NO ACTION
+    FOREIGN KEY (`listing_version_id`)
+    REFERENCES `toq_db`.`listing_versions` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -429,16 +452,16 @@ DROP TABLE IF EXISTS `toq_db`.`exchange_places` ;
 
 CREATE TABLE IF NOT EXISTS `toq_db`.`exchange_places` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` INT UNSIGNED NOT NULL,
+  `listing_version_id` INT UNSIGNED NOT NULL,
   `neighborhood` VARCHAR(150) NOT NULL,
   `city` VARCHAR(150) NOT NULL,
   `state` VARCHAR(2) NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_features_listing_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_features_listing_idx` (`listing_version_id` ASC) VISIBLE,
   CONSTRAINT `fk_features_exchange`
-    FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
-    ON DELETE NO ACTION
+    FOREIGN KEY (`listing_version_id`)
+    REFERENCES `toq_db`.`listing_versions` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -461,14 +484,14 @@ DROP TABLE IF EXISTS `toq_db`.`financing_blockers` ;
 
 CREATE TABLE IF NOT EXISTS `toq_db`.`financing_blockers` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` INT UNSIGNED NOT NULL,
+  `listing_version_id` INT UNSIGNED NOT NULL,
   `blocker` TINYINT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_financing_blockers_listings1_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_financing_blockers_listings1_idx` (`listing_version_id` ASC) VISIBLE,
   CONSTRAINT `fk_financing_blockers_listings1`
-    FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
-    ON DELETE NO ACTION
+    FOREIGN KEY (`listing_version_id`)
+    REFERENCES `toq_db`.`listing_versions` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -608,7 +631,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_agendas` (
   INDEX `fk_agenda_listing_idx` (`listing_id` ASC) VISIBLE,
   CONSTRAINT `fk_agenda_listing`
     FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
+    REFERENCES `toq_db`.`listing_identities` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -682,7 +705,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_visits` (
   INDEX `fk_visit_listing_idx` (`listing_id` ASC) VISIBLE,
   CONSTRAINT `fk_visit_listing`
     FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
+    REFERENCES `toq_db`.`listing_identities` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -773,7 +796,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_photo_session_bookings` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_booking_entry` (`agenda_entry_id` ASC) VISIBLE,
   INDEX `ix_photographer_user_id_idx` (`photographer_user_id` ASC) VISIBLE,
-  INDEX `ix_listing_id_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_listing_id_idx` (`listing_id` ASC) VISIBLE,
   CONSTRAINT `fk_photographer_user_id_user_2`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
@@ -781,7 +804,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_photo_session_bookings` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_listing_id`
     FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listings` (`id`)
+    REFERENCES `toq_db`.`listing_identities` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_agenda_entry_id `

@@ -6,7 +6,24 @@
 
 ## 🎯 Solicitação
 
-Após a ultima refatoraçÃo o endpoint GET /listings/versions está passando o ID do listing no path, quando o correto seria passar no body e ser um POST ao invés do GET
+o processo de criação e atualização de versões de listings deve ser modificado para:
+1) o endpoint de criação de listing POST /listings deve ser usado APENAS para criar a versão inicial (versão 1) em status DRAFT
+   1.1. deve haver validação se existe uma versão ativa (não-expirada/não-fechada) para o listingIdentityId; ou se existe um listing par ao endereço selecionado, se existir, retornar erro 409 
+2) sobre esta versÃo inciail, o endpoint PUT /listings faz todas as atualizações, sempre verificando que a versão está em status DRAFT
+3) ao terminar as atualizações o endpoint POST /listings/versions/promote deve ser chamado para promover a versão DRAFT para:
+   3.1 - Se for a primeira versão (v1), muda o status para `StatusPendingAvailability` e cria a agenda básica do imóvel
+	3.2 - Se for uma versão posterior, mantém o status da versão ativa anterior (preserva o ciclo de vida do listing)
+4) para criar uma nova versão DRAFT a partir de uma versão ativa existente, deve ser usado o novo endpoint POST /listings/versions/draft
+   4.1 - este endpoint deve validar se a versão ativa está em um dos status permitidos para cópia (ver regras abaixo)
+   4.2 - se já existir uma versão DRAFT não-promovida, retornar o versionId desta versão
+   4.3 - caso contrário, criar uma nova versão DRAFT, copiando todos os dados da versão ativa (incluindo entidades satélite: features, exchange_places, financing_blockers, guarantees, etc)
+   4.4 - retornar o versionId e status da nova versão DRAFT criada
+
+### Regras de Cópia de Versão Ativa para DRAFT
+- permitir cópia APENAS de: StatusSuspended, StatusRejectedByOwner, StatusPendingPhotoProcessing, StatusPhotosScheduled, StatusPendingPhotoConfirmation, StatusPendingPhotoScheduling, StatusPendingAvailability;
+- bloquear StatusPublished com mensagem "Listing is published. Suspend it via status update before creating a draft version";
+- bloquear StatusUnderNegotiation/StatusPendingAdminReview/StatusPendingOwnerApproval com "Listing is locked in workflow and cannot be copied";
+- bloquear StatusExpired/StatusArchived/StatusClosed com "Listing is permanently closed and cannot be edited"
 
 
 Assim:
@@ -19,6 +36,7 @@ Assim:
    - Checklist de Conformidade: validação contra seções específicas do guia.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
 4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os listings serão apagados.
+5. Verifique se os endpoints podem ter uma nomenclatura melhor, mas mantenha os verbos HTTP conforme descrito.
 
 ---
 

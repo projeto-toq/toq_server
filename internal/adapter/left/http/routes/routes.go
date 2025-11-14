@@ -286,6 +286,7 @@ func RegisterListingRoutes(
 		listings.GET("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // GetListing
 		listings.PUT("", listingHandler.UpdateListing)                                                       // UpdateListing
 		listings.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // DeleteListing
+		listings.POST("/versions/draft", listingHandler.CreateDraftVersion)                                  // CreateDraftVersion
 		listings.POST("/versions/promote", listingHandler.PromoteListingVersion)
 		listings.POST("/versions/discard", listingHandler.DiscardDraftVersion)
 		listings.POST("/versions", listingHandler.ListListingVersions)

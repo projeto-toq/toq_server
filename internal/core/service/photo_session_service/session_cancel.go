@@ -57,7 +57,7 @@ func (s *photoSessionService) CancelPhotoSession(ctx context.Context, input Canc
 		return CancelSessionOutput{}, derrors.Infra("failed to load booking", err)
 	}
 
-	listing, err := s.listingRepo.GetListingByID(ctx, tx, booking.ListingID())
+	listing, err := s.listingRepo.GetListingVersionByID(ctx, tx, booking.ListingID())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return CancelSessionOutput{}, utils.NotFoundError("Listing")

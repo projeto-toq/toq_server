@@ -53,29 +53,34 @@ func (ls *listingService) UpdateListing(ctx context.Context, input UpdateListing
 }
 
 func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input UpdateListingInput) (err error) {
+	logger := utils.LoggerFromContext(ctx)
 
-	exist := true
-	//check if exists the listing
-	existing, err := ls.listingRepository.GetListingByID(ctx, tx, input.ID)
+	// Determine which ID to use (prefer VersionID over deprecated ID)
+	versionID := input.VersionID
+	if versionID == 0 {
+		versionID = input.ID
+	}
+	if versionID == 0 {
+		return utils.BadRequest("versionId is required")
+	}
+
+	// Get the listing version
+	existing, err := ls.listingRepository.GetListingVersionByID(ctx, tx, versionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			exist = false
-		} else {
-			utils.SetSpanError(ctx, err)
-			return utils.InternalError("")
+			return utils.NotFoundError("listing version")
 		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.update.get_version_error", "err", err, "version_id", versionID)
+		return utils.InternalError("")
 	}
 
-	if !exist {
-		return utils.NotFoundError("listing")
-	}
-
-	//check if the listing is in draft status
+	// Check if the listing is in draft status
 	if existing.Status() != listingmodel.StatusDraft {
 		return utils.ConflictError("listing cannot be updated unless in draft status")
 	}
 
-	//check if the user is the owner of the listing
+	// Check if the user is the owner of the listing
 	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
 	if uidErr != nil {
 		return uidErr
@@ -397,17 +402,12 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		}
 	}
 
-	//update the listing
-	err = ls.listingRepository.UpdateListing(ctx, tx, existing)
+	//update the listing version
+	err = ls.listingRepository.UpdateListingVersion(ctx, tx, existing)
 	if err != nil {
-		// Handle sql.ErrNoRows as success: happens when MySQL UPDATE finds no changes
-		// (listing was loaded in same transaction, so exists, just no fields changed)
-		if !errors.Is(err, sql.ErrNoRows) {
-			// Real infrastructure error
-			utils.SetSpanError(ctx, err)
-			return utils.InternalError("Failed to update listing")
-		}
-		// No changes needed = success, continue
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.update.update_version_error", "err", err, "version_id", versionID)
+		return utils.InternalError("Failed to update listing")
 	}
 
 	err = ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio atualizado")

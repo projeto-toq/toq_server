@@ -53,6 +53,18 @@ type StartListingResponse struct {
 	Status            string `json:"status"`
 }
 
+// CreateDraftVersionRequest represents request for creating a draft version from active listing
+type CreateDraftVersionRequest struct {
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required"`
+}
+
+// CreateDraftVersionResponse represents response for draft version creation
+type CreateDraftVersionResponse struct {
+	VersionID int64  `json:"versionId"`
+	Version   uint8  `json:"version"`
+	Status    string `json:"status"`
+}
+
 // GetListingDetailRequest representa a requisição para obter os detalhes completos de um listing.
 type GetListingDetailRequest struct {
 	ListingID int64 `json:"listingId" binding:"required"`

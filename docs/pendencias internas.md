@@ -31,3 +31,6 @@
 - após o bloqueio não deve haver incremento nas contagens de tentativas de login nem envio de e-mail, está mandando mais de 1
 - tem que haver uso de audit no login/bloqueio/desbloquio de usuário
 - audit está otimizado?
+- criar endpoint para que o proprietário possa fazer upload da planta da casa em construção de um listing, evitando assim o passo de fotos
+- criar um endpoint que liste todos os endpoints, para auxiliar a criação de permissionamedntoo
+- criar endpoint para listar todas as roles disponíveis no sistema

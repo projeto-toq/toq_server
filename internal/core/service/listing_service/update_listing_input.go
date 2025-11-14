@@ -9,7 +9,8 @@ import (
 
 // UpdateListingInput encapsula os campos opcionais para atualização de um listing.
 type UpdateListingInput struct {
-	ID                 int64
+	ID                 int64 // Deprecated: Use VersionID instead
+	VersionID          int64
 	Owner              coreutils.Optional[CatalogSelection]
 	Features           coreutils.Optional[[]listingmodel.FeatureInterface]
 	LandSize           coreutils.Optional[float64]

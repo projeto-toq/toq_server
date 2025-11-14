@@ -80,7 +80,7 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		_ = ls.gsi.RollbackTransaction(ctx, tx)
 	}()
 
-	listing, repoErr := ls.listingRepository.GetListingByID(ctx, tx, listingID)
+	listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, listingID)
 	if repoErr != nil {
 		if errors.Is(repoErr, sql.ErrNoRows) {
 			return output, utils.NotFoundError("Listing")

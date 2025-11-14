@@ -48,8 +48,8 @@ func (lh *ListingHandler) UpdateListing(c *gin.Context) {
 		return
 	}
 
-	listingID, ok := request.ListingVersionID.Value()
-	if !ok || listingID <= 0 {
+	versionID, ok := request.ListingVersionID.Value()
+	if !ok || versionID <= 0 {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_VERSION_ID", "listingVersionId is invalid")
 		return
 	}
@@ -59,7 +59,7 @@ func (lh *ListingHandler) UpdateListing(c *gin.Context) {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", err.Error())
 		return
 	}
-	input.ID = listingID
+	input.VersionID = versionID
 
 	if err := lh.listingService.UpdateListing(baseCtx, input); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)

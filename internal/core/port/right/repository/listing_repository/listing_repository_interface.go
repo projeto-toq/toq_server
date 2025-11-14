@@ -17,30 +17,36 @@ type ListingRepoPortInterface interface {
 	GetListingVersionByID(ctx context.Context, tx *sql.Tx, versionID int64) (listingmodel.ListingInterface, error)
 	ListListingVersions(ctx context.Context, tx *sql.Tx, filter ListListingVersionsFilter) ([]ListingVersionSummary, error)
 
-	CreateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error)
+	// Satellite entities
 	CreateExchangePlace(ctx context.Context, tx *sql.Tx, place listingmodel.ExchangePlaceInterface) (err error)
 	CreateFeature(ctx context.Context, tx *sql.Tx, feature listingmodel.FeatureInterface) (err error)
 	CreateGuarantee(ctx context.Context, tx *sql.Tx, guarantee listingmodel.GuaranteeInterface) (err error)
 	CreateFinancingBlocker(ctx context.Context, tx *sql.Tx, blocker listingmodel.FinancingBlockerInterface) (err error)
 
-	UpdateListing(ctx context.Context, tx *sql.Tx, listing listingmodel.ListingInterface) (err error)
-	UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, listingID int64, places []listingmodel.ExchangePlaceInterface) (err error)
-	UpdateFeatures(ctx context.Context, tx *sql.Tx, listingID int64, features []listingmodel.FeatureInterface) (err error)
-	UpdateGuarantees(ctx context.Context, tx *sql.Tx, listingID int64, guarantees []listingmodel.GuaranteeInterface) (err error)
-	UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, listingID int64, blockers []listingmodel.FinancingBlockerInterface) (err error)
+	UpdateExchangePlaces(ctx context.Context, tx *sql.Tx, listingVersionID int64, places []listingmodel.ExchangePlaceInterface) (err error)
+	UpdateFeatures(ctx context.Context, tx *sql.Tx, listingVersionID int64, features []listingmodel.FeatureInterface) (err error)
+	UpdateGuarantees(ctx context.Context, tx *sql.Tx, listingVersionID int64, guarantees []listingmodel.GuaranteeInterface) (err error)
+	UpdateFinancingBlockers(ctx context.Context, tx *sql.Tx, listingVersionID int64, blockers []listingmodel.FinancingBlockerInterface) (err error)
 
-	DeleteListingExchangePlaces(ctx context.Context, tx *sql.Tx, listingID int64) (err error)
-	DeleteListingFeatures(ctx context.Context, tx *sql.Tx, listingID int64) (err error)
-	DeleteListingGuarantees(ctx context.Context, tx *sql.Tx, listingID int64) (err error)
-	DeleteListingFinancingBlockers(ctx context.Context, tx *sql.Tx, listingID int64) (err error)
+	DeleteListingExchangePlaces(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
+	DeleteListingFeatures(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
+	DeleteListingGuarantees(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
+	DeleteListingFinancingBlockers(ctx context.Context, tx *sql.Tx, listingVersionID int64) (err error)
 
+	// Utilities
 	GetListingCode(ctx context.Context, tx *sql.Tx) (code uint32, err error)
 	GetBaseFeatures(ctx context.Context, tx *sql.Tx) (features []listingmodel.BaseFeatureInterface, err error)
 	GetBaseFeaturesByIDs(ctx context.Context, tx *sql.Tx, ids []int64) (map[int64]listingmodel.BaseFeatureInterface, error)
-	GetListingByZipNumber(ctx context.Context, tx *sql.Tx, zip string, number string) (listing listingmodel.ListingInterface, err error)
-	GetListingByID(ctx context.Context, tx *sql.Tx, listingID int64) (listing listingmodel.ListingInterface, err error)
 	GetListingForEndUpdate(ctx context.Context, tx *sql.Tx, listingID int64) (ListingEndUpdateData, error)
 	ListListings(ctx context.Context, tx *sql.Tx, filter ListListingsFilter) (ListListingsResult, error)
+
+	// New methods for version workflow
+	CheckActiveListingExists(ctx context.Context, tx *sql.Tx, userID int64) (bool, error)
+	GetListingVersionByAddress(ctx context.Context, tx *sql.Tx, zipCode, number string) (listingmodel.ListingInterface, error)
+	GetActiveListingVersion(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (listingmodel.ListingInterface, error)
+	GetPreviousActiveVersionStatus(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (listingmodel.ListingStatus, error)
+	UpdateListingVersion(ctx context.Context, tx *sql.Tx, version listingmodel.ListingVersionInterface) error
+	CloneListingVersionSatellites(ctx context.Context, tx *sql.Tx, sourceVersionID, targetVersionID int64) error
 
 	ListCatalogValues(ctx context.Context, tx *sql.Tx, category string, includeInactive bool) ([]listingmodel.CatalogValueInterface, error)
 	GetCatalogValueByID(ctx context.Context, tx *sql.Tx, category string, id uint8) (listingmodel.CatalogValueInterface, error)

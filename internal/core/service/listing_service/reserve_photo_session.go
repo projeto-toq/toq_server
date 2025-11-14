@@ -46,13 +46,14 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		}
 	}()
 
-	listing, repoErr := ls.listingRepository.GetListingByID(ctx, tx, input.ListingID)
-	if repoErr != nil {
-		if errors.Is(repoErr, sql.ErrNoRows) {
+	// Load listing to validate status
+	listing, err := ls.listingRepository.GetListingVersionByID(ctx, tx, input.ListingID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			return output, utils.NotFoundError("Listing")
 		}
-		utils.SetSpanError(ctx, repoErr)
-		logger.Error("listing.photo_session.reserve.get_listing_error", "err", repoErr, "listing_id", input.ListingID)
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.photo_session.reserve.get_listing_error", "err", err, "listing_id", input.ListingID)
 		return output, utils.InternalError("")
 	}
 

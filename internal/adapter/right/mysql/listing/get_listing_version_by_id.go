@@ -8,5 +8,12 @@ import (
 )
 
 func (la *ListingAdapter) GetListingVersionByID(ctx context.Context, tx *sql.Tx, versionID int64) (listingmodel.ListingInterface, error) {
-	return la.GetListingByID(ctx, tx, versionID)
+	query := `
+		SELECT ` + listingSelectColumns + `
+		FROM listing_versions lv
+		JOIN listing_identities li ON lv.listing_identity_id = li.id
+		WHERE lv.id = ? AND lv.deleted = 0
+		LIMIT 1
+	`
+	return la.GetListingByQuery(ctx, tx, query, versionID)
 }

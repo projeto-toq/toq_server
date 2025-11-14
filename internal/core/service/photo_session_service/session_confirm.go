@@ -50,7 +50,7 @@ func (s *photoSessionService) ConfirmPhotoSession(ctx context.Context, input Con
 		}
 	}()
 
-	listing, err := s.listingRepo.GetListingByID(ctx, tx, input.ListingID)
+	listing, err := s.listingRepo.GetListingVersionByID(ctx, tx, input.ListingID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ConfirmSessionOutput{}, utils.NotFoundError("Listing")

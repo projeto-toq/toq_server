@@ -47,7 +47,8 @@ func NewListingService(
 type ListingServiceInterface interface {
 	GetOptions(ctx context.Context, zipCode string, number string) (types []listingmodel.PropertyTypeOption, err error)
 	GetBaseFeatures(ctx context.Context) (features []listingmodel.BaseFeatureInterface, err error)
-	StartListing(ctx context.Context, input StartListingInput) (listing listingmodel.ListingInterface, err error)
+	CreateListing(ctx context.Context, input CreateListingInput) (listing listingmodel.ListingInterface, err error)
+	CreateDraftVersion(ctx context.Context, input CreateDraftVersionInput) (CreateDraftVersionOutput, error)
 	UpdateListing(ctx context.Context, input UpdateListingInput) (err error)
 	PromoteListingVersion(ctx context.Context, input PromoteListingVersionInput) error
 	DiscardDraftVersion(ctx context.Context, input DiscardDraftVersionInput) error
