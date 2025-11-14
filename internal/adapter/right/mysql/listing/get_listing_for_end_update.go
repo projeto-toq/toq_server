@@ -38,36 +38,36 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		WHERE lv.id = ? AND lv.deleted = 0 AND li.deleted = 0`
 
 	var (
-		status            uint8
-		listingType       uint16
-		street            sql.NullString
-		number            sql.NullString
-		city              sql.NullString
-		state             sql.NullString
-		title             sql.NullString
-		owner             sql.NullInt16
-		buildable         sql.NullFloat64
-		delivered         sql.NullInt16
-		whoLives          sql.NullInt16
-		description       sql.NullString
-		transaction       sql.NullInt16
-		visit             sql.NullInt16
-		accompanying      sql.NullInt16
-		annualTax         sql.NullFloat64
-		monthlyTax        sql.NullFloat64
-		annualGroundRent  sql.NullFloat64
-		monthlyGroundRent sql.NullFloat64
-		exchange          sql.NullInt16
-		exchangePerc      sql.NullFloat64
-		saleNet           sql.NullFloat64
-		rentNet           sql.NullFloat64
-		condominium       sql.NullFloat64
-		landSize          sql.NullFloat64
-		corner            sql.NullInt16
-		tenantName        sql.NullString
-		tenantPhone       sql.NullString
-		tenantEmail       sql.NullString
-		financing         sql.NullInt16
+		status                     uint8
+		listingType                uint16
+		street                     sql.NullString
+		number                     sql.NullString
+		city                       sql.NullString
+		state                      sql.NullString
+		title                      sql.NullString
+		owner                      sql.NullInt16
+		buildable                  sql.NullFloat64
+		delivered                  sql.NullInt16
+		whoLives                   sql.NullInt16
+		description                sql.NullString
+		transaction                sql.NullInt16
+		visit                      sql.NullInt16
+		accompanying               sql.NullInt16
+		annualTax                  sql.NullFloat64
+		monthlyTax                 sql.NullFloat64
+		annualGroundRent           sql.NullFloat64
+		monthlyGroundRent          sql.NullFloat64
+		exchange                   sql.NullInt16
+		exchangePerc               sql.NullFloat64
+		saleNet                    sql.NullFloat64
+		rentNet                    sql.NullFloat64
+		condominium                sql.NullFloat64
+		landSize                   sql.NullFloat64
+		corner                     sql.NullInt16
+		tenantName                 sql.NullString
+		tenantPhone                sql.NullString
+		tenantEmail                sql.NullString
+		financing                  sql.NullInt16
 		completionForecast         sql.NullString
 		landBlock                  sql.NullString
 		landLot                    sql.NullString

@@ -120,51 +120,51 @@ type ListingGuaranteeResponse struct {
 
 // ListingDetailResponse agrega todos os campos do listing.
 type ListingDetailResponse struct {
-	ID                 int64                             `json:"id"`
-	ListingIdentityID  int64                             `json:"listingIdentityId"`
-	ListingUUID        string                            `json:"listingUuid"`
-	ActiveVersionID    int64                             `json:"activeVersionId"`
-	DraftVersionID     *int64                            `json:"draftVersionId,omitempty"`
-	UserID             int64                             `json:"userId"`
-	Code               uint32                            `json:"code"`
-	Version            uint8                             `json:"version"`
-	Status             string                            `json:"status"`
-	ZipCode            string                            `json:"zipCode"`
-	Street             string                            `json:"street"`
-	Number             string                            `json:"number"`
-	Complement         string                            `json:"complement"`
-	Neighborhood       string                            `json:"neighborhood"`
-	City               string                            `json:"city"`
-	State              string                            `json:"state"`
-	Title              string                            `json:"title"`
-	PropertyType       *ListingPropertyTypeResponse      `json:"propertyType,omitempty"`
-	Owner              *CatalogItemResponse              `json:"owner,omitempty"`
-	Features           []ListingFeatureResponse          `json:"features,omitempty"`
-	LandSize           float64                           `json:"landSize"`
-	Corner             bool                              `json:"corner"`
-	NonBuildable       float64                           `json:"nonBuildable"`
-	Buildable          float64                           `json:"buildable"`
-	Delivered          *CatalogItemResponse              `json:"delivered,omitempty"`
-	WhoLives           *CatalogItemResponse              `json:"whoLives,omitempty"`
-	Description        string                            `json:"description"`
-	Transaction        *CatalogItemResponse              `json:"transaction,omitempty"`
-	SellNet            float64                           `json:"sellNet"`
-	RentNet            float64                           `json:"rentNet"`
-	Condominium        float64                           `json:"condominium"`
-	AnnualTax          float64                           `json:"annualTax"`
-	MonthlyTax         float64                           `json:"monthlyTax"`
-	AnnualGroundRent   float64                           `json:"annualGroundRent"`
-	MonthlyGroundRent  float64                           `json:"monthlyGroundRent"`
-	Exchange           bool                              `json:"exchange"`
-	ExchangePercentual float64                           `json:"exchangePercentual"`
-	ExchangePlaces     []ListingExchangePlaceResponse    `json:"exchangePlaces,omitempty"`
-	Installment        *CatalogItemResponse              `json:"installment,omitempty"`
-	Financing          bool                              `json:"financing"`
-	FinancingBlockers  []ListingFinancingBlockerResponse `json:"financingBlockers,omitempty"`
-	Guarantees         []ListingGuaranteeResponse        `json:"guarantees,omitempty"`
-	Visit              *CatalogItemResponse              `json:"visit,omitempty"`
-	TenantName         string                            `json:"tenantName"`
-	TenantEmail        string                            `json:"tenantEmail"`
+	ID                         int64                             `json:"id"`
+	ListingIdentityID          int64                             `json:"listingIdentityId"`
+	ListingUUID                string                            `json:"listingUuid"`
+	ActiveVersionID            int64                             `json:"activeVersionId"`
+	DraftVersionID             *int64                            `json:"draftVersionId,omitempty"`
+	UserID                     int64                             `json:"userId"`
+	Code                       uint32                            `json:"code"`
+	Version                    uint8                             `json:"version"`
+	Status                     string                            `json:"status"`
+	ZipCode                    string                            `json:"zipCode"`
+	Street                     string                            `json:"street"`
+	Number                     string                            `json:"number"`
+	Complement                 string                            `json:"complement"`
+	Neighborhood               string                            `json:"neighborhood"`
+	City                       string                            `json:"city"`
+	State                      string                            `json:"state"`
+	Title                      string                            `json:"title"`
+	PropertyType               *ListingPropertyTypeResponse      `json:"propertyType,omitempty"`
+	Owner                      *CatalogItemResponse              `json:"owner,omitempty"`
+	Features                   []ListingFeatureResponse          `json:"features,omitempty"`
+	LandSize                   float64                           `json:"landSize"`
+	Corner                     bool                              `json:"corner"`
+	NonBuildable               float64                           `json:"nonBuildable"`
+	Buildable                  float64                           `json:"buildable"`
+	Delivered                  *CatalogItemResponse              `json:"delivered,omitempty"`
+	WhoLives                   *CatalogItemResponse              `json:"whoLives,omitempty"`
+	Description                string                            `json:"description"`
+	Transaction                *CatalogItemResponse              `json:"transaction,omitempty"`
+	SellNet                    float64                           `json:"sellNet"`
+	RentNet                    float64                           `json:"rentNet"`
+	Condominium                float64                           `json:"condominium"`
+	AnnualTax                  float64                           `json:"annualTax"`
+	MonthlyTax                 float64                           `json:"monthlyTax"`
+	AnnualGroundRent           float64                           `json:"annualGroundRent"`
+	MonthlyGroundRent          float64                           `json:"monthlyGroundRent"`
+	Exchange                   bool                              `json:"exchange"`
+	ExchangePercentual         float64                           `json:"exchangePercentual"`
+	ExchangePlaces             []ListingExchangePlaceResponse    `json:"exchangePlaces,omitempty"`
+	Installment                *CatalogItemResponse              `json:"installment,omitempty"`
+	Financing                  bool                              `json:"financing"`
+	FinancingBlockers          []ListingFinancingBlockerResponse `json:"financingBlockers,omitempty"`
+	Guarantees                 []ListingGuaranteeResponse        `json:"guarantees,omitempty"`
+	Visit                      *CatalogItemResponse              `json:"visit,omitempty"`
+	TenantName                 string                            `json:"tenantName"`
+	TenantEmail                string                            `json:"tenantEmail"`
 	TenantPhone                string                            `json:"tenantPhone"`
 	Accompanying               *CatalogItemResponse              `json:"accompanying,omitempty"`
 	PhotoSessionID             *uint64                           `json:"photoSessionId,omitempty"`
@@ -285,63 +285,63 @@ type WarehouseAdditionalFloorDTO struct {
 //	  "storeMezzanineArea": 45.0
 //	}
 type UpdateListingRequest struct {
-	ListingIdentityID  coreutils.Optional[int64]                               `json:"listingIdentityId" binding:"required" example:"1024"`
-	ListingVersionID   coreutils.Optional[int64]                               `json:"listingVersionId" binding:"required" example:"5001"`
-	Owner              coreutils.Optional[string]                              `json:"owner"`
-	Features           coreutils.Optional[[]UpdateListingFeatureRequest]       `json:"features"`
-	LandSize           coreutils.Optional[float64]                             `json:"landSize"`
-	Corner             coreutils.Optional[bool]                                `json:"corner"`
-	NonBuildable       coreutils.Optional[float64]                             `json:"nonBuildable"`
-	Buildable          coreutils.Optional[float64]                             `json:"buildable"`
-	Delivered          coreutils.Optional[string]                              `json:"delivered"`
-	WhoLives           coreutils.Optional[string]                              `json:"whoLives"`
-	Title              coreutils.Optional[string]                              `json:"title"`
-	Description        coreutils.Optional[string]                              `json:"description"`
-	Transaction        coreutils.Optional[string]                              `json:"transaction"`
-	SellNet            coreutils.Optional[float64]                             `json:"sellNet"`
-	RentNet            coreutils.Optional[float64]                             `json:"rentNet"`
-	Condominium        coreutils.Optional[float64]                             `json:"condominium"`
-	AnnualTax          coreutils.Optional[float64]                             `json:"annualTax" description:"Annual IPTU (property tax). Mutually exclusive with monthlyTax."`
-	MonthlyTax         coreutils.Optional[float64]                             `json:"monthlyTax" description:"Monthly IPTU (property tax). Mutually exclusive with annualTax."`
-	AnnualGroundRent   coreutils.Optional[float64]                             `json:"annualGroundRent" description:"Annual Laudêmio (ground rent). Mutually exclusive with monthlyGroundRent."`
-	MonthlyGroundRent  coreutils.Optional[float64]                             `json:"monthlyGroundRent" description:"Monthly Laudêmio (ground rent). Mutually exclusive with annualGroundRent."`
-	Exchange           coreutils.Optional[bool]                                `json:"exchange"`
-	ExchangePercentual coreutils.Optional[float64]                             `json:"exchangePercentual"`
-	ExchangePlaces     coreutils.Optional[[]UpdateListingExchangePlaceRequest] `json:"exchangePlaces"`
-	Installment        coreutils.Optional[string]                              `json:"installment"`
-	Financing          coreutils.Optional[bool]                                `json:"financing"`
-	FinancingBlockers  coreutils.Optional[[]string]                            `json:"financingBlockers"`
-	Guarantees         coreutils.Optional[[]UpdateListingGuaranteeRequest]     `json:"guarantees"`
-	Visit              coreutils.Optional[string]                              `json:"visit"`
-	TenantName         coreutils.Optional[string]                              `json:"tenantName"`
-	TenantEmail        coreutils.Optional[string]                              `json:"tenantEmail"`
-	TenantPhone                 coreutils.Optional[string]                              `json:"tenantPhone" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
-	Accompanying                coreutils.Optional[string]                              `json:"accompanying"`
-	CompletionForecast          coreutils.Optional[string]                              `json:"completionForecast" example:"2026-06" description:"Completion forecast for properties under construction (YYYY-MM format)"`
-	LandBlock                   coreutils.Optional[string]                              `json:"landBlock" example:"A" description:"Block identifier for land properties"`
-	LandLot                     coreutils.Optional[string]                              `json:"landLot" example:"15" description:"Lot number for land properties"`
-	LandFront                   coreutils.Optional[float64]                             `json:"landFront" example:"12.5" description:"Front dimension in meters for land properties"`
-	LandSide                    coreutils.Optional[float64]                             `json:"landSide" example:"30.0" description:"Side dimension in meters for land properties"`
-	LandBack                    coreutils.Optional[float64]                             `json:"landBack" example:"12.5" description:"Back dimension in meters for land properties"`
-	LandTerrainType             coreutils.Optional[string]                              `json:"landTerrainType" example:"plano" description:"Terrain type: plano, aclive, declive, irregular, misto"`
-	HasKmz                      coreutils.Optional[bool]                                `json:"hasKmz" description:"Indicates if KMZ file is available for land properties"`
-	KmzFile                     coreutils.Optional[string]                              `json:"kmzFile" example:"https://storage.exemplo.com/terrenos/lote15.kmz" description:"URL to KMZ file for land properties"`
-	BuildingFloors              coreutils.Optional[int16]                               `json:"buildingFloors" example:"8" description:"Total number of floors in building"`
-	UnitTower                   coreutils.Optional[string]                              `json:"unitTower" example:"Torre B" description:"Tower identifier for apartment/commercial units"`
-	UnitFloor                   coreutils.Optional[int16]                               `json:"unitFloor" example:"5" description:"Floor number where unit is located"`
-	UnitNumber                  coreutils.Optional[string]                              `json:"unitNumber" example:"502" description:"Unit number/identifier"`
-	WarehouseManufacturingArea  coreutils.Optional[float64]                             `json:"warehouseManufacturingArea" example:"850.5" description:"Manufacturing/production area in square meters for warehouses"`
-	WarehouseSector             coreutils.Optional[string]                              `json:"warehouseSector" example:"industrial" description:"Warehouse sector: industrial, logistico, comercial"`
-	WarehouseHasPrimaryCabin    coreutils.Optional[bool]                                `json:"warehouseHasPrimaryCabin" description:"Indicates if warehouse has primary electrical cabin"`
-	WarehouseCabinKva           coreutils.Optional[float64]                             `json:"warehouseCabinKva" example:"150.0" description:"Primary cabin power in KVA"`
-	WarehouseGroundFloor        coreutils.Optional[float64]                             `json:"warehouseGroundFloor" example:"4.2" description:"Ground floor ceiling height in meters"`
-	WarehouseFloorResistance    coreutils.Optional[float64]                             `json:"warehouseFloorResistance" example:"2500.0" description:"Floor resistance in kg/m²"`
-	WarehouseZoning             coreutils.Optional[string]                              `json:"warehouseZoning" example:"ZI-2" description:"Zoning classification for warehouse"`
-	WarehouseHasOfficeArea      coreutils.Optional[bool]                                `json:"warehouseHasOfficeArea" description:"Indicates if warehouse has office area"`
-	WarehouseOfficeArea         coreutils.Optional[float64]                             `json:"warehouseOfficeArea" example:"120.0" description:"Office area in square meters"`
-	WarehouseAdditionalFloors   coreutils.Optional[[]WarehouseAdditionalFloorDTO]       `json:"warehouseAdditionalFloors" description:"Additional floors beyond ground floor in warehouses"`
-	StoreHasMezzanine           coreutils.Optional[bool]                                `json:"storeHasMezzanine" description:"Indicates if store has mezzanine"`
-	StoreMezzanineArea          coreutils.Optional[float64]                             `json:"storeMezzanineArea" example:"45.0" description:"Mezzanine area in square meters for stores"`
+	ListingIdentityID          coreutils.Optional[int64]                               `json:"listingIdentityId" binding:"required" example:"1024"`
+	ListingVersionID           coreutils.Optional[int64]                               `json:"listingVersionId" binding:"required" example:"5001"`
+	Owner                      coreutils.Optional[string]                              `json:"owner"`
+	Features                   coreutils.Optional[[]UpdateListingFeatureRequest]       `json:"features"`
+	LandSize                   coreutils.Optional[float64]                             `json:"landSize"`
+	Corner                     coreutils.Optional[bool]                                `json:"corner"`
+	NonBuildable               coreutils.Optional[float64]                             `json:"nonBuildable"`
+	Buildable                  coreutils.Optional[float64]                             `json:"buildable"`
+	Delivered                  coreutils.Optional[string]                              `json:"delivered"`
+	WhoLives                   coreutils.Optional[string]                              `json:"whoLives"`
+	Title                      coreutils.Optional[string]                              `json:"title"`
+	Description                coreutils.Optional[string]                              `json:"description"`
+	Transaction                coreutils.Optional[string]                              `json:"transaction"`
+	SellNet                    coreutils.Optional[float64]                             `json:"sellNet"`
+	RentNet                    coreutils.Optional[float64]                             `json:"rentNet"`
+	Condominium                coreutils.Optional[float64]                             `json:"condominium"`
+	AnnualTax                  coreutils.Optional[float64]                             `json:"annualTax" description:"Annual IPTU (property tax). Mutually exclusive with monthlyTax."`
+	MonthlyTax                 coreutils.Optional[float64]                             `json:"monthlyTax" description:"Monthly IPTU (property tax). Mutually exclusive with annualTax."`
+	AnnualGroundRent           coreutils.Optional[float64]                             `json:"annualGroundRent" description:"Annual Laudêmio (ground rent). Mutually exclusive with monthlyGroundRent."`
+	MonthlyGroundRent          coreutils.Optional[float64]                             `json:"monthlyGroundRent" description:"Monthly Laudêmio (ground rent). Mutually exclusive with annualGroundRent."`
+	Exchange                   coreutils.Optional[bool]                                `json:"exchange"`
+	ExchangePercentual         coreutils.Optional[float64]                             `json:"exchangePercentual"`
+	ExchangePlaces             coreutils.Optional[[]UpdateListingExchangePlaceRequest] `json:"exchangePlaces"`
+	Installment                coreutils.Optional[string]                              `json:"installment"`
+	Financing                  coreutils.Optional[bool]                                `json:"financing"`
+	FinancingBlockers          coreutils.Optional[[]string]                            `json:"financingBlockers"`
+	Guarantees                 coreutils.Optional[[]UpdateListingGuaranteeRequest]     `json:"guarantees"`
+	Visit                      coreutils.Optional[string]                              `json:"visit"`
+	TenantName                 coreutils.Optional[string]                              `json:"tenantName"`
+	TenantEmail                coreutils.Optional[string]                              `json:"tenantEmail"`
+	TenantPhone                coreutils.Optional[string]                              `json:"tenantPhone" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
+	Accompanying               coreutils.Optional[string]                              `json:"accompanying"`
+	CompletionForecast         coreutils.Optional[string]                              `json:"completionForecast" example:"2026-06" description:"Completion forecast for properties under construction (YYYY-MM format)"`
+	LandBlock                  coreutils.Optional[string]                              `json:"landBlock" example:"A" description:"Block identifier for land properties"`
+	LandLot                    coreutils.Optional[string]                              `json:"landLot" example:"15" description:"Lot number for land properties"`
+	LandFront                  coreutils.Optional[float64]                             `json:"landFront" example:"12.5" description:"Front dimension in meters for land properties"`
+	LandSide                   coreutils.Optional[float64]                             `json:"landSide" example:"30.0" description:"Side dimension in meters for land properties"`
+	LandBack                   coreutils.Optional[float64]                             `json:"landBack" example:"12.5" description:"Back dimension in meters for land properties"`
+	LandTerrainType            coreutils.Optional[string]                              `json:"landTerrainType" example:"plano" description:"Terrain type: plano, aclive, declive, irregular, misto"`
+	HasKmz                     coreutils.Optional[bool]                                `json:"hasKmz" description:"Indicates if KMZ file is available for land properties"`
+	KmzFile                    coreutils.Optional[string]                              `json:"kmzFile" example:"https://storage.exemplo.com/terrenos/lote15.kmz" description:"URL to KMZ file for land properties"`
+	BuildingFloors             coreutils.Optional[int16]                               `json:"buildingFloors" example:"8" description:"Total number of floors in building"`
+	UnitTower                  coreutils.Optional[string]                              `json:"unitTower" example:"Torre B" description:"Tower identifier for apartment/commercial units"`
+	UnitFloor                  coreutils.Optional[int16]                               `json:"unitFloor" example:"5" description:"Floor number where unit is located"`
+	UnitNumber                 coreutils.Optional[string]                              `json:"unitNumber" example:"502" description:"Unit number/identifier"`
+	WarehouseManufacturingArea coreutils.Optional[float64]                             `json:"warehouseManufacturingArea" example:"850.5" description:"Manufacturing/production area in square meters for warehouses"`
+	WarehouseSector            coreutils.Optional[string]                              `json:"warehouseSector" example:"industrial" description:"Warehouse sector: industrial, logistico, comercial"`
+	WarehouseHasPrimaryCabin   coreutils.Optional[bool]                                `json:"warehouseHasPrimaryCabin" description:"Indicates if warehouse has primary electrical cabin"`
+	WarehouseCabinKva          coreutils.Optional[float64]                             `json:"warehouseCabinKva" example:"150.0" description:"Primary cabin power in KVA"`
+	WarehouseGroundFloor       coreutils.Optional[float64]                             `json:"warehouseGroundFloor" example:"4.2" description:"Ground floor ceiling height in meters"`
+	WarehouseFloorResistance   coreutils.Optional[float64]                             `json:"warehouseFloorResistance" example:"2500.0" description:"Floor resistance in kg/m²"`
+	WarehouseZoning            coreutils.Optional[string]                              `json:"warehouseZoning" example:"ZI-2" description:"Zoning classification for warehouse"`
+	WarehouseHasOfficeArea     coreutils.Optional[bool]                                `json:"warehouseHasOfficeArea" description:"Indicates if warehouse has office area"`
+	WarehouseOfficeArea        coreutils.Optional[float64]                             `json:"warehouseOfficeArea" example:"120.0" description:"Office area in square meters"`
+	WarehouseAdditionalFloors  coreutils.Optional[[]WarehouseAdditionalFloorDTO]       `json:"warehouseAdditionalFloors" description:"Additional floors beyond ground floor in warehouses"`
+	StoreHasMezzanine          coreutils.Optional[bool]                                `json:"storeHasMezzanine" description:"Indicates if store has mezzanine"`
+	StoreMezzanineArea         coreutils.Optional[float64]                             `json:"storeMezzanineArea" example:"45.0" description:"Mezzanine area in square meters for stores"`
 }
 
 // UpdateListingResponse represents response for updating a listing

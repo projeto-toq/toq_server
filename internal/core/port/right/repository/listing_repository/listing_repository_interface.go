@@ -113,37 +113,37 @@ type ListingRecord struct {
 
 // ListingEndUpdateData aggregates the raw values needed to validate the end-update flow.
 type ListingEndUpdateData struct {
-	ListingID              int64
-	UserID                 int64
-	Status                 listingmodel.ListingStatus
-	Code                   uint32
-	Version                uint8
-	ZipCode                string
-	Street                 sql.NullString
-	Number                 sql.NullString
-	City                   sql.NullString
-	State                  sql.NullString
-	Title                  sql.NullString
-	ListingType            globalmodel.PropertyType
-	Owner                  sql.NullInt16
-	Buildable              sql.NullFloat64
-	Delivered              sql.NullInt16
-	WhoLives               sql.NullInt16
-	Description            sql.NullString
-	Transaction            sql.NullInt16
-	Visit                  sql.NullInt16
-	Accompanying           sql.NullInt16
-	AnnualTax              sql.NullFloat64
-	MonthlyTax             sql.NullFloat64
-	AnnualGroundRent       sql.NullFloat64
-	MonthlyGroundRent      sql.NullFloat64
-	Exchange               sql.NullInt16
-	ExchangePercentual     sql.NullFloat64
-	SaleNet                sql.NullFloat64
-	RentNet                sql.NullFloat64
-	Condominium            sql.NullFloat64
-	LandSize               sql.NullFloat64
-	Corner                 sql.NullInt16
+	ListingID                  int64
+	UserID                     int64
+	Status                     listingmodel.ListingStatus
+	Code                       uint32
+	Version                    uint8
+	ZipCode                    string
+	Street                     sql.NullString
+	Number                     sql.NullString
+	City                       sql.NullString
+	State                      sql.NullString
+	Title                      sql.NullString
+	ListingType                globalmodel.PropertyType
+	Owner                      sql.NullInt16
+	Buildable                  sql.NullFloat64
+	Delivered                  sql.NullInt16
+	WhoLives                   sql.NullInt16
+	Description                sql.NullString
+	Transaction                sql.NullInt16
+	Visit                      sql.NullInt16
+	Accompanying               sql.NullInt16
+	AnnualTax                  sql.NullFloat64
+	MonthlyTax                 sql.NullFloat64
+	AnnualGroundRent           sql.NullFloat64
+	MonthlyGroundRent          sql.NullFloat64
+	Exchange                   sql.NullInt16
+	ExchangePercentual         sql.NullFloat64
+	SaleNet                    sql.NullFloat64
+	RentNet                    sql.NullFloat64
+	Condominium                sql.NullFloat64
+	LandSize                   sql.NullFloat64
+	Corner                     sql.NullInt16
 	TenantName                 sql.NullString
 	TenantPhone                sql.NullString
 	TenantEmail                sql.NullString

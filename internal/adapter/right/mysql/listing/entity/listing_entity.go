@@ -55,31 +55,31 @@ type ListingEntity struct {
 	Accompanying       sql.NullInt16
 	Deleted            sql.NullInt16
 	// New property-specific fields
-	CompletionForecast               sql.NullString
-	LandBlock                        sql.NullString
-	LandLot                          sql.NullString
-	LandFront                        sql.NullFloat64
-	LandSide                         sql.NullFloat64
-	LandBack                         sql.NullFloat64
-	LandTerrainType                  sql.NullInt16
-	HasKmz                           sql.NullInt16
-	KmzFile                          sql.NullString
-	BuildingFloors                   sql.NullInt16
-	UnitTower                        sql.NullString
-	UnitFloor                        sql.NullString
-	UnitNumber                       sql.NullString
-	WarehouseManufacturingArea       sql.NullFloat64
-	WarehouseSector                  sql.NullInt16
-	WarehouseHasPrimaryCabin         sql.NullInt16
-	WarehouseCabinKva                sql.NullString
-	WarehouseGroundFloor             sql.NullInt16
-	WarehouseFloorResistance         sql.NullFloat64
-	WarehouseZoning                  sql.NullString
-	WarehouseHasOfficeArea           sql.NullInt16
-	WarehouseOfficeArea              sql.NullFloat64
-	StoreHasMezzanine                sql.NullInt16
-	StoreMezzanineArea               sql.NullFloat64
-	WarehouseAdditionalFloors        []EntityWarehouseAdditionalFloor
+	CompletionForecast         sql.NullString
+	LandBlock                  sql.NullString
+	LandLot                    sql.NullString
+	LandFront                  sql.NullFloat64
+	LandSide                   sql.NullFloat64
+	LandBack                   sql.NullFloat64
+	LandTerrainType            sql.NullInt16
+	HasKmz                     sql.NullInt16
+	KmzFile                    sql.NullString
+	BuildingFloors             sql.NullInt16
+	UnitTower                  sql.NullString
+	UnitFloor                  sql.NullString
+	UnitNumber                 sql.NullString
+	WarehouseManufacturingArea sql.NullFloat64
+	WarehouseSector            sql.NullInt16
+	WarehouseHasPrimaryCabin   sql.NullInt16
+	WarehouseCabinKva          sql.NullString
+	WarehouseGroundFloor       sql.NullInt16
+	WarehouseFloorResistance   sql.NullFloat64
+	WarehouseZoning            sql.NullString
+	WarehouseHasOfficeArea     sql.NullInt16
+	WarehouseOfficeArea        sql.NullFloat64
+	StoreHasMezzanine          sql.NullInt16
+	StoreMezzanineArea         sql.NullFloat64
+	WarehouseAdditionalFloors  []EntityWarehouseAdditionalFloor
 }
 
 func (e *ListingEntity) ToString(entity sql.NullString) string {
