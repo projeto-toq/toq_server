@@ -10,8 +10,8 @@ type PhotoSessionBookingInterface interface {
 	SetAgendaEntryID(id uint64)
 	PhotographerUserID() uint64
 	SetPhotographerUserID(id uint64)
-	ListingID() int64
-	SetListingID(id int64)
+	ListingIdentityID() int64
+	SetListingIdentityID(id int64)
 	StartsAt() time.Time
 	SetStartsAt(value time.Time)
 	EndsAt() time.Time

@@ -93,7 +93,7 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 FROM listing_versions lv
 INNER JOIN listing_identities li ON li.id = lv.listing_identity_id`, listingSelectColumns)
 
-	listQuery := baseSelect + " " + whereClause + " ORDER BY l.id DESC LIMIT ? OFFSET ?"
+	listQuery := baseSelect + " " + whereClause + " ORDER BY lv.version DESC LIMIT ? OFFSET ?"
 	listArgs := append([]any{}, args...)
 	offset := (filter.Page - 1) * filter.Limit
 	listArgs = append(listArgs, filter.Limit, offset)

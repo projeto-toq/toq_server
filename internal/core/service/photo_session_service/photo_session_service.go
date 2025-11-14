@@ -29,7 +29,7 @@ type PhotoSessionServiceInterface interface {
 	ReservePhotoSession(ctx context.Context, input ReserveSessionInput) (ReserveSessionOutput, error)
 	ConfirmPhotoSession(ctx context.Context, input ConfirmSessionInput) (ConfirmSessionOutput, error)
 	CancelPhotoSession(ctx context.Context, input CancelSessionInput) (CancelSessionOutput, error)
-	GetActiveBookingByListingID(ctx context.Context, tx *sql.Tx, listingID int64) (photosessionmodel.PhotoSessionBookingInterface, error)
+	GetActiveBookingByListingIdentityID(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (photosessionmodel.PhotoSessionBookingInterface, error)
 	ListServiceAreas(ctx context.Context, input ListServiceAreasInput) (ListServiceAreasOutput, error)
 	CreateServiceArea(ctx context.Context, input CreateServiceAreaInput) (ServiceAreaResult, error)
 	GetServiceArea(ctx context.Context, input ServiceAreaDetailInput) (ServiceAreaResult, error)

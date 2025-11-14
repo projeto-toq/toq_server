@@ -118,14 +118,14 @@ type AgendaSlot struct {
 
 // ListAvailabilityInput encapsulates range and pagination data for availability listing.
 type ListAvailabilityInput struct {
-	From      *time.Time
-	To        *time.Time
-	Page      int
-	Size      int
-	Sort      string
-	Period    *photosessionmodel.SlotPeriod
-	Location  *time.Location
-	ListingID int64
+	From              *time.Time
+	To                *time.Time
+	Page              int
+	Size              int
+	Sort              string
+	Period            *photosessionmodel.SlotPeriod
+	Location          *time.Location
+	ListingIdentityID int64
 }
 
 // ListAvailabilityOutput aggregates computed availability slots.
@@ -149,36 +149,36 @@ type AvailabilitySlot struct {
 
 // ReserveSessionInput captures the necessary identifiers to reserve a photo session window.
 type ReserveSessionInput struct {
-	ListingID int64
-	SlotID    uint64
-	UserID    int64
+	ListingIdentityID int64
+	SlotID            uint64
+	UserID            int64
 }
 
 // ReserveSessionOutput returns metadata about the reserved session.
 type ReserveSessionOutput struct {
-	PhotoSessionID uint64
-	SlotID         uint64
-	SlotStart      time.Time
-	SlotEnd        time.Time
-	PhotographerID uint64
-	ListingID      int64
+	PhotoSessionID    uint64
+	SlotID            uint64
+	SlotStart         time.Time
+	SlotEnd           time.Time
+	PhotographerID    uint64
+	ListingIdentityID int64
 }
 
 // ConfirmSessionInput holds data required to confirm a reserved session.
 type ConfirmSessionInput struct {
-	ListingID      int64
-	PhotoSessionID uint64
-	UserID         int64
+	ListingIdentityID int64
+	PhotoSessionID    uint64
+	UserID            int64
 }
 
 // ConfirmSessionOutput reports the confirmed session metadata.
 type ConfirmSessionOutput struct {
-	PhotoSessionID uint64
-	SlotStart      time.Time
-	SlotEnd        time.Time
-	PhotographerID uint64
-	ListingID      int64
-	Status         photosessionmodel.BookingStatus
+	PhotoSessionID    uint64
+	SlotStart         time.Time
+	SlotEnd           time.Time
+	PhotographerID    uint64
+	ListingIdentityID int64
+	Status            photosessionmodel.BookingStatus
 }
 
 // CancelSessionInput captures identifiers needed to cancel an existing session.
@@ -189,12 +189,12 @@ type CancelSessionInput struct {
 
 // CancelSessionOutput reports metadata about a cancelled session.
 type CancelSessionOutput struct {
-	PhotoSessionID uint64
-	SlotStart      time.Time
-	SlotEnd        time.Time
-	PhotographerID uint64
-	ListingID      int64
-	ListingCode    uint32
+	PhotoSessionID    uint64
+	SlotStart         time.Time
+	SlotEnd           time.Time
+	PhotographerID    uint64
+	ListingIdentityID int64
+	ListingCode       uint32
 }
 
 // ListServiceAreasInput captures filters and pagination options when listing service areas.

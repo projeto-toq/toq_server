@@ -158,13 +158,13 @@ func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input Upd
 	}
 
 	// Carrega o listing associado ao booking
-	listing, err := s.listingRepo.GetListingVersionByID(ctx, tx, booking.ListingID())
+	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, booking.ListingIdentityID())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return derrors.NotFound("listing not found")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("photo_session.update_status.get_listing_error", "listing_id", booking.ListingID(), "err", err)
+		logger.Error("photo_session.update_status.get_listing_error", "listing_identity_id", booking.ListingIdentityID(), "err", err)
 		return derrors.Infra("failed to load listing", err)
 	}
 

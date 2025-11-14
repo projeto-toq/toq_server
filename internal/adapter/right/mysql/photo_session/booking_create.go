@@ -27,7 +27,7 @@ func (a *PhotoSessionAdapter) CreateBooking(ctx context.Context, tx *sql.Tx, boo
 	}
 
 	query := `INSERT INTO photographer_photo_session_bookings (
-		agenda_entry_id, photographer_user_id, listing_id, starts_at, ends_at, status, reason
+		agenda_entry_id, photographer_user_id, listing_identity_id, starts_at, ends_at, status, reason
 	) VALUES (?, ?, ?, ?, ?, ?, ?)`
 
 	result, execErr := a.ExecContext(
@@ -37,7 +37,7 @@ func (a *PhotoSessionAdapter) CreateBooking(ctx context.Context, tx *sql.Tx, boo
 		query,
 		entity.AgendaEntryID,
 		entity.PhotographerID,
-		entity.ListingID,
+		entity.ListingIdentityID,
 		entity.StartsAt,
 		entity.EndsAt,
 		entity.Status,

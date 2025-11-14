@@ -15,14 +15,14 @@ func ToBookingEntity(booking photosessionmodel.PhotoSessionBookingInterface) ent
 	}
 
 	return entity.Booking{
-		ID:             booking.ID(),
-		AgendaEntryID:  booking.AgendaEntryID(),
-		PhotographerID: booking.PhotographerUserID(),
-		ListingID:      booking.ListingID(),
-		StartsAt:       booking.StartsAt(),
-		EndsAt:         booking.EndsAt(),
-		Status:         string(booking.Status()),
-		Reason:         reason,
+		ID:                booking.ID(),
+		AgendaEntryID:     booking.AgendaEntryID(),
+		PhotographerID:    booking.PhotographerUserID(),
+		ListingIdentityID: booking.ListingIdentityID(),
+		StartsAt:          booking.StartsAt(),
+		EndsAt:            booking.EndsAt(),
+		Status:            string(booking.Status()),
+		Reason:            reason,
 	}
 }
 
@@ -32,7 +32,7 @@ func ToBookingModel(entity entity.Booking) photosessionmodel.PhotoSessionBooking
 	model.SetID(entity.ID)
 	model.SetAgendaEntryID(entity.AgendaEntryID)
 	model.SetPhotographerUserID(entity.PhotographerID)
-	model.SetListingID(entity.ListingID)
+	model.SetListingIdentityID(entity.ListingIdentityID)
 	model.SetStartsAt(entity.StartsAt)
 	model.SetEndsAt(entity.EndsAt)
 	model.SetStatus(photosessionmodel.BookingStatus(entity.Status))

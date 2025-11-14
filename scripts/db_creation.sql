@@ -624,13 +624,13 @@ DROP TABLE IF EXISTS `toq_db`.`listing_agendas` ;
 
 CREATE TABLE IF NOT EXISTS `toq_db`.`listing_agendas` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` INT UNSIGNED NOT NULL,
+  `listing_identity_id` INT UNSIGNED NOT NULL,
   `owner_id` INT UNSIGNED NOT NULL,
   `timezone` VARCHAR(50) NOT NULL DEFAULT 'America/Sao_Paulo',
   PRIMARY KEY (`id`),
-  INDEX `fk_agenda_listing_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_agenda_listing_idx` (`listing_identity_id` ASC) VISIBLE,
   CONSTRAINT `fk_agenda_listing`
-    FOREIGN KEY (`listing_id`)
+    FOREIGN KEY (`listing_identity_id`)
     REFERENCES `toq_db`.`listing_identities` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
@@ -785,7 +785,7 @@ DROP TABLE IF EXISTS `toq_db`.`photographer_photo_session_bookings` ;
 CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_photo_session_bookings` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `photographer_user_id` INT UNSIGNED NOT NULL,
-  `listing_id` INT UNSIGNED NOT NULL,
+  `listing_identity_id` INT UNSIGNED NOT NULL,
   `agenda_entry_id` INT UNSIGNED NOT NULL,
   `starts_at` DATETIME(6) NOT NULL,
   `ends_at` DATETIME(6) NOT NULL,
@@ -796,14 +796,14 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_photo_session_bookings` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_booking_entry` (`agenda_entry_id` ASC) VISIBLE,
   INDEX `ix_photographer_user_id_idx` (`photographer_user_id` ASC) VISIBLE,
-  INDEX `fk_listing_id_idx` (`listing_id` ASC) VISIBLE,
+  INDEX `fk_listing_id_idx` (`listing_identity_id` ASC) VISIBLE,
   CONSTRAINT `fk_photographer_user_id_user_2`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_listing_id`
-    FOREIGN KEY (`listing_id`)
+  CONSTRAINT `fk_listing_identity_id`
+    FOREIGN KEY (`listing_identity_id`)
     REFERENCES `toq_db`.`listing_identities` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,

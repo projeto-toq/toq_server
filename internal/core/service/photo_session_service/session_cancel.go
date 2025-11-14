@@ -57,13 +57,13 @@ func (s *photoSessionService) CancelPhotoSession(ctx context.Context, input Canc
 		return CancelSessionOutput{}, derrors.Infra("failed to load booking", err)
 	}
 
-	listing, err := s.listingRepo.GetListingVersionByID(ctx, tx, booking.ListingID())
+	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, booking.ListingIdentityID())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return CancelSessionOutput{}, utils.NotFoundError("Listing")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("photo_session.cancel.get_listing_error", "listing_id", booking.ListingID(), "err", err)
+		logger.Error("photo_session.cancel.get_listing_error", "listing_identity_id", booking.ListingIdentityID(), "err", err)
 		return CancelSessionOutput{}, derrors.Infra("failed to load listing", err)
 	}
 
@@ -142,11 +142,11 @@ func (s *photoSessionService) CancelPhotoSession(ctx context.Context, input Canc
 	logger.Info("photo_session.cancel.success", "booking_id", booking.ID(), "listing_id", listing.ID())
 
 	return CancelSessionOutput{
-		PhotoSessionID: booking.ID(),
-		SlotStart:      slotStart,
-		SlotEnd:        slotEnd,
-		PhotographerID: booking.PhotographerUserID(),
-		ListingID:      listing.ID(),
-		ListingCode:    listing.Code(),
+		PhotoSessionID:    booking.ID(),
+		SlotStart:         slotStart,
+		SlotEnd:           slotEnd,
+		PhotographerID:    booking.PhotographerUserID(),
+		ListingIdentityID: booking.ListingIdentityID(),
+		ListingCode:       listing.Code(),
 	}, nil
 }

@@ -22,8 +22,8 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	if input.ListingID <= 0 {
-		return ListAvailabilityOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "greater_than_zero"})
+	if input.ListingIdentityID <= 0 {
+		return ListAvailabilityOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "greater_than_zero"})
 	}
 
 	loc := input.Location
@@ -87,13 +87,13 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 		}
 	}()
 
-	listing, listingErr := s.listingRepo.GetListingVersionByID(ctx, tx, input.ListingID)
+	listing, listingErr := s.listingRepo.GetActiveListingVersion(ctx, tx, input.ListingIdentityID)
 	if listingErr != nil {
 		if errors.Is(listingErr, sql.ErrNoRows) {
 			return ListAvailabilityOutput{}, utils.NotFoundError("Listing")
 		}
 		utils.SetSpanError(ctx, listingErr)
-		logger.Error("photo_session.list_availability.get_listing_error", "listing_id", input.ListingID, "err", listingErr)
+		logger.Error("photo_session.list_availability.get_listing_error", "listing_identity_id", input.ListingIdentityID, "err", listingErr)
 		return ListAvailabilityOutput{}, derrors.Infra("failed to load listing", listingErr)
 	}
 

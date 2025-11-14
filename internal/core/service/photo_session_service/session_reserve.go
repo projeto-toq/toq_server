@@ -66,8 +66,8 @@ func (s *photoSessionService) ReservePhotoSession(ctx context.Context, input Res
 	if input.UserID <= 0 {
 		return ReserveSessionOutput{}, derrors.Auth("unauthorized")
 	}
-	if input.ListingID <= 0 {
-		return ReserveSessionOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "greater_than_zero"})
+	if input.ListingIdentityID <= 0 {
+		return ReserveSessionOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "greater_than_zero"})
 	}
 	if input.SlotID == 0 {
 		return ReserveSessionOutput{}, derrors.Validation("slotId must be greater than zero", map[string]any{"slotId": "greater_than_zero"})
@@ -121,13 +121,13 @@ func (s *photoSessionService) ReservePhotoSession(ctx context.Context, input Res
 		}
 	}()
 
-	listing, err := s.listingRepo.GetListingVersionByID(ctx, tx, input.ListingID)
+	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ReserveSessionOutput{}, utils.NotFoundError("Listing")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("photo_session.reserve.get_listing_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("photo_session.reserve.get_listing_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return ReserveSessionOutput{}, derrors.Infra("failed to load listing", err)
 	}
 
@@ -161,8 +161,8 @@ func (s *photoSessionService) ReservePhotoSession(ctx context.Context, input Res
 	agendaEntry.SetEndsAt(slotEnd.UTC())
 	agendaEntry.SetBlocking(true)
 	agendaEntry.SetTimezone(loc.String())
-	if input.ListingID > 0 {
-		agendaEntry.SetSourceID(uint64(input.ListingID))
+	if input.ListingIdentityID > 0 {
+		agendaEntry.SetSourceID(uint64(input.ListingIdentityID))
 	}
 
 	entryIDs, err := s.repo.CreateEntries(ctx, tx, []photosessionmodel.AgendaEntryInterface{agendaEntry})
@@ -190,7 +190,7 @@ func (s *photoSessionService) ReservePhotoSession(ctx context.Context, input Res
 	booking := photosessionmodel.NewPhotoSessionBooking()
 	booking.SetAgendaEntryID(entryID)
 	booking.SetPhotographerUserID(photographerID)
-	booking.SetListingID(input.ListingID)
+	booking.SetListingIdentityID(input.ListingIdentityID)
 	booking.SetStartsAt(slotStart.UTC())
 	booking.SetEndsAt(slotEnd.UTC())
 	booking.SetStatus(bookingStatus)
@@ -248,12 +248,12 @@ func (s *photoSessionService) ReservePhotoSession(ctx context.Context, input Res
 		"listing_status", targetListingStatus.String())
 
 	return ReserveSessionOutput{
-		PhotoSessionID: bookingID,
-		SlotID:         input.SlotID,
-		SlotStart:      slotStart,
-		SlotEnd:        slotEnd,
-		PhotographerID: photographerID,
-		ListingID:      listing.ID(),
+		PhotoSessionID:    bookingID,
+		SlotID:            input.SlotID,
+		SlotStart:         slotStart,
+		SlotEnd:           slotEnd,
+		PhotographerID:    photographerID,
+		ListingIdentityID: input.ListingIdentityID,
 	}, nil
 }
 

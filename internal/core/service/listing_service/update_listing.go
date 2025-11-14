@@ -429,6 +429,43 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		}
 	}
 
+	// Update satellite tables
+	if input.Features.IsPresent() {
+		err = ls.listingRepository.UpdateFeatures(ctx, tx, existing.ID(), existing.Features())
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("listing.update.update_features_error", "err", err, "version_id", existing.ID())
+			return utils.InternalError("Failed to update listing features")
+		}
+	}
+
+	if input.ExchangePlaces.IsPresent() {
+		err = ls.listingRepository.UpdateExchangePlaces(ctx, tx, existing.ID(), existing.ExchangePlaces())
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("listing.update.update_exchange_places_error", "err", err, "version_id", existing.ID())
+			return utils.InternalError("Failed to update exchange places")
+		}
+	}
+
+	if input.FinancingBlockers.IsPresent() {
+		err = ls.listingRepository.UpdateFinancingBlockers(ctx, tx, existing.ID(), existing.FinancingBlockers())
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("listing.update.update_financing_blockers_error", "err", err, "version_id", existing.ID())
+			return utils.InternalError("Failed to update financing blockers")
+		}
+	}
+
+	if input.Guarantees.IsPresent() {
+		err = ls.listingRepository.UpdateGuarantees(ctx, tx, existing.ID(), existing.Guarantees())
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("listing.update.update_guarantees_error", "err", err, "version_id", existing.ID())
+			return utils.InternalError("Failed to update guarantees")
+		}
+	}
+
 	//update the listing version
 	err = ls.listingRepository.UpdateListingVersion(ctx, tx, existing)
 	if err != nil {

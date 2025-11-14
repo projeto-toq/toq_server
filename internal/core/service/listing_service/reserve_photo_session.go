@@ -93,9 +93,9 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 	tx = nil
 
 	reserveOutput, reserveErr := ls.photoSessionSvc.ReservePhotoSession(ctx, photosessionservices.ReserveSessionInput{
-		ListingID: listing.ID(),
-		SlotID:    input.SlotID,
-		UserID:    userID,
+		ListingIdentityID: listing.IdentityID(),
+		SlotID:            input.SlotID,
+		UserID:            userID,
 	})
 	if reserveErr != nil {
 		return output, reserveErr

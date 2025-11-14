@@ -55,7 +55,7 @@ func (ls *listingService) CancelPhotoSession(ctx context.Context, input CancelPh
 		photographerPhone = phone
 	}
 
-	logger.Info("listing.photo_session.cancel.success", "photo_session_id", cancelOutput.PhotoSessionID, "listing_id", cancelOutput.ListingID, "user_id", userID)
+	logger.Info("listing.photo_session.cancel.success", "photo_session_id", cancelOutput.PhotoSessionID, "listing_identity_id", cancelOutput.ListingIdentityID, "user_id", userID)
 
 	ls.sendPhotographerCancellationSMS(ctx, photographerPhone, cancelOutput.SlotStart, cancelOutput.ListingCode)
 

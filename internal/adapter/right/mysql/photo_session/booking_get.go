@@ -29,7 +29,7 @@ func (a *PhotoSessionAdapter) FindBookingByAgendaEntry(ctx context.Context, tx *
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, agenda_entry_id, photographer_user_id, listing_id, starts_at, ends_at, status, reason
+	query := `SELECT id, agenda_entry_id, photographer_user_id, listing_identity_id, starts_at, ends_at, status, reason
 		FROM photographer_photo_session_bookings WHERE agenda_entry_id = ?`
 
 	row := entity.Booking{}
@@ -37,7 +37,7 @@ func (a *PhotoSessionAdapter) FindBookingByAgendaEntry(ctx context.Context, tx *
 		&row.ID,
 		&row.AgendaEntryID,
 		&row.PhotographerID,
-		&row.ListingID,
+		&row.ListingIdentityID,
 		&row.StartsAt,
 		&row.EndsAt,
 		&row.Status,
@@ -64,7 +64,7 @@ func (a *PhotoSessionAdapter) getBooking(ctx context.Context, tx *sql.Tx, bookin
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, agenda_entry_id, photographer_user_id, listing_id, starts_at, ends_at, status, reason
+	query := `SELECT id, agenda_entry_id, photographer_user_id, listing_identity_id, starts_at, ends_at, status, reason
 		FROM photographer_photo_session_bookings WHERE id = ?`
 	if forUpdate {
 		query += " FOR UPDATE"
@@ -75,7 +75,7 @@ func (a *PhotoSessionAdapter) getBooking(ctx context.Context, tx *sql.Tx, bookin
 		&row.ID,
 		&row.AgendaEntryID,
 		&row.PhotographerID,
-		&row.ListingID,
+		&row.ListingIdentityID,
 		&row.StartsAt,
 		&row.EndsAt,
 		&row.Status,

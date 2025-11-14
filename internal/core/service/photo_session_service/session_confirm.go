@@ -26,8 +26,8 @@ func (s *photoSessionService) ConfirmPhotoSession(ctx context.Context, input Con
 	if input.UserID <= 0 {
 		return ConfirmSessionOutput{}, derrors.Auth("unauthorized")
 	}
-	if input.ListingID <= 0 {
-		return ConfirmSessionOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "greater_than_zero"})
+	if input.ListingIdentityID <= 0 {
+		return ConfirmSessionOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "greater_than_zero"})
 	}
 	if input.PhotoSessionID == 0 {
 		return ConfirmSessionOutput{}, derrors.Validation("photoSessionId must be greater than zero", map[string]any{"photoSessionId": "greater_than_zero"})
@@ -50,13 +50,13 @@ func (s *photoSessionService) ConfirmPhotoSession(ctx context.Context, input Con
 		}
 	}()
 
-	listing, err := s.listingRepo.GetListingVersionByID(ctx, tx, input.ListingID)
+	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, input.ListingIdentityID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return ConfirmSessionOutput{}, utils.NotFoundError("Listing")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("photo_session.confirm.get_listing_error", "listing_id", input.ListingID, "err", err)
+		logger.Error("photo_session.confirm.get_listing_error", "listing_identity_id", input.ListingIdentityID, "err", err)
 		return ConfirmSessionOutput{}, derrors.Infra("failed to load listing", err)
 	}
 
@@ -80,10 +80,6 @@ func (s *photoSessionService) ConfirmPhotoSession(ctx context.Context, input Con
 		utils.SetSpanError(ctx, err)
 		logger.Error("photo_session.confirm.get_booking_error", "photo_session_id", input.PhotoSessionID, "err", err)
 		return ConfirmSessionOutput{}, derrors.Infra("failed to load booking", err)
-	}
-
-	if booking.ListingID() != input.ListingID {
-		return ConfirmSessionOutput{}, derrors.Auth("photo session does not belong to listing")
 	}
 
 	switch booking.Status() {
@@ -141,11 +137,11 @@ func (s *photoSessionService) ConfirmPhotoSession(ctx context.Context, input Con
 	logger.Info("photo_session.confirm.success", "booking_id", booking.ID(), "listing_id", listing.ID())
 
 	return ConfirmSessionOutput{
-		PhotoSessionID: booking.ID(),
-		SlotStart:      start,
-		SlotEnd:        end,
-		PhotographerID: booking.PhotographerUserID(),
-		ListingID:      listing.ID(),
-		Status:         photosessionmodel.BookingStatusActive,
+		PhotoSessionID:    booking.ID(),
+		SlotStart:         start,
+		SlotEnd:           end,
+		PhotographerID:    booking.PhotographerUserID(),
+		ListingIdentityID: input.ListingIdentityID,
+		Status:            photosessionmodel.BookingStatusActive,
 	}, nil
 }

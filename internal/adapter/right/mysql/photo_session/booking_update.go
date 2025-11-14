@@ -28,7 +28,7 @@ func (a *PhotoSessionAdapter) UpdateBooking(ctx context.Context, tx *sql.Tx, boo
 	}
 
 	query := `UPDATE photographer_photo_session_bookings
-		SET agenda_entry_id = ?, photographer_user_id = ?, listing_id = ?, starts_at = ?, ends_at = ?, status = ?, reason = ?, updated_at = NOW()
+		SET agenda_entry_id = ?, photographer_user_id = ?, listing_identity_id = ?, starts_at = ?, ends_at = ?, status = ?, reason = ?, updated_at = NOW()
 		WHERE id = ?`
 
 	result, execErr := a.ExecContext(
@@ -38,7 +38,7 @@ func (a *PhotoSessionAdapter) UpdateBooking(ctx context.Context, tx *sql.Tx, boo
 		query,
 		entity.AgendaEntryID,
 		entity.PhotographerID,
-		entity.ListingID,
+		entity.ListingIdentityID,
 		entity.StartsAt,
 		entity.EndsAt,
 		entity.Status,

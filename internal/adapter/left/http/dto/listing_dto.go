@@ -586,8 +586,8 @@ type ReservePhotoSessionResponse struct {
 
 // ConfirmPhotoSessionRequest representa o payload para confirmar a sessão de fotos.
 type ConfirmPhotoSessionRequest struct {
-	ListingID      int64  `json:"listingId" binding:"required" example:"1001"`
-	PhotoSessionID uint64 `json:"photoSessionId" binding:"required" example:"3003"`
+	ListingIdentityID int64  `json:"listingIdentityId" binding:"required" example:"1024"`
+	PhotoSessionID    uint64 `json:"photoSessionId" binding:"required" example:"3003"`
 }
 
 // ConfirmPhotoSessionResponse retorna dados da sessão confirmada.
