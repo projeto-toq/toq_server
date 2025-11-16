@@ -7,7 +7,7 @@
 
 ## 2. Visão Geral do Fluxo (alto nível)
 1. **Manifesto de upload**: frontend envia lista de arquivos que serão enviados (tipo, orientação, extensão, tamanho estimado, checksum). Backend valida permissão e status do listing.
-2. **Emissão de URLs pré-assinadas**: backend retorna URLs PUT S3 com metadados obrigatórios. Fotógrafo envia diretamentre para o bucket dedicado `toq-listing-medias`, sempre dentro do diretório raiz `/{listingId}/`.
+2. **Emissão de URLs pré-assinadas**: backend retorna URLs PUT S3 com metadados obrigatórios. Fotógrafo envia diretamentre para o bucket dedicado `toq-listing-medias`, sempre dentro do diretório raiz `/{listingId}/`. Listings classificados como empreendimento em construção permitem que o **owner** autenticado (ou representante designado) gere URLs para projetos e renders sem depender do fotógrafo.
 3. **Confirmação de upload**: após concluir todos os uploads com sucesso HTTP 200 na S3, frontend chama endpoint de confirmação entregando o manifesto final com ETags retornadas pelo S3.
 4. **Orquestração assíncrona**: backend persiste lote, muda status interno do lote para `RECEIVED` e publica job em SQS para pipeline de processamento.
 5. **Pipeline AWS**: Step Functions + Lambdas/MediaConvert validam entradas, geram thumbnails, transcoding de vídeo, compactações (ZIP), atualizam estado do job na SQS/DynamoRDS.
@@ -17,15 +17,15 @@
 ## 3. Estrutura de Domínio e Persistência
 - **Novos modelos core (`internal/core/model/media_processing_model`)**
   - `MediaBatch`: representa um lote de uploads (campos sugeridos: `ID`, `ListingID`, `PhotographerUserID`, `Status` = `PENDING_UPLOAD|RECEIVED|PROCESSING|FAILED|READY`, `UploadManifest`, `ProcessingMetadata`).
-  - `MediaAsset`: item individual associado a um lote (`MediaBatchID`, `Type` = `PHOTO_VERTICAL|PHOTO_HORIZONTAL|VIDEO_VERTICAL|VIDEO_HORIZONTAL|THUMBNAIL|ZIP`, `SourceKey`, `ProcessedKey`, `Checksum`, `ContentType`, `Resolution`, `DurationSeconds`, `Title`, `Sequence`). Os campos `Title` e `Sequence` são persistidos e vinculados ao objeto S3 para ordenação do carrossel e exibição ao cliente.
+  - `MediaAsset`: item individual associado a um lote (`MediaBatchID`, `Type` = `PHOTO_VERTICAL|PHOTO_HORIZONTAL|VIDEO_VERTICAL|VIDEO_HORIZONTAL|THUMBNAIL|ZIP|PROJECT_DOC|PROJECT_RENDER`, `SourceKey`, `ProcessedKey`, `Checksum`, `ContentType`, `Resolution`, `DurationSeconds`, `Title`, `Sequence`). Os campos `Title` e `Sequence` são persistidos e vinculados ao objeto S3 para ordenação do carrossel/prateleira de projetos e exibição ao cliente.
   - `MediaProcessingJob`: metadados de execução assíncrona (`BatchID`, `ExternalJobID` do Step Functions, timestamps, mensagens de erro).
 - **Modelagem física proposta**
   - `listing_media_batches`
-    - Colunas chave: `id`, `listing_id`, `photographer_user_id`, `status`, `upload_manifest_json`, `processing_metadata_json`, `received_at`, `processing_started_at`, `processing_finished_at`, `error_code`, `error_detail`.
+    - Colunas chave: `id`, `listing_id`, `photographer_user_id`, `status`, `upload_manifest_json`, `processing_metadata_json`, `received_at`, `processing_started_at`, `processing_finished_at`, `error_code`, `error_detail`, `deleted_at`, `deleted_by`.
     - Índices: (`listing_id`, `id` DESC) para recuperar o lote mais recente; `status` para dashboards/observabilidade.
-    - Constraint: (`listing_id`, `status IN ('PENDING_UPLOAD','RECEIVED','PROCESSING')`) deve ser validada em serviço para evitar múltiplos lotes abertos simultaneamente.
+    - Serviço permite múltiplos lotes ativos por listing; soft delete (`deleted_at`, `deleted_by`) remove lotes obsoletos da UI sem perder histórico para auditoria ou reprocessamento.
   - `listing_media_assets`
-    - Colunas: `id`, `batch_id`, `asset_type`, `orientation`, `source_key`, `processed_key`, `thumbnail_key`, `checksum_sha256`, `content_type`, `bytes`, `resolution`, `duration_seconds`, `title`, `sequence`.
+    - Colunas: `id`, `batch_id`, `asset_type`, `orientation`, `source_key`, `processed_key`, `thumbnail_key`, `checksum_sha256`, `content_type`, `bytes`, `resolution`, `duration_seconds`, `title`, `sequence`, `variant_metadata_json` (metadados adicionais como "tipo de planta" ou "render diurno/noturno").
     - Constraint de unicidade (`batch_id`, `sequence`) garante ordenação determinística do carrossel; `title` fica armazenado para exibição.
     - Foreign key `batch_id` → `listing_media_batches.id` com `ON DELETE CASCADE` para limpeza automática.
   - `listing_media_jobs`
@@ -36,7 +36,7 @@
   - `listing_media_batches` tem relação 1:N com `listing_media_assets` e 1:N com `listing_media_jobs`. O `listing_id` liga o lote ao anúncio e permite histórico de reprocessamentos.
   - Após o upload (status `RECEIVED`), o batch continua sendo a âncora do pipeline: armazena status de processamento, links para assets finais e erros estruturados. Mesmo em `READY`, o registro permanece para audit trail, reprocessamento e geração de downloads adicionais.
   - `MediaAsset` acompanha tanto o objeto bruto (`source_key`) quanto os derivados (`processed_key`, `thumbnail_key`). Assim, o backend pode servir downloads individuais e gerar ZIPs sem nova consulta ao S3.
-  - `MediaProcessingJob` documenta cada execução assíncrona e facilita retentativas controladas. Em caso de falha, o batch fica em `FAILED`, preservando contexto para diagnosticar e permitir retry manual/automático.
+  - `MediaProcessingJob` documenta cada execução assíncrona e facilita retentativas controladas. Em caso de falha, o batch fica em `FAILED`, preservando contexto para diagnosticar e permitir retry manual/automático. Cada solicitação de reprocessamento gera um novo registro em `listing_media_jobs`, mantendo o relacionamento com o batch e permitindo comparar tentativas.
 - **Acompanhamento pós-upload**
   - Services atualizam `listing_media_batches.status` (→ `PROCESSING`, `READY`, `FAILED`) de acordo com callbacks SQS/Step Functions.
   - Endpoints de status e download consomem `listing_media_batches` + `listing_media_assets` para montar respostas (sem varrer S3).
@@ -74,8 +74,9 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
   }
   ```
 - **Regras adicionais**
-  - `sequence` deve ser numeração inteira positiva e única dentro do lote para definir a ordem do carrossel.
-  - `title` será persistido e exibido na galeria; deve refletir o ambiente ou take representado.
+  - `sequence` deve ser numeração inteira positiva e única dentro do lote para definir a ordem do carrossel ou da prateleira de projetos.
+  - `title` será persistido e exibido na galeria; deve refletir o ambiente, render ou documento.
+  - `mediaType` aceita `project/doc` (PDF, imagens de plantas) e `project/render` (renders) quando o listing está marcado como empreendimento em construção e o solicitante é o owner associado.
 - **Response 201**
   ```json
   {
@@ -123,7 +124,7 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
 - **Regras**
   - Backend executa `HEAD`/`GetObjectAttributes` para validar existência, tamanho, checksum.
   - Atualiza `MediaBatch.Status` → `RECEIVED`, persiste metadados por arquivo e publica job na fila.
-  - Campos `title` e `sequence` são consolidados com o manifesto inicial e gravados no `MediaAsset` correspondente para uso posterior no carrossel e nos downloads.
+  - Campos `title` e `sequence` são consolidados com o manifesto inicial e gravados no `MediaAsset` correspondente para uso posterior no carrossel e nos downloads. Para `project/doc` e `project/render`, validar `contentType` (`application/pdf` ou `image/*`) e aplicar sanitização de nome de arquivo.
   - `batchId` obrigatório: confirma apenas o lote especificado (idempotência garantida).
 - **Responses**
   - `202 Accepted`: job enviado a processamento (retorna `processingJobId` e tempo estimado).
@@ -212,6 +213,27 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
   ```
 - **Códigos**: `200 OK`, `204 No Content` (nenhum lote pronto), `404` (listing/batch inexistente).
 
+### 4.5 `POST /api/v2/listings/media/uploads/retry` — Reprocessar lote existente
+- **Objetivo**: permitir que o fotógrafo reenvie um lote para processamento quando o status estiver `FAILED` ou quando alguma derivação precise ser regenerada.
+- **Request Body**
+  ```json
+  {
+    "listingId": 123,
+    "batchId": "UUID",
+    "reason": "manual-check"
+  }
+  ```
+- **Regras**
+  - Apenas lotes em `FAILED` ou `READY` podem ser reprocessados. Em `READY`, o reprocessamento gera novas versões dos assets preservando o histórico anterior.
+  - Sempre cria um novo registro em `listing_media_jobs` vinculado ao batch, com `provider` = `STEP_FUNCTIONS` e `status` inicial `PENDING`.
+  - O reprocessamento não gera novos uploads; reutiliza os objetos S3 existentes na pasta `raw/`.
+  - Soft delete opcional pode ocultar lotes obsoletos após o novo processamento.
+- **Responses**
+  - `202 Accepted`: job reenfileirado, retorna `jobId` e status atual.
+  - `403 Forbidden`: usuário não autorizado.
+  - `404 Not Found`: batch inexistente para o listing fornecido.
+  - `409 Conflict`: lote em `PENDING_UPLOAD`/`RECEIVED` ainda não finalizou upload.
+
 ## 5. Serviços Core e Dependências (Hexagonal)
 - **Service**: `internal/core/service/media_processing_service`
   - Métodos públicos (cada um em arquivo próprio): `CreateUploadBatch`, `CompleteUploadBatch`, `GetBatchStatus`, `ListDownloadUrls`, `HandleProcessingCallback`.
@@ -261,13 +283,13 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
 - **AWS Batch (opcional)**: se for necessário processamento pesado custom (ex.: IA para seleção de fotos), pode substituir Lamdbas específicas mantendo integração com Step Functions.
 
 ## 7. Convenções de Segurança e Compliance
-- **Controle de acesso**: validar `PhotographerUserID` associado ao booking ativo; negar se listing não estiver em `PENDING_PHOTO_PROCESSING` ou se usuário atual não tiver role permitida.
-- **Prefixos S3**: `/{listingId}/raw/{mediaType}/` e `/{listingId}/processed/{variant}/` dentro do bucket `toq-listing-medias`. Nunca reutilizar chaves previsíveis sem UUID (`batchId` + `clientId`).
+- **Controle de acesso**: validar `PhotographerUserID` associado ao booking ativo; somente o fotógrafo do booking (ou um operador com privilégio explícito `media:manage` em ferramentas internas) pode criar lotes, confirmar uploads ou solicitar reprocessamento de fotos/vídeos. **Exceção**: listings marcados como empreendimento em construção aceitam que o owner autenticado (ou procurador cadastrado) crie lotes `project/doc` e `project/render`, desde que possua relação comprovada com o listing.
+- **Prefixos S3**: `/{listingId}/raw/{mediaType}/` e `/{listingId}/processed/{variant}/` dentro do bucket `toq-listing-medias`. Nunca reutilizar chaves previsíveis sem UUID (`batchId` + `clientId`). `mediaType` inclui `photo/vertical`, `photo/horizontal`, `video/vertical`, `video/horizontal`, `project/doc`, `project/render`.
 - **TTL de URLs**: upload 15 min, download 60 min (config via `env.S3.signedUrlTTL`).
 - **Checksums**: exigir `x-amz-checksum-sha256` para uploads; backend valida no `Complete`.
-- **Límites**: máximo 60 arquivos por lote, 1 GiB total; rejeitar `contentType` fora da whitelist (`image/jpeg`, `image/heic`, `video/mp4`, `video/quicktime`).
+- **Límites**: máximo 60 arquivos por lote, 1 GiB total; rejeitar `contentType` fora da whitelist (`image/jpeg`, `image/heic`, `video/mp4`, `video/quicktime`, `application/pdf`).
 - **Auditoria**: registrar logs estruturados com `listing_id`, `batch_id`, `photographer_user_id`, `job_id` em cada etapa. Utilizar `utils.LoggerFromContext`.
-- **Idempotência**: `CreateUploadBatch` aceita header `Idempotency-Key` (salvar no batch). `CompleteUploadBatch` verifica se já foi processado.
+- **Idempotência**: este fluxo **não** suporta `Idempotency-Key`. A prevenção de duplicidade é garantida por regras de status (`PENDING_UPLOAD` → `RECEIVED` → `PROCESSING` → `READY|FAILED`) e por validações de manifesto (`batchId` obrigatório em todas as operações).
 
 ## 8. Orquestração Assíncrona & Estados
 - **Estados do lote**
@@ -280,15 +302,18 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
   - Ao receber `READY`, service atualiza listing → `StatusPendingOwnerApproval` e dispara notificação push/e-mail.
   - Em `FAILED`, mantém listing no status atual e gera alerta Slack/Prometheus (ver seção observabilidade).
 - **Retry**
-  - Lambda com retry automático; Step Functions configurado com `catch` e envio à DLQ (SQS). Backend expõe endpoint `POST /.../retry` (opcional futuro) para reprocessar lote.
+  - Lambda com retry automático; Step Functions configurado com `catch` e envio à DLQ (SQS). Backend expõe endpoint `POST /api/v2/listings/media/uploads/retry` que sempre cria um novo `listing_media_jobs` e reaproveita os objetos brutos existentes.
 
 ## 9. Observabilidade
 - **Tracing**: usar `utils.GenerateTracer` nos métodos públicos do `media_processing_service`; propagar `trace_id` para mensagens SQS (atributo `Traceparent`).
-- **Métricas**
-  - Counter `media_batches_created_total` por status listado.
-  - Histogram `media_processing_duration_seconds` (start `RECEIVED` → `READY`).
-  - Gauge `media_processing_inflight_jobs` (quantidade em `PROCESSING`).
-  - Expor métricas de erro para DLQ (`media_processing_dlq_messages_total`).
+- **Métricas** (todas obrigatórias)
+  - Counter `media_batches_created_total{status="PENDING_UPLOAD|RECEIVED|PROCESSING|READY|FAILED"}`.
+  - Counter `media_batches_failed_total` (incrementa a cada batch que termina com `FAILED`).
+  - Counter `media_reprocess_requests_total` (incrementa a cada chamada aceita em `/uploads/retry`).
+  - Histogram `media_processing_duration_seconds` (tempo entre `RECEIVED` e `READY`).
+  - Gauge `media_processing_inflight_jobs` (batches com status `PROCESSING`).
+  - Counter `media_processing_dlq_messages_total` (mensagens redirecionadas para DLQ).
+  - Counter `media_processing_callback_errors_total` (falhas ao aplicar callback no backend).
 - **Logs**: chaves padrão (`listing_id`, `batch_id`, `job_id`, `stage`). Nível `Error` somente infraestrutura (S3/SQS/MediaConvert). Regra de span error no catch.
 - **Alertas**: se `media_processing_duration_seconds` p95 > 10 min ou `FAILED` > 0 nos últimos 15 min, disparar alerta.
 

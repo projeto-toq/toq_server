@@ -6,13 +6,16 @@
 
 ## 🎯 Solicitação
 
-É necessário que o admin tenha 1 novo endpoint:
-- para listar todas as rotas existentes no sistema. Ele será usado pelo frontend para popular a criação de permissionamento de usuários. veja como é o seed data/base_permissions.csv. o resposta do endpoint deve ter o dado para o campo `action`.
+É necessário implementar a funcionalidade de processamento de fotos para listings no TOQ Server Go, conforme descrito no documento `media_processing_guide.md`. Este documento foi discutido com o time de frontend e agora precisamos transformar os requisitos em um plano de implementação detalhado.
+Um draft de plano de implementação foi criado em `plano media implementation.md`.
 
 
 Assim:
-1. Analise o código atual model, service, handler, repository, dto, converter relacionado ao listing e identifique a melhor forma de implementar a mudança.
-2. Proponha um plano detalhado de implementação, incluindo:
+1. Analise o código atual model, service, handler, repository, dto, converter do projeto e identifique a melhor forma de implementar a mudança.
+   1.1. `media_processing_guide.md` pode ser alterado se necessário para melhor entendimento.
+   1.2. `plano media implementation.md` pode ser usado como base para o planejamento, mas se necessário pode ser totalmente alterado para atender a melhorias.
+   1.3. `media_processing_infra_requirements.md` deve ser usado como referência para requisitos de infraestrutura, mas pode ser atualizado se necessário.
+2. Proponha um plano detalhado de implementação, atualizando o `plano media implementation.md`, incluindo:
    - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
    - Code Skeletons: esqueletos para cada arquivo novo/alterado (handlers, services, repositories, DTOs, entities, converters) conforme templates da Seção 8 do guia.
    - Estrutura de Diretórios: organização final seguindo a Regra de Espelhamento (Seção 2.1 do guia).
@@ -20,7 +23,7 @@ Assim:
    - Checklist de Conformidade: validação contra seções específicas do guia.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
 4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os listings serão apagados.
-5. verifique nomes coerentes e com o padrão do projeto, em ingles
+5. Como será um plano grande, ajuste `plano media implementation.md` com etapas claras e segmentadas, permitindo a implementação em fases.
 
 ---
 

@@ -2,73 +2,80 @@
 
 Este é o guia único do projeto. Aqui você encontra: arquitetura (hexagonal), estrutura de pastas, bootstrap, injeção de dependências, padrões por camada (handlers/DTOs, services, repositórios com converters, workers), erros/observabilidade (logging/tracing), transações e checklists de refatoração/PR.
 
-Sumário
-- 1. Arquitetura do projeto
-- 2. Estrutura de pastas
-- 3. Bootstrapping e ciclo de vida
-- 4. Injeção de dependências (Factory Pattern)
-- 5. Princípios essenciais
-- 6. Middleware HTTP (referência)
-- 7. Padrões por camada
-  - 7.1 Services (métodos públicos)
-  - 7.2 Services (métodos privados)
-  - 7.3 Repositórios (adapters)
-  - 7.4 Handlers HTTP
-  - 7.5 Workers/Go routines
-- 8. Padrões de Documentação
-  - 8.1 Princípios Gerais
-  - 8.2 Handlers (HTTP Left Adapters)
-  - 8.3 DTOs (Data Transfer Objects)
-  - 8.4 Services (Core Business Logic)
-  - 8.5 Repositories (Right Adapters)
-  - 8.6 Entities e Converters
-  - 8.7 Models (Domain)
-  - 8.8 Helpers e Utils
-  - 8.9 Factories
-  - 8.10 Checklist de Documentação
-  - 8.11 Ferramentas e Automação
-- 9. Marcação de erro no span
-- 10. Nomenclatura e campos dos logs
-- 11. Propagação de erros (detalhado)
-- 12. Organização de interfaces e arquivos
-- 13. Padrão para análise/refatoração
-- 14. Anti‑padrões a evitar
-- 15. Checklist de PR (observabilidade)
-- 16. Exemplos rápidos
-- 17. Referências
-
-## 1. Arquitetura do projeto
-
-- Estilo: Arquitetura Hexagonal (Ports & Adapters).
-- Fluxo: Handlers (Left) → Services (Core) → Repositórios/Providers (Right Adapters).
-- Responsabilidades:
-  - Handlers: borda HTTP. Convertem DTOs ⇄ domínio; chamam Services; serializam resultado/erros.
-  - Services: regras de negócio e orquestração; transações; mapeiam erros de infra → domínio; sem HTTP.
-  - Right Adapters: implementam Ports (repositórios, e-mail, SMS, S3 etc.); fazem I/O; retornam erros “puros”.
-  - Ports: interfaces do domínio (left/right). Mantêm o core desacoplado de frameworks/vendors.
-
 ## 2. Estrutura de pastas
 
-- cmd/ — Entrypoints (ex.: `toq_server.go`).
-- internal/
-  - adapter/
-    - left/http/ — Handlers, middlewares, serialização de erro.
-      - handlers/admin_handlers/ — um arquivo por endpoint admin, mantendo handlers curtos e focados.
-    - right/mysql/ — Repositórios MySQL (implementações de Ports).
-    - right/* — Providers externos (aws_s3, sms, email, fcm, ...).
-  - core/
-    - config/ — Bootstrap (fases 01–08), lifecycle, telemetry, HTTP server.
-    - factory/ — Abstract Factory para criar adapters/handlers.
-    - port/ — Ports (interfaces) left/right (HTTP e repositórios/providers).
-    - service/ — Services; um arquivo por caso de uso/método público (OBRIGATÓRIO).
-    - model/ — Modelos de domínio (interfaces e structs).
-    - utils/ — Tracing, errors, converters, validators, etc.
-    - events/, go_routines/ — Barramento e rotinas de sistema.
-  - templates/ — Auxiliares (se houver).
-- docs/ — Este guia, Swagger, outras docs.
-- configs/ — `env.yaml`, credenciais de dev.
-- Observabilidade — `grafana/`, `otel-collector-config.yaml`, `prometheus.yml`.
-- scripts/ — SQL e utilitários de setup em dev.
+**Leitura obrigatória:** a árvore completa (todos os diretórios/arquivos, incluindo itens ocultos) está em `docs/project_tree_full.txt`. Esse arquivo deve ser consultado antes de criar novos adapters/ports ou ajustar serviços para garantir que a estrutura física permaneça alinhada às regras deste guia. Para atualizar a árvore sempre gere novamente a partir da raiz do repositório:
+
+```bash
+tree -a --charset=ascii > docs/project_tree_full.txt
+```
+
+> O guia mantém apenas o resumo abaixo para permanecer leve; todo o detalhamento fino mora no arquivo dedicado.
+├── deploy/
+│   └── nginx/
+├── docs/
+│   ├── observability/
+│   ├── refactors/
+│   ├── security/
+│   └── toq_server_go_guide.md
+├── grafana/
+│   ├── dashboard-files/
+│   ├── dashboard-files_backup_20251104_174901/
+│   ├── dashboards/
+│   └── datasources/
+├── internal/
+│   ├── adapter/
+│   │   ├── left/
+│   │   │   └── http/
+│   │   └── right/
+│   │       ├── aws_s3/
+│   │       ├── cep/
+├── internal/
+│   │       ├── cnpj/
+│   │       ├── cpf/
+│   │       ├── email/
+│   │       ├── fcm/
+│   │       ├── mysql/
+│   │       ├── prometheus/
+│   │       └── sms/
+│   └── core/
+│       ├── cache/
+│       ├── config/
+│       ├── derrors/
+│       ├── events/
+│       ├── factory/
+│       ├── go_routines/
+│       ├── model/
+│       ├── port/
+│       ├── service/
+│       ├── templates/
+│       └── utils/
+├── logs/
+├── scripts/
+├── tempo/
+├── toq v2.mwb
+└── toq v2.mwb.bak
+```
+
+Principais diretórios (descrição rápida para navegação):
+
+- `cmd/` — Entrypoints do binário Go (ex.: `toq_server.go`).
+- `internal/adapter/left/http/` — Handlers, middlewares e serialização de erro (`handlers/admin_handlers/` mantém um arquivo por endpoint admin).
+- `internal/adapter/right/mysql/` — Repositórios MySQL que implementam os Ports; demais subpastas right/* mapeiam providers externos (aws_s3, sms, email, fcm etc.).
+- `internal/core/config/` — Bootstrap completo (fases 01–08), lifecycle manager, telemetry e servidor HTTP.
+- `internal/core/factory/` — Abstract Factory responsável por montar adapters, services e handlers.
+- `internal/core/port/` — Ports (interfaces) left/right para HTTP e repositórios/providers.
+- `internal/core/service/` — Services com obrigatoriedade de “um método público por arquivo”.
+- `internal/core/model/` — Modelos de domínio (interfaces/structs) desacoplados de HTTP ou DB.
+- `internal/core/utils/` — Utilitários (tracing, errors, validators, conversores, logger, etc.).
+- `internal/core/events/` e `internal/core/go_routines/` — Barramento de eventos e rotinas internas do sistema.
+- `docs/` — Documentação oficial (este guia, Swagger, guias de mídia, segurança, observabilidade).
+- `configs/` — Configurações de ambiente (`env.yaml`), credenciais de dev e `security/` com políticas auxiliares.
+- `grafana/`, `prometheus.yml`, `loki-config.yaml`, `tempo/` — Stack de observabilidade completa (dashboards, datasources e coletores).
+- `deploy/nginx/` — Snippets e arquivos de configuração Nginx para publicação.
+- `data/` — CSVs seed para permissões, calendários, complexos, catálogos etc.
+- `scripts/` — SQL e utilitários de setup em ambientes de desenvolvimento.
+- `bin/` e `logs/` — Saídas de build e logs locais do servidor.
 
 Observação: modelos de domínio ficam em `internal/core/model/*`. Não importar pacotes HTTP em modelos.
 
