@@ -81,7 +81,7 @@ Configurações comuns:
 
 ## 2. Banco de Dados — Especificações para DBA
 
-As alterações devem ser aplicadas no schema `toq_server`. Segue DDL sugerida (ajustar tipos conforme padrão do cluster):
+As alterações devem ser aplicadas no schema `toq_server`. Segue DDL sugerida (ajustar tipos conforme padrão do cluster). Conforme alinhado com o time de auditoria, campos `created_by`, `updated_by`, `deleted_by`, `created_at`, `updated_at` e `deleted_at` foram removidos de todas as tabelas abaixo sempre que eram utilizados apenas para rastreabilidade. Mantivemos somente `deleted_at` em `listing_media_batches` porque ele é necessário para o fluxo de soft delete/controlar housekeeping futuro.
 
 ### 2.1 Tabela `listing_media_batches`
 ```sql
@@ -98,9 +98,6 @@ CREATE TABLE listing_media_batches (
   error_code VARCHAR(50) NULL,
   error_detail TEXT NULL,
   deleted_at DATETIME(6) NULL,
-  deleted_by BIGINT UNSIGNED NULL,
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (id),
   KEY idx_listing_status (listing_id, status),
   KEY idx_listing_recent (listing_id, id DESC),
@@ -127,8 +124,6 @@ CREATE TABLE listing_media_assets (
   title VARCHAR(255) NULL,
   sequence INT UNSIGNED NULL,
   variant_metadata_json JSON NULL,
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (id),
   UNIQUE KEY uk_batch_sequence (batch_id, sequence),
   KEY idx_batch_type (batch_id, asset_type),
@@ -148,8 +143,6 @@ CREATE TABLE listing_media_jobs (
   output_payload_json JSON NULL,
   started_at DATETIME(6) NULL,
   finished_at DATETIME(6) NULL,
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (id),
   KEY idx_batch_job (batch_id, created_at DESC),
   CONSTRAINT fk_jobs_batch FOREIGN KEY (batch_id) REFERENCES listing_media_batches(id) ON DELETE CASCADE
@@ -167,6 +160,11 @@ CREATE TABLE listing_media_jobs (
 - **Backend** aguarda confirmação de provisionamento AWS + migração SQL antes de habilitar rotas.
 - **Cloud Admin** deve fornecer outputs (ARNs de Step Functions, filas, roles) para parametrizar `env.yaml`.
 - **DBA** deve comunicar janela de manutenção e confirmar criação em sandbox/homolog antes de produção.
+
+## 4. Housekeeping & Limpeza de Mídias (Entrega Futuras)
+- **Objetivo:** remover fisicamente objetos `raw/processed/zip` após o tempo de retenção e processar lotes marcados com `deleted_at`. Esta automação **não** faz parte do escopo imediato.
+- **Infra necessária:** job dedicado (Lambda agendada, Step Functions ou ECS Fargate) que consuma lista de lotes elegíveis via endpoint interno. O job deve ter permissões restritas em `toq-listing-medias` e em `listing_media_*` para atualizar flags de limpeza.
+- **Ações pendentes:** Cloud/Admin definir arquitetura e custos; Backend expor API de housekeeping na fase correspondente. Até lá, nenhum componente deve remover objetos automaticamente.
 
 ---
 Para dúvidas ou alterações, registrar comentários diretamente neste arquivo e sincronizar com o time de backend responsável pelo TOQ Server.

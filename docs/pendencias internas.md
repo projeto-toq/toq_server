@@ -32,3 +32,5 @@
 - tem que haver uso de audit no login/bloqueio/desbloquio de usuário
 - audit está otimizado?
 - criar endpoint para que o proprietário possa fazer upload da planta da casa em construção de um listing, evitando assim o passo de fotos
+- incluir complex no endereço do listing
+- alterar o endpoint de criação de listing, incluíndo os campos opcionais a serem preenchido de acordo com o propertytype

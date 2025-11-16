@@ -21,9 +21,9 @@
   - `MediaProcessingJob`: metadados de execução assíncrona (`BatchID`, `ExternalJobID` do Step Functions, timestamps, mensagens de erro).
 - **Modelagem física proposta**
   - `listing_media_batches`
-    - Colunas chave: `id`, `listing_id`, `photographer_user_id`, `status`, `upload_manifest_json`, `processing_metadata_json`, `received_at`, `processing_started_at`, `processing_finished_at`, `error_code`, `error_detail`, `deleted_at`, `deleted_by`.
+    - Colunas chave: `id`, `listing_id`, `photographer_user_id`, `status`, `upload_manifest_json`, `processing_metadata_json`, `received_at`, `processing_started_at`, `processing_finished_at`, `error_code`, `error_detail`, `deleted_at`.
     - Índices: (`listing_id`, `id` DESC) para recuperar o lote mais recente; `status` para dashboards/observabilidade.
-    - Serviço permite múltiplos lotes ativos por listing; soft delete (`deleted_at`, `deleted_by`) remove lotes obsoletos da UI sem perder histórico para auditoria ou reprocessamento.
+    - Serviço permite múltiplos lotes ativos por listing; soft delete (`deleted_at`) remove lotes obsoletos da UI sem perder histórico para auditoria ou reprocessamento.
   - `listing_media_assets`
     - Colunas: `id`, `batch_id`, `asset_type`, `orientation`, `source_key`, `processed_key`, `thumbnail_key`, `checksum_sha256`, `content_type`, `bytes`, `resolution`, `duration_seconds`, `title`, `sequence`, `variant_metadata_json` (metadados adicionais como "tipo de planta" ou "render diurno/noturno").
     - Constraint de unicidade (`batch_id`, `sequence`) garante ordenação determinística do carrossel; `title` fica armazenado para exibição.
@@ -292,7 +292,7 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
 - **Idempotência**: este fluxo **não** suporta `Idempotency-Key`. A prevenção de duplicidade é garantida por regras de status (`PENDING_UPLOAD` → `RECEIVED` → `PROCESSING` → `READY|FAILED`) e por validações de manifesto (`batchId` obrigatório em todas as operações).
 
 ## 8. Orquestração Assíncrona & Estados
-- **Estados do lote**
+- **Estados do lote** *(confirmado em 16/11/2025 com plataforma + frontend; não haverá novos estados no MVP)*
   - `PENDING_UPLOAD`: URLs geradas, aguardando confirmação.
   - `RECEIVED`: todos os arquivos confirmados.
   - `PROCESSING`: job Step Functions em execução.
@@ -333,6 +333,11 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
 4. Provisionar pipeline AWS (Infra as Code) e integração Step Functions ↔ callback HTTP.
 5. Atualizar `docs/swagger.yaml` com novos endpoints e esquemas.
 6. Ajustar frontend conforme contrato definido neste guia.
+
+## 12. Housekeeping & Limpeza de Mídias (futuro)
+- **Escopo confirmado:** a exclusão física/expiração de mídias antigas não fará parte desta entrega. Os serviços atuais devem apenas registrar `deleted_at` (soft delete) e manter os objetos brutos/processados disponíveis para reprocessamentos.
+- **Job dedicado:** será criado futuramente um worker/batch dedicado para limpeza (permanently delete) com base em políticas de retenção e sinalizações de soft delete. O job consumirá uma API interna que listará lotes elegíveis.
+- **Dependências:** Cloud/Admin devem provisionar recursos necessários (ex.: Lambda Scheduler ou ECS Fargate) quando o backlog autorizar. Até lá, nenhum componente deve remover objetos automaticamente.
 
 ---
 Este documento é ponto de partida oficial para desenvolvimento paralelo frontend/backend. Qualquer alteração de contrato deve ser negociada e refletida aqui antes da implementação.

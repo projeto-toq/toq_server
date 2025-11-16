@@ -31,6 +31,7 @@ import (
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
@@ -43,40 +44,42 @@ import (
 )
 
 type config struct {
-	env                    globalmodel.Environment
-	db                     *sql.DB
-	database               *mysqladapter.Database
-	httpServer             *http.Server
-	ginRouter              *gin.Engine
-	httpHandlers           factory.HTTPHandlers
-	context                context.Context
-	cache                  cache.CacheInterface
-	activityTracker        *goroutines.ActivityTracker
-	tempBlockCleaner       *goroutines.TempBlockCleanerWorker
-	sessionService         sessionservice.Service
-	wg                     *sync.WaitGroup
-	readiness              bool
-	globalService          globalservice.GlobalServiceInterface
-	userService            userservices.UserServiceInterface
-	listingService         listingservices.ListingServiceInterface
-	complexService         complexservices.ComplexServiceInterface
-	permissionService      permissionservices.PermissionServiceInterface
-	holidayService         holidayservices.HolidayServiceInterface
-	scheduleService        scheduleservices.ScheduleServiceInterface
-	photoSessionService    photosessionservices.PhotoSessionServiceInterface
-	metricsAdapter         *factory.MetricsAdapter
-	cep                    cepport.CEPPortInterface
-	cpf                    cpfport.CPFPortInterface
-	cnpj                   cnpjport.CNPJPortInterface
-	email                  emailport.EmailPortInterface
-	sms                    smsport.SMSPortInterface
-	cloudStorage           storageport.CloudStoragePortInterface
-	firebaseCloudMessaging fcmport.FCMPortInterface
-	repositoryAdapters     *factory.RepositoryAdapters
-	adapterFactory         factory.AdapterFactory
-	hmacValidator          *hmacauth.Validator
-	runtimeEnvironment     string
-	workersEnabled         bool
+	env                     globalmodel.Environment
+	db                      *sql.DB
+	database                *mysqladapter.Database
+	httpServer              *http.Server
+	ginRouter               *gin.Engine
+	httpHandlers            factory.HTTPHandlers
+	context                 context.Context
+	cache                   cache.CacheInterface
+	activityTracker         *goroutines.ActivityTracker
+	tempBlockCleaner        *goroutines.TempBlockCleanerWorker
+	sessionService          sessionservice.Service
+	wg                      *sync.WaitGroup
+	readiness               bool
+	globalService           globalservice.GlobalServiceInterface
+	userService             userservices.UserServiceInterface
+	listingService          listingservices.ListingServiceInterface
+	complexService          complexservices.ComplexServiceInterface
+	permissionService       permissionservices.PermissionServiceInterface
+	holidayService          holidayservices.HolidayServiceInterface
+	scheduleService         scheduleservices.ScheduleServiceInterface
+	photoSessionService     photosessionservices.PhotoSessionServiceInterface
+	mediaProcessingService  mediaprocessingservice.MediaProcessingServiceInterface
+	metricsAdapter          *factory.MetricsAdapter
+	cep                     cepport.CEPPortInterface
+	cpf                     cpfport.CPFPortInterface
+	cnpj                    cnpjport.CNPJPortInterface
+	email                   emailport.EmailPortInterface
+	sms                     smsport.SMSPortInterface
+	cloudStorage            storageport.CloudStoragePortInterface
+	firebaseCloudMessaging  fcmport.FCMPortInterface
+	repositoryAdapters      *factory.RepositoryAdapters
+	externalServiceAdapters *factory.ExternalServiceAdapters
+	adapterFactory          factory.AdapterFactory
+	hmacValidator           *hmacauth.Validator
+	runtimeEnvironment      string
+	workersEnabled          bool
 }
 
 type ConfigInterface interface {
@@ -93,6 +96,7 @@ type ConfigInterface interface {
 	InitComplexHandler()
 	InitHolidayService()
 	InitScheduleService()
+	InitMediaProcessingService()
 	InitPhotoSessionService()
 	InitListingHandler()
 	InitPermissionHandler()
@@ -231,6 +235,8 @@ func (c *config) assignExternalServiceAdapters(external factory.ExternalServiceA
 	c.email = external.Email
 	c.sms = external.SMS
 	c.cloudStorage = external.CloudStorage
+	// Store the full struct to access media processing adapters
+	c.externalServiceAdapters = &external
 }
 
 // initializeServices inicializa todos os serviços do sistema
@@ -504,6 +510,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.holidayService,
 		c.permissionService,
 		c.photoSessionService,
+		c.mediaProcessingService,
 		c.metricsAdapter,
 		c.hmacValidator,
 	)

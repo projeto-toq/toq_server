@@ -142,7 +142,34 @@ type Environment struct {
 			AccessKeyID     string `yaml:"access_key_id"`
 			SecretAccessKey string `yaml:"secret_access_key"`
 		} `yaml:"reader"`
+		SignedURL struct {
+			UploadTTLSeconds   int `yaml:"upload_ttl_seconds"`
+			DownloadTTLSeconds int `yaml:"download_ttl_seconds"`
+		} `yaml:"signed_url"`
 	}
+	MediaProcessing struct {
+		Storage struct {
+			UploadURLTTLSeconds   int `yaml:"upload_url_ttl_seconds"`
+			DownloadURLTTLSeconds int `yaml:"download_url_ttl_seconds"`
+		} `yaml:"storage"`
+		Queue struct {
+			URL      string `yaml:"url"`
+			RetryURL string `yaml:"retry_url"`
+			Region   string `yaml:"region"`
+		} `yaml:"queue"`
+		Callback struct {
+			SharedSecret string `yaml:"shared_secret"`
+		} `yaml:"callback"`
+		Limits struct {
+			MaxFilesPerBatch    int      `yaml:"max_files_per_batch"`
+			MaxTotalBytes       int64    `yaml:"max_total_bytes"`
+			MaxFileBytes        int64    `yaml:"max_file_bytes"`
+			AllowedContentTypes []string `yaml:"allowed_content_types"`
+		} `yaml:"limits"`
+		Features struct {
+			AllowOwnerProjectUploads bool `yaml:"allow_owner_project_uploads"`
+		} `yaml:"features"`
+	} `yaml:"media_processing"`
 	GCS struct {
 		ProjectID     string `yaml:"project_id"`
 		AdminSAEmail  string `yaml:"admin_sa_email"`

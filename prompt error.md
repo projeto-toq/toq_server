@@ -6,11 +6,21 @@
 
 ## 🎯 Problema / Solicitação
 
-Após a refatoraçÃo onde repository responde sql.ErrNoRows, foi identificado que o endpoint de confirmaçÃo de troca de email estÃ falhando com erro 500 quando o usuÃrio nÃo Ã encontrado. Logs de erro:
-{"time":"2025-11-12T16:15:57.239971148Z","level":"ERROR","msg":"user.confirm_email_change.stage_error","request_id":"b7a2173a-eb7e-441a-9346-ad84ff927e0e","stage":"update_user","err":"sql: no rows in result set"}
-{"time":"2025-11-12T16:15:57.244005132Z","level":"ERROR","msg":"HTTP Error","request_id":"b7a2173a-eb7e-441a-9346-ad84ff927e0e","request_id":"b7a2173a-eb7e-441a-9346-ad84ff927e0e","method":"POST","path":"/api/v2/user/email/confirm","status":500,"duration":12936655,"size":61,"client_ip":"79.55.106.238","user_agent":"PostmanRuntime/7.50.0","user_id":6,"user_role_id":6,"function":"github.com/projeto-toq/toq_server/internal/core/utils.InternalError","file":"/codigos/go_code/toq_server/internal/core/utils/http_errors.go","line":248,"stack":["github.com/projeto-toq/toq_server/internal/core/utils.InternalError (http_errors.go:248)"],"error_code":500,"error_message":"Failed to update user","errors":["HTTP 500: Failed to update user"]}
+Durante a criação de um novo listing, através do endpoint POST /listings, é executada um verificação em func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input CreateListingInput) (listing listingmodel.ListingInterface, err error) para garantir que o usuário não possua outro listing ativo para o mesmo imóvel. No entanto existe um erro nesta verificação pois a checagem é feita apenas no zipCode e number, ignorando que no mesmo zipCode/number se for um apartamento, podem haver múltiplos listings ativos em diferentes unidades.
+Assim, a tabela abaixo, lista os tipos de imóveis e os campos que devem ser considerados na verificação de unicidade do listing ativo para o mesmo imóvel.
 
-sql.ErrnoRows deveria ser tratado pelo service para determinar se é erro ou não.
+ComplexType	Tipos	código	bin		Complex		Listing				
+Apartment	Apartamento	1	 1 		zipCode	number			unit_tower	unit_floor	unit_number
+Commercial Store	Loja	2	 10 		zipCode	number			unit_number		
+Commercial floor	Laje	4	 100 		zipCode	number			unit_tower	unit_floor	
+Suite	Sala	8	 1.000 		zipCode	number			unit_tower	unit_floor	unit_number
+House	Casa	16	 10.000 				zipCode	number			
+Off-plan House	Casa na Planta	32	 100.000 				zipCode	number			
+Residencial Land	Terreno Residencial	64	 1.000.000 				zipCode	number	land_block	Land_lot	
+Commercial Land	Terreno Comercial	128	 10.000.000 				zipCode	number			
+Building	Prédio	256	 100.000.000 				zipCode	number			
+Warehouse	Galpão	512	 1.000.000.000 				zipCode	number			
+
 
 Assim:
 1. Analise o código onde o erro ocorreu e identifique a causa raiz do problema.

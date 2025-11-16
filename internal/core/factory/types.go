@@ -19,7 +19,9 @@ import (
 	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
 	emailport "github.com/projeto-toq/toq_server/internal/core/port/right/email"
 	fcmport "github.com/projeto-toq/toq_server/internal/core/port/right/fcm"
+	mediaprocessingcallbackport "github.com/projeto-toq/toq_server/internal/core/port/right/functions/mediaprocessingcallback"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
+	mediaprocessingqueue "github.com/projeto-toq/toq_server/internal/core/port/right/queue/mediaprocessingqueue"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 
@@ -28,6 +30,7 @@ import (
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/mediaprocessingrepository"
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
 	photosessionrepo "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	schedulerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/schedule_repository"
@@ -45,11 +48,14 @@ type ValidationAdapters struct {
 
 // ExternalServiceAdapters agrupa adapters de serviços externos
 type ExternalServiceAdapters struct {
-	FCM          fcmport.FCMPortInterface
-	Email        emailport.EmailPortInterface
-	SMS          smsport.SMSPortInterface
-	CloudStorage storageport.CloudStoragePortInterface
-	CloseFunc    func() error // Função para cleanup de recursos
+	FCM                     fcmport.FCMPortInterface
+	Email                   emailport.EmailPortInterface
+	SMS                     smsport.SMSPortInterface
+	CloudStorage            storageport.CloudStoragePortInterface
+	ListingMediaStorage     storageport.ListingMediaStoragePort
+	MediaProcessingQueue    mediaprocessingqueue.QueuePortInterface
+	MediaProcessingCallback mediaprocessingcallbackport.CallbackPortInterface
+	CloseFunc               func() error // Função para cleanup de recursos
 }
 
 // StorageAdapters agrupa adapters de armazenamento
@@ -61,16 +67,17 @@ type StorageAdapters struct {
 
 // RepositoryAdapters agrupa todos os repositórios MySQL
 type RepositoryAdapters struct {
-	User         userrepoport.UserRepoPortInterface
-	Global       globalrepoport.GlobalRepoPortInterface
-	Complex      complexrepoport.ComplexRepoPortInterface
-	Listing      listingrepoport.ListingRepoPortInterface
-	Holiday      holidayrepository.HolidayRepositoryInterface
-	Schedule     schedulerepository.ScheduleRepositoryInterface
-	Visit        visitrepository.VisitRepositoryInterface
-	PhotoSession photosessionrepo.PhotoSessionRepositoryInterface
-	Session      sessionrepoport.SessionRepoPortInterface
-	Permission   permissionrepository.PermissionRepositoryInterface
+	User            userrepoport.UserRepoPortInterface
+	Global          globalrepoport.GlobalRepoPortInterface
+	Complex         complexrepoport.ComplexRepoPortInterface
+	Listing         listingrepoport.ListingRepoPortInterface
+	MediaProcessing mediaprocessingrepository.RepositoryInterface
+	Holiday         holidayrepository.HolidayRepositoryInterface
+	Schedule        schedulerepository.ScheduleRepositoryInterface
+	Visit           visitrepository.VisitRepositoryInterface
+	PhotoSession    photosessionrepo.PhotoSessionRepositoryInterface
+	Session         sessionrepoport.SessionRepoPortInterface
+	Permission      permissionrepository.PermissionRepositoryInterface
 }
 
 // HTTPHandlers agrupa todos os handlers HTTP

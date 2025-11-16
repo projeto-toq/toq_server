@@ -12,6 +12,7 @@ import (
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
@@ -54,6 +55,7 @@ type AdapterFactory interface {
 		holidayService holidayservices.HolidayServiceInterface,
 		permissionService permissionservices.PermissionServiceInterface,
 		photoSessionService photosessionservices.PhotoSessionServiceInterface,
+		mediaProcessingService mediaprocessingservice.MediaProcessingServiceInterface,
 		metricsAdapter *MetricsAdapter,
 		hmacValidator *hmacauth.Validator,
 	) HTTPHandlers

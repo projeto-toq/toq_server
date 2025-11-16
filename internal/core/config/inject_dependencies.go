@@ -12,6 +12,7 @@ import (
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
@@ -287,6 +288,66 @@ func (c *config) InitScheduleService() {
 		c.globalService,
 		serviceConfig,
 	)
+}
+
+func (c *config) InitMediaProcessingService() {
+	slog.Debug("Initializing Media Processing Service")
+
+	if c.repositoryAdapters == nil || c.repositoryAdapters.MediaProcessing == nil {
+		slog.Warn("MediaProcessing repository not available - service will be nil")
+		c.mediaProcessingService = nil
+		return
+	}
+
+	if c.repositoryAdapters.Listing == nil {
+		slog.Error("repositoryAdapters.Listing is nil")
+		return
+	}
+
+	if c.globalService == nil {
+		slog.Error("globalService is nil")
+		return
+	}
+
+	if c.externalServiceAdapters == nil {
+		slog.Warn("externalServiceAdapters not available - service will be nil")
+		c.mediaProcessingService = nil
+		return
+	}
+
+	if c.externalServiceAdapters.ListingMediaStorage == nil {
+		slog.Warn("ListingMediaStorage not available - service will be nil")
+		c.mediaProcessingService = nil
+		return
+	}
+
+	if c.externalServiceAdapters.MediaProcessingQueue == nil {
+		slog.Warn("MediaProcessingQueue not available - service will be nil")
+		c.mediaProcessingService = nil
+		return
+	}
+
+	// Create service configuration from environment
+	cfg := mediaprocessingservice.NewConfigFromEnvironment(&c.env)
+
+	// Instantiate the service with all dependencies
+	service, err := mediaprocessingservice.NewMediaProcessingService(
+		c.repositoryAdapters.MediaProcessing,
+		c.repositoryAdapters.Listing,
+		c.globalService,
+		c.externalServiceAdapters.ListingMediaStorage,
+		c.externalServiceAdapters.MediaProcessingQueue,
+		cfg,
+	)
+
+	if err != nil {
+		slog.Error("Failed to create MediaProcessingService", "error", err)
+		c.mediaProcessingService = nil
+		return
+	}
+
+	c.mediaProcessingService = service
+	slog.Info("✅ MediaProcessing service initialized successfully")
 }
 
 func (c *config) InitListingHandler() {

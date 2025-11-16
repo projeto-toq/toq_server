@@ -37,6 +37,8 @@ import (
 
 	// Storage adapters - AWS S3 (substituindo GCS)
 	s3adapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws_s3"
+	sqsmediaprocessingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws_sqs/media_processing"
+	stepfunctionscallbackadapter "github.com/projeto-toq/toq_server/internal/adapter/right/step_functions"
 
 	// Storage adapters
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
@@ -58,11 +60,14 @@ import (
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservice "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservice "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
+	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservice "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	scheduleservice "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
+
+	mediaprocessingqueue "github.com/projeto-toq/toq_server/internal/core/port/right/queue/mediaprocessingqueue"
 )
 
 // ConcreteAdapterFactory implementa a interface AdapterFactory
@@ -142,14 +147,28 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 		// Não retorna erro, permite que a aplicação continue sem S3
 	}
 
+	listingMediaStorage := s3adapter.NewListingMediaStorageAdapter(s3, env)
+
+	var mediaQueue mediaprocessingqueue.QueuePortInterface
+	if queueAdapter, err := sqsmediaprocessingadapter.NewMediaProcessingQueueAdapter(ctx, env); err != nil {
+		slog.Warn("failed to create media processing queue adapter", "error", err)
+	} else {
+		mediaQueue = queueAdapter
+	}
+
+	callbackAdapter := stepfunctionscallbackadapter.NewMediaProcessingCallbackAdapter(env)
+
 	slog.Info("Successfully created all external service adapters")
 
 	return ExternalServiceAdapters{
-		FCM:          fcm,
-		Email:        email,
-		SMS:          sms,
-		CloudStorage: s3,      // S3 adapter via interface CloudStorage
-		CloseFunc:    s3Close, // Função de cleanup do S3
+		FCM:                     fcm,
+		Email:                   email,
+		SMS:                     sms,
+		CloudStorage:            s3, // S3 adapter via interface CloudStorage
+		ListingMediaStorage:     listingMediaStorage,
+		MediaProcessingQueue:    mediaQueue,
+		MediaProcessingCallback: callbackAdapter,
+		CloseFunc:               s3Close, // Função de cleanup do S3
 	}, nil
 }
 
@@ -222,16 +241,17 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
-		User:         userRepo,
-		Global:       globalRepo,
-		Complex:      complexRepo,
-		Listing:      listingRepo,
-		Holiday:      holidayRepo,
-		Schedule:     scheduleRepo,
-		Visit:        visitRepo,
-		PhotoSession: photoSessionRepo,
-		Session:      sessionRepo,
-		Permission:   permissionRepo,
+		User:            userRepo,
+		Global:          globalRepo,
+		Complex:         complexRepo,
+		Listing:         listingRepo,
+		MediaProcessing: nil,
+		Holiday:         holidayRepo,
+		Schedule:        scheduleRepo,
+		Visit:           visitRepo,
+		PhotoSession:    photoSessionRepo,
+		Session:         sessionRepo,
+		Permission:      permissionRepo,
 	}, nil
 }
 
@@ -246,6 +266,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	holidayService holidayservice.HolidayServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
 	photoSessionService photosessionservice.PhotoSessionServiceInterface,
+	mediaProcessingService mediaprocessingservice.MediaProcessingServiceInterface,
 	metricsAdapter *MetricsAdapter,
 	hmacValidator *hmacauth.Validator,
 ) HTTPHandlers {
@@ -273,10 +294,12 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	)
 
 	// Create listing handler using the adapter
+	// Note: MediaProcessingService may be nil if dependencies not available
 	listingHandlerPort := listinghandlers.NewListingHandlerAdapter(
 		listingService,
 		globalService,
 		complexService,
+		mediaProcessingService,
 	)
 
 	listingHandler, ok := listingHandlerPort.(*listinghandlers.ListingHandler)

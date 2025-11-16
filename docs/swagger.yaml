@@ -762,6 +762,48 @@ definitions:
       name:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.BatchAssetStatusResponse:
+    properties:
+      assetType:
+        description: AssetType matches the original assetType
+        example: PHOTO_VERTICAL
+        type: string
+      clientId:
+        description: ClientID matches the original clientId for correlation
+        example: photo-001
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        description: Metadata contains additional asset information
+        type: object
+      processedKey:
+        description: |-
+          ProcessedKey is the S3 key where the processed file is stored
+          Empty until processing completes successfully
+        example: 123/processed/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg
+        type: string
+      rawObjectKey:
+        description: |-
+          RawObjectKey is the S3 key where the raw file is stored
+          Empty until upload is confirmed
+        example: 123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg
+        type: string
+      sequence:
+        description: Sequence matches the original sequence
+        example: 1
+        type: integer
+      thumbnailKey:
+        description: |-
+          ThumbnailKey is the S3 key where the thumbnail is stored
+          Empty until processing completes successfully
+        example: 123/processed/THUMBNAIL/2025-11-16/IMG_20231116_140530_thumb.jpg
+        type: string
+      title:
+        description: Title matches the original title
+        example: Vista frontal do imóvel
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CEPValidationResponse:
     properties:
       city:
@@ -802,6 +844,90 @@ definitions:
         type: integer
       slug:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchRequest:
+    properties:
+      batchId:
+        description: BatchID must match the batchId from CreateUploadBatch
+        example: 456
+        minimum: 1
+        type: integer
+      files:
+        description: |-
+          Files lists all successfully uploaded assets with S3 metadata
+          Must include all files from the original manifest
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompletedUploadFileRequest'
+        minItems: 1
+        type: array
+      listingId:
+        description: ListingID must match the listingId from CreateUploadBatch
+        example: 123
+        minimum: 1
+        type: integer
+    required:
+    - batchId
+    - files
+    - listingId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchResponse:
+    properties:
+      batchId:
+        description: BatchID confirms the batch
+        example: 456
+        type: integer
+      estimatedDurationSeconds:
+        description: |-
+          EstimatedDurationSeconds provides a rough estimate of processing time
+          Actual duration depends on file count, sizes, and pipeline load
+        example: 300
+        type: integer
+      jobId:
+        description: |-
+          JobID is the unique identifier for the async processing job
+          Used for monitoring and troubleshooting
+        example: 789
+        type: integer
+      listingId:
+        description: ListingID confirms the listing
+        example: 123
+        type: integer
+      status:
+        description: Status indicates the current batch status (typically RECEIVED)
+        example: RECEIVED
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompletedUploadFileRequest:
+    properties:
+      bytes:
+        description: Bytes is the confirmed file size after upload (should match original)
+        example: 2457600
+        minimum: 1
+        type: integer
+      checksum:
+        description: Checksum is the SHA-256 hash used for upload verification
+        example: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        type: string
+      clientId:
+        description: ClientID must match a clientId from the original CreateUploadBatch
+          request
+        example: photo-001
+        type: string
+      etag:
+        description: |-
+          ETag is the S3 ETag returned after successful upload
+          Optional but recommended for additional verification
+        example: '"5d41402abc4b2a76b9719d911017c592"'
+        type: string
+      objectKey:
+        description: ObjectKey must match the objectKey returned in CreateUploadBatch
+        example: 123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg
+        type: string
+    required:
+    - bytes
+    - checksum
+    - clientId
+    - objectKey
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse:
     properties:
@@ -995,6 +1121,150 @@ definitions:
     - endDate
     - startDate
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchFileRequest:
+    properties:
+      assetType:
+        description: |-
+          AssetType categorizes the media for processing and display
+          Allowed values: PHOTO_VERTICAL, PHOTO_HORIZONTAL, VIDEO_VERTICAL, VIDEO_HORIZONTAL,
+                          THUMBNAIL, ZIP, PROJECT_DOC, PROJECT_RENDER
+          Example: "PHOTO_VERTICAL"
+        example: PHOTO_VERTICAL
+        type: string
+      bytes:
+        description: |-
+          Bytes is the file size in bytes
+          Must be positive and not exceed the maximum file size limit
+          Example: 2457600 (2.4 MB)
+        example: 2457600
+        minimum: 1
+        type: integer
+      checksum:
+        description: |-
+          Checksum is the SHA-256 hash of the file content (hex-encoded)
+          Used to verify upload integrity via S3 HeadObject
+          Example: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        example: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        type: string
+      clientId:
+        description: |-
+          ClientID is a unique identifier assigned by the client (frontend)
+          Used to correlate upload confirmation and error messages
+          Must be unique within the batch
+          Example: "photo-001"
+        example: photo-001
+        type: string
+      contentType:
+        description: |-
+          ContentType is the MIME type of the file
+          Must be in the allowed content types list (configured in env.yaml)
+          Common values: image/jpeg, image/png, image/heic, video/mp4, video/quicktime
+          Example: "image/jpeg"
+        example: image/jpeg
+        type: string
+      filename:
+        description: |-
+          Filename is the original filename from the client device
+          Used for download metadata and logging
+          Example: "IMG_20231116_140530.jpg"
+        example: IMG_20231116_140530.jpg
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        description: |-
+          Metadata holds additional key-value pairs for processing hints
+          Optional field for future extensibility
+        type: object
+      orientation:
+        description: |-
+          Orientation specifies the intended display orientation
+          Required for photo and video types
+          Allowed values: VERTICAL, HORIZONTAL
+          Example: "VERTICAL"
+        example: VERTICAL
+        type: string
+      sequence:
+        description: |-
+          Sequence determines the display order in the listing carousel
+          Must be positive and unique within the batch
+          Example: 1
+        example: 1
+        minimum: 1
+        type: integer
+      title:
+        description: |-
+          Title is an optional user-provided caption or description
+          Displayed in the listing carousel
+          Example: "Vista frontal do imóvel"
+        example: Vista frontal do imóvel
+        type: string
+    required:
+    - assetType
+    - bytes
+    - checksum
+    - clientId
+    - contentType
+    - filename
+    - sequence
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchRequest:
+    properties:
+      batchReference:
+        description: |-
+          BatchReference helps the frontend correlate retries
+          Typically a timestamp or session identifier
+          Maximum 120 characters
+          Example: "2025-11-16T14:00Z-slot-123"
+        example: 2025-11-16T14:00Z-slot-123
+        maxLength: 120
+        type: string
+      files:
+        description: |-
+          Files enumerates every asset to upload, preserving carousel order and metadata
+          Minimum 1 file, maximum defined by environment configuration (default 60)
+          Each file must have unique clientId and sequence
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchFileRequest'
+        minItems: 1
+        type: array
+      listingId:
+        description: |-
+          ListingID identifies the listing identity receiving the batch
+          Must correspond to a listing in PENDING_PHOTO_PROCESSING status
+          Example: 123
+        example: 123
+        minimum: 1
+        type: integer
+    required:
+    - batchReference
+    - files
+    - listingId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchResponse:
+    properties:
+      batchId:
+        description: |-
+          BatchID is the unique identifier for this upload batch
+          Required for subsequent CompleteUploadBatch and status polling calls
+        example: 456
+        type: integer
+      files:
+        description: Files contains upload instructions for each asset in the manifest
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UploadInstructionResponse'
+        type: array
+      listingId:
+        description: ListingID confirms the listing receiving the uploads
+        example: 123
+        type: integer
+      uploadUrlTtlSeconds:
+        description: |-
+          UploadURLTTLSeconds indicates how long the signed URLs remain valid
+          Typically 900 seconds (15 minutes)
+        example: 900
+        type: integer
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse:
     properties:
       message:
@@ -1031,6 +1301,48 @@ definitions:
       success:
         type: boolean
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadEntryResponse:
+    properties:
+      assetType:
+        description: AssetType matches the original assetType
+        example: PHOTO_VERTICAL
+        type: string
+      clientId:
+        description: ClientID matches the original clientId for correlation
+        example: photo-001
+        type: string
+      expiresAt:
+        description: |-
+          ExpiresAt indicates when the signed URL expires
+          RFC3339 format timestamp
+        example: "2025-11-16T16:30:00Z"
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        description: Metadata contains additional asset information
+        type: object
+      previewUrl:
+        description: |-
+          PreviewURL is the pre-signed S3 URL for downloading a thumbnail/preview
+          Empty if no thumbnail was generated
+        example: https://s3.amazonaws.com/bucket/thumbnail-key?X-Amz-Algorithm=...
+        type: string
+      sequence:
+        description: Sequence matches the original sequence
+        example: 1
+        type: integer
+      title:
+        description: Title matches the original title
+        example: Vista frontal do imóvel
+        type: string
+      url:
+        description: |-
+          URL is the pre-signed S3 URL for downloading the processed file
+          Valid for the duration specified in TTLSeconds
+        example: https://s3.amazonaws.com/bucket/processed-key?X-Amz-Algorithm=...
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse:
     properties:
       code:
@@ -1055,6 +1367,50 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.BaseFeature'
         type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusRequest:
+    properties:
+      batchId:
+        description: BatchID identifies the specific batch to query
+        example: 456
+        minimum: 1
+        type: integer
+      listingId:
+        description: ListingID identifies the listing owning the batch
+        example: 123
+        minimum: 1
+        type: integer
+    required:
+    - batchId
+    - listingId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusResponse:
+    properties:
+      assets:
+        description: Assets lists all assets in the batch with their processing status
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.BatchAssetStatusResponse'
+        type: array
+      batchId:
+        description: BatchID confirms the batch
+        example: 456
+        type: integer
+      listingId:
+        description: ListingID confirms the listing
+        example: 123
+        type: integer
+      status:
+        description: |-
+          Status indicates the current batch status
+          Possible values: PENDING_UPLOAD, RECEIVED, PROCESSING, READY, FAILED
+        example: PROCESSING
+        type: string
+      statusMessage:
+        description: |-
+          StatusMessage provides human-readable status information
+          Includes error details for FAILED status
+        example: Processing assets
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetCreciUploadURLRequest:
     properties:
@@ -1287,6 +1643,50 @@ definitions:
         type: array
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest:
+    properties:
+      batchId:
+        description: |-
+          BatchID identifies the specific batch to retrieve downloads for
+          If zero, the most recent READY batch will be used
+        example: 456
+        type: integer
+      listingId:
+        description: ListingID identifies the listing owning the assets
+        example: 123
+        minimum: 1
+        type: integer
+    required:
+    - listingId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse:
+    properties:
+      batchId:
+        description: BatchID confirms the batch
+        example: 456
+        type: integer
+      downloads:
+        description: Downloads contains signed URLs for each processed asset
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadEntryResponse'
+        type: array
+      generatedAt:
+        description: |-
+          GeneratedAt indicates when the signed URLs were created
+          RFC3339 format timestamp
+        example: "2025-11-16T15:30:00Z"
+        type: string
+      listingId:
+        description: ListingID confirms the listing
+        example: 123
+        type: integer
+      ttlSeconds:
+        description: |-
+          TTLSeconds indicates how long the signed URLs remain valid
+          Typically 3600 seconds (1 hour)
+        example: 3600
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsRequest:
     properties:
@@ -2014,6 +2414,50 @@ definitions:
         example: "2025-10-24T09:00:00Z"
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchRequest:
+    properties:
+      batchId:
+        description: BatchID identifies the specific batch to retry
+        example: 456
+        minimum: 1
+        type: integer
+      listingId:
+        description: ListingID identifies the listing owning the batch
+        example: 123
+        minimum: 1
+        type: integer
+      reason:
+        description: |-
+          Reason explains why the batch is being retried
+          Used for audit logging and troubleshooting
+          Example: "Pipeline timeout - retrying with increased timeout"
+        example: Pipeline timeout - retrying with increased timeout
+        maxLength: 500
+        type: string
+    required:
+    - batchId
+    - listingId
+    - reason
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchResponse:
+    properties:
+      batchId:
+        description: BatchID confirms the batch
+        example: 456
+        type: integer
+      jobId:
+        description: JobID is the unique identifier for the new async processing job
+        example: 790
+        type: integer
+      listingId:
+        description: ListingID confirms the listing
+        example: 123
+        type: integer
+      status:
+        description: Status indicates the current batch status (typically PROCESSING)
+        example: PROCESSING
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RouteInfo:
     properties:
       action:
@@ -2379,6 +2823,46 @@ definitions:
       street:
         type: string
       zipCode:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UploadInstructionResponse:
+    properties:
+      clientId:
+        description: ClientID matches the clientId from the request for correlation
+        example: photo-001
+        type: string
+      headers:
+        additionalProperties:
+          type: string
+        description: |-
+          Headers contains required HTTP headers for the upload request
+          Typically includes Content-Type and x-amz-checksum-sha256
+        type: object
+      method:
+        description: Method is the HTTP method to use for the upload (always PUT)
+        example: PUT
+        type: string
+      objectKey:
+        description: |-
+          ObjectKey is the S3 object key where the file will be stored
+          Format: /{listingId}/raw/{assetType}/{YYYY-MM-DD}/{filename}
+          Example: "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
+        example: 123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg
+        type: string
+      sequence:
+        description: Sequence matches the sequence from the request
+        example: 1
+        type: integer
+      title:
+        description: Title matches the title from the request
+        example: Vista frontal do imóvel
+        type: string
+      uploadUrl:
+        description: |-
+          UploadURL is the pre-signed S3 URL for uploading the file
+          Valid for the duration specified in UploadURLTTLSeconds
+          Example: "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."
+        example: https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=...
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserCreateRequest:
@@ -5674,6 +6158,243 @@ paths:
       summary: Update system user data
       tags:
       - Admin Users
+  /api/v2/listings/media/downloads:
+    post:
+      consumes:
+      - application/json
+      description: Finds the most recent READY batch for a listing and generates time-limited
+        signed S3 URLs for downloading processed assets (optimized images/videos).
+        Includes preview URLs for thumbnails. Returns 204 if no READY batch exists.
+      parameters:
+      - description: Listing identification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Download URLs generated
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse'
+        "204":
+          description: No READY batch available
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get signed download URLs for processed media
+      tags:
+      - Listings Media
+  /api/v2/listings/media/status:
+    post:
+      consumes:
+      - application/json
+      description: Returns batch status (PENDING_UPLOAD/RECEIVED/PROCESSING/READY/FAILED)
+        along with asset details (titles, sequences, object keys). Used by frontend
+        to poll progress and determine when downloads are available.
+      parameters:
+      - description: Batch identification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Batch status retrieved
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Batch not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get media batch processing status
+      tags:
+      - Listings Media
+  /api/v2/listings/media/uploads:
+    post:
+      consumes:
+      - application/json
+      description: Validates permissions (photographer booking or owner for project
+        media), enforces listing status PENDING_PHOTO_PROCESSING, creates a media
+        batch and returns signed PUT URLs with required headers (Content-Type, checksum).
+        Rejects duplicates (sequence/title) and unsupported media types.
+      parameters:
+      - description: Manifest with client-side file metadata
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Batch created with signed URLs
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden - User not allowed to upload for this listing
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found or not in PENDING_PHOTO_PROCESSING
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: There is another open batch
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Request upload URLs for a listing media batch
+      tags:
+      - Listings Media
+  /api/v2/listings/media/uploads/complete:
+    post:
+      consumes:
+      - application/json
+      description: Validates S3 uploads via HEAD requests checking checksums, consolidates
+        asset titles/sequences, updates batch status to RECEIVED, registers processing
+        job and enqueues it to SQS. Returns job ID and estimated processing duration.
+      parameters:
+      - description: Upload confirmation with object keys and checksums
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Processing job enqueued
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchResponse'
+        "400":
+          description: Invalid request or checksum mismatch
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Batch not found or not in PENDING_UPLOAD
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm upload completion and start processing
+      tags:
+      - Listings Media
+  /api/v2/listings/media/uploads/retry:
+    post:
+      consumes:
+      - application/json
+      description: Accepts batches in FAILED or READY status and creates a new processing
+        job reusing existing raw S3 objects. Updates batch status to PROCESSING and
+        enqueues the job to SQS with retry flag. Always returns 202 with new job ID.
+      parameters:
+      - description: Batch identification and retry reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Retry job enqueued
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchResponse'
+        "400":
+          description: Invalid request or batch not in terminal status
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Batch not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Retry media batch processing
+      tags:
+      - Listings Media
   /auth/agency:
     post:
       consumes:
@@ -6316,7 +7037,10 @@ paths:
         x-example: '{"listingIdentityId":1024,"listingVersionId":5001,"owner":"myself","features":[{"featureId":101,"quantity":2},{"featureId":205,"quantity":1}],"landSize":423.5,"corner":true,"nonBuildable":12.75,"buildable":410.75,"delivered":"furnished","whoLives":"tenant","description":"Apartamento
           amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"monthlyTax":283.40,"monthlyGroundRent":150,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila
           Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao
-          da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+5511912345678","title":"Oportunidade","accompanying":"assistant"}'
+          da Silva","tenantEmail":"joao.silva@example.com","tenantPhone":"+5511912345678","title":"Apartamento
+          3 dormitorios com piscina","accompanying":"assistant","completionForecast":"2026-06","landBlock":"A","landLot":"15","landFront":12.5,"landSide":30.0,"landBack":12.5,"landTerrainType":"plano","hasKmz":true,"kmzFile":"https://storage.exemplo.com/terrenos/lote15.kmz","buildingFloors":8,"unitTower":"Torre
+          B","unitFloor":5,"unitNumber":"502","warehouseManufacturingArea":850.5,"warehouseSector":"industrial","warehouseHasPrimaryCabin":true,"warehouseCabinKva":150.0,"warehouseGroundFloor":4.2,"warehouseFloorResistance":2500.0,"warehouseZoning":"ZI-2","warehouseHasOfficeArea":true,"warehouseOfficeArea":120.0,"warehouseAdditionalFloors":[{"floorName":"Mezanino","floorOrder":1,"floorHeight":3.5},{"floorName":"Segundo
+          Piso","floorOrder":2,"floorHeight":3.2}],"storeHasMezzanine":true,"storeMezzanineArea":45.0}'
       produces:
       - application/json
       responses:

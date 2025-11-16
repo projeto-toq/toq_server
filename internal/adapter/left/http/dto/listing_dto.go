@@ -288,36 +288,36 @@ type WarehouseAdditionalFloorDTO struct {
 type UpdateListingRequest struct {
 	ListingIdentityID          coreutils.Optional[int64]                               `json:"listingIdentityId" binding:"required" example:"1024"`
 	ListingVersionID           coreutils.Optional[int64]                               `json:"listingVersionId" binding:"required" example:"5001"`
-	Owner                      coreutils.Optional[string]                              `json:"owner"`
+	Owner                      coreutils.Optional[string]                              `json:"owner" example:"myself"`
 	Features                   coreutils.Optional[[]UpdateListingFeatureRequest]       `json:"features"`
-	LandSize                   coreutils.Optional[float64]                             `json:"landSize"`
-	Corner                     coreutils.Optional[bool]                                `json:"corner"`
-	NonBuildable               coreutils.Optional[float64]                             `json:"nonBuildable"`
-	Buildable                  coreutils.Optional[float64]                             `json:"buildable"`
-	Delivered                  coreutils.Optional[string]                              `json:"delivered"`
-	WhoLives                   coreutils.Optional[string]                              `json:"whoLives"`
-	Title                      coreutils.Optional[string]                              `json:"title"`
-	Description                coreutils.Optional[string]                              `json:"description"`
-	Transaction                coreutils.Optional[string]                              `json:"transaction"`
-	SellNet                    coreutils.Optional[float64]                             `json:"sellNet"`
-	RentNet                    coreutils.Optional[float64]                             `json:"rentNet"`
-	Condominium                coreutils.Optional[float64]                             `json:"condominium"`
-	AnnualTax                  coreutils.Optional[float64]                             `json:"annualTax" description:"Annual IPTU (property tax). Mutually exclusive with monthlyTax."`
-	MonthlyTax                 coreutils.Optional[float64]                             `json:"monthlyTax" description:"Monthly IPTU (property tax). Mutually exclusive with annualTax."`
-	AnnualGroundRent           coreutils.Optional[float64]                             `json:"annualGroundRent" description:"Annual Laudêmio (ground rent). Mutually exclusive with monthlyGroundRent."`
-	MonthlyGroundRent          coreutils.Optional[float64]                             `json:"monthlyGroundRent" description:"Monthly Laudêmio (ground rent). Mutually exclusive with annualGroundRent."`
-	Exchange                   coreutils.Optional[bool]                                `json:"exchange"`
-	ExchangePercentual         coreutils.Optional[float64]                             `json:"exchangePercentual"`
+	LandSize                   coreutils.Optional[float64]                             `json:"landSize" example:"423.5"`
+	Corner                     coreutils.Optional[bool]                                `json:"corner" example:"true"`
+	NonBuildable               coreutils.Optional[float64]                             `json:"nonBuildable" example:"12.75"`
+	Buildable                  coreutils.Optional[float64]                             `json:"buildable" example:"410.75"`
+	Delivered                  coreutils.Optional[string]                              `json:"delivered" example:"furnished"`
+	WhoLives                   coreutils.Optional[string]                              `json:"whoLives" example:"tenant"`
+	Title                      coreutils.Optional[string]                              `json:"title" example:"Apartamento 3 dormitorios com piscina"`
+	Description                coreutils.Optional[string]                              `json:"description" example:"Apartamento amplo com vista panoramica"`
+	Transaction                coreutils.Optional[string]                              `json:"transaction" example:"sale"`
+	SellNet                    coreutils.Optional[float64]                             `json:"sellNet" example:"1200000"`
+	RentNet                    coreutils.Optional[float64]                             `json:"rentNet" example:"8500"`
+	Condominium                coreutils.Optional[float64]                             `json:"condominium" example:"1200.5"`
+	AnnualTax                  coreutils.Optional[float64]                             `json:"annualTax" example:"3400.75" description:"Annual IPTU (property tax). Mutually exclusive with monthlyTax."`
+	MonthlyTax                 coreutils.Optional[float64]                             `json:"monthlyTax" example:"283.40" description:"Monthly IPTU (property tax). Mutually exclusive with annualTax."`
+	AnnualGroundRent           coreutils.Optional[float64]                             `json:"annualGroundRent" example:"1800" description:"Annual Laudêmio (ground rent). Mutually exclusive with monthlyGroundRent."`
+	MonthlyGroundRent          coreutils.Optional[float64]                             `json:"monthlyGroundRent" example:"150" description:"Monthly Laudêmio (ground rent). Mutually exclusive with annualGroundRent."`
+	Exchange                   coreutils.Optional[bool]                                `json:"exchange" example:"true"`
+	ExchangePercentual         coreutils.Optional[float64]                             `json:"exchangePercentual" example:"50"`
 	ExchangePlaces             coreutils.Optional[[]UpdateListingExchangePlaceRequest] `json:"exchangePlaces"`
-	Installment                coreutils.Optional[string]                              `json:"installment"`
-	Financing                  coreutils.Optional[bool]                                `json:"financing"`
+	Installment                coreutils.Optional[string]                              `json:"installment" example:"short_term"`
+	Financing                  coreutils.Optional[bool]                                `json:"financing" example:"true"`
 	FinancingBlockers          coreutils.Optional[[]string]                            `json:"financingBlockers"`
 	Guarantees                 coreutils.Optional[[]UpdateListingGuaranteeRequest]     `json:"guarantees"`
-	Visit                      coreutils.Optional[string]                              `json:"visit"`
-	TenantName                 coreutils.Optional[string]                              `json:"tenantName"`
-	TenantEmail                coreutils.Optional[string]                              `json:"tenantEmail"`
-	TenantPhone                coreutils.Optional[string]                              `json:"tenantPhone" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
-	Accompanying               coreutils.Optional[string]                              `json:"accompanying"`
+	Visit                      coreutils.Optional[string]                              `json:"visit" example:"client"`
+	TenantName                 coreutils.Optional[string]                              `json:"tenantName" example:"Joao da Silva"`
+	TenantEmail                coreutils.Optional[string]                              `json:"tenantEmail" example:"joao.silva@example.com"`
+	TenantPhone                coreutils.Optional[string]                              `json:"tenantPhone" example:"+5511912345678" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
+	Accompanying               coreutils.Optional[string]                              `json:"accompanying" example:"assistant"`
 	CompletionForecast         coreutils.Optional[string]                              `json:"completionForecast" example:"2026-06" description:"Completion forecast for properties under construction (YYYY-MM format)"`
 	LandBlock                  coreutils.Optional[string]                              `json:"landBlock" example:"A" description:"Block identifier for land properties"`
 	LandLot                    coreutils.Optional[string]                              `json:"landLot" example:"15" description:"Lot number for land properties"`
@@ -325,7 +325,7 @@ type UpdateListingRequest struct {
 	LandSide                   coreutils.Optional[float64]                             `json:"landSide" example:"30.0" description:"Side dimension in meters for land properties"`
 	LandBack                   coreutils.Optional[float64]                             `json:"landBack" example:"12.5" description:"Back dimension in meters for land properties"`
 	LandTerrainType            coreutils.Optional[string]                              `json:"landTerrainType" example:"plano" description:"Terrain type: plano, aclive, declive, irregular, misto"`
-	HasKmz                     coreutils.Optional[bool]                                `json:"hasKmz" description:"Indicates if KMZ file is available for land properties"`
+	HasKmz                     coreutils.Optional[bool]                                `json:"hasKmz" example:"true" description:"Indicates if KMZ file is available for land properties"`
 	KmzFile                    coreutils.Optional[string]                              `json:"kmzFile" example:"https://storage.exemplo.com/terrenos/lote15.kmz" description:"URL to KMZ file for land properties"`
 	BuildingFloors             coreutils.Optional[int16]                               `json:"buildingFloors" example:"8" description:"Total number of floors in building"`
 	UnitTower                  coreutils.Optional[string]                              `json:"unitTower" example:"Torre B" description:"Tower identifier for apartment/commercial units"`
@@ -333,15 +333,15 @@ type UpdateListingRequest struct {
 	UnitNumber                 coreutils.Optional[string]                              `json:"unitNumber" example:"502" description:"Unit number/identifier"`
 	WarehouseManufacturingArea coreutils.Optional[float64]                             `json:"warehouseManufacturingArea" example:"850.5" description:"Manufacturing/production area in square meters for warehouses"`
 	WarehouseSector            coreutils.Optional[string]                              `json:"warehouseSector" example:"industrial" description:"Warehouse sector: industrial, logistico, comercial"`
-	WarehouseHasPrimaryCabin   coreutils.Optional[bool]                                `json:"warehouseHasPrimaryCabin" description:"Indicates if warehouse has primary electrical cabin"`
+	WarehouseHasPrimaryCabin   coreutils.Optional[bool]                                `json:"warehouseHasPrimaryCabin" example:"true" description:"Indicates if warehouse has primary electrical cabin"`
 	WarehouseCabinKva          coreutils.Optional[float64]                             `json:"warehouseCabinKva" example:"150.0" description:"Primary cabin power in KVA"`
 	WarehouseGroundFloor       coreutils.Optional[float64]                             `json:"warehouseGroundFloor" example:"4.2" description:"Ground floor ceiling height in meters"`
 	WarehouseFloorResistance   coreutils.Optional[float64]                             `json:"warehouseFloorResistance" example:"2500.0" description:"Floor resistance in kg/m²"`
 	WarehouseZoning            coreutils.Optional[string]                              `json:"warehouseZoning" example:"ZI-2" description:"Zoning classification for warehouse"`
-	WarehouseHasOfficeArea     coreutils.Optional[bool]                                `json:"warehouseHasOfficeArea" description:"Indicates if warehouse has office area"`
+	WarehouseHasOfficeArea     coreutils.Optional[bool]                                `json:"warehouseHasOfficeArea" example:"true" description:"Indicates if warehouse has office area"`
 	WarehouseOfficeArea        coreutils.Optional[float64]                             `json:"warehouseOfficeArea" example:"120.0" description:"Office area in square meters"`
 	WarehouseAdditionalFloors  coreutils.Optional[[]WarehouseAdditionalFloorDTO]       `json:"warehouseAdditionalFloors" description:"Additional floors beyond ground floor in warehouses"`
-	StoreHasMezzanine          coreutils.Optional[bool]                                `json:"storeHasMezzanine" description:"Indicates if store has mezzanine"`
+	StoreHasMezzanine          coreutils.Optional[bool]                                `json:"storeHasMezzanine" example:"true" description:"Indicates if store has mezzanine"`
 	StoreMezzanineArea         coreutils.Optional[float64]                             `json:"storeMezzanineArea" example:"45.0" description:"Mezzanine area in square meters for stores"`
 }
 
@@ -697,4 +697,363 @@ type ConfirmPhotoSessionResponse struct {
 // CancelPhotoSessionRequest representa o corpo para cancelamento de sessão de fotos.
 type CancelPhotoSessionRequest struct {
 	PhotoSessionID uint64 `json:"photoSessionId" binding:"required" example:"3003"`
+}
+
+// ====================================================================================================
+// Media Processing DTOs
+// ====================================================================================================
+
+// CreateUploadBatchRequest represents the payload used to request signed URLs for raw media uploads
+//
+// This DTO is used to initialize a media upload batch for a listing.
+// The service validates the manifest, generates signed S3 URLs, and returns upload instructions.
+type CreateUploadBatchRequest struct {
+	// ListingID identifies the listing identity receiving the batch
+	// Must correspond to a listing in PENDING_PHOTO_PROCESSING status
+	// Example: 123
+	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+
+	// BatchReference helps the frontend correlate retries
+	// Typically a timestamp or session identifier
+	// Maximum 120 characters
+	// Example: "2025-11-16T14:00Z-slot-123"
+	BatchReference string `json:"batchReference" binding:"required,max=120" example:"2025-11-16T14:00Z-slot-123"`
+
+	// Files enumerates every asset to upload, preserving carousel order and metadata
+	// Minimum 1 file, maximum defined by environment configuration (default 60)
+	// Each file must have unique clientId and sequence
+	Files []CreateUploadBatchFileRequest `json:"files" binding:"required,min=1,dive"`
+}
+
+// CreateUploadBatchFileRequest describes a single asset to be uploaded by the client
+//
+// Each file in the manifest must provide complete metadata for validation and storage organization.
+type CreateUploadBatchFileRequest struct {
+	// ClientID is a unique identifier assigned by the client (frontend)
+	// Used to correlate upload confirmation and error messages
+	// Must be unique within the batch
+	// Example: "photo-001"
+	ClientID string `json:"clientId" binding:"required" example:"photo-001"`
+
+	// AssetType categorizes the media for processing and display
+	// Allowed values: PHOTO_VERTICAL, PHOTO_HORIZONTAL, VIDEO_VERTICAL, VIDEO_HORIZONTAL,
+	//                 THUMBNAIL, ZIP, PROJECT_DOC, PROJECT_RENDER
+	// Example: "PHOTO_VERTICAL"
+	AssetType string `json:"assetType" binding:"required" example:"PHOTO_VERTICAL"`
+
+	// Orientation specifies the intended display orientation
+	// Required for photo and video types
+	// Allowed values: VERTICAL, HORIZONTAL
+	// Example: "VERTICAL"
+	Orientation string `json:"orientation,omitempty" example:"VERTICAL"`
+
+	// Filename is the original filename from the client device
+	// Used for download metadata and logging
+	// Example: "IMG_20231116_140530.jpg"
+	Filename string `json:"filename" binding:"required" example:"IMG_20231116_140530.jpg"`
+
+	// ContentType is the MIME type of the file
+	// Must be in the allowed content types list (configured in env.yaml)
+	// Common values: image/jpeg, image/png, image/heic, video/mp4, video/quicktime
+	// Example: "image/jpeg"
+	ContentType string `json:"contentType" binding:"required" example:"image/jpeg"`
+
+	// Bytes is the file size in bytes
+	// Must be positive and not exceed the maximum file size limit
+	// Example: 2457600 (2.4 MB)
+	Bytes int64 `json:"bytes" binding:"required,min=1" example:"2457600"`
+
+	// Checksum is the SHA-256 hash of the file content (hex-encoded)
+	// Used to verify upload integrity via S3 HeadObject
+	// Example: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+	Checksum string `json:"checksum" binding:"required" example:"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"`
+
+	// Title is an optional user-provided caption or description
+	// Displayed in the listing carousel
+	// Example: "Vista frontal do imóvel"
+	Title string `json:"title,omitempty" example:"Vista frontal do imóvel"`
+
+	// Sequence determines the display order in the listing carousel
+	// Must be positive and unique within the batch
+	// Example: 1
+	Sequence uint8 `json:"sequence" binding:"required,min=1" example:"1"`
+
+	// Metadata holds additional key-value pairs for processing hints
+	// Optional field for future extensibility
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+// CreateUploadBatchResponse returns signed URLs ready to be used by the uploader
+//
+// The client must use these signed URLs to upload files to S3, then call CompleteUploadBatch.
+type CreateUploadBatchResponse struct {
+	// ListingID confirms the listing receiving the uploads
+	ListingID uint64 `json:"listingId" example:"123"`
+
+	// BatchID is the unique identifier for this upload batch
+	// Required for subsequent CompleteUploadBatch and status polling calls
+	BatchID uint64 `json:"batchId" example:"456"`
+
+	// UploadURLTTLSeconds indicates how long the signed URLs remain valid
+	// Typically 900 seconds (15 minutes)
+	UploadURLTTLSeconds int `json:"uploadUrlTtlSeconds" example:"900"`
+
+	// Files contains upload instructions for each asset in the manifest
+	Files []UploadInstructionResponse `json:"files"`
+}
+
+// UploadInstructionResponse carries the information required to perform a PUT upload to S3
+//
+// The client must execute an HTTP PUT request to UploadURL with the specified headers.
+type UploadInstructionResponse struct {
+	// ClientID matches the clientId from the request for correlation
+	ClientID string `json:"clientId" example:"photo-001"`
+
+	// UploadURL is the pre-signed S3 URL for uploading the file
+	// Valid for the duration specified in UploadURLTTLSeconds
+	// Example: "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."
+	UploadURL string `json:"uploadUrl" example:"https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."`
+
+	// Method is the HTTP method to use for the upload (always PUT)
+	Method string `json:"method" example:"PUT"`
+
+	// Headers contains required HTTP headers for the upload request
+	// Typically includes Content-Type and x-amz-checksum-sha256
+	Headers map[string]string `json:"headers"`
+
+	// ObjectKey is the S3 object key where the file will be stored
+	// Format: /{listingId}/raw/{assetType}/{YYYY-MM-DD}/{filename}
+	// Example: "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
+	ObjectKey string `json:"objectKey" example:"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"`
+
+	// Sequence matches the sequence from the request
+	Sequence uint8 `json:"sequence" example:"1"`
+
+	// Title matches the title from the request
+	Title string `json:"title,omitempty" example:"Vista frontal do imóvel"`
+}
+
+// CompleteUploadBatchRequest confirms that every asset in the manifest has been uploaded successfully
+//
+// The client must call this endpoint after all files have been uploaded to S3.
+// The service validates each upload via S3 HeadObject, then enqueues the batch for async processing.
+type CompleteUploadBatchRequest struct {
+	// ListingID must match the listingId from CreateUploadBatch
+	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+
+	// BatchID must match the batchId from CreateUploadBatch
+	BatchID uint64 `json:"batchId" binding:"required,min=1" example:"456"`
+
+	// Files lists all successfully uploaded assets with S3 metadata
+	// Must include all files from the original manifest
+	Files []CompletedUploadFileRequest `json:"files" binding:"required,min=1,dive"`
+}
+
+// CompletedUploadFileRequest links the logical asset to the physical object persisted in S3
+//
+// The client provides confirmation that the upload succeeded and includes S3 ETag for verification.
+type CompletedUploadFileRequest struct {
+	// ClientID must match a clientId from the original CreateUploadBatch request
+	ClientID string `json:"clientId" binding:"required" example:"photo-001"`
+
+	// ObjectKey must match the objectKey returned in CreateUploadBatch
+	ObjectKey string `json:"objectKey" binding:"required" example:"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"`
+
+	// Bytes is the confirmed file size after upload (should match original)
+	Bytes int64 `json:"bytes" binding:"required,min=1" example:"2457600"`
+
+	// Checksum is the SHA-256 hash used for upload verification
+	Checksum string `json:"checksum" binding:"required" example:"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"`
+
+	// ETag is the S3 ETag returned after successful upload
+	// Optional but recommended for additional verification
+	ETag string `json:"etag,omitempty" example:"\"5d41402abc4b2a76b9719d911017c592\""`
+}
+
+// CompleteUploadBatchResponse exposes the async job metadata published to the processing queue
+//
+// The batch transitions to RECEIVED status and a processing job is enqueued.
+// The client should poll GetBatchStatus to monitor progress.
+type CompleteUploadBatchResponse struct {
+	// ListingID confirms the listing
+	ListingID uint64 `json:"listingId" example:"123"`
+
+	// BatchID confirms the batch
+	BatchID uint64 `json:"batchId" example:"456"`
+
+	// JobID is the unique identifier for the async processing job
+	// Used for monitoring and troubleshooting
+	JobID uint64 `json:"jobId" example:"789"`
+
+	// Status indicates the current batch status (typically RECEIVED)
+	Status string `json:"status" example:"RECEIVED"`
+
+	// EstimatedDurationSeconds provides a rough estimate of processing time
+	// Actual duration depends on file count, sizes, and pipeline load
+	EstimatedDurationSeconds int `json:"estimatedDurationSeconds" example:"300"`
+}
+
+// GetBatchStatusRequest retrieves detailed status for a specific batch under a listing identity
+//
+// Used by the frontend to poll batch progress during upload and processing.
+type GetBatchStatusRequest struct {
+	// ListingID identifies the listing owning the batch
+	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+
+	// BatchID identifies the specific batch to query
+	BatchID uint64 `json:"batchId" binding:"required,min=1" example:"456"`
+}
+
+// GetBatchStatusResponse aggregates batch status and asset metadata for UI polling
+//
+// Contains current batch status and detailed information about each asset.
+type GetBatchStatusResponse struct {
+	// ListingID confirms the listing
+	ListingID uint64 `json:"listingId" example:"123"`
+
+	// BatchID confirms the batch
+	BatchID uint64 `json:"batchId" example:"456"`
+
+	// Status indicates the current batch status
+	// Possible values: PENDING_UPLOAD, RECEIVED, PROCESSING, READY, FAILED
+	Status string `json:"status" example:"PROCESSING"`
+
+	// StatusMessage provides human-readable status information
+	// Includes error details for FAILED status
+	StatusMessage string `json:"statusMessage" example:"Processing assets"`
+
+	// Assets lists all assets in the batch with their processing status
+	Assets []BatchAssetStatusResponse `json:"assets"`
+}
+
+// BatchAssetStatusResponse mirrors the information frontend needs to display upload and processing progress
+//
+// Each asset shows upload status and processed output availability.
+type BatchAssetStatusResponse struct {
+	// ClientID matches the original clientId for correlation
+	ClientID string `json:"clientId" example:"photo-001"`
+
+	// Title matches the original title
+	Title string `json:"title,omitempty" example:"Vista frontal do imóvel"`
+
+	// AssetType matches the original assetType
+	AssetType string `json:"assetType" example:"PHOTO_VERTICAL"`
+
+	// Sequence matches the original sequence
+	Sequence uint8 `json:"sequence" example:"1"`
+
+	// RawObjectKey is the S3 key where the raw file is stored
+	// Empty until upload is confirmed
+	RawObjectKey string `json:"rawObjectKey,omitempty" example:"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"`
+
+	// ProcessedKey is the S3 key where the processed file is stored
+	// Empty until processing completes successfully
+	ProcessedKey string `json:"processedKey,omitempty" example:"123/processed/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"`
+
+	// ThumbnailKey is the S3 key where the thumbnail is stored
+	// Empty until processing completes successfully
+	ThumbnailKey string `json:"thumbnailKey,omitempty" example:"123/processed/THUMBNAIL/2025-11-16/IMG_20231116_140530_thumb.jpg"`
+
+	// Metadata contains additional asset information
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+// ListDownloadURLsRequest requests signed GET URLs for processed assets
+//
+// Used to retrieve download links for assets that have completed processing.
+type ListDownloadURLsRequest struct {
+	// ListingID identifies the listing owning the assets
+	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+
+	// BatchID identifies the specific batch to retrieve downloads for
+	// If zero, the most recent READY batch will be used
+	BatchID uint64 `json:"batchId,omitempty" example:"456"`
+}
+
+// ListDownloadURLsResponse returns signed URLs for processed assets within a batch
+//
+// Contains download links valid for the duration specified in TTLSeconds.
+type ListDownloadURLsResponse struct {
+	// ListingID confirms the listing
+	ListingID uint64 `json:"listingId" example:"123"`
+
+	// BatchID confirms the batch
+	BatchID uint64 `json:"batchId" example:"456"`
+
+	// GeneratedAt indicates when the signed URLs were created
+	// RFC3339 format timestamp
+	GeneratedAt string `json:"generatedAt" example:"2025-11-16T15:30:00Z"`
+
+	// TTLSeconds indicates how long the signed URLs remain valid
+	// Typically 3600 seconds (1 hour)
+	TTLSeconds int `json:"ttlSeconds" example:"3600"`
+
+	// Downloads contains signed URLs for each processed asset
+	Downloads []DownloadEntryResponse `json:"downloads"`
+}
+
+// DownloadEntryResponse encapsulates individual signed URLs derived from processed assets
+//
+// Each entry provides download links for the processed file and optional preview/thumbnail.
+type DownloadEntryResponse struct {
+	// ClientID matches the original clientId for correlation
+	ClientID string `json:"clientId" example:"photo-001"`
+
+	// AssetType matches the original assetType
+	AssetType string `json:"assetType" example:"PHOTO_VERTICAL"`
+
+	// Title matches the original title
+	Title string `json:"title,omitempty" example:"Vista frontal do imóvel"`
+
+	// Sequence matches the original sequence
+	Sequence uint8 `json:"sequence" example:"1"`
+
+	// URL is the pre-signed S3 URL for downloading the processed file
+	// Valid for the duration specified in TTLSeconds
+	URL string `json:"url" example:"https://s3.amazonaws.com/bucket/processed-key?X-Amz-Algorithm=..."`
+
+	// ExpiresAt indicates when the signed URL expires
+	// RFC3339 format timestamp
+	ExpiresAt string `json:"expiresAt" example:"2025-11-16T16:30:00Z"`
+
+	// PreviewURL is the pre-signed S3 URL for downloading a thumbnail/preview
+	// Empty if no thumbnail was generated
+	PreviewURL string `json:"previewUrl,omitempty" example:"https://s3.amazonaws.com/bucket/thumbnail-key?X-Amz-Algorithm=..."`
+
+	// Metadata contains additional asset information
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+// RetryMediaBatchRequest allows the caller to re-enqueue a finished batch
+//
+// Used to retry processing for batches that failed or need reprocessing.
+// Only accepts batches in terminal states (READY or FAILED).
+type RetryMediaBatchRequest struct {
+	// ListingID identifies the listing owning the batch
+	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+
+	// BatchID identifies the specific batch to retry
+	BatchID uint64 `json:"batchId" binding:"required,min=1" example:"456"`
+
+	// Reason explains why the batch is being retried
+	// Used for audit logging and troubleshooting
+	// Example: "Pipeline timeout - retrying with increased timeout"
+	Reason string `json:"reason" binding:"required,max=500" example:"Pipeline timeout - retrying with increased timeout"`
+}
+
+// RetryMediaBatchResponse exposes the identifier of the newly created processing job
+//
+// The batch transitions back to PROCESSING status and a new job is enqueued.
+type RetryMediaBatchResponse struct {
+	// ListingID confirms the listing
+	ListingID uint64 `json:"listingId" example:"123"`
+
+	// BatchID confirms the batch
+	BatchID uint64 `json:"batchId" example:"456"`
+
+	// JobID is the unique identifier for the new async processing job
+	JobID uint64 `json:"jobId" example:"790"`
+
+	// Status indicates the current batch status (typically PROCESSING)
+	Status string `json:"status" example:"PROCESSING"`
 }

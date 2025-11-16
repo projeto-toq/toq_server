@@ -27,6 +27,7 @@ func (b *Bootstrap) Phase05_InitializeServices() error {
 		{"PhotoSessionService", b.initializePhotoSessionService},
 		{"ComplexService", b.initializeComplexService},
 		{"ScheduleService", b.initializeScheduleService},
+		{"MediaProcessingService", b.initializeMediaProcessingService},
 		{"ListingService", b.initializeListingService},
 		{"UserService", b.initializeUserService},
 	}
@@ -111,6 +112,14 @@ func (b *Bootstrap) initializeComplexService() error {
 	b.config.InitComplexHandler()
 
 	b.logger.Debug("✅ Complex Service inicializado")
+	return nil
+}
+
+// initializeMediaProcessingService inicializa o Media Processing Service
+func (b *Bootstrap) initializeMediaProcessingService() error {
+	b.logger.Debug("Inicializando Media Processing Service")
+	b.config.InitMediaProcessingService()
+	b.logger.Debug("✅ Media Processing Service inicializado")
 	return nil
 }
 
