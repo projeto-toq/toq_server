@@ -210,7 +210,6 @@ type WarehouseAdditionalFloorDTO struct {
 }
 
 // UpdateListingRequest represents request for updating a listing.
-//
 // @Description Request payload for updating draft listing. Omitted fields remain unchanged; present fields (including null) overwrite stored values.
 // @Description Property-specific required fields (validated on promote): Casa em Construção requires completionForecast; All Terrenos require landBlock; Terreno Comercial/Residencial require landLot, landTerrainType, hasKmz (kmzFile required if hasKmz=true); Prédio requires buildingFloors; Apartamento/Sala/Laje require unitTower, unitFloor, unitNumber; Galpão requires warehouseManufacturingArea, warehouseSector, warehouseHasPrimaryCabin (warehouseCabinKva required if true), warehouseGroundFloor, warehouseFloorResistance, warehouseZoning, warehouseHasOfficeArea (warehouseOfficeArea required if true); Loja requires storeHasMezzanine (storeMezzanineArea required if true).
 //
@@ -285,6 +284,64 @@ type WarehouseAdditionalFloorDTO struct {
 //	  "storeHasMezzanine": true,
 //	  "storeMezzanineArea": 45.0
 //	}
+//
+// @property listingIdentityId integer true "Listing identity ID" example(1024)
+// @property listingVersionId integer true "Listing version ID" example(5001)
+// @property owner string false "Owner type: myself, third_party" example(myself)
+// @property features array false "List of features with quantities"
+// @property landSize number false "Land size in square meters" example(423.5)
+// @property corner boolean false "Whether property is on a corner" example(true)
+// @property nonBuildable number false "Non-buildable area in square meters" example(12.75)
+// @property buildable number false "Buildable area in square meters" example(410.75)
+// @property delivered string false "Delivery state: furnished, unfurnished, semi_furnished" example(furnished)
+// @property whoLives string false "Current occupancy: owner, tenant, vacant" example(tenant)
+// @property title string false "Listing title" example(Apartamento 3 dormitorios com piscina)
+// @property description string false "Listing description" example(Apartamento amplo com vista panoramica)
+// @property transaction string false "Transaction type: sale, rent, both" example(sale)
+// @property sellNet number false "Sale price" example(1200000)
+// @property rentNet number false "Monthly rent price" example(8500)
+// @property condominium number false "Monthly condominium fee" example(1200.5)
+// @property annualTax number false "Annual IPTU (property tax). Mutually exclusive with monthlyTax" example(3400.75)
+// @property monthlyTax number false "Monthly IPTU (property tax). Mutually exclusive with annualTax" example(283.40)
+// @property annualGroundRent number false "Annual Laudêmio (ground rent). Mutually exclusive with monthlyGroundRent" example(1800)
+// @property monthlyGroundRent number false "Monthly Laudêmio (ground rent). Mutually exclusive with annualGroundRent" example(150)
+// @property exchange boolean false "Whether owner accepts exchange" example(true)
+// @property exchangePercentual number false "Exchange percentage accepted" example(50)
+// @property exchangePlaces array false "List of acceptable exchange locations"
+// @property installment string false "Installment type: short_term, long_term, none" example(short_term)
+// @property financing boolean false "Whether financing is available" example(true)
+// @property financingBlockers array false "List of financing blocker codes"
+// @property guarantees array false "List of accepted guarantees with priority"
+// @property visit string false "Visit policy: owner, client, flexible" example(client)
+// @property tenantName string false "Current tenant name" example(Joao da Silva)
+// @property tenantEmail string false "Current tenant email" example(joao.silva@example.com)
+// @property tenantPhone string false "Current tenant phone in E.164 format" example(+5511912345678)
+// @property accompanying string false "Accompanying requirement: broker, assistant, owner, none" example(assistant)
+// @property completionForecast string false "Completion forecast for properties under construction (YYYY-MM format)" example(2026-06)
+// @property landBlock string false "Block identifier for land properties" example(A)
+// @property landLot string false "Lot number for land properties" example(15)
+// @property landFront number false "Front dimension in meters for land properties" example(12.5)
+// @property landSide number false "Side dimension in meters for land properties" example(30.0)
+// @property landBack number false "Back dimension in meters for land properties" example(12.5)
+// @property landTerrainType string false "Terrain type: plano, aclive, declive, irregular, misto" example(plano)
+// @property hasKmz boolean false "Indicates if KMZ file is available for land properties" example(true)
+// @property kmzFile string false "URL to KMZ file for land properties" example(https://storage.exemplo.com/terrenos/lote15.kmz)
+// @property buildingFloors integer false "Total number of floors in building" example(8)
+// @property unitTower string false "Tower identifier for apartment/commercial units" example(Torre B)
+// @property unitFloor integer false "Floor number where unit is located" example(5)
+// @property unitNumber string false "Unit number/identifier" example(502)
+// @property warehouseManufacturingArea number false "Manufacturing/production area in square meters for warehouses" example(850.5)
+// @property warehouseSector string false "Warehouse sector: industrial, logistico, comercial" example(industrial)
+// @property warehouseHasPrimaryCabin boolean false "Indicates if warehouse has primary electrical cabin" example(true)
+// @property warehouseCabinKva number false "Primary cabin power in KVA" example(150.0)
+// @property warehouseGroundFloor number false "Ground floor ceiling height in meters" example(4.2)
+// @property warehouseFloorResistance number false "Floor resistance in kg/m²" example(2500.0)
+// @property warehouseZoning string false "Zoning classification for warehouse" example(ZI-2)
+// @property warehouseHasOfficeArea boolean false "Indicates if warehouse has office area" example(true)
+// @property warehouseOfficeArea number false "Office area in square meters" example(120.0)
+// @property warehouseAdditionalFloors array false "Additional floors beyond ground floor in warehouses"
+// @property storeHasMezzanine boolean false "Indicates if store has mezzanine" example(true)
+// @property storeMezzanineArea number false "Mezzanine area in square meters for stores" example(45.0)
 type UpdateListingRequest struct {
 	ListingIdentityID          coreutils.Optional[int64]                               `json:"listingIdentityId" binding:"required" example:"1024"`
 	ListingVersionID           coreutils.Optional[int64]                               `json:"listingVersionId" binding:"required" example:"5001"`
@@ -343,6 +400,69 @@ type UpdateListingRequest struct {
 	WarehouseAdditionalFloors  coreutils.Optional[[]WarehouseAdditionalFloorDTO]       `json:"warehouseAdditionalFloors" description:"Additional floors beyond ground floor in warehouses"`
 	StoreHasMezzanine          coreutils.Optional[bool]                                `json:"storeHasMezzanine" example:"true" description:"Indicates if store has mezzanine"`
 	StoreMezzanineArea         coreutils.Optional[float64]                             `json:"storeMezzanineArea" example:"45.0" description:"Mezzanine area in square meters for stores"`
+}
+
+// UpdateListingRequestSwagger is used ONLY for Swagger documentation since swag doesn't support Optional[T] generics.
+// The actual handler uses UpdateListingRequest with Optional fields.
+// This struct mirrors UpdateListingRequest but with concrete types to generate proper Swagger docs.
+type UpdateListingRequestSwagger struct {
+	ListingIdentityID          int64                                `json:"listingIdentityId" binding:"required" example:"1024"`
+	ListingVersionID           int64                                `json:"listingVersionId" binding:"required" example:"5001"`
+	Owner                      *string                              `json:"owner,omitempty" example:"myself"`
+	Features                   *[]UpdateListingFeatureRequest       `json:"features,omitempty"`
+	LandSize                   *float64                             `json:"landSize,omitempty" example:"423.5"`
+	Corner                     *bool                                `json:"corner,omitempty" example:"true"`
+	NonBuildable               *float64                             `json:"nonBuildable,omitempty" example:"12.75"`
+	Buildable                  *float64                             `json:"buildable,omitempty" example:"410.75"`
+	Delivered                  *string                              `json:"delivered,omitempty" example:"furnished"`
+	WhoLives                   *string                              `json:"whoLives,omitempty" example:"tenant"`
+	Title                      *string                              `json:"title,omitempty" example:"Apartamento 3 dormitorios com piscina"`
+	Description                *string                              `json:"description,omitempty" example:"Apartamento amplo com vista panoramica"`
+	Transaction                *string                              `json:"transaction,omitempty" example:"sale"`
+	SellNet                    *float64                             `json:"sellNet,omitempty" example:"1200000"`
+	RentNet                    *float64                             `json:"rentNet,omitempty" example:"8500"`
+	Condominium                *float64                             `json:"condominium,omitempty" example:"1200.5"`
+	AnnualTax                  *float64                             `json:"annualTax,omitempty" example:"3400.75"`
+	MonthlyTax                 *float64                             `json:"monthlyTax,omitempty" example:"283.40"`
+	AnnualGroundRent           *float64                             `json:"annualGroundRent,omitempty" example:"1800"`
+	MonthlyGroundRent          *float64                             `json:"monthlyGroundRent,omitempty" example:"150"`
+	Exchange                   *bool                                `json:"exchange,omitempty" example:"true"`
+	ExchangePercentual         *float64                             `json:"exchangePercentual,omitempty" example:"50"`
+	ExchangePlaces             *[]UpdateListingExchangePlaceRequest `json:"exchangePlaces,omitempty"`
+	Installment                *string                              `json:"installment,omitempty" example:"short_term"`
+	Financing                  *bool                                `json:"financing,omitempty" example:"true"`
+	FinancingBlockers          *[]string                            `json:"financingBlockers,omitempty"`
+	Guarantees                 *[]UpdateListingGuaranteeRequest     `json:"guarantees,omitempty"`
+	Visit                      *string                              `json:"visit,omitempty" example:"client"`
+	TenantName                 *string                              `json:"tenantName,omitempty" example:"Joao da Silva"`
+	TenantEmail                *string                              `json:"tenantEmail,omitempty" example:"joao.silva@example.com"`
+	TenantPhone                *string                              `json:"tenantPhone,omitempty" example:"+5511912345678"`
+	Accompanying               *string                              `json:"accompanying,omitempty" example:"assistant"`
+	CompletionForecast         *string                              `json:"completionForecast,omitempty" example:"2026-06"`
+	LandBlock                  *string                              `json:"landBlock,omitempty" example:"A"`
+	LandLot                    *string                              `json:"landLot,omitempty" example:"15"`
+	LandFront                  *float64                             `json:"landFront,omitempty" example:"12.5"`
+	LandSide                   *float64                             `json:"landSide,omitempty" example:"30.0"`
+	LandBack                   *float64                             `json:"landBack,omitempty" example:"12.5"`
+	LandTerrainType            *string                              `json:"landTerrainType,omitempty" example:"plano"`
+	HasKmz                     *bool                                `json:"hasKmz,omitempty" example:"true"`
+	KmzFile                    *string                              `json:"kmzFile,omitempty" example:"https://storage.exemplo.com/terrenos/lote15.kmz"`
+	BuildingFloors             *int16                               `json:"buildingFloors,omitempty" example:"8"`
+	UnitTower                  *string                              `json:"unitTower,omitempty" example:"Torre B"`
+	UnitFloor                  *int16                               `json:"unitFloor,omitempty" example:"5"`
+	UnitNumber                 *string                              `json:"unitNumber,omitempty" example:"502"`
+	WarehouseManufacturingArea *float64                             `json:"warehouseManufacturingArea,omitempty" example:"850.5"`
+	WarehouseSector            *string                              `json:"warehouseSector,omitempty" example:"industrial"`
+	WarehouseHasPrimaryCabin   *bool                                `json:"warehouseHasPrimaryCabin,omitempty" example:"true"`
+	WarehouseCabinKva          *float64                             `json:"warehouseCabinKva,omitempty" example:"150.0"`
+	WarehouseGroundFloor       *float64                             `json:"warehouseGroundFloor,omitempty" example:"4.2"`
+	WarehouseFloorResistance   *float64                             `json:"warehouseFloorResistance,omitempty" example:"2500.0"`
+	WarehouseZoning            *string                              `json:"warehouseZoning,omitempty" example:"ZI-2"`
+	WarehouseHasOfficeArea     *bool                                `json:"warehouseHasOfficeArea,omitempty" example:"true"`
+	WarehouseOfficeArea        *float64                             `json:"warehouseOfficeArea,omitempty" example:"120.0"`
+	WarehouseAdditionalFloors  *[]WarehouseAdditionalFloorDTO       `json:"warehouseAdditionalFloors,omitempty"`
+	StoreHasMezzanine          *bool                                `json:"storeHasMezzanine,omitempty" example:"true"`
+	StoreMezzanineArea         *float64                             `json:"storeMezzanineArea,omitempty" example:"45.0"`
 }
 
 // UpdateListingResponse represents response for updating a listing

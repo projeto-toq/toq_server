@@ -2735,7 +2735,210 @@ definitions:
       refreshToken:
         type: string
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest:
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingExchangePlaceRequest:
+    properties:
+      city:
+        type: string
+      neighborhood:
+        type: string
+      state:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingFeatureRequest:
+    properties:
+      featureId:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingGuaranteeRequest:
+    properties:
+      guarantee:
+        type: string
+      priority:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequestSwagger:
+    properties:
+      accompanying:
+        example: assistant
+        type: string
+      annualGroundRent:
+        example: 1800
+        type: number
+      annualTax:
+        example: 3400.75
+        type: number
+      buildable:
+        example: 410.75
+        type: number
+      buildingFloors:
+        example: 8
+        type: integer
+      completionForecast:
+        example: 2026-06
+        type: string
+      condominium:
+        example: 1200.5
+        type: number
+      corner:
+        example: true
+        type: boolean
+      delivered:
+        example: furnished
+        type: string
+      description:
+        example: Apartamento amplo com vista panoramica
+        type: string
+      exchange:
+        example: true
+        type: boolean
+      exchangePercentual:
+        example: 50
+        type: number
+      exchangePlaces:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingExchangePlaceRequest'
+        type: array
+      features:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingFeatureRequest'
+        type: array
+      financing:
+        example: true
+        type: boolean
+      financingBlockers:
+        items:
+          type: string
+        type: array
+      guarantees:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingGuaranteeRequest'
+        type: array
+      hasKmz:
+        example: true
+        type: boolean
+      installment:
+        example: short_term
+        type: string
+      kmzFile:
+        example: https://storage.exemplo.com/terrenos/lote15.kmz
+        type: string
+      landBack:
+        example: 12.5
+        type: number
+      landBlock:
+        example: A
+        type: string
+      landFront:
+        example: 12.5
+        type: number
+      landLot:
+        example: "15"
+        type: string
+      landSide:
+        example: 30
+        type: number
+      landSize:
+        example: 423.5
+        type: number
+      landTerrainType:
+        example: plano
+        type: string
+      listingIdentityId:
+        example: 1024
+        type: integer
+      listingVersionId:
+        example: 5001
+        type: integer
+      monthlyGroundRent:
+        example: 150
+        type: number
+      monthlyTax:
+        example: 283.4
+        type: number
+      nonBuildable:
+        example: 12.75
+        type: number
+      owner:
+        example: myself
+        type: string
+      rentNet:
+        example: 8500
+        type: number
+      sellNet:
+        example: 1200000
+        type: number
+      storeHasMezzanine:
+        example: true
+        type: boolean
+      storeMezzanineArea:
+        example: 45
+        type: number
+      tenantEmail:
+        example: joao.silva@example.com
+        type: string
+      tenantName:
+        example: Joao da Silva
+        type: string
+      tenantPhone:
+        example: "+5511912345678"
+        type: string
+      title:
+        example: Apartamento 3 dormitorios com piscina
+        type: string
+      transaction:
+        example: sale
+        type: string
+      unitFloor:
+        example: 5
+        type: integer
+      unitNumber:
+        example: "502"
+        type: string
+      unitTower:
+        example: Torre B
+        type: string
+      visit:
+        example: client
+        type: string
+      warehouseAdditionalFloors:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO'
+        type: array
+      warehouseCabinKva:
+        example: 150
+        type: number
+      warehouseFloorResistance:
+        example: 2500
+        type: number
+      warehouseGroundFloor:
+        example: 4.2
+        type: number
+      warehouseHasOfficeArea:
+        example: true
+        type: boolean
+      warehouseHasPrimaryCabin:
+        example: true
+        type: boolean
+      warehouseManufacturingArea:
+        example: 850.5
+        type: number
+      warehouseOfficeArea:
+        example: 120
+        type: number
+      warehouseSector:
+        example: industrial
+        type: string
+      warehouseZoning:
+        example: ZI-2
+        type: string
+      whoLives:
+        example: tenant
+        type: string
+    required:
+    - listingIdentityId
+    - listingVersionId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingResponse:
     properties:
@@ -3154,8 +3357,6 @@ definitions:
         type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool:
-    type: object
-  github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64:
     type: object
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-string:
     type: object
@@ -7033,7 +7234,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest'
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequestSwagger'
         x-example: '{"listingIdentityId":1024,"listingVersionId":5001,"owner":"myself","features":[{"featureId":101,"quantity":2},{"featureId":205,"quantity":1}],"landSize":423.5,"corner":true,"nonBuildable":12.75,"buildable":410.75,"delivered":"furnished","whoLives":"tenant","description":"Apartamento
           amplo com vista panoramica","transaction":"sale","sellNet":1200000,"rentNet":8500,"condominium":1200.5,"monthlyTax":283.40,"monthlyGroundRent":150,"exchange":true,"exchangePercentual":50,"exchangePlaces":[{"neighborhood":"Vila
           Mariana","city":"Sao Paulo","state":"SP"},{"neighborhood":"Centro","city":"Campinas","state":"SP"}],"installment":"short_term","financing":true,"financingBlockers":["pending_probate","other"],"guarantees":[{"priority":1,"guarantee":"security_deposit"},{"priority":2,"guarantee":"surety_bond"}],"visit":"client","tenantName":"Joao

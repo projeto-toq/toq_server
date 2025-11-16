@@ -5622,7 +5622,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequestSwagger"
                         }
                     }
                 ],
@@ -12845,8 +12845,288 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequest": {
-            "type": "object"
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingExchangePlaceRequest": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "neighborhood": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingFeatureRequest": {
+            "type": "object",
+            "properties": {
+                "featureId": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingGuaranteeRequest": {
+            "type": "object",
+            "properties": {
+                "guarantee": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingRequestSwagger": {
+            "type": "object",
+            "required": [
+                "listingIdentityId",
+                "listingVersionId"
+            ],
+            "properties": {
+                "accompanying": {
+                    "type": "string",
+                    "example": "assistant"
+                },
+                "annualGroundRent": {
+                    "type": "number",
+                    "example": 1800
+                },
+                "annualTax": {
+                    "type": "number",
+                    "example": 3400.75
+                },
+                "buildable": {
+                    "type": "number",
+                    "example": 410.75
+                },
+                "buildingFloors": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "completionForecast": {
+                    "type": "string",
+                    "example": "2026-06"
+                },
+                "condominium": {
+                    "type": "number",
+                    "example": 1200.5
+                },
+                "corner": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "delivered": {
+                    "type": "string",
+                    "example": "furnished"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Apartamento amplo com vista panoramica"
+                },
+                "exchange": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "exchangePercentual": {
+                    "type": "number",
+                    "example": 50
+                },
+                "exchangePlaces": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingExchangePlaceRequest"
+                    }
+                },
+                "features": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingFeatureRequest"
+                    }
+                },
+                "financing": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "financingBlockers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "guarantees": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingGuaranteeRequest"
+                    }
+                },
+                "hasKmz": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "installment": {
+                    "type": "string",
+                    "example": "short_term"
+                },
+                "kmzFile": {
+                    "type": "string",
+                    "example": "https://storage.exemplo.com/terrenos/lote15.kmz"
+                },
+                "landBack": {
+                    "type": "number",
+                    "example": 12.5
+                },
+                "landBlock": {
+                    "type": "string",
+                    "example": "A"
+                },
+                "landFront": {
+                    "type": "number",
+                    "example": 12.5
+                },
+                "landLot": {
+                    "type": "string",
+                    "example": "15"
+                },
+                "landSide": {
+                    "type": "number",
+                    "example": 30
+                },
+                "landSize": {
+                    "type": "number",
+                    "example": 423.5
+                },
+                "landTerrainType": {
+                    "type": "string",
+                    "example": "plano"
+                },
+                "listingIdentityId": {
+                    "type": "integer",
+                    "example": 1024
+                },
+                "listingVersionId": {
+                    "type": "integer",
+                    "example": 5001
+                },
+                "monthlyGroundRent": {
+                    "type": "number",
+                    "example": 150
+                },
+                "monthlyTax": {
+                    "type": "number",
+                    "example": 283.4
+                },
+                "nonBuildable": {
+                    "type": "number",
+                    "example": 12.75
+                },
+                "owner": {
+                    "type": "string",
+                    "example": "myself"
+                },
+                "rentNet": {
+                    "type": "number",
+                    "example": 8500
+                },
+                "sellNet": {
+                    "type": "number",
+                    "example": 1200000
+                },
+                "storeHasMezzanine": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "storeMezzanineArea": {
+                    "type": "number",
+                    "example": 45
+                },
+                "tenantEmail": {
+                    "type": "string",
+                    "example": "joao.silva@example.com"
+                },
+                "tenantName": {
+                    "type": "string",
+                    "example": "Joao da Silva"
+                },
+                "tenantPhone": {
+                    "type": "string",
+                    "example": "+5511912345678"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Apartamento 3 dormitorios com piscina"
+                },
+                "transaction": {
+                    "type": "string",
+                    "example": "sale"
+                },
+                "unitFloor": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "unitNumber": {
+                    "type": "string",
+                    "example": "502"
+                },
+                "unitTower": {
+                    "type": "string",
+                    "example": "Torre B"
+                },
+                "visit": {
+                    "type": "string",
+                    "example": "client"
+                },
+                "warehouseAdditionalFloors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO"
+                    }
+                },
+                "warehouseCabinKva": {
+                    "type": "number",
+                    "example": 150
+                },
+                "warehouseFloorResistance": {
+                    "type": "number",
+                    "example": 2500
+                },
+                "warehouseGroundFloor": {
+                    "type": "number",
+                    "example": 4.2
+                },
+                "warehouseHasOfficeArea": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "warehouseHasPrimaryCabin": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "warehouseManufacturingArea": {
+                    "type": "number",
+                    "example": 850.5
+                },
+                "warehouseOfficeArea": {
+                    "type": "number",
+                    "example": 120
+                },
+                "warehouseSector": {
+                    "type": "string",
+                    "example": "industrial"
+                },
+                "warehouseZoning": {
+                    "type": "string",
+                    "example": "ZI-2"
+                },
+                "whoLives": {
+                    "type": "string",
+                    "example": "tenant"
+                }
+            }
         },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateListingResponse": {
             "type": "object",
@@ -13427,9 +13707,6 @@ const docTemplate = `{
             }
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool": {
-            "type": "object"
-        },
-        "github_com_projeto-toq_toq_server_internal_core_utils.Optional-int64": {
             "type": "object"
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-string": {
