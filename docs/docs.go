@@ -2815,6 +2815,101 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/permissions/routes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a paginated list of all HTTP routes registered in the system.\nSupports filtering by HTTP method (GET, POST, etc.) and path pattern (substring match).\nThe ` + "`" + `action` + "`" + ` field in the response follows the format ` + "`" + `METHOD:PATH` + "`" + `, which is used for permission management.\nUseful for API discovery, debugging, and populating frontend permission forms.\nRequires admin-level permissions.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Permissions"
+                ],
+                "summary": "List all registered HTTP routes",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "example": 1,
+                        "description": "Page number (1-indexed)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 200,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 50,
+                        "example": 50,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "DELETE",
+                            "PATCH"
+                        ],
+                        "type": "string",
+                        "example": "GET",
+                        "description": "Filter by HTTP method (case-insensitive)",
+                        "name": "method",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "admin",
+                        "description": "Filter by path substring (case-insensitive)",
+                        "name": "pathPattern",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of routes",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRoutesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (missing or invalid token)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden (insufficient permissions)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/admin/role-permissions": {
             "get": {
                 "produces": [
@@ -9219,6 +9314,26 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRoutesResponse": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "description": "Pagination metadata (page, limit, total, totalPages)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                        }
+                    ]
+                },
+                "routes": {
+                    "description": "List of routes for the current page",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RouteInfo"
+                    }
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse": {
             "type": "object",
             "properties": {
@@ -11502,6 +11617,31 @@ const docTemplate = `{
                 "slotStart": {
                     "type": "string",
                     "example": "2025-10-24T09:00:00Z"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RouteInfo": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "description": "Formatted action for permission system (METHOD:PATH)",
+                    "type": "string",
+                    "example": "GET:/api/v2/admin/permissions"
+                },
+                "handler": {
+                    "description": "Cleaned handler name (Struct.Method)",
+                    "type": "string",
+                    "example": "AdminHandler.GetAdminPermissions"
+                },
+                "method": {
+                    "description": "HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)",
+                    "type": "string",
+                    "example": "GET"
+                },
+                "path": {
+                    "description": "Route path with Gin parameter syntax",
+                    "type": "string",
+                    "example": "/api/v2/admin/permissions"
                 }
             }
         },

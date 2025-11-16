@@ -110,3 +110,4 @@ id;name;action;description;is_active
 109;"HTTP Schedule Listing Block";"GET:/api/v2/schedules/listing/block";"Permite listar bloqueios na agenda de um listing";1
 110;"HTTP Listing Version Discard";"POST:/api/v2/listings/versions/discard";"Permite descartar versão draft de listing";1
 111;"HTTP List Listing Versions";"POST:/api/v2/listings/versions";"Permite listar versões de um listing";1
+112;"HTTP Admin List Routes";"GET:/api/v2/admin/permissions/routes";"Permite listar todas as rotas HTTP registradas no sistema para popular formulários de permissões";1

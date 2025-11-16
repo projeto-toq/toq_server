@@ -502,6 +502,7 @@ func RegisterAdminRoutes(
 			permissionsGroup.POST("", adminHandler.PostAdminCreatePermission)
 			permissionsGroup.PUT("", adminHandler.PutAdminUpdatePermission)
 			permissionsGroup.DELETE("", adminHandler.DeleteAdminPermission)
+			permissionsGroup.GET("/routes", adminHandler.GetAdminRoutes)
 		}
 
 		rolePermissionsGroup := admin.Group("/role-permissions")

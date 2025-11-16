@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/gin-gonic/gin"
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
@@ -44,6 +45,7 @@ type AdapterFactory interface {
 
 	// CreateHTTPHandlers cria todos os handlers HTTP
 	CreateHTTPHandlers(
+		router *gin.Engine,
 		userService userservices.UserServiceInterface,
 		globalService globalservice.GlobalServiceInterface,
 		listingService listingservices.ListingServiceInterface,

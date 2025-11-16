@@ -447,6 +447,18 @@ definitions:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminRoleSummary'
         type: array
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRoutesResponse:
+    properties:
+      pagination:
+        allOf:
+        - $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+        description: Pagination metadata (page, limit, total, totalPages)
+      routes:
+        description: List of routes for the current page
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RouteInfo'
+        type: array
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListUsersResponse:
     properties:
       pagination:
@@ -2000,6 +2012,25 @@ definitions:
         type: integer
       slotStart:
         example: "2025-10-24T09:00:00Z"
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RouteInfo:
+    properties:
+      action:
+        description: Formatted action for permission system (METHOD:PATH)
+        example: GET:/api/v2/admin/permissions
+        type: string
+      handler:
+        description: Cleaned handler name (Struct.Method)
+        example: AdminHandler.GetAdminPermissions
+        type: string
+      method:
+        description: HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)
+        example: GET
+        type: string
+      path:
+        description: Route path with Gin parameter syntax
+        example: /api/v2/admin/permissions
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ScheduleAvailabilityResponse:
@@ -4540,6 +4571,78 @@ paths:
             additionalProperties: true
             type: object
       summary: Get permission detail
+      tags:
+      - Admin Permissions
+  /admin/permissions/routes:
+    get:
+      description: |-
+        Retrieve a paginated list of all HTTP routes registered in the system.
+        Supports filtering by HTTP method (GET, POST, etc.) and path pattern (substring match).
+        The `action` field in the response follows the format `METHOD:PATH`, which is used for permission management.
+        Useful for API discovery, debugging, and populating frontend permission forms.
+        Requires admin-level permissions.
+      parameters:
+      - default: 1
+        description: Page number (1-indexed)
+        example: 1
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 50
+        description: Items per page
+        example: 50
+        in: query
+        maximum: 200
+        minimum: 1
+        name: limit
+        type: integer
+      - description: Filter by HTTP method (case-insensitive)
+        enum:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        example: GET
+        in: query
+        name: method
+        type: string
+      - description: Filter by path substring (case-insensitive)
+        example: admin
+        in: query
+        name: pathPattern
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Paginated list of routes
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminListRoutesResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized (missing or invalid token)
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden (insufficient permissions)
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all registered HTTP routes
       tags:
       - Admin Permissions
   /admin/role-permissions:

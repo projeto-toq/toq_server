@@ -495,6 +495,7 @@ func (c *config) InitializeHTTP() {
 func (c *config) SetupHTTPHandlersAndRoutes() {
 	// Criar handlers HTTP
 	c.httpHandlers = c.adapterFactory.CreateHTTPHandlers(
+		c.ginRouter,
 		c.userService,
 		c.globalService,
 		c.listingService,

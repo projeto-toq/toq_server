@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
@@ -236,6 +237,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 
 // CreateHTTPHandlers creates and returns all HTTP handlers
 func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
+	router *gin.Engine,
 	userService userservice.UserServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 	listingService listingservice.ListingServiceInterface,
@@ -311,6 +313,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		listingService,
 		permissionService,
 		complexService,
+		router,
 	)
 
 	complexHandlerPort := complexhandlers.NewComplexHandlerAdapter(

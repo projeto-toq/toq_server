@@ -339,3 +339,27 @@ type AdminRolePermissionResponse struct {
 type AdminGetRolePermissionDetailRequest struct {
 	ID int64 `json:"id" binding:"required,min=1"`
 }
+
+// AdminListRoutesRequest captures filters for GET /admin/permissions/routes.
+// Supports pagination and optional filtering by HTTP method and path pattern.
+type AdminListRoutesRequest struct {
+	Page        int    `form:"page,default=1" binding:"min=1"`           // Page number (1-indexed)
+	Limit       int    `form:"limit,default=50" binding:"min=1,max=200"` // Items per page (max 200)
+	Method      string `form:"method"`                                   // Filter: HTTP method (e.g., GET, POST)
+	PathPattern string `form:"pathPattern"`                              // Filter: substring match on path (case-insensitive)
+}
+
+// RouteInfo represents a single HTTP route registered in the system.
+// The Action field follows the format "METHOD:PATH", matching the permission system's action format.
+type RouteInfo struct {
+	Method  string `json:"method" example:"GET"`                               // HTTP method (GET, POST, PUT, DELETE, PATCH, etc.)
+	Path    string `json:"path" example:"/api/v2/admin/permissions"`           // Route path with Gin parameter syntax
+	Action  string `json:"action" example:"GET:/api/v2/admin/permissions"`     // Formatted action for permission system (METHOD:PATH)
+	Handler string `json:"handler" example:"AdminHandler.GetAdminPermissions"` // Cleaned handler name (Struct.Method)
+}
+
+// AdminListRoutesResponse wraps the paginated list of HTTP routes.
+type AdminListRoutesResponse struct {
+	Routes     []RouteInfo        `json:"routes"`     // List of routes for the current page
+	Pagination PaginationResponse `json:"pagination"` // Pagination metadata (page, limit, total, totalPages)
+}

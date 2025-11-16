@@ -6,34 +6,8 @@
 
 ## 🎯 Solicitação
 
-é necessário incluir novos campos no modelo de Listing para suportar diferentes tipos de propriedades imobiliárias. Abaixo estão os campos a serem adicionados, juntamente com seus tipos e regras de validação:
-
-- PREVISÃO DE CONCLUSÃO ==> só interessa mes e ano. Regra: obrigatório quando casa em construção
-- QUADRA ==> varchar(50) ==> Regra: obrigatório quando terreno
-- LOTE ==> varchar (50)==> Regra: obrigatório quando terreno comercial ou residencial
-- FRENTE ==> float ==> Regra: opcional quando terreno comercial ou residencial
-- LADO ==> float ==> Regra: opcional quando terreno comercial ou residencial
-- FUNDOS ==> float ==> Regra: opcional quando terreno comercial ou residencial
-- TIPO TERRENO;==>enum {ACLIVE LEVE,ACLIVE,PLANO,DECLIVE,DECLIVE LEVE} ==>Regra: obrigatório quando terreno comercial ou residencial
-- KMZ DO TERRENO;==> qual o tipo de campo? ==> Regra: opcional quando terreno comercial 
-- TEM KMZ?;==> boolean ==> Regra: obrigatório quando terreno comercial 
-- QUANTIDADE DE ANDARES ==> int ==> obrigatório quando predio 
-- TORRE/BLOCO;==> varchar(100) ==> Regra: obrigatório quando apartamento ou sala ou laje ==> ja existe no complex_towers e deve ser coincidente com esse campo
-- ANDAR; varchar(10) ==> Regra: obrigatório quando apartamento ou sala ou laje
-- unidade;varchar(10) ==> Regra: obrigatório quando apartamento ou sala ou laje
-- METRAGEM DE ÁREA FABRIL;==> float ==> Regra: Obrigatório quando galpão
-- setor de atuaçÃo == > enum(FABRIL, INDUSTRIAL, E LOGÍSTICO) ==> Regra: Obrigatório quando galpão
-- CABINE PRIMÁRIA (MEU GALPÃO POSSUI CABINES);==> boolean ==> obrigatório quando galpão
-- CABINE_kva;==> varchar(50) ==> obrigatório quando galpão e possui cabine
-- TÉRREO;==> int ==> obrigatório quando galpão
-- ADICIONAR OUTROS PAVIMENTOS;==> tabela adiconal com: NOME Varchar(50), ORDEM int E ALTURA float
-- RESISTÊNCIA DO PISO;==> float ==> obrigatório quando galpão
-- ZONEAMENTO;==> varchar(50) ==> obrigatório quando galpão
-- tem ÁREA PARA ESCRITÓRIO;==> boolean ==> obrigatório quando galpão
-- ÁREA PARA ESCRITÓRIO;==> flaot ==> obrigatório quando galpão e tem area para escritorio
-- NÃO HÁ ÁREA PARA ESCRITÓRIO?; ==> boolean ==> obrigatório quando galpão
-- METRAGEM DO MEZANINO;==> float ==> obrigatório quando loja e tem mezanino
-- HÁ MEZANINO?;==> boolean ==> obrigatório quando loja
+É necessário que o admin tenha 1 novo endpoint:
+- para listar todas as rotas existentes no sistema. Ele será usado pelo frontend para popular a criação de permissionamento de usuários. veja como é o seed data/base_permissions.csv. o resposta do endpoint deve ter o dado para o campo `action`.
 
 
 Assim:
