@@ -14,14 +14,20 @@ import (
 
 // UpdateSessionStatus updates the status of a photo session booking and notifies the listing owner.
 //
-// This endpoint is only available when manual photographer approval is enabled via configuration.
-// If automatic approval is enabled (require_photographer_approval=false), this operation returns
-// a validation error indicating the feature is disabled.
+// This endpoint supports two independent workflows:
+//  1. Session Approval/Rejection (only when manual approval enabled):
+//     - PENDING_APPROVAL → ACCEPTED (photographer accepts)
+//     - PENDING_APPROVAL → REJECTED (photographer declines)
+//  2. Session Completion (always available):
+//     - ACCEPTED/ACTIVE → DONE (photographer completes session)
 //
-// Supported Status Transitions:
-//   - PENDING_APPROVAL → ACCEPTED (photographer accepts)
-//   - PENDING_APPROVAL → REJECTED (photographer declines)
-//   - ACCEPTED/ACTIVE → DONE (photographer completes session)
+// The approval workflow is controlled by configuration (require_photographer_approval):
+//   - If require_photographer_approval=false: approval/rejection transitions are blocked
+//     (sessions are auto-approved at reservation time)
+//   - If require_photographer_approval=true: approval/rejection transitions are allowed
+//
+// The completion workflow (DONE) is ALWAYS available regardless of approval mode,
+// as photographers must be able to mark sessions as completed after performing them.
 //
 // Listing Status Changes:
 //   - ACCEPTED: StatusPendingPhotoConfirmation → StatusPhotosScheduled
@@ -34,7 +40,7 @@ import (
 //
 // Returns:
 //   - error: Domain error with appropriate HTTP status code:
-//   - 400 (BadRequest) if manual approval is disabled in config
+//   - 400 (BadRequest) if manual approval is disabled and status is ACCEPTED/REJECTED
 //   - 401 (Auth) if photographer not authorized
 //   - 403 (Forbidden) if session does not belong to photographer
 //   - 404 (NotFound) if session not found
@@ -43,7 +49,8 @@ import (
 //   - 500 (Infra) for infrastructure failures
 //
 // Configuration:
-//   - Requires photo_session.require_photographer_approval = true in env.yaml
+//   - Approval/rejection requires photo_session.require_photographer_approval = true in env.yaml
+//   - Completion (DONE) is always available regardless of approval mode
 //
 // Side Effects:
 //   - Updates photographer_photo_session_bookings.status
@@ -58,14 +65,6 @@ func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input Upd
 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
-
-	// Check if manual approval mode is enabled
-	if !s.cfg.RequirePhotographerApproval {
-		logger.Warn("photo_session.update_status.manual_approval_disabled",
-			"photographer_id", input.PhotographerID,
-			"session_id", input.SessionID)
-		return derrors.BadRequest("manual photographer approval is disabled; photo sessions are automatically approved upon reservation")
-	}
 
 	// Validações de entrada
 	if input.SessionID == 0 {
@@ -87,6 +86,18 @@ func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input Upd
 		return derrors.BadRequest("status must be ACCEPTED, REJECTED or DONE")
 	}
 	status := photosessionmodel.BookingStatus(statusStr)
+
+	// CRITICAL: Validate approval mode ONLY for approval/rejection transitions
+	// The DONE transition must be available regardless of approval mode
+	if status == photosessionmodel.BookingStatusAccepted || status == photosessionmodel.BookingStatusRejected {
+		if !s.cfg.RequirePhotographerApproval {
+			logger.Warn("photo_session.update_status.approval_rejected_auto_mode",
+				"photographer_id", input.PhotographerID,
+				"session_id", input.SessionID,
+				"status", statusStr)
+			return derrors.BadRequest("manual photographer approval is disabled; photo sessions are automatically approved upon reservation")
+		}
+	}
 
 	// Inicia transação
 	tx, err := s.globalService.StartTransaction(ctx)
@@ -229,7 +240,8 @@ func (s *photoSessionService) UpdateSessionStatus(ctx context.Context, input Upd
 		"photographer_id", input.PhotographerID,
 		"status", statusStr,
 		"listing_id", listing.ID(),
-		"listing_new_status", newListingStatus.String())
+		"listing_new_status", newListingStatus.String(),
+		"approval_mode", s.cfg.RequirePhotographerApproval)
 
 	return nil
 }

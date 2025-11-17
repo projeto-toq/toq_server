@@ -11,20 +11,28 @@ import (
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 )
 
-// UpdateSessionStatus handles the request to accept or reject a photo session.
+// UpdateSessionStatus handles the request to update photo session status.
 //
-//	@Summary   Accept or reject a photo session
+//	@Summary   Update photo session status (approve/reject/complete)
+//	@Description Updates a photo session booking status with support for approval/rejection and completion workflows.
+//	             **Approval/Rejection Workflow** (only when manual approval enabled):
+//	             - ACCEPTED: Photographer accepts the session (requires require_photographer_approval=true)
+//	             - REJECTED: Photographer declines the session (requires require_photographer_approval=true)
+//	             **Completion Workflow** (always available):
+//	             - DONE: Photographer marks session as completed after performing it
+//	             When automatic approval is enabled (require_photographer_approval=false), ACCEPTED/REJECTED
+//	             transitions are blocked (sessions are auto-approved at reservation time), but DONE is always available.
 //	@Tags      Photographer
 //	@Accept    json
 //	@Produce   json
-//	@Param     request   body      dto.UpdateSessionStatusRequest true "Status update request"
-//	@Success   204       {object}  nil                "No Content"
-//	@Failure   400       {object}  dto.ErrorResponse  "Invalid payload"
+//	@Param     request   body      dto.UpdateSessionStatusRequest true "Status update request (ACCEPTED/REJECTED/DONE)"
+//	@Success   204       {object}  nil                "Status successfully updated"
+//	@Failure   400       {object}  dto.ErrorResponse  "Invalid payload or approval disabled for ACCEPTED/REJECTED transitions"
 //	@Failure   401       {object}  dto.ErrorResponse  "Unauthorized"
-//	@Failure   403       {object}  dto.ErrorResponse  "Forbidden"
+//	@Failure   403       {object}  dto.ErrorResponse  "Forbidden - session does not belong to photographer"
 //	@Failure   404       {object}  dto.ErrorResponse  "Session not found"
-//	@Failure   409       {object}  dto.ErrorResponse  "Session not in pending state"
-//	@Failure   422       {object}  dto.ErrorResponse  "Invalid status value"
+//	@Failure   409       {object}  dto.ErrorResponse  "Session not in valid state for requested transition"
+//	@Failure   422       {object}  dto.ErrorResponse  "Invalid status value (must be ACCEPTED, REJECTED, or DONE)"
 //	@Failure   500       {object}  dto.ErrorResponse  "Internal error"
 //	@Router    /photographer/sessions/status [post]
 //	@Security  BearerAuth

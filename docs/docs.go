@@ -7219,6 +7219,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Updates a photo session booking status with support for approval/rejection and completion workflows.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7228,10 +7229,10 @@ const docTemplate = `{
                 "tags": [
                     "Photographer"
                 ],
-                "summary": "Accept or reject a photo session",
+                "summary": "Update photo session status (approve/reject/complete)",
                 "parameters": [
                     {
-                        "description": "Status update request",
+                        "description": "Status update request (ACCEPTED/REJECTED/DONE)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -7242,10 +7243,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "Status successfully updated"
                     },
                     "400": {
-                        "description": "Invalid payload",
+                        "description": "Invalid payload or approval disabled for ACCEPTED/REJECTED transitions",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -7257,7 +7258,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden - session does not belong to photographer",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -7269,13 +7270,13 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Session not in pending state",
+                        "description": "Session not in valid state for requested transition",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "422": {
-                        "description": "Invalid status value",
+                        "description": "Invalid status value (must be ACCEPTED, REJECTED, or DONE)",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
