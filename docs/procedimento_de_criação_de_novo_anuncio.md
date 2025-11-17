@@ -237,28 +237,23 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 	
 	**Validações Específicas por Tipo de Imóvel (bitmask)**:
 	
-	*Casa em Construção (code: 256)*:
+	*Prédio (code: 256)*:
 	- `completionForecast` - Previsão de conclusão no formato YYYY-MM
 	
-	*Todos os Terrenos (codes: 16, 32, 64, 128, 512)*:
+	*Terreno Residencial (code: 64) ou Terreno Comercial (code: 128)*:
 	- `landBlock` - Quadra/Bloco
-	
-	*Terreno Comercial (code: 64) ou Terreno Residencial (code: 512)*:
 	- `landLot` - Número do lote
 	- `landTerrainType` - Tipo do terreno (catálogo land_terrain_type)
 	- `hasKmz` - Flag indicando se possui arquivo KMZ
-	- Se `hasKmz = true` **E é Terreno Comercial (64)**:
+	- Se `hasKmz = true` **E é Terreno Comercial (128)**:
 	  - `kmzFile` - Caminho/URL do arquivo KMZ
 	
-	*Prédio (code: 1024)*:
-	- `buildingFloors` - Número de andares do prédio
-	
-	*Apartamento (code: 1), Sala (code: 2), Laje Corporativa (code: 4)*:
+	*Apartamento (code: 1), Loja (code: 2), Laje Corporativa (code: 4)*:
 	- `unitTower` - Torre/Bloco da unidade
 	- `unitFloor` - Andar da unidade
 	- `unitNumber` - Número da unidade
 	
-	*Galpão/Industrial/Logístico (code: 2048)*:
+	*Galpão/Industrial/Logístico (code: 512)*:
 	- `warehouseManufacturingArea` - Área de manufatura/produção
 	- `warehouseSector` - Setor do galpão (catálogo warehouse_sector)
 	- `warehouseHasPrimaryCabin` - Flag de cabine primária
@@ -271,13 +266,14 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 	- Se `warehouseHasOfficeArea = true`:
 	  - `warehouseOfficeArea` - Área de escritórios em m²
 	
-	*Loja (code: 8)*:
+	*Loja (code: 2)*:
 	- `storeHasMezzanine` - Flag de mezanino
 	- Se `storeHasMezzanine = true`:
 	  - `storeMezzanineArea` - Área do mezanino em m²
 	
 	**Observações Importantes**:
 	- Os códigos de tipo de imóvel são bitmask, um listing pode ter múltiplos tipos simultaneamente
+	- Códigos válidos: 1=Apartamento, 2=Loja, 4=Laje, 8=Sala, 16=Casa, 32=Casa na Planta, 64=Terreno Residencial, 128=Terreno Comercial, 256=Prédio, 512=Galpão
 	- Durante o `PUT /listings` nenhuma validação é feita, os dados são apenas gravados
 	- Todas as validações acima são executadas apenas no `POST /listings/versions/promote`
 	- Se alguma validação falhar, o promote retorna 400 Bad Request com mensagem específica do campo faltante

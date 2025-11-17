@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
@@ -167,10 +168,55 @@ func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateL
 	return nil
 }
 
+// validateListingBeforeEndUpdate validates all required fields before ending listing update.
+// This function orchestrates validation in layers: basic fields, transaction-specific rules,
+// property type conditionals, and detailed property-specific validations.
+//
+// Validation follows the documented business rules in procedimento_de_criação_de_novo_anuncio.md
+// section 4.5 (Regras de Validação do Promote).
+//
+// Parameters:
+//   - ctx: context for logging
+//   - tx: database transaction for catalog lookups
+//   - data: complete listing snapshot with all fields
+//
+// Returns error with appropriate HTTP status code:
+//   - 400 Bad Request: missing required field or invalid value
+//   - 500 Internal Server Error: infrastructure failure during catalog lookups
 func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx *sql.Tx, data listingrepository.ListingEndUpdateData) error {
 	logger := utils.LoggerFromContext(ctx)
 
-	// Campos básicos obrigatórios para qualquer anúncio em draft.
+	// ========== LAYER 1: Basic Required Fields (all property types) ==========
+	if err := ls.validateBasicFields(data); err != nil {
+		return err
+	}
+
+	// ========== LAYER 2: Transaction-Specific Validations ==========
+	if err := ls.validateTransactionRules(ctx, tx, data, logger); err != nil {
+		return err
+	}
+
+	// ========== LAYER 3: Property Type Conditional Validations ==========
+	if err := ls.validatePropertyTypeConditionals(ctx, data); err != nil {
+		return err
+	}
+
+	// ========== LAYER 4: Tenant-Specific Validations ==========
+	if err := ls.validateTenantFields(ctx, tx, data, logger); err != nil {
+		return err
+	}
+
+	// ========== LAYER 5: Property-Specific Detailed Validations ==========
+	if err := ls.validatePropertySpecificFields(ctx, data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateBasicFields validates mandatory fields required for all listing types.
+// These fields must be present regardless of property type or transaction type.
+func (ls *listingService) validateBasicFields(data listingrepository.ListingEndUpdateData) error {
 	if data.Code == 0 {
 		return utils.BadRequest("Listing code is required")
 	}
@@ -249,7 +295,20 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 		return utils.BadRequest("Listing must include features")
 	}
 
-	// Regras condicionais para o tipo de transação.
+	return nil
+}
+
+// validateTransactionRules validates fields required based on transaction type (sale, rent, both).
+//
+// For Sale transactions:
+//   - saleNet (sell value)
+//   - exchange flag and related fields if enabled
+//   - financing flag and blockers if disabled
+//
+// For Rent transactions:
+//   - rentNet (rent value)
+//   - guarantees (at least one)
+func (ls *listingService) validateTransactionRules(ctx context.Context, tx *sql.Tx, data listingrepository.ListingEndUpdateData, logger *slog.Logger) error {
 	txnValue := uint8(data.Transaction.Int16)
 	txnCatalog, err := ls.listingRepository.GetCatalogValueByNumeric(ctx, tx, listingmodel.CatalogCategoryTransactionType, txnValue)
 	if err != nil {
@@ -266,7 +325,6 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 	needsRentValidation := slug == "rent" || slug == "both"
 
 	if needsSaleValidation {
-		// Quando a transação envolve venda, validamos preço líquido, permuta e barreiras de financiamento.
 		if !data.SaleNet.Valid {
 			return utils.BadRequest("Sale net value is required")
 		}
@@ -290,7 +348,6 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 	}
 
 	if needsRentValidation {
-		// Nas locações exigimos valor líquido e garantias cadastradas para prosseguir.
 		if !data.RentNet.Valid {
 			return utils.BadRequest("Rent net value is required")
 		}
@@ -299,19 +356,29 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 		}
 	}
 
-	// Regras específicas por tipo de imóvel.
+	return nil
+}
+
+// validatePropertyTypeConditionals validates fields required based on broad property categories.
+//
+// Categories:
+//   - Condominium-based: Apartment, CommercialFloor (require condominium value)
+//   - Land-based: House, OffPlanHouse, ResidencialLand, CommercialLand (require land size and corner flag)
+func (ls *listingService) validatePropertyTypeConditionals(ctx context.Context, data listingrepository.ListingEndUpdateData) error {
 	propertyOptions := ls.DecodePropertyTypes(ctx, data.ListingType)
 	if len(propertyOptions) == 0 {
 		return utils.BadRequest("Property type is invalid")
 	}
-	// Cada option representa um bit ativo na máscara do tipo; usamos isso para derivar validações adicionais.
+
 	needsCondominium := false
 	needsLandData := false
+
 	for _, option := range propertyOptions {
 		switch option.Code {
-		case 1, 4:
+		case int64(globalmodel.Apartment), int64(globalmodel.CommercialFloor):
 			needsCondominium = true
-		case 16, 32, 64, 128:
+		case int64(globalmodel.House), int64(globalmodel.OffPlanHouse),
+			int64(globalmodel.ResidencialLand), int64(globalmodel.CommercialLand):
 			needsLandData = true
 		}
 	}
@@ -329,125 +396,225 @@ func (ls *listingService) validateListingBeforeEndUpdate(ctx context.Context, tx
 		}
 	}
 
-	// Regras adicionais quando quem mora é inquilino.
-	if data.WhoLives.Valid {
-		whoLivesValue := uint8(data.WhoLives.Int16)
-		whoLivesCatalog, catalogErr := ls.listingRepository.GetCatalogValueByNumeric(ctx, tx, listingmodel.CatalogCategoryWhoLives, whoLivesValue)
-		if catalogErr != nil {
-			if errors.Is(catalogErr, sql.ErrNoRows) {
-				return utils.BadRequest("Who lives value is invalid")
-			}
-			utils.SetSpanError(ctx, catalogErr)
-			logger.Error("listing.end_update.wholives_catalog_error", "err", catalogErr, "listing_id", data.ListingID, "who_lives_id", whoLivesValue)
-			return utils.InternalError("")
-		}
+	return nil
+}
 
-		if strings.ToLower(strings.TrimSpace(whoLivesCatalog.Slug())) == "tenant" {
-			if !data.TenantName.Valid || strings.TrimSpace(data.TenantName.String) == "" {
-				return utils.BadRequest("Tenant name is required when tenant lives in the property")
-			}
-			if !data.TenantPhone.Valid || strings.TrimSpace(data.TenantPhone.String) == "" {
-				return utils.BadRequest("Tenant phone is required when tenant lives in the property")
-			}
-			if !data.TenantEmail.Valid || strings.TrimSpace(data.TenantEmail.String) == "" {
-				return utils.BadRequest("Tenant email is required when tenant lives in the property")
-			}
+// validateTenantFields validates tenant-specific fields when whoLives = "tenant".
+// Requires tenant name, phone, and email for proper contact management.
+func (ls *listingService) validateTenantFields(ctx context.Context, tx *sql.Tx, data listingrepository.ListingEndUpdateData, logger *slog.Logger) error {
+	if !data.WhoLives.Valid {
+		return nil
+	}
+
+	whoLivesValue := uint8(data.WhoLives.Int16)
+	whoLivesCatalog, catalogErr := ls.listingRepository.GetCatalogValueByNumeric(ctx, tx, listingmodel.CatalogCategoryWhoLives, whoLivesValue)
+	if catalogErr != nil {
+		if errors.Is(catalogErr, sql.ErrNoRows) {
+			return utils.BadRequest("Who lives value is invalid")
+		}
+		utils.SetSpanError(ctx, catalogErr)
+		logger.Error("listing.end_update.wholives_catalog_error", "err", catalogErr, "listing_id", data.ListingID, "who_lives_id", whoLivesValue)
+		return utils.InternalError("")
+	}
+
+	if strings.ToLower(strings.TrimSpace(whoLivesCatalog.Slug())) == "tenant" {
+		if !data.TenantName.Valid || strings.TrimSpace(data.TenantName.String) == "" {
+			return utils.BadRequest("Tenant name is required when tenant lives in the property")
+		}
+		if !data.TenantPhone.Valid || strings.TrimSpace(data.TenantPhone.String) == "" {
+			return utils.BadRequest("Tenant phone is required when tenant lives in the property")
+		}
+		if !data.TenantEmail.Valid || strings.TrimSpace(data.TenantEmail.String) == "" {
+			return utils.BadRequest("Tenant email is required when tenant lives in the property")
 		}
 	}
 
-	// Property-type specific validations
+	return nil
+}
+
+// validatePropertySpecificFields validates detailed fields specific to each property type.
+// Each property type has its own validation rules based on business requirements.
+//
+// Property types validated:
+//   - Building (256): completion forecast
+//   - ResidencialLand, CommercialLand (64, 128): land block, lot, terrain type, KMZ
+//   - Apartment, CommercialStore, CommercialFloor (1, 2, 4): unit tower, floor, number
+//   - Warehouse (512): manufacturing area, sector, cabin, floor specs, zoning, office area
+//   - CommercialStore (2): mezzanine flag and area
+func (ls *listingService) validatePropertySpecificFields(ctx context.Context, data listingrepository.ListingEndUpdateData) error {
+	propertyOptions := ls.DecodePropertyTypes(ctx, data.ListingType)
+
 	for _, option := range propertyOptions {
 		switch option.Code {
-		case 256: // Casa em Construção
-			if !data.CompletionForecast.Valid || strings.TrimSpace(data.CompletionForecast.String) == "" {
-				return utils.BadRequest("Completion forecast (YYYY-MM) is required for Casa em Construção")
+		case int64(globalmodel.Building):
+			if err := ls.validateBuilding(data); err != nil {
+				return err
 			}
 
-		case 16, 32, 64, 128, 512: // All Terreno types (Urbano, Rural, Industrial, Comercial, Residencial)
-			if !data.LandBlock.Valid || strings.TrimSpace(data.LandBlock.String) == "" {
-				return utils.BadRequest("Land block is required for Terreno properties")
+		case int64(globalmodel.ResidencialLand), int64(globalmodel.CommercialLand):
+			if err := ls.validateLand(data, option.Code); err != nil {
+				return err
 			}
 
-			// Terreno Comercial (64) or Terreno Residencial (512)
-			if option.Code == 64 || option.Code == 512 {
-				if !data.LandLot.Valid || strings.TrimSpace(data.LandLot.String) == "" {
-					return utils.BadRequest("Land lot is required for Terreno Comercial/Residencial")
-				}
-				if !data.LandTerrainType.Valid {
-					return utils.BadRequest("Land terrain type is required for Terreno Comercial/Residencial")
-				}
-				if !data.HasKmz.Valid {
-					return utils.BadRequest("HasKmz flag is required for Terreno Comercial/Residencial")
-				}
-				// If has_kmz is true, kmz_file is required (only for Comercial)
-				if option.Code == 64 && data.HasKmz.Valid && data.HasKmz.Int16 == 1 {
-					if !data.KmzFile.Valid || strings.TrimSpace(data.KmzFile.String) == "" {
-						return utils.BadRequest("KMZ file path is required when HasKmz is true for Terreno Comercial")
-					}
-				}
+		case int64(globalmodel.Apartment), int64(globalmodel.CommercialFloor):
+			if err := ls.validateUnit(data); err != nil {
+				return err
 			}
 
-		case 1024: // Prédio
-			if !data.BuildingFloors.Valid {
-				return utils.BadRequest("Building floors count is required for Prédio")
+		case int64(globalmodel.CommercialStore):
+			// CommercialStore requires both unit validation and mezzanine validation
+			if err := ls.validateUnit(data); err != nil {
+				return err
+			}
+			if err := ls.validateCommercialStore(data); err != nil {
+				return err
 			}
 
-		case 1, 2, 4: // Apartamento (1), Sala (2), Laje Corporativa (4)
-			if !data.UnitTower.Valid || strings.TrimSpace(data.UnitTower.String) == "" {
-				return utils.BadRequest("Unit tower is required for Apartamento/Sala/Laje")
-			}
-			if !data.UnitFloor.Valid || strings.TrimSpace(data.UnitFloor.String) == "" {
-				return utils.BadRequest("Unit floor is required for Apartamento/Sala/Laje")
-			}
-			if !data.UnitNumber.Valid || strings.TrimSpace(data.UnitNumber.String) == "" {
-				return utils.BadRequest("Unit number is required for Apartamento/Sala/Laje")
-			}
-
-		case 2048: // Galpão (Industrial/Logístico)
-			if !data.WarehouseManufacturingArea.Valid {
-				return utils.BadRequest("Warehouse manufacturing area is required for Galpão")
-			}
-			if !data.WarehouseSector.Valid {
-				return utils.BadRequest("Warehouse sector is required for Galpão")
-			}
-			if !data.WarehouseHasPrimaryCabin.Valid {
-				return utils.BadRequest("Warehouse has primary cabin flag is required for Galpão")
-			}
-			if data.WarehouseHasPrimaryCabin.Valid && data.WarehouseHasPrimaryCabin.Int16 == 1 {
-				if !data.WarehouseCabinKva.Valid || strings.TrimSpace(data.WarehouseCabinKva.String) == "" {
-					return utils.BadRequest("Warehouse cabin KVA is required when has primary cabin is true for Galpão")
-				}
-			}
-			if !data.WarehouseGroundFloor.Valid {
-				return utils.BadRequest("Warehouse ground floor height is required for Galpão")
-			}
-			if !data.WarehouseFloorResistance.Valid {
-				return utils.BadRequest("Warehouse floor resistance is required for Galpão")
-			}
-			if !data.WarehouseZoning.Valid || strings.TrimSpace(data.WarehouseZoning.String) == "" {
-				return utils.BadRequest("Warehouse zoning is required for Galpão")
-			}
-			if !data.WarehouseHasOfficeArea.Valid {
-				return utils.BadRequest("Warehouse has office area flag is required for Galpão")
-			}
-			if data.WarehouseHasOfficeArea.Valid && data.WarehouseHasOfficeArea.Int16 == 1 {
-				if !data.WarehouseOfficeArea.Valid {
-					return utils.BadRequest("Warehouse office area is required when has office area is true for Galpão")
-				}
-			}
-
-		case 8: // Loja
-			if !data.StoreHasMezzanine.Valid {
-				return utils.BadRequest("Store has mezzanine flag is required for Loja")
-			}
-			if data.StoreHasMezzanine.Valid && data.StoreHasMezzanine.Int16 == 1 {
-				if !data.StoreMezzanineArea.Valid {
-					return utils.BadRequest("Store mezzanine area is required when has mezzanine is true for Loja")
-				}
+		case int64(globalmodel.Warehouse):
+			if err := ls.validateWarehouse(data); err != nil {
+				return err
 			}
 		}
 	}
 
+	return nil
+}
+
+// validateBuilding validates fields specific to Building property type (code: 256).
+// Buildings under construction require a completion forecast in YYYY-MM format.
+func (ls *listingService) validateBuilding(data listingrepository.ListingEndUpdateData) error {
+	if !data.CompletionForecast.Valid || strings.TrimSpace(data.CompletionForecast.String) == "" {
+		return utils.BadRequest("Completion forecast (YYYY-MM) is required for Building")
+	}
+	return nil
+}
+
+// validateLand validates fields specific to land property types.
+//
+// All land types (ResidencialLand=64, CommercialLand=128) require:
+//   - landBlock: block identification
+//   - landLot: lot number
+//   - landTerrainType: terrain type catalog value
+//   - hasKmz: flag indicating KMZ file presence
+//
+// For CommercialLand specifically:
+//   - kmzFile: required when hasKmz is true
+func (ls *listingService) validateLand(data listingrepository.ListingEndUpdateData, propertyCode int64) error {
+	// All land types require land block
+	if !data.LandBlock.Valid || strings.TrimSpace(data.LandBlock.String) == "" {
+		return utils.BadRequest("Land block is required for land properties")
+	}
+
+	// All land types require lot number
+	if !data.LandLot.Valid || strings.TrimSpace(data.LandLot.String) == "" {
+		return utils.BadRequest("Land lot is required for land properties")
+	}
+
+	// All land types require terrain type
+	if !data.LandTerrainType.Valid {
+		return utils.BadRequest("Land terrain type is required for land properties")
+	}
+
+	// All land types require hasKmz flag
+	if !data.HasKmz.Valid {
+		return utils.BadRequest("HasKmz flag is required for land properties")
+	}
+
+	// CommercialLand (128) requires KMZ file when hasKmz is true
+	if propertyCode == int64(globalmodel.CommercialLand) && data.HasKmz.Valid && data.HasKmz.Int16 == 1 {
+		if !data.KmzFile.Valid || strings.TrimSpace(data.KmzFile.String) == "" {
+			return utils.BadRequest("KMZ file path is required when HasKmz is true for Commercial Land")
+		}
+	}
+
+	return nil
+}
+
+// validateUnit validates fields specific to unit-based property types.
+//
+// Applies to:
+//   - Apartment (1): residential unit in multi-family building
+//   - CommercialStore (2): commercial store/shop
+//   - CommercialFloor (4): commercial floor/office space
+//
+// All require:
+//   - unitTower: tower/building identification
+//   - unitFloor: floor number
+//   - unitNumber: unit identification number
+func (ls *listingService) validateUnit(data listingrepository.ListingEndUpdateData) error {
+	if !data.UnitTower.Valid || strings.TrimSpace(data.UnitTower.String) == "" {
+		return utils.BadRequest("Unit tower is required for unit-based properties")
+	}
+	if !data.UnitFloor.Valid || strings.TrimSpace(data.UnitFloor.String) == "" {
+		return utils.BadRequest("Unit floor is required for unit-based properties")
+	}
+	if !data.UnitNumber.Valid || strings.TrimSpace(data.UnitNumber.String) == "" {
+		return utils.BadRequest("Unit number is required for unit-based properties")
+	}
+	return nil
+}
+
+// validateWarehouse validates fields specific to Warehouse/Industrial property type (code: 512).
+//
+// Warehouses are complex industrial/logistics facilities requiring detailed technical specifications:
+//   - warehouseManufacturingArea: production/manufacturing area in m²
+//   - warehouseSector: industrial sector catalog value (manufacturing, logistics, etc.)
+//   - warehouseHasPrimaryCabin: flag for primary electrical cabin presence
+//   - warehouseCabinKva: cabin power in KVA (required when primary cabin exists)
+//   - warehouseGroundFloor: ground floor height in meters
+//   - warehouseFloorResistance: floor load capacity in kg/m²
+//   - warehouseZoning: municipal zoning classification
+//   - warehouseHasOfficeArea: flag for office space presence
+//   - warehouseOfficeArea: office area in m² (required when office space exists)
+func (ls *listingService) validateWarehouse(data listingrepository.ListingEndUpdateData) error {
+	if !data.WarehouseManufacturingArea.Valid {
+		return utils.BadRequest("Warehouse manufacturing area is required for Warehouse")
+	}
+	if !data.WarehouseSector.Valid {
+		return utils.BadRequest("Warehouse sector is required for Warehouse")
+	}
+	if !data.WarehouseHasPrimaryCabin.Valid {
+		return utils.BadRequest("Warehouse has primary cabin flag is required for Warehouse")
+	}
+	if data.WarehouseHasPrimaryCabin.Valid && data.WarehouseHasPrimaryCabin.Int16 == 1 {
+		if !data.WarehouseCabinKva.Valid || strings.TrimSpace(data.WarehouseCabinKva.String) == "" {
+			return utils.BadRequest("Warehouse cabin KVA is required when has primary cabin is true for Warehouse")
+		}
+	}
+	if !data.WarehouseGroundFloor.Valid {
+		return utils.BadRequest("Warehouse ground floor height is required for Warehouse")
+	}
+	if !data.WarehouseFloorResistance.Valid {
+		return utils.BadRequest("Warehouse floor resistance is required for Warehouse")
+	}
+	if !data.WarehouseZoning.Valid || strings.TrimSpace(data.WarehouseZoning.String) == "" {
+		return utils.BadRequest("Warehouse zoning is required for Warehouse")
+	}
+	if !data.WarehouseHasOfficeArea.Valid {
+		return utils.BadRequest("Warehouse has office area flag is required for Warehouse")
+	}
+	if data.WarehouseHasOfficeArea.Valid && data.WarehouseHasOfficeArea.Int16 == 1 {
+		if !data.WarehouseOfficeArea.Valid {
+			return utils.BadRequest("Warehouse office area is required when has office area is true for Warehouse")
+		}
+	}
+	return nil
+}
+
+// validateCommercialStore validates fields specific to CommercialStore property type (code: 2).
+//
+// Commercial stores may have mezzanine space:
+//   - storeHasMezzanine: flag indicating mezzanine presence
+//   - storeMezzanineArea: mezzanine area in m² (required when mezzanine exists)
+func (ls *listingService) validateCommercialStore(data listingrepository.ListingEndUpdateData) error {
+	if !data.StoreHasMezzanine.Valid {
+		return utils.BadRequest("Store has mezzanine flag is required for Commercial Store")
+	}
+	if data.StoreHasMezzanine.Valid && data.StoreHasMezzanine.Int16 == 1 {
+		if !data.StoreMezzanineArea.Valid {
+			return utils.BadRequest("Store mezzanine area is required when has mezzanine is true for Commercial Store")
+		}
+	}
 	return nil
 }
 
