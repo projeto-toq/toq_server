@@ -83,7 +83,7 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 	*Campos Específicos por Tipo de Imóvel*:
 	
 	**Casa em Construção (256)**:
-	- `completionForecast` (string) - Previsão de conclusão no formato YYYY-MM (ex: "2026-06")
+	- `completionForecast` (string) - Previsão de conclusão no formato YYYY-MM-DD (ex: "2026-06-01")
 	
 	**Terrenos (16=Urbano, 32=Rural, 64=Industrial, 128=Comercial, 512=Residencial)**:
 	- `landBlock` (string) - Quadra/Bloco (ex: "A", "B1")

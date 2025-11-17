@@ -90,6 +90,20 @@ func (cv *catalogValue) SetIsActive(active bool) {
 }
 
 // AllowedCatalogCategories returns all supported catalog categories.
+//
+// This function defines the whitelist of catalog categories that can be queried
+// via the listing catalog endpoints. Categories not listed here will be rejected
+// by the service layer with a validation error.
+//
+// Returns:
+//   - []string: Slice of valid catalog category identifiers
+//
+// Usage:
+//
+//	categories := listingmodel.AllowedCatalogCategories()
+//	for _, cat := range categories {
+//	    fmt.Println(cat) // property_owner, property_delivered, ...
+//	}
 func AllowedCatalogCategories() []string {
 	return []string{
 		CatalogCategoryPropertyOwner,
@@ -101,10 +115,26 @@ func AllowedCatalogCategories() []string {
 		CatalogCategoryVisitType,
 		CatalogCategoryAccompanyingType,
 		CatalogCategoryGuaranteeType,
+		CatalogCategoryLandTerrainType, // terrain type for land properties
+		CatalogCategoryWarehouseSector, // sector classification for warehouses
 	}
 }
 
 // IsValidCatalogCategory indicates whether the provided category is supported by the domain.
+//
+// This function validates if a given category string matches any of the allowed
+// catalog categories. It is case-sensitive and requires exact matches.
+//
+// Parameters:
+//   - category: The catalog category identifier to validate
+//
+// Returns:
+//   - bool: true if category is valid, false otherwise
+//
+// Example:
+//
+//	valid := listingmodel.IsValidCatalogCategory("land_terrain_type")  // true
+//	valid := listingmodel.IsValidCatalogCategory("invalid_category")    // false
 func IsValidCatalogCategory(category string) bool {
 	for _, allowed := range AllowedCatalogCategories() {
 		if allowed == category {

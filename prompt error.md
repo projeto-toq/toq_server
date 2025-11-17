@@ -9,26 +9,24 @@
 Durante a criação de um novo listing, através do endpoint POST /listings, é executada um verificação em func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input CreateListingInput) (listing listingmodel.ListingInterface, err error) para garantir que o usuário não possua outro listing ativo para o mesmo imóvel. No entanto existe um erro nesta verificação pois a checagem é feita apenas no zipCode e number, ignorando que no mesmo zipCode/number se for um apartamento, podem haver múltiplos listings ativos em diferentes unidades.
 Assim, a tabela abaixo, lista os tipos de imóveis e os campos que devem ser considerados na verificação de unicidade do listing ativo para o mesmo imóvel.
 
-ComplexType	Tipos	código	bin		Complex		Listing				
-Apartment	Apartamento	1	 1 		zipCode	number			unit_tower	unit_floor	unit_number
-Commercial Store	Loja	2	 10 		zipCode	number			unit_number		
-Commercial floor	Laje	4	 100 		zipCode	number			unit_tower	unit_floor	
-Suite	Sala	8	 1.000 		zipCode	number			unit_tower	unit_floor	unit_number
-House	Casa	16	 10.000 				zipCode	number			
-Off-plan House	Casa na Planta	32	 100.000 				zipCode	number			
-Residencial Land	Terreno Residencial	64	 1.000.000 				zipCode	number	land_block	Land_lot	
-Commercial Land	Terreno Comercial	128	 10.000.000 				zipCode	number			
-Building	Prédio	256	 100.000.000 				zipCode	number			
-Warehouse	Galpão	512	 1.000.000.000 				zipCode	number			
+																			duplicity by						
+ComplexType				Tipos					código	bin				Complex				Listing				
+Apartment				Apartamento				1	 	1 				zipCode	number		unit_tower	unit_floor	unit_number
+Commercial Store		Loja					2		 10 			zipCode	number		unit_number		
+Commercial floor		Laje					4	 	100 			zipCode	number		unit_tower	unit_floor	
+Suite					Sala					8		 1.000 			zipCode	number		unit_tower	unit_floor	unit_number
+House					Casa					16		 10.000 							zipCode	number			
+Off-plan House			Casa na Planta			32		 100.000 							zipCode	number			
+Residencial Land		Terreno Residencial		64		 1.000.000 							zipCode	number	land_block	Land_lot	
+Commercial Land			Terreno Comercial		128		 10.000.000 						zipCode	number			
+Building				Prédio					256		 100.000.000 						zipCode	number			
+Warehouse				Galpão					512		 1.000.000.000 						zipCode	number			
 
 
 Assim:
-1. Analise o código onde o erro ocorreu e identifique a causa raiz do problema.
-2. Verifique outros pontos service onde sql.ErrNoRows pode estar sendo mal interpretado.
+1. Analise o código identifique a causa raiz do problema.
+2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
----
-
-## 📘 Fonte da Verdade
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**
 - **`docs/toq_server_go_guide.md`** — Guia completo do projeto (seções 1-17)

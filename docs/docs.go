@@ -2053,7 +2053,7 @@ const docTemplate = `{
         },
         "/admin/listing/catalog": {
             "get": {
-                "description": "Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.",
+                "description": "Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type, land_terrain_type, warehouse_sector.",
                 "produces": [
                     "application/json"
                 ],
@@ -2064,13 +2064,15 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Catalog category",
+                        "example": "land_terrain_type",
+                        "description": "Catalog category (property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type, land_terrain_type, warehouse_sector)",
                         "name": "category",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "boolean",
+                        "default": false,
                         "description": "Include inactive values",
                         "name": "includeInactive",
                         "in": "query"
@@ -2078,34 +2080,34 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "List of catalog values",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValuesResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid category or request parameters",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized (missing or invalid token)",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden (insufficient permissions)",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
