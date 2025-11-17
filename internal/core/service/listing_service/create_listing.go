@@ -85,16 +85,16 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 	propertyType := input.PropertyType
 
 	exist := true
-	// Check if user already has an active listing
-	hasActiveListing, checkErr := ls.listingRepository.CheckActiveListingExists(ctx, tx, userID)
-	if checkErr != nil {
-		utils.SetSpanError(ctx, checkErr)
-		logger.Error("listing.create.check_active_error", "err", checkErr, "user_id", userID)
-		return nil, utils.InternalError("")
-	}
-	if hasActiveListing {
-		return nil, utils.ConflictError("User already has an active listing")
-	}
+	// // Check if user already has an active listing
+	// hasActiveListing, checkErr := ls.listingRepository.CheckActiveListingExists(ctx, tx, userID)
+	// if checkErr != nil {
+	// 	utils.SetSpanError(ctx, checkErr)
+	// 	logger.Error("listing.create.check_active_error", "err", checkErr, "user_id", userID)
+	// 	return nil, utils.InternalError("")
+	// }
+	// if hasActiveListing {
+	// 	return nil, utils.ConflictError("User already has an active listing")
+	// }
 
 	// Check if listing already exists for this address
 	_, err = ls.listingRepository.GetListingVersionByAddress(ctx, tx, zipCode, number)

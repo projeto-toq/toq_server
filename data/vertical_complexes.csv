@@ -1,0 +1,167 @@
+id;name;zip_code;street;number;neighborhood;city;state;reception_phone;sector;main_registration;type
+1;TRIX Tamboré Housing Offices & Shops;06543001;Av. Marcos Penteado de Ulhôa Rodrigues;4053;Alphaville;Santana de Parnaíba;SP;;2;98.678;11
+2;Terraços Tamboré ;06543001;Av. Marcos Penteado de Ulhôa Rodrigues;4000;Alphaville;Santana de Parnaíba;SP;;0;148.291;1
+3;Edifício AlphaLife;06472001;Av. Copacaba ;291;Alphaville;Barueri;SP;;0;100.570;1
+4;Condomínio Boulevard Tamboré;06543006;Alameda Canto dos Pássaros ;95;Alphaville;Santana de Parnaíba;SP;;2;;3
+5;Reserva Alphasitio 1;06544300;Avenida dos Parques ;329;Alphaville;Santana de Parnaíba;SP;;0;135.141;1
+6;Condomínio Paisagem Tamboré;06543001;Av. Marcos Penteado de Ulhôa Rodrigues, ;2113;Alphaville;Santana de Parnaíba;SP;;0;98.661;1
+7;Edifício Cauaxi Plaza ;06454020;Avenida Cauaxi ;119;Alphaville;Barueri;SP;;0;63.875;1
+8;Condomínio Edifício Everest Tower;06454020;Avenida Cauaxi ;189;Alphaville;Barueri;SP;;0;43.773;1
+9;Complexo Madeira Alphaville;06454010;Alameida Madeira;328;Alphaville;Barueri;SP;;2;81.417;15
+10;Complexo Madeira Alphaville;06454010;Alameida Madeira;362;Alphaville;Barueri;SP;;2;81.417;15
+11;Complexo Madeira Alphaville;06454010;Alameida Madeira;398;Alphaville;Barueri;SP;;2;81.417;15
+12;Condomínio Edifício Saint Paul;06454020;Avenida Cauaxi ;399;Alphaville;Barueri;SP;;0;82.280;1
+13;Condomínio Californian Towers ;06454020;Avenida Cauaxi ;222;Alphaville;Barueri;SP;;0;71.000;1
+14;Condomínio Premium Tamboré;06460040;Alameda Cores da Mata ;1973;Alphaville;Barueri;SP;;0;136.672;1
+15;Condomínio Loft ;06454080;Alameda Itapecuru ;515;Alphaville;Barueri;SP;;0;62.890;1
+16;Condomínio Edifício San Francisco;06454020;Avenida Cauaxi ;152;Alphaville;Barueri;SP;;0;82.848;1
+17;Condomínio Edifício Sol Alphaville;06454020;Avenida Cauaxi ;223;Alphaville;Barueri;SP;;0;5.731;1
+18;Condomínio Edifício L'Etoile Residence Service ;06454030;Alameda Purús;265;Alphaville;Barueri;SP;;0;59.946;1
+19;Condomínio Alpha Club Condominium ;06454040;Alameda Mamoré;"149;189";Alphaville;Barueri;SP;;0;99.752;1
+20;Condomínio Edifício Concorde;06454040;Alameda Mamoré;773;Alphaville;Barueri;SP;;0;33.792;1
+21;Condomínio Edifício Metrópolis Flat and Office ;06454040;Alameda Mamoré;333;Alphaville;Barueri;SP;;2;3.942;9
+22;Condomínio Edíficio Alpha Towers;06454050;Alameda Grajaú;473;Alphaville;Barueri;SP;;0;47.162;1
+23;Condomíno Edifício Alphama ;06454050;Alameda Grajaú;654;Alphaville;Barueri;SP;;0;35.112/35.113;1
+24;Condomínio Columbia ;06454050;Alameda Grajaú;292;Alphaville;Barueri;SP;;0;29.076;1
+25;Condomíno Edifício Discovery ;06454050;Alameda Grajaú;249;Alphaville;Barueri;SP;;0;58.255;1
+26;Condomínio Duplex House ;06454050;Alameda Grajaú;128;Alphaville;Barueri;SP;;0;;1
+27;Condomínio Edifício Le Bougainvillee Home Service ;06454050;Alameda Grajaú;321;Alphaville;Barueri;SP;;0;7824;1
+28;Condomínio Edifício Manhattan ;06454050;Alameda Grajaú;615;Alphaville;Barueri;SP;;0;956;1
+29;Condomínio Master Residence Stay;06454050;Alameda Grajaú;158;Alphaville;Barueri;SP;;0;18.683;1
+30;Condomínio Parati ;06454050;Alameda Grajaú;584;Alphaville;Barueri;SP;;0;18.681;1
+31;Condominio Edificio Santiago;06454050;Alameda Grajaú;585;Alphaville;Barueri;SP;;0;18.682;1
+32;Condomínio Top Village;06460020;Av. Tucunaré ;1140;Alphaville;Barueri;SP;;0;98.327;1
+33;Condomínio Edifício Village;06454050;Alameda Grajaú;554;Alphaville;Barueri;SP;;0;15.265;1
+34;Condomínio Office Grajaú;06454050;Alameda Grajaú;614;Alphaville;Barueri;SP;;1;49.117;12
+35;Condominio Edificio Vitoria I;06454050;Alameda Grajaú;248;Alphaville;Barueri;SP;;0;34.539;1
+36;Condomínio Monte Carlo 1;06454050;Alameda Grajaú;524;Alphaville;Barueri;SP;;0;66.411;1
+37;Condomínio Monte Carlo Trade Center;06454040;Alameda Mamoré;911;Alphaville;Barueri;SP;;1;59.262;12
+38;Condomínio Empresarial Monte Carlo 18 do Forte;06472002;Av. Ipanema;165;Alphaville;Barueri;SP;;1;102.109;14
+39;Condominio 1Splendore;06454060;Praça Oiapoque;360;Alphaville;Barueri;SP;;0;118.937;1
+40;Condomínio 1Maison Mont Blanc;06454065;Avenida Oiapoque;65;Alphaville;Barueri;SP;;0;63.565;1
+41;Condomínio Classic;06454070;Alameda Amazonas;875;Alphaville;Barueri;SP;;0;47.460;1
+42;Condomínio Edifício Grand Floridian ;06454080;Alameda Itapecuru ;149;Alphaville;Barueri;SP;;0;22.252;1
+43;Condomínio Edificio Granville;06454080;Alameda Itapecuru ;605;Alphaville;Barueri;SP;;0;3.941;1
+44;Condomínio Edifício Itapecuru I e II;06454080;Alameda Itapecuru ;154;Alphaville;Barueri;SP;;0;48.793;1
+45;Condominio Edificio Pacific Towers;06454080;Alameda Itapecuru ;119;Alphaville;Barueri;SP;;0;22.251;1
+46;Condomínio Edifício Lotus;06454080;Alameda Itapecuru ;282;Alphaville;Barueri;SP;;0;59.872;1
+47;Condomínio Beat Alphaville;06454080;Alameda Itapecuru ;239;Alphaville;Barueri;SP;;0;62.314;1
+48;Condomínio Edifício Fatto Alphaville;06460010;Avenida Aruanã;851;Alphaville;Barueri;SP;;0;96.734;1
+49;Condomínio Edificio Garden Hill;06460010;Avenida Aruanã;821;Alphaville;Barueri;SP;;0;103.700;1
+50;Condomínio Win Alphaville;06460010;Avenida Aruanã;745;Alphaville;Barueri;SP;;0;94.173;1
+51;Condomínio Edifício Aruanã 601;06460010;Avenida Aruanã;601;Alphaville;Barueri;SP;;0;;1
+52;Condomínio Panoramic;06460020;Avenida Tucunaré ;1192;Alphaville;Barueri;SP;;0;133.649;1
+53;Condomínio Bellagio Ecopark Residence;06465134;Rua Bonnard;157;Alphaville;Barueri;SP;;0;133.533;1
+54;Condominio Parc Athénée;06465134;Rua Bonnard;231;Alphaville;Barueri;SP;;0;133.532;1
+55;Condominio The Garden & The Lake Gramercy Park;06465136;Avenida Parkinson;101;Alphaville;Barueri;SP;;0;133.548;1
+56;Condomínio 1One Gramercy Park;06465136;Avenida Parkinson;42;Alphaville;Barueri;SP;;0;191.190;1
+57;Condomínio Brascan Century Plaza Green Valley 11;06465136;Avenida Parkinson;35;Alphaville;Barueri;SP;;0;133.547;1
+58;Condomínio Ereditá;06543315;Alameda América;365;Alphaville;Santana de Parnaíba;SP;;0;100.464;1
+59;Condomínio Edifício London Ville;06472001;Avenida Copacaba ;348;Alphaville;Barueri;SP;;0;140.009;1
+60;Condomínio Iakatu Alphaville;06472001;Avenida Copacaba ;439;Alphaville;Barueri;SP;;0;135.693;1
+61;Condomínio More Alphaville;06472005;Avenida Ômega;598;Alphaville;Barueri;SP;;0;135.037;1
+62;Condomínio Hit Alphaville;06472005;Avenida Ômega;442;Alphaville;Barueri;SP;;0;156.421;1
+63;Condomínio Glass Alphaville;06472005;Avenida Ômega;310;Alphaville;Barueri;SP;;0;100.729;1
+64;Condomínio Edifício Novare;06472005;Avenida Ômega;174;Alphaville;Barueri;SP;;0;170.965;1
+65;Condomínio Edifício Choice 1;06472005;Avenida Ômega;265;Alphaville;Barueri;SP;;0;;1
+66;Condomínio Edifício Verte Ville II;06472007;Avenida Vert Ville ;610;Alphaville;Barueri;SP;;0;69.166;1
+67;Condomínio Lumina Gramercy Park;06465136;Avenida Parkinson;72;Alphaville;Barueri;SP;;0;133.546;1
+68;Condomínio Brascan Century Plaza Green Valley Commercial;06473000;Avenida Andrômeda;885;Alphaville;Barueri;SP;;1;134.686;14
+69;Condomínio Life Park;06465135;Avenida Delmar;277;Alphaville;Barueri;SP;;0;133.542;1
+70;Condomínio Atria Alphaville;06473000;Avenida Andrômeda;206;Alphaville;Barueri;SP;;0;193.663;1
+71;Condomínio Myra Alphaville ;06473000;Avenida Andrômeda;152;Alphaville;Barueri;SP;;0;;1
+72;Condomínio Acqua Park;06465134;Rua Bonnard;132;Alphaville;Barueri;SP;;0;133.537;1
+73;Condomínio Comercial Edifício Alpha Park;06455000;Alameda Araguaia ;943;Alphaville;Barueri;SP;;1;28.383;14
+74;Condomínio 1I-Gloo Alphaville;06485360;Rua Vicente De Carvalho;219;Alphaville;Barueri;SP;;0;145.490;1
+75;Condomínio Splendya 1;06485370;Rua Augusto dos Anjos;139;Alphaville;Barueri;SP;;0;155.330;1
+76;Condomínio Splendya 1II;06485370;Rua Augusto dos Anjos;155;Alphaville;Barueri;SP;;0;167.906;1
+77;Condomínio Edifício Júpiter;06541005;Avenida Marte;245;Alphaville;Santana de Parnaíba;SP;;0;81.793;1
+78;Condominio Edificio Marte;06541005;Avenida Marte;273;Alphaville;Santana de Parnaíba;SP;;0;86.365;1
+79;Condominio Edificio Maison de Ville;06541005;Avenida Marte;125;Alphaville;Santana de Parnaíba;SP;;0;80.459;1
+80;Condomínio Alpha Vita;06542089;Avenida Universitário;585;Alphaville;Santana de Parnaíba;SP;;0;135.800;1
+81;Condomínio Green Tamboré;06543001;Avenida Marcos Penteado Ulhôa Rodrigues;4446;Alphaville;Santana de Parnaíba;SP;;0;129.533;1
+82;Condominio Jardins de Tambore;06544515;Alameda Terras Altas ;35;Alphaville;Santana de Parnaíba;SP;;2;148.313;3
+83;Condomínio 1The Penthouses Tamboré;06543001;Avenida Marcos Penteado Ulhôa Rodrigues;3566;Alphaville;Santana de Parnaíba;SP;;0;106.397;1
+84;Condominio Edificio Ghaia;06543315;Alameda América;101;Alphaville;Santana de Parnaíba;SP;;0;135.094;1
+85;Condomínio Link Studios & Offices;06544300;Avenida dos Parques;45;Alphaville;Santana de Parnaíba;SP;;2;164.788;15
+86;Condominio Edificio Stadium;06454000;Alameda Rio Negro ;1030;Alphaville;Barueri;SP;;2;53.277;15
+87;Condominio Edificio Sequoia Residence;06454010;Alameda Madeira;292;Alphaville;Barueri;SP;;0;;1
+88;Condomínio Edifício Europa;06454020;Avenida Cauaxi ;431;Alphaville;Barueri;SP;;0;92.325;1
+89;Condomínio Uptown Housing;06541035;Avenida Altos de Alphaville;500;Alphaville;Santana de Parnaíba;SP;;0;61.370;16
+90;Condomínio Quintas de Tamboré;06544515;Alameda Terras Altas;433;Alphaville;Santana de Parnaíba;SP;;0;;16
+91;Condomínio Bonnard 307;06465134;Rua Bonnard;307;Alphaville;Barueri;SP;;0;;1
+92;Condomínio West Gate ;06454020;Alameda Tocantins;75;Alphaville;Barueri;SP;;1;;14
+93;Condomínio West Point;06454000;Alameda Rio Negro;161;Alphaville;Barueri;SP;;1;28.326;14
+94;Condominio West Side;06455020;Alameda Tocantins;125;Alphaville;Barueri;SP;;1;28.328;270
+95;Condomínio West Towers;06454000;Alameda Rio Negro;500;Alphaville;Barueri;SP;;1;62.827;14
+96;Condomínio Canopus Corporate Alphaville;06460000;Avenida Tamboré ;267;Alphaville;Barueri;SP;;1;1.207;14
+97;Centro Empresarial Araguaia - Cea I;06455000;Alameda Araguaia ;2044;Alphaville;Barueri;SP;;1;124.627;14
+98;Centro Empresarial Araguaia II - Cea II;06455000;Alameda Araguaia ;2190;Alphaville;Barueri;SP;;1;124.630;14
+99;Edifício CEA Corporate;06455000;Alameda Araguaia ;2104;Alphaville;Barueri;SP;;1;;14
+100;Edifício Office Shopping Tamboré;06460040;Avenida Marcos Penteado Ulhôa Rodrigues;1.119;Alphaville;Barueri;SP;;1;85.415;12
+101;Condomínio Escritórios Rio Negro;06454000;Alameda Rio Negro;503;Alphaville;Barueri;SP;;1;9.724;12
+102;Condomínio Centro Administrativo Rio Negro;06454000;Alameda Rio Negro;585;Alphaville;Barueri;SP;;1;115.321;14
+103;Edifício Alpha Premium - Rio Negro Business Center;06454000;Alameda Rio Negro;967;Alphaville;Barueri;SP;;1;156.370;14
+104;Condomínio Edifício Station Square;06454010;Alameda Madeira;53;Alphaville;Barueri;SP;;1;;14
+105;Edificio Amazonia;06454040;Alameda Mamoré;687;Alphaville;Barueri;SP;;1;;6
+106;Condomínio Plaza Alphaville;06453051;Alameda Rio Negro;1.084;Alphaville;Barueri;SP;;1;58.450;14
+107;Condomínio New Worker Tower Alphaville;06454050;Alameda Grajaú;60;Alphaville;Barueri;SP;;1;21.156;14
+108;Condominio Edificio Pravda;06454050;Alameda Grajaú;98;Alphaville;Barueri;SP;;1;28.539;14
+109;Condomínio Edifício Murano Business Office;06454050;Alameda Grajaú;129;Alphaville;Barueri;SP;;1;33.939;14
+110;Condomínio Edifício Personal Business Office;06454040;Alameda Mamoré;535;Alphaville;Barueri;SP;;1;66.699;14
+111;Condomínio Edifício Icon;06454041;Alameda Mamoré;503;Alphaville;Barueri;SP;;1;;14
+112;Edifício Guinzza Trade Center;06454010;Alameda Madeira;258;Alphaville;Barueri;SP;;1;97.175;12
+113;Condomínio Edifício Alfacon;06454010;Alameda Madeira;222;Alphaville;Barueri;SP;;1;;14
+114;Condomínio Quebec Business Center;06454010;Alameda Madeira;162;Alphaville;Barueri;SP;;1;131.071;14
+115;Condomínio Cauaxi Empresarial;06454020;Avenida Cauaxi ;350;Alphaville;Barueri;SP;;1;53.669;12
+116;Condominio Alpha Green Business Tower;06454020;Avenida Cauaxi ;293;Alphaville;Barueri;SP;;1;154.394;14
+117;Condomínio Medic Life;06472001;Avenida Copacaba ;112;Alphaville;Barueri;SP;;1;134.748;14
+118;Edifício Empresarial Conti Chiari;06472001;Avenida Copacaba ;238;Alphaville;Barueri;SP;;1;;14
+119;Condomínio Edifício Gama Offices;06472001;Avenida Copacaba ;177;Alphaville;Barueri;SP;;1;100.720;14
+120;Edificio Montreal Plaza;06472001;Avenida Copacaba ;325;Alphaville;Barueri;SP;;1;149.096;14
+121;Condomínio Smart Office Alphaville;06485365;Rua Rubem Braga;58;Alphaville;Barueri;SP;;1;116.853;12
+122;Condomínio Wave Alphaville;06472003;Alameda Leblon;15;Alphaville;Barueri;SP;;0;95.117;1
+123;Condomínio Edifício Air Offices;06473000;Avenida Andrômeda;723;Alphaville;Barueri;SP;;1;133.551;14
+124;Condomínio Edifício Ômega;06454000;Alameda Rio Negro;911;Alphaville;Barueri;SP;;1;28.380;14
+125;Condomínio Trend Tower;06472001;Avenida Copacaba ;268;Alphaville;Barueri;SP;;2;218.001;15
+126;Condomínio Soho Tamboré;06543001;Avenida Marcos Penteado Ulhôa Rodrigues;624;Alphaville;Santana de Parnaíba;SP;;0;149.176;1
+127;Condomínio Resort Tamboré;06543001;Avenida Marcos Penteado Ulhôa Rodrigues;3800;Alphaville;Santana de Parnaíba;SP;;0;143.665;1
+128;Condominio 1Parque Tamboré;06543001;Avenida Marcos Penteado Ulhôa Rodrigues;1001;Alphaville;Santana de Parnaíba;SP;;0;106.449;1
+129;Condomínio Bosques de Tamboré;06543001;Avenida Marcos Penteado Ulhôa Rodrigues;5100;Alphaville;Santana de Parnaíba;SP;;0;98.745;1
+130;Condomínio 1Alphalife Tamboré;06543001;Avenida Marcos Penteado Ulhôa Rodrigues;1.081;Alphaville;Santana de Parnaíba;SP;;0;106.450;1
+131;Condomínio Alpha Square ;06473073;Avenida Sagitário;138;Alphaville;Barueri;SP;;1;111.058;14
+132;Condomínio Alpha Guarden;06473073;Avenida Sagitário;198;Alphaville;Barueri;SP;;0;111.058;1
+133;Condomínio Alpha Park ;06473073;Avenida Sagitário;278;Alphaville;Barueri;SP;;0;111.058;1
+134;Condomínio Verone ;06473010;Alameda Centauro;919;Alphaville;Barueri;SP;;0;135.095;1
+135;Condomínio 1Royal Park;06465135;Avenida Delmar ;351;Alphaville;Barueri;SP;;0;133.535;1
+136;Condomínio Bellini Alphaville ;06460121;Avenida Piraíba;263;Alphaville;Barueri;SP;;0;117.581;1
+137;Condomínio Edifício Vogue;06454020;Avenida Cauaxi;329;Alphaville;Barueri;SP;;0;86.347;1
+138;Condomínio Edifício Regina;06454020;Avenida Cauaxi;258;Alphaville;Barueri;SP;;0;34.154;1
+139;Condomínio Level Alphaville ;06473073;Avenida Sagitário;233;Alphaville;Barueri;SP;;0;212.148;1
+140;Condomínio Wi-House Alphaville;06454070;Alameda Amazonas;495;Alphaville;Barueri;SP;;0;63.566;1
+141;Condomínio Edifício Chateau;06454020;Avenida Cauaxi;363;Alphaville;Barueri;SP;;0;57.014;1
+142;Associação 1Scenic;06540900;Avenida Pentágono ;1100;Alphaville;Santana de Parnaíba;SP;;0;105.990;1
+143;Condomínio Tamboré 05 - Villaggio;06543901;Alameda Gregório Bogossian Sobrinho;60;Alphaville;Santana de Parnaíba;SP;;0;109.241;1
+144;Condomínio Tamboré 04 - Villaggio;06544072;Avenida Victor Civita;235;Alphaville;Santana de Parnaíba;SP;;0;105.698;1
+145;Condomínio Tamboré 06 - Villaggio;06543502;Alameda Ibérica;285;Alphaville;Santana de Parnaíba;SP;;0;110.587;1
+146;Condomínio Edifício Alpha Style ;06454080;Alameda Itapecuru;214;Alphaville;Barueri;SP;;0;137.314;1
+147;Condomínio Canvas High House ;06454020;Avenida Cauaxi;370;Alphaville;Barueri;SP;;0;36.880;1
+148;Edifício Crystal Tower;06454040;Alameda Mamoré,;989;Alphaville;Barueri;SP;;1;99.199;14
+149;Condominio Edificio Lazulli Corporate Office;06472001;Avenida Copacaba ;190;Alphaville;Barueri;SP;;1;160.739;14
+150;Condominio Edificio Vitoria II;06454050;Alameda Grajaú;218;Alphaville;Barueri;SP;;0;53.110;1
+151;Condomínio Edifício Eagle Point;06455000;Alameda Araguaia;1293;Alphaville;Barueri;SP;;1;28.381;14
+152;Castelo Branco Office Park;06460040;Avenida Marcos Penteado Ulhôa Rodrigues;819;Alphaville;Barueri;SP;;1;144.676;14
+153;Condomínio Edifício Evolution Corporate;06455914;Alameda Xingu ;512;Alphaville;Barueri;SP;;1;148.521;14
+154;Condomínio Edifício Itower;06455911;Alameda Xingu;350;Alphaville;Barueri;SP;;1;138.678;14
+155;Condomínio Edifício Oiapoque;06454080;Alameda Itapecuru ;322;Alphaville;Barueri;SP;;0;40.616;1
+156;Condomínio Edifício Ana Paula;06541005;Avenida Marte;376;Alphaville;Santana de Parnaíba;SP;;0;78.986;1
+157;Condomínio Edifício Copacabana;06472001;Avenida Copacaba ;229;Alphaville;Barueri;SP;;0;104.750;1
+158;Condomínio Jardins de Monet ;06454080;Alameda Itapecuru;244;Alphaville;Barueri;SP;;0;8140;1
+159;Condomínio Edifício Essencia Alphaville;06454080;Alameda Itapecuru;283;Alphaville;Barueri;SP;;0;62.133;1
+160;Condomíno Edifício America II;06454080;Alameda Itapecuru;473;Alphaville;Barueri;SP;;0;97.250;1
+161;Condomíno Edifício America I;06454050;Alameda Grajaú;482;Alphaville;Barueri;SP;;0;95.247;1
+162;Condomínio Edifício Phanton;06454040;Alameda Mamoré;737;Alphaville;Barueri;SP;;0;44.726;1
+163;Condomínio Edifício Mirage;06454040;Alameda Mamoré;109;Alphaville;Barueri;SP;;0;19.460;1
+164;Condomínio Edifício De Ville;06454040;Alameda Mamoré;947;Alphaville;Barueri;SP;;0;34.469;1
+165;Condomínio Edifício Present Alphaville;06472005;Avenida Ômega;171;Alphaville;Barueri;SP;;0;100.722;1
+166;Condomínio Edifício Metrópolis Flat and Office ;06454080;Alameda Itapecuru ;645;Alphaville;Barueri;SP;;2;3.942;9

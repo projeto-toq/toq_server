@@ -5510,13 +5510,13 @@ const docTemplate = `{
             }
         },
         "/listings/detail": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns all fields of a listing given its identifier, including active photo session ID if exists.",
+                "description": "Retrieves comprehensive details of a listing including active version, draft metadata (if exists),",
                 "consumes": [
                     "application/json"
                 ],
@@ -5526,10 +5526,18 @@ const docTemplate = `{
                 "tags": [
                     "Listings"
                 ],
-                "summary": "Get listing detail",
+                "summary": "Get listing details by identity ID",
                 "parameters": [
                     {
-                        "description": "Listing identifier",
+                        "type": "string",
+                        "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "description": "Bearer token for authentication",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Listing identity identifier",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -5540,37 +5548,37 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Listing details successfully retrieved",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingDetailResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request format (missing listingIdentityId or invalid value)",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized (missing or invalid token)",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden (requester is not the listing owner)",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Listing identity not found",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error (database failure, transaction error)",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -11014,11 +11022,14 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetListingDetailRequest": {
             "type": "object",
             "required": [
-                "listingId"
+                "listingIdentityId"
             ],
             "properties": {
-                "listingId": {
-                    "type": "integer"
+                "listingIdentityId": {
+                    "description": "ListingIdentityID is the unique identifier of the listing identity (listing_identities.id)\nThis references the parent listing entity, not a specific version\nRequired field to identify which listing's details should be retrieved\nMust be greater than 0\nExample: 1024",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1024
                 }
             }
         },

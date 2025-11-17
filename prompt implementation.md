@@ -6,20 +6,40 @@
 
 ## 🎯 Solicitação
 
-O função `func (lh *ListingHandler) GetAllListings(c *gin.Context)` que lista todos os listings tem a documentação confusa, por não especificar quais listings/versões são retornados. 
-O nome do da função também não é adequado, pois se vai listar listings deveria ser List* e não Get*
-É necessário também que o endpoint aceite ordenação por Id (ascendente/descendente) que representa a data de criação pois o id maior e sempre mais velho e por Status.
+O endpoint POST `/listings/options` nÃo está interpretanto bem a regra de negócio que exige que ao criar um novo listing seja consultado a opção de propertyType para o zipCode number fornecido.
+Isso porque o serviço que atendo ao endpoint está errado e o repository que busca as options também está errado.
+
+Precisamos criar um novo modelo de dados, repository e serviços. O modelos de dados deverá ser criaddo para receber os seeds em `data/horizontal_complex_zip_codes.csv`, `data/horizontal_complexes.csv`, `data/no_complex_zip_codes.csv`, `data/vertical_complex_zip_codes.csv`, `data/vertical_complexes.csv`, `data/vertical_complex_towers.csv`, `data/vertical_complex_sizes.csv`.
+
+A regra de negócios a ser implementada para a busca de propertyTypes é a seguinte:
+- buscar pelo zipCode e number fornecidos em vertical_complexes.csv. Se encontrar, retornar os propertyTypes associados representados por type na tabela vertical_complex_sizes.csv.
+- se nÃo encontrar, buscar pelo zipCode fornecidos em horizontal_complex_zip_codes.csv. Se encontrar, retornar o propertyType associado representado por type na tabela horizontal_complexes.csv.
+- se nÃo encontrar, buscar pelo zipCode fornecidos em no_complex_zip_codes.csv. Se encontrar, retornar o propertyType associado representado por type na tabela no_complex_zip_codes.csv.
+- se nÃo encontrar em nenhum dos casos, retornar um erro 404 com a mesnagem "Area not covered yet for the provided zip code and number."
+
+A resposta do deve conter além da mensagem atual:
+``json
+{
+  "propertyTypes": [
+    {
+      "name": "string",
+      "propertyType": 0
+    }
+  ]
+}
+```
+o nome do condomínio (name) conforme os dados retornados das tabelas.
 
 Assim:
-1. Analise o código atual model, service, handler, repository, dto, converter do projeto e identifique a melhor forma de implementar a mudança.
+1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md` e identifique a melhor forma de implementar a mudança.
+    1.1 apresente o novo modelo de dados para as novas tabelas. O DBA fará a criação das tabelas no banco.
 2. Proponha um plano detalhado de implementação incluindo:
    - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
    - Code Skeletons: esqueletos para cada arquivo novo/alterado (handlers, services, repositories, DTOs, entities, converters) conforme templates da Seção 8 do guia.
    - Estrutura de Diretórios: organização final seguindo a Regra de Espelhamento (Seção 2.1 do guia).
    - Ordem de Execução: etapas numeradas com dependências.
-   - Checklist de Conformidade: validação contra seções específicas do guia.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
-4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva e todos os listings serão apagados.
+4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva.
 
 ---
 

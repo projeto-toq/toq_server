@@ -1422,10 +1422,18 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetListingDetailRequest:
     properties:
-      listingId:
+      listingIdentityId:
+        description: |-
+          ListingIdentityID is the unique identifier of the listing identity (listing_identities.id)
+          This references the parent listing entity, not a specific version
+          Required field to identify which listing's details should be retrieved
+          Must be greater than 0
+          Example: 1024
+        example: 1024
+        minimum: 1
         type: integer
     required:
-    - listingId
+    - listingIdentityId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsRequest:
     properties:
@@ -7137,13 +7145,19 @@ paths:
       tags:
       - Listings
   /listings/detail:
-    get:
+    post:
       consumes:
       - application/json
-      description: Returns all fields of a listing given its identifier, including
-        active photo session ID if exists.
+      description: Retrieves comprehensive details of a listing including active version,
+        draft metadata (if exists),
       parameters:
-      - description: Listing identifier
+      - description: Bearer token for authentication
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Listing identity identifier
         in: body
         name: request
         required: true
@@ -7153,32 +7167,33 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Listing details successfully retrieved
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingDetailResponse'
         "400":
-          description: Bad Request
+          description: Invalid request format (missing listingIdentityId or invalid
+            value)
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "401":
-          description: Unauthorized
+          description: Unauthorized (missing or invalid token)
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "403":
-          description: Forbidden
+          description: Forbidden (requester is not the listing owner)
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "404":
-          description: Not Found
+          description: Listing identity not found
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error (database failure, transaction error)
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get listing detail
+      summary: Get listing details by identity ID
       tags:
       - Listings
   /listings/features/base:

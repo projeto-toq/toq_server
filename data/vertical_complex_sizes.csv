@@ -1,0 +1,560 @@
+id;vertical_complex_id;size;description
+1;1;39.0;Studio Compacto: Design funcional para otimização de espaço.
+2;1;39.6;Studio Plus: Um toque extra de metragem para maior liberdade.
+3;1;48.0;Apartamento Essencial: Planta base com 1 dormitório bem distribuído.
+4;1;48.6;Varanda Minimalista: O essencial com um respiro ao ar livre.
+5;1;49.12;Conforto Otimizado: Espaço ideal para casal, sem desperdícios.
+6;1;49.56;Planta Smart: Layout inteligente para máxima funcionalidade.
+7;1;50.0;Nível Conforto: Suíte integrada e área de serviço discreta.
+8;1;59.24;Opção Família Curta: 1 Suíte e sala ampliada.
+9;1;79.19;Configuração Ampliada: Potencial para 2º dormitório ou home office.
+10;1;81.35;Planta Master: 2 quartos e área social generosa.
+11;1;96.7;Cobertura Baixa: O máximo de espaço interno na torre.
+12;2;196.0;Conceito Aconchego: Planta com sala de estar e jantar integradas.
+13;2;197.0;Design Contemporâneo: Planta levemente maior, ideal para personalização.
+14;2;201.0;Elegância Funcional: Sala de TV e 3 suítes bem dimensionadas.
+15;2;306.0;Alto Padrão: 4 suítes, varanda gourmet e elevador privativo.
+16;3;86.56;Unidade Padrão: Distribuição clássica para famílias.
+17;4;311.51;Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego.
+18;4;295.68;Planta Premium: Sala principal com pé direito duplo e vista privilegiada.
+19;4;319.34;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+20;4;224.51;Opção Varanda: Suítes com acesso direto à sacada.
+21;4;228.53;Planta Garden: Unidade térrea com jardim privativo.
+22;4;197.25;Elegância Funcional: 3 Suítes e área de serviço completa.
+23;4;183.87;Unidade Padrão Conforto: Suíte master ampliada e varanda.
+24;4;203.81;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+25;4;139.39;Planta Compacta Premium: 2 Suítes, ideal para quem busca praticidade.
+26;4;140.0;Design Otimizado: Metragem aproveitada ao máximo.
+27;4;136.39;Versão Essencial: O mais prático da categoria, sem abrir mão da qualidade.
+28;4;234.79;Jardim Suspenso: Varanda ampla com potencial de paisagismo.
+29;4;223.0;Ambientes Integrados: Fluxo livre entre sala e cozinha gourmet.
+30;4;242.42;Exclusividade Total: A metragem mais completa da torre.
+31;4;168.43;Otimizado Luxo: Espaço para adega e lavabo social.
+32;4;172.25;Conforto Superior: Com closet na suíte principal.
+33;5;100.8;Planta Superior: Acima de 100m² para maior liberdade de layout.
+34;5;143.61;Loft Duplo: Pé direito alto com área íntima no mezanino.
+35;5;116.62;Unidade Padrão: Com a metragem ideal para sua família.
+36;5;72.99;Planta Compacta Plus: Studio ou 1 dormitório com área de serviço.
+37;5;190.0;Cobertura Baixa: Terraço com potencial para jacuzzi.
+38;5;179.87;Conforto King Size: Suítes amplas para camas maiores.
+39;5;135.1;Design Modular: Paredes que permitem diferentes configurações.
+40;5;155.23;Varanda Estendida: Perfeita para receber amigos.
+41;5;96.51;Versão Essencial: O mais prático da categoria.
+42;5;72.62;Studio Gourmet: Cozinha aberta e sala aconchegante.
+43;6;142.77;Planta Master: 3 suítes e varanda técnica.
+44;6;156.58;Varanda Estendida: Mais espaço para seu lazer.
+45;6;123.12;Unidade Padrão: Distribuição clássica e funcional.
+46;6;116.37;Design Otimizado: Planta com ambientes bem delimitados.
+47;6;115.82;Conforto Essencial: A opção ideal para quem busca praticidade.
+48;6;94.47;Compacto Funcional: Sala e cozinha integradas.
+49;6;94.12;Versão Smart: Metragem inteligente para um dia a dia dinâmico.
+50;7;296.95;Unidade Exclusiva: 3 suítes com ampla área social.
+51;8;107.56;Planta Essencial: 2 dormitórios com varanda.
+52;9;26.11;Micro Studio: Otimização máxima, ideal para investimento.
+53;9;38.68;Studio Plus: Com espaço extra para bancada de trabalho.
+54;9;38.82;Studio Conforto: Cozinha americana e área de serviço compacta.
+55;9;52.78;Loft Urbano: Pé direito duplo com potencial para mezanino.
+56;9;26.11;Micro Studio Versão B: Layout espelhado.
+57;9;38.32;Studio Varanda: O essencial com um respiro ao ar livre.
+58;9;53.35;Loft Garden: Unidade térrea com pequeno pátio.
+59;12;175.08;Unidade Padrão: 3 Suítes, varanda gourmet e lavabo.
+60;13;162.24;Planta Master: 4 dormitórios ou 3 suítes com escritório.
+61;14;172.7;Conforto Ampliado: Mais espaço nas áreas sociais e íntimas.
+62;14;156.04;Planta Padrão: 3 dormitórios, sendo 1 suíte.
+63;14;122.0;Compacto Premium: 2 suítes e área social integrada.
+64;14;186.68;Varanda Estendida: A maior sacada da torre.
+65;14;146.62;Unidade Garden: Térreo com área externa privativa.
+66;14;142.27;Design Otimizado: Ambientes bem definidos e funcionais.
+67;14;112.62;Essencial Conforto: Opção mais econômica e inteligente.
+68;14;111.89;Versão Smart: Metragem que surpreende na distribuição.
+69;14;180.37;Nível Master: Closet na suíte principal e lavabo.
+70;14;175.32;Elegância Funcional: Sala ampla com dois ambientes.
+71;14;182.41;Exclusividade Total: Sala de jantar para 8 lugares.
+72;15;141.09;Unidade Padrão: 3 dormitórios com varanda.
+73;15;125.37;Compacto Premium: 2 suítes e lavabo.
+74;15;89.14;Essencial Família: 2 quartos e área de serviço.
+75;15;213.69;Cobertura Duplex: Terraço com churrasqueira e vista panorâmica.
+76;15;82.5;Planta Smart: Otimização de espaços.
+77;15;54.33;Studio Varanda: Ideal para jovens e investidores.
+78;15;58.03;Studio Premium: Maior área social integrada.
+79;15;57.33;Studio Conforto: Cozinha americana completa.
+80;15;59.83;Studio Master: Mais espaço na área de descanso.
+81;15;56.13;Studio Essencial: A melhor opção custo-benefício.
+82;15;55.51;Studio Design: Planta flexível para diferentes layouts.
+83;16;164.42;Unidade Padrão: 3 suítes com 2 vagas de garagem.
+84;17;39.6;Studio Otimizado: Design funcional para o dia a dia.
+85;17;43.78;Studio Plus: Com espaço extra para bancada de trabalho.
+86;17;38.82;Studio Varanda: Um respiro ao ar livre.
+87;17;40.3;Studio Conforto: Cozinha americana completa.
+88;17;43.9;Studio Garden: Unidade térrea com pátio privativo.
+89;18;61.04;Planta Essencial: 1 dormitório e área de serviço.
+90;18;52.75;Compacto Funcional: Studio com design moderno.
+91;18;122.95;Unidade Padrão: 2 suítes com lavabo e varanda.
+92;18;114.66;Design Otimizado: O essencial para uma família.
+93;19;153.6;Unidade Padrão: 3 suítes e varanda gourmet.
+94;19;260.02;Cobertura Duplex: Área de lazer privativa no piso superior.
+95;20;168.14;Planta Essencial: 3 dormitórios com suíte.
+96;20;309.54;Planta Master: 4 suítes, varanda ampla e lavabo.
+97;21;39.09;Studio Compacto: Ideal para investidores e primeira moradia.
+98;21;57.84;Studio Premium: Com cozinha gourmet e varanda.
+99;21;46.25;Studio Conforto: Espaço para home office ou leitura.
+100;22;98.33;Unidade Padrão: 2 dormitórios com suíte e varanda.
+101;23;127.46;Planta Essencial: 3 dormitórios e área de serviço.
+102;23;252.54;Loft Duplex: O charme do pé direito duplo com 2 suítes.
+103;24;91.52;Unidade Padrão: 2 dormitórios com varanda.
+104;25;109.85;Planta Essencial: 2 suítes e área social integrada.
+105;26;64.0;Studio Plus: Com espaço extra para bancada de trabalho.
+106;26;62.5;Studio Essencial: A melhor opção custo-benefício.
+107;26;69.5;Studio Premium: Mais espaço na área de descanso e estar.
+108;27;55.93;Studio Compacto: Design funcional e moderno.
+109;27;119.35;Unidade Padrão: 2 suítes com lavabo e varanda.
+110;27;116.05;Design Otimizado: O essencial para uma família.
+111;28;421.82;Planta Master: 4 suítes, varanda ampla e elevador privativo.
+112;28;713.03;Cobertura Exclusiva: O maior apartamento do empreendimento.
+113;29;68.19;Compacto Premium: 1 suíte e sala de estar aconchegante.
+114;29;48.08;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+115;29;63.8;Essencial Conforto: Cozinha americana completa.
+116;29;76.1;Unidade Padrão: 2 dormitórios e área de serviço discreta.
+117;29;122.16;Planta Varanda Gourmet: Ideal para receber amigos.
+118;29;118.46;Design Otimizado: Ambientes bem definidos e funcionais.
+119;29;123.58;Nível Conforto: Suíte master ampliada e lavabo.
+120;29;124.94;Exclusividade Total: A metragem mais completa da torre.
+121;29;127.07;Cobertura Baixa: O máximo de espaço interno na torre.
+122;29;121.57;Versão Smart: Metragem que surpreende na distribuição.
+123;29;120.75;Jardim Suspenso: Varanda ampla com potencial de paisagismo.
+124;29;120.33;Planta Flexível: Paredes que permitem diferentes configurações.
+125;29;118.15;Otimizado Luxo: Espaço para adega e lavabo social.
+126;29;88.03;Planta Família Curta: 2 dormitórios e sala de jantar.
+127;29;85.32;Versão Essencial: O mais prático da categoria.
+128;29;86.2;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+129;29;83.14;Design Minimalista: Foco na funcionalidade.
+130;29;113.03;Planta Garden: Unidade térrea com jardim privativo.
+131;29;126.18;Planta Master: 2 suítes e área de serviço completa.
+132;29;103.12;Unidade Superior: Acima de 100m² para maior liberdade de layout.
+133;30;79.8;Planta Padrão: 2 dormitórios com varanda.
+134;30;60.36;Compacto Funcional: Studio com design moderno.
+135;31;62.22;Studio Essencial: A melhor opção custo-benefício.
+136;31;86.52;Planta Padrão: 2 dormitórios com suíte.
+137;32;77.11;Unidade Padrão: 2 dormitórios e varanda.
+138;32;76.04;Design Otimizado: Ambientes bem definidos e funcionais.
+139;33;90.28;Planta Essencial: 2 suítes e área social integrada.
+140;34;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+141;35;57.63;Studio Compacto: Ideal para investidores e primeira moradia.
+142;35;77.1;Unidade Padrão: 2 dormitórios com varanda.
+143;36;84.38;Planta Essencial: 2 dormitórios e área de serviço.
+144;36;78.08;Design Otimizado: Ambientes bem definidos e funcionais.
+145;37;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+146;38;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+147;39;235.86;Planta Padrão: 3 suítes, varanda ampla e lavabo.
+148;39;246.65;Conforto Ampliado: Mais espaço nas áreas sociais e íntimas.
+149;39;333.92;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+150;39;340.01;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+151;40;162.02;Unidade Padrão: 3 dormitórios, sendo 1 suíte.
+152;40;164.88;Design Otimizado: Planta com ambientes bem delimitados.
+153;41;94.12;Planta Essencial: 2 dormitórios e varanda.
+154;42;84.17;Unidade Padrão: 2 dormitórios com suíte.
+155;42;80.2;Design Otimizado: O essencial para uma família.
+156;43;128.16;Planta Essencial: 3 dormitórios e área de serviço.
+157;44;106.29;Unidade Padrão: 2 suítes com lavabo.
+158;44;109.32;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+159;44;218.31;Cobertura Duplex: Área de lazer privativa no piso superior.
+160;45;75.0;Unidade Padrão: 2 dormitórios com varanda.
+161;45;74.0;Design Otimizado: Ambientes bem definidos e funcionais.
+162;46;111.23;Planta Essencial: 2 suítes e área social integrada.
+163;46;201.46;Loft Duplex: O charme do pé direito duplo com 2 suítes.
+164;47;65.68;Compacto Funcional: Sala e cozinha integradas.
+165;47;53.9;Studio Essencial: A melhor opção custo-benefício.
+166;47;47.94;Studio Compacto: Otimização máxima, ideal para investimento.
+167;47;50.65;Studio Varanda: O essencial com um respiro ao ar livre.
+168;48;72.22;Unidade Padrão: 2 dormitórios com varanda.
+169;48;77.03;Conforto Otimizado: Espaço ideal para casal.
+170;48;71.68;Design Minimalista: Foco na funcionalidade.
+171;48;99.56;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+172;48;108.78;Varanda Estendida: Perfeita para receber amigos.
+173;49;58.14;Studio Premium: Com cozinha gourmet e varanda.
+174;49;66.23;Unidade Padrão: 1 suíte e sala de estar aconchegante.
+175;50;61.3;Studio Plus: Com espaço extra para bancada de trabalho.
+176;50;73.02;Unidade Padrão: 2 dormitórios com varanda.
+177;50;59.15;Studio Conforto: Cozinha americana completa.
+178;50;34.22;Micro Studio: Otimização máxima, ideal para investimento.
+179;50;36.02;Micro Studio Varanda: Um toque de ar livre.
+180;51;57.0;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+181;51;63.0;Compacto Premium: 1 suíte e sala de estar aconchegante.
+182;51;64.0;Essencial Conforto: Cozinha americana completa.
+183;51;75.0;Unidade Padrão: 2 dormitórios e área de serviço discreta.
+184;51;76.0;Planta Família Curta: 2 dormitórios e sala de jantar.
+185;51;87.0;Design Otimizado: Ambientes bem definidos e funcionais.
+186;51;79.0;Versão Smart: Metragem que surpreende na distribuição.
+187;51;163.0;Varanda Estendida: Perfeita para receber amigos.
+188;51;106.0;Nível Conforto: Suíte master ampliada e lavabo.
+189;51;108.0;Exclusividade Total: A metragem mais completa da torre.
+190;51;111.0;Jardim Suspenso: Varanda ampla com potencial de paisagismo.
+191;51;115.0;Cobertura Baixa: O máximo de espaço interno na torre.
+192;51;230.0;Cobertura Duplex: Área de lazer privativa no piso superior.
+193;52;91.0;Unidade Padrão: 2 dormitórios com varanda.
+194;52;94.3;Conforto Otimizado: Espaço ideal para casal.
+195;52;91.62;Design Minimalista: Foco na funcionalidade.
+196;52;94.89;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+197;52;93.69;Versão Essencial: O mais prático da categoria.
+198;52;96.96;Varanda Estendida: Perfeita para receber amigos.
+199;53;96.43;Unidade Padrão: 2 suítes com varanda.
+200;53;74.22;Compacto Funcional: Studio com design moderno.
+201;53;86.83;Planta Essencial: 2 dormitórios com suíte.
+202;53;65.57;Studio Essencial: A melhor opção custo-benefício.
+203;54;110.24;Unidade Padrão: 3 dormitórios com suíte e varanda.
+204;54;105.85;Design Otimizado: Ambientes bem definidos e funcionais.
+205;54;133.14;Planta Master: 3 suítes com lavabo.
+206;55;238.0;Planta Padrão: 4 suítes, varanda ampla e lavabo.
+207;55;425.0;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+208;55;200.0;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+209;55;387.5;Cobertura Baixa: O máximo de espaço interno na torre.
+210;55;389.8;Planta Garden: Unidade térrea com jardim privativo.
+211;55;328.8;Design Smart: Com divisória inteligente e cômodos bem definidos.
+212;55;636.8;Exclusividade Total: Sala de jantar para 12 lugares.
+213;55;330.8;Jardim Suspenso: Varanda ampla com potencial de paisagismo.
+214;56;185.45;Planta Padrão: 3 suítes, varanda ampla e lavabo.
+215;56;191.65;Conforto Ampliado: Mais espaço nas áreas sociais e íntimas.
+216;56;279.75;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+217;56;188.93;Design Otimizado: Ambientes bem definidos e funcionais.
+218;56;200.76;Nível Master: Closet na suíte principal e lavabo.
+219;56;217.79;Varanda Estendida: A maior sacada da torre.
+220;56;124.86;Compacto Premium: 2 suítes e área social integrada.
+221;56;98.02;Planta Essencial: 2 dormitórios com suíte e varanda.
+222;56;264.59;Elegância Funcional: Sala ampla com dois ambientes.
+223;56;150.81;Unidade Garden: Térreo com área externa privativa.
+224;56;154.17;Design Modular: Paredes que permitem diferentes configurações.
+225;56;137.91;Versão Essencial: O mais prático da categoria.
+226;56;152.85;Otimizado Luxo: Espaço para adega e lavabo social.
+227;56;123.82;Planta Flexível: Paredes que permitem diferentes configurações.
+228;56;439.61;Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego.
+229;56;344.25;Planta Premium: Sala principal com pé direito duplo e vista privilegiada.
+230;57;261.14;Planta Padrão: 4 suítes, varanda ampla e lavabo.
+231;57;258.0;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+232;57;500.12;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+233;57;494.93;Cobertura Exclusiva: O maior apartamento do empreendimento.
+234;58;202.0;Unidade Padrão: 3 suítes e varanda gourmet.
+235;59;107.42;Planta Padrão: 2 suítes com varanda.
+236;59;78.64;Compacto Funcional: Studio com design moderno.
+237;59;79.06;Studio Plus: Com espaço extra para bancada de trabalho.
+238;59;150.0;Planta Master: 3 suítes com lavabo.
+239;59;158.02;Varanda Estendida: A maior sacada da torre.
+240;59;152.82;Nível Master: Closet na suíte principal e lavabo.
+241;60;106.76;Unidade Padrão: 2 suítes com varanda.
+242;60;104.43;Design Otimizado: Ambientes bem definidos e funcionais.
+243;60;106.47;Conforto Otimizado: Espaço ideal para casal.
+244;60;98.91;Planta Essencial: 2 dormitórios com suíte e varanda.
+245;60;76.3;Compacto Funcional: Studio com design moderno.
+246;60;69.64;Studio Plus: Com espaço extra para bancada de trabalho.
+247;60;64.12;Studio Essencial: A melhor opção custo-benefício.
+248;60;146.14;Planta Master: 3 suítes com lavabo.
+249;61;174.29;Planta Padrão: 3 suítes, varanda ampla e lavabo.
+250;61;150.49;Compacto Premium: 2 suítes e área social integrada.
+251;61;192.55;Conforto Ampliado: Mais espaço nas áreas sociais e íntimas.
+252;61;248.98;Elegância Funcional: Sala ampla com dois ambientes.
+253;61;329.89;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+254;62;66.38;Unidade Padrão: 2 dormitórios com varanda.
+255;62;50.31;Studio Compacto: Design funcional e moderno.
+256;62;50.63;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+257;63;66.66;Unidade Padrão: 2 dormitórios com varanda.
+258;63;66.38;Conforto Otimizado: Espaço ideal para casal.
+259;63;63.02;Design Minimalista: Foco na funcionalidade.
+260;63;66.4;Planta Essencial: 2 dormitórios e área de serviço.
+261;64;77.63;Unidade Padrão: 2 dormitórios com varanda.
+262;64;66.74;Compacto Funcional: Studio com design moderno.
+263;64;50.05;Studio Compacto: Otimização máxima, ideal para investimento.
+264;64;135.19;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+265;64;108.09;Design Otimizado: Ambientes bem definidos e funcionais.
+266;64;213.94;Cobertura Duplex: Área de lazer privativa no piso superior.
+267;64;168.64;Varanda Estendida: Perfeita para receber amigos.
+268;64;70.27;Studio Plus: Com espaço extra para bancada de trabalho.
+269;65;91.21;Unidade Padrão: 2 suítes com varanda.
+270;65;96.16;Conforto Otimizado: Espaço ideal para casal.
+271;65;78.36;Compacto Premium: 1 suíte e sala de estar aconchegante.
+272;65;88.64;Design Otimizado: Ambientes bem definidos e funcionais.
+273;65;48.2;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+274;65;74.05;Essencial Conforto: Cozinha americana completa.
+275;65;68.02;Studio Essencial: A melhor opção custo-benefício.
+276;65;42.24;Micro Studio: Otimização máxima, ideal para investimento.
+277;65;68.7;Studio Plus: Com espaço extra para bancada de trabalho.
+278;65;67.72;Studio Design: Planta flexível para diferentes layouts.
+279;65;142.37;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+280;65;135.03;Varanda Estendida: Perfeita para receber amigos.
+281;65;110.65;Nível Conforto: Suíte master ampliada e lavabo.
+282;65;82.21;Planta Família Curta: 2 dormitórios e sala de jantar.
+283;65;79.2;Versão Smart: Metragem que surpreende na distribuição.
+284;65;172.17;Cobertura Baixa: O máximo de espaço interno na torre.
+285;65;68.71;Jardim Suspenso: Varanda ampla com potencial de paisagismo.
+286;65;177.6;Exclusividade Total: A metragem mais completa da torre.
+287;65;145.13;Otimizado Luxo: Espaço para adega e lavabo social.
+288;65;142.72;Planta Flexível: Paredes que permitem diferentes configurações.
+289;66;339.49;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+290;66;206.47;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+291;66;350.63;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+292;67;185.05;Planta Padrão: 3 suítes, varanda ampla e lavabo.
+293;67;177.48;Design Otimizado: Ambientes bem definidos e funcionais.
+294;67;176.97;Conforto Ampliado: Mais espaço nas áreas sociais e íntimas.
+295;67;185.56;Nível Master: Closet na suíte principal e lavabo.
+296;67;342.82;Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego.
+297;67;136.05;Compacto Premium: 2 suítes e área social integrada.
+298;67;145.77;Unidade Garden: Térreo com área externa privativa.
+299;67;153.08;Design Modular: Paredes que permitem diferentes configurações.
+300;68;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+301;69;75.5;Unidade Padrão: 2 dormitórios com varanda.
+302;69;62.4;Compacto Funcional: Studio com design moderno.
+303;69;65.37;Studio Plus: Com espaço extra para bancada de trabalho.
+304;69;63.59;Studio Conforto: Cozinha americana completa.
+305;69;62.41;Studio Essencial: A melhor opção custo-benefício.
+306;69;73.0;Design Minimalista: Foco na funcionalidade.
+307;70;334.0;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+308;70;264.0;Elegância Funcional: Sala ampla com dois ambientes.
+309;70;239.0;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+310;70;285.0;Nível Master: Closet na suíte principal e lavabo.
+311;70;228.0;Planta Varanda Gourmet: Ideal para receber amigos.
+312;70;278.0;Varanda Estendida: A maior sacada da torre.
+313;70;498.0;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+314;70;379.0;Cobertura Baixa: O máximo de espaço interno na torre.
+315;71;410.0;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+316;71;708.0;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+317;71;313.0;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+318;71;552.0;Cobertura Exclusiva: O maior apartamento do empreendimento.
+319;71;462.0;Nível Master: Closet na suíte principal e lavabo.
+320;71;723.0;Exclusividade Total: Sala de jantar para 12 lugares.
+321;72;69.0;Unidade Padrão: 2 dormitórios com varanda.
+322;72;62.34;Compacto Funcional: Studio com design moderno.
+323;72;60.11;Studio Compacto: Otimização máxima, ideal para investimento.
+324;72;61.73;Studio Plus: Com espaço extra para bancada de trabalho.
+325;72;54.8;Studio Essencial: A melhor opção custo-benefício.
+326;72;49.0;Micro Studio: Otimização máxima, ideal para investimento.
+327;72;53.46;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+328;72;59.08;Studio Conforto: Cozinha americana completa.
+329;72;47.52;Design Minimalista: Foco na funcionalidade.
+330;72;83.73;Planta Família Curta: 2 dormitórios e sala de jantar.
+331;73;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+332;74;43.2;Studio Compacto: Design funcional e moderno.
+333;74;62.92;Unidade Padrão: 1 suíte e sala de estar aconchegante.
+334;74;61.66;Studio Plus: Com espaço extra para bancada de trabalho.
+335;75;81.0;Unidade Padrão: 2 dormitórios com varanda.
+336;75;49.0;Studio Compacto: Otimização máxima, ideal para investimento.
+337;75;64.0;Compacto Premium: 1 suíte e sala de estar aconchegante.
+338;75;167.07;Planta Master: 3 suítes com lavabo.
+339;75;75.07;Design Otimizado: Ambientes bem definidos e funcionais.
+340;75;121.02;Varanda Estendida: Perfeita para receber amigos.
+341;76;60.61;Unidade Padrão: 2 dormitórios com varanda.
+342;76;40.65;Studio Compacto: Design funcional e moderno.
+343;76;70.59;Compacto Premium: 1 suíte e sala de estar aconchegante.
+344;76;140.47;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+345;76;127.24;Varanda Estendida: Perfeita para receber amigos.
+346;76;80.66;Design Otimizado: Ambientes bem definidos e funcionais.
+347;76;127.69;Nível Conforto: Suíte master ampliada e lavabo.
+348;76;140.54;Cobertura Baixa: O máximo de espaço interno na torre.
+349;77;83.39;Unidade Padrão: 2 dormitórios com varanda.
+350;77;81.41;Design Otimizado: Ambientes bem definidos e funcionais.
+351;77;78.97;Conforto Otimizado: Espaço ideal para casal.
+352;77;83.66;Planta Essencial: 2 dormitórios e área de serviço.
+353;77;83.68;Versão Smart: Metragem que surpreende na distribuição.
+354;77;80.62;Design Minimalista: Foco na funcionalidade.
+355;78;84.15;Unidade Padrão: 2 dormitórios com varanda.
+356;78;84.55;Conforto Otimizado: Espaço ideal para casal.
+357;78;85.96;Planta Essencial: 2 dormitórios e área de serviço.
+358;78;84.24;Design Otimizado: Ambientes bem definidos e funcionais.
+359;79;78.82;Unidade Padrão: 2 dormitórios com varanda.
+360;80;144.34;Planta Master: 3 suítes com lavabo.
+361;80;110.29;Unidade Padrão: 2 suítes com varanda.
+362;80;94.01;Compacto Premium: 1 suíte e sala de estar aconchegante.
+363;81;231.75;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+364;81;110.5;Compacto Premium: 2 suítes e área social integrada.
+365;81;179.88;Unidade Padrão: 3 suítes, varanda ampla e lavabo.
+366;81;179.82;Design Otimizado: Ambientes bem definidos e funcionais.
+367;81;81.3;Planta Essencial: 2 dormitórios com suíte.
+368;81;80.0;Compacto Funcional: Studio com design moderno.
+369;81;82.23;Studio Plus: Com espaço extra para bancada de trabalho.
+370;82;148.88;Planta Master: 3 suítes com lavabo.
+371;82;122.59;Unidade Padrão: 2 suítes com varanda.
+372;82;119.8;Compacto Premium: 1 suíte e sala de estar aconchegante.
+373;82;100.21;Design Otimizado: Ambientes bem definidos e funcionais.
+374;83;367.24;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+375;83;322.42;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+376;83;284.06;Elegância Funcional: Sala ampla com dois ambientes.
+377;84;158.6;Unidade Padrão: 3 dormitórios, sendo 1 suíte.
+378;84;132.74;Compacto Premium: 2 suítes e área social integrada.
+379;85;46.11;Studio Compacto: Otimização máxima, ideal para investimento.
+380;85;58.09;Unidade Padrão: 1 suíte e sala de estar aconchegante.
+381;85;45.72;Design Minimalista: Foco na funcionalidade.
+382;86;33.6;Micro Studio: Otimização máxima, ideal para investimento.
+383;86;46.75;Studio Compacto: Design funcional e moderno.
+384;86;32.23;Micro Studio Versão B: Layout espelhado.
+385;86;30.25;Nano Studio: O menor e mais prático.
+386;86;50.06;Studio Plus: Com espaço extra para bancada de trabalho.
+387;87;56.34;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+388;87;57.9;Studio Conforto: Cozinha americana completa.
+389;88;205.88;Planta Padrão: 3 suítes, varanda ampla e lavabo.
+390;88;359.98;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+391;88;203.25;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+392;88;355.73;Design Otimizado: Ambientes bem definidos e funcionais.
+393;88;203.58;Elegância Funcional: Sala ampla com dois ambientes.
+394;88;356.32;Varanda Estendida: A maior sacada da torre.
+395;89;179.61;Unidade Padrão: 3 suítes, varanda ampla e lavabo.
+396;89;176.12;Design Otimizado: Ambientes bem definidos e funcionais.
+397;90;157.53;Planta Essencial: 3 dormitórios com suíte.
+398;91;69.0;Unidade Padrão: 2 dormitórios com varanda.
+399;91;70.0;Conforto Otimizado: Espaço ideal para casal.
+400;91;88.0;Planta Família Curta: 2 dormitórios e sala de jantar.
+401;92;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+402;93;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+403;94;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+404;95;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+405;96;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+406;97;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+407;98;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+408;99;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+409;100;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+410;101;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+411;102;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+412;103;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+413;104;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+414;105;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+415;106;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+416;107;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+417;108;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+418;109;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+419;110;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+420;111;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+421;112;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+422;113;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+423;114;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+424;115;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+425;116;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+426;117;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+427;118;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+428;119;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+429;120;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+430;121;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+431;122;54.0;Studio Compacto: Design funcional e moderno.
+432;122;69.0;Unidade Padrão: 2 dormitórios com varanda.
+433;122;88.0;Planta Família Curta: 2 dormitórios e sala de jantar.
+434;123;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+435;124;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+436;125;56.96;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+437;125;69.0;Unidade Padrão: 2 dormitórios com varanda.
+438;125;71.7;Conforto Otimizado: Espaço ideal para casal.
+439;125;55.0;Studio Compacto: Design funcional e moderno.
+440;125;55.29;Studio Conforto: Cozinha americana completa.
+441;126;98.31;Unidade Padrão: 2 suítes com varanda.
+442;126;79.31;Compacto Premium: 1 suíte e sala de estar aconchegante.
+443;127;133.11;Planta Master: 3 suítes com lavabo.
+444;127;130.18;Unidade Padrão: 2 suítes com varanda.
+445;127;113.2;Design Otimizado: Ambientes bem definidos e funcionais.
+446;128;139.24;Planta Essencial: 3 dormitórios e área de serviço.
+447;129;131.62;Planta Master: 3 suítes com lavabo.
+448;129;128.82;Unidade Padrão: 2 suítes com varanda.
+449;129;101.28;Compacto Premium: 1 suíte e sala de estar aconchegante.
+450;130;94.4;Unidade Padrão: 2 dormitórios com varanda.
+451;131;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+452;132;196.99;Planta Master: 4 dormitórios ou 3 suítes com escritório.
+453;132;194.42;Unidade Padrão: 3 suítes, varanda ampla e lavabo.
+454;132;88.59;Planta Essencial: 2 dormitórios com suíte.
+455;132;120.33;Compacto Premium: 2 suítes e área social integrada.
+456;132;213.21;Varanda Estendida: A maior sacada da torre.
+457;132;164.19;Design Otimizado: Ambientes bem definidos e funcionais.
+458;133;190.14;Planta Padrão: 3 suítes, varanda ampla e lavabo.
+459;133;166.05;Compacto Premium: 2 suítes e área social integrada.
+460;133;268.54;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+461;133;266.37;Conforto Ampliado: Mais espaço nas áreas sociais e íntimas.
+462;133;381.92;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+463;133;222.29;Nível Master: Closet na suíte principal e lavabo.
+464;133;151.74;Design Otimizado: Ambientes bem definidos e funcionais.
+465;133;271.89;Elegância Funcional: Sala ampla com dois ambientes.
+466;133;315.11;Jardim Suspenso: Varanda ampla com potencial de paisagismo.
+467;133;402.38;Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego.
+468;133;272.08;Exclusividade Total: A metragem mais completa da torre.
+469;134;181.48;Unidade Padrão: 3 suítes, varanda ampla e lavabo.
+470;135;81.7;Unidade Padrão: 2 dormitórios com varanda.
+471;135;90.11;Planta Família Curta: 2 dormitórios e sala de jantar.
+472;136;109.36;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+473;136;83.94;Unidade Padrão: 2 dormitórios com varanda.
+474;136;83.76;Design Otimizado: Ambientes bem definidos e funcionais.
+475;136;128.55;Varanda Estendida: Perfeita para receber amigos.
+476;136;133.77;Nível Conforto: Suíte master ampliada e lavabo.
+477;136;132.68;Otimizado Luxo: Espaço para adega e lavabo social.
+478;136;83.83;Conforto Otimizado: Espaço ideal para casal.
+479;136;83.79;Planta Essencial: 2 dormitórios e área de serviço.
+480;137;252.69;Unidade Padrão: 3 suítes, varanda ampla e lavabo.
+481;137;711.24;Cobertura Exclusiva: O maior apartamento do empreendimento.
+482;138;127.81;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+483;138;256.91;Cobertura Duplex: Área de lazer privativa no piso superior.
+484;139;180.0;Planta Master: 4 dormitórios ou 3 suítes com escritório.
+485;139;95.5;Unidade Padrão: 2 suítes com varanda.
+486;139;123.0;Compacto Premium: 2 suítes e área social integrada.
+487;140;53.0;Studio Compacto: Design funcional e moderno.
+488;140;49.0;Micro Studio: Otimização máxima, ideal para investimento.
+489;140;78.0;Unidade Padrão: 2 dormitórios com varanda.
+490;140;52.0;Studio Varanda: Otimização de espaço com respiro ao ar livre.
+491;141;287.3;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+492;142;175.77;Unidade Padrão: 3 suítes, varanda ampla e lavabo.
+493;142;157.76;Design Otimizado: Ambientes bem definidos e funcionais.
+494;142;143.42;Compacto Premium: 2 suítes e área social integrada.
+495;143;160.38;Unidade Padrão: 3 dormitórios, sendo 1 suíte.
+496;143;320.76;Cobertura Duplex: Área de lazer privativa no piso superior.
+497;144;151.5;Unidade Padrão: 3 dormitórios, sendo 1 suíte.
+498;144;303.0;Cobertura Duplex: Área de lazer privativa no piso superior.
+499;145;160.51;Unidade Padrão: 3 dormitórios, sendo 1 suíte.
+500;145;321.02;Cobertura Duplex: Área de lazer privativa no piso superior.
+501;146;97.28;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+502;146;91.14;Unidade Padrão: 2 suítes com varanda.
+503;146;66.89;Compacto Premium: 1 suíte e sala de estar aconchegante.
+504;146;68.43;Studio Plus: Com espaço extra para bancada de trabalho.
+505;146;62.44;Studio Essencial: A melhor opção custo-benefício.
+506;146;86.15;Design Otimizado: Ambientes bem definidos e funcionais.
+507;147;348.5;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+508;147;344.0;Conceito Aconchego: Sala de estar e jantar com iluminação natural.
+509;147;282.5;Elegância Funcional: Sala ampla com dois ambientes.
+510;147;657.5;Luxo e Exclusividade: O maior espaço, com opção de 5º dormitório.
+511;147;498.5;Cobertura Baixa: O máximo de espaço interno na torre.
+512;148;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+513;149;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+514;150;79.4;Unidade Padrão: 2 dormitórios com varanda.
+515;150;59.93;Compacto Funcional: Studio com design moderno.
+516;151;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+517;152;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+518;153;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+519;154;0.0;Planta Conceitual: Para desenvolvimento futuro ou customização extrema.
+520;155;360.0;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+521;155;676.72;Cobertura Exclusiva: O maior apartamento do empreendimento.
+522;156;106.24;Unidade Padrão: 2 suítes com varanda.
+523;156;116.14;Planta Master: 3 dormitórios ou 2 suítes com escritório.
+524;157;91.0;Planta Essencial: 2 dormitórios com suíte.
+525;157;83.4;Compacto Funcional: Studio com design moderno.
+526;157;175.71;Planta Master: 3 suítes com lavabo.
+527;157;160.17;Unidade Padrão: 3 dormitórios, sendo 1 suíte.
+528;157;168.11;Varanda Estendida: Perfeita para receber amigos.
+529;158;84.26;Unidade Padrão: 2 dormitórios com varanda.
+530;158;82.05;Design Otimizado: Ambientes bem definidos e funcionais.
+531;159;207.77;Planta Master: 4 dormitórios ou 3 suítes com escritório.
+532;159;212.64;Unidade Padrão: 3 suítes, varanda ampla e lavabo.
+533;159;412.42;Cobertura Duplex Superior: 4 suítes e terraço de tirar o fôlego.
+534;159;408.7;Planta Premium: Sala principal com pé direito duplo e vista privilegiada.
+535;159;220.75;Nível Master: Closet na suíte principal e lavabo.
+536;159;300.42;Elegância Funcional: Sala ampla com dois ambientes.
+537;160;117.5;Unidade Padrão: 2 suítes com varanda.
+538;160;191.69;Planta Master: 3 suítes com lavabo.
+539;161;117.5;Unidade Padrão: 2 suítes com varanda.
+540;161;191.69;Planta Master: 3 suítes com lavabo.
+541;162;278.14;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+542;163;301.54;Planta Master: 4 suítes, varanda gourmet e elevador privativo.
+543;164;143.58;Unidade Padrão: 3 dormitórios, sendo 1 suíte.
+544;165;112.0;Unidade Padrão: 2 suítes com varanda.
+545;165;85.0;Compacto Premium: 1 suíte e sala de estar aconchegante.
+546;10;26.11;Micro Studio: Otimização máxima, ideal para investimento.
+547;10;38.68;Studio Plus: Com espaço extra para bancada de trabalho.
+548;10;38.82;Studio Conforto: Cozinha americana e área de serviço compacta.
+549;10;52.78;Loft Urbano: Pé direito duplo com potencial para mezanino.
+550;10;26.11;Micro Studio Versão B: Layout espelhado.
+551;10;38.32;Studio Varanda: O essencial com um respiro ao ar livre.
+552;10;53.35;Loft Garden: Unidade térrea com pequeno pátio.
+553;11;26.11;Micro Studio: Otimização máxima, ideal para investimento.
+554;11;38.68;Studio Plus: Com espaço extra para bancada de trabalho.
+555;11;38.82;Studio Conforto: Cozinha americana e área de serviço compacta.
+556;11;52.78;Loft Urbano: Pé direito duplo com potencial para mezanino.
+557;11;26.11;Micro Studio Versão B: Layout espelhado.
+558;11;38.32;Studio Varanda: O essencial com um respiro ao ar livre.
+559;11;53.35;Loft Garden: Unidade térrea com pequeno pátio.

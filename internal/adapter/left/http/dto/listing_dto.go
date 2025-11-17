@@ -201,9 +201,32 @@ type CreateDraftVersionResponse struct {
 	Status    string `json:"status"`
 }
 
-// GetListingDetailRequest representa a requisição para obter os detalhes completos de um listing.
+// GetListingDetailRequest represents the request payload to retrieve full listing details
+//
+// This DTO is used to fetch comprehensive information about a listing, including:
+//   - Active version data (the currently promoted version)
+//   - Draft version metadata (if exists and requester is the owner)
+//   - All property-specific fields and related entities (features, guarantees, exchange places, etc.)
+//   - Photo session booking status
+//
+// The endpoint returns the ACTIVE version by default (referenced by listing_identities.active_version_id).
+// Draft versions are exposed via draftVersionId field if they exist.
+//
+// Authorization:
+//   - Only the listing owner (listing_identities.user_id == authenticated user_id) can access details
+//   - Returns 403 Forbidden if requester is not the owner
+//
+// Example:
+//
+//	Request Body: {"listingIdentityId": 1024}
+//	Response includes: active version fields + draftVersionId: 5002 (if draft exists)
 type GetListingDetailRequest struct {
-	ListingID int64 `json:"listingId" binding:"required"`
+	// ListingIdentityID is the unique identifier of the listing identity (listing_identities.id)
+	// This references the parent listing entity, not a specific version
+	// Required field to identify which listing's details should be retrieved
+	// Must be greater than 0
+	// Example: 1024
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required,min=1" example:"1024"`
 }
 
 // CatalogItemResponse padroniza valores de catálogo retornados pelo endpoint de detalhes de listing.

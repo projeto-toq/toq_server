@@ -55,23 +55,74 @@ type ListingDetailOutput struct {
 	PhotoSessionID    *uint64
 }
 
-// GetListingDetail retorna todos os dados de um listing específico.
-func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64) (ListingDetailOutput, error) {
+// GetListingDetail retrieves comprehensive details of a listing by its identity ID
+//
+// This method returns the ACTIVE version of a listing (referenced by listing_identities.active_version_id).
+// It orchestrates the following operations:
+//  1. Validates listingIdentityId parameter (must be > 0)
+//  2. Starts read-only transaction for data consistency
+//  3. Fetches listing identity record (listing_identities table)
+//  4. Validates ownership (identity.user_id == authenticated user_id)
+//  5. Fetches active version via identity.active_version_id
+//  6. Enriches catalog values (owner, delivered, whoLives, transaction, etc.)
+//  7. Fetches related entities (features, guarantees, exchange places, financing blockers)
+//  8. Queries active photo session booking (if exists)
+//  9. Lists all versions to populate draft metadata
+//
+// The operation is read-only and uses a read-only transaction for performance.
+//
+// Parameters:
+//   - ctx: Context for tracing, cancellation, and logging. Must contain request metadata and authenticated user.
+//   - listingIdentityId: Unique identifier of the listing identity (listing_identities.id). Must be > 0.
+//
+// Returns:
+//   - detail: ListingDetailOutput with enriched listing data, catalog values, and related entities
+//   - err: Domain error with appropriate HTTP status code:
+//   - 400 (Bad Request) if listingIdentityId <= 0
+//   - 403 (Forbidden) if requester is not the listing owner
+//   - 404 (Not Found) if listing identity does not exist
+//   - 500 (Internal) for infrastructure failures (DB, cache, transaction errors)
+//
+// Business Rules:
+//   - Only the listing owner (identity.user_id == authenticated user_id) can access details
+//   - Returns the ACTIVE version (referenced by identity.active_version_id)
+//   - Draft version metadata is included in response if it exists
+//   - Catalog values are enriched with slug and label for frontend display
+//   - Photo session booking ID is included if active booking exists
+//
+// Side Effects:
+//   - Logs warning if requester is not the listing owner (audit trail)
+//   - Logs warning if catalog values are not found (data integrity issue)
+//
+// Example:
+//
+//	detail, err := svc.GetListingDetail(ctx, 1024)
+//	if err != nil {
+//	    // Handle error (already logged by service)
+//	    return err
+//	}
+//	// detail.Listing contains active version data
+//	// detail.PhotoSessionID contains booking ID (if exists)
+func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityId int64) (ListingDetailOutput, error) {
 	var output ListingDetailOutput
 
-	if listingID <= 0 {
-		return output, utils.ValidationError("listingId", "listingId must be greater than zero")
+	// Validate listingIdentityId parameter (business rule)
+	if listingIdentityId <= 0 {
+		return output, utils.ValidationError("listingIdentityId", "listingIdentityId must be greater than zero")
 	}
 
+	// Initialize tracing for distributed observability
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return output, utils.InternalError("")
 	}
 	defer spanEnd()
 
+	// Ensure logger propagation with request_id and trace_id
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
+	// Start read-only transaction (performance optimization for SELECT-only operations)
 	tx, txErr := ls.gsi.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
@@ -79,41 +130,68 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		return output, utils.InternalError("")
 	}
 	defer func() {
+		// Always rollback read-only transactions (no side effects)
 		_ = ls.gsi.RollbackTransaction(ctx, tx)
 	}()
 
-	listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, listingID)
-	if repoErr != nil {
-		if errors.Is(repoErr, sql.ErrNoRows) {
+	// Fetch listing identity record to validate existence and ownership
+	identity, identityErr := ls.listingRepository.GetListingIdentityByID(ctx, tx, listingIdentityId)
+	if identityErr != nil {
+		if errors.Is(identityErr, sql.ErrNoRows) {
+			// Listing identity not found (404)
 			return output, utils.NotFoundError("Listing")
 		}
-		utils.SetSpanError(ctx, repoErr)
-		logger.Error("listing.detail.get_listing_error", "err", repoErr, "listing_id", listingID)
+		// Infrastructure error (500)
+		utils.SetSpanError(ctx, identityErr)
+		logger.Error("listing.detail.get_identity_error", "err", identityErr, "listing_identity_id", listingIdentityId)
 		return output, utils.InternalError("")
 	}
 
-	// Validate ownership
+	// Validate ownership before returning sensitive data
 	userID, uidErr := ls.gsi.GetUserIDFromContext(ctx)
 	if uidErr != nil {
+		// Context missing user_id (should never happen after AuthMiddleware)
 		return output, uidErr
 	}
 
-	if listing.UserID() != userID {
+	if identity.UserID != userID {
+		// Requester is not the owner (audit trail + 403 Forbidden)
 		logger.Warn("unauthorized_detail_access_attempt",
-			"listing_id", listingID,
-			"listing_identity_id", listing.IdentityID(),
+			"listing_identity_id", listingIdentityId,
 			"requester_user_id", userID,
-			"owner_user_id", listing.UserID())
+			"owner_user_id", identity.UserID)
 		return output, utils.AuthorizationError("not authorized to access this listing")
 	}
 
+	// Fetch active version via identity.active_version_id
+	if !identity.ActiveVersionID.Valid || identity.ActiveVersionID.Int64 == 0 {
+		// Edge case: identity exists but no active version (should not happen in production)
+		logger.Error("listing.detail.no_active_version", "listing_identity_id", listingIdentityId)
+		return output, utils.InternalError("")
+	}
+
+	activeVersionID := identity.ActiveVersionID.Int64
+	listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, activeVersionID)
+	if repoErr != nil {
+		if errors.Is(repoErr, sql.ErrNoRows) {
+			// Active version referenced but not found (data integrity issue)
+			logger.Error("listing.detail.active_version_not_found", "listing_identity_id", listingIdentityId, "active_version_id", activeVersionID)
+			return output, utils.InternalError("")
+		}
+		// Infrastructure error
+		utils.SetSpanError(ctx, repoErr)
+		logger.Error("listing.detail.get_listing_error", "err", repoErr, "listing_identity_id", listingIdentityId, "active_version_id", activeVersionID)
+		return output, utils.InternalError("")
+	}
+
+	// List all versions to populate draft metadata
 	versionSummaries, listErr := ls.listingRepository.ListListingVersions(ctx, tx, listingrepository.ListListingVersionsFilter{
-		ListingIdentityID: listing.IdentityID(),
+		ListingIdentityID: listingIdentityId,
 		IncludeDeleted:    false,
 	})
 	if listErr != nil {
 		utils.SetSpanError(ctx, listErr)
-		logger.Error("listing.detail.list_versions_error", "err", listErr, "listing_identity_id", listing.IdentityID())
+		logger.Error("listing.detail.list_versions_error", "err", listErr, "listing_identity_id", listingIdentityId)
 		return output, utils.InternalError("")
 	}
 
@@ -148,19 +226,21 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 
 	output.Listing = listing
 
-	// Buscar booking ativo de photo session se existir
-	booking, bookingErr := ls.photoSessionSvc.GetActiveBookingByListingIdentityID(ctx, tx, listing.IdentityID())
+	// Fetch active photo session booking (optional, may not exist)
+	booking, bookingErr := ls.photoSessionSvc.GetActiveBookingByListingIdentityID(ctx, tx, listingIdentityId)
 	if bookingErr != nil && !errors.Is(bookingErr, sql.ErrNoRows) {
-		// Apenas loga warning se não for ErrNoRows (ausência de booking é esperado)
-		logger.Warn("listing.detail.get_active_booking_warning", "listing_identity_id", listing.IdentityID(), "err", bookingErr)
-		// Não retorna erro; apenas não preenche o campo
+		// Log warning if not ErrNoRows (absence of booking is expected)
+		logger.Warn("listing.detail.get_active_booking_warning", "listing_identity_id", listingIdentityId, "err", bookingErr)
+		// Do not return error; just omit photoSessionId field
 	} else if bookingErr == nil && booking != nil {
 		bookingID := booking.ID()
 		output.PhotoSessionID = &bookingID
 	}
 
+	// Cache for catalog values to avoid duplicate queries
 	cache := make(map[string]*CatalogValueDetail)
 
+	// Enrich features with base feature metadata (description, name)
 	if listingFeatures := listing.Features(); len(listingFeatures) > 0 {
 		ids := make([]int64, 0, len(listingFeatures))
 		seen := make(map[int64]struct{}, len(listingFeatures))
@@ -178,7 +258,7 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		featureMap, ferr := ls.listingRepository.GetBaseFeaturesByIDs(ctx, tx, ids)
 		if ferr != nil {
 			utils.SetSpanError(ctx, ferr)
-			logger.Error("listing.detail.get_features_metadata_error", "err", ferr, "listing_id", listingID)
+			logger.Error("listing.detail.get_features_metadata_error", "err", ferr, "listing_identity_id", listingIdentityId)
 			return output, utils.InternalError("")
 		}
 
@@ -187,6 +267,7 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 			featureID := feature.FeatureID()
 			metadata, ok := featureMap[featureID]
 			if !ok {
+				// Feature ID referenced but not found in base_features (data integrity issue)
 				logger.Warn("listing.detail.base_feature_not_found", "feature_id", featureID)
 				featureDetails = append(featureDetails, FeatureDetail{
 					Feature:     "",
@@ -206,6 +287,7 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		output.Features = featureDetails
 	}
 
+	// Enrich catalog values with slug and label for frontend display
 	ownerDetail, derr := ls.fetchCatalogValueDetail(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, uint8(listing.Owner()), cache)
 	if derr != nil {
 		return output, derr
@@ -260,6 +342,7 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 	}
 	output.WarehouseSector = warehouseSectorDetail
 
+	// Enrich financing blockers with catalog labels
 	if blockers := listing.FinancingBlockers(); len(blockers) > 0 {
 		details := make([]FinancingBlockerDetail, 0, len(blockers))
 		for _, blocker := range blockers {
@@ -272,6 +355,7 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 		output.FinancingBlockers = details
 	}
 
+	// Enrich guarantees with catalog labels
 	if guarantees := listing.Guarantees(); len(guarantees) > 0 {
 		details := make([]GuaranteeDetail, 0, len(guarantees))
 		for _, guarantee := range guarantees {
@@ -287,6 +371,21 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingID int64)
 	return output, nil
 }
 
+// fetchCatalogValueDetail retrieves and caches catalog value metadata
+//
+// This private helper reduces redundant database queries by caching catalog values.
+// Returns nil for numeric value 0 (indicates no value selected).
+//
+// Parameters:
+//   - ctx: current context
+//   - tx: database transaction
+//   - category: catalog category (e.g., "property_owner", "transaction_type")
+//   - numeric: catalog numeric value (tinyint)
+//   - cache: in-memory cache map to avoid duplicate queries
+//
+// Returns:
+//   - *CatalogValueDetail: enriched catalog value with slug and label
+//   - error: infrastructure error if database query fails
 func (ls *listingService) fetchCatalogValueDetail(
 	ctx context.Context,
 	tx *sql.Tx,
@@ -294,28 +393,34 @@ func (ls *listingService) fetchCatalogValueDetail(
 	numeric uint8,
 	cache map[string]*CatalogValueDetail,
 ) (*CatalogValueDetail, error) {
+	// Numeric value 0 indicates no value selected (return nil)
 	if numeric == 0 {
 		return nil, nil
 	}
 
+	// Check cache to avoid redundant database queries
 	key := fmt.Sprintf("%s:%d", category, numeric)
 	if cached, ok := cache[key]; ok {
 		return cached, nil
 	}
 
+	// Query catalog value from database
 	value, err := ls.listingRepository.GetCatalogValueByNumeric(ctx, tx, category, numeric)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			// Catalog value not found (data integrity issue, log warning)
 			logger := utils.LoggerFromContext(ctx)
 			logger.Warn("listing.detail.catalog_not_found", "category", category, "numeric", numeric)
 			detail := &CatalogValueDetail{NumericValue: numeric}
 			cache[key] = detail
 			return detail, nil
 		}
+		// Infrastructure error
 		utils.SetSpanError(ctx, err)
 		return nil, utils.InternalError("")
 	}
 
+	// Cache result for future use in this request
 	detail := &CatalogValueDetail{
 		NumericValue: value.NumericValue(),
 		Slug:         value.Slug(),
