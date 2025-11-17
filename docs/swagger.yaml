@@ -6359,243 +6359,6 @@ paths:
       summary: Update system user data
       tags:
       - Admin Users
-  /api/v2/listings/media/downloads:
-    post:
-      consumes:
-      - application/json
-      description: Finds the most recent READY batch for a listing and generates time-limited
-        signed S3 URLs for downloading processed assets (optimized images/videos).
-        Includes preview URLs for thumbnails. Returns 204 if no READY batch exists.
-      parameters:
-      - description: Listing identification
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Download URLs generated
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse'
-        "204":
-          description: No READY batch available
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Listing not found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get signed download URLs for processed media
-      tags:
-      - Listings Media
-  /api/v2/listings/media/status:
-    post:
-      consumes:
-      - application/json
-      description: Returns batch status (PENDING_UPLOAD/RECEIVED/PROCESSING/READY/FAILED)
-        along with asset details (titles, sequences, object keys). Used by frontend
-        to poll progress and determine when downloads are available.
-      parameters:
-      - description: Batch identification
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Batch status retrieved
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusResponse'
-        "400":
-          description: Invalid request
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Batch not found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get media batch processing status
-      tags:
-      - Listings Media
-  /api/v2/listings/media/uploads:
-    post:
-      consumes:
-      - application/json
-      description: Validates permissions (photographer booking or owner for project
-        media), enforces listing status PENDING_PHOTO_PROCESSING, creates a media
-        batch and returns signed PUT URLs with required headers (Content-Type, checksum).
-        Rejects duplicates (sequence/title) and unsupported media types.
-      parameters:
-      - description: Manifest with client-side file metadata
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Batch created with signed URLs
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchResponse'
-        "400":
-          description: Invalid request format
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden - User not allowed to upload for this listing
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Listing not found or not in PENDING_PHOTO_PROCESSING
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "409":
-          description: There is another open batch
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Request upload URLs for a listing media batch
-      tags:
-      - Listings Media
-  /api/v2/listings/media/uploads/complete:
-    post:
-      consumes:
-      - application/json
-      description: Validates S3 uploads via HEAD requests checking checksums, consolidates
-        asset titles/sequences, updates batch status to RECEIVED, registers processing
-        job and enqueues it to SQS. Returns job ID and estimated processing duration.
-      parameters:
-      - description: Upload confirmation with object keys and checksums
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchRequest'
-      produces:
-      - application/json
-      responses:
-        "202":
-          description: Processing job enqueued
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchResponse'
-        "400":
-          description: Invalid request or checksum mismatch
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Batch not found or not in PENDING_UPLOAD
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Confirm upload completion and start processing
-      tags:
-      - Listings Media
-  /api/v2/listings/media/uploads/retry:
-    post:
-      consumes:
-      - application/json
-      description: Accepts batches in FAILED or READY status and creates a new processing
-        job reusing existing raw S3 objects. Updates batch status to PROCESSING and
-        enqueues the job to SQS with retry flag. Always returns 202 with new job ID.
-      parameters:
-      - description: Batch identification and retry reason
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchRequest'
-      produces:
-      - application/json
-      responses:
-        "202":
-          description: Retry job enqueued
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchResponse'
-        "400":
-          description: Invalid request or batch not in terminal status
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Batch not found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Retry media batch processing
-      tags:
-      - Listings Media
   /auth/agency:
     post:
       consumes:
@@ -7403,6 +7166,243 @@ paths:
       summary: Get base features
       tags:
       - Listings
+  /listings/media/downloads:
+    post:
+      consumes:
+      - application/json
+      description: Finds the most recent READY batch for a listing and generates time-limited
+        signed S3 URLs for downloading processed assets (optimized images/videos).
+        Includes preview URLs for thumbnails. Returns 204 if no READY batch exists.
+      parameters:
+      - description: Listing identification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Download URLs generated
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse'
+        "204":
+          description: No READY batch available
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get signed download URLs for processed media
+      tags:
+      - Listings Media
+  /listings/media/status:
+    post:
+      consumes:
+      - application/json
+      description: Returns batch status (PENDING_UPLOAD/RECEIVED/PROCESSING/READY/FAILED)
+        along with asset details (titles, sequences, object keys). Used by frontend
+        to poll progress and determine when downloads are available.
+      parameters:
+      - description: Batch identification
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Batch status retrieved
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Batch not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get media batch processing status
+      tags:
+      - Listings Media
+  /listings/media/uploads:
+    post:
+      consumes:
+      - application/json
+      description: Validates permissions (photographer booking or owner for project
+        media), enforces listing status PENDING_PHOTO_PROCESSING, creates a media
+        batch and returns signed PUT URLs with required headers (Content-Type, checksum).
+        Rejects duplicates (sequence/title) and unsupported media types.
+      parameters:
+      - description: Manifest with client-side file metadata
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Batch created with signed URLs
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchResponse'
+        "400":
+          description: Invalid request format
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden - User not allowed to upload for this listing
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found or not in PENDING_PHOTO_PROCESSING
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: There is another open batch
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Request upload URLs for a listing media batch
+      tags:
+      - Listings Media
+  /listings/media/uploads/complete:
+    post:
+      consumes:
+      - application/json
+      description: Validates S3 uploads via HEAD requests checking checksums, consolidates
+        asset titles/sequences, updates batch status to RECEIVED, registers processing
+        job and enqueues it to SQS. Returns job ID and estimated processing duration.
+      parameters:
+      - description: Upload confirmation with object keys and checksums
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Processing job enqueued
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchResponse'
+        "400":
+          description: Invalid request or checksum mismatch
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Batch not found or not in PENDING_UPLOAD
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Confirm upload completion and start processing
+      tags:
+      - Listings Media
+  /listings/media/uploads/retry:
+    post:
+      consumes:
+      - application/json
+      description: Accepts batches in FAILED or READY status and creates a new processing
+        job reusing existing raw S3 objects. Updates batch status to PROCESSING and
+        enqueues the job to SQS with retry flag. Always returns 202 with new job ID.
+      parameters:
+      - description: Batch identification and retry reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Retry job enqueued
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchResponse'
+        "400":
+          description: Invalid request or batch not in terminal status
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Batch not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Retry media batch processing
+      tags:
+      - Listings Media
   /listings/options:
     post:
       consumes:

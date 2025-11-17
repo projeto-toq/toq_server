@@ -27,7 +27,7 @@ import (
 //	@Failure		404		{object}	dto.ErrorResponse	"Listing not found or not in PENDING_PHOTO_PROCESSING"
 //	@Failure		409		{object}	dto.ErrorResponse	"There is another open batch"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-//	@Router			/api/v2/listings/media/uploads [post]
+//	@Router			/listings/media/uploads [post]
 func (lh *ListingHandler) CreateUploadBatch(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)

@@ -26,7 +26,7 @@ import (
 //	@Failure		403		{object}	dto.ErrorResponse	"Forbidden"
 //	@Failure		404		{object}	dto.ErrorResponse	"Batch not found"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
-//	@Router			/api/v2/listings/media/uploads/retry [post]
+//	@Router			/listings/media/uploads/retry [post]
 func (lh *ListingHandler) RetryMediaBatch(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
