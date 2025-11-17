@@ -6,9 +6,9 @@
 
 ## 🎯 Solicitação
 
-O `procedimento_de_criação_de_novo_anuncio.md` diz
-	- `landTerrainType` (string) - Slug do catálogo land_terrain_type (ex: "flat", "uphill", "downhill", "slight_uphill", "slight_downhill") - **obrigatório para Comercial(64) e Residencial(512)**
-Entretanto, o código atual não implementa a busca de land_terrain_type no endpoint GET `/admin/listing/catalog`
+O função `func (lh *ListingHandler) GetAllListings(c *gin.Context)` que lista todos os listings tem a documentação confusa, por não especificar quais listings/versões são retornados. 
+O nome do da função também não é adequado, pois se vai listar listings deveria ser List* e não Get*
+É necessário também que o endpoint aceite ordenação por Id (ascendente/descendente) que representa a data de criação pois o id maior e sempre mais velho e por Status.
 
 Assim:
 1. Analise o código atual model, service, handler, repository, dto, converter do projeto e identifique a melhor forma de implementar a mudança.

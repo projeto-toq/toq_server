@@ -6,7 +6,142 @@ import (
 
 // Listing DTOs for HTTP handlers
 
-// GetAllListingsRequest represents request for getting all listings
+// ListListingsRequest captures filters, pagination, and sorting for listing search
+//
+// This DTO is used to retrieve paginated, filtered, and sorted lists of active listing versions.
+// By default, only versions linked as active_version_id in listing_identities are returned.
+// Set includeAllVersions=true to retrieve all versions regardless of active status.
+//
+// Sorting:
+//   - sortBy: Field to order results by (id, status)
+//   - sortOrder: Direction (asc or desc)
+//   - Default: id DESC (newest listings first)
+//
+// Filtering:
+//   - status: Listing lifecycle status (e.g., PUBLISHED, DRAFT, UNDER_OFFER)
+//   - code: Exact listing code match
+//   - title: Wildcard search on title/description (supports '*')
+//   - userId: Owner filter (auto-enforced for owner role)
+//   - Location: zipCode, city, neighborhood (wildcards supported)
+//   - Price ranges: minSell/maxSell, minRent/maxRent
+//   - Size range: minLandSize/maxLandSize
+//
+// Pagination:
+//   - page: 1-indexed page number
+//   - limit: Items per page (max 100)
+type ListListingsRequest struct {
+	// Page number for pagination (1-indexed)
+	// Minimum: 1, Default: 1
+	// Example: 1
+	Page int `form:"page,default=1" binding:"min=1" example:"1"`
+
+	// Limit is the number of items per page
+	// Minimum: 1, Maximum: 100, Default: 20
+	// Example: 20
+	Limit int `form:"limit,default=20" binding:"min=1,max=100" example:"20"`
+
+	// SortBy specifies the field to order results by
+	// Allowed values: id, status
+	// Default: id (creation order proxy - higher ID = newer listing)
+	// Example: "id"
+	SortBy string `form:"sortBy,default=id" binding:"omitempty,oneof=id status" example:"id"`
+
+	// SortOrder specifies the sort direction
+	// Allowed values: asc (ascending), desc (descending)
+	// Default: desc (newest first)
+	// Example: "desc"
+	SortOrder string `form:"sortOrder,default=desc" binding:"omitempty,oneof=asc desc" example:"desc"`
+
+	// Status filters by listing lifecycle status
+	// Accepts enum name (e.g., "PUBLISHED") or numeric value
+	// Optional - omit to retrieve all statuses
+	// Example: "PUBLISHED"
+	Status string `form:"status,omitempty" example:"PUBLISHED"`
+
+	// Code filters by exact listing code
+	// Optional - omit to retrieve all codes
+	// Example: 1024
+	Code string `form:"code,omitempty" example:"1024"`
+
+	// Title performs wildcard search on listing title and description
+	// Supports '*' as wildcard character
+	// Case-insensitive partial match
+	// Optional
+	// Example: "*garden*"
+	Title string `form:"title,omitempty" example:"*garden*"`
+
+	// UserID filters listings by owner user ID
+	// For owner role, this is auto-enforced to requester's ID (security)
+	// Optional for admin/realtor roles
+	// Example: 55
+	UserID string `form:"userId,omitempty" example:"55"`
+
+	// ZipCode filters by Brazilian postal code (CEP)
+	// Digits only, supports '*' wildcard
+	// Example: "06543*"
+	ZipCode string `form:"zipCode,omitempty" example:"06543*"`
+
+	// City filters by city name
+	// Supports '*' wildcard for partial match
+	// Case-insensitive
+	// Example: "*Paulista*"
+	City string `form:"city,omitempty" example:"*Paulista*"`
+
+	// Neighborhood filters by neighborhood name
+	// Supports '*' wildcard for partial match
+	// Case-insensitive
+	// Example: "*Centro*"
+	Neighborhood string `form:"neighborhood,omitempty" example:"*Centro*"`
+
+	// MinSellPrice filters listings with sell price >= this value
+	// Optional - used with maxSell to define price range
+	// Example: 100000
+	MinSellPrice string `form:"minSell,omitempty" example:"100000"`
+
+	// MaxSellPrice filters listings with sell price <= this value
+	// Optional - used with minSell to define price range
+	// Example: 900000
+	MaxSellPrice string `form:"maxSell,omitempty" example:"900000"`
+
+	// MinRentPrice filters listings with rent price >= this value
+	// Optional - used with maxRent to define price range
+	// Example: 1500
+	MinRentPrice string `form:"minRent,omitempty" example:"1500"`
+
+	// MaxRentPrice filters listings with rent price <= this value
+	// Optional - used with minRent to define price range
+	// Example: 8000
+	MaxRentPrice string `form:"maxRent,omitempty" example:"8000"`
+
+	// MinLandSize filters listings with land size >= this value (square meters)
+	// Optional - used with maxLandSize to define size range
+	// Example: 120.5
+	MinLandSize string `form:"minLandSize,omitempty" example:"120.5"`
+
+	// MaxLandSize filters listings with land size <= this value (square meters)
+	// Optional - used with minLandSize to define size range
+	// Example: 500.75
+	MaxLandSize string `form:"maxLandSize,omitempty" example:"500.75"`
+
+	// IncludeAllVersions determines version filtering behavior
+	// false (default): Only active versions (linked via active_version_id)
+	// true: All versions (active + draft)
+	// Example: false
+	IncludeAllVersions bool `form:"includeAllVersions,default=false" example:"false"`
+}
+
+// ListListingsResponse aggregates paginated listing data with metadata
+//
+// Contains the filtered and sorted listing collection plus pagination info.
+type ListListingsResponse struct {
+	// Data contains the listing collection for the current page
+	Data []ListingResponse `json:"data"`
+
+	// Pagination provides metadata for navigating the result set
+	Pagination PaginationResponse `json:"pagination"`
+}
+
+// GetAllListingsRequest represents request for getting all listings (DEPRECATED - use ListListingsRequest)
 type GetAllListingsRequest struct {
 	Page         int    `form:"page,default=1" binding:"min=1"`
 	Limit        int    `form:"limit,default=10" binding:"min=1,max=100"`
@@ -25,7 +160,7 @@ type GetAllListingsRequest struct {
 	MaxLandSize  string `form:"maxLandSize,omitempty"`
 }
 
-// GetAllListingsResponse represents response for getting all listings
+// GetAllListingsResponse represents response for getting all listings (DEPRECATED - use ListListingsResponse)
 type GetAllListingsResponse struct {
 	Data       []ListingResponse  `json:"data"`
 	Pagination PaginationResponse `json:"pagination"`

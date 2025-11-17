@@ -266,7 +266,7 @@ func RegisterListingRoutes(
 	listings.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		// Basic CRUD
-		listings.GET("", listingHandler.GetAllListings)                                                      // GetAllListings (returns 501 until service ready)
+		listings.GET("", listingHandler.ListListings)                                                        // ListListings with filters, sorting, and pagination
 		listings.POST("", listingHandler.StartListing)                                                       // StartListing
 		listings.GET("/search", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SearchListing
 		listings.POST("/options", listingHandler.PostOptions)                                                // PostOptions

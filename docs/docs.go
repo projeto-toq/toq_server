@@ -5091,42 +5091,82 @@ const docTemplate = `{
         },
         "/listings": {
             "get": {
-                "description": "Supports pagination, wildcard search for strings using '*', and range filters for numbers and dates.",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves a paginated list of active listing versions (versions linked via listing_identities.active_version_id).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Listings"
                 ],
-                "summary": "List all listings with filters",
+                "summary": "List active listing versions with filters and sorting",
                 "parameters": [
                     {
+                        "type": "string",
+                        "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "description": "Bearer token for authentication",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
                         "type": "integer",
                         "default": 1,
                         "example": 1,
-                        "description": "Page number",
+                        "description": "Page number (1-indexed)",
                         "name": "page",
                         "in": "query"
                     },
                     {
+                        "maximum": 100,
+                        "minimum": 1,
                         "type": "integer",
-                        "default": 10,
+                        "default": 20,
                         "example": 20,
-                        "description": "Page size",
+                        "description": "Items per page",
                         "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "id",
+                            "status"
+                        ],
+                        "type": "string",
+                        "default": "id",
+                        "example": "id",
+                        "description": "Field to sort by",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "example": "desc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "example": "\"PUBLISHED\"",
-                        "description": "Listing status (enum name or numeric)",
+                        "description": "Filter by listing status (enum name or numeric)",
                         "name": "status",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "example": 1024,
-                        "description": "Exact listing code",
+                        "description": "Filter by exact listing code",
                         "name": "code",
                         "in": "query"
                     },
@@ -5140,7 +5180,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "example": 55,
-                        "description": "Filter by owner user id",
+                        "description": "Filter by owner user ID (owners auto-filtered to their own listings)",
                         "name": "userId",
                         "in": "query"
                     },
@@ -5196,51 +5236,60 @@ const docTemplate = `{
                     {
                         "type": "number",
                         "example": 120.5,
-                        "description": "Minimum land size",
+                        "description": "Minimum land size in square meters",
                         "name": "minLandSize",
                         "in": "query"
                     },
                     {
                         "type": "number",
                         "example": 500.75,
-                        "description": "Maximum land size",
+                        "description": "Maximum land size in square meters",
                         "name": "maxLandSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "example": false,
+                        "description": "Include all versions (active + draft). Default: false (active only)",
+                        "name": "includeAllVersions",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Paginated list of listings with metadata",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetAllListingsResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingsResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invalid request parameters (malformed sortBy, sortOrder, or filter values)",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized (missing or invalid token)",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "403": {
-                        "description": "Forbidden",
+                        "description": "Forbidden (user lacks permission to access this resource)",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed (invalid enum values, range errors)\" example({\"code\":422,\"message\":\"Validation failed\",\"details\":{\"field\":\"sortBy\",\"error\":\"Invalid sort field\"}})",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     }
                 }
@@ -10873,20 +10922,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetAllListingsResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse"
-                    }
-                },
-                "pagination": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBaseFeaturesResponse": {
             "type": "object",
             "properties": {
@@ -11387,6 +11422,26 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse"
                     }
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "Data contains the listing collection for the current page",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse"
+                    }
+                },
+                "pagination": {
+                    "description": "Pagination provides metadata for navigating the result set",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                        }
+                    ]
                 }
             }
         },

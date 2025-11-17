@@ -1352,15 +1352,6 @@ definitions:
       message:
         type: string
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetAllListingsResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse'
-        type: array
-      pagination:
-        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBaseFeaturesResponse:
     properties:
       features:
@@ -1727,6 +1718,18 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse'
         type: array
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingsResponse:
+    properties:
+      data:
+        description: Data contains the listing collection for the current page
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingResponse'
+        type: array
+      pagination:
+        allOf:
+        - $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+        description: Pagination provides metadata for navigating the result set
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse:
     properties:
@@ -6831,27 +6834,54 @@ paths:
       - Complex
   /listings:
     get:
-      description: Supports pagination, wildcard search for strings using '*', and
-        range filters for numbers and dates.
+      description: Retrieves a paginated list of active listing versions (versions
+        linked via listing_identities.active_version_id).
       parameters:
+      - description: Bearer token for authentication
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - default: 1
-        description: Page number
+        description: Page number (1-indexed)
         example: 1
         in: query
+        minimum: 1
         name: page
         type: integer
-      - default: 10
-        description: Page size
+      - default: 20
+        description: Items per page
         example: 20
         in: query
+        maximum: 100
+        minimum: 1
         name: limit
         type: integer
-      - description: Listing status (enum name or numeric)
+      - default: id
+        description: Field to sort by
+        enum:
+        - id
+        - status
+        example: id
+        in: query
+        name: sortBy
+        type: string
+      - default: desc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        example: desc
+        in: query
+        name: sortOrder
+        type: string
+      - description: Filter by listing status (enum name or numeric)
         example: '"PUBLISHED"'
         in: query
         name: status
         type: string
-      - description: Exact listing code
+      - description: Filter by exact listing code
         example: 1024
         in: query
         name: code
@@ -6861,7 +6891,7 @@ paths:
         in: query
         name: title
         type: string
-      - description: Filter by owner user id
+      - description: Filter by owner user ID (owners auto-filtered to their own listings)
         example: 55
         in: query
         name: userId
@@ -6901,44 +6931,54 @@ paths:
         in: query
         name: maxRent
         type: number
-      - description: Minimum land size
+      - description: Minimum land size in square meters
         example: 120.5
         in: query
         name: minLandSize
         type: number
-      - description: Maximum land size
+      - description: Maximum land size in square meters
         example: 500.75
         in: query
         name: maxLandSize
         type: number
+      - description: 'Include all versions (active + draft). Default: false (active
+          only)'
+        example: false
+        in: query
+        name: includeAllVersions
+        type: boolean
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Paginated list of listings with metadata
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetAllListingsResponse'
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingsResponse'
         "400":
-          description: Bad Request
+          description: Invalid request parameters (malformed sortBy, sortOrder, or
+            filter values)
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "401":
-          description: Unauthorized
+          description: Unauthorized (missing or invalid token)
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "403":
-          description: Forbidden
+          description: Forbidden (user lacks permission to access this resource)
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Validation failed (invalid enum values, range errors)" example({"code":422,"message":"Validation
+            failed","details":{"field":"sortBy","error":"Invalid sort field"}})
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
-          description: Internal Server Error
+          description: Internal server error
           schema:
-            additionalProperties: true
-            type: object
-      summary: List all listings with filters
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List active listing versions with filters and sorting
       tags:
       - Listings
     post:
