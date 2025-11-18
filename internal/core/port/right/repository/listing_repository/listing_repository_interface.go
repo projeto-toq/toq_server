@@ -16,6 +16,7 @@ type ListingRepoPortInterface interface {
 	GetListingIdentityByID(ctx context.Context, tx *sql.Tx, identityID int64) (ListingIdentityRecord, error)
 	GetListingIdentityByUUID(ctx context.Context, tx *sql.Tx, listingUUID string) (ListingIdentityRecord, error)
 	GetListingVersionByID(ctx context.Context, tx *sql.Tx, versionID int64) (listingmodel.ListingInterface, error)
+	GetDraftVersionByListingIdentityID(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (listingmodel.ListingInterface, error)
 	ListListingVersions(ctx context.Context, tx *sql.Tx, filter ListListingVersionsFilter) ([]ListingVersionSummary, error)
 
 	// Satellite entities

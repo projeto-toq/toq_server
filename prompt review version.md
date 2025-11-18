@@ -6,16 +6,16 @@
 
 ## 🎯 Problema / Solicitação
 
-Houve um erro na definição do campo type de listing_versions, que foi definido como tinyint ao invés de smallint, o que limita o número de tipos de imóvel possíveis.
-Além disso é necessário incluir o campo condominio, com o nome traduzido para o ingles, condominium na tabela listing_versions antes de type. deverá ter o formato varchar(255) e aceitar valores nulos. Este campo deve ser incluido no modelo, nas buscas e nas criações/atualizações de listing_versions.
+A busca pelo detalhe de versão ativa de listings (anuncios) em get_listing_detail.go na linha 174 listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, activeVersionID) obtem o a versão correta do listing já enriquecida com as tabelas satelites e em seguida começa uma rotina de enriquecimento manual que destroi o listing e ao responder features, por exemplo, está nil.
 
-Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
-1. Analise `scripts/db_creation.sql` que tem o modelo do banco de dados, o adapater mysql em `internal/adapter/right/mysql/`, e os services e handlers relacionados a anuncios em `internal/core/service/listing_service/` e `internal/adapter/left/http/handlers/listing_handlers/` para planejar a alteração do tipo do campo `type` de `tinyint` para `smallint`.
-2. A alteração no banco de dados será feito pelo DBA. foque apenas no código Go.
-3. Proponha um plano detalhado para alteração, incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
-    3.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
-4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
-5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
+## Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
+1. Analise o código relevante para a solicitação, identificando todos os arquivos envolvidos (adapters, services, handlers, entities, converters).
+    1.1. Identifique desvios das regras de negócio e do guia do projeto (cite seções específicas).
+    1.2. Explique o impacto de cada desvio identificado.
+2. Proponha um plano detalhado para alteração, incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
+    2.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
+3. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
+4. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
 
 
 ---

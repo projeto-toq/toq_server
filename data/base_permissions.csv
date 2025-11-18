@@ -49,7 +49,7 @@ id;name;action;description;is_active
 48;"HTTP Admin Update Role Permission";"PUT:/api/v2/admin/role-permissions";"Permite atualizar relações role-permission";1
 49;"HTTP Admin Delete Role Permission";"DELETE:/api/v2/admin/role-permissions";"Permite excluir relações role-permission";1
 50;"HTTP Listing Version Promote";"POST:/api/v2/listings/versions/promote";"Permite finalizar atualização de listing passando a versão ativa";1
-51;"HTTP Get Listing Detail";"GET:/api/v2/listings/detail";"Permite consultar detalhes completos de um listing";1
+51;"HTTP Get Listing Detail";"POST:/api/v2/listings/detail";"Permite consultar detalhes completos de um listing";1
 52;"HTTP Admin Get Complexes";"GET:/api/v2/admin/complexes";"Permite listar complexos no painel admin";1
 53;"HTTP Admin Create Complex";"POST:/api/v2/admin/complexes";"Permite criar novos complexos no painel admin";1
 54;"HTTP Admin Update Complex";"PUT:/api/v2/admin/complexes";"Permite atualizar complexos no painel admin";1
@@ -111,3 +111,4 @@ id;name;action;description;is_active
 110;"HTTP Listing Version Discard";"POST:/api/v2/listings/versions/discard";"Permite descartar versão draft de listing";1
 111;"HTTP List Listing Versions";"POST:/api/v2/listings/versions";"Permite listar versões de um listing";1
 112;"HTTP Admin List Routes";"GET:/api/v2/admin/permissions/routes";"Permite listar todas as rotas HTTP registradas no sistema para popular formulários de permissões";1
+113;"HTTP Create Listing Draft Versions";"POST:/api/v2/listings/versions/draft";"Permite criar versões draft de um listing";1

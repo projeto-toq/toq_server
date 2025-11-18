@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
-	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -171,6 +170,9 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	}
 
 	activeVersionID := identity.ActiveVersionID.Int64
+
+	// Fetch active version FULLY ENRICHED (includes Features, Guarantees, ExchangePlaces, etc.)
+	// Note: GetListingVersionByID internally calls GetListingByQuery which enriches all satellite tables
 	listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, activeVersionID)
 	if repoErr != nil {
 		if errors.Is(repoErr, sql.ErrNoRows) {
@@ -184,42 +186,19 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 		return output, utils.InternalError("")
 	}
 
-	// List all versions to populate draft metadata
-	versionSummaries, listErr := ls.listingRepository.ListListingVersions(ctx, tx, listingrepository.ListListingVersionsFilter{
-		ListingIdentityID: listingIdentityId,
-		IncludeDeleted:    false,
-	})
-	if listErr != nil {
-		utils.SetSpanError(ctx, listErr)
-		logger.Error("listing.detail.list_versions_error", "err", listErr, "listing_identity_id", listingIdentityId)
-		return output, utils.InternalError("")
-	}
+	// Set listing identity metadata (UUID, identity ID)
+	listing.SetIdentityID(listingIdentityId)
+	listing.SetUUID(identity.UUID)
+	listing.SetActiveVersionID(activeVersionID)
 
-	if len(versionSummaries) > 0 {
-		versions := make([]listingmodel.ListingVersionInterface, 0, len(versionSummaries))
-		var draftVersion listingmodel.ListingVersionInterface
-
-		for _, summary := range versionSummaries {
-			version := summary.Version
-			if version == nil {
-				continue
-			}
-
-			versions = append(versions, version)
-			if summary.IsActive {
-				listing.SetActiveVersion(version)
-			}
-			if !summary.IsActive && version.Status() == listingmodel.StatusDraft {
-				draftVersion = version
-			}
-		}
-
-		listing.SetVersions(versions)
-		if draftVersion != nil {
-			listing.SetDraftVersion(draftVersion)
-		} else {
-			listing.ClearDraftVersion()
-		}
+	// Fetch draft version (if exists) for metadata
+	// Note: Avoid fetching all versions; only draft is needed
+	draftVersion, draftErr := ls.listingRepository.GetDraftVersionByListingIdentityID(ctx, tx, listingIdentityId)
+	if draftErr != nil && !errors.Is(draftErr, sql.ErrNoRows) {
+		// Log warning but do not fail request (draft is optional)
+		logger.Warn("listing.detail.get_draft_warning", "listing_identity_id", listingIdentityId, "err", draftErr)
+	} else if draftErr == nil && draftVersion != nil {
+		listing.SetDraftVersion(draftVersion)
 	} else {
 		listing.ClearDraftVersion()
 	}
