@@ -12,19 +12,51 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx, listingID int64) (listingrepository.ListingEndUpdateData, error) {
+// GetListingForEndUpdate retrieves comprehensive listing version data for validation during end-update and promotion flows.
+//
+// This method fetches a specific listing version by its version ID and returns aggregated data including:
+// - Version metadata (identity_id, user_id, code, version, status)
+// - Property details (address, type, transaction, pricing)
+// - Satellite entity counts (features, guarantees, exchange_places, financing_blockers)
+//
+// The method joins listing_versions with listing_identities to ensure both records are not soft-deleted.
+// It uses the InstrumentedAdapter for query execution, providing automatic tracing and metrics.
+//
+// Parameters:
+//   - ctx: Context with request/trace information
+//   - tx: Active database transaction
+//   - versionID: The ID of the listing_version record to fetch (NOT the listing_identity_id)
+//
+// Returns:
+//   - ListingEndUpdateData: Aggregated data struct with all necessary fields for validation
+//   - error: sql.ErrNoRows if version not found, or infrastructure error if query fails
+//
+// Business Rules in Query:
+//   - Only returns versions where both lv.deleted = 0 AND li.deleted = 0
+//   - Joins listing_identities to validate referential integrity
+//
+// Edge Cases:
+//   - Satellite entities (features, guarantees, etc.) may return sql.ErrNoRows → treated as empty, not error
+//   - Returns sql.ErrNoRows if version doesn't exist or is soft-deleted
+func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx, versionID int64) (listingrepository.ListingEndUpdateData, error) {
 	data := listingrepository.ListingEndUpdateData{}
 
+	// Initialize tracer for this repository operation
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return data, err
 	}
 	defer spanEnd()
 
+	// Propagate logger with trace context for structured logging
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT lv.id, lv.user_id, lv.code, lv.version, lv.status, lv.zip_code, lv.street, lv.number, lv.complex, lv.city, lv.state,
+	// Query explanation:
+	// - Selects lv.listing_identity_id (NOT lv.id) to populate ListingID field
+	// - Joins with listing_identities to enforce referential integrity
+	// - Filters by lv.id (version ID) and ensures both version and identity are not deleted
+	query := `SELECT lv.listing_identity_id, lv.user_id, lv.code, lv.version, lv.status, lv.zip_code, lv.street, lv.number, lv.complex, lv.city, lv.state,
 		lv.title, lv.type, lv.owner, lv.buildable, lv.delivered, lv.who_lives, lv.description, lv.transaction, lv.visit,
 		lv.accompanying, lv.annual_tax, lv.monthly_tax, lv.annual_ground_rent, lv.monthly_ground_rent, lv.exchange,
 		lv.exchange_perc, lv.sell_net, lv.rent_net, lv.condominium, lv.land_size, lv.corner, lv.tenant_name, lv.tenant_phone,
@@ -95,7 +127,11 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		storeMezzanineArea         sql.NullFloat64
 	)
 
-	row := la.QueryRowContext(ctx, tx, "select", query, listingID)
+	// Use InstrumentedAdapter for query execution (automatic tracing + metrics)
+	row := la.QueryRowContext(ctx, tx, "select", query, versionID)
+
+	// Scan result into data struct
+	// IMPORTANT: First column is now lv.listing_identity_id (not lv.id)
 	err = row.Scan(
 		&data.ListingID,
 		&data.UserID,
@@ -159,11 +195,13 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		&storeMezzanineArea,
 	)
 	if err != nil {
+		// Return sql.ErrNoRows directly for "not found" handling in service layer
 		if errors.Is(err, sql.ErrNoRows) {
 			return data, sql.ErrNoRows
 		}
+		// Mark span as error and log infrastructure failure
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.listing.get_listing_for_end_update.scan_error", "error", err, "listing_id", listingID)
+		logger.Error("mysql.listing.get_listing_for_end_update.scan_error", "error", err, "version_id", versionID)
 		return data, fmt.Errorf("scan listing for end update: %w", err)
 	}
 
@@ -223,34 +261,42 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	data.StoreHasMezzanine = storeHasMezzanine
 	data.StoreMezzanineArea = storeMezzanineArea
 
-	features, ferr := la.GetEntityFeaturesByListing(ctx, tx, data.ListingID)
+	// Fetch satellite entities counts
+	// Note: Satellite tables reference listing_version_id, not listing_identity_id
+	// Therefore we use versionID to fetch related entities
+
+	// Fetch features count
+	features, ferr := la.GetEntityFeaturesByListing(ctx, tx, versionID)
 	if ferr != nil && !errors.Is(ferr, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, ferr)
-		logger.Error("mysql.listing.get_listing_for_end_update.features_error", "error", ferr, "listing_id", listingID)
+		logger.Error("mysql.listing.get_listing_for_end_update.features_error", "error", ferr, "version_id", versionID)
 		return data, fmt.Errorf("get features for end update: %w", ferr)
 	}
 	data.FeaturesCount = len(features)
 
-	exchangePlaces, eerr := la.GetEntityExchangePlacesByListing(ctx, tx, data.ListingID)
+	// Fetch exchange places count
+	exchangePlaces, eerr := la.GetEntityExchangePlacesByListing(ctx, tx, versionID)
 	if eerr != nil && !errors.Is(eerr, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, eerr)
-		logger.Error("mysql.listing.get_listing_for_end_update.exchange_places_error", "error", eerr, "listing_id", listingID)
+		logger.Error("mysql.listing.get_listing_for_end_update.exchange_places_error", "error", eerr, "version_id", versionID)
 		return data, fmt.Errorf("get exchange places for end update: %w", eerr)
 	}
 	data.ExchangePlacesCount = len(exchangePlaces)
 
-	financingBlockers, berr := la.GetEntityFinancingBlockersByListing(ctx, tx, data.ListingID)
+	// Fetch financing blockers count
+	financingBlockers, berr := la.GetEntityFinancingBlockersByListing(ctx, tx, versionID)
 	if berr != nil && !errors.Is(berr, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, berr)
-		logger.Error("mysql.listing.get_listing_for_end_update.financing_blockers_error", "error", berr, "listing_id", listingID)
+		logger.Error("mysql.listing.get_listing_for_end_update.financing_blockers_error", "error", berr, "version_id", versionID)
 		return data, fmt.Errorf("get financing blockers for end update: %w", berr)
 	}
 	data.FinancingBlockersCount = len(financingBlockers)
 
-	guarantees, gerr := la.GetEntityGuaranteesByListing(ctx, tx, data.ListingID)
+	// Fetch guarantees count
+	guarantees, gerr := la.GetEntityGuaranteesByListing(ctx, tx, versionID)
 	if gerr != nil && !errors.Is(gerr, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, gerr)
-		logger.Error("mysql.listing.get_listing_for_end_update.guarantees_error", "error", gerr, "listing_id", listingID)
+		logger.Error("mysql.listing.get_listing_for_end_update.guarantees_error", "error", gerr, "version_id", versionID)
 		return data, fmt.Errorf("get guarantees for end update: %w", gerr)
 	}
 	data.GuaranteesCount = len(guarantees)

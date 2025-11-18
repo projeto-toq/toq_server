@@ -41,7 +41,22 @@ type ListingRepoPortInterface interface {
 	GetListingCode(ctx context.Context, tx *sql.Tx) (code uint32, err error)
 	GetBaseFeatures(ctx context.Context, tx *sql.Tx) (features []listingmodel.BaseFeatureInterface, err error)
 	GetBaseFeaturesByIDs(ctx context.Context, tx *sql.Tx, ids []int64) (map[int64]listingmodel.BaseFeatureInterface, error)
-	GetListingForEndUpdate(ctx context.Context, tx *sql.Tx, listingID int64) (ListingEndUpdateData, error)
+
+	// GetListingForEndUpdate retrieves comprehensive listing version data for validation flows.
+	//
+	// This method fetches a specific listing version and returns aggregated data including version metadata,
+	// property details, and satellite entity counts. Used primarily by end-update and promote flows.
+	//
+	// Parameters:
+	//   - ctx: Context with request/trace information
+	//   - tx: Active database transaction
+	//   - versionID: The ID of the listing_version record (NOT the listing_identity_id)
+	//
+	// Returns:
+	//   - ListingEndUpdateData: Aggregated data struct with ListingID populated as listing_identity_id
+	//   - error: sql.ErrNoRows if version not found, or infrastructure error
+	GetListingForEndUpdate(ctx context.Context, tx *sql.Tx, versionID int64) (ListingEndUpdateData, error)
+
 	ListListings(ctx context.Context, tx *sql.Tx, filter ListListingsFilter) (ListListingsResult, error)
 
 	// New methods for version workflow
@@ -120,8 +135,11 @@ type ListingRecord struct {
 }
 
 // ListingEndUpdateData aggregates the raw values needed to validate the end-update flow.
+//
+// IMPORTANT: ListingID field contains the listing_identity_id (from listing_versions.listing_identity_id),
+// NOT the listing_versions.id. This enables version-to-identity validation in service layer.
 type ListingEndUpdateData struct {
-	ListingID                  int64
+	ListingID                  int64 // listing_identity_id from listing_versions table
 	UserID                     int64
 	Status                     listingmodel.ListingStatus
 	Code                       uint32
