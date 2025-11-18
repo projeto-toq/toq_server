@@ -20,7 +20,7 @@ func (la *ListingAdapter) GetEntityGuaranteesByListing(ctx context.Context, tx *
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM guarantees WHERE listing_version_id = ?;`
+	query := `SELECT id, listing_version_id, priority, guarantee FROM guarantees WHERE listing_version_id = ?`
 
 	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingVersionID)
 	if queryErr != nil {

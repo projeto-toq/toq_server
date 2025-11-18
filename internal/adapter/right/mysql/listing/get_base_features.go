@@ -21,7 +21,7 @@ func (la *ListingAdapter) GetBaseFeatures(ctx context.Context, tx *sql.Tx) (feat
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM base_features ORDER BY priority ASC;`
+	query := `SELECT id, feature, description, priority FROM base_features ORDER BY priority ASC`
 
 	rows, queryErr := la.QueryContext(ctx, tx, "select", query)
 	if queryErr != nil {

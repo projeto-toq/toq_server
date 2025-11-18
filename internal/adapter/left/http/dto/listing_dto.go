@@ -477,7 +477,7 @@ type WarehouseAdditionalFloorDTO struct {
 // @property tenantEmail string false "Current tenant email" example(joao.silva@example.com)
 // @property tenantPhone string false "Current tenant phone in E.164 format" example(+5511912345678)
 // @property accompanying string false "Accompanying requirement: broker, assistant, owner, none" example(assistant)
-// @property completionForecast string false "Completion forecast for properties under construction (YYYY-MM format)" example(2026-06)
+// @property completionForecast string false "Completion forecast for properties under construction. Accepts: YYYY-MM-DD (2026-01-20), YYYY-MM (2026-06), or RFC3339 timestamp (2026-01-20T00:00:00Z). Internally normalized to YYYY-MM-DD for storage." example(2026-06)
 // @property landBlock string false "Block identifier for land properties" example(A)
 // @property landLot string false "Lot number for land properties" example(15)
 // @property landFront number false "Front dimension in meters for land properties" example(12.5)
@@ -536,7 +536,7 @@ type UpdateListingRequest struct {
 	TenantEmail                coreutils.Optional[string]                              `json:"tenantEmail" example:"joao.silva@example.com"`
 	TenantPhone                coreutils.Optional[string]                              `json:"tenantPhone" example:"+5511912345678" description:"Tenant phone number in E.164 format (e.g., +5511912345678)."`
 	Accompanying               coreutils.Optional[string]                              `json:"accompanying" example:"assistant"`
-	CompletionForecast         coreutils.Optional[string]                              `json:"completionForecast" example:"2026-06" description:"Completion forecast for properties under construction (YYYY-MM format)"`
+	CompletionForecast         coreutils.Optional[string]                              `json:"completionForecast" example:"2026-06" description:"Completion forecast for properties under construction. Accepts: YYYY-MM-DD, YYYY-MM, or RFC3339 timestamp. Internally normalized to YYYY-MM-DD for storage."`
 	LandBlock                  coreutils.Optional[string]                              `json:"landBlock" example:"A" description:"Block identifier for land properties"`
 	LandLot                    coreutils.Optional[string]                              `json:"landLot" example:"15" description:"Lot number for land properties"`
 	LandFront                  coreutils.Optional[float64]                             `json:"landFront" example:"12.5" description:"Front dimension in meters for land properties"`
@@ -600,7 +600,7 @@ type UpdateListingRequestSwagger struct {
 	TenantEmail                *string                              `json:"tenantEmail,omitempty" example:"joao.silva@example.com"`
 	TenantPhone                *string                              `json:"tenantPhone,omitempty" example:"+5511912345678"`
 	Accompanying               *string                              `json:"accompanying,omitempty" example:"assistant"`
-	CompletionForecast         *string                              `json:"completionForecast,omitempty" example:"2026-06"`
+	CompletionForecast         *string                              `json:"completionForecast,omitempty" example:"2026-06" description:"Completion forecast. Accepts: YYYY-MM-DD, YYYY-MM, or RFC3339. Normalized to YYYY-MM-DD."`
 	LandBlock                  *string                              `json:"landBlock,omitempty" example:"A"`
 	LandLot                    *string                              `json:"landLot,omitempty" example:"15"`
 	LandFront                  *float64                             `json:"landFront,omitempty" example:"12.5"`

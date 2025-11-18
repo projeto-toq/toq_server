@@ -238,9 +238,22 @@ func (la *ListingAdapter) CreateListingVersion(ctx context.Context, tx *sql.Tx, 
 	deletedValue := version.Deleted()
 
 	// New property-specific fields
+	// Sanitize completion forecast to ensure MySQL DATE compatibility
 	completionForecast := sql.NullString{}
 	if version.HasCompletionForecast() {
-		completionForecast = sql.NullString{String: version.CompletionForecast(), Valid: true}
+		rawValue := version.CompletionForecast()
+
+		// Attempt to normalize format (defensive programming)
+		normalized, parseErr := utils.ParseCompletionForecast(rawValue)
+		if parseErr != nil {
+			// Log warning but don't fail the insert (domain should have validated)
+			logger.Warn("mysql.listing.create_listing_version.invalid_completion_forecast_format",
+				"raw_value", rawValue, "error", parseErr)
+			// Store raw value (will likely fail MySQL constraint, triggering proper error handling)
+			completionForecast = sql.NullString{String: rawValue, Valid: true}
+		} else {
+			completionForecast = sql.NullString{String: normalized, Valid: true}
+		}
 	}
 
 	landBlock := sql.NullString{}

@@ -20,7 +20,7 @@ func (la *ListingAdapter) GetEntityFinancingBlockersByListing(ctx context.Contex
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM financing_blockers WHERE listing_version_id = ?;`
+	query := `SELECT id, listing_version_id, blocker FROM financing_blockers WHERE listing_version_id = ?`
 
 	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingVersionID)
 	if queryErr != nil {

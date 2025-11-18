@@ -333,7 +333,12 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		if req.CompletionForecast.IsNull() {
 			input.CompletionForecast = coreutils.NewOptionalNull[string]()
 		} else if value, ok := req.CompletionForecast.Value(); ok {
-			input.CompletionForecast = coreutils.NewOptionalValue(strings.TrimSpace(value))
+			// Validate and normalize date format (accepts YYYY-MM-DD, YYYY-MM, or RFC3339)
+			normalized, err := coreutils.ParseCompletionForecast(value)
+			if err != nil {
+				return input, fmt.Errorf("invalid completionForecast: %w", err)
+			}
+			input.CompletionForecast = coreutils.NewOptionalValue(normalized)
 		}
 	}
 

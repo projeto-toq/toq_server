@@ -20,7 +20,7 @@ func (la *ListingAdapter) GetEntityExchangePlacesByListing(ctx context.Context, 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT * FROM exchange_places WHERE listing_version_id = ?;`
+	query := `SELECT id, listing_version_id, neighborhood, city, state FROM exchange_places WHERE listing_version_id = ?`
 
 	rows, queryErr := la.QueryContext(ctx, tx, "select", query, listingVersionID)
 	if queryErr != nil {

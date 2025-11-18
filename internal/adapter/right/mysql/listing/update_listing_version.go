@@ -138,9 +138,25 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 	if version.HasAccompanying() {
 		accompanying = uint8(version.Accompanying())
 	}
+
+	// Sanitize completion forecast to ensure MySQL DATE compatibility
+	// Layer of defense: even if domain validation failed, ensure correct format here
 	if version.HasCompletionForecast() {
-		completionForecast = version.CompletionForecast()
+		rawValue := version.CompletionForecast()
+
+		// Attempt to normalize format (defensive programming)
+		normalized, parseErr := utils.ParseCompletionForecast(rawValue)
+		if parseErr != nil {
+			// Log warning but don't fail the update (domain should have validated)
+			logger.Warn("mysql.listing.update_listing_version.invalid_completion_forecast_format",
+				"raw_value", rawValue, "error", parseErr)
+			// Store raw value (will likely fail MySQL constraint, triggering proper error handling)
+			completionForecast = rawValue
+		} else {
+			completionForecast = normalized
+		}
 	}
+
 	if version.HasLandBlock() {
 		landBlock = version.LandBlock()
 	}
