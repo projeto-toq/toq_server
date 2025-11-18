@@ -1890,6 +1890,8 @@ definitions:
       completionForecast:
         example: 2026-06
         type: string
+      complex:
+        type: string
       condominium:
         type: number
       corner:
@@ -2106,6 +2108,8 @@ definitions:
     properties:
       activeVersionId:
         type: integer
+      complex:
+        type: string
       complexId:
         type: string
       description:
@@ -2788,6 +2792,9 @@ definitions:
         type: integer
       completionForecast:
         example: 2026-06
+        type: string
+      complex:
+        example: Residencial Jardins
         type: string
       condominium:
         example: 1200.5

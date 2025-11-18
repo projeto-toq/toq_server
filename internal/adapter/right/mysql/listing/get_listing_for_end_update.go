@@ -24,7 +24,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT lv.id, lv.user_id, lv.code, lv.version, lv.status, lv.zip_code, lv.street, lv.number, lv.city, lv.state,
+	query := `SELECT lv.id, lv.user_id, lv.code, lv.version, lv.status, lv.zip_code, lv.street, lv.number, lv.complex, lv.city, lv.state,
 		lv.title, lv.type, lv.owner, lv.buildable, lv.delivered, lv.who_lives, lv.description, lv.transaction, lv.visit,
 		lv.accompanying, lv.annual_tax, lv.monthly_tax, lv.annual_ground_rent, lv.monthly_ground_rent, lv.exchange,
 		lv.exchange_perc, lv.sell_net, lv.rent_net, lv.condominium, lv.land_size, lv.corner, lv.tenant_name, lv.tenant_phone,
@@ -42,6 +42,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		listingType                uint16
 		street                     sql.NullString
 		number                     sql.NullString
+		complex                    sql.NullString
 		city                       sql.NullString
 		state                      sql.NullString
 		title                      sql.NullString
@@ -104,6 +105,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 		&data.ZipCode,
 		&street,
 		&number,
+		&complex,
 		&city,
 		&state,
 		&title,
@@ -169,6 +171,7 @@ func (la *ListingAdapter) GetListingForEndUpdate(ctx context.Context, tx *sql.Tx
 	data.ListingType = globalmodel.PropertyType(listingType)
 	data.Street = street
 	data.Number = number
+	data.Complex = complex
 	data.City = city
 	data.State = state
 	data.Title = title

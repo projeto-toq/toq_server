@@ -11683,6 +11683,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-06"
                 },
+                "complex": {
+                    "type": "string"
+                },
                 "condominium": {
                     "type": "number"
                 },
@@ -12001,6 +12004,9 @@ const docTemplate = `{
             "properties": {
                 "activeVersionId": {
                     "type": "integer"
+                },
+                "complex": {
+                    "type": "string"
                 },
                 "complexId": {
                     "type": "string"
@@ -12980,6 +12986,10 @@ const docTemplate = `{
                 "completionForecast": {
                     "type": "string",
                     "example": "2026-06"
+                },
+                "complex": {
+                    "type": "string",
+                    "example": "Residencial Jardins"
                 },
                 "condominium": {
                     "type": "number",

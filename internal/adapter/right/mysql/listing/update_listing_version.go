@@ -23,7 +23,7 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 
 	query := `
 		UPDATE listing_versions SET
-			status = ?, title = ?, zip_code = ?, street = ?, number = ?, complement = ?,
+			status = ?, title = ?, zip_code = ?, street = ?, number = ?, complement = ?, complex = ?,
 			neighborhood = ?, city = ?, state = ?, type = ?, owner = ?, land_size = ?,
 			corner = ?, non_buildable = ?, buildable = ?, delivered = ?, who_lives = ?,
 			description = ?, transaction = ?, sell_net = ?, rent_net = ?, condominium = ?,
@@ -40,7 +40,7 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 		WHERE id = ? AND deleted = 0
 	`
 
-	var title, description, tenantName, tenantEmail, tenantPhone interface{}
+	var title, description, complexValue, tenantName, tenantEmail, tenantPhone interface{}
 	var owner, landSize, corner, nonBuildable, buildable, delivered, whoLives, transaction interface{}
 	var sellNet, rentNet, condominium, annualTax, monthlyTax, annualGroundRent, monthlyGroundRent interface{}
 	var exchange, exchangePerc, installment, financing, visit, accompanying interface{}
@@ -62,6 +62,9 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 	}
 	if version.HasDescription() {
 		description = version.Description()
+	}
+	if version.HasComplex() {
+		complexValue = version.Complex()
 	}
 	if version.HasOwner() {
 		owner = uint8(version.Owner())
@@ -209,8 +212,8 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 	}
 
 	_, execErr := la.ExecContext(ctx, tx, "update", query,
-		uint8(version.Status()), title, version.ZipCode(), street, version.Number(), complement,
-		neighborhood, city, state, uint8(version.ListingType()), owner, landSize,
+		uint8(version.Status()), title, version.ZipCode(), street, version.Number(), complement, complexValue,
+		neighborhood, city, state, uint16(version.ListingType()), owner, landSize,
 		corner, nonBuildable, buildable, delivered, whoLives,
 		description, transaction, sellNet, rentNet, condominium,
 		annualTax, monthlyTax, annualGroundRent, monthlyGroundRent,

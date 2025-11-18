@@ -117,6 +117,21 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		return utils.ConflictError("listing cannot be updated unless in draft status")
 	}
 
+	if input.Complex.IsPresent() {
+		if input.Complex.IsNull() {
+			existing.UnsetComplex()
+		} else if value, ok := input.Complex.Value(); ok {
+			trimmed := strings.TrimSpace(value)
+			if trimmed == "" {
+				existing.UnsetComplex()
+			} else if len([]rune(trimmed)) > 255 {
+				return utils.ValidationError("complex", "Complex must not exceed 255 characters")
+			} else {
+				existing.SetComplex(trimmed)
+			}
+		}
+	}
+
 	//update only the allowed fields respeitando campos opcionais
 	if input.Owner.IsPresent() {
 		if input.Owner.IsNull() {

@@ -14,6 +14,8 @@ type listingVersion struct {
 	street                  string
 	number                  string
 	complement              string
+	complex                 string
+	complexValid            bool
 	neighborhood            string
 	city                    string
 	state                   string
@@ -238,6 +240,24 @@ func (l *listingVersion) State() string {
 
 func (l *listingVersion) SetState(state string) {
 	l.state = state
+}
+
+func (l *listingVersion) Complex() string {
+	return l.complex
+}
+
+func (l *listingVersion) SetComplex(complex string) {
+	l.complex = complex
+	l.complexValid = true
+}
+
+func (l *listingVersion) HasComplex() bool {
+	return l.complexValid
+}
+
+func (l *listingVersion) UnsetComplex() {
+	l.complex = ""
+	l.complexValid = false
 }
 
 func (l *listingVersion) Title() string {
@@ -1250,6 +1270,14 @@ func (l *listingVersion) copyFrom(version ListingVersionInterface) {
 	l.neighborhood = version.Neighborhood()
 	l.city = version.City()
 	l.state = version.State()
+
+	if version.HasComplex() {
+		l.complex = version.Complex()
+		l.complexValid = true
+	} else {
+		l.complex = ""
+		l.complexValid = false
+	}
 
 	if version.HasTitle() {
 		l.title = version.Title()

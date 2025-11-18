@@ -31,6 +31,10 @@ type ListingVersionInterface interface {
 	SetCity(city string)
 	State() string
 	SetState(state string)
+	Complex() string
+	SetComplex(complex string)
+	HasComplex() bool
+	UnsetComplex()
 	Title() string
 	SetTitle(title string)
 	HasTitle() bool

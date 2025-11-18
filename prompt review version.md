@@ -6,22 +6,17 @@
 
 ## 🎯 Problema / Solicitação
 
-Após a refatoração que incluiu versioinamento de listings, os endpoints:
-- GET/PUT/POST `/listings`;
-- POST `/listings/details`;
-- POST `/listings/versions*`;
-estao meclando listingID e listingIdentityID, causando erros 500 e falhas na lógica de negócio.
+Houve um erro na definição do campo type de listing_versions, que foi definido como tinyint ao invés de smallint, o que limita o número de tipos de imóvel possíveis.
+Além disso é necessário incluir o campo condominio, com o nome traduzido para o ingles, condominium na tabela listing_versions antes de type. deverá ter o formato varchar(255) e aceitar valores nulos. Este campo deve ser incluido no modelo, nas buscas e nas criações/atualizações de listing_versions.
 
 Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
-1. Analise o código de cada um dos endpoints em busca de uso indevido de listingID vs listingIdentityID.
-    1.1. os endpoints se encadeiam durante a utilização, portanto, a resposta de um provavelmente é usada como entrada para outro. Analise o fluxo completo para que haja um coerencia nas variáveis de respostas e chamadas.
-    1.2. o arquivo `procedimento_de_criação_de_novo_anuncio.md` pode ajudar a entender o fluxo de chamadas.
-2. Para cada desvio identificado, explique qual regra foi violada e o impacto disso no sistema.
-3. Proponha um plano detalhado para corrigir os desvios, incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
+1. Analise `scripts/db_creation.sql` que tem o modelo do banco de dados, o adapater mysql em `internal/adapter/right/mysql/`, e os services e handlers relacionados a anuncios em `internal/core/service/listing_service/` e `internal/adapter/left/http/handlers/listing_handlers/` para planejar a alteração do tipo do campo `type` de `tinyint` para `smallint`.
+2. A alteração no banco de dados será feito pelo DBA. foque apenas no código Go.
+3. Proponha um plano detalhado para alteração, incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
     3.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
 4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
-6. Além de apresentar o plano de refatoração, crie um arquivo com o plano de forma detalhada e com etapas claramente descritas para que possam ser implementadas por times diferentes.
+
 
 ---
 

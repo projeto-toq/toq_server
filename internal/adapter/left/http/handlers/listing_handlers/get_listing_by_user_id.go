@@ -69,6 +69,11 @@ func (lh *ListingHandler) GetListingByUserId(c *gin.Context) {
 			activeVersionID = listing.ID()
 		}
 
+		complexValue := ""
+		if listing.HasComplex() {
+			complexValue = strings.TrimSpace(listing.Complex())
+		}
+
 		listingResponses = append(listingResponses, dto.ListingResponse{
 			ID:                listing.ID(),
 			ListingIdentityID: listing.IdentityID(),
@@ -83,6 +88,7 @@ func (lh *ListingHandler) GetListingByUserId(c *gin.Context) {
 			PropertyType:      int(listing.ListingType()),
 			ZipCode:           listing.ZipCode(),
 			Number:            listing.Number(),
+			Complex:           complexValue,
 			UserID:            listing.UserID(),
 			ComplexID:         "", // ComplexID not easily accessible
 		})

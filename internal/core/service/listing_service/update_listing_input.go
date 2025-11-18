@@ -11,6 +11,7 @@ import (
 type UpdateListingInput struct {
 	ListingIdentityID          int64 // ID da listing identity (obrigatório para validação de propriedade)
 	VersionID                  int64 // ID da versão específica a ser atualizada
+	Complex                    coreutils.Optional[string]
 	Owner                      coreutils.Optional[CatalogSelection]
 	Features                   coreutils.Optional[[]listingmodel.FeatureInterface]
 	LandSize                   coreutils.Optional[float64]

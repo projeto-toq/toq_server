@@ -28,16 +28,16 @@
 
 - permitir hard delete de lisnting enquanto não for publicado removendo todos os agendamentos, fotos, propostas, visitas
 - após publicado, deve ser passado ao modeo de suspenso e entÃo soft delete
-- após o bloqueio não deve haver incremento nas contagens de tentativas de login nem envio de e-mail, está mandando mais de 1
 - tem que haver uso de audit no login/bloqueio/desbloquio de usuário
 - audit está otimizado?
 - criar endpoint para que o proprietário possa fazer upload da planta da casa em construção de um listing, evitando assim o passo de fotos
-- incluir complex no endereço do listing
 - alterar o endpoint de criação de listing, incluíndo os campos opcionais a serem preenchido de acordo com o propertytype
-- ô recebendo 500 ao criar imóvel tipo predio -> trocar type de tinyint para int
+
 
 - Segundo é ao promover uma versão o status mudar para PENDING_AVAILIABITY, só que ao mandar os dados de agenda do proprietário, retorna que o imóvel já foi criada e que esse passo deveria ter sido feito antes disso.
 
 
 ## Resolvidos
  - O primeiro ao promover uma versão, ele tá usando a informação de id da entidade do imóvel e não listingIdentityId.==> está correto o código
+ - ô recebendo 500 ao criar imóvel tipo predio -> trocar type de tinyint para int
+ - incluir complex no endereço do listing

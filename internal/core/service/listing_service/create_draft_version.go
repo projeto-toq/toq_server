@@ -218,6 +218,11 @@ func (ls *listingService) copyVersionFields(source, target listingmodel.ListingV
 	target.SetCity(source.City())
 	target.SetState(source.State())
 	target.SetZipCode(source.ZipCode())
+	if source.HasComplex() {
+		target.SetComplex(source.Complex())
+	} else {
+		target.UnsetComplex()
+	}
 	target.SetListingType(source.ListingType())
 
 	if source.HasOwner() {

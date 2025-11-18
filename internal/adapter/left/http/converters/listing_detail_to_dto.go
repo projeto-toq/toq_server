@@ -12,6 +12,10 @@ import (
 func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingDetailResponse {
 	listing := detail.Listing
 	title := strings.TrimSpace(listing.Title())
+	complexValue := ""
+	if listing.HasComplex() {
+		complexValue = strings.TrimSpace(listing.Complex())
+	}
 
 	resp := dto.ListingDetailResponse{
 		ID:                 listing.ID(),
@@ -29,6 +33,7 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 		Neighborhood:       listing.Neighborhood(),
 		City:               listing.City(),
 		State:              listing.State(),
+		Complex:            complexValue,
 		Title:              title,
 		LandSize:           listing.LandSize(),
 		Corner:             listing.Corner(),

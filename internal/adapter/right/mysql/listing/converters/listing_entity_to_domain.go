@@ -27,6 +27,11 @@ func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.
 	listing.SetNeighborhood(e.ToString(e.Neighborhood))
 	listing.SetCity(e.ToString(e.City))
 	listing.SetState(e.ToString(e.State))
+	if e.Complex.Valid {
+		listing.SetComplex(e.Complex.String)
+	} else {
+		listing.UnsetComplex()
+	}
 	if e.Title.Valid {
 		listing.SetTitle(e.Title.String)
 	} else {

@@ -338,6 +338,11 @@ func toListingResponse(item listingservices.ListListingsItem) dto.ListingRespons
 		price = listing.RentNet()
 	}
 
+	complexValue := ""
+	if listing.HasComplex() {
+		complexValue = strings.TrimSpace(listing.Complex())
+	}
+
 	var draftVersionID *int64
 	if draft, ok := listing.DraftVersion(); ok && draft != nil {
 		if draftID := draft.ID(); draftID > 0 {
@@ -364,6 +369,7 @@ func toListingResponse(item listingservices.ListListingsItem) dto.ListingRespons
 		PropertyType:      int(listing.ListingType()),
 		ZipCode:           listing.ZipCode(),
 		Number:            listing.Number(),
+		Complex:           complexValue,
 		UserID:            listing.UserID(),
 	}
 }

@@ -129,6 +129,7 @@ type ListingEndUpdateData struct {
 	ZipCode                    string
 	Street                     sql.NullString
 	Number                     sql.NullString
+	Complex                    sql.NullString
 	City                       sql.NullString
 	State                      sql.NullString
 	Title                      sql.NullString

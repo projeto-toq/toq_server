@@ -101,6 +101,14 @@ func UpdateListingRequestToInput(req dto.UpdateListingRequest) (listingservices.
 		}
 	}
 
+	if req.Complex.IsPresent() {
+		if req.Complex.IsNull() {
+			input.Complex = coreutils.NewOptionalNull[string]()
+		} else if value, ok := req.Complex.Value(); ok {
+			input.Complex = coreutils.NewOptionalValue(strings.TrimSpace(value))
+		}
+	}
+
 	if req.Title.IsPresent() {
 		if req.Title.IsNull() {
 			input.Title = coreutils.NewOptionalNull[string]()

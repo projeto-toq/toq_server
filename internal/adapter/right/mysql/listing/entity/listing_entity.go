@@ -19,11 +19,12 @@ type ListingEntity struct {
 	Street             sql.NullString
 	Number             string
 	Complement         sql.NullString
+	Complex            sql.NullString
 	Neighborhood       sql.NullString
 	City               sql.NullString
 	State              sql.NullString
 	Title              sql.NullString
-	ListingType        uint8
+	ListingType        uint16
 	Owner              sql.NullInt16
 	Features           []EntityFeature
 	LandSize           sql.NullFloat64

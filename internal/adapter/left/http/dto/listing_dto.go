@@ -295,6 +295,7 @@ type ListingDetailResponse struct {
 	Neighborhood               string                            `json:"neighborhood"`
 	City                       string                            `json:"city"`
 	State                      string                            `json:"state"`
+	Complex                    string                            `json:"complex,omitempty"`
 	Title                      string                            `json:"title"`
 	PropertyType               *ListingPropertyTypeResponse      `json:"propertyType,omitempty"`
 	Owner                      *CatalogItemResponse              `json:"owner,omitempty"`
@@ -458,6 +459,7 @@ type WarehouseAdditionalFloorDTO struct {
 // @property transaction string false "Transaction type: sale, rent, both" example(sale)
 // @property sellNet number false "Sale price" example(1200000)
 // @property rentNet number false "Monthly rent price" example(8500)
+// @property complex string false "Name of the condominium/complex" example("Residencial Jardins")
 // @property condominium number false "Monthly condominium fee" example(1200.5)
 // @property annualTax number false "Annual IPTU (property tax). Mutually exclusive with monthlyTax" example(3400.75)
 // @property monthlyTax number false "Monthly IPTU (property tax). Mutually exclusive with annualTax" example(283.40)
@@ -513,6 +515,7 @@ type UpdateListingRequest struct {
 	WhoLives                   coreutils.Optional[string]                              `json:"whoLives" example:"tenant"`
 	Title                      coreutils.Optional[string]                              `json:"title" example:"Apartamento 3 dormitorios com piscina"`
 	Description                coreutils.Optional[string]                              `json:"description" example:"Apartamento amplo com vista panoramica"`
+	Complex                    coreutils.Optional[string]                              `json:"complex" example:"Residencial Jardins" description:"Name of the condominium/complex"`
 	Transaction                coreutils.Optional[string]                              `json:"transaction" example:"sale"`
 	SellNet                    coreutils.Optional[float64]                             `json:"sellNet" example:"1200000"`
 	RentNet                    coreutils.Optional[float64]                             `json:"rentNet" example:"8500"`
@@ -576,6 +579,7 @@ type UpdateListingRequestSwagger struct {
 	WhoLives                   *string                              `json:"whoLives,omitempty" example:"tenant"`
 	Title                      *string                              `json:"title,omitempty" example:"Apartamento 3 dormitorios com piscina"`
 	Description                *string                              `json:"description,omitempty" example:"Apartamento amplo com vista panoramica"`
+	Complex                    *string                              `json:"complex,omitempty" example:"Residencial Jardins"`
 	Transaction                *string                              `json:"transaction,omitempty" example:"sale"`
 	SellNet                    *float64                             `json:"sellNet,omitempty" example:"1200000"`
 	RentNet                    *float64                             `json:"rentNet,omitempty" example:"8500"`
@@ -782,6 +786,7 @@ type ListingResponse struct {
 	PropertyType      int     `json:"propertyType"`
 	ZipCode           string  `json:"zipCode"`
 	Number            string  `json:"number"`
+	Complex           string  `json:"complex,omitempty"`
 	UserID            int64   `json:"userId"`
 	ComplexID         string  `json:"complexId,omitempty"`
 }
