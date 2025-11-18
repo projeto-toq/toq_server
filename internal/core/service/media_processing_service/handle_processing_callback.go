@@ -2,8 +2,12 @@ package mediaprocessingservice
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"strconv"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -41,8 +45,21 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		}
 	}()
 
+	job, err := s.repo.GetProcessingJobByID(ctx, tx, callback.JobID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			utils.SetSpanError(ctx, err)
+			logger.Warn("service.media.callback.job_not_found", "job_id", callback.JobID)
+			return HandleProcessingCallbackOutput{}, derrors.NotFound("processing job not found")
+		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.callback.get_job_error", "err", err, "job_id", callback.JobID)
+		return HandleProcessingCallbackOutput{}, derrors.Infra("failed to load processing job", err)
+	}
+
 	var batchStatus mediaprocessingmodel.BatchStatus
 	var jobPayload mediaprocessingmodel.MediaProcessingJobPayload
+	statusMessage := "processing_completed"
 
 	switch callback.Status {
 	case mediaprocessingmodel.MediaProcessingJobStatusSucceeded:
@@ -52,6 +69,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		}
 	case mediaprocessingmodel.MediaProcessingJobStatusFailed:
 		batchStatus = mediaprocessingmodel.BatchStatusFailed
+		statusMessage = "processing_failed"
 		jobPayload.ErrorMessage = callback.FailureReason
 	default:
 		logger.Warn("service.media.callback.unknown_status",
@@ -67,18 +85,47 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		return HandleProcessingCallbackOutput{}, derrors.Infra("failed to update job", err)
 	}
 
-	// Retrieve batch/listing IDs from the job record to update batch status
-	// Since we don't have a GetJobByID method, we'll work with what's in the callback
-	// The callback should contain enough info or we need to add a method
-	// For now, we'll assume the callback includes the necessary IDs
+	details := map[string]string{
+		"provider": string(callback.Provider),
+		"status":   string(callback.Status),
+		"jobId":    strconv.FormatUint(callback.JobID, 10),
+	}
+	if externalID := job.ExternalID(); externalID != "" {
+		details["externalId"] = externalID
+	}
+	if jobPayload.RawKey != "" {
+		details["rawKey"] = jobPayload.RawKey
+	}
+	if jobPayload.ProcessedKey != "" {
+		details["processedKey"] = jobPayload.ProcessedKey
+	}
+	if jobPayload.ThumbnailKey != "" {
+		details["thumbnailKey"] = jobPayload.ThumbnailKey
+	}
+	if jobPayload.ErrorMessage != "" {
+		details["error"] = jobPayload.ErrorMessage
+	}
 
-	// Note: This is a simplified implementation. In production, you'd retrieve the job
-	// record to get the batch_id and listing_id, then update accordingly.
+	metadata := mediaprocessingmodel.BatchStatusMetadata{
+		Message:   statusMessage,
+		Reason:    jobPayload.ErrorMessage,
+		Details:   details,
+		UpdatedBy: 0,
+		UpdatedAt: s.nowUTC(),
+	}
+
+	if err := s.repo.UpdateBatchStatus(ctx, tx, job.BatchID(), batchStatus, metadata); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.callback.update_batch_status_error", "err", err, "job_id", callback.JobID, "batch_id", job.BatchID())
+		return HandleProcessingCallbackOutput{}, derrors.Infra("failed to update batch status", err)
+	}
 
 	logger.Info("service.media.callback.success",
 		"job_id", callback.JobID,
 		"status", callback.Status,
 		"batch_status", batchStatus,
+		"batch_id", job.BatchID(),
+		"listing_identity_id", job.ListingID(),
 	)
 
 	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
@@ -97,8 +144,8 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	}
 
 	return HandleProcessingCallbackOutput{
-		ListingID: 0, // Would be populated from job record
-		BatchID:   0, // Would be populated from job record
-		Status:    batchStatus,
+		ListingIdentityID: listingmodel.ListingIdentityID(job.ListingID()),
+		BatchID:           job.BatchID(),
+		Status:            batchStatus,
 	}, nil
 }

@@ -25,8 +25,8 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	if input.ListingID == 0 {
-		return CompleteUploadBatchOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "required"})
+	if input.ListingIdentityID == 0 {
+		return CompleteUploadBatchOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "required"})
 	}
 	if input.BatchID == 0 {
 		return CompleteUploadBatchOutput{}, derrors.Validation("batchId must be greater than zero", map[string]any{"batchId": "required"})
@@ -45,7 +45,7 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("service.media.complete_batch.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("service.media.complete_batch.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return CompleteUploadBatchOutput{}, derrors.Infra("failed to start transaction", txErr)
 	}
 
@@ -54,7 +54,7 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("service.media.complete_batch.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+				logger.Error("service.media.complete_batch.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 			}
 		}
 	}()
@@ -69,7 +69,7 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 		return CompleteUploadBatchOutput{}, derrors.Infra("failed to load batch", err)
 	}
 
-	if batch.ListingID() != input.ListingID {
+	if listingmodel.ListingIdentityID(batch.ListingID()) != input.ListingIdentityID {
 		return CompleteUploadBatchOutput{}, derrors.Conflict("batch does not belong to listing")
 	}
 
@@ -77,13 +77,13 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 		return CompleteUploadBatchOutput{}, derrors.Conflict("batch is not pending upload")
 	}
 
-	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, int64(input.ListingID))
+	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, input.ListingIdentityID.Int64())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return CompleteUploadBatchOutput{}, derrors.NotFound("listing not found")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("service.media.complete_batch.get_listing_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("service.media.complete_batch.get_listing_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return CompleteUploadBatchOutput{}, derrors.Infra("failed to load listing", err)
 	}
 
@@ -184,7 +184,7 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 		return CompleteUploadBatchOutput{}, derrors.Infra("failed to update batch status", err)
 	}
 
-	job := mediaprocessingmodel.NewMediaProcessingJob(input.BatchID, input.ListingID, mediaprocessingmodel.MediaProcessingProviderStepFunctions)
+	job := mediaprocessingmodel.NewMediaProcessingJob(input.BatchID, input.ListingIdentityID.Uint64(), mediaprocessingmodel.MediaProcessingProviderStepFunctions)
 	jobID, err := s.repo.RegisterProcessingJob(ctx, tx, job)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -202,7 +202,7 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 	queuePayload := mediaprocessingmodel.MediaProcessingJobMessage{
 		JobID:     jobID,
 		BatchID:   input.BatchID,
-		ListingID: input.ListingID,
+		ListingID: input.ListingIdentityID.Uint64(),
 		Assets:    objectKeys,
 		Retry:     0,
 	}
@@ -212,7 +212,7 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 		utils.SetSpanError(ctx, err)
 		logger.Error("service.media.complete_batch.enqueue_error",
 			"err", err,
-			"listing_id", input.ListingID,
+			"listing_identity_id", input.ListingIdentityID,
 			"batch_id", input.BatchID,
 			"job_id", jobID,
 		)
@@ -220,14 +220,14 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 	}
 
 	logger.Info("service.media.complete_batch.success",
-		"listing_id", input.ListingID,
+		"listing_identity_id", input.ListingIdentityID,
 		"batch_id", input.BatchID,
 		"job_id", jobID,
 		"files", len(updatedAssets),
 	)
 
 	return CompleteUploadBatchOutput{
-		ListingID:         input.ListingID,
+		ListingIdentityID: input.ListingIdentityID,
 		BatchID:           input.BatchID,
 		JobID:             jobID,
 		Status:            mediaprocessingmodel.BatchStatusReceived,

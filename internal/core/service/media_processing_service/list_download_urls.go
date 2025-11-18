@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/mediaprocessingrepository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -23,20 +24,20 @@ func (s *mediaProcessingService) ListDownloadURLs(ctx context.Context, input Lis
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	if input.ListingID == 0 {
-		return ListDownloadURLsOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingID": "required"})
+	if input.ListingIdentityID == 0 {
+		return ListDownloadURLsOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "required"})
 	}
 
 	tx, txErr := s.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("service.media.list_downloads.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("service.media.list_downloads.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return ListDownloadURLsOutput{}, derrors.Infra("failed to start transaction", txErr)
 	}
 	defer func() {
 		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
-			logger.Error("service.media.list_downloads.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+			logger.Error("service.media.list_downloads.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 		}
 	}()
 
@@ -52,19 +53,19 @@ func (s *mediaProcessingService) ListDownloadURLs(ctx context.Context, input Lis
 			return ListDownloadURLsOutput{}, derrors.Infra("failed to load batch", err)
 		}
 
-		if batch.ListingID() != input.ListingID {
+		if listingmodel.ListingIdentityID(batch.ListingID()) != input.ListingIdentityID {
 			return ListDownloadURLsOutput{}, derrors.Conflict("batch does not belong to listing")
 		}
 	} else {
 		filter := mediaprocessingrepository.BatchQueryFilter{
-			ListingID: input.ListingID,
+			ListingID: input.ListingIdentityID.Uint64(),
 			Statuses:  []mediaprocessingmodel.BatchStatus{mediaprocessingmodel.BatchStatusReady},
 			Limit:     1,
 		}
 		batches, err := s.repo.ListBatchesByListing(ctx, tx, filter)
 		if err != nil {
 			utils.SetSpanError(ctx, err)
-			logger.Error("service.media.list_downloads.list_batches_error", "err", err, "listing_id", input.ListingID)
+			logger.Error("service.media.list_downloads.list_batches_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 			return ListDownloadURLsOutput{}, derrors.Infra("failed to list batches", err)
 		}
 		if len(batches) == 0 {
@@ -95,19 +96,19 @@ func (s *mediaProcessingService) ListDownloadURLs(ctx context.Context, input Lis
 	for _, asset := range assets {
 		if asset.ProcessedKey() == "" {
 			logger.Warn("service.media.list_downloads.missing_processed_key",
-				"listing_id", input.ListingID,
+				"listing_identity_id", input.ListingIdentityID,
 				"batch_id", batch.ID(),
 				"asset_id", asset.ID(),
 			)
 			continue
 		}
 
-		signedURL, err := s.storage.GenerateProcessedDownloadURL(ctx, input.ListingID, asset)
+		signedURL, err := s.storage.GenerateProcessedDownloadURL(ctx, input.ListingIdentityID.Uint64(), asset)
 		if err != nil {
 			utils.SetSpanError(ctx, err)
 			logger.Error("service.media.list_downloads.generate_url_error",
 				"err", err,
-				"listing_id", input.ListingID,
+				"listing_identity_id", input.ListingIdentityID,
 				"asset_id", asset.ID(),
 			)
 			return ListDownloadURLsOutput{}, derrors.Infra("failed to generate download URL", err)
@@ -120,7 +121,7 @@ func (s *mediaProcessingService) ListDownloadURLs(ctx context.Context, input Lis
 		previewURL := ""
 		if asset.ThumbnailKey() != "" {
 			previewAsset := asset
-			previewSignedURL, previewErr := s.storage.GenerateProcessedDownloadURL(ctx, input.ListingID, previewAsset)
+			previewSignedURL, previewErr := s.storage.GenerateProcessedDownloadURL(ctx, input.ListingIdentityID.Uint64(), previewAsset)
 			if previewErr == nil {
 				previewURL = previewSignedURL.URL
 			}
@@ -146,16 +147,16 @@ func (s *mediaProcessingService) ListDownloadURLs(ctx context.Context, input Lis
 	}
 
 	logger.Info("service.media.list_downloads.success",
-		"listing_id", input.ListingID,
+		"listing_identity_id", input.ListingIdentityID,
 		"batch_id", batch.ID(),
 		"downloads", len(downloads),
 	)
 
 	return ListDownloadURLsOutput{
-		ListingID:   input.ListingID,
-		BatchID:     batch.ID(),
-		GeneratedAt: generatedAt,
-		TTLSeconds:  int(maxTTL.Seconds()),
-		Downloads:   downloads,
+		ListingIdentityID: input.ListingIdentityID,
+		BatchID:           batch.ID(),
+		GeneratedAt:       generatedAt,
+		TTLSeconds:        int(maxTTL.Seconds()),
+		Downloads:         downloads,
 	}, nil
 }

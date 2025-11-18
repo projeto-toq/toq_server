@@ -10306,7 +10306,7 @@ const docTemplate = `{
             "required": [
                 "batchId",
                 "files",
-                "listingId"
+                "listingIdentityId"
             ],
             "properties": {
                 "batchId": {
@@ -10323,8 +10323,8 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompletedUploadFileRequest"
                     }
                 },
-                "listingId": {
-                    "description": "ListingID must match the listingId from CreateUploadBatch",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID must match the listingIdentityId from CreateUploadBatch",
                     "type": "integer",
                     "minimum": 1,
                     "example": 123
@@ -10349,8 +10349,8 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 789
                 },
-                "listingId": {
-                    "description": "ListingID confirms the listing",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID confirms the listing",
                     "type": "integer",
                     "example": 123
                 },
@@ -10764,7 +10764,7 @@ const docTemplate = `{
             "required": [
                 "batchReference",
                 "files",
-                "listingId"
+                "listingIdentityId"
             ],
             "properties": {
                 "batchReference": {
@@ -10781,8 +10781,8 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchFileRequest"
                     }
                 },
-                "listingId": {
-                    "description": "ListingID identifies the listing identity receiving the batch\nMust correspond to a listing in PENDING_PHOTO_PROCESSING status\nExample: 123",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing receiving the batch\nMust correspond to a listing in PENDING_PHOTO_PROCESSING status\nExample: 123",
                     "type": "integer",
                     "minimum": 1,
                     "example": 123
@@ -10804,8 +10804,8 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UploadInstructionResponse"
                     }
                 },
-                "listingId": {
-                    "description": "ListingID confirms the listing receiving the uploads",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID confirms the listing receiving the uploads",
                     "type": "integer",
                     "example": 123
                 },
@@ -10945,7 +10945,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "batchId",
-                "listingId"
+                "listingIdentityId"
             ],
             "properties": {
                 "batchId": {
@@ -10954,8 +10954,8 @@ const docTemplate = `{
                     "minimum": 1,
                     "example": 456
                 },
-                "listingId": {
-                    "description": "ListingID identifies the listing owning the batch",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing owning the batch",
                     "type": "integer",
                     "minimum": 1,
                     "example": 123
@@ -10977,8 +10977,8 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 456
                 },
-                "listingId": {
-                    "description": "ListingID confirms the listing",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID confirms the listing",
                     "type": "integer",
                     "example": 123
                 },
@@ -11347,7 +11347,7 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest": {
             "type": "object",
             "required": [
-                "listingId"
+                "listingIdentityId"
             ],
             "properties": {
                 "batchId": {
@@ -11355,8 +11355,8 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 456
                 },
-                "listingId": {
-                    "description": "ListingID identifies the listing owning the assets",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing owning the assets",
                     "type": "integer",
                     "minimum": 1,
                     "example": 123
@@ -11383,8 +11383,8 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2025-11-16T15:30:00Z"
                 },
-                "listingId": {
-                    "description": "ListingID confirms the listing",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID confirms the listing",
                     "type": "integer",
                     "example": 123
                 },
@@ -12467,7 +12467,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "batchId",
-                "listingId",
+                "listingIdentityId",
                 "reason"
             ],
             "properties": {
@@ -12477,8 +12477,8 @@ const docTemplate = `{
                     "minimum": 1,
                     "example": 456
                 },
-                "listingId": {
-                    "description": "ListingID identifies the listing owning the batch",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing owning the batch",
                     "type": "integer",
                     "minimum": 1,
                     "example": 123
@@ -12504,8 +12504,8 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 790
                 },
-                "listingId": {
-                    "description": "ListingID confirms the listing",
+                "listingIdentityId": {
+                    "description": "ListingIdentityID confirms the listing",
                     "type": "integer",
                     "example": 123
                 },
@@ -13347,7 +13347,7 @@ const docTemplate = `{
                     "example": "PUT"
                 },
                 "objectKey": {
-                    "description": "ObjectKey is the S3 object key where the file will be stored\nFormat: /{listingId}/raw/{assetType}/{YYYY-MM-DD}/{filename}\nExample: \"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg\"",
+                    "description": "ObjectKey is the S3 object key where the file will be stored\nFormat: /{listingIdentityId}/raw/{assetType}/{YYYY-MM-DD}/{filename}\nExample: \"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg\"",
                     "type": "string",
                     "example": "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
                 },

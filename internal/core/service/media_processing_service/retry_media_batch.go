@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -22,8 +23,8 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	if input.ListingID == 0 {
-		return RetryMediaBatchOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "required"})
+	if input.ListingIdentityID == 0 {
+		return RetryMediaBatchOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "required"})
 	}
 	if input.BatchID == 0 {
 		return RetryMediaBatchOutput{}, derrors.Validation("batchId must be greater than zero", map[string]any{"batchId": "required"})
@@ -38,7 +39,7 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("service.media.retry_batch.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("service.media.retry_batch.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return RetryMediaBatchOutput{}, derrors.Infra("failed to start transaction", txErr)
 	}
 
@@ -47,7 +48,7 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("service.media.retry_batch.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+				logger.Error("service.media.retry_batch.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 			}
 		}
 	}()
@@ -62,7 +63,7 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 		return RetryMediaBatchOutput{}, derrors.Infra("failed to load batch", err)
 	}
 
-	if batch.ListingID() != input.ListingID {
+	if listingmodel.ListingIdentityID(batch.ListingID()) != input.ListingIdentityID {
 		return RetryMediaBatchOutput{}, derrors.Conflict("batch does not belong to listing")
 	}
 
@@ -103,7 +104,7 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 		return RetryMediaBatchOutput{}, derrors.Infra("failed to update batch status", err)
 	}
 
-	job := mediaprocessingmodel.NewMediaProcessingJob(input.BatchID, input.ListingID, mediaprocessingmodel.MediaProcessingProviderStepFunctions)
+	job := mediaprocessingmodel.NewMediaProcessingJob(input.BatchID, input.ListingIdentityID.Uint64(), mediaprocessingmodel.MediaProcessingProviderStepFunctions)
 	jobID, err := s.repo.RegisterProcessingJob(ctx, tx, job)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -121,7 +122,7 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 	queuePayload := mediaprocessingmodel.MediaProcessingJobMessage{
 		JobID:     jobID,
 		BatchID:   input.BatchID,
-		ListingID: input.ListingID,
+		ListingID: input.ListingIdentityID.Uint64(),
 		Assets:    objectKeys,
 		Retry:     1,
 	}
@@ -131,7 +132,7 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 		utils.SetSpanError(ctx, err)
 		logger.Error("service.media.retry_batch.enqueue_error",
 			"err", err,
-			"listing_id", input.ListingID,
+			"listing_identity_id", input.ListingIdentityID,
 			"batch_id", input.BatchID,
 			"job_id", jobID,
 		)
@@ -139,16 +140,16 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 	}
 
 	logger.Info("service.media.retry_batch.success",
-		"listing_id", input.ListingID,
+		"listing_identity_id", input.ListingIdentityID,
 		"batch_id", input.BatchID,
 		"job_id", jobID,
 		"reason", input.Reason,
 	)
 
 	return RetryMediaBatchOutput{
-		ListingID: input.ListingID,
-		BatchID:   input.BatchID,
-		JobID:     jobID,
-		Status:    mediaprocessingmodel.BatchStatusProcessing,
+		ListingIdentityID: input.ListingIdentityID,
+		BatchID:           input.BatchID,
+		JobID:             jobID,
+		Status:            mediaprocessingmodel.BatchStatusProcessing,
 	}, nil
 }

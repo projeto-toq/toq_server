@@ -42,8 +42,8 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	if input.ListingID == 0 {
-		return CreateUploadBatchOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "required"})
+	if input.ListingIdentityID == 0 {
+		return CreateUploadBatchOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "required"})
 	}
 
 	input.BatchReference = strings.TrimSpace(input.BatchReference)
@@ -68,7 +68,7 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("service.media.create_batch.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("service.media.create_batch.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return CreateUploadBatchOutput{}, derrors.Infra("failed to start transaction", txErr)
 	}
 
@@ -77,18 +77,18 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 				utils.SetSpanError(ctx, rbErr)
-				logger.Error("service.media.create_batch.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+				logger.Error("service.media.create_batch.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 			}
 		}
 	}()
 
-	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, int64(input.ListingID))
+	listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, input.ListingIdentityID.Int64())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return CreateUploadBatchOutput{}, derrors.NotFound("listing not found")
 		}
 		utils.SetSpanError(ctx, err)
-		logger.Error("service.media.create_batch.get_listing_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("service.media.create_batch.get_listing_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return CreateUploadBatchOutput{}, derrors.Infra("failed to load listing", err)
 	}
 
@@ -96,16 +96,16 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 		return CreateUploadBatchOutput{}, derrors.Conflict("listing is not awaiting media uploads")
 	}
 
-	if err := s.ensureNoOpenBatch(ctx, tx, input.ListingID); err != nil {
+	if err := s.ensureNoOpenBatch(ctx, tx, input.ListingIdentityID); err != nil {
 		return CreateUploadBatchOutput{}, err
 	}
 
-	batch := mediaprocessingmodel.NewMediaBatch(input.ListingID, input.BatchReference, input.RequestedBy)
+	batch := mediaprocessingmodel.NewMediaBatch(input.ListingIdentityID.Uint64(), input.BatchReference, input.RequestedBy)
 
 	batchID, err := s.repo.CreateBatch(ctx, tx, batch)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("service.media.create_batch.create_batch_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("service.media.create_batch.create_batch_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return CreateUploadBatchOutput{}, derrors.Infra("failed to persist batch", err)
 	}
 
@@ -114,7 +114,7 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 	var uploadTTLSeconds int
 
 	for _, file := range validatedFiles {
-		asset := mediaprocessingmodel.NewMediaAsset(batchID, input.ListingID, file.assetType, file.sequence)
+		asset := mediaprocessingmodel.NewMediaAsset(batchID, input.ListingIdentityID.Uint64(), file.assetType, file.sequence)
 		asset.SetFilename(file.filename)
 		asset.SetContentType(file.contentType)
 		if file.orientation != "" {
@@ -130,10 +130,10 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 		asset.SetMetadata("batch_reference", input.BatchReference)
 		asset.SetMetadata("requested_by", fmt.Sprintf("%d", input.RequestedBy))
 
-		signedURL, genErr := s.storage.GenerateRawUploadURL(ctx, input.ListingID, asset)
+		signedURL, genErr := s.storage.GenerateRawUploadURL(ctx, input.ListingIdentityID.Uint64(), asset)
 		if genErr != nil {
 			utils.SetSpanError(ctx, genErr)
-			logger.Error("service.media.create_batch.generate_url_error", "err", genErr, "listing_id", input.ListingID, "client_id", file.clientID)
+			logger.Error("service.media.create_batch.generate_url_error", "err", genErr, "listing_identity_id", input.ListingIdentityID, "client_id", file.clientID)
 			return CreateUploadBatchOutput{}, genErr
 		}
 
@@ -158,7 +158,7 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 
 	if err := s.repo.UpsertAssets(ctx, tx, assets); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("service.media.create_batch.upsert_assets_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("service.media.create_batch.upsert_assets_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return CreateUploadBatchOutput{}, derrors.Infra("failed to persist assets", err)
 	}
 
@@ -171,26 +171,26 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 
 	if err := s.repo.UpdateBatchStatus(ctx, tx, batchID, mediaprocessingmodel.BatchStatusPendingUpload, metadata); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("service.media.create_batch.update_status_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("service.media.create_batch.update_status_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return CreateUploadBatchOutput{}, derrors.Infra("failed to update batch status", err)
 	}
 
 	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("service.media.create_batch.tx_commit_error", "err", err, "listing_id", input.ListingID)
+		logger.Error("service.media.create_batch.tx_commit_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return CreateUploadBatchOutput{}, derrors.Infra("failed to commit batch creation", err)
 	}
 	committed = true
 
 	logger.Info("service.media.create_batch.success",
-		"listing_id", input.ListingID,
+		"listing_identity_id", input.ListingIdentityID,
 		"batch_id", batchID,
 		"files", len(assets),
 		"bytes", totalBytes,
 	)
 
 	return CreateUploadBatchOutput{
-		ListingID:           input.ListingID,
+		ListingIdentityID:   input.ListingIdentityID,
 		BatchID:             batchID,
 		UploadURLTTLSeconds: uploadTTLSeconds,
 		Files:               instructions,
@@ -272,9 +272,9 @@ func (s *mediaProcessingService) validateUploadManifest(input CreateUploadBatchI
 	return validated, totalBytes, nil
 }
 
-func (s *mediaProcessingService) ensureNoOpenBatch(ctx context.Context, tx *sql.Tx, listingID uint64) error {
+func (s *mediaProcessingService) ensureNoOpenBatch(ctx context.Context, tx *sql.Tx, listingIdentityID listingmodel.ListingIdentityID) error {
 	filter := mediaprocessingrepository.BatchQueryFilter{
-		ListingID: listingID,
+		ListingID: listingIdentityID.Uint64(),
 		Statuses: []mediaprocessingmodel.BatchStatus{
 			mediaprocessingmodel.BatchStatusPendingUpload,
 			mediaprocessingmodel.BatchStatusReceived,

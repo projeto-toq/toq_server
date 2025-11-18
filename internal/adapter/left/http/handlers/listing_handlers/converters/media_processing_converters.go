@@ -2,6 +2,7 @@ package converters
 
 import (
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 )
@@ -25,9 +26,9 @@ func DTOToCreateUploadBatchInput(req dto.CreateUploadBatchRequest) mediaprocessi
 	}
 
 	return mediaprocessingservice.CreateUploadBatchInput{
-		ListingID:      req.ListingID,
-		BatchReference: req.BatchReference,
-		Files:          files,
+		ListingIdentityID: listingmodel.ListingIdentityID(req.ListingIdentityID),
+		BatchReference:    req.BatchReference,
+		Files:             files,
 	}
 }
 
@@ -47,7 +48,7 @@ func CreateUploadBatchOutputToDTO(output mediaprocessingservice.CreateUploadBatc
 	}
 
 	return dto.CreateUploadBatchResponse{
-		ListingID:           output.ListingID,
+		ListingIdentityID:   output.ListingIdentityID.Uint64(),
 		BatchID:             output.BatchID,
 		UploadURLTTLSeconds: output.UploadURLTTLSeconds,
 		Files:               files,
@@ -68,16 +69,16 @@ func DTOToCompleteUploadBatchInput(req dto.CompleteUploadBatchRequest) mediaproc
 	}
 
 	return mediaprocessingservice.CompleteUploadBatchInput{
-		ListingID: req.ListingID,
-		BatchID:   req.BatchID,
-		Files:     files,
+		ListingIdentityID: listingmodel.ListingIdentityID(req.ListingIdentityID),
+		BatchID:           req.BatchID,
+		Files:             files,
 	}
 }
 
 // CompleteUploadBatchOutputToDTO converts service output to HTTP response
 func CompleteUploadBatchOutputToDTO(output mediaprocessingservice.CompleteUploadBatchOutput) dto.CompleteUploadBatchResponse {
 	return dto.CompleteUploadBatchResponse{
-		ListingID:                output.ListingID,
+		ListingIdentityID:        output.ListingIdentityID.Uint64(),
 		BatchID:                  output.BatchID,
 		JobID:                    output.JobID,
 		Status:                   output.Status.String(),
@@ -88,8 +89,8 @@ func CompleteUploadBatchOutputToDTO(output mediaprocessingservice.CompleteUpload
 // DTOToGetBatchStatusInput converts HTTP request to service input
 func DTOToGetBatchStatusInput(req dto.GetBatchStatusRequest) mediaprocessingservice.GetBatchStatusInput {
 	return mediaprocessingservice.GetBatchStatusInput{
-		ListingID: req.ListingID,
-		BatchID:   req.BatchID,
+		ListingIdentityID: listingmodel.ListingIdentityID(req.ListingIdentityID),
+		BatchID:           req.BatchID,
 	}
 }
 
@@ -110,19 +111,19 @@ func GetBatchStatusOutputToDTO(output mediaprocessingservice.GetBatchStatusOutpu
 	}
 
 	return dto.GetBatchStatusResponse{
-		ListingID:     output.ListingID,
-		BatchID:       output.BatchID,
-		Status:        output.Status.String(),
-		StatusMessage: output.StatusMessage,
-		Assets:        assets,
+		ListingIdentityID: output.ListingIdentityID.Uint64(),
+		BatchID:           output.BatchID,
+		Status:            output.Status.String(),
+		StatusMessage:     output.StatusMessage,
+		Assets:            assets,
 	}
 }
 
 // DTOToListDownloadURLsInput converts HTTP request to service input
 func DTOToListDownloadURLsInput(req dto.ListDownloadURLsRequest) mediaprocessingservice.ListDownloadURLsInput {
 	return mediaprocessingservice.ListDownloadURLsInput{
-		ListingID: req.ListingID,
-		BatchID:   req.BatchID,
+		ListingIdentityID: listingmodel.ListingIdentityID(req.ListingIdentityID),
+		BatchID:           req.BatchID,
 	}
 }
 
@@ -143,29 +144,29 @@ func ListDownloadURLsOutputToDTO(output mediaprocessingservice.ListDownloadURLsO
 	}
 
 	return dto.ListDownloadURLsResponse{
-		ListingID:   output.ListingID,
-		BatchID:     output.BatchID,
-		GeneratedAt: output.GeneratedAt.Format("2006-01-02T15:04:05Z07:00"),
-		TTLSeconds:  output.TTLSeconds,
-		Downloads:   downloads,
+		ListingIdentityID: output.ListingIdentityID.Uint64(),
+		BatchID:           output.BatchID,
+		GeneratedAt:       output.GeneratedAt.Format("2006-01-02T15:04:05Z07:00"),
+		TTLSeconds:        output.TTLSeconds,
+		Downloads:         downloads,
 	}
 }
 
 // DTOToRetryMediaBatchInput converts HTTP request to service input
 func DTOToRetryMediaBatchInput(req dto.RetryMediaBatchRequest) mediaprocessingservice.RetryMediaBatchInput {
 	return mediaprocessingservice.RetryMediaBatchInput{
-		ListingID: req.ListingID,
-		BatchID:   req.BatchID,
-		Reason:    req.Reason,
+		ListingIdentityID: listingmodel.ListingIdentityID(req.ListingIdentityID),
+		BatchID:           req.BatchID,
+		Reason:            req.Reason,
 	}
 }
 
 // RetryMediaBatchOutputToDTO converts service output to HTTP response
 func RetryMediaBatchOutputToDTO(output mediaprocessingservice.RetryMediaBatchOutput) dto.RetryMediaBatchResponse {
 	return dto.RetryMediaBatchResponse{
-		ListingID: output.ListingID,
-		BatchID:   output.BatchID,
-		JobID:     output.JobID,
-		Status:    output.Status.String(),
+		ListingIdentityID: output.ListingIdentityID.Uint64(),
+		BatchID:           output.BatchID,
+		JobID:             output.JobID,
+		Status:            output.Status.String(),
 	}
 }

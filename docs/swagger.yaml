@@ -860,15 +860,15 @@ definitions:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompletedUploadFileRequest'
         minItems: 1
         type: array
-      listingId:
-        description: ListingID must match the listingId from CreateUploadBatch
+      listingIdentityId:
+        description: ListingIdentityID must match the listingIdentityId from CreateUploadBatch
         example: 123
         minimum: 1
         type: integer
     required:
     - batchId
     - files
-    - listingId
+    - listingIdentityId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchResponse:
     properties:
@@ -888,8 +888,8 @@ definitions:
           Used for monitoring and troubleshooting
         example: 789
         type: integer
-      listingId:
-        description: ListingID confirms the listing
+      listingIdentityId:
+        description: ListingIdentityID confirms the listing
         example: 123
         type: integer
       status:
@@ -1228,9 +1228,9 @@ definitions:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchFileRequest'
         minItems: 1
         type: array
-      listingId:
+      listingIdentityId:
         description: |-
-          ListingID identifies the listing identity receiving the batch
+          ListingIdentityID identifies the listing receiving the batch
           Must correspond to a listing in PENDING_PHOTO_PROCESSING status
           Example: 123
         example: 123
@@ -1239,7 +1239,7 @@ definitions:
     required:
     - batchReference
     - files
-    - listingId
+    - listingIdentityId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchResponse:
     properties:
@@ -1254,8 +1254,8 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UploadInstructionResponse'
         type: array
-      listingId:
-        description: ListingID confirms the listing receiving the uploads
+      listingIdentityId:
+        description: ListingIdentityID confirms the listing receiving the uploads
         example: 123
         type: integer
       uploadUrlTtlSeconds:
@@ -1366,14 +1366,14 @@ definitions:
         example: 456
         minimum: 1
         type: integer
-      listingId:
-        description: ListingID identifies the listing owning the batch
+      listingIdentityId:
+        description: ListingIdentityID identifies the listing owning the batch
         example: 123
         minimum: 1
         type: integer
     required:
     - batchId
-    - listingId
+    - listingIdentityId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusResponse:
     properties:
@@ -1386,8 +1386,8 @@ definitions:
         description: BatchID confirms the batch
         example: 456
         type: integer
-      listingId:
-        description: ListingID confirms the listing
+      listingIdentityId:
+        description: ListingIdentityID confirms the listing
         example: 123
         type: integer
       status:
@@ -1651,13 +1651,13 @@ definitions:
           If zero, the most recent READY batch will be used
         example: 456
         type: integer
-      listingId:
-        description: ListingID identifies the listing owning the assets
+      listingIdentityId:
+        description: ListingIdentityID identifies the listing owning the assets
         example: 123
         minimum: 1
         type: integer
     required:
-    - listingId
+    - listingIdentityId
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse:
     properties:
@@ -1676,8 +1676,8 @@ definitions:
           RFC3339 format timestamp
         example: "2025-11-16T15:30:00Z"
         type: string
-      listingId:
-        description: ListingID confirms the listing
+      listingIdentityId:
+        description: ListingIdentityID confirms the listing
         example: 123
         type: integer
       ttlSeconds:
@@ -2432,8 +2432,8 @@ definitions:
         example: 456
         minimum: 1
         type: integer
-      listingId:
-        description: ListingID identifies the listing owning the batch
+      listingIdentityId:
+        description: ListingIdentityID identifies the listing owning the batch
         example: 123
         minimum: 1
         type: integer
@@ -2447,7 +2447,7 @@ definitions:
         type: string
     required:
     - batchId
-    - listingId
+    - listingIdentityId
     - reason
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchResponse:
@@ -2460,8 +2460,8 @@ definitions:
         description: JobID is the unique identifier for the new async processing job
         example: 790
         type: integer
-      listingId:
-        description: ListingID confirms the listing
+      listingIdentityId:
+        description: ListingIdentityID confirms the listing
         example: 123
         type: integer
       status:
@@ -3059,7 +3059,7 @@ definitions:
       objectKey:
         description: |-
           ObjectKey is the S3 object key where the file will be stored
-          Format: /{listingId}/raw/{assetType}/{YYYY-MM-DD}/{filename}
+          Format: /{listingIdentityId}/raw/{assetType}/{YYYY-MM-DD}/{filename}
           Example: "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
         example: 123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg
         type: string

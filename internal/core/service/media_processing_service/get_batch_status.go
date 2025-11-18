@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -20,8 +21,8 @@ func (s *mediaProcessingService) GetBatchStatus(ctx context.Context, input GetBa
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	if input.ListingID == 0 {
-		return GetBatchStatusOutput{}, derrors.Validation("listingId must be greater than zero", map[string]any{"listingId": "required"})
+	if input.ListingIdentityID == 0 {
+		return GetBatchStatusOutput{}, derrors.Validation("listingIdentityId must be greater than zero", map[string]any{"listingIdentityId": "required"})
 	}
 	if input.BatchID == 0 {
 		return GetBatchStatusOutput{}, derrors.Validation("batchId must be greater than zero", map[string]any{"batchId": "required"})
@@ -30,13 +31,13 @@ func (s *mediaProcessingService) GetBatchStatus(ctx context.Context, input GetBa
 	tx, txErr := s.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("service.media.get_batch_status.tx_start_error", "err", txErr, "listing_id", input.ListingID)
+		logger.Error("service.media.get_batch_status.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return GetBatchStatusOutput{}, derrors.Infra("failed to start transaction", txErr)
 	}
 	defer func() {
 		if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
-			logger.Error("service.media.get_batch_status.tx_rollback_error", "err", rbErr, "listing_id", input.ListingID)
+			logger.Error("service.media.get_batch_status.tx_rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 		}
 	}()
 
@@ -50,7 +51,7 @@ func (s *mediaProcessingService) GetBatchStatus(ctx context.Context, input GetBa
 		return GetBatchStatusOutput{}, derrors.Infra("failed to load batch", err)
 	}
 
-	if batch.ListingID() != input.ListingID {
+	if listingmodel.ListingIdentityID(batch.ListingID()) != input.ListingIdentityID {
 		return GetBatchStatusOutput{}, derrors.Conflict("batch does not belong to listing")
 	}
 
@@ -85,17 +86,17 @@ func (s *mediaProcessingService) GetBatchStatus(ctx context.Context, input GetBa
 	}
 
 	logger.Info("service.media.get_batch_status.success",
-		"listing_id", input.ListingID,
+		"listing_identity_id", input.ListingIdentityID,
 		"batch_id", input.BatchID,
 		"status", batch.Status(),
 		"assets", len(assets),
 	)
 
 	return GetBatchStatusOutput{
-		ListingID:     input.ListingID,
-		BatchID:       input.BatchID,
-		Status:        batch.Status(),
-		StatusMessage: statusMessage,
-		Assets:        assetStatuses,
+		ListingIdentityID: input.ListingIdentityID,
+		BatchID:           input.BatchID,
+		Status:            batch.Status(),
+		StatusMessage:     statusMessage,
+		Assets:            assetStatuses,
 	}, nil
 }

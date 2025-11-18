@@ -986,10 +986,10 @@ type CancelPhotoSessionRequest struct {
 // This DTO is used to initialize a media upload batch for a listing.
 // The service validates the manifest, generates signed S3 URLs, and returns upload instructions.
 type CreateUploadBatchRequest struct {
-	// ListingID identifies the listing identity receiving the batch
+	// ListingIdentityID identifies the listing receiving the batch
 	// Must correspond to a listing in PENDING_PHOTO_PROCESSING status
 	// Example: 123
-	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"123"`
 
 	// BatchReference helps the frontend correlate retries
 	// Typically a timestamp or session identifier
@@ -1065,8 +1065,8 @@ type CreateUploadBatchFileRequest struct {
 //
 // The client must use these signed URLs to upload files to S3, then call CompleteUploadBatch.
 type CreateUploadBatchResponse struct {
-	// ListingID confirms the listing receiving the uploads
-	ListingID uint64 `json:"listingId" example:"123"`
+	// ListingIdentityID confirms the listing receiving the uploads
+	ListingIdentityID uint64 `json:"listingIdentityId" example:"123"`
 
 	// BatchID is the unique identifier for this upload batch
 	// Required for subsequent CompleteUploadBatch and status polling calls
@@ -1100,7 +1100,7 @@ type UploadInstructionResponse struct {
 	Headers map[string]string `json:"headers"`
 
 	// ObjectKey is the S3 object key where the file will be stored
-	// Format: /{listingId}/raw/{assetType}/{YYYY-MM-DD}/{filename}
+	// Format: /{listingIdentityId}/raw/{assetType}/{YYYY-MM-DD}/{filename}
 	// Example: "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
 	ObjectKey string `json:"objectKey" example:"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"`
 
@@ -1116,8 +1116,8 @@ type UploadInstructionResponse struct {
 // The client must call this endpoint after all files have been uploaded to S3.
 // The service validates each upload via S3 HeadObject, then enqueues the batch for async processing.
 type CompleteUploadBatchRequest struct {
-	// ListingID must match the listingId from CreateUploadBatch
-	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+	// ListingIdentityID must match the listingIdentityId from CreateUploadBatch
+	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"123"`
 
 	// BatchID must match the batchId from CreateUploadBatch
 	BatchID uint64 `json:"batchId" binding:"required,min=1" example:"456"`
@@ -1153,8 +1153,8 @@ type CompletedUploadFileRequest struct {
 // The batch transitions to RECEIVED status and a processing job is enqueued.
 // The client should poll GetBatchStatus to monitor progress.
 type CompleteUploadBatchResponse struct {
-	// ListingID confirms the listing
-	ListingID uint64 `json:"listingId" example:"123"`
+	// ListingIdentityID confirms the listing
+	ListingIdentityID uint64 `json:"listingIdentityId" example:"123"`
 
 	// BatchID confirms the batch
 	BatchID uint64 `json:"batchId" example:"456"`
@@ -1175,8 +1175,8 @@ type CompleteUploadBatchResponse struct {
 //
 // Used by the frontend to poll batch progress during upload and processing.
 type GetBatchStatusRequest struct {
-	// ListingID identifies the listing owning the batch
-	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+	// ListingIdentityID identifies the listing owning the batch
+	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"123"`
 
 	// BatchID identifies the specific batch to query
 	BatchID uint64 `json:"batchId" binding:"required,min=1" example:"456"`
@@ -1186,8 +1186,8 @@ type GetBatchStatusRequest struct {
 //
 // Contains current batch status and detailed information about each asset.
 type GetBatchStatusResponse struct {
-	// ListingID confirms the listing
-	ListingID uint64 `json:"listingId" example:"123"`
+	// ListingIdentityID confirms the listing
+	ListingIdentityID uint64 `json:"listingIdentityId" example:"123"`
 
 	// BatchID confirms the batch
 	BatchID uint64 `json:"batchId" example:"456"`
@@ -1240,8 +1240,8 @@ type BatchAssetStatusResponse struct {
 //
 // Used to retrieve download links for assets that have completed processing.
 type ListDownloadURLsRequest struct {
-	// ListingID identifies the listing owning the assets
-	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+	// ListingIdentityID identifies the listing owning the assets
+	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"123"`
 
 	// BatchID identifies the specific batch to retrieve downloads for
 	// If zero, the most recent READY batch will be used
@@ -1252,8 +1252,8 @@ type ListDownloadURLsRequest struct {
 //
 // Contains download links valid for the duration specified in TTLSeconds.
 type ListDownloadURLsResponse struct {
-	// ListingID confirms the listing
-	ListingID uint64 `json:"listingId" example:"123"`
+	// ListingIdentityID confirms the listing
+	ListingIdentityID uint64 `json:"listingIdentityId" example:"123"`
 
 	// BatchID confirms the batch
 	BatchID uint64 `json:"batchId" example:"456"`
@@ -1307,8 +1307,8 @@ type DownloadEntryResponse struct {
 // Used to retry processing for batches that failed or need reprocessing.
 // Only accepts batches in terminal states (READY or FAILED).
 type RetryMediaBatchRequest struct {
-	// ListingID identifies the listing owning the batch
-	ListingID uint64 `json:"listingId" binding:"required,min=1" example:"123"`
+	// ListingIdentityID identifies the listing owning the batch
+	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"123"`
 
 	// BatchID identifies the specific batch to retry
 	BatchID uint64 `json:"batchId" binding:"required,min=1" example:"456"`
@@ -1323,8 +1323,8 @@ type RetryMediaBatchRequest struct {
 //
 // The batch transitions back to PROCESSING status and a new job is enqueued.
 type RetryMediaBatchResponse struct {
-	// ListingID confirms the listing
-	ListingID uint64 `json:"listingId" example:"123"`
+	// ListingIdentityID confirms the listing
+	ListingIdentityID uint64 `json:"listingIdentityId" example:"123"`
 
 	// BatchID confirms the batch
 	BatchID uint64 `json:"batchId" example:"456"`

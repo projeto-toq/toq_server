@@ -35,3 +35,9 @@
 - incluir complex no endereço do listing
 - alterar o endpoint de criação de listing, incluíndo os campos opcionais a serem preenchido de acordo com o propertytype
 - ô recebendo 500 ao criar imóvel tipo predio -> trocar type de tinyint para int
+
+- Segundo é ao promover uma versão o status mudar para PENDING_AVAILIABITY, só que ao mandar os dados de agenda do proprietário, retorna que o imóvel já foi criada e que esse passo deveria ter sido feito antes disso.
+
+
+## Resolvidos
+ - O primeiro ao promover uma versão, ele tá usando a informação de id da entidade do imóvel e não listingIdentityId.==> está correto o código
