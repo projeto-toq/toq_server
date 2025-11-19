@@ -11051,6 +11051,9 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse": {
             "type": "object",
             "properties": {
+                "complexName": {
+                    "type": "string"
+                },
                 "propertyTypes": {
                     "type": "array",
                     "items": {

@@ -6,7 +6,11 @@
 
 ## 🎯 Problema / Solicitação
 
-A busca pelo detalhe de versão ativa de listings (anuncios) em get_listing_detail.go na linha 174 listing, repoErr := ls.listingRepository.GetListingVersionByID(ctx, tx, activeVersionID) obtem o a versão correta do listing já enriquecida com as tabelas satelites e em seguida começa uma rotina de enriquecimento manual que destroi o listing e ao responder features, por exemplo, está nil.
+Com a criação do modelo property_coverage_model, service property_coverage_service, adapter mysql property_coverage_repository e seu port, os endpoints
+- /admin/complexes** GET/POST/PUT/DELETE
+- /complex/sizes GET 
+estão utilizando os dados do antigo modelo complex e seus services/repositórios.
+Este modelo está deprecated e a logica dos endpoints deve ser alterada para utilizar o novo modelo property_coverage_model e seus services/repositórios.
 
 ## Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
 1. Analise o código relevante para a solicitação, identificando todos os arquivos envolvidos (adapters, services, handlers, entities, converters).
@@ -16,6 +20,7 @@ A busca pelo detalhe de versão ativa de listings (anuncios) em get_listing_deta
     2.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
 3. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 4. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
+5. o código morto que restara deve ser eliminado. sem mensagens de deprecated, apenas deleção.
 
 
 ---

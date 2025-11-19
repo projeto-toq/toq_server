@@ -1447,6 +1447,8 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse:
     properties:
+      complexName:
+        type: string
       propertyTypes:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption'
