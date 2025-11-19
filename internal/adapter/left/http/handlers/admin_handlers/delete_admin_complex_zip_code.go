@@ -32,7 +32,7 @@ func (h *AdminHandler) DeleteAdminComplexZipCode(c *gin.Context) {
 		return
 	}
 
-	if err := h.complexService.DeleteComplexZipCode(ctx, req.ID); err != nil {
+	if err := h.propertyCoverageService.DeleteComplexZipCode(ctx, req.ID); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

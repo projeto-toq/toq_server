@@ -33,7 +33,7 @@ func (h *AdminHandler) PostAdminGetComplexTowerDetail(c *gin.Context) {
 		return
 	}
 
-	tower, err := h.complexService.GetComplexTowerDetail(ctx, req.ID)
+	tower, err := h.propertyCoverageService.GetComplexTowerDetail(ctx, req.ID)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

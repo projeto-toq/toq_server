@@ -6,56 +6,6 @@ Este é o guia único do projeto. Aqui você encontra: arquitetura (hexagonal), 
 
 **Leitura obrigatória:** a árvore completa (todos os diretórios/arquivos, incluindo itens ocultos) está em `docs/project_tree_full.txt`. Esse arquivo deve ser consultado antes de criar novos adapters/ports ou ajustar serviços para garantir que a estrutura física permaneça alinhada às regras deste guia. Para atualizar a árvore sempre gere novamente a partir da raiz do repositório:
 
-```bash
-tree -a --charset=ascii > docs/project_tree_full.txt
-```
-
-> O guia mantém apenas o resumo abaixo para permanecer leve; todo o detalhamento fino mora no arquivo dedicado.
-├── deploy/
-│   └── nginx/
-├── docs/
-│   ├── observability/
-│   ├── refactors/
-│   ├── security/
-│   └── toq_server_go_guide.md
-├── grafana/
-│   ├── dashboard-files/
-│   ├── dashboard-files_backup_20251104_174901/
-│   ├── dashboards/
-│   └── datasources/
-├── internal/
-│   ├── adapter/
-│   │   ├── left/
-│   │   │   └── http/
-│   │   └── right/
-│   │       ├── aws_s3/
-│   │       ├── cep/
-├── internal/
-│   │       ├── cnpj/
-│   │       ├── cpf/
-│   │       ├── email/
-│   │       ├── fcm/
-│   │       ├── mysql/
-│   │       ├── prometheus/
-│   │       └── sms/
-│   └── core/
-│       ├── cache/
-│       ├── config/
-│       ├── derrors/
-│       ├── events/
-│       ├── factory/
-│       ├── go_routines/
-│       ├── model/
-│       ├── port/
-│       ├── service/
-│       ├── templates/
-│       └── utils/
-├── logs/
-├── scripts/
-├── tempo/
-├── toq v2.mwb
-└── toq v2.mwb.bak
-```
 
 Principais diretórios (descrição rápida para navegação):
 

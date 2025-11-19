@@ -7,9 +7,9 @@ import (
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -36,7 +36,14 @@ func (h *AdminHandler) PostAdminCreateComplex(c *gin.Context) {
 		return
 	}
 
-	input := complexservices.CreateComplexInput{
+	kind, err := parseCoverageKind(req.CoverageType)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
+		return
+	}
+
+	input := propertycoverageservice.CreateComplexInput{
+		Kind:             kind,
 		Name:             req.Name,
 		ZipCode:          req.ZipCode,
 		Street:           req.Street,
@@ -44,15 +51,15 @@ func (h *AdminHandler) PostAdminCreateComplex(c *gin.Context) {
 		Neighborhood:     req.Neighborhood,
 		City:             req.City,
 		State:            req.State,
-		PhoneNumber:      req.PhoneNumber,
-		Sector:           complexmodel.Sector(req.Sector),
+		ReceptionPhone:   req.PhoneNumber,
+		Sector:           propertycoveragemodel.Sector(*req.Sector),
 		MainRegistration: req.MainRegistration,
-		PropertyType:     globalmodel.PropertyType(req.PropertyType),
+		PropertyType:     globalmodel.PropertyType(*req.PropertyType),
 	}
 
-	complexEntity, err := h.complexService.CreateComplex(ctx, input)
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, err)
+	complexEntity, svcErr := h.propertyCoverageService.CreateComplex(ctx, input)
+	if svcErr != nil {
+		httperrors.SendHTTPErrorObj(c, svcErr)
 		return
 	}
 

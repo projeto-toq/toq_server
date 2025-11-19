@@ -11,7 +11,6 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/factory"
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
@@ -56,7 +55,6 @@ type BootstrapContext struct {
 type ServiceContainer struct {
 	GlobalService       globalservice.GlobalServiceInterface
 	UserService         userservices.UserServiceInterface
-	ComplexService      complexservices.ComplexServiceInterface
 	ListingService      listingservices.ListingServiceInterface
 	PermissionService   permissionservices.PermissionServiceInterface
 	HolidayService      holidayservices.HolidayServiceInterface

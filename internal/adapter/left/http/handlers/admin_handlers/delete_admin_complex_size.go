@@ -32,7 +32,7 @@ func (h *AdminHandler) DeleteAdminComplexSize(c *gin.Context) {
 		return
 	}
 
-	if err := h.complexService.DeleteComplexSize(ctx, req.ID); err != nil {
+	if err := h.propertyCoverageService.DeleteComplexSize(ctx, req.ID); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

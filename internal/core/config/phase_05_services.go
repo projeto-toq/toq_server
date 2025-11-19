@@ -25,7 +25,6 @@ func (b *Bootstrap) Phase05_InitializeServices() error {
 		{"PermissionService", b.initializePermissionService},
 		{"HolidayService", b.initializeHolidayService},
 		{"PhotoSessionService", b.initializePhotoSessionService},
-		{"ComplexService", b.initializeComplexService},
 		{"ScheduleService", b.initializeScheduleService},
 		{"MediaProcessingService", b.initializeMediaProcessingService},
 		{"ListingService", b.initializeListingService},
@@ -101,17 +100,6 @@ func (b *Bootstrap) initializeUserService() error {
 	b.config.InitUserHandler()
 
 	b.logger.Debug("✅ User Service inicializado")
-	return nil
-}
-
-// initializeComplexService inicializa o Complex Service (quarto)
-func (b *Bootstrap) initializeComplexService() error {
-	b.logger.Debug("Inicializando Complex Service")
-
-	// Inicializar Complex Service
-	b.config.InitComplexHandler()
-
-	b.logger.Debug("✅ Complex Service inicializado")
 	return nil
 }
 

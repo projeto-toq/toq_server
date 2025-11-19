@@ -2,19 +2,19 @@ package complexhandlers
 
 import (
 	complexhandlerport "github.com/projeto-toq/toq_server/internal/core/port/left/http/complexhandler"
-	complexservice "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 )
 
 // ComplexHandler implementa os handlers HTTP para operações de empreendimentos publicamente acessíveis.
 type ComplexHandler struct {
-	complexService complexservice.ComplexServiceInterface
+	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface
 }
 
 // NewComplexHandlerAdapter cria uma nova instância de ComplexHandler.
 func NewComplexHandlerAdapter(
-	complexService complexservice.ComplexServiceInterface,
+	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface,
 ) complexhandlerport.ComplexHandlerPort {
 	return &ComplexHandler{
-		complexService: complexService,
+		propertyCoverageService: propertyCoverageService,
 	}
 }

@@ -46,6 +46,12 @@ definitions:
     properties:
       city:
         type: string
+      coverageType:
+        enum:
+        - VERTICAL
+        - HORIZONTAL
+        - STANDALONE
+        type: string
       mainRegistration:
         type: string
       name:
@@ -68,6 +74,7 @@ definitions:
         type: string
     required:
     - city
+    - coverageType
     - name
     - number
     - propertyType
@@ -224,10 +231,17 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexRequest:
     properties:
+      coverageType:
+        enum:
+        - VERTICAL
+        - HORIZONTAL
+        - STANDALONE
+        type: string
       id:
         minimum: 1
         type: integer
     required:
+    - coverageType
     - id
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexSizeRequest:
@@ -288,10 +302,17 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexDetailRequest:
     properties:
+      coverageType:
+        enum:
+        - VERTICAL
+        - HORIZONTAL
+        - STANDALONE
+        type: string
       id:
         minimum: 1
         type: integer
     required:
+    - coverageType
     - id
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexSizeDetailRequest:
@@ -568,6 +589,12 @@ definitions:
     properties:
       city:
         type: string
+      coverageType:
+        enum:
+        - VERTICAL
+        - HORIZONTAL
+        - STANDALONE
+        type: string
       id:
         minimum: 1
         type: integer
@@ -593,6 +620,7 @@ definitions:
         type: string
     required:
     - city
+    - coverageType
     - id
     - name
     - number
@@ -932,6 +960,8 @@ definitions:
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse:
     properties:
       city:
+        type: string
+      coverageType:
         type: string
       id:
         type: integer
@@ -1760,13 +1790,6 @@ definitions:
         type: array
       timezone:
         type: string
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListSizesByAddressResponse:
-    properties:
-      sizes:
-        items:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse'
-        type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse:
     properties:
@@ -3455,6 +3478,10 @@ paths:
         in: query
         name: city
         type: string
+      - description: Complex number
+        in: query
+        name: number
+        type: string
       - description: Complex state
         in: query
         name: state
@@ -3467,6 +3494,10 @@ paths:
         in: query
         name: propertyType
         type: integer
+      - description: Coverage type (VERTICAL, HORIZONTAL, STANDALONE)
+        in: query
+        name: coverageType
+        type: string
       - description: Page number
         in: query
         name: page
@@ -6810,10 +6841,12 @@ paths:
       summary: Validate CPF
       tags:
       - Authentication
-  /complex/sizes:
+  /complex:
     get:
       consumes:
       - application/json
+      description: Retrieves full complex details (including towers, sizes, and zip
+        codes) based on ZipCode and Number.
       parameters:
       - description: Complex zip code
         in: query
@@ -6830,23 +6863,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListSizesByAddressResponse'
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
-      summary: List complex sizes by address
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Get complex details by address
       tags:
       - Complex
   /listings:

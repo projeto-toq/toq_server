@@ -2,7 +2,6 @@ package listinghandlers
 
 import (
 	listinghandlerport "github.com/projeto-toq/toq_server/internal/core/port/left/http/listinghandler"
-	complexservice "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	listingservice "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
@@ -12,7 +11,6 @@ import (
 type ListingHandler struct {
 	listingService         listingservice.ListingServiceInterface
 	globalService          globalservice.GlobalServiceInterface
-	complexService         complexservice.ComplexServiceInterface
 	mediaProcessingService mediaprocessingservice.MediaProcessingServiceInterface
 }
 
@@ -20,13 +18,11 @@ type ListingHandler struct {
 func NewListingHandlerAdapter(
 	listingService listingservice.ListingServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
-	complexService complexservice.ComplexServiceInterface,
 	mediaProcessingService mediaprocessingservice.MediaProcessingServiceInterface,
 ) listinghandlerport.ListingHandlerPort {
 	return &ListingHandler{
 		listingService:         listingService,
 		globalService:          globalService,
-		complexService:         complexService,
 		mediaProcessingService: mediaProcessingService,
 	}
 }

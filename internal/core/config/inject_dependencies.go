@@ -8,7 +8,6 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/factory"
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
@@ -215,14 +214,6 @@ func (c *config) InitUserHandler() {
 		userCfg,
 	)
 	// HTTP handler initialization is done during HTTP server setup
-}
-
-func (c *config) InitComplexHandler() {
-	slog.Debug("Initializing Complex Handler")
-	c.complexService = complexservices.NewComplexService(
-		c.repositoryAdapters.Complex,
-		c.globalService,
-	)
 }
 
 func (c *config) InitHolidayService() {

@@ -7,7 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 func computeTotalPages(total int64, limit int) int {
@@ -206,4 +208,24 @@ func calculatePaginationBounds(page, limit int, total int64) (start, end int) {
 	}
 
 	return start, end
+}
+
+func parseCoverageKind(raw string) (propertycoveragemodel.CoverageKind, error) {
+	kind := propertycoveragemodel.CoverageKind(strings.ToUpper(strings.TrimSpace(raw)))
+	if !kind.Valid() {
+		return "", coreutils.ValidationError("coverageType", "coverageType must be one of VERTICAL, HORIZONTAL or STANDALONE")
+	}
+	return kind, nil
+}
+
+func parseOptionalCoverageKind(raw string) (*propertycoveragemodel.CoverageKind, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return nil, nil
+	}
+	kind, err := parseCoverageKind(trimmed)
+	if err != nil {
+		return nil, err
+	}
+	return &kind, nil
 }

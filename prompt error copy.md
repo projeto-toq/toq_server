@@ -6,19 +6,39 @@
 
 ## 🎯 Problema / Solicitação
 
-Durante a validação de listings, feito em end_update_listing.go, atualmente features é obrigatório em todos os propertyTypes. 
-Isto é verificado nas linhas 294-296 do arquivo end_update_listing.go:
-
-```go
-	if data.FeaturesCount == 0 {
-		return utils.BadRequest("Listing must include features")
-	}
+AO chamar o endpoint PUT `/admin/complexes` com o body:
+```json
+{
+    "coverageType": "VERTICAL",
+    "id": 164,
+    "name": "Condomínio Edifício de Ville",
+    "zipCode": "06454040",
+    "street": "Alameda Mamoré",
+    "number": "947",
+    "neighborhood": "Alphaville",
+    "city": "Barueri",
+    "state": "SP",
+    "phoneNumber": "",
+    "sector": 0,
+    "mainRegistration": "34.469",
+    "propertyType": 1
+}
 ```
-O requisito correto é:
-Somente quando o listing tiver propertyType = Appartment, House, pff-plan house, features deve ser obrigatório. Nos outros casos deve ser opcional.
+é retornado o erro de validação:
+
+```json
+{
+    "code": 400,
+    "details": {
+        "field": "body",
+        "message": "Key: 'AdminUpdateComplexRequest.Sector' Error:Field validation for 'Sector' failed on the 'required' tag"
+    },
+    "message": "Key: 'AdminUpdateComplexRequest.Sector' Error:Field validation for 'Sector' failed on the 'required' tag"
+}
+```
 
 Assim:
-1. Analise o código identifique a causa raiz do problema.
+1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 

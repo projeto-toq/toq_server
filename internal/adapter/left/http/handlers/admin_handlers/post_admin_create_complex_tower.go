@@ -7,7 +7,7 @@ import (
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -34,17 +34,17 @@ func (h *AdminHandler) PostAdminCreateComplexTower(c *gin.Context) {
 		return
 	}
 
-	input := complexservices.CreateComplexTowerInput{
-		ComplexID:     req.ComplexID,
-		Tower:         req.Tower,
-		Floors:        req.Floors,
-		TotalUnits:    req.TotalUnits,
-		UnitsPerFloor: req.UnitsPerFloor,
+	input := propertycoverageservice.CreateComplexTowerInput{
+		VerticalComplexID: req.ComplexID,
+		Tower:             req.Tower,
+		Floors:            req.Floors,
+		TotalUnits:        req.TotalUnits,
+		UnitsPerFloor:     req.UnitsPerFloor,
 	}
 
-	tower, err := h.complexService.CreateComplexTower(ctx, input)
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, err)
+	tower, svcErr := h.propertyCoverageService.CreateComplexTower(ctx, input)
+	if svcErr != nil {
+		httperrors.SendHTTPErrorObj(c, svcErr)
 		return
 	}
 

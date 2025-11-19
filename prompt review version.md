@@ -7,10 +7,19 @@
 ## 🎯 Problema / Solicitação
 
 Com a criação do modelo property_coverage_model, service property_coverage_service, adapter mysql property_coverage_repository e seu port, os endpoints
-- /admin/complexes** GET/POST/PUT/DELETE
+- /admin/complexes** LIST/GET/POST/PUT/DELETE
 - /complex/sizes GET 
 estão utilizando os dados do antigo modelo complex e seus services/repositórios.
-Este modelo está deprecated e a logica dos endpoints deve ser alterada para utilizar o novo modelo property_coverage_model e seus services/repositórios.
+
+Assim é necessário criar endpoints CRUD (LIST/GET/POST/PUT/DELETE) para gerir as tabelas:
+- horizontal_complexes e reboque horizontal_zip_codes
+- vertical_complexes e vertical_complex_sizes/vertical_complex_towers
+- no_complex_zipcodes 
+Estes endpoints estarão no path /admin/complexes/** e devem utilizar o novo modelo property_coverage_model, utilizando os novos services/repositórios criados.
+Estes endpoints substituirão os endpoints atuais de /admin/complexes** LIST/GET/POST/PUT/DELETE que utilizam o modelo complex.
+O endpoint /complex/sizes GET também deve ser alterado para utilizar a lógica do novo modelo property_coverage_model e serviços/repositórios, mas permance o path atual.
+
+O modelo complex handler/repositorid/adpater mysql e services está deprecated e deve ser removido do código, assim como todo o código morto que restar.
 
 ## Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
 1. Analise o código relevante para a solicitação, identificando todos os arquivos envolvidos (adapters, services, handlers, entities, converters).
@@ -20,7 +29,7 @@ Este modelo está deprecated e a logica dos endpoints deve ser alterada para uti
     2.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
 3. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 4. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
-5. o código morto que restara deve ser eliminado. sem mensagens de deprecated, apenas deleção.
+5. o código morto que restar deve ser eliminado. sem mensagens de deprecated, apenas deleção.
 
 
 ---

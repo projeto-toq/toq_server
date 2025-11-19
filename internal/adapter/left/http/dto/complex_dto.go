@@ -2,6 +2,7 @@ package dto
 
 // ComplexResponse representa um empreendimento e seus dados relacionados.
 type ComplexResponse struct {
+	CoverageType     string                   `json:"coverageType"`
 	ID               int64                    `json:"id"`
 	Name             string                   `json:"name"`
 	ZipCode          string                   `json:"zipCode"`
@@ -44,68 +45,69 @@ type ComplexZipCodeResponse struct {
 	ZipCode   string `json:"zipCode"`
 }
 
-// ListSizesByAddressQuery representa os parâmetros de consulta para o endpoint público de tamanhos.
-type ListSizesByAddressQuery struct {
+// GetComplexByAddressQuery representa os parâmetros de consulta para o endpoint público de complexo.
+type GetComplexByAddressQuery struct {
 	ZipCode string `form:"zipCode" binding:"required"`
 	Number  string `form:"number"`
 }
 
-// ListSizesByAddressResponse encapsula os tamanhos retornados para um CEP/número.
-type ListSizesByAddressResponse struct {
-	Sizes []ComplexSizeResponse `json:"sizes"`
-}
-
 // AdminCreateComplexRequest representa o payload para criação de empreendimento.
 type AdminCreateComplexRequest struct {
-	Name             string `json:"name" binding:"required"`
-	ZipCode          string `json:"zipCode" binding:"required"`
-	Street           string `json:"street"`
-	Number           string `json:"number" binding:"required"`
-	Neighborhood     string `json:"neighborhood"`
-	City             string `json:"city" binding:"required"`
-	State            string `json:"state" binding:"required"`
-	PhoneNumber      string `json:"phoneNumber"`
-	Sector           uint8  `json:"sector" binding:"required"`
-	MainRegistration string `json:"mainRegistration"`
-	PropertyType     uint16 `json:"propertyType" binding:"required"`
+	CoverageType     string  `json:"coverageType" binding:"required,oneof=VERTICAL HORIZONTAL STANDALONE"`
+	Name             string  `json:"name" binding:"required"`
+	ZipCode          string  `json:"zipCode" binding:"required"`
+	Street           string  `json:"street"`
+	Number           string  `json:"number" binding:"required"`
+	Neighborhood     string  `json:"neighborhood"`
+	City             string  `json:"city" binding:"required"`
+	State            string  `json:"state" binding:"required"`
+	PhoneNumber      string  `json:"phoneNumber"`
+	Sector           *uint8  `json:"sector" binding:"required"`
+	MainRegistration string  `json:"mainRegistration"`
+	PropertyType     *uint16 `json:"propertyType" binding:"required"`
 }
 
 // AdminUpdateComplexRequest representa o payload para atualização de empreendimento.
 type AdminUpdateComplexRequest struct {
-	ID               int64  `json:"id" binding:"required,min=1"`
-	Name             string `json:"name" binding:"required"`
-	ZipCode          string `json:"zipCode" binding:"required"`
-	Street           string `json:"street"`
-	Number           string `json:"number" binding:"required"`
-	Neighborhood     string `json:"neighborhood"`
-	City             string `json:"city" binding:"required"`
-	State            string `json:"state" binding:"required"`
-	PhoneNumber      string `json:"phoneNumber"`
-	Sector           uint8  `json:"sector" binding:"required"`
-	MainRegistration string `json:"mainRegistration"`
-	PropertyType     uint16 `json:"propertyType" binding:"required"`
+	ID               int64   `json:"id" binding:"required,min=1"`
+	CoverageType     string  `json:"coverageType" binding:"required,oneof=VERTICAL HORIZONTAL STANDALONE"`
+	Name             string  `json:"name" binding:"required"`
+	ZipCode          string  `json:"zipCode" binding:"required"`
+	Street           string  `json:"street"`
+	Number           string  `json:"number" binding:"required"`
+	Neighborhood     string  `json:"neighborhood"`
+	City             string  `json:"city" binding:"required"`
+	State            string  `json:"state" binding:"required"`
+	PhoneNumber      string  `json:"phoneNumber"`
+	Sector           *uint8  `json:"sector" binding:"required"`
+	MainRegistration string  `json:"mainRegistration"`
+	PropertyType     *uint16 `json:"propertyType" binding:"required"`
 }
 
 // AdminDeleteComplexRequest representa o payload para exclusão de empreendimento.
 type AdminDeleteComplexRequest struct {
-	ID int64 `json:"id" binding:"required,min=1"`
+	ID           int64  `json:"id" binding:"required,min=1"`
+	CoverageType string `json:"coverageType" binding:"required,oneof=VERTICAL HORIZONTAL STANDALONE"`
 }
 
 // AdminListComplexesRequest representa filtros para listagem de empreendimentos.
 type AdminListComplexesRequest struct {
 	Name         string  `json:"name" form:"name"`
 	ZipCode      string  `json:"zipCode" form:"zipCode"`
+	Number       string  `json:"number" form:"number"`
 	City         string  `json:"city" form:"city"`
 	State        string  `json:"state" form:"state"`
 	Sector       *uint8  `json:"sector" form:"sector"`
 	PropertyType *uint16 `json:"propertyType" form:"propertyType"`
+	CoverageType string  `json:"coverageType" form:"coverageType"`
 	Page         int     `json:"page" form:"page"`
 	Limit        int     `json:"limit" form:"limit"`
 }
 
 // AdminGetComplexDetailRequest representa o payload para obter detalhes de um empreendimento.
 type AdminGetComplexDetailRequest struct {
-	ID int64 `json:"id" binding:"required,min=1"`
+	ID           int64  `json:"id" binding:"required,min=1"`
+	CoverageType string `json:"coverageType" binding:"required,oneof=VERTICAL HORIZONTAL STANDALONE"`
 }
 
 // AdminListComplexesResponse encapsula a lista de empreendimentos retornada.

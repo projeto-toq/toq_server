@@ -33,7 +33,7 @@ func (h *AdminHandler) PostAdminGetComplexSizeDetail(c *gin.Context) {
 		return
 	}
 
-	size, err := h.complexService.GetComplexSizeDetail(ctx, req.ID)
+	size, err := h.propertyCoverageService.GetComplexSizeDetail(ctx, req.ID)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

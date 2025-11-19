@@ -553,6 +553,6 @@ func RegisterComplexRoutes(
 	complex.Use(middlewares.AuthMiddleware(activityTracker))
 	complex.Use(middlewares.PermissionMiddleware(permissionService))
 	{
-		complex.GET("/sizes", complexHandler.ListSizesByAddress)
+		complex.GET("", complexHandler.GetComplexByAddress)
 	}
 }

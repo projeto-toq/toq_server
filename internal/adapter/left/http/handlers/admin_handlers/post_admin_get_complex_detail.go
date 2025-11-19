@@ -7,6 +7,7 @@ import (
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -33,9 +34,17 @@ func (h *AdminHandler) PostAdminGetComplexDetail(c *gin.Context) {
 		return
 	}
 
-	complexEntity, err := h.complexService.GetComplexDetail(ctx, req.ID)
+	kind, err := parseCoverageKind(req.CoverageType)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
+		return
+	}
+
+	input := propertycoverageservice.GetComplexDetailInput{ID: req.ID, Kind: kind}
+
+	complexEntity, svcErr := h.propertyCoverageService.GetComplexDetail(ctx, input)
+	if svcErr != nil {
+		httperrors.SendHTTPErrorObj(c, svcErr)
 		return
 	}
 

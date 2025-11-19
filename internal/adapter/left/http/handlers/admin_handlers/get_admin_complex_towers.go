@@ -7,7 +7,7 @@ import (
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -45,14 +45,14 @@ func (h *AdminHandler) GetAdminComplexTowers(c *gin.Context) {
 		limit = 20
 	}
 
-	input := complexservices.ListComplexTowersInput{
-		ComplexID: req.ComplexID,
-		Tower:     req.Tower,
-		Page:      page,
-		Limit:     limit,
+	input := propertycoverageservice.ListComplexTowersInput{
+		VerticalComplexID: req.ComplexID,
+		Tower:             req.Tower,
+		Page:              page,
+		Limit:             limit,
 	}
 
-	towers, err := h.complexService.ListComplexTowers(ctx, input)
+	towers, err := h.propertyCoverageService.ListComplexTowers(ctx, input)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

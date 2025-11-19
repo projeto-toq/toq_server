@@ -33,7 +33,7 @@ func (h *AdminHandler) PostAdminGetComplexZipCodeDetail(c *gin.Context) {
 		return
 	}
 
-	zipCode, err := h.complexService.GetComplexZipCodeDetail(ctx, req.ID)
+	zipCode, err := h.propertyCoverageService.GetComplexZipCodeDetail(ctx, req.ID)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

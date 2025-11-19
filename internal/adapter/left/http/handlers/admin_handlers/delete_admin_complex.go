@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -32,8 +33,16 @@ func (h *AdminHandler) DeleteAdminComplex(c *gin.Context) {
 		return
 	}
 
-	if err := h.complexService.DeleteComplex(ctx, req.ID); err != nil {
+	kind, err := parseCoverageKind(req.CoverageType)
+	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
+		return
+	}
+
+	input := propertycoverageservice.DeleteComplexInput{ID: req.ID, Kind: kind}
+
+	if svcErr := h.propertyCoverageService.DeleteComplex(ctx, input); svcErr != nil {
+		httperrors.SendHTTPErrorObj(c, svcErr)
 		return
 	}
 

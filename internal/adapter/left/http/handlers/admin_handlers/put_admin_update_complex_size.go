@@ -7,7 +7,7 @@ import (
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -34,14 +34,16 @@ func (h *AdminHandler) PutAdminUpdateComplexSize(c *gin.Context) {
 		return
 	}
 
-	input := complexservices.UpdateComplexSizeInput{
-		ID:          req.ID,
-		ComplexID:   req.ComplexID,
-		Size:        req.Size,
-		Description: req.Description,
+	input := propertycoverageservice.UpdateComplexSizeInput{
+		ID: req.ID,
+		CreateComplexSizeInput: propertycoverageservice.CreateComplexSizeInput{
+			VerticalComplexID: req.ComplexID,
+			Size:              req.Size,
+			Description:       req.Description,
+		},
 	}
 
-	size, err := h.complexService.UpdateComplexSize(ctx, input)
+	size, err := h.propertyCoverageService.UpdateComplexSize(ctx, input)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

@@ -44,7 +44,6 @@ import (
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 
 	// Repository adapters
-	mysqlcomplexadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/complex"
 	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
 	mysqlholidayadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday"
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
@@ -57,13 +56,13 @@ import (
 	mysqlvisitadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit"
 
 	// Core services
-	complexservice "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservice "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservice "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservice "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	scheduleservice "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
@@ -215,9 +214,6 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Global Repository
 	globalRepo := mysqlglobaladapter.NewGlobalAdapter(database, metrics)
 
-	// Complex Repository
-	complexRepo := mysqlcomplexadapter.NewComplexAdapter(database, metrics)
-
 	// Listing Repository
 	listingRepo := mysqllistingadapter.NewListingAdapter(database, metrics)
 
@@ -247,7 +243,6 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	return RepositoryAdapters{
 		User:             userRepo,
 		Global:           globalRepo,
-		Complex:          complexRepo,
 		PropertyCoverage: propertyCoverageRepo,
 		Listing:          listingRepo,
 		MediaProcessing:  nil,
@@ -266,7 +261,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	userService userservice.UserServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 	listingService listingservice.ListingServiceInterface,
-	complexService complexservice.ComplexServiceInterface,
+	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface,
 	scheduleService scheduleservice.ScheduleServiceInterface,
 	holidayService holidayservice.HolidayServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
@@ -281,7 +276,6 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	userHandlerPort := userhandlers.NewUserHandlerAdapter(
 		userService,
 		globalService,
-		complexService,
 		permissionService,
 	)
 
@@ -303,7 +297,6 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	listingHandlerPort := listinghandlers.NewListingHandlerAdapter(
 		listingService,
 		globalService,
-		complexService,
 		mediaProcessingService,
 	)
 
@@ -340,12 +333,12 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		userService,
 		listingService,
 		permissionService,
-		complexService,
+		propertyCoverageService,
 		router,
 	)
 
 	complexHandlerPort := complexhandlers.NewComplexHandlerAdapter(
-		complexService,
+		propertyCoverageService,
 	)
 
 	complexHandler, ok := complexHandlerPort.(*complexhandlers.ComplexHandler)

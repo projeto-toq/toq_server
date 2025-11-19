@@ -55,6 +55,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Complex number",
+                        "name": "number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Complex state",
                         "name": "state",
                         "in": "query"
@@ -69,6 +75,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Property type identifier",
                         "name": "propertyType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Coverage type (VERTICAL, HORIZONTAL, STANDALONE)",
+                        "name": "coverageType",
                         "in": "query"
                     },
                     {
@@ -5031,8 +5043,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/complex/sizes": {
+        "/complex": {
             "get": {
+                "description": "Retrieves full complex details (including towers, sizes, and zip codes) based on ZipCode and Number.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5042,7 +5055,7 @@ const docTemplate = `{
                 "tags": [
                     "Complex"
                 ],
-                "summary": "List complex sizes by address",
+                "summary": "Get complex details by address",
                 "parameters": [
                     {
                         "type": "string",
@@ -5062,28 +5075,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListSizesByAddressResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
                     }
                 }
@@ -9134,6 +9144,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "city",
+                "coverageType",
                 "name",
                 "number",
                 "propertyType",
@@ -9144,6 +9155,14 @@ const docTemplate = `{
             "properties": {
                 "city": {
                     "type": "string"
+                },
+                "coverageType": {
+                    "type": "string",
+                    "enum": [
+                        "VERTICAL",
+                        "HORIZONTAL",
+                        "STANDALONE"
+                    ]
                 },
                 "mainRegistration": {
                     "type": "string"
@@ -9390,9 +9409,18 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminDeleteComplexRequest": {
             "type": "object",
             "required": [
+                "coverageType",
                 "id"
             ],
             "properties": {
+                "coverageType": {
+                    "type": "string",
+                    "enum": [
+                        "VERTICAL",
+                        "HORIZONTAL",
+                        "STANDALONE"
+                    ]
+                },
                 "id": {
                     "type": "integer",
                     "minimum": 1
@@ -9486,9 +9514,18 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminGetComplexDetailRequest": {
             "type": "object",
             "required": [
+                "coverageType",
                 "id"
             ],
             "properties": {
+                "coverageType": {
+                    "type": "string",
+                    "enum": [
+                        "VERTICAL",
+                        "HORIZONTAL",
+                        "STANDALONE"
+                    ]
+                },
                 "id": {
                     "type": "integer",
                     "minimum": 1
@@ -9914,6 +9951,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "city",
+                "coverageType",
                 "id",
                 "name",
                 "number",
@@ -9925,6 +9963,14 @@ const docTemplate = `{
             "properties": {
                 "city": {
                     "type": "string"
+                },
+                "coverageType": {
+                    "type": "string",
+                    "enum": [
+                        "VERTICAL",
+                        "HORIZONTAL",
+                        "STANDALONE"
+                    ]
                 },
                 "id": {
                     "type": "integer",
@@ -10402,6 +10448,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "city": {
+                    "type": "string"
+                },
+                "coverageType": {
                     "type": "string"
                 },
                 "id": {
@@ -11487,17 +11536,6 @@ const docTemplate = `{
                 },
                 "timezone": {
                     "type": "string"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListSizesByAddressResponse": {
-            "type": "object",
-            "properties": {
-                "sizes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexSizeResponse"
-                    }
                 }
             }
         },

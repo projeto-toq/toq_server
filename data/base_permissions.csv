@@ -67,7 +67,7 @@ id;name;action;description;is_active
 66;"HTTP Admin Create Complex Zip Code";"POST:/api/v2/admin/complexes/zip-codes";"Permite criar CEPs associados a complexos no painel admin";1
 67;"HTTP Admin Update Complex Zip Code";"PUT:/api/v2/admin/complexes/zip-codes";"Permite atualizar CEPs associados a complexos no painel admin";1
 68;"HTTP Admin Delete Complex Zip Code";"DELETE:/api/v2/admin/complexes/zip-codes";"Permite deletar CEPs associados a complexos no painel admin";1
-69;"HTTP Get Complex Sizes";"GET:/api/v2/complex/sizes";"Permite listar tamanhos de complexos";1
+69;"HTTP Get Complex";"GET:/api/v2/complex";"Permite listar dados de complexos";1
 70;"HTTP Admin Get Complex Zip Code Detail";"POST:/api/v2/admin/complexes/zip-codes/detail";"Permite consultar detalhes de CEP associados a complexos no painel admin";1
 71;"HTTP Admin Get Complex Size Detail";"POST:/api/v2/admin/complexes/sizes/detail";"Permite consultar detalhes de um valor de catálogo de tamanho de complexo no painel admin";1
 72;"HTTP Admin Get Complex Tower Detail";"POST:/api/v2/admin/complexes/towers/detail";"Permite consultar detalhes de uma torre de complexo no painel admin";1

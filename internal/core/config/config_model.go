@@ -27,7 +27,6 @@ import (
 	fcmport "github.com/projeto-toq/toq_server/internal/core/port/right/fcm"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
@@ -61,7 +60,6 @@ type config struct {
 	globalService           globalservice.GlobalServiceInterface
 	userService             userservices.UserServiceInterface
 	listingService          listingservices.ListingServiceInterface
-	complexService          complexservices.ComplexServiceInterface
 	permissionService       permissionservices.PermissionServiceInterface
 	holidayService          holidayservices.HolidayServiceInterface
 	scheduleService         scheduleservices.ScheduleServiceInterface
@@ -95,7 +93,6 @@ type ConfigInterface interface {
 	InjectDependencies(*LifecycleManager) error
 	InitGlobalService()
 	InitUserHandler()
-	InitComplexHandler()
 	InitHolidayService()
 	InitScheduleService()
 	InitMediaProcessingService()
@@ -183,9 +180,6 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.Global == nil {
 		slog.Error("repositories.Global is nil")
 	}
-	if repositories.Complex == nil {
-		slog.Error("repositories.Complex is nil")
-	}
 	if repositories.PropertyCoverage == nil {
 		slog.Error("repositories.PropertyCoverage is nil")
 	}
@@ -215,7 +209,6 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	c.repositoryAdapters = &factory.RepositoryAdapters{
 		User:             repositories.User,
 		Global:           repositories.Global,
-		Complex:          repositories.Complex,
 		PropertyCoverage: repositories.PropertyCoverage,
 		Listing:          repositories.Listing,
 		Holiday:          repositories.Holiday,
@@ -253,7 +246,6 @@ func (c *config) initializeServices() {
 	// Inicializar serviços na ordem correta (resolvendo dependências)
 	c.InitGlobalService()
 	c.InitPermissionHandler()
-	c.InitComplexHandler()
 	c.InitHolidayService()
 	c.InitScheduleService()
 	c.InitPhotoSessionService()
@@ -513,7 +505,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.userService,
 		c.globalService,
 		c.listingService,
-		c.complexService,
+		c.propertyCoverageService,
 		c.scheduleService,
 		c.holidayService,
 		c.permissionService,

@@ -7,7 +7,7 @@ import (
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -34,12 +34,12 @@ func (h *AdminHandler) PostAdminCreateComplexZipCode(c *gin.Context) {
 		return
 	}
 
-	input := complexservices.CreateComplexZipCodeInput{
-		ComplexID: req.ComplexID,
-		ZipCode:   req.ZipCode,
+	input := propertycoverageservice.CreateComplexZipCodeInput{
+		HorizontalComplexID: req.ComplexID,
+		ZipCode:             req.ZipCode,
 	}
 
-	zipCode, err := h.complexService.CreateComplexZipCode(ctx, input)
+	zipCode, err := h.propertyCoverageService.CreateComplexZipCode(ctx, input)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

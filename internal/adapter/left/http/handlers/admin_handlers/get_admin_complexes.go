@@ -7,9 +7,9 @@ import (
 	httpconv "github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	complexmodel "github.com/projeto-toq/toq_server/internal/core/model/complex_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
+	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -21,9 +21,11 @@ import (
 //	@Param		name	query	string	false	"Complex name filter"
 //	@Param		zipCode	query	string	false	"Complex zip code"
 //	@Param		city	query	string	false	"Complex city"
+//	@Param		number	query	string	false	"Complex number"
 //	@Param		state	query	string	false	"Complex state"
 //	@Param		sector	query	int	false	"Sector identifier"
 //	@Param		propertyType	query	int	false	"Property type identifier"
+//	@Param		coverageType	query	string	false	"Coverage type (VERTICAL, HORIZONTAL, STANDALONE)"
 //	@Param		page	query	int	false	"Page number"
 //	@Param		limit	query	int	false	"Page size"
 //	@Success	200	{object}	dto.AdminListComplexesResponse
@@ -51,9 +53,9 @@ func (h *AdminHandler) GetAdminComplexes(c *gin.Context) {
 		limit = 20
 	}
 
-	var sector *complexmodel.Sector
+	var sector *propertycoveragemodel.Sector
 	if req.Sector != nil {
-		converted := complexmodel.Sector(*req.Sector)
+		converted := propertycoveragemodel.Sector(*req.Sector)
 		sector = &converted
 	}
 
@@ -63,20 +65,28 @@ func (h *AdminHandler) GetAdminComplexes(c *gin.Context) {
 		propertyType = &converted
 	}
 
-	input := complexservices.ListComplexesInput{
+	kind, err := parseOptionalCoverageKind(req.CoverageType)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
+		return
+	}
+
+	input := propertycoverageservice.ListComplexesInput{
 		Name:         req.Name,
 		ZipCode:      req.ZipCode,
+		Number:       req.Number,
 		City:         req.City,
 		State:        req.State,
 		Sector:       sector,
 		PropertyType: propertyType,
+		Kind:         kind,
 		Page:         page,
 		Limit:        limit,
 	}
 
-	complexes, err := h.complexService.ListComplexes(ctx, input)
-	if err != nil {
-		httperrors.SendHTTPErrorObj(c, err)
+	complexes, svcErr := h.propertyCoverageService.ListComplexes(ctx, input)
+	if svcErr != nil {
+		httperrors.SendHTTPErrorObj(c, svcErr)
 		return
 	}
 

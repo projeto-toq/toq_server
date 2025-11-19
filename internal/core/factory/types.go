@@ -26,7 +26,6 @@ import (
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
-	complexrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/complex_repository"
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -70,7 +69,6 @@ type StorageAdapters struct {
 type RepositoryAdapters struct {
 	User             userrepoport.UserRepoPortInterface
 	Global           globalrepoport.GlobalRepoPortInterface
-	Complex          complexrepoport.ComplexRepoPortInterface
 	PropertyCoverage propertycoveragerepository.RepositoryInterface
 	Listing          listingrepoport.ListingRepoPortInterface
 	MediaProcessing  mediaprocessingrepository.RepositoryInterface

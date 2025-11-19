@@ -32,7 +32,7 @@ func (h *AdminHandler) DeleteAdminComplexTower(c *gin.Context) {
 		return
 	}
 
-	if err := h.complexService.DeleteComplexTower(ctx, req.ID); err != nil {
+	if err := h.propertyCoverageService.DeleteComplexTower(ctx, req.ID); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
