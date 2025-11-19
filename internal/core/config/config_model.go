@@ -34,6 +34,7 @@ import (
 	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	sessionservice "github.com/projeto-toq/toq_server/internal/core/service/session_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
@@ -65,6 +66,7 @@ type config struct {
 	holidayService          holidayservices.HolidayServiceInterface
 	scheduleService         scheduleservices.ScheduleServiceInterface
 	photoSessionService     photosessionservices.PhotoSessionServiceInterface
+	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface
 	mediaProcessingService  mediaprocessingservice.MediaProcessingServiceInterface
 	metricsAdapter          *factory.MetricsAdapter
 	cep                     cepport.CEPPortInterface
@@ -97,6 +99,7 @@ type ConfigInterface interface {
 	InitHolidayService()
 	InitScheduleService()
 	InitMediaProcessingService()
+	InitPropertyCoverageService()
 	InitPhotoSessionService()
 	InitListingHandler()
 	InitPermissionHandler()
@@ -183,6 +186,9 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.Complex == nil {
 		slog.Error("repositories.Complex is nil")
 	}
+	if repositories.PropertyCoverage == nil {
+		slog.Error("repositories.PropertyCoverage is nil")
+	}
 	if repositories.Listing == nil {
 		slog.Error("repositories.Listing is nil")
 	}
@@ -207,16 +213,17 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 
 	// Criar uma cópia dos repositórios para evitar problemas com ponteiros
 	c.repositoryAdapters = &factory.RepositoryAdapters{
-		User:         repositories.User,
-		Global:       repositories.Global,
-		Complex:      repositories.Complex,
-		Listing:      repositories.Listing,
-		Holiday:      repositories.Holiday,
-		Schedule:     repositories.Schedule,
-		Visit:        repositories.Visit,
-		PhotoSession: repositories.PhotoSession,
-		Session:      repositories.Session,
-		Permission:   repositories.Permission,
+		User:             repositories.User,
+		Global:           repositories.Global,
+		Complex:          repositories.Complex,
+		PropertyCoverage: repositories.PropertyCoverage,
+		Listing:          repositories.Listing,
+		Holiday:          repositories.Holiday,
+		Schedule:         repositories.Schedule,
+		Visit:            repositories.Visit,
+		PhotoSession:     repositories.PhotoSession,
+		Session:          repositories.Session,
+		Permission:       repositories.Permission,
 	}
 
 	slog.Info("Repository adapters assigned successfully")
@@ -250,6 +257,7 @@ func (c *config) initializeServices() {
 	c.InitHolidayService()
 	c.InitScheduleService()
 	c.InitPhotoSessionService()
+	c.InitPropertyCoverageService()
 	c.InitListingHandler()
 	c.InitUserHandler()
 

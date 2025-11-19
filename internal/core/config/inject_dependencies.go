@@ -15,6 +15,7 @@ import (
 	mediaprocessingservice "github.com/projeto-toq/toq_server/internal/core/service/media_processing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
@@ -290,6 +291,30 @@ func (c *config) InitScheduleService() {
 	)
 }
 
+func (c *config) InitPropertyCoverageService() {
+	slog.Debug("Initializing Property Coverage Service")
+
+	if c.repositoryAdapters == nil {
+		slog.Error("repositoryAdapters is nil")
+		return
+	}
+
+	if c.repositoryAdapters.PropertyCoverage == nil {
+		slog.Error("repositoryAdapters.PropertyCoverage is nil")
+		return
+	}
+
+	if c.globalService == nil {
+		slog.Error("globalService is nil")
+		return
+	}
+
+	c.propertyCoverageService = propertycoverageservice.NewPropertyCoverageService(
+		c.repositoryAdapters.PropertyCoverage,
+		c.globalService,
+	)
+}
+
 func (c *config) InitMediaProcessingService() {
 	slog.Debug("Initializing Media Processing Service")
 
@@ -352,11 +377,15 @@ func (c *config) InitMediaProcessingService() {
 
 func (c *config) InitListingHandler() {
 	slog.Debug("Initializing Listing Handler")
+	if c.propertyCoverageService == nil {
+		slog.Error("propertyCoverageService is nil")
+		return
+	}
 	c.listingService = listingservices.NewListingService(
 		c.repositoryAdapters.Listing,
 		c.photoSessionService,
 		c.repositoryAdapters.User,
-		c.complexService,
+		c.propertyCoverageService,
 		c.globalService,
 		c.cloudStorage,
 		c.scheduleService,

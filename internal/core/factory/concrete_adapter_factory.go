@@ -50,6 +50,7 @@ import (
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
 	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
 	mysqlphotosessionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/photo_session"
+	mysqlpropertycoverageadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/property_coverage"
 	mysqlscheduleadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule"
 	sessionmysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session"
 	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user"
@@ -220,6 +221,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Listing Repository
 	listingRepo := mysqllistingadapter.NewListingAdapter(database, metrics)
 
+	// Property Coverage Repository
+	propertyCoverageRepo := mysqlpropertycoverageadapter.NewPropertyCoverageAdapter(database, metrics)
+
 	// Holiday Repository
 	holidayRepo := mysqlholidayadapter.NewHolidayAdapter(database, metrics)
 
@@ -241,17 +245,18 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
-		User:            userRepo,
-		Global:          globalRepo,
-		Complex:         complexRepo,
-		Listing:         listingRepo,
-		MediaProcessing: nil,
-		Holiday:         holidayRepo,
-		Schedule:        scheduleRepo,
-		Visit:           visitRepo,
-		PhotoSession:    photoSessionRepo,
-		Session:         sessionRepo,
-		Permission:      permissionRepo,
+		User:             userRepo,
+		Global:           globalRepo,
+		Complex:          complexRepo,
+		PropertyCoverage: propertyCoverageRepo,
+		Listing:          listingRepo,
+		MediaProcessing:  nil,
+		Holiday:          holidayRepo,
+		Schedule:         scheduleRepo,
+		Visit:            visitRepo,
+		PhotoSession:     photoSessionRepo,
+		Session:          sessionRepo,
+		Permission:       permissionRepo,
 	}, nil
 }
 

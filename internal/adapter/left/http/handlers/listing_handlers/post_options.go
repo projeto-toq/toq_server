@@ -40,21 +40,26 @@ func (lh *ListingHandler) PostOptions(c *gin.Context) {
 		return
 	}
 
-	types, err := lh.listingService.GetOptions(ctx, request.ZipCode, request.Number)
+	options, err := lh.listingService.GetOptions(ctx, request.ZipCode, request.Number)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
-	propertyTypes := make([]dto.PropertyTypeOption, 0, len(types))
-	for _, t := range types {
+	propertyTypes := make([]dto.PropertyTypeOption, 0, len(options.PropertyTypes))
+	for _, t := range options.PropertyTypes {
 		propertyTypes = append(propertyTypes, dto.PropertyTypeOption{
 			PropertyType: int(t.Code),
 			Name:         t.Label,
 		})
 	}
 
-	c.JSON(http.StatusOK, dto.GetOptionsResponse{
+	response := dto.GetOptionsResponse{
 		PropertyTypes: propertyTypes,
-	})
+	}
+	if options.ComplexName != "" {
+		response.ComplexName = options.ComplexName
+	}
+
+	c.JSON(http.StatusOK, response)
 }

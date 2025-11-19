@@ -33,6 +33,7 @@ import (
 	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/mediaprocessingrepository"
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
 	photosessionrepo "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
+	propertycoveragerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/property_coverage_repository"
 	schedulerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/schedule_repository"
 	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
@@ -67,17 +68,18 @@ type StorageAdapters struct {
 
 // RepositoryAdapters agrupa todos os repositórios MySQL
 type RepositoryAdapters struct {
-	User            userrepoport.UserRepoPortInterface
-	Global          globalrepoport.GlobalRepoPortInterface
-	Complex         complexrepoport.ComplexRepoPortInterface
-	Listing         listingrepoport.ListingRepoPortInterface
-	MediaProcessing mediaprocessingrepository.RepositoryInterface
-	Holiday         holidayrepository.HolidayRepositoryInterface
-	Schedule        schedulerepository.ScheduleRepositoryInterface
-	Visit           visitrepository.VisitRepositoryInterface
-	PhotoSession    photosessionrepo.PhotoSessionRepositoryInterface
-	Session         sessionrepoport.SessionRepoPortInterface
-	Permission      permissionrepository.PermissionRepositoryInterface
+	User             userrepoport.UserRepoPortInterface
+	Global           globalrepoport.GlobalRepoPortInterface
+	Complex          complexrepoport.ComplexRepoPortInterface
+	PropertyCoverage propertycoveragerepository.RepositoryInterface
+	Listing          listingrepoport.ListingRepoPortInterface
+	MediaProcessing  mediaprocessingrepository.RepositoryInterface
+	Holiday          holidayrepository.HolidayRepositoryInterface
+	Schedule         schedulerepository.ScheduleRepositoryInterface
+	Visit            visitrepository.VisitRepositoryInterface
+	PhotoSession     photosessionrepo.PhotoSessionRepositoryInterface
+	Session          sessionrepoport.SessionRepoPortInterface
+	Permission       permissionrepository.PermissionRepositoryInterface
 }
 
 // HTTPHandlers agrupa todos os handlers HTTP

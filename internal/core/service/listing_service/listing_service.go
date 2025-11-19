@@ -7,9 +7,9 @@ import (
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
-	complexservices "github.com/projeto-toq/toq_server/internal/core/service/complex_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 )
 
@@ -17,7 +17,7 @@ type listingService struct {
 	listingRepository listingrepository.ListingRepoPortInterface
 	photoSessionSvc   photosessionservices.PhotoSessionServiceInterface
 	userRepository    userrepository.UserRepoPortInterface
-	csi               complexservices.ComplexServiceInterface
+	propertyCoverage  propertycoverageservice.PropertyCoverageServiceInterface
 	gsi               globalservice.GlobalServiceInterface
 	gcs               storageport.CloudStoragePortInterface
 	scheduleService   scheduleservices.ScheduleServiceInterface
@@ -27,7 +27,7 @@ func NewListingService(
 	lr listingrepository.ListingRepoPortInterface,
 	ps photosessionservices.PhotoSessionServiceInterface,
 	ur userrepository.UserRepoPortInterface,
-	csi complexservices.ComplexServiceInterface,
+	pcs propertycoverageservice.PropertyCoverageServiceInterface,
 	gsi globalservice.GlobalServiceInterface,
 	gcs storageport.CloudStoragePortInterface,
 	ss scheduleservices.ScheduleServiceInterface,
@@ -37,7 +37,7 @@ func NewListingService(
 		listingRepository: lr,
 		photoSessionSvc:   ps,
 		userRepository:    ur,
-		csi:               csi,
+		propertyCoverage:  pcs,
 		gsi:               gsi,
 		gcs:               gcs,
 		scheduleService:   ss,
@@ -45,7 +45,7 @@ func NewListingService(
 }
 
 type ListingServiceInterface interface {
-	GetOptions(ctx context.Context, zipCode string, number string) (types []listingmodel.PropertyTypeOption, err error)
+	GetOptions(ctx context.Context, zipCode string, number string) (result listingmodel.PropertyOptionsResult, err error)
 	GetBaseFeatures(ctx context.Context) (features []listingmodel.BaseFeatureInterface, err error)
 	CreateListing(ctx context.Context, input CreateListingInput) (listing listingmodel.ListingInterface, err error)
 	CreateDraftVersion(ctx context.Context, input CreateDraftVersionInput) (CreateDraftVersionOutput, error)

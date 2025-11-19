@@ -11,6 +11,7 @@ import (
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -112,14 +113,16 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 		return nil, utils.ConflictError("Listing already exists for this address")
 	}
 
-	//get the propertyTypes allowed on the zipCode and number
-	allowedTypes, err := ls.csi.GetOptions(ctx, zipCode, number)
+	coverage, err := ls.propertyCoverage.ResolvePropertyTypes(ctx, propertycoveragemodel.ResolvePropertyTypesInput{
+		ZipCode: zipCode,
+		Number:  number,
+	})
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	//check if the propertyType is allowed
-	allowed, err := ls.isPropertyTypeAllowed(ctx, allowedTypes, propertyType)
+	allowed, err := ls.isPropertyTypeAllowed(ctx, coverage.PropertyTypes, propertyType)
 	if err != nil {
 		return
 	}
@@ -184,6 +187,9 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 	activeVersion := listing.ActiveVersion()
 	activeVersion.SetListingIdentityID(listing.IdentityID())
 	activeVersion.SetListingUUID(listing.UUID())
+	if coverage.ComplexName != "" {
+		activeVersion.SetComplex(coverage.ComplexName)
+	}
 
 	if versionErr := ls.listingRepository.CreateListingVersion(ctx, tx, activeVersion); versionErr != nil {
 		utils.SetSpanError(ctx, versionErr)

@@ -744,6 +744,7 @@ type ChangeListingStatusResponse struct {
 // GetOptionsResponse represents response for getting options
 type GetOptionsResponse struct {
 	PropertyTypes []PropertyTypeOption `json:"propertyTypes"`
+	ComplexName   string               `json:"complexName,omitempty"`
 }
 
 // GetOptionsRequest representa o payload para obter opções de listing
