@@ -6,35 +6,16 @@
 
 ## 🎯 Problema / Solicitação
 
-Ao cahamar o ednpoint POST `/listings/versions/promote` com o body:
+Durante a validação de listings, feito em end_update_listing.go, atualmente features é obrigatório em todos os propertyTypes. 
+Isto é verificado nas linhas 294-296 do arquivo end_update_listing.go:
 
-``` json
-{
-  "listingIdentityId": 25,
-  "versionId": 22
-}
-
-recebo o erro 400 com a mensagem:
-
-``` json
-{
-  "code": 400,
-  "details": null,
-  "message": "version doesn't belong to specified listing"
-}
-
-Abaixo o estrato do banco de dados:
-
-``` listing_versions
-# id	user_id	listing_identity_id	code	version	status	title	zip_code	street	number	complement	neighborhood	city	state	complex	type	owner	land_size	corner	non_buildable	buildable	delivered	who_lives	description	transaction	sell_net	rent_net	condominium	annual_tax	monthly_tax	annual_ground_rent	monthly_ground_rent	exchange	exchange_perc	installment	financing	visit	tenant_name	tenant_email	tenant_phone	accompanying	completion_forecast	land_block	land_lot	land_front	land_side	land_back	land_terrain_type	has_kmz	kmz_file	building_floors	unit_tower	unit_floor	unit_number	warehouse_manufacturing_area	warehouse_sector	warehouse_has_primary_cabin	warehouse_cabin_kva	warehouse_ground_floor	warehouse_floor_resistance	warehouse_zoning	warehouse_has_office_area	warehouse_office_area	store_has_mezzanine	store_mezzanine_area	deleted
-22	2	25	1022	1	1	Listing 25	06542160	Alameda Bertioga	777	(Residencial Três)	Alphaville	Santana de Parnaíba	SP		16	1	20.00	0		20.00	1	3	fgd fgfh ghvbgh	1	100000.00		1000.00	1200.00		1200.00		0		1	0	1				1																									0
+```go
+	if data.FeaturesCount == 0 {
+		return utils.BadRequest("Listing must include features")
+	}
 ```
-
-``` listing_identities
-# id	listing_uuid	user_id	code	active_version_id	deleted
-25	8fccb269-bf30-4eb7-a43d-f76519178200	2	1022	22	0
-```
-
+O requisito correto é:
+Somente quando o listing tiver propertyType = Appartment, House, pff-plan house, features deve ser obrigatório. Nos outros casos deve ser opcional.
 
 Assim:
 1. Analise o código identifique a causa raiz do problema.

@@ -291,9 +291,9 @@ func (ls *listingService) validateBasicFields(data listingrepository.ListingEndU
 		return utils.BadRequest("Laudêmio conflict: cannot provide both annual_ground_rent and monthly_ground_rent simultaneously")
 	}
 
-	if data.FeaturesCount == 0 {
-		return utils.BadRequest("Listing must include features")
-	}
+	// Note: Features validation moved to validatePropertySpecificFields() (LAYER 5)
+	// Features are MANDATORY only for residential types: Apartment, House, OffPlanHouse
+	// Other property types (commercial, land, warehouse) can proceed without features
 
 	return nil
 }
@@ -436,19 +436,37 @@ func (ls *listingService) validateTenantFields(ctx context.Context, tx *sql.Tx, 
 // Each property type has its own validation rules based on business requirements.
 //
 // Property types validated:
-//   - Building (256): completion forecast
+//   - Apartment (1): features (MANDATORY) + unit fields
+//   - House (16): features (MANDATORY)
+//   - OffPlanHouse (32): features (MANDATORY) + completion forecast
 //   - ResidencialLand, CommercialLand (64, 128): land block, lot, terrain type, KMZ
-//   - Apartment, CommercialStore, CommercialFloor (1, 2, 4): unit tower, floor, number
+//   - CommercialFloor (4): unit tower, floor, number
+//   - CommercialStore (2): unit fields + mezzanine flag and area
 //   - Warehouse (512): manufacturing area, sector, cabin, floor specs, zoning, office area
-//   - CommercialStore (2): mezzanine flag and area
 func (ls *listingService) validatePropertySpecificFields(ctx context.Context, data listingrepository.ListingEndUpdateData) error {
 	propertyOptions := ls.DecodePropertyTypes(ctx, data.ListingType)
 
 	for _, option := range propertyOptions {
 		switch option.Code {
-		case int64(globalmodel.Building):
-			if err := ls.validateBuilding(data); err != nil {
+		case int64(globalmodel.Apartment):
+			// Apartment requires both features validation (residential) and unit validation
+			if err := ls.validateResidentialFeatures(data, option.Code); err != nil {
 				return err
+			}
+			if err := ls.validateUnit(data); err != nil {
+				return err
+			}
+
+		case int64(globalmodel.House), int64(globalmodel.OffPlanHouse):
+			// House types require features validation only
+			if err := ls.validateResidentialFeatures(data, option.Code); err != nil {
+				return err
+			}
+			// OffPlanHouse specifically requires completion forecast
+			if option.Code == int64(globalmodel.OffPlanHouse) {
+				if !data.CompletionForecast.Valid || strings.TrimSpace(data.CompletionForecast.String) == "" {
+					return utils.BadRequest("Completion forecast (YYYY-MM) is required for Off Plan House")
+				}
 			}
 
 		case int64(globalmodel.ResidencialLand), int64(globalmodel.CommercialLand):
@@ -456,7 +474,7 @@ func (ls *listingService) validatePropertySpecificFields(ctx context.Context, da
 				return err
 			}
 
-		case int64(globalmodel.Apartment), int64(globalmodel.CommercialFloor):
+		case int64(globalmodel.CommercialFloor):
 			if err := ls.validateUnit(data); err != nil {
 				return err
 			}
@@ -477,15 +495,6 @@ func (ls *listingService) validatePropertySpecificFields(ctx context.Context, da
 		}
 	}
 
-	return nil
-}
-
-// validateBuilding validates fields specific to Building property type (code: 256).
-// Buildings under construction require a completion forecast in YYYY-MM format.
-func (ls *listingService) validateBuilding(data listingrepository.ListingEndUpdateData) error {
-	if !data.CompletionForecast.Valid || strings.TrimSpace(data.CompletionForecast.String) == "" {
-		return utils.BadRequest("Completion forecast (YYYY-MM) is required for Building")
-	}
 	return nil
 }
 
@@ -616,6 +625,57 @@ func (ls *listingService) validateCommercialStore(data listingrepository.Listing
 		}
 	}
 	return nil
+}
+
+// validateResidentialFeatures validates that residential property types have required features.
+//
+// Features are MANDATORY for residential properties where amenities significantly impact
+// property value and buyer/renter decisions. These property types require detailed
+// feature information for accurate listing presentation and search filtering.
+//
+// Mandatory for:
+//   - Apartment (1): Multi-family residential units (bedrooms, bathrooms, garage, etc.)
+//   - House (16): Single-family residences (backyard, pool, gourmet area, etc.)
+//   - OffPlanHouse (32): Pre-construction houses (planned features and finishes)
+//
+// Optional for (not validated here):
+//   - Commercial properties (stores, offices, warehouses): features less relevant
+//   - Land properties: no built amenities to list
+//   - Buildings: aggregate property, features handled at unit level
+//
+// Parameters:
+//   - data: Complete listing snapshot with features count
+//   - propertyCode: Numeric code identifying the property type being validated
+//
+// Returns:
+//   - error: 400 Bad Request if features are missing for residential types
+//
+// Business Rule Reference:
+//   - docs/procedimento_de_criação_de_novo_anuncio.md - Section 4.5
+func (ls *listingService) validateResidentialFeatures(data listingrepository.ListingEndUpdateData, propertyCode int64) error {
+	// Residential properties must have at least one feature for listing completeness
+	if data.FeaturesCount == 0 {
+		// Provide clear error message indicating which property type requires features
+		propertyName := getPropertyTypeName(propertyCode)
+		return utils.BadRequest("Features are required for " + propertyName + " property type")
+	}
+
+	return nil
+}
+
+// getPropertyTypeName returns human-readable name for property type code.
+// Used for constructing clear validation error messages.
+func getPropertyTypeName(code int64) string {
+	switch code {
+	case int64(globalmodel.Apartment):
+		return "Apartment"
+	case int64(globalmodel.House):
+		return "House"
+	case int64(globalmodel.OffPlanHouse):
+		return "Off Plan House"
+	default:
+		return "residential"
+	}
 }
 
 func resolveListingTimezone(data listingrepository.ListingEndUpdateData) string {
