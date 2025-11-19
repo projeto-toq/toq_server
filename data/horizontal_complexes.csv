@@ -1,32 +1,32 @@
-id;name;zip_code;street;number;neighborhood;city;state;reception_phone;sector;main_registration
-1;Associação Villa Velha Residencial;06532050;Rua do Lampião;26;Alphaville;Santana de Parnaíba;SP;+551141541799;0;
-2;Residencial Valville I;06532421;Estrada de Ipanema;2805;Alphaville;Santana de Parnaíba;SP;+551141546940;0;
-3;Residencial Valville II;06532421;Estrada de Ipanema;2805;Alphaville;Santana de Parnaíba;SP;+551141546940;0;
-4;Alphaville Burle Marx;06542012;Alameda Picasso;611;Alphaville;Santana de Parnaíba;SP;;0;
-5;Alphaville Residencial 12;06540001;Avenida Yojiro Takaoka;6715;Alphaville;Santana de Parnaíba;SP;+551141532292;0;
-6;Alphaville Residencial 11;06540001;Avenida Yojiro Takaoka;6720;Alphaville;Santana de Parnaíba;SP;;0;
-7;Alphaville Residencial 10;06539005;Avenida Bom Pastor;1000;Alphaville;Santana de Parnaíba;SP;+551155539300;0;
-8;Alphaville Residencial 9;06539005;Avenida Bom Pastor;509;Alphaville;Santana de Parnaíba;SP;+551141520900;0;
-9;Alphaville Residencial 8;06541035;Avenida Altos de Alphaville;961;Alphaville;Santana de Parnaíba;SP;+551141533282;0;
-10;Alphaville Residencial 6;06541038;Avenida Dr. Yojiro Takaoka;5201;Alphaville;Santana de Parnaíba;SP;+551138102121;0;
-11;Alphaville Residencial 5;06542001;Avenida Dr. Yojiro Takaoka;4981;Alphaville;Santana de Parnaíba;SP;+551141520990;0;
-12;Alphaville Residencial 4;06542001;Avenida Dr. Yojiro Takaoka;3229;Alphaville;Santana de Parnaíba;SP;+551141534017;0;
-13;Alphaville Residencial 3;06542001;Avenida Dr. Yojiro Takaoka;2411;Alphaville;Santana de Parnaíba;SP;+551137874599;0;
-14;Alphaville Residencial 2;06454040;Alameda Mamoré;1000;Alphaville;Barueri;SP;+551121915700;0;
-15;Alphaville Residencial 1;06454000;Alameda Rio Negro;1500;Alphaville;Barueri;SP;+551120782961;0;
-16;Alphaville Residencial 0;06475270;Avenida Paiol Velho;800;Alphaville;Barueri;SP;+551141963170;0;
-17;Residencial Gênesis II;06542180;Alameda das Aroeiras;101;Alphaville;Santana de Parnaíba;SP;+551141530010;0;
-18;Residencial Gênesis I;06543600;Avenida Gêmini;1670;Alphaville;Santana de Parnaíba;SP;+551141521380;0;
-19;Tamboré 1;06460120;Avenida Ceci;100;Alphaville;Barueri;SP;+551120783116;0;
-20;Tamboré 2;06543115;Praça da China;648;Alphaville;Santana de Parnaíba;SP;+551141521310;0;
-21;Tamboré 3;06542001;Avenida Dr. Yojiro Takaoka;2430;Alphaville;Santana de Parnaíba;SP;+551141533665;0;
-22;Tamboré 10;06544515;Alameda Terras Altas;310;Alphaville;Santana de Parnaíba;SP;+551141522525;0;
-23;Tamboré 11;06543320;Avenida Honorio Alvares Penteado;1100;Alphaville;Santana de Parnaíba;SP;+551126907322;0;
-24;Residencial Itahyê;06537405;Avenida Pérola Byington;S/N;Alphaville;Santana de Parnaíba;SP;+551143218009;0;
-25;Residencial Campos do Conde;06543315;Alameda América;1100;Alphaville;Santana de Parnaíba;SP;;0;
-26;Condomínio Melville;06543200;Avenida Pacífico Sul;423;Alphaville;Santana de Parnaíba;SP;+551141534232;0;
-27;Residencial Alphaville Conde II;06473075;Avenida Sagitário ;900;Alphaville;Barueri;SP;;0;
-28;Residencial 18 Do Forte;;;;Alphaville;Barueri;SP;;0;
-29;Villa Solaia Residencial;06460121;Avenida Piraíba;520;Alphaville;Barueri;SP;+551141938888;0;
-30;Residencial Alpha Plus;06472010;Avenida Alphaville;1555;Alphaville;Barueri;SP;;0;
-31;Residencial AlphaSitio;06544300;Avenida dos Parques;351;Alphaville;Santana de Parnaíba;SP;+551141535808;0;
+id;name;zip_code;street;number;neighborhood;city;state;reception_phone;sector;main_registration;type
+1;Associação Villa Velha Residencial;06532050;Rua do Lampião;26;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+2;Residencial Valville I;06532421;Estrada de Ipanema;2805;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+3;Residencial Valville II;06532421;Estrada de Ipanema;2805;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+4;Alphaville Burle Marx;06542012;Alameda Picasso;611;Alphaville;Santana de Parnaíba;SP;;0;;112
+5;Alphaville Residencial 12;06540001;Avenida Yojiro Takaoka;6715;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+6;Alphaville Residencial 11;06540001;Avenida Yojiro Takaoka;6720;Alphaville;Santana de Parnaíba;SP;;0;;112
+7;Alphaville Residencial 10;06539005;Avenida Bom Pastor;1000;Alphaville;Santana de Parnaíba;SP;5,51156E+11;0;;112
+8;Alphaville Residencial 9;06539005;Avenida Bom Pastor;509;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+9;Alphaville Residencial 8;06541035;Avenida Altos de Alphaville;961;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+10;Alphaville Residencial 6;06541038;Avenida Dr. Yojiro Takaoka;5201;Alphaville;Santana de Parnaíba;SP;5,51138E+11;0;;112
+11;Alphaville Residencial 5;06542001;Avenida Dr. Yojiro Takaoka;4981;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+12;Alphaville Residencial 4;06542001;Avenida Dr. Yojiro Takaoka;3229;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+13;Alphaville Residencial 3;06542001;Avenida Dr. Yojiro Takaoka;2411;Alphaville;Santana de Parnaíba;SP;5,51138E+11;0;;112
+14;Alphaville Residencial 2;06454040;Alameda Mamoré;1000;Alphaville;Barueri;SP;5,51122E+11;0;;112
+15;Alphaville Residencial 1;06454000;Alameda Rio Negro;1500;Alphaville;Barueri;SP;5,51121E+11;0;;112
+16;Alphaville Residencial 0;06475270;Avenida Paiol Velho;800;Alphaville;Barueri;SP;5,51142E+11;0;;112
+17;Residencial Gênesis II;06542180;Alameda das Aroeiras;101;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+18;Residencial Gênesis I;06543600;Avenida Gêmini;1670;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+19;Tamboré 1;06460120;Avenida Ceci;100;Alphaville;Barueri;SP;5,51121E+11;0;;112
+20;Tamboré 2;06543115;Praça da China;648;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+21;Tamboré 3;06542001;Avenida Dr. Yojiro Takaoka;2430;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+22;Tamboré 10;06544515;Alameda Terras Altas;310;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+23;Tamboré 11;06543320;Avenida Honorio Alvares Penteado;1100;Alphaville;Santana de Parnaíba;SP;5,51127E+11;0;;112
+24;Residencial Itahyê;06537405;Avenida Pérola Byington;S/N;Alphaville;Santana de Parnaíba;SP;5,51143E+11;0;;112
+25;Residencial Campos do Conde;06543315;Alameda América;1100;Alphaville;Santana de Parnaíba;SP;;0;;112
+26;Condomínio Melville;06543200;Avenida Pacífico Sul;423;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112
+27;Residencial Alphaville Conde II;06473075;Avenida Sagitário ;900;Alphaville;Barueri;SP;;0;;112
+28;Residencial 18 Do Forte;;;;Alphaville;Barueri;SP;;0;;112
+29;Villa Solaia Residencial;06460121;Avenida Piraíba;520;Alphaville;Barueri;SP;5,51142E+11;0;;112
+30;Residencial Alpha Plus;06472010;Avenida Alphaville;1555;Alphaville;Barueri;SP;;0;;112
+31;Residencial AlphaSitio;06544300;Avenida dos Parques;351;Alphaville;Santana de Parnaíba;SP;5,51142E+11;0;;112

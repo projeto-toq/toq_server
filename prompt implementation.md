@@ -12,12 +12,12 @@ Isso porque o serviço que atendo ao endpoint está errado e o repository que bu
 Precisamos criar um novo modelo de dados, repository e serviços. O modelos de dados deverá ser criaddo para receber os seeds em `data/horizontal_complex_zip_codes.csv`, `data/horizontal_complexes.csv`, `data/no_complex_zip_codes.csv`, `data/vertical_complex_zip_codes.csv`, `data/vertical_complexes.csv`, `data/vertical_complex_towers.csv`, `data/vertical_complex_sizes.csv`.
 
 A regra de negócios a ser implementada para a busca de propertyTypes é a seguinte:
-- buscar pelo zipCode e number fornecidos em vertical_complexes.csv. Se encontrar, retornar os propertyTypes associados representados por type na tabela vertical_complex_sizes.csv.
-- se nÃo encontrar, buscar pelo zipCode fornecidos em horizontal_complex_zip_codes.csv. Se encontrar, retornar o propertyType associado representado por type na tabela horizontal_complexes.csv.
-- se nÃo encontrar, buscar pelo zipCode fornecidos em no_complex_zip_codes.csv. Se encontrar, retornar o propertyType associado representado por type na tabela no_complex_zip_codes.csv.
+- buscar pelo zipCode e number fornecidos em vertical_complexes.csv. Se encontrar, retornar os propertyTypes contidos no campo type e o complex contido no campo name na tabela vertical_complexes.csv.
+- se nÃo encontrar, buscar pelo zipCode fornecido em horizontal_complex_zip_codes.csv. Se encontrar, retornar o propertyType associado, representado por type na tabela horizontal_complexes.csv, e o complex contido no campo name na tabela horizontal_complexes.csv.
+- se nÃo encontrar, buscar pelo zipCode fornecido em no_complex_zip_codes.csv. Se encontrar, retornar o propertyType contido no campo type na tabela no_complex_zip_codes.csv.
 - se nÃo encontrar em nenhum dos casos, retornar um erro 404 com a mesnagem "Area not covered yet for the provided zip code and number."
 
-A resposta do deve conter além da mensagem atual:
+A resposta deve conter além da mensagem atual, o campo complex, conforme abaixo:
 ``json
 {
   "propertyTypes": [
@@ -25,10 +25,11 @@ A resposta do deve conter além da mensagem atual:
       "name": "string",
       "propertyType": 0
     }
-  ]
+  ],
+  "complexName": "string"
 }
 ```
-o nome do condomínio (name) conforme os dados retornados das tabelas.
+o complex está no campo (name) conforme os dados retornados das tabelas. Case não houver complex, retornar vazio, como no caso de no_complex_zip_codes.csv.
 
 Assim:
 1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md` e identifique a melhor forma de implementar a mudança.
@@ -40,6 +41,7 @@ Assim:
    - Ordem de Execução: etapas numeradas com dependências.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
 4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva.
+  4.1 Não se preocupe em migração de dados, o DBA cuidará disso.
 
 ---
 
