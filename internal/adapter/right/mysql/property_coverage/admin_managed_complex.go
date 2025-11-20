@@ -606,28 +606,3 @@ func (a *PropertyCoverageAdapter) GetVerticalComplexByZipNumber(ctx context.Cont
 
 	return domain, nil
 }
-
-func (a *PropertyCoverageAdapter) GetHorizontalComplexByZip(ctx context.Context, tx *sql.Tx, zipCode string) (propertycoveragemodel.ManagedComplexInterface, error) {
-	const query = `
-		SELECT hc.id, hc.name, hc.zip_code, hc.street, hc.number, hc.neighborhood, hc.city, hc.state,
-		       hc.reception_phone, hc.sector, hc.main_registration, hc.type
-		FROM horizontal_complexes hc
-		WHERE hc.zip_code = ?
-		LIMIT 1;
-	`
-
-	entity, err := a.fetchManagedComplex(ctx, tx, query, []any{zipCode}, propertycoveragemodel.CoverageKindHorizontal)
-	if err != nil {
-		return nil, err
-	}
-
-	domain := propertycoverageconverters.ManagedComplexEntityToDomain(entity)
-
-	zipCodes, err := a.listZipCodes(ctx, tx, entity.ID)
-	if err != nil {
-		return nil, err
-	}
-	domain.SetZipCodes(zipCodes)
-
-	return domain, nil
-}

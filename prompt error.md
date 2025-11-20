@@ -6,7 +6,7 @@
 
 ## 🎯 Problema / Solicitação
 
-Durante a criação de um novo listing, através do endpoint POST /listings, é executada um verificação em func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input CreateListingInput) (listing listingmodel.ListingInterface, err error) para garantir que o usuário não possua outro listing ativo para o mesmo imóvel. No entanto existe um erro nesta verificação pois a checagem é feita apenas no zipCode e number, ignorando que no mesmo zipCode/number se for um apartamento, podem haver múltiplos listings ativos em diferentes unidades.
+Durante a criação de um novo listing, através do endpoint `POST /listings`, é executada uma verificação em `func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input CreateListingInput) (listing listingmodel.ListingInterface, err error)` para garantir que o usuário não possua outro listing ativo para o mesmo imóvel. No entanto existe um erro nesta verificação pois a checagem hoje é feita apenas no zipCode e number, ignorando que no mesmo zipCode/number se for um apartamento, podem haver múltiplos listings ativos em diferentes unidades.
 Assim, a tabela abaixo, lista os tipos de imóveis e os campos que devem ser considerados na verificação de unicidade do listing ativo para o mesmo imóvel.
 
 																			duplicity by						
@@ -22,9 +22,11 @@ Commercial Land			Terreno Comercial		128		 10.000.000 						zipCode	number
 Building				Prédio					256		 100.000.000 						zipCode	number			
 Warehouse				Galpão					512		 1.000.000.000 						zipCode	number			
 
+Para tanto, o body da requisição` POST /listings` deve ser alterado para incluir campos opcionais de unidade (unit_tower, unit_floor, unit_number) e de terreno (land_block, land_lot), que dependendo do tipo de imóvel `propertyType` serão necessários ou não.
+
 
 Assim:
-1. Analise o código identifique a causa raiz do problema.
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema.
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 
