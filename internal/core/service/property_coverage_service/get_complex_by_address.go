@@ -10,7 +10,8 @@ import (
 
 // GetComplexByAddress retrieves a managed complex by its address (ZipCode + Number).
 // It searches for Vertical complexes first, then Horizontal.
-// Returns NotFoundError if no complex matches.
+// If neither is found, it checks for Standalone coverage (No Complex).
+// Returns NotFoundError only if the area is completely uncovered.
 func (s *propertyCoverageService) GetComplexByAddress(ctx context.Context, input GetComplexByAddressInput) (propertycoveragemodel.ManagedComplexInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -60,14 +61,32 @@ func (s *propertyCoverageService) GetComplexByAddress(ctx context.Context, input
 	// 2. If not found, try Horizontal Complex (ZipCode only)
 	if complex == nil {
 		complex, err = s.repository.GetHorizontalComplexByZip(ctx, tx, normalizedZip)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				return nil, utils.NotFoundError("complex")
-			}
+		if err != nil && err != sql.ErrNoRows {
 			utils.SetSpanError(ctx, err)
 			logger.Error("property_coverage.get_by_address.get_horizontal_error", "err", err, "zip_code", normalizedZip)
 			return nil, utils.InternalError("")
 		}
+	}
+
+	// 3. If still not found, try Standalone/NoComplex coverage
+	if complex == nil {
+		noComplexCoverage, err := s.repository.GetNoComplexCoverage(ctx, tx, normalizedZip)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, utils.NotFoundError("complex or coverage area")
+			}
+			utils.SetSpanError(ctx, err)
+			logger.Error("property_coverage.get_by_address.get_nocomplex_error", "err", err, "zip_code", normalizedZip)
+			return nil, utils.InternalError("")
+		}
+
+		// Create a virtual complex for standalone coverage
+		complex = propertycoveragemodel.NewManagedComplex()
+		complex.SetKind(propertycoveragemodel.CoverageKindStandalone)
+		complex.SetPropertyTypes(noComplexCoverage.PropertyTypes())
+		complex.SetZipCode(normalizedZip)
+		complex.SetNumber(number)
+		// ID remains 0, Name remains empty to indicate no specific complex
 	}
 
 	if commitErr := s.globalService.CommitTransaction(ctx, tx); commitErr != nil {

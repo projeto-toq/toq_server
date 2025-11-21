@@ -2,45 +2,40 @@ package listingservices
 
 import (
 	"context"
-	"errors"
 	"strings"
 
-	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
-func (ls *listingService) GetOptions(ctx context.Context, zipCode string, number string) (result listingmodel.PropertyOptionsResult, err error) {
+// GetOptions retrieves the full complex details or coverage options for a given address.
+// It delegates to PropertyCoverageService.GetComplexByAddress to handle both complex and standalone scenarios.
+func (ls *listingService) GetOptions(ctx context.Context, zipCode string, number string) (propertycoveragemodel.ManagedComplexInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return result, utils.InternalError("")
+		return nil, utils.InternalError("")
 	}
 	defer spanEnd()
 
 	zipCandidate := strings.TrimSpace(zipCode)
 	normalizedZip, normErr := validators.NormalizeCEP(zipCandidate)
 	if normErr != nil {
-		return result, utils.ValidationError("zipCode", "Zip code must contain exactly 8 digits without separators.")
+		return nil, utils.ValidationError("zipCode", "Zip code must contain exactly 8 digits without separators.")
 	}
 	zipCode = normalizedZip
 	number = strings.TrimSpace(number)
 
-	coverage, err := ls.propertyCoverage.ResolvePropertyTypes(ctx, propertycoveragemodel.ResolvePropertyTypesInput{
+	// Delegate to PropertyCoverageService which now handles Vertical, Horizontal and Standalone cases
+	complex, err := ls.propertyCoverage.GetComplexByAddress(ctx, propertycoverageservice.GetComplexByAddressInput{
 		ZipCode: zipCode,
 		Number:  number,
 	})
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		var domainErr utils.DomainError
-		if errors.As(err, &domainErr) {
-			return result, utils.WrapDomainErrorWithSource(domainErr)
-		}
-		return result, utils.InternalError("")
+		return nil, err
 	}
 
-	result.PropertyTypes = ls.DecodePropertyTypes(ctx, coverage.PropertyTypes)
-	result.ComplexName = coverage.ComplexName
-
-	return result, nil
+	return complex, nil
 }

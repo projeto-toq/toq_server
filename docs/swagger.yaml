@@ -1475,15 +1475,6 @@ definitions:
     - number
     - zipCode
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse:
-    properties:
-      complexName:
-        type: string
-      propertyTypes:
-        items:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption'
-        type: array
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLRequest:
     properties:
       variant:
@@ -2360,13 +2351,6 @@ definitions:
         type: string
       success:
         type: boolean
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption:
-    properties:
-      name:
-        type: string
-      propertyType:
-        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RefreshTokenRequest:
     properties:
@@ -6854,44 +6838,6 @@ paths:
       summary: Validate CPF
       tags:
       - Authentication
-  /complex:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves full complex details (including towers, sizes, and zip
-        codes) based on ZipCode and Number.
-      parameters:
-      - description: Complex zip code
-        in: query
-        name: zipCode
-        required: true
-        type: string
-      - description: Complex street number
-        in: query
-        name: number
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      summary: Get complex details by address
-      tags:
-      - Complex
   /listings:
     get:
       description: Retrieves a paginated list of active listing versions (versions
@@ -7518,7 +7464,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Get available property types for listings based on location
+      description: Get available property types and full complex details (if applicable)
+        based on location.
       parameters:
       - description: Location data for listing options
         in: body
@@ -7532,7 +7479,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse'
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse'
         "400":
           description: Invalid request format
           schema:
@@ -7546,7 +7493,7 @@ paths:
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "404":
-          description: Complex not found
+          description: Coverage not found
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
         "500":
@@ -7555,7 +7502,7 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get listing options
+      summary: Get listing options and complex details
       tags:
       - Listings
   /listings/photo-session/cancel:

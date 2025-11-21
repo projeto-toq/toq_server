@@ -11,7 +11,7 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 
 ## Fluxo de Criação
 
-1 - POST `/listings/options` - Buscar as opções de imovel possíveis no cep/numero
+1 - POST `/listings/options` - Buscar as opções de imóvel possíveis e dados completos do condomínio (se houver) no cep/número
 
 2 - POST `/listings` - Cria o anuncio com as informações básicas com `StatusDraft`
 	2.1 - Cria automaticamente a **listing identity** (UUID) e a primeira **versão** (v1)
@@ -24,7 +24,7 @@ O sistema utiliza **versionamento de listings** para preservar o histórico e pe
 	3.3 - Atualiza a versão draft atual (v1 ou versão draft criada posteriormente)
 	3.4 - Utilizar GET `/listings/catalog` para obter Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type, land_terrain_type, warehouse_sector.
 	3.5 - Utilizar GET `/listings/features/base` para obter as features possíveis de serem incluídas
-	3.6 - Utilizar GET `/complex` para obter os dados do condomínio (tamanhos, torres, etc) a partir do CEP e número.
+	3.6 - Utilizar POST `/listings/options` para obter os dados do condomínio (tamanhos, torres, etc) a partir do CEP e número.
 	
 	3.7 - **Campos do Body do UpdateListingRequest**:
 	

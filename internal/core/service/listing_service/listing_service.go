@@ -4,6 +4,7 @@ import (
 	"context"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
@@ -45,7 +46,7 @@ func NewListingService(
 }
 
 type ListingServiceInterface interface {
-	GetOptions(ctx context.Context, zipCode string, number string) (result listingmodel.PropertyOptionsResult, err error)
+	GetOptions(ctx context.Context, zipCode string, number string) (propertycoveragemodel.ManagedComplexInterface, error)
 	GetBaseFeatures(ctx context.Context) (features []listingmodel.BaseFeatureInterface, err error)
 	CreateListing(ctx context.Context, input CreateListingInput) (listing listingmodel.ListingInterface, err error)
 	CreateDraftVersion(ctx context.Context, input CreateDraftVersionInput) (CreateDraftVersionOutput, error)

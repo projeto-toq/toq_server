@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	adminhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/admin_handlers"
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
-	complexhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/complex_handlers"
 	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
@@ -62,7 +61,6 @@ func SetupRoutes(
 	userHandler := handlers.UserHandler
 	listingHandler := handlers.ListingHandler
 	adminHandler := handlers.AdminHandler
-	complexHandler := handlers.ComplexHandler
 	scheduleHandler := handlers.ScheduleHandler
 	holidayHandler := handlers.HolidayHandler
 	photoSessionHandler := handlers.PhotoSessionHandler
@@ -82,9 +80,6 @@ func SetupRoutes(
 
 	// Register admin routes with dependencies
 	RegisterAdminRoutes(v1, adminHandler, holidayHandler, activityTracker, permissionService)
-
-	// Register complex routes (authenticated)
-	RegisterComplexRoutes(v1, complexHandler, activityTracker, permissionService)
 
 	// Register schedule routes (authenticated)
 	RegisterScheduleRoutes(v1, scheduleHandler, activityTracker, permissionService)
@@ -539,20 +534,5 @@ func RegisterAdminRoutes(
 		holidayGroup.POST("/dates/detail", holidayHandler.GetCalendarDateDetail)
 		holidayGroup.GET("/dates", holidayHandler.ListCalendarDates)
 		holidayGroup.DELETE("/dates", holidayHandler.DeleteCalendarDate)
-	}
-}
-
-// RegisterComplexRoutes configura rotas autenticadas relacionadas aos empreendimentos.
-func RegisterComplexRoutes(
-	router *gin.RouterGroup,
-	complexHandler *complexhandlers.ComplexHandler,
-	activityTracker *goroutines.ActivityTracker,
-	permissionService permissionservice.PermissionServiceInterface,
-) {
-	complex := router.Group("/complex")
-	complex.Use(middlewares.AuthMiddleware(activityTracker))
-	complex.Use(middlewares.PermissionMiddleware(permissionService))
-	{
-		complex.GET("", complexHandler.GetComplexByAddress)
 	}
 }

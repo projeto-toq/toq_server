@@ -6,8 +6,16 @@
 
 ## 🎯 Problema / Solicitação
 
-o endpoint de POST `/listings` tem o campo complex que é extremamente necessário para o funcionamento correto do sistema, porém este campo não pode ser onrig
+o endpoint de POST `/listings` tem o campo complex que é extremamente necessário para o permitir buscas de listing por complex, porém este campo não pode ser obrigatório, pois existem listings que não pertencem a complexos.
+Adicionalmente existem campos de building_floors, unit_tower, unit_floor e unit_number que também são necessários para listings que pertencem a complexos, mas que podem não estar sendo validados corretamente no momento da criação do listing.
 
+Assim, é necessário que durante a criação de listing, seja:
+- efetuada a verificação do zip_code fornecido, através do adapter `internal/adapter/right/cep`, para confirmar os dados de endereço passados pelo usuário; os dados obtidos do cep se sobrepoe a quaisquer dados de endereço fornecidos, com exceção de complement e neighborhood;
+- em seguida efetuar a busca do complex associado ao zip_code e number, se existir, através do `GetComplexByAddress(ctx context.Context, input GetComplexByAddressInput) (propertycoveragemodel.ManagedComplexInterface, error)`;
+- com os dados do complex obtidos, confirmar se complex foi populado e se foi populado corretamente;
+    - verificar se os campos building_floors, unit_tower, unit_floor e unit_number são coerentes com os dados do complex;
+
+    
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).

@@ -5043,62 +5043,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/complex": {
-            "get": {
-                "description": "Retrieves full complex details (including towers, sizes, and zip codes) based on ZipCode and Number.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Complex"
-                ],
-                "summary": "Get complex details by address",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Complex zip code",
-                        "name": "zipCode",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Complex street number",
-                        "name": "number",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/listings": {
             "get": {
                 "security": [
@@ -6003,7 +5947,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get available property types for listings based on location",
+                "description": "Get available property types and full complex details (if applicable) based on location.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6013,7 +5957,7 @@ const docTemplate = `{
                 "tags": [
                     "Listings"
                 ],
-                "summary": "Get listing options",
+                "summary": "Get listing options and complex details",
                 "parameters": [
                     {
                         "description": "Location data for listing options",
@@ -6029,7 +5973,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse"
                         }
                     },
                     "400": {
@@ -6051,7 +5995,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Complex not found",
+                        "description": "Coverage not found",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -11097,20 +11041,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetOptionsResponse": {
-            "type": "object",
-            "properties": {
-                "complexName": {
-                    "type": "string"
-                },
-                "propertyTypes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption"
-                    }
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetPhotoDownloadURLRequest": {
             "type": "object",
             "required": [
@@ -12365,17 +12295,6 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PropertyTypeOption": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "propertyType": {
-                    "type": "integer"
                 }
             }
         },
