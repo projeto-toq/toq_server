@@ -6,72 +6,18 @@
 
 ## 🎯 Problema / Solicitação
 
-O endpoint POST `/listings/options` deve juntar a função do endpoint GET `/complex`, e este último de ve ser removido.
-
-O endpoint POST `/listings/options` que tem como resposta 
+Porque estou recebendo este erro na inicialização do toq_server:
 ```json
-{
-  "complexName": "string",
-  "propertyTypes": [
-    {
-      "name": "string",
-      "propertyType": 0
-    }
-  ]
-}
+{"time":"2025-11-21T13:31:42.364169727Z","level":"INFO","msg":"✅ Handlers HTTP preparados para criação"}
+{"time":"2025-11-21T13:31:42.36393563Z","level":"WARN","msg":"MediaProcessing repository not available - service will be nil"}
+{"time":"2025-11-21T13:31:42.364414963Z","level":"INFO","msg":"Creating HTTP handlers"}
 ```
-
-deve passar a responder 
-```json
-{
-  "city": "string",
-  "coverageType": "string",
-  "id": 0,
-  "mainRegistration": "string",
-  "name": "string",
-  "neighborhood": "string",
-  "number": "string",
-  "phoneNumber": "string",
-  "propertyType": 0,
-  "sector": 0,
-  "sizes": [
-    {
-      "complexId": 0,
-      "description": "string",
-      "id": 0,
-      "size": 0
-    }
-  ],
-  "state": "string",
-  "street": "string",
-  "towers": [
-    {
-      "complexId": 0,
-      "floors": 0,
-      "id": 0,
-      "totalUnits": 0,
-      "tower": "string",
-      "unitsPerFloor": 0
-    }
-  ],
-  "zipCode": "string",
-  "zipCodes": [
-    {
-      "complexId": 0,
-      "id": 0,
-      "zipCode": "string"
-    }
-  ]
-}
-```
-
-que a tual resposta de GET `/complex`.
 
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema.
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
-3. Todo o código morto relacionado ao endpoint GET `/complex` deve ser removido. incluindo handlers, services, repositories, entidades, DTOs, conversores, etc e seus diretórios.
+
 
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**

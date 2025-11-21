@@ -13,9 +13,9 @@
 - garantir que seja possível alterar listing ainda antes da publicaçao, garantindo a verificação de agenda e fotos
 - get_listing_for_end_update.go listi_liting não está utilizando converters e está fazendo a conversão diretaenteme no arquivo, sem entity
 - listing_catalog.go tem vários funs no mesmo arquivo
-- o repositório de listing está totalmente dofora dao prã de listing, sem converters, sem entity, func chamando func no próprio repositorio
+- o repositório de listing está totalmente fora do padrão de listing, sem converters, sem entity, func chamando func no próprio repositorio
 - service_areas_repo está com várias funcs no mesmo arquivo
-- repo de session tem outra interface dentro e nÃo segue o padrão
+- repo de session tem outra interface dentro e não segue o padrão
 - necessário criar CRUD /schedules/listing/entries para criar editar entradas de agenda
     - corretor ao pedir visita, cria uma entrada de agenda
     - proprietário dono no listing pode criar entradas de agenda
@@ -31,10 +31,9 @@
 - tem que haver uso de audit no login/bloqueio/desbloquio de usuário
 - audit está otimizado?
 - criar endpoint para que o proprietário possa fazer upload da planta da casa em construção de um listing, evitando assim o passo de fotos
-- alterar o endpoint de criação de listing, incluíndo os campos opcionais a serem preenchido de acordo com o propertytype
+- Depois de selecionar dia/horário do fotógrafo, a tela mostra um card com o fotógrafo, porém sem foto de rosto e com poucos dados de identificação.
+    Necessário popular endpoint de confirmação da sessão de fotos com dados/foto do fotógrado.
 
-
-- Segundo é ao promover uma versão o status mudar para PENDING_AVAILIABITY, só que ao mandar os dados de agenda do proprietário, retorna que o imóvel já foi criada e que esse passo deveria ter sido feito antes disso.
 - contar tempo do envio do pedido de visitas até aceite/recusa do proprietário.
     Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis
 

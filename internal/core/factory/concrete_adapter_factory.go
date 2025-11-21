@@ -46,6 +46,7 @@ import (
 	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
 	mysqlholidayadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday"
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
+	mysqlmediaprocessingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/media_processing"
 	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
 	mysqlphotosessionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/photo_session"
 	mysqlpropertycoverageadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/property_coverage"
@@ -237,6 +238,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Permission Repository
 	permissionRepo := mysqlpermissionadapter.NewPermissionAdapter(database, metrics)
 
+	// Media Processing Repository
+	mediaProcessingRepo := mysqlmediaprocessingadapter.NewMediaProcessingAdapter(database, metrics)
+
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
@@ -244,7 +248,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 		Global:           globalRepo,
 		PropertyCoverage: propertyCoverageRepo,
 		Listing:          listingRepo,
-		MediaProcessing:  nil,
+		MediaProcessing:  mediaProcessingRepo,
 		Holiday:          holidayRepo,
 		Schedule:         scheduleRepo,
 		Visit:            visitRepo,

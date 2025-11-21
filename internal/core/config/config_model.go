@@ -217,6 +217,7 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 		PhotoSession:     repositories.PhotoSession,
 		Session:          repositories.Session,
 		Permission:       repositories.Permission,
+		MediaProcessing:  repositories.MediaProcessing,
 	}
 
 	slog.Info("Repository adapters assigned successfully")
