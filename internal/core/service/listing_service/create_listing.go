@@ -3,8 +3,8 @@ package listingservices
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -26,6 +26,12 @@ type CreateListingInput struct {
 	Neighborhood *string
 	Complement   *string
 	PropertyType globalmodel.PropertyType
+	Complex      *string
+	UnitTower    *string
+	UnitFloor    *int16
+	UnitNumber   *string
+	LandBlock    *string
+	LandLot      *string
 }
 
 func (ls *listingService) CreateListing(ctx context.Context, input CreateListingInput) (listing listingmodel.ListingInterface, err error) {
@@ -85,32 +91,18 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 	number := strings.TrimSpace(input.Number)
 	propertyType := input.PropertyType
 
-	exist := true
-	// // Check if user already has an active listing
-	// hasActiveListing, checkErr := ls.listingRepository.CheckActiveListingExists(ctx, tx, userID)
-	// if checkErr != nil {
-	// 	utils.SetSpanError(ctx, checkErr)
-	// 	logger.Error("listing.create.check_active_error", "err", checkErr, "user_id", userID)
-	// 	return nil, utils.InternalError("")
-	// }
-	// if hasActiveListing {
-	// 	return nil, utils.ConflictError("User already has an active listing")
-	// }
+	// Check if listing already exists for this address/unit/lot
+	criteria := ls.buildDuplicityCriteria(zipCode, number, input)
 
-	// Check if listing already exists for this address
-	_, err = ls.listingRepository.GetListingVersionByAddress(ctx, tx, zipCode, number)
+	exists, err := ls.listingRepository.CheckDuplicity(ctx, tx, criteria)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			exist = false
-		} else {
-			utils.SetSpanError(ctx, err)
-			logger.Error("listing.create.check_address_error", "err", err, "zip", zipCode, "number", number)
-			return nil, utils.InternalError("")
-		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.create.check_duplicity_error", "err", err, "criteria", criteria)
+		return nil, utils.InternalError("")
 	}
 
-	if exist {
-		return nil, utils.ConflictError("Listing already exists for this address")
+	if exists {
+		return nil, utils.ConflictError("Listing already exists for this address/unit")
 	}
 
 	coverage, err := ls.propertyCoverage.ResolvePropertyTypes(ctx, propertycoveragemodel.ResolvePropertyTypesInput{
@@ -176,6 +168,24 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 	listing.SetNeighborhood(neighborhood)
 	listing.SetCity(cepCity)
 	listing.SetState(cepState)
+
+	// save the criteria info
+	if criteria.UnitTower != nil {
+		listing.SetUnitTower(strings.TrimSpace(*criteria.UnitTower))
+	}
+	if criteria.UnitFloor != nil {
+		listing.SetUnitFloor(*criteria.UnitFloor)
+	}
+	if criteria.UnitNumber != nil {
+		listing.SetUnitNumber(strings.TrimSpace(*criteria.UnitNumber))
+	}
+	if criteria.LandBlock != nil {
+		listing.SetLandBlock(strings.TrimSpace(*criteria.LandBlock))
+	}
+	if criteria.LandLot != nil {
+		listing.SetLandLot(strings.TrimSpace(*criteria.LandLot))
+	}
+
 	listing.SetDeleted(false)
 
 	if identityErr := ls.listingRepository.CreateListingIdentity(ctx, tx, listing); identityErr != nil {
@@ -226,4 +236,64 @@ func (ls *listingService) isPropertyTypeAllowed(ctx context.Context, allowedType
 	}
 
 	return false, nil
+}
+
+// buildDuplicityCriteria constructs the criteria ensuring only relevant fields are set based on PropertyType.
+// It strictly follows the rules defined in duplicity_criteria.md.
+func (ls *listingService) buildDuplicityCriteria(zipCode, number string, input CreateListingInput) listingmodel.DuplicityCriteria {
+	criteria := listingmodel.DuplicityCriteria{
+		ZipCode: zipCode,
+		Number:  number,
+	}
+
+	// Helper to treat empty strings as nil
+	toPtr := func(s *string) *string {
+		if s == nil {
+			return nil
+		}
+		trimmed := strings.TrimSpace(*s)
+		if trimmed == "" {
+			return nil
+		}
+		return &trimmed
+	}
+
+	switch input.PropertyType {
+	case globalmodel.Apartment, globalmodel.Suite:
+		// Checks: UnitTower, UnitFloor, UnitNumber
+		criteria.UnitTower = toPtr(input.UnitTower)
+		if input.UnitFloor != nil {
+			s := strconv.Itoa(int(*input.UnitFloor))
+			criteria.UnitFloor = &s
+		}
+		criteria.UnitNumber = toPtr(input.UnitNumber)
+
+	case globalmodel.CommercialStore:
+		// Checks: UnitNumber only
+		criteria.UnitNumber = toPtr(input.UnitNumber)
+
+	case globalmodel.CommercialFloor:
+		// Checks: UnitTower, UnitFloor (Ignores UnitNumber)
+		criteria.UnitTower = toPtr(input.UnitTower)
+		if input.UnitFloor != nil {
+			s := strconv.Itoa(int(*input.UnitFloor))
+			criteria.UnitFloor = &s
+		}
+
+	case globalmodel.ResidencialLand:
+		// Checks: LandBlock, LandLot (Ignores UnitNumber)
+		criteria.LandBlock = toPtr(input.LandBlock)
+		criteria.LandLot = toPtr(input.LandLot)
+
+	case globalmodel.House, globalmodel.OffPlanHouse, globalmodel.CommercialLand, globalmodel.Building, globalmodel.Warehouse:
+		// Checks: ZipCode + Number ONLY.
+		// No additional fields are checked for these types.
+
+	default:
+		// Fallback: If a new type is added but not mapped, we default to strict Zip+Number check
+		// to avoid accidental duplicates, or we could log a warning.
+		// For now, no extra criteria added.
+	}
+
+	return criteria
 }

@@ -62,6 +62,7 @@ type ListingRepoPortInterface interface {
 
 	// New methods for version workflow
 	CheckActiveListingExists(ctx context.Context, tx *sql.Tx, userID int64) (bool, error)
+	CheckDuplicity(ctx context.Context, tx *sql.Tx, criteria listingmodel.DuplicityCriteria) (bool, error)
 	GetListingVersionByAddress(ctx context.Context, tx *sql.Tx, zipCode, number string) (listingmodel.ListingInterface, error)
 	GetActiveListingVersion(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (listingmodel.ListingInterface, error)
 	GetPreviousActiveVersionStatus(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (listingmodel.ListingStatus, error)

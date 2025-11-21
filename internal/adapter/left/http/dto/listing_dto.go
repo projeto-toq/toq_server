@@ -176,6 +176,14 @@ type StartListingRequest struct {
 	Street       string  `json:"street" binding:"required"`
 	ZipCode      string  `json:"zipCode" binding:"required" example:"06543001" description:"Zip code without separators (8 digits)."`
 	PropertyType int     `json:"propertyType" binding:"required"`
+
+	// New fields for duplicity check
+	Complex    *string `json:"complex,omitempty"`
+	UnitTower  *string `json:"unitTower,omitempty"`
+	UnitFloor  *int16  `json:"unitFloor,omitempty"`
+	UnitNumber *string `json:"unitNumber,omitempty"`
+	LandBlock  *string `json:"landBlock,omitempty"`
+	LandLot    *string `json:"landLot,omitempty"`
 }
 
 // StartListingResponse represents response for starting a new listing

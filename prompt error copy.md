@@ -6,28 +6,7 @@
 
 ## 🎯 Problema / Solicitação
 
-AO chamar o endpoint GET `/complex?zipCode=06540400&number=255` é retornado o seguinte:
-
-```json
-{
-    "code": 404,
-    "details": null,
-    "message": "complex not found"
-}
-```
-Entretanto o CEP 06540400 existe
-
-```toq_db.horizontal_complex_zip_codes
-# id	horizontal_complex_id	zip_code
-75	6	06540400
-```
-
-```toq_db.horizontal_complexes
-# id	name	zip_code	street	number	neighborhood	city	state	reception_phone	sector	main_registration	type
-6	Alphaville Residencial 11	06540001	Avenida Yojiro Takaoka	6720	Alphaville	Santana de Parnaíba	SP		0		112
-```
-e portanto deveria retornar o complexo horizontal associado. 
-Creio que a busca está sendo restrita a complex vertical, quando deveria ser complexo horizontal também.
+o endpoint de POST `/listings` tem o campo complex que é extremamente necessário para o funcionamento correto do sistema, porém este campo não pode ser onrig
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.

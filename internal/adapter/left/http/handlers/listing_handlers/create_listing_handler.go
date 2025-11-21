@@ -60,6 +60,12 @@ func (lh *ListingHandler) StartListing(c *gin.Context) {
 		Neighborhood: request.Neighborhood,
 		Complement:   request.Complement,
 		PropertyType: globalmodel.PropertyType(request.PropertyType),
+		Complex:      request.Complex,
+		UnitTower:    request.UnitTower,
+		UnitFloor:    request.UnitFloor,
+		UnitNumber:   request.UnitNumber,
+		LandBlock:    request.LandBlock,
+		LandLot:      request.LandLot,
 	}
 
 	listing, err := lh.listingService.CreateListing(ctx, input)

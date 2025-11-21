@@ -12879,6 +12879,16 @@ const docTemplate = `{
                 "complement": {
                     "type": "string"
                 },
+                "complex": {
+                    "description": "New fields for duplicity check",
+                    "type": "string"
+                },
+                "landBlock": {
+                    "type": "string"
+                },
+                "landLot": {
+                    "type": "string"
+                },
                 "neighborhood": {
                     "type": "string"
                 },
@@ -12892,6 +12902,15 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "street": {
+                    "type": "string"
+                },
+                "unitFloor": {
+                    "type": "integer"
+                },
+                "unitNumber": {
+                    "type": "string"
+                },
+                "unitTower": {
                     "type": "string"
                 },
                 "zipCode": {

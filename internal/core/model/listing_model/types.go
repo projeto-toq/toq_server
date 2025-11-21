@@ -1,6 +1,22 @@
 package listingmodel
 
-import "strconv"
+import (
+	"strconv"
+
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+)
+
+// DuplicityCriteria defines the criteria for checking listing duplicity.
+type DuplicityCriteria struct {
+	ZipCode      string
+	Number       string
+	PropertyType globalmodel.PropertyType
+	UnitTower    *string
+	UnitFloor    *string
+	UnitNumber   *string
+	LandBlock    *string
+	LandLot      *string
+}
 
 // ListingIdentityID representa o identificador lógico (listing_identities.id).
 type ListingIdentityID uint64

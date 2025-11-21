@@ -35,7 +35,8 @@
 
 
 - Segundo é ao promover uma versão o status mudar para PENDING_AVAILIABITY, só que ao mandar os dados de agenda do proprietário, retorna que o imóvel já foi criada e que esse passo deveria ter sido feito antes disso.
-- admin pode deletar usuario nãoa system? não deveria
+- contar tempo do envio do pedido de visitas até aceite/recusa do proprietário.
+    Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis
 
 ## Resolvidos
  - O primeiro ao promover uma versão, ele tá usando a informação de id da entidade do imóvel e não listingIdentityId.==> está correto o código
