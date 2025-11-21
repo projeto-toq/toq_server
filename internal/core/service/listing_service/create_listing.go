@@ -12,6 +12,7 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
+	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -82,6 +83,7 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 		return nil, uidErr
 	}
 
+	// 1. Normalize ZipCode
 	zipCode := strings.TrimSpace(input.ZipCode)
 	normalizedZip, normErr := validators.NormalizeCEP(zipCode)
 	if normErr != nil {
@@ -89,23 +91,15 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 	}
 	zipCode = normalizedZip
 	number := strings.TrimSpace(input.Number)
-	propertyType := input.PropertyType
 
-	// Check if listing already exists for this address/unit/lot
-	criteria := ls.buildDuplicityCriteria(zipCode, number, input)
-
-	exists, err := ls.listingRepository.CheckDuplicity(ctx, tx, criteria)
+	// 2. Fetch Address from CEP Adapter (Source of Truth)
+	cepAddress, err := ls.gsi.GetCEP(ctx, zipCode)
 	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("listing.create.check_duplicity_error", "err", err, "criteria", criteria)
-		return nil, utils.InternalError("")
+		return nil, err
 	}
 
-	if exists {
-		return nil, utils.ConflictError("Listing already exists for this address/unit")
-	}
-
-	coverage, err := ls.propertyCoverage.ResolvePropertyTypes(ctx, propertycoveragemodel.ResolvePropertyTypesInput{
+	// 3. Get Complex by Address (Coverage & Rules)
+	complex, err := ls.propertyCoverage.GetComplexByAddress(ctx, propertycoverageservice.GetComplexByAddressInput{
 		ZipCode: zipCode,
 		Number:  number,
 	})
@@ -113,18 +107,37 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 		return nil, err
 	}
 
-	//check if the propertyType is allowed
-	allowed, err := ls.isPropertyTypeAllowed(ctx, coverage.PropertyTypes, propertyType)
+	// 4. Validate Property Type Allowance
+	allowed, err := ls.isPropertyTypeAllowed(ctx, complex.PropertyTypes(), input.PropertyType)
 	if err != nil {
-		return
+		return nil, err
 	}
 	if !allowed {
-		logger := utils.LoggerFromContext(ctx)
-		logger.Warn("listing.create.not_allowed_property_type", "zip", zipCode, "number", number, "property_type", propertyType)
-		return nil, utils.BadRequest("Property type not allowed for this area")
+		logger.Warn("listing.create.not_allowed_property_type", "zip", zipCode, "number", number, "property_type", input.PropertyType)
+		return nil, utils.BadRequest("Property type not allowed for this area/complex")
 	}
 
-	//create a new code for the listing in the sequence
+	// 5. Validate Complex Specific Rules (Towers, Floors)
+	// Only if it is a managed complex (not standalone)
+	if complex.Kind() != propertycoveragemodel.CoverageKindStandalone {
+		if err := ls.validateComplexRules(ctx, complex, input); err != nil {
+			return nil, err
+		}
+	}
+
+	// 6. Check Duplicity
+	criteria := ls.buildDuplicityCriteria(zipCode, number, input)
+	exists, err := ls.listingRepository.CheckDuplicity(ctx, tx, criteria)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.create.check_duplicity_error", "err", err, "criteria", criteria)
+		return nil, utils.InternalError("")
+	}
+	if exists {
+		return nil, utils.ConflictError("Listing already exists for this address/unit")
+	}
+
+	// 7. Create Listing Entity
 	code, err := ls.listingRepository.GetListingCode(ctx, tx)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -139,66 +152,64 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 	listing.SetStatus(listingmodel.StatusDraft)
 	listing.SetZipCode(zipCode)
 	listing.SetNumber(number)
-	listing.SetListingType(propertyType)
+	listing.SetListingType(input.PropertyType)
 
-	//recover the address from the zipCode and number
-	address, err := ls.gsi.GetCEP(ctx, zipCode)
-	if err != nil {
-		return
-	}
+	// Overwrite address with CEP data
+	listing.SetStreet(strings.TrimSpace(cepAddress.GetStreet()))
+	listing.SetCity(strings.TrimSpace(cepAddress.GetCity()))
+	listing.SetState(strings.TrimSpace(cepAddress.GetState()))
 
-	cepStreet := strings.TrimSpace(address.GetStreet())
-	cepCity := strings.TrimSpace(address.GetCity())
-	cepState := strings.TrimSpace(address.GetState())
-	cepNeighborhood := strings.TrimSpace(address.GetNeighborhood())
-	cepComplement := strings.TrimSpace(address.GetComplement())
-
-	neighborhood := cepNeighborhood
+	// Use input for Neighborhood/Complement if provided, else CEP
+	neighborhood := strings.TrimSpace(cepAddress.GetNeighborhood())
 	if input.Neighborhood != nil {
 		neighborhood = strings.TrimSpace(*input.Neighborhood)
 	}
+	listing.SetNeighborhood(neighborhood)
 
-	complement := cepComplement
+	complement := strings.TrimSpace(cepAddress.GetComplement())
 	if input.Complement != nil {
 		complement = strings.TrimSpace(*input.Complement)
 	}
-
-	listing.SetStreet(cepStreet)
 	listing.SetComplement(complement)
-	listing.SetNeighborhood(neighborhood)
-	listing.SetCity(cepCity)
-	listing.SetState(cepState)
 
-	// save the criteria info
+	// Set Unit/Land details from criteria
 	if criteria.UnitTower != nil {
-		listing.SetUnitTower(strings.TrimSpace(*criteria.UnitTower))
+		listing.SetUnitTower(*criteria.UnitTower)
 	}
 	if criteria.UnitFloor != nil {
 		listing.SetUnitFloor(*criteria.UnitFloor)
 	}
 	if criteria.UnitNumber != nil {
-		listing.SetUnitNumber(strings.TrimSpace(*criteria.UnitNumber))
+		listing.SetUnitNumber(*criteria.UnitNumber)
 	}
 	if criteria.LandBlock != nil {
-		listing.SetLandBlock(strings.TrimSpace(*criteria.LandBlock))
+		listing.SetLandBlock(*criteria.LandBlock)
 	}
 	if criteria.LandLot != nil {
-		listing.SetLandLot(strings.TrimSpace(*criteria.LandLot))
+		listing.SetLandLot(*criteria.LandLot)
 	}
 
 	listing.SetDeleted(false)
 
+	// 8. Persist Identity
 	if identityErr := ls.listingRepository.CreateListingIdentity(ctx, tx, listing); identityErr != nil {
 		utils.SetSpanError(ctx, identityErr)
 		logger.Error("listing.create.create_identity_error", "err", identityErr)
 		return nil, utils.InternalError("")
 	}
 
+	// 9. Create Version
 	activeVersion := listing.ActiveVersion()
 	activeVersion.SetListingIdentityID(listing.IdentityID())
 	activeVersion.SetListingUUID(listing.UUID())
-	if coverage.ComplexName != "" {
-		activeVersion.SetComplex(coverage.ComplexName)
+
+	// Determine Complex Name: System > User Input
+	complexName := strings.TrimSpace(complex.Name())
+	if complexName == "" && input.Complex != nil {
+		complexName = strings.TrimSpace(*input.Complex)
+	}
+	if complexName != "" {
+		activeVersion.SetComplex(complexName)
 	}
 
 	if versionErr := ls.listingRepository.CreateListingVersion(ctx, tx, activeVersion); versionErr != nil {
@@ -221,6 +232,53 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 	}
 
 	return
+}
+
+// validateComplexRules checks if the input unit details match the complex configuration.
+// If the complex configuration is incomplete (e.g., no towers defined), it accepts the user input.
+func (ls *listingService) validateComplexRules(ctx context.Context, complex propertycoveragemodel.ManagedComplexInterface, input CreateListingInput) error {
+	// Only validate for types that require unit details
+	if input.PropertyType != globalmodel.Apartment && input.PropertyType != globalmodel.CommercialFloor {
+		return nil
+	}
+
+	towers := complex.Towers()
+
+	// Fallback: If the complex has no towers defined in the system, we cannot validate.
+	// In this case, we trust the user input and return success.
+	if len(towers) == 0 {
+		return nil
+	}
+
+	// If the complex HAS towers defined, the user MUST provide a valid one.
+	if input.UnitTower == nil {
+		return utils.ValidationError("unit_tower", "Tower is required for this complex")
+	}
+	inputTower := strings.TrimSpace(*input.UnitTower)
+
+	var foundTower propertycoveragemodel.VerticalComplexTowerInterface
+	for _, t := range towers {
+		if strings.EqualFold(t.Tower(), inputTower) {
+			foundTower = t
+			break
+		}
+	}
+
+	if foundTower == nil {
+		// Strict validation: Tower must exist if towers are mapped.
+		return utils.ValidationError("unit_tower", "Tower not found in this complex")
+	}
+
+	// Validate Floor if provided and if the tower has a limit
+	if input.UnitFloor != nil {
+		floor := int(*input.UnitFloor)
+		// Only validate max floor if the system has this data
+		if foundTower.Floors() != nil && *foundTower.Floors() > 0 && floor > *foundTower.Floors() {
+			return utils.ValidationError("unit_floor", "Floor exceeds the tower limit")
+		}
+	}
+
+	return nil
 }
 
 func (ls *listingService) isPropertyTypeAllowed(ctx context.Context, allowedTypes globalmodel.PropertyType, propertyType globalmodel.PropertyType) (allow bool, err error) {
