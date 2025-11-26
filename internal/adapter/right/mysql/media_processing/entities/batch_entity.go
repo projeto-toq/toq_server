@@ -2,19 +2,22 @@ package mediaprocessingentities
 
 import (
 	"database/sql"
-	"time"
+	"encoding/json"
 )
 
 // BatchEntity espelha a tabela listing_media_batches.
+// Mapeamento estrito 1:1 com o banco de dados.
 type BatchEntity struct {
-	ID              uint64
-	ListingID       uint64
-	Reference       string
-	Status          string
-	StatusMessage   sql.NullString
-	StatusReason    sql.NullString
-	StatusDetails   sql.NullString
-	StatusUpdatedBy uint64
-	StatusUpdatedAt time.Time
-	DeletedAt       sql.NullTime
+	ID                     uint64
+	ListingID              uint64
+	PhotographerUserID     uint64
+	Status                 string
+	UploadManifestJSON     json.RawMessage
+	ProcessingMetadataJSON json.RawMessage
+	ReceivedAt             sql.NullTime
+	ProcessingStartedAt    sql.NullTime
+	ProcessingFinishedAt   sql.NullTime
+	ErrorCode              sql.NullString
+	ErrorDetail            sql.NullString
+	DeletedAt              sql.NullTime
 }

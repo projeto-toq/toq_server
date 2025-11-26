@@ -10,8 +10,8 @@ import (
 )
 
 const listAssetsByBatchQuery = `
-SELECT id, batch_id, listing_id, asset_type, orientation, filename, content_type, sequence, size_bytes, checksum,
-	   raw_object_key, processed_key, thumbnail_key, width, height, duration_millis, metadata
+SELECT id, batch_id, asset_type, orientation, filename, content_type, sequence, size_bytes, checksum,
+	   raw_object_key, processed_key, thumbnail_key, width, height, duration_millis, title, metadata
 FROM listing_media_assets
 WHERE batch_id = ?
 ORDER BY sequence ASC
@@ -34,13 +34,12 @@ func (a *MediaProcessingAdapter) ListAssetsByBatch(ctx context.Context, tx *sql.
 		if err := rows.Scan(
 			&entity.ID,
 			&entity.BatchID,
-			&entity.ListingID,
 			&entity.AssetType,
 			&entity.Orientation,
 			&entity.Filename,
 			&entity.ContentType,
 			&entity.Sequence,
-			&entity.SizeInBytes,
+			&entity.SizeBytes,
 			&entity.Checksum,
 			&entity.RawObjectKey,
 			&entity.ProcessedKey,
@@ -48,6 +47,7 @@ func (a *MediaProcessingAdapter) ListAssetsByBatch(ctx context.Context, tx *sql.
 			&entity.Width,
 			&entity.Height,
 			&entity.DurationMillis,
+			&entity.Title,
 			&entity.Metadata,
 		); err != nil {
 			return nil, err

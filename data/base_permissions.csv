@@ -112,3 +112,8 @@ id;name;action;description;is_active
 111;"HTTP List Listing Versions";"POST:/api/v2/listings/versions";"Permite listar versões de um listing";1
 112;"HTTP Admin List Routes";"GET:/api/v2/admin/permissions/routes";"Permite listar todas as rotas HTTP registradas no sistema para popular formulários de permissões";1
 113;"HTTP Create Listing Draft Versions";"POST:/api/v2/listings/versions/draft";"Permite criar versões draft de um listing";1
+114;"HTTP Photographer Listing Media Uploads";"POST:/api/v2/listings/media/uploads";"Obtem URLs assinadas para upload de mídia de listing";1
+115;"HTTP Photographer Listing Media Uploads Retry";"POST:/api/v2/listings/media/uploads/retry";"Cria um novo batch de processament usando os mesmos objetos S3";1
+116;"HTTP Photographer Listing Media Uploads Complete";"POST:/api/v2/listings/media/uploads/complete";"Informa que o upload de mídia foi concluído";1
+117;"HTTP Photographer Listing Media Download URLs";"POST:/api/v2/listings/media/downloads";"Obtem URLs assinadas para download de mídia de listing";1
+118;"HTTP Photographer Listing Media Status";"GET:/api/v2/listings/media/status";"Consulta o status de processamento de mídia de um listing";1

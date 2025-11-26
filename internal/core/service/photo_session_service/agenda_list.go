@@ -133,16 +133,29 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 	}, nil
 }
 
-func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntryInterface, loc *time.Location, bookingsMap map[uint64]uint64) AgendaSlot {
+// Internal struct to hold booking and listing details
+type bookingDetails struct {
+	BookingID uint64
+	Listing   *ListingInfo
+	Status    photosessionmodel.BookingStatus
+}
+
+func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntryInterface, loc *time.Location, bookingsMap map[uint64]bookingDetails) AgendaSlot {
 	start := entry.StartsAt().In(loc)
 	end := entry.EndsAt().In(loc)
+
+	// Default status based on blocking nature
+	defaultStatus := photosessionmodel.SlotStatusBlocked
+	if !entry.Blocking() {
+		defaultStatus = photosessionmodel.SlotStatusAvailable
+	}
 
 	slot := AgendaSlot{
 		EntryID:        entry.ID(),
 		PhotographerID: entry.PhotographerUserID(),
 		Start:          start,
 		End:            end,
-		Status:         photosessionmodel.SlotStatusBlocked,
+		Status:         string(defaultStatus),
 		GroupID:        buildAgendaGroupID(entry, loc),
 		Source:         entry.Source(),
 		IsHoliday:      entry.EntryType() == photosessionmodel.AgendaEntryTypeHoliday,
@@ -151,20 +164,21 @@ func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntr
 		EntryType:      entry.EntryType(),
 	}
 
-	if !entry.Blocking() {
-		slot.Status = photosessionmodel.SlotStatusAvailable
-	}
-
 	switch entry.EntryType() {
 	case photosessionmodel.AgendaEntryTypePhotoSession:
-		slot.Status = photosessionmodel.SlotStatusBooked
+		// Default to BOOKED if no specific booking status is found
+		slot.Status = string(photosessionmodel.SlotStatusBooked)
+
 		if sourceID, ok := entry.SourceID(); ok && sourceID != nil {
 			slot.SourceID = *sourceID
 		}
 
-		// Popular photoSessionId se disponível no map
-		if bookingID, found := bookingsMap[entry.ID()]; found {
-			slot.PhotoSessionID = &bookingID
+		// Popular photoSessionId e Listing se disponível no map
+		if details, found := bookingsMap[entry.ID()]; found {
+			slot.PhotoSessionID = &details.BookingID
+			slot.Listing = details.Listing
+			// Sobrescreve com o status real do booking (ex: DONE, ACCEPTED)
+			slot.Status = string(details.Status)
 		}
 
 	case photosessionmodel.AgendaEntryTypeHoliday:
@@ -189,8 +203,8 @@ func buildAgendaGroupID(entry photosessionmodel.AgendaEntryInterface, loc *time.
 }
 
 // loadBookingsForEntries retrieves bookings associated with agenda entries.
-// Returns a map of agendaEntryID -> bookingID for quick lookup.
-func (s *photoSessionService) loadBookingsForEntries(ctx context.Context, tx *sql.Tx, entries []photosessionmodel.AgendaEntryInterface) (map[uint64]uint64, error) {
+// Returns a map of agendaEntryID -> bookingDetails for quick lookup.
+func (s *photoSessionService) loadBookingsForEntries(ctx context.Context, tx *sql.Tx, entries []photosessionmodel.AgendaEntryInterface) (map[uint64]bookingDetails, error) {
 	logger := utils.LoggerFromContext(ctx)
 
 	// Coleta IDs de entradas do tipo PHOTO_SESSION com source BOOKING
@@ -203,11 +217,11 @@ func (s *photoSessionService) loadBookingsForEntries(ctx context.Context, tx *sq
 	}
 
 	if len(entryIDs) == 0 {
-		return make(map[uint64]uint64), nil
+		return make(map[uint64]bookingDetails), nil
 	}
 
 	// Buscar bookings associados
-	bookingsMap := make(map[uint64]uint64, len(entryIDs))
+	bookingsMap := make(map[uint64]bookingDetails, len(entryIDs))
 	for _, entryID := range entryIDs {
 		booking, err := s.repo.FindBookingByAgendaEntry(ctx, tx, entryID)
 		if err != nil {
@@ -220,7 +234,36 @@ func (s *photoSessionService) loadBookingsForEntries(ctx context.Context, tx *sq
 			logger.Error("agenda.load_bookings.repo_error", "agenda_entry_id", entryID, "err", err)
 			return nil, fmt.Errorf("failed to load booking for entry %d: %w", entryID, err)
 		}
-		bookingsMap[entryID] = booking.ID()
+
+		// Fetch listing details
+		listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, booking.ListingIdentityID())
+		if err != nil {
+			// Log warning and continue, or return error depending on strictness.
+			// Suggest logging warning to not break agenda if listing is missing.
+			logger.Warn("agenda.load_bookings.listing_not_found", "listing_id", booking.ListingIdentityID(), "err", err)
+			bookingsMap[entryID] = bookingDetails{
+				BookingID: booking.ID(),
+				Status:    booking.Status(),
+			}
+			continue
+		}
+
+		bookingsMap[entryID] = bookingDetails{
+			BookingID: booking.ID(),
+			Status:    booking.Status(),
+			Listing: &ListingInfo{
+				ListingIdentityID: listing.IdentityID(),
+				Code:              listing.Code(),
+				Title:             listing.Title(),
+				ZipCode:           listing.ZipCode(),
+				Street:            listing.Street(),
+				Number:            listing.Number(),
+				Complement:        listing.Complement(),
+				Neighborhood:      listing.Neighborhood(),
+				City:              listing.City(),
+				State:             listing.State(),
+			},
+		}
 	}
 
 	return bookingsMap, nil

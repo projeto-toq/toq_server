@@ -96,7 +96,7 @@ func (s *mediaProcessingService) CreateUploadBatch(ctx context.Context, input Cr
 		return CreateUploadBatchOutput{}, derrors.Conflict("listing is not awaiting media uploads")
 	}
 
-	if err := s.ensureNoOpenBatch(ctx, tx, input.ListingIdentityID); err != nil {
+	if err := s.handleExistingBatches(ctx, tx, input.ListingIdentityID, input.RequestedBy); err != nil {
 		return CreateUploadBatchOutput{}, err
 	}
 
@@ -272,7 +272,10 @@ func (s *mediaProcessingService) validateUploadManifest(input CreateUploadBatchI
 	return validated, totalBytes, nil
 }
 
-func (s *mediaProcessingService) ensureNoOpenBatch(ctx context.Context, tx *sql.Tx, listingIdentityID listingmodel.ListingIdentityID) error {
+// handleExistingBatches checks for active batches and handles conflicts.
+// If a batch is PENDING_UPLOAD, it is marked as FAILED (superseded) to allow the new request to proceed.
+// If a batch is RECEIVED or PROCESSING, a Conflict error is returned.
+func (s *mediaProcessingService) handleExistingBatches(ctx context.Context, tx *sql.Tx, listingIdentityID listingmodel.ListingIdentityID, requestedBy uint64) error {
 	filter := mediaprocessingrepository.BatchQueryFilter{
 		ListingID: listingIdentityID.Uint64(),
 		Statuses: []mediaprocessingmodel.BatchStatus{
@@ -288,9 +291,37 @@ func (s *mediaProcessingService) ensureNoOpenBatch(ctx context.Context, tx *sql.
 		utils.SetSpanError(ctx, err)
 		return derrors.Infra("failed to check existing batches", err)
 	}
+
 	if len(batches) > 0 {
-		return derrors.Conflict("listing already has an active media batch")
+		existingBatch := batches[0]
+
+		// Se o lote está apenas aguardando upload (URLs geradas), podemos cancelá-lo e criar um novo.
+		if existingBatch.Status() == mediaprocessingmodel.BatchStatusPendingUpload {
+			logger := utils.LoggerFromContext(ctx)
+			logger.Info("service.media.create_batch.superseding_batch",
+				"listing_identity_id", listingIdentityID,
+				"old_batch_id", existingBatch.ID(),
+				"reason", "urls_expired_retry")
+
+			metadata := mediaprocessingmodel.BatchStatusMetadata{
+				Message:   "batch_superseded",
+				Reason:    "new_upload_requested",
+				Details:   map[string]string{"superseded_by_request": "true"},
+				UpdatedBy: requestedBy,
+				UpdatedAt: s.nowUTC(),
+			}
+
+			if err := s.repo.UpdateBatchStatus(ctx, tx, existingBatch.ID(), mediaprocessingmodel.BatchStatusFailed, metadata); err != nil {
+				utils.SetSpanError(ctx, err)
+				return derrors.Infra("failed to cancel existing pending batch", err)
+			}
+			return nil
+		}
+
+		// Se o lote já foi recebido ou está processando, não podemos interromper.
+		return derrors.Conflict("listing already has an active media batch being processed")
 	}
+
 	return nil
 }
 

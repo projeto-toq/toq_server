@@ -51,8 +51,8 @@ func (h *PhotoSessionHandler) UpdateSessionStatus(c *gin.Context) {
 		return
 	}
 
-	if req.SessionID == 0 {
-		http_errors.SendHTTPErrorObj(c, derrors.Validation("sessionId is required", map[string]string{"sessionId": "required"}))
+	if req.PhotoSessionID == 0 {
+		http_errors.SendHTTPErrorObj(c, derrors.Validation("photoSessionId is required", map[string]string{"photoSessionId": "required"}))
 		return
 	}
 
@@ -63,7 +63,7 @@ func (h *PhotoSessionHandler) UpdateSessionStatus(c *gin.Context) {
 	}
 
 	input := photosessionservices.UpdateSessionStatusInput{
-		SessionID:      req.SessionID,
+		SessionID:      req.PhotoSessionID,
 		PhotographerID: uint64(userID),
 		Status:         status,
 	}

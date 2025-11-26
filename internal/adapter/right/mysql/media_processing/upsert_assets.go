@@ -14,7 +14,6 @@ const deleteAssetsByBatchQuery = `DELETE FROM listing_media_assets WHERE batch_i
 const insertAssetQuery = `
 INSERT INTO listing_media_assets (
     batch_id,
-    listing_id,
     asset_type,
     orientation,
     filename,
@@ -28,6 +27,7 @@ INSERT INTO listing_media_assets (
     width,
     height,
     duration_millis,
+    title,
 	metadata
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
@@ -54,13 +54,12 @@ func (a *MediaProcessingAdapter) UpsertAssets(ctx context.Context, tx *sql.Tx, a
 		observer := a.ObserveOnComplete("insert", insertAssetQuery)
 		if _, err := a.ExecContext(ctx, tx, "insert", insertAssetQuery,
 			entity.BatchID,
-			entity.ListingID,
 			entity.AssetType,
 			entity.Orientation,
 			entity.Filename,
 			entity.ContentType,
 			entity.Sequence,
-			entity.SizeInBytes,
+			entity.SizeBytes,
 			entity.Checksum,
 			entity.RawObjectKey,
 			entity.ProcessedKey,
@@ -68,6 +67,7 @@ func (a *MediaProcessingAdapter) UpsertAssets(ctx context.Context, tx *sql.Tx, a
 			entity.Width,
 			entity.Height,
 			entity.DurationMillis,
+			entity.Title,
 			entity.Metadata,
 		); err != nil {
 			observer()

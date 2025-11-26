@@ -11,32 +11,35 @@ import (
 const insertBatchQuery = `
 INSERT INTO listing_media_batches (
     listing_id,
-    reference,
+    photographer_user_id,
     status,
-    status_message,
-    status_reason,
-    status_details,
-    status_updated_by,
-	status_updated_at,
-	deleted_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    upload_manifest_json,
+    processing_metadata_json,
+    error_code,
+    error_detail,
+    received_at,
+    deleted_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
 `
 
 // CreateBatch persiste um novo lote de mídia.
 func (a *MediaProcessingAdapter) CreateBatch(ctx context.Context, tx *sql.Tx, batch mediaprocessingmodel.MediaBatch) (uint64, error) {
-	entity := mediaprocessingconverters.BatchDomainToEntity(batch)
+	entity, err := mediaprocessingconverters.BatchDomainToEntity(batch)
+	if err != nil {
+		return 0, err
+	}
+
 	observer := a.ObserveOnComplete("insert", insertBatchQuery)
 	defer observer()
 
 	result, err := a.ExecContext(ctx, tx, "insert", insertBatchQuery,
 		entity.ListingID,
-		entity.Reference,
+		entity.PhotographerUserID,
 		entity.Status,
-		entity.StatusMessage,
-		entity.StatusReason,
-		entity.StatusDetails,
-		entity.StatusUpdatedBy,
-		entity.StatusUpdatedAt,
+		entity.UploadManifestJSON,
+		entity.ProcessingMetadataJSON,
+		entity.ErrorCode,
+		entity.ErrorDetail,
 		entity.DeletedAt,
 	)
 	if err != nil {

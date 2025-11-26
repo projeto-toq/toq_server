@@ -69,7 +69,7 @@
 
 | Campo                      | Obrigatório     | Layer   | Função                                        |
 |----------------------------|-----------------|---------|-----------------------------------------------|
-| features                   | ❌ Não          | -       | (opcional)                                    |
+| features- Alterar para SIM                    | ❌ Não          | -       | (opcional)                                    |
 | **unitTower**              | ✅ Sim          | LAYER 5 | validateUnit()                                |
 | **unitFloor**              | ✅ Sim          | LAYER 5 | validateUnit()                                |
 | **unitNumber**             | ✅ Sim          | LAYER 5 | validateUnit()                                |
@@ -83,7 +83,7 @@
 | Campo            | Obrigatório  | Layer   | Função                               |
 |------------------|--------------|---------|--------------------------------------|
 | **condominium**  | ✅ Sim       | LAYER 3 | validatePropertyTypeConditionals()   |
-| features         | ❌ Não       | -       | (opcional)                           |
+| features- Alterar para SIM          | ❌ Não       | -       | (opcional)                           |
 | **unitTower**    | ✅ Sim       | LAYER 5 | validateUnit()                       |
 | **unitFloor**    | ✅ Sim       | LAYER 5 | validateUnit()                       |
 | **unitNumber**   | ✅ Sim       | LAYER 5 | validateUnit()                       |
@@ -94,7 +94,7 @@
 
 | Campo                             | Obrigatório  | Layer  | Função      |
 |-----------------------------------|--------------|--------|-------------|
-| features                          | ❌ Não       | -      | (opcional)  |
+| features- Alterar para SIM                           | ❌ Não       | -      | (opcional)  |
 | *(nenhuma validação específica)*  | -            | -      | -           |
 
 ---
@@ -154,7 +154,7 @@
 
 | Campo                             | Obrigatório  | Layer  | Função      |
 |-----------------------------------|--------------|--------|-------------|
-| features                          | ❌ Não       | -      | (opcional)  |
+| features- Alterar para SIM                           | ❌ Não       | -      | (opcional)  |
 | *(nenhuma validação específica)*  | -            | -      | -           |
 
 ---
@@ -163,7 +163,7 @@
 
 | Campo                           | Obrigatório     | Layer   | Função                                            |
 |---------------------------------|-----------------|---------|---------------------------------------------------|
-| features                        | ❌ Não          | -       | (opcional)                                        |
+| features- Alterar para SIM                     | ❌ Não          | -       | (opcional)                                        |
 | **warehouseManufacturingArea**  | ✅ Sim          | LAYER 5 | validateWarehouse()                               |
 | **warehouseSector**             | ✅ Sim          | LAYER 5 | validateWarehouse()                               |
 | **warehouseHasPrimaryCabin**    | ✅ Sim          | LAYER 5 | validateWarehouse()                               |
@@ -175,7 +175,7 @@
 | **warehouseOfficeArea**         | ⚠️ Condicional  | LAYER 5 | Obrigatório se warehouseHasOfficeArea = true      |
 
 ---
-
+Remover  inquilino
 ## Validações Condicionais por WhoLives
 
 ### Se whoLives = "tenant":

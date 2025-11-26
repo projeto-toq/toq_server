@@ -3,14 +3,14 @@ package mysqlmediaprocessingadapter
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 
-	mediaprocessingconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/media_processing/converters"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
 const updateBatchStatusQuery = `
 UPDATE listing_media_batches
-SET status = ?, status_message = ?, status_reason = ?, status_details = ?, status_updated_by = ?, status_updated_at = ?
+SET status = ?, error_code = ?, error_detail = ?, processing_metadata_json = ?
 WHERE id = ? AND deleted_at IS NULL
 `
 
@@ -19,13 +19,20 @@ func (a *MediaProcessingAdapter) UpdateBatchStatus(ctx context.Context, tx *sql.
 	observer := a.ObserveOnComplete("update", updateBatchStatusQuery)
 	defer observer()
 
+	var detailsJSON []byte
+	if len(metadata.Details) > 0 {
+		var err error
+		detailsJSON, err = json.Marshal(metadata.Details)
+		if err != nil {
+			return err
+		}
+	}
+
 	_, err := a.ExecContext(ctx, tx, "update", updateBatchStatusQuery,
 		status.String(),
-		metadata.Message,
-		metadata.Reason,
-		mediaprocessingconverters.EncodeStatusDetails(metadata.Details),
-		metadata.UpdatedBy,
-		metadata.UpdatedAt,
+		metadata.Reason,  // Mapped to error_code
+		metadata.Message, // Mapped to error_detail
+		detailsJSON,
 		batchID,
 	)
 	return err

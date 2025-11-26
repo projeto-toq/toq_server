@@ -3011,7 +3011,7 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest:
     properties:
-      sessionId:
+      photoSessionId:
         example: 12345
         type: integer
       status:
@@ -3022,7 +3022,7 @@ definitions:
         example: ACCEPTED
         type: string
     required:
-    - sessionId
+    - photoSessionId
     - status
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateTimeOffRequest:
@@ -3364,6 +3364,8 @@ definitions:
         type: boolean
       isTimeOff:
         type: boolean
+      listing:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListingInfo'
       photoSessionId:
         type: integer
       photographerId:
@@ -3395,6 +3397,29 @@ definitions:
         type: string
       total:
         type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListingInfo:
+    properties:
+      city:
+        type: string
+      code:
+        type: integer
+      complement:
+        type: string
+      listingIdentityId:
+        type: integer
+      neighborhood:
+        type: string
+      number:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      title:
+        type: string
+      zipCode:
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool:
     type: object

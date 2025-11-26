@@ -13228,11 +13228,11 @@
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest": {
             "type": "object",
             "required": [
-                "sessionId",
+                "photoSessionId",
                 "status"
             ],
             "properties": {
-                "sessionId": {
+                "photoSessionId": {
                     "type": "integer",
                     "example": 12345
                 },
@@ -13708,6 +13708,9 @@
                 "isTimeOff": {
                     "type": "boolean"
                 },
+                "listing": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListingInfo"
+                },
                 "photoSessionId": {
                     "type": "integer"
                 },
@@ -13754,6 +13757,41 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.ListingInfo": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "complement": {
+                    "type": "string"
+                },
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "neighborhood": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "zipCode": {
+                    "type": "string"
                 }
             }
         },

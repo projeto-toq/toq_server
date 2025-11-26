@@ -96,6 +96,20 @@ type ListAgendaOutput struct {
 	Timezone string       `json:"timezone"`
 }
 
+// ListingInfo contains summarized listing details for agenda display.
+type ListingInfo struct {
+	ListingIdentityID int64  `json:"listingIdentityId"`
+	Code              uint32 `json:"code"`
+	Title             string `json:"title"`
+	ZipCode           string `json:"zipCode"`
+	Street            string `json:"street"`
+	Number            string `json:"number"`
+	Complement        string `json:"complement"`
+	Neighborhood      string `json:"neighborhood"`
+	City              string `json:"city"`
+	State             string `json:"state"`
+}
+
 // AgendaSlot represents an agenda entry rendered to clients.
 type AgendaSlot struct {
 	EntryID            uint64                              `json:"entryId"`
@@ -104,9 +118,10 @@ type AgendaSlot struct {
 	Source             photosessionmodel.AgendaEntrySource `json:"source"`
 	SourceID           uint64                              `json:"sourceId,omitempty"`
 	PhotoSessionID     *uint64                             `json:"photoSessionId,omitempty"`
+	Listing            *ListingInfo                        `json:"listing,omitempty"`
 	Start              time.Time                           `json:"start"`
 	End                time.Time                           `json:"end"`
-	Status             photosessionmodel.SlotStatus        `json:"status"`
+	Status             string                              `json:"status"`
 	GroupID            string                              `json:"groupId"`
 	IsHoliday          bool                                `json:"isHoliday"`
 	IsTimeOff          bool                                `json:"isTimeOff"`

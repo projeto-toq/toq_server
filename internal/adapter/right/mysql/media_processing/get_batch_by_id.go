@@ -11,8 +11,8 @@ import (
 )
 
 const selectBatchByIDQuery = `
-SELECT id, listing_id, reference, status, status_message, status_reason, status_details, status_updated_by, status_updated_at,
-	   deleted_at
+SELECT id, listing_id, photographer_user_id, status, upload_manifest_json, processing_metadata_json,
+       received_at, processing_started_at, processing_finished_at, error_code, error_detail, deleted_at
 FROM listing_media_batches
 WHERE id = ?
 `
@@ -27,13 +27,15 @@ func (a *MediaProcessingAdapter) GetBatchByID(ctx context.Context, tx *sql.Tx, b
 	if err := row.Scan(
 		&entity.ID,
 		&entity.ListingID,
-		&entity.Reference,
+		&entity.PhotographerUserID,
 		&entity.Status,
-		&entity.StatusMessage,
-		&entity.StatusReason,
-		&entity.StatusDetails,
-		&entity.StatusUpdatedBy,
-		&entity.StatusUpdatedAt,
+		&entity.UploadManifestJSON,
+		&entity.ProcessingMetadataJSON,
+		&entity.ReceivedAt,
+		&entity.ProcessingStartedAt,
+		&entity.ProcessingFinishedAt,
+		&entity.ErrorCode,
+		&entity.ErrorDetail,
 		&entity.DeletedAt,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -42,5 +44,5 @@ func (a *MediaProcessingAdapter) GetBatchByID(ctx context.Context, tx *sql.Tx, b
 		return mediaprocessingmodel.MediaBatch{}, err
 	}
 
-	return mediaprocessingconverters.BatchEntityToDomain(entity), nil
+	return mediaprocessingconverters.BatchEntityToDomain(entity)
 }
