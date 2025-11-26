@@ -11,8 +11,8 @@ import (
 )
 
 const selectProcessingJobByIDQuery = `
-SELECT j.id, j.batch_id, b.listing_id, j.status, j.provider, j.external_id, j.payload, j.retry_count,
-       j.started_at, j.completed_at, j.last_error, j.callback_raw
+SELECT j.id, j.batch_id, b.listing_id, j.status, j.provider, j.external_job_id, j.output_payload_json,
+       j.started_at, j.finished_at
 FROM listing_media_jobs j
 JOIN listing_media_batches b ON j.batch_id = b.id
 WHERE j.id = ?
@@ -33,11 +33,8 @@ func (a *MediaProcessingAdapter) GetProcessingJobByID(ctx context.Context, tx *s
 		&entity.Provider,
 		&entity.ExternalID,
 		&entity.Payload,
-		&entity.RetryCount,
 		&entity.StartedAt,
-		&entity.CompletedAt,
-		&entity.LastError,
-		&entity.CallbackRaw,
+		&entity.FinishedAt,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return mediaprocessingmodel.MediaProcessingJob{}, err

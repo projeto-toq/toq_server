@@ -79,7 +79,12 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		return HandleProcessingCallbackOutput{}, derrors.Validation("unsupported job status", map[string]any{"status": callback.Status})
 	}
 
-	if err := s.repo.UpdateProcessingJob(ctx, tx, callback.JobID, callback.Status, jobPayload); err != nil {
+	job.MarkCompleted(callback.Status, jobPayload, s.nowUTC())
+	if callback.ExternalID != "" {
+		job.SetExternalID(callback.ExternalID)
+	}
+
+	if err := s.repo.UpdateProcessingJob(ctx, tx, job); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("service.media.callback.update_job_error", "err", err, "job_id", callback.JobID)
 		return HandleProcessingCallbackOutput{}, derrors.Infra("failed to update job", err)

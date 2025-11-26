@@ -68,6 +68,7 @@ func (j *MediaProcessingJob) ListingID() uint64                 { return j.listi
 func (j *MediaProcessingJob) Status() MediaProcessingJobStatus  { return j.status }
 func (j *MediaProcessingJob) Provider() MediaProcessingProvider { return j.provider }
 func (j *MediaProcessingJob) ExternalID() string                { return j.externalID }
+func (j *MediaProcessingJob) SetExternalID(externalID string)   { j.externalID = externalID }
 func (j *MediaProcessingJob) Payload() MediaProcessingJobPayload {
 	return j.payload
 }

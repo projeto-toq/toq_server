@@ -19,7 +19,7 @@ type RepositoryInterface interface {
 
 	RegisterProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) (uint64, error)
 	GetProcessingJobByID(ctx context.Context, tx *sql.Tx, jobID uint64) (mediaprocessingmodel.MediaProcessingJob, error)
-	UpdateProcessingJob(ctx context.Context, tx *sql.Tx, jobID uint64, status mediaprocessingmodel.MediaProcessingJobStatus, output mediaprocessingmodel.MediaProcessingJobPayload) error
+	UpdateProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) error
 
 	SoftDeleteBatch(ctx context.Context, tx *sql.Tx, batchID uint64) error
 }

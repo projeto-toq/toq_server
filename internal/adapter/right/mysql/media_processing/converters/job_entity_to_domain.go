@@ -18,11 +18,11 @@ func JobEntityToDomain(entity mediaprocessingentities.JobEntity) mediaprocessing
 		Provider:     mediaprocessingmodel.MediaProcessingProvider(entity.Provider),
 		ExternalID:   entity.ExternalID.String,
 		Payload:      decodeJobPayload(entity.Payload),
-		RetryCount:   entity.RetryCount,
+		RetryCount:   0,
 		StartedAt:    timePtrFromNull(entity.StartedAt),
-		CompletedAt:  timePtrFromNull(entity.CompletedAt),
-		LastError:    entity.LastError.String,
-		CallbackBody: entity.CallbackRaw.String,
+		CompletedAt:  timePtrFromNull(entity.FinishedAt),
+		LastError:    "",
+		CallbackBody: "",
 	}
 
 	return mediaprocessingmodel.RestoreMediaProcessingJob(record)

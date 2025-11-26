@@ -6,16 +6,18 @@
 
 ## 🎯 Problema / Solicitação
 
-Porque estou recebendo este erro na inicialização do toq_server:
-```json
-{"time":"2025-11-21T13:31:42.364169727Z","level":"INFO","msg":"✅ Handlers HTTP preparados para criação"}
-{"time":"2025-11-21T13:31:42.36393563Z","level":"WARN","msg":"MediaProcessing repository not available - service will be nil"}
-{"time":"2025-11-21T13:31:42.364414963Z","level":"INFO","msg":"Creating HTTP handlers"}
-```
+Estou recebendo este erro ao executar o endpoint POST `/listings/media/uploads/complete`:
 
+```json
+{"time":"2025-11-26T16:29:35.309690063Z","level":"ERROR","msg":"mysql.executor.exec_error","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","query":"\nINSERT INTO listing_media_jobs (\n    batch_id,\n    status,\n    provider,\n    external_job_id,\n    output_payload_json,\n    started_at,\n    finished_at\n) VALUES (?, ?, ?, ?, ?, ?, ?)\n","err":"Error 1048 (23000): Column 'external_job_id' cannot be null"}
+{"time":"2025-11-26T16:29:35.309785405Z","level":"ERROR","msg":"service.media.complete_batch.register_job_error","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","err":"Error 1048 (23000): Column 'external_job_id' cannot be null","batch_id":4}
+{"time":"2025-11-26T16:29:35.314179673Z","level":"ERROR","msg":"HTTP Error","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","method":"POST","path":"/api/v2/listings/media/uploads/complete","status":500,"duration":245685637,"size":73,"client_ip":"217.201.193.41","user_agent":"PostmanRuntime/7.49.1","user_id":3,"user_role_id":3,"errors":["failed to register processing job"]}
+```
+Este é o 4 erro consecutivo de problemas entre as queries e o modelo no banco de dados MySQL.
+é necessário uma revisão de todas as queries do repositório `internal/adapter/right/mysql/media_processing/repository` para garantir que estejam alinhadas com o modelo de dados atual e as regras de negócio definidas no guia do projeto. O modelo de DB pode ser obtido em scripts/db_creation.sql.
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema.
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema e as divergências entre as queries SQL e o modelo de dados.
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 

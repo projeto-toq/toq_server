@@ -11,18 +11,14 @@ import (
 // JobDomainToEntity converte o domínio em entidade listing_media_jobs.
 func JobDomainToEntity(job mediaprocessingmodel.MediaProcessingJob) mediaprocessingentities.JobEntity {
 	return mediaprocessingentities.JobEntity{
-		ID:          job.ID(),
-		BatchID:     job.BatchID(),
-		ListingID:   job.ListingID(),
-		Status:      string(job.Status()),
-		Provider:    string(job.Provider()),
-		ExternalID:  nullString(job.ExternalID()),
-		Payload:     encodeJobPayload(job.Payload()),
-		RetryCount:  job.RetryCount(),
-		StartedAt:   nullTimeFromPtr(job.StartedAt()),
-		CompletedAt: nullTimeFromPtr(job.CompletedAt()),
-		LastError:   nullString(job.LastError()),
-		CallbackRaw: nullString(job.CallbackBody()),
+		ID:         job.ID(),
+		BatchID:    job.BatchID(),
+		Status:     string(job.Status()),
+		Provider:   string(job.Provider()),
+		ExternalID: nullString(job.ExternalID()),
+		Payload:    EncodeJobPayload(job.Payload()),
+		StartedAt:  nullTimeFromPtr(job.StartedAt()),
+		FinishedAt: nullTimeFromPtr(job.CompletedAt()),
 	}
 }
 

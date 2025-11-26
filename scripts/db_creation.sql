@@ -959,7 +959,7 @@ DROP TABLE IF EXISTS `toq_db`.`listing_media_jobs` ;
 CREATE TABLE IF NOT EXISTS `toq_db`.`listing_media_jobs` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `batch_id` INT UNSIGNED NOT NULL,
-  `external_job_id` VARCHAR(255) NOT NULL,
+  `external_job_id` VARCHAR(255) NULL,
   `provider` ENUM('STEP_FUNCTIONS', 'MEDIACONVERT') NOT NULL,
   `status` VARCHAR(50) NOT NULL,
   `input_payload_json` JSON NULL,
