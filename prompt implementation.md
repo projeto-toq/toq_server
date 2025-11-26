@@ -6,28 +6,7 @@
 
 ## 🎯 Solicitação
 
-Ao chamar o endpoint PUT `https://toq-listing-medias.s3.us-east-1.amazonaws.com/28/raw/photo/vertical/2025-11-26/photo-001-20220907_121157.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQ3EGR6UWYR4AXXD6%2F20251126%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251126T152322Z&X-Amz-Expires=900&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEL%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJIMEYCIQCSdh1mi5L%2BzIFZCTtqkzWK1O1stwPnMyQ8LLml%2F47yTQIhAKPVbajk219tNnITi%2BUxWv9VAWbeyLnbvPI%2BrkJgWfRJKsYFCIj%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMMDU4MjY0MjUzNzQxIgzbAwb%2Bf2ixqlSrRBEqmgWNODbb%2BMQ5HtRw%2F4YgBhhHUE%2BdpsK8Put0ZqiQFiN4IXbzqsnYxDit4FI1i5HT9nF7A5Dk9BlzA9%2F%2BQLlV6dhZHScQGgdzvFhN0EBhZH6z0TU0I%2B3cDTQxVK32cerLGIgBzJ7hvEwKgxgOpq0uAgzgaFKzl6n26zQB8JO0TW3QAPFd7tpPf1ahwrAYzH4DWYSbUsbLh0kXiBEQvQ2mkK7JayigZXp%2FPPoIGsvgW6FF%2BZUgTKZ7gWAW%2FfytJaf89eQf5GrBeEFDSXRck7g%2FkhQu0YZ%2FAHu961OihN90SS3qte8RyOi68oFXfun2y0ySgiBtsRit9ZVNTZWLeQvwtCy4Hccmiqn2oUzug6ejVecTONGpVKXJ2zJbkn3FUwi0PuY4I3TU6w39%2B0NHzUkVD69VnQ2voIUFrTkc9nnir7bpgEeXVVswfUvkOa%2BiUll6%2FoTOeEWOhn4MwJmz%2BFN2hBA1wQ3TZ9O6tKDOdlQ2i3d8x9PkvAKeigjKSyuaqTFGBDV3xT7NLyNeNVG%2BCcK4MSvlr2RDB5xbDxDGvqcLaLEZZw1ZYSIoSAqJQXM3VTYZAACcFOEiy206sXqvyd4izsWbLS%2B91rR0OP6NzSws3xN9kOkUifNgDrrhGx3OPop7fAwKV8MSCZZQ9LSBOZbqMq8BtKGxLsc3V3hmpsE6pC7hiZFBKFLiw7tYIUJvDEHaBOLj2uBdrS8t%2FFPfACFlb5ckM4KMoWpmQZrEQHBz7czn9FUnWXrvJxfq8H1Ul0q8Vzmv66y9ddnMD%2BbG5gMZVFfpl4k8u2TJUHkasplgXudEleMYCo%2Bv5pjDsvo5YaW4DFyBuyggpDtVjbZj0PQWZvI8kBhsN01cuzWGmkCRJdpyEp5XniGAWfYxwTsw3aucyQY6sAFe8qxPnjpyny9NFaToLvxPvU8pdufgoOxMW4gVGZfF0lGkQ0YsYDYkEWz8Pl6ZBSnZMpNmXYfuRVutJGQYUU3ExV0qq7npxM4g6nlGdklPvfgwmagpFGqCIT5B81K28%2FqnP0NeYkwePNbA061g91HDPLc1JYC3GYDrSKIaBB7dTxpslD1sQZdzRmx1O0CdS80nk0iQKEDpJ2be4TsOtp9sGCtXub4YX09P0pmdFMwQrw%3D%3D&X-Amz-SignedHeaders=host&x-id=PutObject&X-Amz-Signature=363451590e38c86c424d968c8ba0c99a71e4566d8fad330239927dca280a3ae6` recebo o seguinte erro:
-
-```html
-<?xml version="1.0" encoding="UTF-8"?>
-<Error>
-    <Code>AccessDenied</Code>
-    <Message>Request has expired</Message>
-    <X-Amz-Expires>900</X-Amz-Expires>
-    <Expires>2025-11-26T15:38:22Z</Expires>
-    <ServerTime>2025-11-26T15:46:18Z</ServerTime>
-    <RequestId>XQZTA64G5R2352N6</RequestId>
-    <HostId>CsA3GkZGAzpscl0N3YCcXp97qUuSDSs0OdjzhNQ/8eYDECII8ynn60bjNa/QizIKaZ6eMWahNeQ=</HostId>
-</Error>
-```
-Isso porque já se passou muito tempo e a URL expirou. Mas ao tentar solicitar uma nova URL de upload via POST `/listings/media/uploads` com o mesmo body da chamada anterior, recebo o seguinte erro em JSON:
-```json
-{
-    "code": 409,
-    "details": null,
-    "message": "listing already has an active media batch"
-}
-```
+Ao chamar o endpoint PUT 
 Qual o procedimento neste caso?
 
 Assim:

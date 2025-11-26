@@ -11,10 +11,11 @@ import (
 )
 
 const selectProcessingJobByIDQuery = `
-SELECT id, batch_id, listing_id, status, provider, external_id, payload, retry_count,
-       started_at, completed_at, last_error, callback_raw
-FROM listing_media_jobs
-WHERE id = ?
+SELECT j.id, j.batch_id, b.listing_id, j.status, j.provider, j.external_id, j.payload, j.retry_count,
+       j.started_at, j.completed_at, j.last_error, j.callback_raw
+FROM listing_media_jobs j
+JOIN listing_media_batches b ON j.batch_id = b.id
+WHERE j.id = ?
 `
 
 // GetProcessingJobByID retorna os metadados de um job específico.

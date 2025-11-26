@@ -11,7 +11,6 @@ import (
 const insertProcessingJobQuery = `
 INSERT INTO listing_media_jobs (
     batch_id,
-    listing_id,
     status,
     provider,
     external_id,
@@ -21,7 +20,7 @@ INSERT INTO listing_media_jobs (
     completed_at,
     last_error,
     callback_raw
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 // RegisterProcessingJob cria um novo job associado ao lote.
@@ -32,7 +31,6 @@ func (a *MediaProcessingAdapter) RegisterProcessingJob(ctx context.Context, tx *
 
 	result, err := a.ExecContext(ctx, tx, "insert", insertProcessingJobQuery,
 		entity.BatchID,
-		entity.ListingID,
 		entity.Status,
 		entity.Provider,
 		entity.ExternalID,
