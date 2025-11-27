@@ -1,0 +1,9 @@
+{
+  "name": "listing-media-validate",
+  "version": "1.0.0",
+  "description": "Validate media assets in S3",
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.478.0"
+  }
+}

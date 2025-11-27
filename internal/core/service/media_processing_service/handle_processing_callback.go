@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -57,20 +58,79 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		return HandleProcessingCallbackOutput{}, derrors.Infra("failed to load processing job", err)
 	}
 
+	assets, err := s.repo.ListAssetsByBatch(ctx, tx, job.BatchID())
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.callback.list_assets_error", "err", err, "batch_id", job.BatchID())
+		return HandleProcessingCallbackOutput{}, derrors.Infra("failed to list assets", err)
+	}
+
+	assetMap := make(map[string]*mediaprocessingmodel.MediaAsset, len(assets))
+	for i := range assets {
+		assetMap[assets[i].RawObjectKey()] = &assets[i]
+	}
+
 	var batchStatus mediaprocessingmodel.BatchStatus
-	var jobPayload mediaprocessingmodel.MediaProcessingJobPayload
+	var failureReason string
 	statusMessage := "processing_completed"
+	updatedAssets := make([]mediaprocessingmodel.MediaAsset, 0, len(assets))
 
 	switch callback.Status {
 	case mediaprocessingmodel.MediaProcessingJobStatusSucceeded:
 		batchStatus = mediaprocessingmodel.BatchStatusReady
-		if len(callback.Outputs) > 0 {
-			jobPayload = callback.Outputs[0]
+
+		for _, output := range callback.Outputs {
+			if asset, exists := assetMap[output.RawKey]; exists {
+				width, _ := strconv.ParseUint(output.Outputs["width"], 10, 16)
+				height, _ := strconv.ParseUint(output.Outputs["height"], 10, 16)
+				duration, _ := strconv.ParseUint(output.Outputs["durationMillis"], 10, 32)
+
+				asset.SetProcessedOutputs(
+					output.ProcessedKey,
+					output.ThumbnailKey,
+					uint16(width),
+					uint16(height),
+					uint32(duration),
+				)
+
+				if len(output.Outputs) > 0 {
+					for k, v := range output.Outputs {
+						asset.SetMetadata("variant_"+k, v)
+					}
+				}
+				updatedAssets = append(updatedAssets, *asset)
+			} else {
+				if isZipArtifact(output.ProcessedKey) {
+					newAsset := mediaprocessingmodel.NewMediaAsset(
+						job.BatchID(),
+						job.ListingID(),
+						mediaprocessingmodel.MediaAssetTypeZip,
+						0,
+					)
+					newAsset.SetProcessedOutputs(output.ProcessedKey, "", 0, 0, 0)
+					newAsset.SetFilename("full_download.zip")
+					newAsset.SetMetadata("title", "Pacote Completo (ZIP)")
+
+					updatedAssets = append(updatedAssets, newAsset)
+				} else {
+					logger.Warn("service.media.callback.unknown_asset", "raw_key", output.RawKey, "job_id", callback.JobID)
+				}
+			}
 		}
+
+		if len(updatedAssets) > 0 {
+			if err := s.repo.UpsertAssets(ctx, tx, updatedAssets); err != nil {
+				utils.SetSpanError(ctx, err)
+				logger.Error("service.media.callback.upsert_assets_error", "err", err, "batch_id", job.BatchID())
+				return HandleProcessingCallbackOutput{}, derrors.Infra("failed to update assets", err)
+			}
+		}
+
 	case mediaprocessingmodel.MediaProcessingJobStatusFailed:
 		batchStatus = mediaprocessingmodel.BatchStatusFailed
 		statusMessage = "processing_failed"
-		jobPayload.ErrorMessage = callback.FailureReason
+		failureReason = callback.FailureReason
+
 	default:
 		logger.Warn("service.media.callback.unknown_status",
 			"job_id", callback.JobID,
@@ -79,7 +139,13 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		return HandleProcessingCallbackOutput{}, derrors.Validation("unsupported job status", map[string]any{"status": callback.Status})
 	}
 
-	job.MarkCompleted(callback.Status, jobPayload, s.nowUTC())
+	var summaryPayload mediaprocessingmodel.MediaProcessingJobPayload
+	if len(callback.Outputs) > 0 {
+		summaryPayload = callback.Outputs[0]
+	}
+	summaryPayload.ErrorMessage = failureReason
+
+	job.MarkCompleted(callback.Status, summaryPayload, s.nowUTC())
 	if callback.ExternalID != "" {
 		job.SetExternalID(callback.ExternalID)
 	}
@@ -98,22 +164,22 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	if externalID := job.ExternalID(); externalID != "" {
 		details["externalId"] = externalID
 	}
-	if jobPayload.RawKey != "" {
-		details["rawKey"] = jobPayload.RawKey
+	if summaryPayload.RawKey != "" {
+		details["rawKey"] = summaryPayload.RawKey
 	}
-	if jobPayload.ProcessedKey != "" {
-		details["processedKey"] = jobPayload.ProcessedKey
+	if summaryPayload.ProcessedKey != "" {
+		details["processedKey"] = summaryPayload.ProcessedKey
 	}
-	if jobPayload.ThumbnailKey != "" {
-		details["thumbnailKey"] = jobPayload.ThumbnailKey
+	if summaryPayload.ThumbnailKey != "" {
+		details["thumbnailKey"] = summaryPayload.ThumbnailKey
 	}
-	if jobPayload.ErrorMessage != "" {
-		details["error"] = jobPayload.ErrorMessage
+	if summaryPayload.ErrorMessage != "" {
+		details["error"] = summaryPayload.ErrorMessage
 	}
 
 	metadata := mediaprocessingmodel.BatchStatusMetadata{
 		Message:   statusMessage,
-		Reason:    jobPayload.ErrorMessage,
+		Reason:    failureReason,
 		Details:   details,
 		UpdatedBy: 0,
 		UpdatedAt: s.nowUTC(),
@@ -131,6 +197,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		"batch_status", batchStatus,
 		"batch_id", job.BatchID(),
 		"listing_identity_id", job.ListingID(),
+		"assets_updated", len(updatedAssets),
 	)
 
 	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
@@ -140,11 +207,9 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	}
 	committed = true
 
-	// Acknowledge the message from the queue if receipt handle provided
 	if input.ReceiptHandle != "" {
 		if ackErr := s.queue.Acknowledge(ctx, input.ReceiptHandle); ackErr != nil {
 			logger.Error("service.media.callback.ack_error", "err", ackErr, "job_id", callback.JobID)
-			// Don't fail the entire operation if ack fails
 		}
 	}
 
@@ -153,4 +218,8 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		BatchID:           job.BatchID(),
 		Status:            batchStatus,
 	}, nil
+}
+
+func isZipArtifact(key string) bool {
+	return strings.HasSuffix(strings.ToLower(key), ".zip")
 }

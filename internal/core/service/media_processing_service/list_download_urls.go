@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
@@ -127,6 +128,20 @@ func (s *mediaProcessingService) ListDownloadURLs(ctx context.Context, input Lis
 			}
 		}
 
+		metadata := cloneStringMap(asset.Metadata())
+		for k, v := range asset.Metadata() {
+			if strings.HasPrefix(k, "variant_") {
+				variantAsset := asset
+				variantAsset.SetProcessedOutputs(v, "", 0, 0, 0)
+				variantSignedURL, vErr := s.storage.GenerateProcessedDownloadURL(ctx, input.ListingIdentityID.Uint64(), variantAsset)
+				if vErr == nil {
+					metadata["url_"+k] = variantSignedURL.URL
+				} else {
+					logger.Warn("service.media.list_downloads.variant_url_error", "err", vErr, "key", k)
+				}
+			}
+		}
+
 		clientID := asset.Metadata()["client_id"]
 		title := asset.Metadata()["title"]
 
@@ -138,7 +153,7 @@ func (s *mediaProcessingService) ListDownloadURLs(ctx context.Context, input Lis
 			URL:        signedURL.URL,
 			ExpiresAt:  generatedAt.Add(signedURL.ExpiresIn),
 			PreviewURL: previewURL,
-			Metadata:   cloneStringMap(asset.Metadata()),
+			Metadata:   metadata,
 		})
 	}
 

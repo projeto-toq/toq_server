@@ -150,10 +150,13 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 	listingMediaStorage := s3adapter.NewListingMediaStorageAdapter(s3, env)
 
 	var mediaQueue mediaprocessingqueue.QueuePortInterface
-	if queueAdapter, err := sqsmediaprocessingadapter.NewMediaProcessingQueueAdapter(ctx, env); err != nil {
+	queueAdapter, err := sqsmediaprocessingadapter.NewMediaProcessingQueueAdapter(ctx, env)
+	if err != nil {
 		slog.Warn("failed to create media processing queue adapter", "error", err)
-	} else {
+	} else if queueAdapter != nil {
 		mediaQueue = queueAdapter
+	} else {
+		slog.Warn("media processing queue adapter returned nil (configuration missing?)")
 	}
 
 	callbackAdapter := stepfunctionscallbackadapter.NewMediaProcessingCallbackAdapter(env)

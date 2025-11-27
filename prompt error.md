@@ -6,19 +6,64 @@
 
 ## 🎯 Problema / Solicitação
 
-Estou recebendo este erro ao executar o endpoint POST `/listings/media/uploads/complete`:
-
+Baseado em `docs/media_processing_guide.md` executei o passo 3. **Confirmação de upload** e se executo o endpoint POST `/listings/media/status` com o payload:
 ```json
-{"time":"2025-11-26T16:29:35.309690063Z","level":"ERROR","msg":"mysql.executor.exec_error","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","query":"\nINSERT INTO listing_media_jobs (\n    batch_id,\n    status,\n    provider,\n    external_job_id,\n    output_payload_json,\n    started_at,\n    finished_at\n) VALUES (?, ?, ?, ?, ?, ?, ?)\n","err":"Error 1048 (23000): Column 'external_job_id' cannot be null"}
-{"time":"2025-11-26T16:29:35.309785405Z","level":"ERROR","msg":"service.media.complete_batch.register_job_error","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","err":"Error 1048 (23000): Column 'external_job_id' cannot be null","batch_id":4}
-{"time":"2025-11-26T16:29:35.314179673Z","level":"ERROR","msg":"HTTP Error","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","request_id":"746e958e-9de8-4404-b94d-a8dc5f58329f","method":"POST","path":"/api/v2/listings/media/uploads/complete","status":500,"duration":245685637,"size":73,"client_ip":"217.201.193.41","user_agent":"PostmanRuntime/7.49.1","user_id":3,"user_role_id":3,"errors":["failed to register processing job"]}
+{
+  "batchId": 5,
+  "listingIdentityID": 51
+}
 ```
-Este é o 4 erro consecutivo de problemas entre as queries e o modelo no banco de dados MySQL.
-é necessário uma revisão de todas as queries do repositório `internal/adapter/right/mysql/media_processing/repository` para garantir que estejam alinhadas com o modelo de dados atual e as regras de negócio definidas no guia do projeto. O modelo de DB pode ser obtido em scripts/db_creation.sql.
+recebo como resposta:
+```json
+{
+    "listingIdentityId": 51,
+    "batchId": 5,
+    "status": "RECEIVED",
+    "statusMessage": "uploads_confirmed",
+    "assets": [
+        {
+            "clientId": "photo-001",
+            "title": "Vista frontal do imóvel",
+            "assetType": "PHOTO_VERTICAL",
+            "sequence": 1,
+            "rawObjectKey": "51/raw/photo/vertical/2025-11-27/photo-001-20220907_121157.jpg",
+            "metadata": {
+                "batch_reference": "2025-11-27T17:45Z-slot-123",
+                "client_id": "photo-001",
+                "etag": "\"acc548ded7f7865267f58edcdc3290ae\"",
+                "key_0": "string",
+                "requested_by": "3",
+                "title": "Vista frontal do imóvel"
+            }
+        },
+        {
+            "clientId": "photo-002",
+            "title": "Vista lateral do imóvel",
+            "assetType": "PHOTO_VERTICAL",
+            "sequence": 2,
+            "rawObjectKey": "51/raw/photo/vertical/2025-11-27/photo-002-20220907_121308.jpg",
+            "metadata": {
+                "batch_reference": "2025-11-27T17:45Z-slot-123",
+                "client_id": "photo-002",
+                "etag": "\"acc548ded7f7865267f58edcdc3290ae\"",
+                "key_0": "string",
+                "requested_by": "3",
+                "title": "Vista lateral do imóvel"
+            }
+        }
+    ]
+}
+```
+
+entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs também não ocorreu.
+O processo foi executado como previsto? quais os passos falatantes se hovuer algum?
+Onde examino o log para identificar potenciais erros?
+Estamos rodando numa instancia EC2, e as credenciais ADMIN estão em `configs/aws_credentials`, porntao voce pode usar a console para investigar detlhadamente o que ocorreu com os SQS, Lambdas, Step Functions, S3 etc.
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema e as divergências entre as queries SQL e o modelo de dados.
-2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
+2. Resposnda as dúvidas levantandas.
+3. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 
 
