@@ -5,10 +5,11 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/aws/aws-lambda-go/lambda"
 	"zip_generator/internal/adapter"
 	"zip_generator/internal/model"
 	"zip_generator/internal/service"
+
+	"github.com/aws/aws-lambda-go/lambda"
 )
 
 var (
