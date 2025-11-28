@@ -9,7 +9,7 @@
 Baseado em `docs/media_processing_guide.md` executei o passo 3. **Confirmação de upload** e se executo o endpoint POST `/listings/media/status` com o payload:
 ```json
 {
-  "batchId": 5,
+  "batchId": 6,
   "listingIdentityID": 51
 }
 ```
@@ -17,7 +17,7 @@ recebo como resposta:
 ```json
 {
     "listingIdentityId": 51,
-    "batchId": 5,
+    "batchId": 6,
     "status": "RECEIVED",
     "statusMessage": "uploads_confirmed",
     "assets": [
@@ -26,11 +26,11 @@ recebo como resposta:
             "title": "Vista frontal do imóvel",
             "assetType": "PHOTO_VERTICAL",
             "sequence": 1,
-            "rawObjectKey": "51/raw/photo/vertical/2025-11-27/photo-001-20220907_121157.jpg",
+            "rawObjectKey": "51/raw/photo/vertical/2025-11-28/photo-001-20220907_121157.jpg",
             "metadata": {
                 "batch_reference": "2025-11-27T17:45Z-slot-123",
                 "client_id": "photo-001",
-                "etag": "\"acc548ded7f7865267f58edcdc3290ae\"",
+                "etag": "\"80263030da74301d4940408fb7c71ee2\"",
                 "key_0": "string",
                 "requested_by": "3",
                 "title": "Vista frontal do imóvel"
@@ -41,11 +41,11 @@ recebo como resposta:
             "title": "Vista lateral do imóvel",
             "assetType": "PHOTO_VERTICAL",
             "sequence": 2,
-            "rawObjectKey": "51/raw/photo/vertical/2025-11-27/photo-002-20220907_121308.jpg",
+            "rawObjectKey": "51/raw/photo/vertical/2025-11-28/photo-002-20220907_121308.jpg",
             "metadata": {
                 "batch_reference": "2025-11-27T17:45Z-slot-123",
                 "client_id": "photo-002",
-                "etag": "\"acc548ded7f7865267f58edcdc3290ae\"",
+                "etag": "\"80263030da74301d4940408fb7c71ee2\"",
                 "key_0": "string",
                 "requested_by": "3",
                 "title": "Vista lateral do imóvel"
@@ -55,15 +55,15 @@ recebo como resposta:
 }
 ```
 
-entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs também não ocorreu.
-O processo foi executado como previsto? quais os passos falatantes se hovuer algum?
-Onde examino o log para identificar potenciais erros?
+entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs ocorre mas está toq-listing-medias/zip o que não permitira encontr-a-lo pois não está sob o diretório do com listingID.
+
 Estamos rodando numa instancia EC2, e as credenciais ADMIN estão em `configs/aws_credentials`, porntao voce pode usar a console para investigar detlhadamente o que ocorreu com os SQS, Lambdas, Step Functions, S3 etc.
+Caso necessite algum comando SUDO, envie no terminal que digito a senha.
+Houveram diversas interaçoes para correçao, mas sempre correçoes pontuais que não resolvem o problema de forma definitiva.
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
-2. Resposnda as dúvidas levantandas.
-3. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
+2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 
 

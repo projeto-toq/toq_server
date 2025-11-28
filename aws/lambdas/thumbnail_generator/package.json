@@ -1,0 +1,10 @@
+{
+  "name": "listing-media-thumbnails",
+  "version": "1.0.0",
+  "description": "Generate thumbnails for media assets",
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.478.0",
+    "sharp": "^0.33.1"
+  }
+}

@@ -259,3 +259,13 @@ func (b *Bootstrap) WaitShutdown() {
 	<-b.shutdownChan
 	b.logger.Info("🛑 Sinal de shutdown recebido")
 }
+
+// GetEnvironment retorna a configuração de ambiente carregada
+func (b *Bootstrap) GetEnvironment() *globalmodel.Environment {
+	return b.env
+}
+
+// GetLifecycleManager retorna o gerenciador de ciclo de vida
+func (b *Bootstrap) GetLifecycleManager() *LifecycleManager {
+	return b.lifecycleManager
+}

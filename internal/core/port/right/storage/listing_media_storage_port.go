@@ -13,6 +13,8 @@ type ListingMediaStoragePort interface {
 	GenerateProcessedDownloadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset) (SignedURL, error)
 	ValidateObjectChecksum(ctx context.Context, bucketKey string, expectedChecksum string) (StorageObjectMetadata, error)
 	DeleteObject(ctx context.Context, bucketKey string) error
+	DownloadFile(ctx context.Context, key string) ([]byte, error)
+	UploadFile(ctx context.Context, key string, content []byte, contentType string) error
 }
 
 // SignedURL stores the URL plus mandatory headers for clients.

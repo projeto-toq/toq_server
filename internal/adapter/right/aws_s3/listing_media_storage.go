@@ -1,6 +1,7 @@
 package s3adapter
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/hex"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/google/uuid"
@@ -417,6 +419,61 @@ func normalizeChecksum(value string) (string, error) {
 	}
 
 	return "", fmt.Errorf("unsupported checksum format")
+}
+
+// DownloadFile downloads an object from the listing bucket to memory.
+func (a *ListingMediaStorageAdapter) DownloadFile(ctx context.Context, key string) ([]byte, error) {
+	ctx = utils.ContextWithLogger(ctx)
+	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "ListingMediaStorage.DownloadFile")
+	if err != nil {
+		return nil, derrors.Infra("failed to create tracer", err)
+	}
+	defer spanEnd()
+
+	if err := a.ensureClients(); err != nil {
+		utils.SetSpanError(ctx, err)
+		return nil, err
+	}
+
+	buf := manager.NewWriteAtBuffer([]byte{})
+	_, err = a.base.downloader.Download(ctx, buf, &s3.GetObjectInput{
+		Bucket: aws.String(a.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		return nil, derrors.Infra("failed to download file", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+// UploadFile uploads content from memory to the listing bucket.
+func (a *ListingMediaStorageAdapter) UploadFile(ctx context.Context, key string, content []byte, contentType string) error {
+	ctx = utils.ContextWithLogger(ctx)
+	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "ListingMediaStorage.UploadFile")
+	if err != nil {
+		return derrors.Infra("failed to create tracer", err)
+	}
+	defer spanEnd()
+
+	if err := a.ensureClients(); err != nil {
+		utils.SetSpanError(ctx, err)
+		return err
+	}
+
+	_, err = a.base.uploader.Upload(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(a.bucket),
+		Key:         aws.String(key),
+		Body:        bytes.NewReader(content),
+		ContentType: aws.String(contentType),
+	})
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		return derrors.Infra("failed to upload file", err)
+	}
+
+	return nil
 }
 
 const (
