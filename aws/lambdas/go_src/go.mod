@@ -9,7 +9,6 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.40.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.92.1
-	github.com/aws/aws-sdk-go-v2/service/sfn v1.40.2
 	github.com/disintegration/imaging v1.6.2
 	github.com/projeto-toq/toq_server v0.0.0-00010101000000-000000000000
 )

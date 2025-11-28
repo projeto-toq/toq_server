@@ -25,6 +25,14 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	logger := utils.LoggerFromContext(ctx)
 
 	callback := input.Callback
+
+	// LOG: Raw input at service level
+	logger.Info("service.media.callback.received",
+		"job_id", callback.JobID,
+		"status", callback.Status,
+		"outputs_count", len(callback.Outputs),
+	)
+
 	if callback.JobID == 0 {
 		return HandleProcessingCallbackOutput{}, derrors.Validation("jobId is required", map[string]any{"jobId": "required"})
 	}
@@ -80,6 +88,13 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		batchStatus = mediaprocessingmodel.BatchStatusReady
 
 		for _, output := range callback.Outputs {
+			// LOG: Debugging incoming output
+			logger.Debug("service.media.callback.processing_asset",
+				"raw_key", output.RawKey,
+				"processed_key", output.ProcessedKey,
+				"thumbnail_key", output.ThumbnailKey,
+			)
+
 			if asset, exists := assetMap[output.RawKey]; exists {
 				width, _ := strconv.ParseUint(output.Outputs["width"], 10, 16)
 				height, _ := strconv.ParseUint(output.Outputs["height"], 10, 16)
@@ -98,6 +113,14 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 						asset.SetMetadata("variant_"+k, v)
 					}
 				}
+
+				logger.Info("service.media.callback.asset_updated",
+					"asset_id", asset.ID(),
+					"raw_key", output.RawKey,
+					"processed_key", output.ProcessedKey,
+					"thumb_key", output.ThumbnailKey,
+				)
+
 				updatedAssets = append(updatedAssets, *asset)
 			} else {
 				if isZipArtifact(output.ProcessedKey) {
@@ -113,7 +136,20 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 					updatedAssets = append(updatedAssets, newAsset)
 				} else {
-					logger.Warn("service.media.callback.unknown_asset", "raw_key", output.RawKey, "job_id", callback.JobID)
+					// LOG: Critical error diagnosis
+					logger.Error("service.media.callback.asset_mismatch",
+						"received_raw_key", output.RawKey,
+						"batch_id", job.BatchID(),
+						"available_keys_count", len(assetMap),
+					)
+					// Log sample keys
+					keys := make([]string, 0, 3)
+					for k := range assetMap {
+						if len(keys) < 3 {
+							keys = append(keys, k)
+						}
+					}
+					logger.Debug("service.media.callback.available_keys_sample", "keys", keys)
 				}
 			}
 		}

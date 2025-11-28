@@ -46,16 +46,17 @@ type ThumbnailOutput struct {
 }
 
 func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
-	logger.Info("Thumbnails Lambda started", "batchId", event.BatchID)
+	logger.Info("Thumbnails Lambda started", "batch_id", event.BatchID, "assets_to_process", len(event.ValidAssets))
 
 	generatedThumbnails := make([]mediaprocessingmodel.JobAsset, 0)
 
 	for _, asset := range event.ValidAssets {
 		if !strings.HasPrefix(asset.Type, "PHOTO") {
+			logger.Debug("Skipping non-photo asset", "key", asset.Key, "type", asset.Type)
 			continue
 		}
 
-		logger.Info("Processing asset", "key", asset.Key, "type", asset.Type)
+		logger.Info("Processing photo", "key", asset.Key)
 
 		// Download
 		resp, err := s3Client.GetObject(ctx, &s3.GetObjectInput{
@@ -103,6 +104,13 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 				}
 			}
 
+			// LOG: Before upload
+			logger.Debug("Uploading thumbnail",
+				"original_key", asset.Key,
+				"size", sizeName,
+				"target_key", thumbKey,
+			)
+
 			_, err = s3Client.PutObject(ctx, &s3.PutObjectInput{
 				Bucket:      &bucket,
 				Key:         &thumbKey,
@@ -117,10 +125,16 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 			generatedThumbnails = append(generatedThumbnails, mediaprocessingmodel.JobAsset{
 				Key:       thumbKey,
 				Type:      "THUMBNAIL_" + strings.ToUpper(sizeName),
-				SourceKey: asset.Key,
+				SourceKey: asset.Key, // CRUCIAL: Keep link with original
 			})
 		}
 	}
+
+	// LOG: Final output
+	logger.Info("Thumbnails generation finished",
+		"batch_id", event.BatchID,
+		"generated_count", len(generatedThumbnails),
+	)
 
 	return mediaprocessingmodel.LambdaResponse{
 		Body: ThumbnailOutput{

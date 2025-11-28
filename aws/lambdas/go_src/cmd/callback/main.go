@@ -29,7 +29,11 @@ func init() {
 }
 
 func HandleRequest(ctx context.Context, event map[string]any) error {
-	logger.Info("Callback Lambda started", "event", event)
+	// Extract IDs for log
+	batchID, _ := event["batchId"]
+	jobID, _ := event["jobId"]
+
+	logger.Info("Callback Lambda started", "batch_id", batchID, "job_id", jobID)
 
 	if callbackURL == "" {
 		logger.Error("BACKEND_CALLBACK_URL not set")
@@ -40,6 +44,9 @@ func HandleRequest(ctx context.Context, event map[string]any) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
+
+	// LOG: The CRITICAL payload arriving at the backend
+	logger.Info("Sending callback payload", "payload", string(payloadBytes))
 
 	req, err := http.NewRequestWithContext(ctx, "POST", callbackURL, bytes.NewReader(payloadBytes))
 	if err != nil {
@@ -58,9 +65,16 @@ func HandleRequest(ctx context.Context, event map[string]any) error {
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
+		logger.Error("Callback request failed", "error", err)
 		return fmt.Errorf("failed to send callback: %w", err)
 	}
 	defer resp.Body.Close()
+
+	// LOG: Backend response
+	logger.Info("Callback response received",
+		"status_code", resp.StatusCode,
+		"batch_id", batchID,
+	)
 
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("callback failed with status: %d", resp.StatusCode)

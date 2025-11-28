@@ -8,15 +8,13 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/sfn"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
 var (
-	s3Client  *s3.Client
-	sfnClient *sfn.Client
-	logger    *slog.Logger
-	bucket    string
+	s3Client *s3.Client
+	logger   *slog.Logger
+	bucket   string
 )
 
 func init() {
@@ -33,23 +31,34 @@ func init() {
 	}
 
 	s3Client = s3.NewFromConfig(cfg)
-	sfnClient = sfn.NewFromConfig(cfg)
 }
 
 func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.StepFunctionPayload, error) {
-	logger.Info("Validate Lambda started", "batchId", event.BatchID, "listingId", event.ListingID)
+	// LOG: Start with context
+	logger.Info("Validate Lambda started",
+		"batch_id", event.BatchID,
+		"listing_id", event.ListingID,
+		"input_assets_count", len(event.Assets),
+	)
 
 	validAssets := make([]mediaprocessingmodel.JobAsset, 0, len(event.Assets))
 
 	for _, asset := range event.Assets {
+		// LOG: Checking each asset
+		logger.Debug("Validating asset", "key", asset.Key, "batch_id", event.BatchID)
+
 		headOutput, err := s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 			Bucket: &bucket,
 			Key:    &asset.Key,
 		})
 
 		if err != nil {
-			logger.Error("Failed to validate asset", "key", asset.Key, "error", err)
-			// We skip invalid assets but log them. In a stricter mode, we might fail the batch.
+			// LOG: Specific failure
+			logger.Error("Asset validation failed",
+				"key", asset.Key,
+				"batch_id", event.BatchID,
+				"error", err,
+			)
 			continue
 		}
 
@@ -59,14 +68,22 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 		if headOutput.ETag != nil {
 			asset.ETag = *headOutput.ETag
 		}
-		// SourceKey is same as Key for now, but could be different if we moved files.
 		asset.SourceKey = asset.Key
 
 		validAssets = append(validAssets, asset)
+
+		// LOG: Individual success
+		logger.Debug("Asset valid", "key", asset.Key, "size", asset.Size)
 	}
 
 	event.ValidAssets = validAssets
-	logger.Info("Validation complete", "validCount", len(validAssets), "totalCount", len(event.Assets))
+
+	// LOG: Final summary
+	logger.Info("Validation complete",
+		"batch_id", event.BatchID,
+		"valid_count", len(validAssets),
+		"invalid_count", len(event.Assets)-len(validAssets),
+	)
 
 	return event, nil
 }

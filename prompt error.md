@@ -55,16 +55,18 @@ recebo como resposta:
 }
 ```
 
-entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs não está ocorrendo.
+Entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs está correta.
 
 Estamos rodando numa instancia EC2, e as credenciais ADMIN estão em `configs/aws_credentials`, porntao voce pode usar a console para investigar detlhadamente o que ocorreu com os SQS, Lambdas, Step Functions, S3 etc.
 Caso necessite algum comando SUDO, envie no terminal que digito a senha.
 Comandos devem ser enviados individualmente, um por vez.
 Houveram diversas interaçoes para correçao, mas sempre correçoes pontuais que não resolvem o problema de forma definitiva.
+Portanto, o objetivo aqui é uma análise profunda e completa para identificar a causa raiz do problema e propor um plano de refatoração detalhado.
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
+3. Implemente log de debuging detalhado para facilitar futuras análises, em todas as etapas do processo de upload, confirmação, processamento e geração dos assets convertidos. Principalmente nos lambdas e step functions e callbacks.
 
 
 

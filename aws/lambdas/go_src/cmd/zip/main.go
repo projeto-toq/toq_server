@@ -45,7 +45,7 @@ type ZipOutput struct {
 }
 
 func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
-	logger.Info("Zip Lambda started", "batchId", event.BatchID)
+	logger.Info("Zip Lambda started", "batch_id", event.BatchID, "assets_to_zip", len(event.ValidAssets))
 
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
@@ -53,7 +53,7 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 	zippedCount := 0
 
 	for _, asset := range event.ValidAssets {
-		logger.Info("Zipping asset", "key", asset.Key)
+		logger.Debug("Zipping asset", "key", asset.Key)
 
 		resp, err := s3Client.GetObject(ctx, &s3.GetObjectInput{
 			Bucket: &bucket,
@@ -86,6 +86,8 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 	}
 
 	zipKey := fmt.Sprintf("%d/zip/complete_%d_%d.zip", event.ListingID, event.BatchID, time.Now().Unix())
+
+	logger.Info("Uploading zip bundle", "key", zipKey, "size_bytes", buf.Len())
 
 	_, err := s3Client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      &bucket,
