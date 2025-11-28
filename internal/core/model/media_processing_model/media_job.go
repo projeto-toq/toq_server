@@ -102,6 +102,29 @@ func (j *MediaProcessingJob) SetCallbackBody(body string) {
 	j.callbackBody = body
 }
 
+// JobAsset defines the contract between Backend -> SQS -> Lambdas.
+type JobAsset struct {
+	Key       string `json:"key"`
+	Type      string `json:"type"`                // Enum: PHOTO_VERTICAL, VIDEO_HORIZONTAL, etc.
+	SourceKey string `json:"sourceKey,omitempty"` // Filled by validation
+	Size      int64  `json:"size,omitempty"`
+	ETag      string `json:"etag,omitempty"`
+}
+
+// StepFunctionPayload is the unified payload for Step Functions.
+type StepFunctionPayload struct {
+	BatchID     uint64     `json:"batchId"`
+	ListingID   uint64     `json:"listingId"`
+	Assets      []JobAsset `json:"assets"`      // Raw input
+	ValidAssets []JobAsset `json:"validAssets"` // Validation output
+	Traceparent string     `json:"traceparent"`
+}
+
+// LambdaResponse wraps the output to match Step Functions expectation ($.body).
+type LambdaResponse struct {
+	Body any `json:"body"`
+}
+
 // MediaProcessingJobPayload keeps information serialized from the async provider.
 type MediaProcessingJobPayload struct {
 	RawKey       string
@@ -114,11 +137,11 @@ type MediaProcessingJobPayload struct {
 
 // MediaProcessingJobMessage is the payload sent to SQS/Step Functions.
 type MediaProcessingJobMessage struct {
-	JobID     uint64   `json:"jobId"`
-	BatchID   uint64   `json:"batchId"`
-	ListingID uint64   `json:"listingId"`
-	Assets    []string `json:"assets"`
-	Retry     uint16   `json:"retry"`
+	JobID     uint64     `json:"jobId"`
+	BatchID   uint64     `json:"batchId"`
+	ListingID uint64     `json:"listingId"`
+	Assets    []JobAsset `json:"assets"`
+	Retry     uint16     `json:"retry"`
 }
 
 // MediaProcessingCallback represents the structure received from the async workflow.

@@ -82,12 +82,15 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 		return RetryMediaBatchOutput{}, derrors.Conflict("no assets found to retry")
 	}
 
-	objectKeys := make([]string, 0, len(assets))
+	jobAssets := make([]mediaprocessingmodel.JobAsset, 0, len(assets))
 	for _, asset := range assets {
 		if asset.RawObjectKey() == "" {
 			return RetryMediaBatchOutput{}, derrors.Conflict("raw objects missing for retry")
 		}
-		objectKeys = append(objectKeys, asset.RawObjectKey())
+		jobAssets = append(jobAssets, mediaprocessingmodel.JobAsset{
+			Key:  asset.RawObjectKey(),
+			Type: string(asset.AssetType()),
+		})
 	}
 
 	metadata := mediaprocessingmodel.BatchStatusMetadata{
@@ -123,7 +126,7 @@ func (s *mediaProcessingService) RetryMediaBatch(ctx context.Context, input Retr
 		JobID:     jobID,
 		BatchID:   input.BatchID,
 		ListingID: input.ListingIdentityID.Uint64(),
-		Assets:    objectKeys,
+		Assets:    jobAssets,
 		Retry:     1,
 	}
 

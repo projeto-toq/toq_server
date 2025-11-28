@@ -55,10 +55,11 @@ recebo como resposta:
 }
 ```
 
-entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs ocorre mas está toq-listing-medias/zip o que não permitira encontr-a-lo pois não está sob o diretório do com listingID.
+entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs não está ocorrendo.
 
 Estamos rodando numa instancia EC2, e as credenciais ADMIN estão em `configs/aws_credentials`, porntao voce pode usar a console para investigar detlhadamente o que ocorreu com os SQS, Lambdas, Step Functions, S3 etc.
 Caso necessite algum comando SUDO, envie no terminal que digito a senha.
+Comandos devem ser enviados individualmente, um por vez.
 Houveram diversas interaçoes para correçao, mas sempre correçoes pontuais que não resolvem o problema de forma definitiva.
 
 Assim:

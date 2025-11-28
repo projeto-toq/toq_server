@@ -1,0 +1,52 @@
+{
+  "Records": [
+    {
+      "messageId": "405d0340-fb36-4e81-8a8b-1f6ca8033f2c",
+      "receiptHandle": "AQEBDGUOkCxgkAHzSaFH+SHUGLMUOAwyZUxCN/252R0mp76QL9gVnUtn8jGLPxjdcuT26S6rqfUYHU+skcpF+jSSzyWnut6ocjiQe0Lwxsf+TsUPTeiznjK6TB0leMgE1GMBXtr1VpxE8TTyh9n7MTgkZdHLOdf9cP9f61m2vQe4wWe7ivRDglg4FpSxGZFPqpx51JQqTfY94xwD/wlgAGS6mTO882I1uAtbm760D+SgDZTGDFj/h0frMQiwj1EMDb3fdzdfMATuV+GLNPH4vos9cuUWh5UHivTE7KnJyBZNnDY0ul4IJLAYu+CH5Yn3K+54wq79BUFIEJ5yDpcSZFV4bfbPnglwv4/Oy2UjCVEzF2CcAksthzasO/k7jmukOamZvuabXoCUF/oGR7wKYDHf0IRnCBuxNhh7g30htyqBbUA=",
+      "body": "{\"jobId\":14,\"batchId\":6,\"listingId\":51,\"assets\":[\"51/raw/photo/vertical/2025-11-28/photo-001-20220907_121157.jpg\",\"51/raw/photo/vertical/2025-11-28/photo-002-20220907_121308.jpg\"],\"retry\":0}",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1764327341622",
+        "SenderId": "AROAQ3EGR6UW45MXN223P:i-0cf43425ada73388a",
+        "ApproximateFirstReceiveTimestamp": "1764327341631"
+      },
+      "messageAttributes": {
+        "RetryCount": {
+          "stringValue": "0",
+          "stringListValues": [],
+          "binaryListValues": [],
+          "dataType": "String"
+        },
+        "BatchId": {
+          "stringValue": "6",
+          "stringListValues": [],
+          "binaryListValues": [],
+          "dataType": "String"
+        },
+        "ListingId": {
+          "stringValue": "51",
+          "stringListValues": [],
+          "binaryListValues": [],
+          "dataType": "String"
+        },
+        "JobId": {
+          "stringValue": "14",
+          "stringListValues": [],
+          "binaryListValues": [],
+          "dataType": "String"
+        },
+        "Traceparent": {
+          "stringValue": "00-c9fa41df4178263b716951c23b2debe0-3b79e0b25512d4c0-01",
+          "stringListValues": [],
+          "binaryListValues": [],
+          "dataType": "String"
+        }
+      },
+      "md5OfBody": "1280197c1652b7100c1db445c3af1e61",
+      "md5OfMessageAttributes": "13bf2a6593be2f06de3d4ca8733c8232",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:058264253741:listing-media-processing-staging",
+      "awsRegion": "us-east-1"
+    }
+  ]
+}

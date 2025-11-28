@@ -199,11 +199,19 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 	}
 	committed = true
 
+	jobAssets := make([]mediaprocessingmodel.JobAsset, 0, len(updatedAssets))
+	for _, asset := range updatedAssets {
+		jobAssets = append(jobAssets, mediaprocessingmodel.JobAsset{
+			Key:  asset.RawObjectKey(),
+			Type: string(asset.AssetType()),
+		})
+	}
+
 	queuePayload := mediaprocessingmodel.MediaProcessingJobMessage{
 		JobID:     jobID,
 		BatchID:   input.BatchID,
 		ListingID: input.ListingIdentityID.Uint64(),
-		Assets:    objectKeys,
+		Assets:    jobAssets,
 		Retry:     0,
 	}
 
