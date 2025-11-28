@@ -65,6 +65,15 @@ func SetupRoutes(
 	holidayHandler := handlers.HolidayHandler
 	photoSessionHandler := handlers.PhotoSessionHandler
 
+	// Internal routes (system-to-system)
+	internal := router.Group("/internal")
+	{
+		mediaProcessing := internal.Group("/media-processing")
+		{
+			mediaProcessing.POST("/callback", listingHandler.HandleProcessingCallback)
+		}
+	}
+
 	// API base routes (v2)
 	base := "/api/v2"
 	if versionProvider != nil {

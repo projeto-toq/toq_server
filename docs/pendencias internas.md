@@ -36,6 +36,15 @@
 
 - contar tempo do envio do pedido de visitas até aceite/recusa do proprietário.
     Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis
+- Necessário criar um endpoint para apagar medias do bucket S3, para o caso de fotos enviadas que não serão usadas.
+- como serão limpos os dados de uploads/bactchs com erro de upload?
+
+
+
+
+
+
+
 
 ## Resolvidos
  - O primeiro ao promover uma versão, ele tá usando a informação de id da entidade do imóvel e não listingIdentityId.==> está correto o código
