@@ -11,7 +11,7 @@ import (
 
 	"github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/adapter/left/lambda/thumbnails"
 	s3adapter "github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/adapter/right/s3"
-	"github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/service/image_processing"
+	imageprocessing "github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/service/image_processing"
 )
 
 func main() {

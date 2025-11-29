@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/service/image_processing"
+	imageprocessing "github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/service/image_processing"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
