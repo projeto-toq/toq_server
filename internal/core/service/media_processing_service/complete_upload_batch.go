@@ -114,7 +114,6 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 	}
 
 	updatedAssets := make([]mediaprocessingmodel.MediaAsset, 0, len(input.Files))
-	objectKeys := make([]string, 0, len(input.Files))
 
 	for idx, file := range input.Files {
 		clientID := strings.TrimSpace(file.ClientID)
@@ -162,7 +161,6 @@ func (s *mediaProcessingService) CompleteUploadBatch(ctx context.Context, input 
 		}
 
 		updatedAssets = append(updatedAssets, asset)
-		objectKeys = append(objectKeys, objectKey)
 	}
 
 	if err := s.repo.UpsertAssets(ctx, tx, updatedAssets); err != nil {

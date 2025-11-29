@@ -1,0 +1,6 @@
+{
+    "PolicyNames": [
+        "AllowStepFunctionsExecution",
+        "MediaProcessingLambdaPolicy"
+    ]
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -162,10 +163,20 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 			}
 		}
 
-	case mediaprocessingmodel.MediaProcessingJobStatusFailed:
+	case mediaprocessingmodel.MediaProcessingJobStatusFailed, "PROCESSING_FAILED", "VALIDATION_FAILED":
 		batchStatus = mediaprocessingmodel.BatchStatusFailed
 		statusMessage = "processing_failed"
 		failureReason = callback.FailureReason
+
+		if failureReason == "" && callback.Error != nil {
+			failureReason = fmt.Sprintf("%v", callback.Error)
+		}
+
+		logger.Error("service.media.callback.job_failed",
+			"job_id", callback.JobID,
+			"reason", failureReason,
+			"raw_error", callback.Error,
+		)
 
 	default:
 		logger.Warn("service.media.callback.unknown_status",

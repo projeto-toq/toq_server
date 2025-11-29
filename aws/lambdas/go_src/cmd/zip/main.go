@@ -2,7 +2,6 @@ package main
 
 import (
 	"archive/zip"
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -13,12 +12,14 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
 var (
 	s3Client *s3.Client
+	uploader *manager.Uploader
 	logger   *slog.Logger
 	bucket   string
 )
@@ -37,6 +38,8 @@ func init() {
 	}
 
 	s3Client = s3.NewFromConfig(cfg)
+	// Uploader facilita multipart upload para streams
+	uploader = manager.NewUploader(s3Client)
 }
 
 type ZipOutput struct {
@@ -46,56 +49,69 @@ type ZipOutput struct {
 }
 
 func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
-	logger.Info("Zip Lambda started", "batch_id", event.BatchID, "assets_to_zip", len(event.ValidAssets))
-
-	buf := new(bytes.Buffer)
-	zipWriter := zip.NewWriter(buf)
-
-	zippedCount := 0
-
-	for _, asset := range event.ValidAssets {
-		logger.Debug("Zipping asset", "key", asset.Key)
-
-		resp, err := s3Client.GetObject(ctx, &s3.GetObjectInput{
-			Bucket: &bucket,
-			Key:    &asset.Key,
-		})
-		if err != nil {
-			logger.Error("Failed to download asset for zip", "key", asset.Key, "error", err)
-			continue
-		}
-
-		f, err := zipWriter.Create(asset.Key)
-		if err != nil {
-			logger.Error("Failed to create zip entry", "key", asset.Key, "error", err)
-			resp.Body.Close()
-			continue
-		}
-
-		_, err = io.Copy(f, resp.Body)
-		resp.Body.Close()
-		if err != nil {
-			logger.Error("Failed to write zip entry", "key", asset.Key, "error", err)
-			continue
-		}
-
-		zippedCount++
-	}
-
-	if err := zipWriter.Close(); err != nil {
-		return mediaprocessingmodel.LambdaResponse{}, fmt.Errorf("failed to close zip writer: %w", err)
-	}
+	logger.Info("Zip Lambda started (Streaming Mode)", "batch_id", event.BatchID, "assets_count", len(event.ValidAssets))
 
 	zipKey := fmt.Sprintf("%d/zip/complete_%d_%d.zip", event.ListingID, event.BatchID, time.Now().Unix())
 
-	logger.Info("Uploading zip bundle", "key", zipKey, "size_bytes", buf.Len())
+	// Pipe: writer (zip) -> reader (s3 upload)
+	pr, pw := io.Pipe()
+	zipWriter := zip.NewWriter(pw)
 
-	_, err := s3Client.PutObject(ctx, &s3.PutObjectInput{
+	// Canal para capturar erro da goroutine de escrita
+	errCh := make(chan error, 1)
+	zippedCount := 0
+
+	go func() {
+		defer pw.Close()
+		defer zipWriter.Close()
+
+		for _, asset := range event.ValidAssets {
+			// 1. Download do S3 (Stream)
+			resp, err := s3Client.GetObject(ctx, &s3.GetObjectInput{
+				Bucket: &bucket,
+				Key:    &asset.Key,
+			})
+			if err != nil {
+				logger.Error("Failed to download asset", "key", asset.Key, "error", err)
+				errCh <- fmt.Errorf("download failed for %s: %w", asset.Key, err)
+				return
+			}
+
+			// 2. Criar entrada no ZIP
+			f, err := zipWriter.Create(asset.Key)
+			if err != nil {
+				resp.Body.Close()
+				logger.Error("Failed to create zip entry", "key", asset.Key, "error", err)
+				errCh <- fmt.Errorf("zip entry failed for %s: %w", asset.Key, err)
+				return
+			}
+
+			// 3. Copiar stream (S3 -> Zip)
+			if _, err := io.Copy(f, resp.Body); err != nil {
+				resp.Body.Close()
+				logger.Error("Failed to write zip content", "key", asset.Key, "error", err)
+				errCh <- fmt.Errorf("zip write failed for %s: %w", asset.Key, err)
+				return
+			}
+			resp.Body.Close()
+			zippedCount++
+		}
+		close(errCh) // Sucesso
+	}()
+
+	// Upload bloqueante lendo do PipeReader
+	_, err := uploader.Upload(ctx, &s3.PutObjectInput{
 		Bucket:      &bucket,
 		Key:         &zipKey,
-		Body:        bytes.NewReader(buf.Bytes()),
+		Body:        pr,
 		ContentType: aws.String("application/zip"),
 	})
+
+	// Verificar se houve erro na goroutine
+	if zipErr := <-errCh; zipErr != nil {
+		return mediaprocessingmodel.LambdaResponse{}, zipErr
+	}
+
 	if err != nil {
 		return mediaprocessingmodel.LambdaResponse{}, fmt.Errorf("failed to upload zip: %w", err)
 	}

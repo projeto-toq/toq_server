@@ -154,5 +154,6 @@ type MediaProcessingCallback struct {
 	Provider      MediaProcessingProvider     `json:"provider"`
 	Outputs       []MediaProcessingJobPayload `json:"outputs"`
 	FailureReason string                      `json:"failureReason"`
+	Error         any                         `json:"error"`
 	RawBody       string
 }

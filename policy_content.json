@@ -1,0 +1,14 @@
+{
+    "RoleName": "toq-media-processing-lambda-staging",
+    "PolicyName": "AllowStepFunctionsExecution",
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": "states:StartExecution",
+                "Resource": "arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging"
+            }
+        ]
+    }
+}
