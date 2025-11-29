@@ -50,7 +50,9 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 
 	generatedThumbnails := make([]mediaprocessingmodel.JobAsset, 0)
 
-	for _, asset := range event.ValidAssets {
+	for i, asset := range event.ValidAssets {
+		logger.Info("Inspecting asset", "index", i, "key", asset.Key, "type", asset.Type)
+
 		if !strings.HasPrefix(asset.Type, "PHOTO") {
 			logger.Debug("Skipping non-photo asset", "key", asset.Key, "type", asset.Type)
 			continue

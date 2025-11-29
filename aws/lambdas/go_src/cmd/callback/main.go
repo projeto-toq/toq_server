@@ -24,7 +24,11 @@ var (
 
 func init() {
 	logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	callbackURL = os.Getenv("BACKEND_CALLBACK_URL")
+	callbackURL = os.Getenv("CALLBACK_URL")
+	if callbackURL == "" {
+		// Fallback for backward compatibility or local testing
+		callbackURL = os.Getenv("BACKEND_CALLBACK_URL")
+	}
 	secret = os.Getenv("CALLBACK_SECRET")
 }
 
@@ -33,14 +37,30 @@ func HandleRequest(ctx context.Context, event map[string]any) error {
 	batchID, _ := event["batchId"]
 	jobID, _ := event["jobId"]
 
+	// Check if event is wrapped in "body" (Step Function output)
+	var payloadToSend any = event
+	if body, ok := event["body"]; ok {
+		// If body is a map, use it as the payload
+		if bodyMap, ok := body.(map[string]any); ok {
+			payloadToSend = bodyMap
+			// Extract IDs from inner body if not found in outer
+			if batchID == nil {
+				batchID, _ = bodyMap["batchId"]
+			}
+			if jobID == nil {
+				jobID, _ = bodyMap["jobId"]
+			}
+		}
+	}
+
 	logger.Info("Callback Lambda started", "batch_id", batchID, "job_id", jobID)
 
 	if callbackURL == "" {
-		logger.Error("BACKEND_CALLBACK_URL not set")
-		return fmt.Errorf("BACKEND_CALLBACK_URL not set")
+		logger.Error("CALLBACK_URL not set")
+		return fmt.Errorf("CALLBACK_URL not set")
 	}
 
-	payloadBytes, err := json.Marshal(event)
+	payloadBytes, err := json.Marshal(payloadToSend)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}

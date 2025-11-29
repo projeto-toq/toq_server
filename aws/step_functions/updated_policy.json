@@ -1,0 +1,66 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "InvokeLambdas",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:InvokeFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:us-east-1:058264253741:function:listing-media-validate-staging",
+                "arn:aws:lambda:us-east-1:058264253741:function:listing-media-thumbnails-staging",
+                "arn:aws:lambda:us-east-1:058264253741:function:listing-media-zip-staging",
+                "arn:aws:lambda:us-east-1:058264253741:function:listing-media-callback-dispatch-staging",
+                "arn:aws:lambda:us-east-1:058264253741:function:listing-media-consolidate-staging"
+            ]
+        },
+        {
+            "Sid": "MediaConvertJobs",
+            "Effect": "Allow",
+            "Action": [
+                "mediaconvert:CreateJob",
+                "mediaconvert:GetJob",
+                "mediaconvert:DescribeEndpoints"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SQSSendMessage",
+            "Effect": "Allow",
+            "Action": [
+                "sqs:SendMessage"
+            ],
+            "Resource": [
+                "arn:aws:sqs:us-east-1:058264253741:listing-media-processing-staging",
+                "arn:aws:sqs:us-east-1:058264253741:listing-media-processing-dlq-staging"
+            ]
+        },
+        {
+            "Sid": "CloudWatchLogs",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "XRayTracing",
+            "Effect": "Allow",
+            "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords",
+                "xray:GetSamplingRules",
+                "xray:GetSamplingTargets"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

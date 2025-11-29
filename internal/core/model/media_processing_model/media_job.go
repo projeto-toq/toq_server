@@ -113,10 +113,12 @@ type JobAsset struct {
 
 // StepFunctionPayload is the unified payload for Step Functions.
 type StepFunctionPayload struct {
+	JobID       uint64     `json:"jobId"` // Added
 	BatchID     uint64     `json:"batchId"`
 	ListingID   uint64     `json:"listingId"`
 	Assets      []JobAsset `json:"assets"`      // Raw input
 	ValidAssets []JobAsset `json:"validAssets"` // Validation output
+	HasVideos   bool       `json:"hasVideos"`   // Flag for video processing
 	Traceparent string     `json:"traceparent"`
 }
 

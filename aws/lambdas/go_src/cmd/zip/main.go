@@ -40,8 +40,9 @@ func init() {
 }
 
 type ZipOutput struct {
-	ZipKey       string `json:"zipKey"`
-	AssetsZipped int    `json:"assetsZipped"`
+	ZipKey       string   `json:"zipKey"`
+	AssetsZipped int      `json:"assetsZipped"`
+	ZipBundles   []string `json:"zipBundles"`
 }
 
 func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
@@ -103,6 +104,7 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 		Body: ZipOutput{
 			ZipKey:       zipKey,
 			AssetsZipped: zippedCount,
+			ZipBundles:   []string{zipKey},
 		},
 	}, nil
 }
