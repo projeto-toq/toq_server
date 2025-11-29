@@ -1,6 +1,6 @@
 # TOQ Server - Media Processing Infrastructure
 ## Recursos AWS Criados - Staging Environment
-**Data:** 17 de Novembro de 2025  
+**Data:** 29 de Novembro de 2025  
 **Região:** us-east-1  
 **Ambiente:** staging
 
@@ -28,6 +28,14 @@
 - **Block Public Access:** Todas opções ativadas
 - **Logging:** Enabled → `toq-logs-staging`
 - **Lifecycle Rule:** `raw/` → Glacier após 180 dias
+
+### Estrutura de Pastas (Atualizado)
+- **Raw (Upload):** `/{listingId}/raw/{mediaType}/{uuid}.{ext}`
+  - *Nota:* Segmentos de data (YYYY-MM-DD) foram removidos para simplificar a estrutura.
+- **Processed (Thumbnails):** `/{listingId}/processed/{mediaType}/{size}/{uuid}.{ext}`
+  - Tamanhos: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px).
+- **Zip Bundles:** `/{listingId}/processed/zip/{batchId}.zip`
+  - Conteúdo interno do Zip é limpo (sem prefixos `processed/` ou datas).
 
 ### Bucket de Logs
 - **Nome:** `toq-logs-staging`
@@ -87,7 +95,7 @@
 - **ARN:** `arn:aws:iam::058264253741:role/toq-media-processing-stepfunctions-staging`
 - **Assume Role:** states.amazonaws.com
 - **Permissões:**
-  - Lambda: InvokeFunction (todas as 4 Lambdas)
+  - Lambda: InvokeFunction (todas as 5 Lambdas)
   - MediaConvert: CreateJob, GetJob
   - SQS: SendMessage
   - CloudWatch Logs, X-Ray
@@ -98,201 +106,25 @@
 - **Assume Role:** mediaconvert.amazonaws.com
 - **Permissões:**
   - S3: GetObject, PutObject (toq-listing-medias)
-  - KMS: Encrypt, Decrypt, GenerateDataKey
 
 ---
 
-## 5. AWS Lambda - Funções (Placeholder)
+## 5. Implementação das Lambdas (Go)
 
-### 5.1 Validate
-- **Nome:** `listing-media-validate-staging`
-- **ARN:** `arn:aws:lambda:us-east-1:058264253741:function:listing-media-validate-staging`
-- **Runtime:** Node.js 20.x
-- **Memory:** 512 MB | **Timeout:** 60s
-- **Propósito:** Validar assets no S3 (checksum, bytes, existência)
+As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagonal.
 
-### 5.2 Thumbnails
-- **Nome:** `listing-media-thumbnails-staging`
-- **ARN:** `arn:aws:lambda:us-east-1:058264253741:function:listing-media-thumbnails-staging`
-- **Runtime:** Node.js 20.x
-- **Memory:** 2048 MB | **Timeout:** 300s
-- **Propósito:** Gerar thumbnails com Sharp (layer necessária)
+### Funções
+1. **Validate (`listing-media-validate-staging`)**: Valida assets no S3 contra o manifesto.
+2. **Thumbnails (`listing-media-thumbnails-staging`)**:
+   - Gera thumbnails usando `disintegration/imaging`.
+   - Corrige rotação baseada em EXIF automaticamente.
+   - Gera tamanhos: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px).
+3. **Zip (`listing-media-zip-staging`)**:
+   - Cria arquivo ZIP contendo todas as mídias processadas.
+   - Limpa estrutura de pastas interna (remove prefixos de sistema).
+4. **Consolidate (`listing-media-consolidate-staging`)**: Agrega resultados do processamento paralelo.
+5. **Callback (`listing-media-callback-staging`)**: Envia webhook de volta ao backend.
 
-### 5.3 ZIP
-- **Nome:** `listing-media-zip-staging`
-- **ARN:** `arn:aws:lambda:us-east-1:058264253741:function:listing-media-zip-staging`
-- **Runtime:** Python 3.12
-- **Memory:** 3008 MB | **Timeout:** 900s | **Storage:** 2 GB
-- **Propósito:** Compactar assets processados
-
-### 5.4 Callback Dispatch
-- **Nome:** `listing-media-callback-dispatch-staging`
-- **ARN:** `arn:aws:lambda:us-east-1:058264253741:function:listing-media-callback-dispatch-staging`
-- **Runtime:** provided.al2023 (custom)
-- **Memory:** 256 MB | **Timeout:** 60s
-- **Propósito:** Enviar callback ao backend
-
-**Variáveis de Ambiente (todas):**
-- `ENV=staging`
-- `MEDIA_BUCKET=toq-listing-medias`
-- `TRACE_HEADER_KEY=traceparent`
-- `CALLBACK_URL=https://api-staging.toq.com/internal/media-processing/callback` (só callback)
-
----
-
-## 6. AWS Step Functions - State Machine
-
-### State Machine
-- **Nome:** `listing-media-processing-sm-staging`
-- **ARN:** `arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging`
-- **Tipo:** STANDARD
-- **Status:** ACTIVE
-- **Logging:** ALL (CloudWatch Logs)
-- **Tracing:** X-Ray habilitado
-- **Log Group:** `/aws/stepfunctions/listing-media-processing-sm-staging` (retenção 30 dias)
-
-### Workflow States
-1. **ValidateRawAssets** → Valida assets
-2. **ParallelProcessing** →
-   - Branch 1: GenerateThumbnails
-   - Branch 2: CheckVideoProcessing → ProcessVideos (MediaConvert) ou Skip
-3. **CreateZipBundle** → Compacta assets
-4. **FinalizeAndCallback** → Notifica backend
-5. **ProcessingSucceeded** / **ValidationFailed** / **ProcessingFailed**
-
----
-
-## 7. AWS MediaConvert - Transcodificação
-
-### Queue
-- **Nome:** `toq-media-queue-staging`
-- **ARN:** `arn:aws:mediaconvert:us-east-1:058264253741:queues/toq-media-queue-staging`
-- **Status:** ACTIVE
-- **Pricing:** ON_DEMAND
-
-### Job Template
-- **Nome:** `toq-media-video-preset-staging`
-- **ARN:** `arn:aws:mediaconvert:us-east-1:058264253741:jobTemplates/toq-media-video-preset-staging`
-- **Category:** toq-media-processing
-- **Outputs:**
-  - 1080p: H.264 (5 Mbps max), AAC 128 kbps, MP4
-  - 720p: H.264 (3 Mbps max), AAC 96 kbps, MP4
-
----
-
-## 8. Amazon SNS - Notificações
-
-### Topic
-- **Nome:** `toq-media-alerts-staging`
-- **ARN:** `arn:aws:sns:us-east-1:058264253741:toq-media-alerts-staging`
-- **Subscription:** giulio.alfieri@gmail.com (confirmar email)
-
----
-
-## 9. Amazon EventBridge - Eventos
-
-### Rule MediaConvert
-- **Nome:** `toq-media-mediaconvert-status-staging`
-- **ARN:** `arn:aws:events:us-east-1:058264253741:rule/toq-media-mediaconvert-status-staging`
-- **Padrão:** Eventos de MediaConvert (COMPLETE/ERROR) da queue staging
-- **Target:** SNS topic `toq-media-alerts-staging`
-
----
-
-## 10. Amazon CloudWatch - Alarmes
-
-### Alarme 1: DLQ Messages
-- **Nome:** `listing-media-dlq-has-messages-staging`
-- **Métrica:** ApproximateNumberOfMessagesVisible (SQS DLQ)
-- **Threshold:** > 0
-- **Período:** 5 minutos
-- **Ação:** Notifica SNS
-
-### Alarme 2: Step Functions Failures
-- **Nome:** `stepfunctions-execution-failed-staging`
-- **Métrica:** ExecutionsFailed (Step Functions)
-- **Threshold:** > 0
-- **Período:** 5 minutos
-- **Ação:** Notifica SNS
-
-### Alarme 3: Lambda Errors
-- **Nome:** `lambda-errors-media-processing-staging`
-- **Métrica:** Errors (Lambda - todas funções)
-- **Threshold:** > 5
-- **Período:** 5 minutos
-- **Ação:** Notifica SNS
-
----
-
-## 11. Próximos Passos - Implementação
-
-### Para o Time de Backend (Go):
-1. Implementar código real nas Lambdas (atualmente placeholders)
-2. Adicionar Sharp layer na Lambda `listing-media-thumbnails-staging`
-3. Configurar variáveis de ambiente no `env.yaml`:
-   ```yaml
-   aws:
-     region: us-east-1
-     kms_key_id: 2fd6d9e5-dc43-4275-ba77-79c99cad509c
-     media_bucket: toq-listing-medias
-     sqs_queue_url: https://sqs.us-east-1.amazonaws.com/058264253741/listing-media-processing-staging
-     step_functions_arn: arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging
-   ```
-4. Implementar endpoints:
-   - `POST /internal/media-processing/callback` (recebe callbacks)
-   - `POST /api/v1/listings/{id}/media/batch` (inicia upload)
-5. Aplicar migrations SQL (criar tabelas `listing_media_*`)
-
-### Para o Time de Cloud/DevOps:
-1. Revisar e ajustar policies IAM se necessário
-2. Configurar backups do bucket S3 se aplicável
-3. Monitorar custos (MediaConvert é pay-per-use)
-4. Configurar dashboards Grafana/CloudWatch personalizados
-5. Implementar housekeeping automatizado (fase futura)
-
-### Para o Time de QA:
-1. Testar workflow completo end-to-end
-2. Validar alarmes e notificações
-3. Testar cenários de falha (DLQ, retries)
-4. Verificar tracing X-Ray funcionando
-
----
-
-## 12. Custos Estimados (Staging)
-
-- **S3:** ~$0.023/GB/mês + requests
-- **SQS:** Grátis até 1M requests/mês
-- **Lambda:** Grátis até 1M requests + 400k GB-s/mês
-- **Step Functions:** $0.025 por 1000 transições de estado
-- **MediaConvert:** ~$0.015/minuto (1080p SD) + ~$0.0075/min (720p SD)
-- **KMS:** $1/mês por chave + $0.03 per 10k requests
-- **CloudWatch Logs:** $0.50/GB ingestão, $0.03/GB armazenamento
-
-**Estimativa mensal (uso moderado):** $20-50 USD
-
----
-
-## 13. Segurança e Compliance
-
-✅ Criptografia em repouso (KMS) em todos os recursos  
-✅ Criptografia em trânsito (TLS)  
-✅ Block Public Access no S3  
-✅ Least privilege IAM policies  
-✅ Logging e auditoria habilitados  
-✅ X-Ray tracing para troubleshooting  
-✅ Alarmes para detecção de falhas  
-
----
-
-## 14. Credenciais Locais
-
-**Arquivo:** `/codigos/go_code/toq_server/configs/aws_credentials`  
-**Symlink:** `~/.aws/credentials → configs/aws_credentials`  
-**Perfil:** `admin`  
-
-⚠️ **Não commitar** este arquivo no Git!
-
----
-
-**Documento gerado automaticamente**  
-Para dúvidas: contatar time de Cloud/Backend
+### Runtime
+- **Runtime:** `provided.al2023`
+- **Build:** Binários compilados estaticamente via `./scripts/build_lambdas.sh`.

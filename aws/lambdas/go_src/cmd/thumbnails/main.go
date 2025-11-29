@@ -25,17 +25,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	bucket := os.Getenv("MEDIA_BUCKET")
-	if bucket == "" {
-		bucket = "toq-listing-medias"
-	}
-
 	// 3. Init Adapters
 	s3Client := s3.NewFromConfig(cfg)
 	storageAdapter := s3adapter.NewS3Adapter(s3Client)
 
 	// 4. Init Service
-	svc := imageprocessing.NewThumbnailService(storageAdapter, bucket, logger)
+	svc := imageprocessing.NewThumbnailService(storageAdapter)
 
 	// 5. Init Handler
 	h := thumbnails.NewHandler(svc, logger)

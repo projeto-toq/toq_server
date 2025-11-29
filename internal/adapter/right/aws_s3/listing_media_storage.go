@@ -277,9 +277,10 @@ func (a *ListingMediaStorageAdapter) buildObjectKey(listingID uint64, stage stri
 	}
 
 	filename := sanitizeFilename(asset.Filename(), asset.ContentType())
-	dateSegment := time.Now().UTC().Format("2006-01-02")
+	// dateSegment removed to keep path clean
+	// dateSegment := time.Now().UTC().Format("2006-01-02")
 
-	return fmt.Sprintf("%d/%s/%s/%s/%s-%s", listingID, stage, mediaTypeSegment, dateSegment, reference, filename)
+	return fmt.Sprintf("%d/%s/%s/%s-%s", listingID, stage, mediaTypeSegment, reference, filename)
 }
 
 func (a *ListingMediaStorageAdapter) resolveProcessedKey(listingID uint64, asset mediaprocessingmodel.MediaAsset) string {

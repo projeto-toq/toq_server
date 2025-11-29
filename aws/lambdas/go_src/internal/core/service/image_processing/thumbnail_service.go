@@ -4,120 +4,107 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"image"
 	"image/jpeg"
-	"log/slog"
-	"path/filepath"
+	"path"
+	"regexp"
 	"strings"
 
 	"github.com/disintegration/imaging"
 	"github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/port"
-	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
-// ThumbnailService handles image resizing and processing logic
 type ThumbnailService struct {
 	storage port.StoragePort
-	bucket  string
-	logger  *slog.Logger
 }
 
-// NewThumbnailService creates a new instance of ThumbnailService
-func NewThumbnailService(storage port.StoragePort, bucket string, logger *slog.Logger) *ThumbnailService {
+func NewThumbnailService(storage port.StoragePort) *ThumbnailService {
 	return &ThumbnailService{
 		storage: storage,
-		bucket:  bucket,
-		logger:  logger,
 	}
 }
 
-type targetSize struct {
-	Name    string
-	Width   int
-	Quality int
-}
-
-// ProcessAsset downloads, resizes, and uploads thumbnails for a given asset
-// It generates Large (1920px), Medium (1280px), Small (640px), and Tiny (300px) versions.
-func (s *ThumbnailService) ProcessAsset(ctx context.Context, listingID uint64, asset mediaprocessingmodel.JobAsset) ([]mediaprocessingmodel.JobAsset, error) {
-	if !strings.HasPrefix(asset.Type, "PHOTO") {
-		s.logger.Info("Skipping non-photo asset", "key", asset.Key, "type", asset.Type)
-		return nil, nil
-	}
-
-	s.logger.Info("Processing photo", "key", asset.Key)
-
+func (s *ThumbnailService) ProcessImage(ctx context.Context, bucket, key string) ([]string, error) {
 	// 1. Download
-	body, err := s.storage.Download(ctx, s.bucket, asset.Key)
+	reader, err := s.storage.Download(ctx, bucket, key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to download asset %s: %w", asset.Key, err)
+		return nil, fmt.Errorf("failed to download image: %w", err)
 	}
-	defer body.Close()
+	defer reader.Close()
 
-	// 2. Decode
-	img, _, err := image.Decode(body)
+	// 2. Decode with auto-orientation (fixes rotation issues)
+	// imaging.Decode handles EXIF orientation automatically
+	img, err := imaging.Decode(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode image %s: %w", asset.Key, err)
+		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
 
 	// 3. Define sizes
-	sizes := []targetSize{
-		{Name: "large", Width: 1920, Quality: 80},
-		{Name: "medium", Width: 1280, Quality: 70},
-		{Name: "small", Width: 640, Quality: 60},
-		{Name: "tiny", Width: 300, Quality: 50},
+	// "tiny" renamed to "thumbnail" as requested
+	sizes := []struct {
+		Name  string
+		Width int
+	}{
+		{Name: "thumbnail", Width: 200},
+		{Name: "small", Width: 400},
+		{Name: "medium", Width: 800},
+		{Name: "large", Width: 1200},
 	}
 
-	var generatedAssets []mediaprocessingmodel.JobAsset
+	var generatedKeys []string
 
 	// 4. Process each size
 	for _, size := range sizes {
-		// Resize maintaining aspect ratio
-		resized := imaging.Resize(img, size.Width, 0, imaging.Lanczos)
+		resizedImg := imaging.Resize(img, size.Width, 0, imaging.Lanczos)
 
 		// Encode to JPEG
-		buf := new(bytes.Buffer)
-		if err := jpeg.Encode(buf, resized, &jpeg.Options{Quality: size.Quality}); err != nil {
-			s.logger.Error("Failed to encode thumbnail", "key", asset.Key, "size", size.Name, "error", err)
-			continue
+		var buf bytes.Buffer
+		if err := jpeg.Encode(&buf, resizedImg, &jpeg.Options{Quality: 85}); err != nil {
+			return nil, fmt.Errorf("failed to encode resized image %s: %w", size.Name, err)
 		}
 
-		// Generate Key
-		newKey := s.generateKey(asset.Key, size.Name)
+		// Generate new key
+		newKey, err := s.generateKey(key, size.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate key for %s: %w", size.Name, err)
+		}
 
 		// Upload
-		if err := s.storage.Upload(ctx, s.bucket, newKey, buf, "image/jpeg"); err != nil {
-			s.logger.Error("Failed to upload thumbnail", "key", newKey, "error", err)
-			continue
+		if err := s.storage.Upload(ctx, bucket, newKey, &buf, "image/jpeg"); err != nil {
+			return nil, fmt.Errorf("failed to upload %s: %w", size.Name, err)
 		}
 
-		generatedAssets = append(generatedAssets, mediaprocessingmodel.JobAsset{
-			Key:  newKey,
-			Type: fmt.Sprintf("PHOTO_%s", strings.ToUpper(size.Name)),
-		})
+		generatedKeys = append(generatedKeys, newKey)
 	}
 
-	return generatedAssets, nil
+	return generatedKeys, nil
 }
 
-func (s *ThumbnailService) generateKey(originalKey, sizeName string) string {
-	// Default fallback if structure is unexpected
-	dir := filepath.Dir(originalKey)
-	base := filepath.Base(originalKey)
-	ext := filepath.Ext(base)
-	name := strings.TrimSuffix(base, ext)
-
-	// Try to replace /raw/ with /processed/{size}/
-	if strings.Contains(originalKey, "/raw/") {
-		// 1. Replace /raw/ with /processed/{size}/
-		tempKey := strings.Replace(originalKey, "/raw/", fmt.Sprintf("/processed/%s/", sizeName), 1)
-
-		// 2. Handle filename
-		tempDir := filepath.Dir(tempKey)
-		// Re-assemble
-		return fmt.Sprintf("%s/%s_%s.jpg", tempDir, name, sizeName)
+// generateKey transforms the raw key into the processed key
+func (s *ThumbnailService) generateKey(originalKey, sizeName string) (string, error) {
+	// Check for 'raw/' segment
+	if !strings.Contains(originalKey, "raw/") {
+		return "", fmt.Errorf("invalid key format: must contain 'raw/' segment")
 	}
 
-	// Fallback: append size to directory and filename
-	return fmt.Sprintf("%s/%s/%s_%s.jpg", dir, sizeName, name, sizeName)
+	// Split into prefix (e.g. "123/" or empty) and suffix (e.g. "photo/vertical/...")
+	parts := strings.SplitN(originalKey, "raw/", 2)
+	prefix := parts[0] // "123/" or ""
+	suffix := parts[1] // "photo/vertical/..."
+
+	// Remove date segment from suffix if present
+	dateRegex := regexp.MustCompile(`\d{4}-\d{2}-\d{2}/`)
+	cleanSuffix := dateRegex.ReplaceAllString(suffix, "")
+
+	// Construct new path components
+	dir := path.Dir(cleanSuffix)   // "photo/vertical"
+	file := path.Base(cleanSuffix) // "uuid.jpg"
+
+	// Final structure: {prefix}processed/{dir}/{size}/{file}
+	// Example: 123/processed/photo/vertical/thumbnail/uuid.jpg
+	newKey := fmt.Sprintf("%sprocessed/%s/%s/%s", prefix, dir, sizeName, file)
+
+	// Clean up any double slashes just in case
+	newKey = strings.ReplaceAll(newKey, "//", "/")
+
+	return newKey, nil
 }
