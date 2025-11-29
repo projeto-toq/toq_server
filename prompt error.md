@@ -6,56 +6,15 @@
 
 ## 🎯 Problema / Solicitação
 
-Baseado em `docs/media_processing_guide.md` executei o passo 3. **Confirmação de upload** e se executo o endpoint POST `/listings/media/status` com o payload:
-```json
-{
-  "batchId": 6,
-  "listingIdentityID": 51
-}
-```
-recebo como resposta:
-```json
-{
-    "listingIdentityId": 51,
-    "batchId": 6,
-    "status": "RECEIVED",
-    "statusMessage": "uploads_confirmed",
-    "assets": [
-        {
-            "clientId": "photo-001",
-            "title": "Vista frontal do imóvel",
-            "assetType": "PHOTO_VERTICAL",
-            "sequence": 1,
-            "rawObjectKey": "51/raw/photo/vertical/2025-11-28/photo-001-20220907_121157.jpg",
-            "metadata": {
-                "batch_reference": "2025-11-27T17:45Z-slot-123",
-                "client_id": "photo-001",
-                "etag": "\"80263030da74301d4940408fb7c71ee2\"",
-                "key_0": "string",
-                "requested_by": "3",
-                "title": "Vista frontal do imóvel"
-            }
-        },
-        {
-            "clientId": "photo-002",
-            "title": "Vista lateral do imóvel",
-            "assetType": "PHOTO_VERTICAL",
-            "sequence": 2,
-            "rawObjectKey": "51/raw/photo/vertical/2025-11-28/photo-002-20220907_121308.jpg",
-            "metadata": {
-                "batch_reference": "2025-11-27T17:45Z-slot-123",
-                "client_id": "photo-002",
-                "etag": "\"80263030da74301d4940408fb7c71ee2\"",
-                "key_0": "string",
-                "requested_by": "3",
-                "title": "Vista lateral do imóvel"
-            }
-        }
-    ]
-}
-```
+O processo de conversão das fotos para tamanhos menores (thumbnail, small, medium, large etc) não está com os tamanhos corretos. Os lambdas utilizados para isso estão em aws/lambdas/go_src.
+Os tamanhos devem ser:
+Tipo (Dispositivo)      Tamanho (Versão)    Dimensões de Exibição (Pixels)  Proporção (Aspect Ratio)    Foco Principal              Qualidade/Formato
+Computadores (Desktop)  Large (-large)      1920px a 2560px (largura)       Manter a proporção original Detalhe e Resolução         70-85% (JPEG) ou WebP (Recomendado)
+Tablets (Intermediário) Medium (-medium)    1024px a 1280px (largura)       Manter a proporção original Velocidade e Equilíbrio     60-75% (JPEG) ou WebP (Recomendado)
+Celulares (Mobile)      Small (-small)      320px a 640px (largura)         Manter a proporção original Velocidade de Carregamento  50-65% (JPEG) ou WebP (Recomendado)
+Miniaturas (Thumbnails) Tiny (-tiny)        150px a 300px (largura)         Manter a proporção original Mínimo Tamanho de Arquivo   40-55% (JPEG) ou WebP (Recomendado)
 
-Entretanto não houve a conversão das fotos para os formatos esperados (thumbnail, small, medium, large etc) e nem a conversão de vídeos (se houver), a geração dos ZIPs está correta.
+A orientação das fotos deve ser mantida (vertical ou horizontal) e o corte deve ser centralizado.
 
 Estamos rodando numa instancia EC2, e as credenciais ADMIN estão em `configs/aws_credentials`, porntao voce pode usar a console para investigar detlhadamente o que ocorreu com os SQS, Lambdas, Step Functions, S3 etc.
 Caso necessite algum comando SUDO, envie no terminal que digito a senha.
@@ -64,9 +23,9 @@ Houveram diversas interaçoes para correçao, mas sempre correçoes pontuais que
 Portanto, o objetivo aqui é uma análise profunda e completa para identificar a causa raiz do problema e propor um plano de refatoração detalhado.
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual dos lambdas e identifique a causa raiz do problema
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
-3. Implemente log de debuging detalhado para facilitar futuras análises, em todas as etapas do processo de upload, confirmação, processamento e geração dos assets convertidos. Principalmente nos lambdas e step functions e callbacks.
+3. Implemente as alterações na AWS para que tudo funcione corretamente.
 
 
 

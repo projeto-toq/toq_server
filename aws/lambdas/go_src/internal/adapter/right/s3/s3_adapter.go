@@ -1,0 +1,47 @@
+package s3adapter
+
+import (
+	"context"
+	"fmt"
+	"io"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/port"
+)
+
+// S3Adapter implements StoragePort using AWS SDK v2
+type S3Adapter struct {
+	client *s3.Client
+}
+
+// NewS3Adapter creates a new S3 adapter
+func NewS3Adapter(client *s3.Client) port.StoragePort {
+	return &S3Adapter{client: client}
+}
+
+// Download retrieves the object body
+func (a *S3Adapter) Download(ctx context.Context, bucket, key string) (io.ReadCloser, error) {
+	resp, err := a.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to download from s3: %w", err)
+	}
+	return resp.Body, nil
+}
+
+// Upload uploads the object
+func (a *S3Adapter) Upload(ctx context.Context, bucket, key string, body io.Reader, contentType string) error {
+	_, err := a.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+		Body:        body,
+		ContentType: aws.String(contentType),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to upload to s3: %w", err)
+	}
+	return nil
+}
