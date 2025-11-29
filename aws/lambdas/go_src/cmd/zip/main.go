@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -78,7 +79,14 @@ func HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionP
 			}
 
 			// 2. Criar entrada no ZIP
-			f, err := zipWriter.Create(asset.Key)
+			// Remove prefixo "listingID/raw/" para limpar a estrutura do zip
+			entryName := asset.Key
+			prefixToRemove := fmt.Sprintf("%d/raw/", event.ListingID)
+			if strings.HasPrefix(asset.Key, prefixToRemove) {
+				entryName = strings.TrimPrefix(asset.Key, prefixToRemove)
+			}
+
+			f, err := zipWriter.Create(entryName)
 			if err != nil {
 				resp.Body.Close()
 				logger.Error("Failed to create zip entry", "key", asset.Key, "error", err)
