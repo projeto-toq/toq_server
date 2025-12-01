@@ -54,29 +54,46 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 		return derrors.Conflict("listing is not in PENDING_PHOTO_PROCESSING status")
 	}
 
-	// 2. Fetch processed assets for ZIP
-	filter := mediaprocessingrepository.AssetFilter{
-		Status: []mediaprocessingmodel.MediaAssetStatus{mediaprocessingmodel.MediaAssetStatusProcessed},
-	}
-	assets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), filter, nil)
+	// 2. Fetch ALL assets to validate state
+	// We do not filter by status initially to detect pending/processing items
+	allAssets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), mediaprocessingrepository.AssetFilter{}, nil)
 	if err != nil {
-		return derrors.Infra("failed to list processed assets", err)
+		return derrors.Infra("failed to list assets", err)
 	}
 
-	if len(assets) == 0 {
+	if len(allAssets) == 0 {
+		return derrors.Conflict("no assets found for this listing")
+	}
+
+	// 3. Validate Asset Statuses
+	var processedAssets []mediaprocessingmodel.MediaAsset
+	for _, asset := range allAssets {
+		switch asset.Status() {
+		case mediaprocessingmodel.MediaAssetStatusProcessing:
+			return derrors.Conflict("assets are still processing, please wait")
+		case mediaprocessingmodel.MediaAssetStatusPendingUpload:
+			return derrors.Conflict("assets are pending upload, please call /process endpoint first")
+		case mediaprocessingmodel.MediaAssetStatusFailed:
+			return derrors.Conflict("some assets failed processing, please remove or retry them")
+		case mediaprocessingmodel.MediaAssetStatusProcessed:
+			processedAssets = append(processedAssets, asset)
+		}
+	}
+
+	if len(processedAssets) == 0 {
 		return derrors.Conflict("no processed assets found to finalize")
 	}
 
-	// 3. Register ZIP Job
+	// 4. Register ZIP Job
 	job := mediaprocessingmodel.NewMediaProcessingJob(uint64(input.ListingIdentityID), mediaprocessingmodel.MediaProcessingProviderStepFunctions)
 	jobID, err := s.repo.RegisterProcessingJob(ctx, tx, job)
 	if err != nil {
 		return derrors.Infra("failed to register zip job", err)
 	}
 
-	// 4. Trigger Finalization Pipeline
-	jobAssets := make([]mediaprocessingmodel.JobAsset, 0, len(assets))
-	for _, a := range assets {
+	// 5. Trigger Finalization Pipeline
+	jobAssets := make([]mediaprocessingmodel.JobAsset, 0, len(processedAssets))
+	for _, a := range processedAssets {
 		jobAssets = append(jobAssets, mediaprocessingmodel.JobAsset{
 			Key:  a.S3KeyProcessed(),
 			Type: string(a.AssetType()),

@@ -104,6 +104,7 @@ type JobAsset struct {
 	SourceKey string `json:"sourceKey,omitempty"` // Filled by validation
 	Size      int64  `json:"size,omitempty"`
 	ETag      string `json:"etag,omitempty"`
+	Error     string `json:"error,omitempty"`
 }
 
 // StepFunctionPayload is the unified payload for Step Functions.
@@ -122,12 +123,12 @@ type LambdaResponse struct {
 
 // MediaProcessingJobPayload keeps information serialized from the async provider.
 type MediaProcessingJobPayload struct {
-	RawKey       string
-	ProcessedKey string
-	ThumbnailKey string
-	Outputs      map[string]string
-	ErrorCode    string
-	ErrorMessage string
+	RawKey       string            `json:"rawKey"`
+	ProcessedKey string            `json:"processedKey"`
+	ThumbnailKey string            `json:"thumbnailKey"`
+	Outputs      map[string]string `json:"outputs"`
+	ErrorCode    string            `json:"errorCode"`
+	ErrorMessage string            `json:"errorMessage"`
 }
 
 // MediaProcessingJobMessage is the payload sent to SQS/Step Functions.

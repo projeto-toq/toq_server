@@ -40,6 +40,11 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 	for i, asset := range event.Assets {
 		h.logger.Info("Inspecting asset", "index", i, "key", asset.Key, "type", asset.Type)
 
+		if asset.Error != "" {
+			h.logger.Warn("Skipping asset with previous error", "key", asset.Key, "error", asset.Error)
+			continue
+		}
+
 		generatedKeys, err := h.service.ProcessImage(ctx, bucket, asset.Key)
 		if err != nil {
 			h.logger.Error("Failed to process asset", "key", asset.Key, "error", err)

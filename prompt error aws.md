@@ -9,37 +9,25 @@
 Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_useful_commands.md`, `docs/aws_media_processing_implementation_summary.md` e `aws/README.md` decrevem o atual sistema de media processing, ou como deveria estar funcionando, ja que nem todas as etapas do processo já foram testadas.
 
 Existem os seguinte erros detectados:
-1. o endpoint `POST /listings/media/download` sendo chamado com o body:
+1. o endpoint `POST /listings/media/uploads/complete` sendo chamado com o body:
 ```json
 {
-  "listingIdentityId": 51,
-  "requests": [
-    {
-      "assetType": "PHOTO_VERTICAL",
-      "resolution": "medium",
-      "sequence": 1
-    }
-  ]
+  "listingIdentityId": 51
 }
 ```
 
 está retornando:
 ```json
 {
-    "listingIdentityId": 51,
-    "urls": []
+    "code": 409,
+    "details": null,
+    "message": "no processed assets found to finalize"
 }
-```
-O log mostra:
-```json
-{"time":"2025-12-01T16:46:24.711881602Z","level":"WARN","msg":"service.media.generate_urls.asset_status_invalid","request_id":"e9d3ec34-fbb1-4f6c-949f-c462478ed2ed","listing_id":51,"asset_type":"PHOTO_VERTICAL","sequence":1,"current_status":"PROCESSING","expected_status":"PROCESSED"}
 ```
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
-2. Verfique se todas as opções de tamanho de foto (thumbnail, small, medium, large, original) estão sendo corretamente tratadas no código.
-3. O swagger necessita de exemplos e de todas as opções para tamnhos disponíveis. veja o endpoint `PUT /listings` que tem estes exemplos.
-4. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
+2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**

@@ -101,7 +101,7 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 		"input_assets_count", len(event.Assets),
 	)
 
-	validAssets := make([]mediaprocessingmodel.JobAsset, 0, len(event.Assets))
+	validatedAssets := make([]mediaprocessingmodel.JobAsset, 0, len(event.Assets))
 
 	for _, asset := range event.Assets {
 		s.logger.Debug("Validating asset", "key", asset.Key, "job_id", event.JobID)
@@ -113,21 +113,23 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 				"job_id", event.JobID,
 				"error", err,
 			)
-			continue
+			// Mark error instead of discarding
+			asset.Error = err.Error()
+			asset.SourceKey = asset.Key
+		} else {
+			asset.Size = size
+			asset.ETag = etag
+			asset.SourceKey = asset.Key
+			s.logger.Debug("Asset valid", "key", asset.Key, "size", asset.Size)
 		}
 
-		asset.Size = size
-		asset.ETag = etag
-		asset.SourceKey = asset.Key
-
-		validAssets = append(validAssets, asset)
-		s.logger.Debug("Asset valid", "key", asset.Key, "size", asset.Size)
+		validatedAssets = append(validatedAssets, asset)
 	}
 
-	event.Assets = validAssets
+	event.Assets = validatedAssets
 
 	// Check for videos
-	for _, asset := range validAssets {
+	for _, asset := range validatedAssets {
 		if strings.Contains(asset.Type, "VIDEO") {
 			event.HasVideos = true
 			break
@@ -136,8 +138,7 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 
 	s.logger.Info("Validation complete",
 		"job_id", event.JobID,
-		"valid_count", len(validAssets),
-		"invalid_count", len(event.Assets)-len(validAssets),
+		"total_assets", len(validatedAssets),
 		"has_videos", event.HasVideos,
 	)
 

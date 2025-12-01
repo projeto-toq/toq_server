@@ -42,10 +42,17 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 
 	// 1. Initialize with original assets
 	for _, asset := range event.Assets {
-		resultsMap[asset.Key] = &mediaprocessingmodel.MediaProcessingJobPayload{
+		payload := &mediaprocessingmodel.MediaProcessingJobPayload{
 			RawKey:  asset.Key, // The Backend looks for THIS
 			Outputs: make(map[string]string),
 		}
+
+		if asset.Error != "" {
+			payload.ErrorCode = "VALIDATION_ERROR"
+			payload.ErrorMessage = asset.Error
+		}
+
+		resultsMap[asset.Key] = payload
 	}
 
 	// 2. Process Parallel Results (Thumbnails)
