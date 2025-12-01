@@ -26,6 +26,12 @@ type ProcessMediaInput struct {
 	RequestedBy       uint64 `json:"-"`
 }
 
+// CompleteMediaInput defines the input for finalizing media processing.
+type CompleteMediaInput struct {
+	ListingIdentityID int64  `json:"listingIdentityId" validate:"required,gt=0"`
+	RequestedBy       uint64 `json:"-"`
+}
+
 // ListDownloadURLsInput defines filters for listing media URLs.
 type ListDownloadURLsInput struct {
 	ListingIdentityID int64                                 `json:"listingIdentityId" validate:"required,gt=0"`

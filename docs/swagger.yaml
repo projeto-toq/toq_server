@@ -3043,6 +3043,72 @@ definitions:
         example: 1
         type: integer
     type: object
+  github_com_projeto-toq_toq_server_internal_core_domain_dto.CompleteMediaInput:
+    properties:
+      listingIdentityId:
+        type: integer
+    required:
+    - listingIdentityId
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_domain_dto.DeleteMediaInput:
+    properties:
+      assetType:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaAssetType'
+      listingIdentityId:
+        type: integer
+      sequence:
+        type: integer
+    required:
+    - assetType
+    - listingIdentityId
+    - sequence
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_domain_dto.ProcessMediaInput:
+    properties:
+      listingIdentityId:
+        type: integer
+    required:
+    - listingIdentityId
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_domain_dto.UpdateMediaInput:
+    properties:
+      assetType:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaAssetType'
+      listingIdentityId:
+        type: integer
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      sequence:
+        type: integer
+      title:
+        type: string
+    required:
+    - assetType
+    - listingIdentityId
+    - sequence
+    type: object
+  github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaAssetType:
+    enum:
+    - PHOTO_VERTICAL
+    - PHOTO_HORIZONTAL
+    - VIDEO_VERTICAL
+    - VIDEO_HORIZONTAL
+    - THUMBNAIL
+    - ZIP
+    - PROJECT_DOC
+    - PROJECT_RENDER
+    type: string
+    x-enum-varnames:
+    - MediaAssetTypePhotoVertical
+    - MediaAssetTypePhotoHorizontal
+    - MediaAssetTypeVideoVertical
+    - MediaAssetTypeVideoHorizontal
+    - MediaAssetTypeThumbnail
+    - MediaAssetTypeZip
+    - MediaAssetTypeProjectDoc
+    - MediaAssetTypeProjectRender
   github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource:
     enum:
     - BOOKING
@@ -6161,6 +6227,151 @@ paths:
       summary: Update system user data
       tags:
       - Admin Users
+  /api/v2/listings/media:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a specific media asset from the listing.
+      parameters:
+      - description: Delete Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.DeleteMediaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Asset deleted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Asset Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Delete media asset
+      tags:
+      - Listings Media
+  /api/v2/listings/media/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates the title or metadata of a specific media asset.
+      parameters:
+      - description: Update Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.UpdateMediaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Asset updated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Asset Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Update media asset
+      tags:
+      - Listings Media
+  /api/v2/listings/media/uploads/complete:
+    post:
+      consumes:
+      - application/json
+      description: Consolidates media, generates ZIP, and advances listing status.
+      parameters:
+      - description: Completion Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.CompleteMediaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Processing completed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Complete media processing
+      tags:
+      - Listings Media
+  /api/v2/listings/media/uploads/process:
+    post:
+      consumes:
+      - application/json
+      description: Starts the asynchronous processing pipeline for assets in PENDING_UPLOAD
+        status.
+      parameters:
+      - description: Processing Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.ProcessMediaInput'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Processing started
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Trigger media processing
+      tags:
+      - Listings Media
   /auth/agency:
     post:
       consumes:

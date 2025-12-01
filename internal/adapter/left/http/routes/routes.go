@@ -289,7 +289,11 @@ func RegisterListingRoutes(
 		media := listings.Group("/media")
 		{
 			// Upload management
-			media.POST("/uploads", listingHandler.RequestUploadURLs) // RequestUploadURLs - request signed upload URLs
+			media.POST("/uploads", listingHandler.RequestUploadURLs)      // RequestUploadURLs - request signed upload URLs
+			media.POST("/uploads/process", listingHandler.ProcessMedia)   // ProcessMedia - trigger async processing
+			media.POST("/uploads/complete", listingHandler.CompleteMedia) // CompleteMedia - finalize and zip
+			media.POST("/update", listingHandler.UpdateMedia)             // UpdateMedia - update metadata
+			media.DELETE("", listingHandler.DeleteMedia)                  // DeleteMedia - remove asset
 
 			// Downloads
 			media.POST("/downloads", listingHandler.ListDownloadURLs) // ListDownloadURLs - get signed download URLs for processed assets
