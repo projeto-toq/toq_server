@@ -195,3 +195,12 @@ func GetUserRoleSlugFromUserRole(userRole usermodel.UserRoleInterface) permissio
 func IsProfileActiveFromStatus(status globalmodel.UserRoleStatus) bool {
 	return status == globalmodel.StatusActive
 }
+
+// GetUserIDFromContext extracts the user ID from the context
+func GetUserIDFromContext(ctx context.Context) (uint64, bool) {
+	userInfo, err := GetUserInfoFromContext(ctx)
+	if err != nil {
+		return 0, false
+	}
+	return uint64(userInfo.ID), true
+}

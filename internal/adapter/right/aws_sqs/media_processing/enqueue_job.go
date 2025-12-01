@@ -53,7 +53,6 @@ func (a *MediaProcessingQueueAdapter) publish(ctx context.Context, queueURL stri
 	traceparent := buildTraceparent(ctx)
 	attributes := map[string]types.MessageAttributeValue{
 		"ListingId":  stringAttribute(strconv.FormatUint(payload.ListingID, 10)),
-		"BatchId":    stringAttribute(strconv.FormatUint(payload.BatchID, 10)),
 		"JobId":      stringAttribute(strconv.FormatUint(payload.JobID, 10)),
 		"RetryCount": stringAttribute(strconv.FormatUint(uint64(payload.Retry), 10)),
 	}
@@ -71,12 +70,12 @@ func (a *MediaProcessingQueueAdapter) publish(ctx context.Context, queueURL stri
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger := utils.LoggerFromContext(ctx)
-		logger.Error("adapter.sqs.media.send_failed", "queue", queueURL, "listing_id", payload.ListingID, "batch_id", payload.BatchID, "error", err)
+		logger.Error("adapter.sqs.media.send_failed", "queue", queueURL, "listing_id", payload.ListingID, "error", err)
 		return "", derrors.Infra("failed to send SQS message", err)
 	}
 
 	logger := utils.LoggerFromContext(ctx)
-	logger.Info("adapter.sqs.media.send_success", "queue", queueURL, "listing_id", payload.ListingID, "batch_id", payload.BatchID, "message_id", aws.ToString(output.MessageId))
+	logger.Info("adapter.sqs.media.send_success", "queue", queueURL, "listing_id", payload.ListingID, "message_id", aws.ToString(output.MessageId))
 
 	return aws.ToString(output.MessageId), nil
 }

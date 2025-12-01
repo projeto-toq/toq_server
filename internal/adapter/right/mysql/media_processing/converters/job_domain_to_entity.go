@@ -8,11 +8,11 @@ import (
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
-// JobDomainToEntity converte o domínio em entidade listing_media_jobs.
+// JobDomainToEntity converts domain to DB entity.
 func JobDomainToEntity(job mediaprocessingmodel.MediaProcessingJob) mediaprocessingentities.JobEntity {
 	return mediaprocessingentities.JobEntity{
 		ID:         job.ID(),
-		BatchID:    job.BatchID(),
+		ListingID:  job.ListingID(),
 		Status:     string(job.Status()),
 		Provider:   string(job.Provider()),
 		ExternalID: nullString(job.ExternalID()),

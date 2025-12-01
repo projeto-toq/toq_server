@@ -70,3 +70,13 @@ const (
 func (s MediaProcessingJobStatus) IsTerminal() bool {
 	return s == MediaProcessingJobStatusSucceeded || s == MediaProcessingJobStatusFailed
 }
+
+// MediaAssetStatus represents the lifecycle of a single media asset.
+type MediaAssetStatus string
+
+const (
+	MediaAssetStatusPendingUpload MediaAssetStatus = "PENDING_UPLOAD"
+	MediaAssetStatusProcessing    MediaAssetStatus = "PROCESSING"
+	MediaAssetStatusProcessed     MediaAssetStatus = "PROCESSED"
+	MediaAssetStatusFailed        MediaAssetStatus = "FAILED"
+)

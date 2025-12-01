@@ -5658,75 +5658,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/listings/media/status": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Returns batch status (PENDING_UPLOAD/RECEIVED/PROCESSING/READY/FAILED) along with asset details (titles, sequences, object keys). Used by frontend to poll progress and determine when downloads are available.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings Media"
-                ],
-                "summary": "Get media batch processing status",
-                "parameters": [
-                    {
-                        "description": "Batch identification",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Batch status retrieved",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Batch not found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/listings/media/uploads": {
             "post": {
                 "security": [
@@ -5752,7 +5683,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchRequest"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadURLsRequest"
                         }
                     }
                 ],
@@ -5760,7 +5691,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Batch created with signed URLs",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadURLsResponse"
                         }
                     },
                     "400": {
@@ -5789,144 +5720,6 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "There is another open batch",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/listings/media/uploads/complete": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Validates S3 uploads via HEAD requests checking checksums, consolidates asset titles/sequences, updates batch status to RECEIVED, registers processing job and enqueues it to SQS. Returns job ID and estimated processing duration.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings Media"
-                ],
-                "summary": "Confirm upload completion and start processing",
-                "parameters": [
-                    {
-                        "description": "Upload confirmation with object keys and checksums",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "202": {
-                        "description": "Processing job enqueued",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request or checksum mismatch",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Batch not found or not in PENDING_UPLOAD",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/listings/media/uploads/retry": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Accepts batches in FAILED or READY status and creates a new processing job reusing existing raw S3 objects. Updates batch status to PROCESSING and enqueues the job to SQS with retry flag. Always returns 202 with new job ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings Media"
-                ],
-                "summary": "Retry media batch processing",
-                "parameters": [
-                    {
-                        "description": "Batch identification and retry reason",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "202": {
-                        "description": "Retry job enqueued",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request or batch not in terminal status",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Batch not found",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -10185,53 +9978,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.BatchAssetStatusResponse": {
-            "type": "object",
-            "properties": {
-                "assetType": {
-                    "description": "AssetType matches the original assetType",
-                    "type": "string",
-                    "example": "PHOTO_VERTICAL"
-                },
-                "clientId": {
-                    "description": "ClientID matches the original clientId for correlation",
-                    "type": "string",
-                    "example": "photo-001"
-                },
-                "metadata": {
-                    "description": "Metadata contains additional asset information",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "processedKey": {
-                    "description": "ProcessedKey is the S3 key where the processed file is stored\nEmpty until processing completes successfully",
-                    "type": "string",
-                    "example": "123/processed/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
-                },
-                "rawObjectKey": {
-                    "description": "RawObjectKey is the S3 key where the raw file is stored\nEmpty until upload is confirmed",
-                    "type": "string",
-                    "example": "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
-                },
-                "sequence": {
-                    "description": "Sequence matches the original sequence",
-                    "type": "integer",
-                    "example": 1
-                },
-                "thumbnailKey": {
-                    "description": "ThumbnailKey is the S3 key where the thumbnail is stored\nEmpty until processing completes successfully",
-                    "type": "string",
-                    "example": "123/processed/THUMBNAIL/2025-11-16/IMG_20231116_140530_thumb.jpg"
-                },
-                "title": {
-                    "description": "Title matches the original title",
-                    "type": "string",
-                    "example": "Vista frontal do imóvel"
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CEPValidationResponse": {
             "type": "object",
             "properties": {
@@ -10288,103 +10034,6 @@ const docTemplate = `{
                 },
                 "slug": {
                     "type": "string"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchRequest": {
-            "type": "object",
-            "required": [
-                "batchId",
-                "files",
-                "listingIdentityId"
-            ],
-            "properties": {
-                "batchId": {
-                    "description": "BatchID must match the batchId from CreateUploadBatch",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 456
-                },
-                "files": {
-                    "description": "Files lists all successfully uploaded assets with S3 metadata\nMust include all files from the original manifest",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompletedUploadFileRequest"
-                    }
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID must match the listingIdentityId from CreateUploadBatch",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 123
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteUploadBatchResponse": {
-            "type": "object",
-            "properties": {
-                "batchId": {
-                    "description": "BatchID confirms the batch",
-                    "type": "integer",
-                    "example": 456
-                },
-                "estimatedDurationSeconds": {
-                    "description": "EstimatedDurationSeconds provides a rough estimate of processing time\nActual duration depends on file count, sizes, and pipeline load",
-                    "type": "integer",
-                    "example": 300
-                },
-                "jobId": {
-                    "description": "JobID is the unique identifier for the async processing job\nUsed for monitoring and troubleshooting",
-                    "type": "integer",
-                    "example": 789
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID confirms the listing",
-                    "type": "integer",
-                    "example": 123
-                },
-                "status": {
-                    "description": "Status indicates the current batch status (typically RECEIVED)",
-                    "type": "string",
-                    "example": "RECEIVED"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompletedUploadFileRequest": {
-            "type": "object",
-            "required": [
-                "bytes",
-                "checksum",
-                "clientId",
-                "objectKey"
-            ],
-            "properties": {
-                "bytes": {
-                    "description": "Bytes is the confirmed file size after upload (should match original)",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 2457600
-                },
-                "checksum": {
-                    "description": "Checksum is the SHA-256 hash used for upload verification",
-                    "type": "string",
-                    "example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-                },
-                "clientId": {
-                    "description": "ClientID must match a clientId from the original CreateUploadBatch request",
-                    "type": "string",
-                    "example": "photo-001"
-                },
-                "etag": {
-                    "description": "ETag is the S3 ETag returned after successful upload\nOptional but recommended for additional verification",
-                    "type": "string",
-                    "example": "\"5d41402abc4b2a76b9719d911017c592\""
-                },
-                "objectKey": {
-                    "description": "ObjectKey must match the objectKey returned in CreateUploadBatch",
-                    "type": "string",
-                    "example": "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
                 }
             }
         },
@@ -10684,131 +10333,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchFileRequest": {
-            "type": "object",
-            "required": [
-                "assetType",
-                "bytes",
-                "checksum",
-                "clientId",
-                "contentType",
-                "filename",
-                "sequence"
-            ],
-            "properties": {
-                "assetType": {
-                    "description": "AssetType categorizes the media for processing and display\nAllowed values: PHOTO_VERTICAL, PHOTO_HORIZONTAL, VIDEO_VERTICAL, VIDEO_HORIZONTAL,\n                THUMBNAIL, ZIP, PROJECT_DOC, PROJECT_RENDER\nExample: \"PHOTO_VERTICAL\"",
-                    "type": "string",
-                    "example": "PHOTO_VERTICAL"
-                },
-                "bytes": {
-                    "description": "Bytes is the file size in bytes\nMust be positive and not exceed the maximum file size limit\nExample: 2457600 (2.4 MB)",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 2457600
-                },
-                "checksum": {
-                    "description": "Checksum is the SHA-256 hash of the file content (hex-encoded)\nUsed to verify upload integrity via S3 HeadObject\nExample: \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"",
-                    "type": "string",
-                    "example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-                },
-                "clientId": {
-                    "description": "ClientID is a unique identifier assigned by the client (frontend)\nUsed to correlate upload confirmation and error messages\nMust be unique within the batch\nExample: \"photo-001\"",
-                    "type": "string",
-                    "example": "photo-001"
-                },
-                "contentType": {
-                    "description": "ContentType is the MIME type of the file\nMust be in the allowed content types list (configured in env.yaml)\nCommon values: image/jpeg, image/png, image/heic, video/mp4, video/quicktime\nExample: \"image/jpeg\"",
-                    "type": "string",
-                    "example": "image/jpeg"
-                },
-                "filename": {
-                    "description": "Filename is the original filename from the client device\nUsed for download metadata and logging\nExample: \"IMG_20231116_140530.jpg\"",
-                    "type": "string",
-                    "example": "IMG_20231116_140530.jpg"
-                },
-                "metadata": {
-                    "description": "Metadata holds additional key-value pairs for processing hints\nOptional field for future extensibility",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "orientation": {
-                    "description": "Orientation specifies the intended display orientation\nRequired for photo and video types\nAllowed values: VERTICAL, HORIZONTAL\nExample: \"VERTICAL\"",
-                    "type": "string",
-                    "example": "VERTICAL"
-                },
-                "sequence": {
-                    "description": "Sequence determines the display order in the listing carousel\nMust be positive and unique within the batch\nExample: 1",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 1
-                },
-                "title": {
-                    "description": "Title is an optional user-provided caption or description\nDisplayed in the listing carousel\nExample: \"Vista frontal do imóvel\"",
-                    "type": "string",
-                    "example": "Vista frontal do imóvel"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchRequest": {
-            "type": "object",
-            "required": [
-                "batchReference",
-                "files",
-                "listingIdentityId"
-            ],
-            "properties": {
-                "batchReference": {
-                    "description": "BatchReference helps the frontend correlate retries\nTypically a timestamp or session identifier\nMaximum 120 characters\nExample: \"2025-11-16T14:00Z-slot-123\"",
-                    "type": "string",
-                    "maxLength": 120,
-                    "example": "2025-11-16T14:00Z-slot-123"
-                },
-                "files": {
-                    "description": "Files enumerates every asset to upload, preserving carousel order and metadata\nMinimum 1 file, maximum defined by environment configuration (default 60)\nEach file must have unique clientId and sequence",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchFileRequest"
-                    }
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID identifies the listing receiving the batch\nMust correspond to a listing in PENDING_PHOTO_PROCESSING status\nExample: 123",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 123
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateUploadBatchResponse": {
-            "type": "object",
-            "properties": {
-                "batchId": {
-                    "description": "BatchID is the unique identifier for this upload batch\nRequired for subsequent CompleteUploadBatch and status polling calls",
-                    "type": "integer",
-                    "example": 456
-                },
-                "files": {
-                    "description": "Files contains upload instructions for each asset in the manifest",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UploadInstructionResponse"
-                    }
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID confirms the listing receiving the uploads",
-                    "type": "integer",
-                    "example": 123
-                },
-                "uploadUrlTtlSeconds": {
-                    "description": "UploadURLTTLSeconds indicates how long the signed URLs remain valid\nTypically 900 seconds (15 minutes)",
-                    "type": "integer",
-                    "example": 900
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse": {
             "type": "object",
             "properties": {
@@ -10870,16 +10394,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "PHOTO_VERTICAL"
                 },
-                "clientId": {
-                    "description": "ClientID matches the original clientId for correlation",
-                    "type": "string",
-                    "example": "photo-001"
-                },
-                "expiresAt": {
-                    "description": "ExpiresAt indicates when the signed URL expires\nRFC3339 format timestamp",
-                    "type": "string",
-                    "example": "2025-11-16T16:30:00Z"
-                },
                 "metadata": {
                     "description": "Metadata contains additional asset information",
                     "type": "object",
@@ -10888,14 +10402,19 @@ const docTemplate = `{
                     }
                 },
                 "previewUrl": {
-                    "description": "PreviewURL is the pre-signed S3 URL for downloading a thumbnail/preview\nEmpty if no thumbnail was generated",
+                    "description": "PreviewURL is the signed GET URL for the thumbnail (if available)",
                     "type": "string",
-                    "example": "https://s3.amazonaws.com/bucket/thumbnail-key?X-Amz-Algorithm=..."
+                    "example": "https://s3.amazonaws.com/bucket/thumb?X-Amz-Algorithm=..."
                 },
                 "sequence": {
                     "description": "Sequence matches the original sequence",
                     "type": "integer",
                     "example": 1
+                },
+                "status": {
+                    "description": "Status indicates the processing status",
+                    "type": "string",
+                    "example": "PROCESSED"
                 },
                 "title": {
                     "description": "Title matches the original title",
@@ -10903,9 +10422,9 @@ const docTemplate = `{
                     "example": "Vista frontal do imóvel"
                 },
                 "url": {
-                    "description": "URL is the pre-signed S3 URL for downloading the processed file\nValid for the duration specified in TTLSeconds",
+                    "description": "URL is the signed GET URL for the processed file",
                     "type": "string",
-                    "example": "https://s3.amazonaws.com/bucket/processed-key?X-Amz-Algorithm=..."
+                    "example": "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."
                 }
             }
         },
@@ -10931,59 +10450,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.BaseFeature"
                     }
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusRequest": {
-            "type": "object",
-            "required": [
-                "batchId",
-                "listingIdentityId"
-            ],
-            "properties": {
-                "batchId": {
-                    "description": "BatchID identifies the specific batch to query",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 456
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID identifies the listing owning the batch",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 123
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBatchStatusResponse": {
-            "type": "object",
-            "properties": {
-                "assets": {
-                    "description": "Assets lists all assets in the batch with their processing status",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.BatchAssetStatusResponse"
-                    }
-                },
-                "batchId": {
-                    "description": "BatchID confirms the batch",
-                    "type": "integer",
-                    "example": 456
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID confirms the listing",
-                    "type": "integer",
-                    "example": 123
-                },
-                "status": {
-                    "description": "Status indicates the current batch status\nPossible values: PENDING_UPLOAD, RECEIVED, PROCESSING, READY, FAILED",
-                    "type": "string",
-                    "example": "PROCESSING"
-                },
-                "statusMessage": {
-                    "description": "StatusMessage provides human-readable status information\nIncludes error details for FAILED status",
-                    "type": "string",
-                    "example": "Processing assets"
                 }
             }
         },
@@ -11332,10 +10798,16 @@ const docTemplate = `{
                 "listingIdentityId"
             ],
             "properties": {
-                "batchId": {
-                    "description": "BatchID identifies the specific batch to retrieve downloads for\nIf zero, the most recent READY batch will be used",
-                    "type": "integer",
-                    "example": 456
+                "assetTypes": {
+                    "description": "AssetTypes filters the results by asset type",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "PHOTO_VERTICAL",
+                        "VIDEO_HORIZONTAL"
+                    ]
                 },
                 "listingIdentityId": {
                     "description": "ListingIdentityID identifies the listing owning the assets",
@@ -11348,11 +10820,6 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse": {
             "type": "object",
             "properties": {
-                "batchId": {
-                    "description": "BatchID confirms the batch",
-                    "type": "integer",
-                    "example": 456
-                },
                 "downloads": {
                     "description": "Downloads contains signed URLs for each processed asset",
                     "type": "array",
@@ -11360,20 +10827,10 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadEntryResponse"
                     }
                 },
-                "generatedAt": {
-                    "description": "GeneratedAt indicates when the signed URLs were created\nRFC3339 format timestamp",
-                    "type": "string",
-                    "example": "2025-11-16T15:30:00Z"
-                },
                 "listingIdentityId": {
                     "description": "ListingIdentityID confirms the listing",
                     "type": "integer",
                     "example": 123
-                },
-                "ttlSeconds": {
-                    "description": "TTLSeconds indicates how long the signed URLs remain valid\nTypically 3600 seconds (1 hour)",
-                    "type": "integer",
-                    "example": 3600
                 }
             }
         },
@@ -12375,6 +11832,156 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadFileRequest": {
+            "type": "object",
+            "required": [
+                "assetType",
+                "bytes",
+                "checksum",
+                "contentType",
+                "filename",
+                "orientation",
+                "sequence"
+            ],
+            "properties": {
+                "assetType": {
+                    "description": "AssetType categorizes the media for processing and display\nAllowed values: PHOTO_VERTICAL, PHOTO_HORIZONTAL, VIDEO_VERTICAL, VIDEO_HORIZONTAL,\n                THUMBNAIL, ZIP, PROJECT_DOC, PROJECT_RENDER\nExample: \"PHOTO_VERTICAL\"",
+                    "type": "string",
+                    "example": "PHOTO_VERTICAL"
+                },
+                "bytes": {
+                    "description": "Bytes is the file size in bytes\nMust be positive and not exceed the maximum file size limit\nExample: 2457600 (2.4 MB)",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 2457600
+                },
+                "checksum": {
+                    "description": "Checksum is the SHA-256 hash of the file content (hex-encoded)\nUsed to verify upload integrity via S3 HeadObject\nExample: \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"",
+                    "type": "string",
+                    "example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                "contentType": {
+                    "description": "ContentType is the MIME type of the file\nMust be in the allowed content types list (configured in env.yaml)\nCommon values: image/jpeg, image/png, image/heic, video/mp4, video/quicktime\nExample: \"image/jpeg\"",
+                    "type": "string",
+                    "example": "image/jpeg"
+                },
+                "filename": {
+                    "description": "Filename is the original filename from the client device\nUsed for download metadata and logging\nExample: \"IMG_20231116_140530.jpg\"",
+                    "type": "string",
+                    "example": "IMG_20231116_140530.jpg"
+                },
+                "metadata": {
+                    "description": "Metadata holds additional key-value pairs for processing hints\nOptional field for future extensibility",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "orientation": {
+                    "description": "Orientation specifies the visual orientation of the asset\nAllowed values: PORTRAIT, LANDSCAPE\nExample: \"PORTRAIT\"",
+                    "type": "string",
+                    "example": "PORTRAIT"
+                },
+                "sequence": {
+                    "description": "Sequence determines the display order in the listing carousel\nMust be positive and unique within the batch\nExample: 1",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                },
+                "title": {
+                    "description": "Title is an optional user-provided caption or description\nDisplayed in the listing carousel\nExample: \"Vista frontal do imóvel\"",
+                    "type": "string",
+                    "example": "Vista frontal do imóvel"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadInstructionResponse": {
+            "type": "object",
+            "properties": {
+                "assetType": {
+                    "description": "AssetType matches the assetType from the request",
+                    "type": "string",
+                    "example": "PHOTO_VERTICAL"
+                },
+                "headers": {
+                    "description": "Headers contains required HTTP headers for the upload request\nTypically includes Content-Type and x-amz-checksum-sha256",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "method": {
+                    "description": "Method is the HTTP method to use for the upload (always PUT)",
+                    "type": "string",
+                    "example": "PUT"
+                },
+                "objectKey": {
+                    "description": "ObjectKey is the S3 object key where the file will be stored\nFormat: /{listingIdentityId}/raw/{assetType}/{YYYY-MM-DD}/{filename}\nExample: \"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg\"",
+                    "type": "string",
+                    "example": "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
+                },
+                "sequence": {
+                    "description": "Sequence matches the sequence from the request",
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "description": "Title matches the title from the request",
+                    "type": "string",
+                    "example": "Vista frontal do imóvel"
+                },
+                "uploadUrl": {
+                    "description": "UploadURL is the pre-signed S3 URL for uploading the file\nValid for the duration specified in UploadURLTTLSeconds\nExample: \"https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=...\"",
+                    "type": "string",
+                    "example": "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadURLsRequest": {
+            "type": "object",
+            "required": [
+                "files",
+                "listingIdentityId"
+            ],
+            "properties": {
+                "files": {
+                    "description": "Files enumerates every asset to upload, preserving carousel order and metadata\nMinimum 1 file, maximum defined by environment configuration (default 60)\nEach file must have unique clientId and sequence",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadFileRequest"
+                    }
+                },
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing receiving the batch\nMust correspond to a listing in PENDING_PHOTO_PROCESSING status\nExample: 123",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 123
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadURLsResponse": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "description": "Files contains upload instructions for each asset in the manifest",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadInstructionResponse"
+                    }
+                },
+                "listingIdentityId": {
+                    "description": "ListingIdentityID confirms the listing receiving the uploads",
+                    "type": "integer",
+                    "example": 123
+                },
+                "uploadUrlTtlSeconds": {
+                    "description": "UploadURLTTLSeconds indicates how long the signed URLs remain valid\nTypically 900 seconds (15 minutes)",
+                    "type": "integer",
+                    "example": 900
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ResendEmailChangeCodeResponse": {
             "type": "object",
             "properties": {
@@ -12426,59 +12033,6 @@ const docTemplate = `{
                 "slotStart": {
                     "type": "string",
                     "example": "2025-10-24T09:00:00Z"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchRequest": {
-            "type": "object",
-            "required": [
-                "batchId",
-                "listingIdentityId",
-                "reason"
-            ],
-            "properties": {
-                "batchId": {
-                    "description": "BatchID identifies the specific batch to retry",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 456
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID identifies the listing owning the batch",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 123
-                },
-                "reason": {
-                    "description": "Reason explains why the batch is being retried\nUsed for audit logging and troubleshooting\nExample: \"Pipeline timeout - retrying with increased timeout\"",
-                    "type": "string",
-                    "maxLength": 500,
-                    "example": "Pipeline timeout - retrying with increased timeout"
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RetryMediaBatchResponse": {
-            "type": "object",
-            "properties": {
-                "batchId": {
-                    "description": "BatchID confirms the batch",
-                    "type": "integer",
-                    "example": 456
-                },
-                "jobId": {
-                    "description": "JobID is the unique identifier for the new async processing job",
-                    "type": "integer",
-                    "example": 790
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID confirms the listing",
-                    "type": "integer",
-                    "example": 123
-                },
-                "status": {
-                    "description": "Status indicates the current batch status (typically PROCESSING)",
-                    "type": "string",
-                    "example": "PROCESSING"
                 }
             }
         },
@@ -13315,48 +12869,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UploadInstructionResponse": {
-            "type": "object",
-            "properties": {
-                "clientId": {
-                    "description": "ClientID matches the clientId from the request for correlation",
-                    "type": "string",
-                    "example": "photo-001"
-                },
-                "headers": {
-                    "description": "Headers contains required HTTP headers for the upload request\nTypically includes Content-Type and x-amz-checksum-sha256",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "method": {
-                    "description": "Method is the HTTP method to use for the upload (always PUT)",
-                    "type": "string",
-                    "example": "PUT"
-                },
-                "objectKey": {
-                    "description": "ObjectKey is the S3 object key where the file will be stored\nFormat: /{listingIdentityId}/raw/{assetType}/{YYYY-MM-DD}/{filename}\nExample: \"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg\"",
-                    "type": "string",
-                    "example": "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
-                },
-                "sequence": {
-                    "description": "Sequence matches the sequence from the request",
-                    "type": "integer",
-                    "example": 1
-                },
-                "title": {
-                    "description": "Title matches the title from the request",
-                    "type": "string",
-                    "example": "Vista frontal do imóvel"
-                },
-                "uploadUrl": {
-                    "description": "UploadURL is the pre-signed S3 URL for uploading the file\nValid for the duration specified in UploadURLTTLSeconds\nExample: \"https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=...\"",
-                    "type": "string",
-                    "example": "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserCreateRequest": {
             "type": "object",
             "required": [
@@ -13667,21 +13179,6 @@ const docTemplate = `{
                 "AgendaEntryTypeHoliday"
             ]
         },
-        "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotStatus": {
-            "type": "string",
-            "enum": [
-                "AVAILABLE",
-                "RESERVED",
-                "BOOKED",
-                "BLOCKED"
-            ],
-            "x-enum-varnames": [
-                "SlotStatusAvailable",
-                "SlotStatusReserved",
-                "SlotStatusBooked",
-                "SlotStatusBlocked"
-            ]
-        },
         "github_com_projeto-toq_toq_server_internal_core_service_photo_session_service.AgendaSlot": {
             "type": "object",
             "properties": {
@@ -13737,7 +13234,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.SlotStatus"
+                    "type": "string"
                 },
                 "timezone": {
                     "type": "string"

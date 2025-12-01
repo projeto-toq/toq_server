@@ -10,7 +10,7 @@ import (
 )
 
 const updateProcessingJobQuery = `
-UPDATE listing_media_jobs
+UPDATE media_jobs
 SET 
     status = ?, 
     external_job_id = ?,

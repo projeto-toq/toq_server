@@ -34,7 +34,7 @@
   - *Nota:* Segmentos de data (YYYY-MM-DD) foram removidos para simplificar a estrutura.
 - **Processed (Thumbnails):** `/{listingId}/processed/{mediaType}/{size}/{uuid}.{ext}`
   - Tamanhos: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px).
-- **Zip Bundles:** `/{listingId}/processed/zip/{batchId}.zip`
+- **Zip Bundles:** `/{listingId}/processed/zip/{listingId}.zip`
   - Conteúdo interno do Zip é limpo (sem prefixos `processed/` ou datas).
 
 ### Bucket de Logs

@@ -9,25 +9,21 @@ import (
 
 // RepositoryInterface exposes the persistence contract for media processing entities.
 type RepositoryInterface interface {
-	CreateBatch(ctx context.Context, tx *sql.Tx, batch mediaprocessingmodel.MediaBatch) (uint64, error)
-	UpdateBatchStatus(ctx context.Context, tx *sql.Tx, batchID uint64, status mediaprocessingmodel.BatchStatus, metadata mediaprocessingmodel.BatchStatusMetadata) error
-	GetBatchByID(ctx context.Context, tx *sql.Tx, batchID uint64) (mediaprocessingmodel.MediaBatch, error)
-	ListBatchesByListing(ctx context.Context, tx *sql.Tx, filter BatchQueryFilter) ([]mediaprocessingmodel.MediaBatch, error)
-
-	UpsertAssets(ctx context.Context, tx *sql.Tx, assets []mediaprocessingmodel.MediaAsset) error
-	ListAssetsByBatch(ctx context.Context, tx *sql.Tx, batchID uint64) ([]mediaprocessingmodel.MediaAsset, error)
+	// New methods for granular asset management
+	UpsertAsset(ctx context.Context, tx *sql.Tx, asset mediaprocessingmodel.MediaAsset) error
+	GetAsset(ctx context.Context, tx *sql.Tx, listingID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) (mediaprocessingmodel.MediaAsset, error)
+	GetAssetByID(ctx context.Context, tx *sql.Tx, assetID uint64) (mediaprocessingmodel.MediaAsset, error)
+	GetAssetByRawKey(ctx context.Context, tx *sql.Tx, rawKey string) (mediaprocessingmodel.MediaAsset, error)
+	ListAssets(ctx context.Context, tx *sql.Tx, listingID uint64, filter AssetFilter) ([]mediaprocessingmodel.MediaAsset, error)
+	DeleteAsset(ctx context.Context, tx *sql.Tx, listingID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) error
 
 	RegisterProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) (uint64, error)
 	GetProcessingJobByID(ctx context.Context, tx *sql.Tx, jobID uint64) (mediaprocessingmodel.MediaProcessingJob, error)
 	UpdateProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) error
-
-	SoftDeleteBatch(ctx context.Context, tx *sql.Tx, batchID uint64) error
 }
 
-// BatchQueryFilter narrows down batch lookups for handlers and workers.
-type BatchQueryFilter struct {
-	ListingID      uint64
-	Statuses       []mediaprocessingmodel.BatchStatus
-	Limit          int
-	IncludeDeleted bool
+// AssetFilter narrows down asset lookups.
+type AssetFilter struct {
+	AssetTypes []mediaprocessingmodel.MediaAssetType
+	Status     []mediaprocessingmodel.MediaAssetStatus
 }

@@ -67,7 +67,7 @@ aws sqs get-queue-attributes \
 # Enviar mensagem de teste
 aws sqs send-message \
   --queue-url https://sqs.us-east-1.amazonaws.com/058264253741/listing-media-processing-staging \
-  --message-body '{"batchId":"test-123","listingId":"456","assets":[]}' \
+  --message-body '{"jobId":123,"listingId":456,"assets":[{"key":"456/raw/photo/horizontal/test.jpg","type":"PHOTO_HORIZONTAL"}]}' \
   --message-attributes '{"Traceparent":{"DataType":"String","StringValue":"00-trace-id-123"}}'
 
 # Purgar fila (CUIDADO!)
@@ -91,7 +91,7 @@ aws lambda list-functions --query 'Functions[?contains(FunctionName, `listing-me
 # Invocar Lambda manualmente
 aws lambda invoke \
   --function-name listing-media-validate-staging \
-  --payload '{"batchId":"test","listingId":"123","assets":[]}' \
+  --payload '{"jobId":123,"listingId":456,"assets":[{"key":"456/raw/photo/horizontal/test.jpg","type":"PHOTO_HORIZONTAL"}]}' \
   response.json
 
 # Ver logs recentes

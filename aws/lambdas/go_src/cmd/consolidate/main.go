@@ -18,16 +18,16 @@ func init() {
 
 // ConsolidateInput represents the combined input from Step Function
 type ConsolidateInput struct {
-	BatchID         uint64                          `json:"batchId"`
+	JobID           string                          `json:"jobId"`
 	ListingID       uint64                          `json:"listingId"`
-	ValidAssets     []mediaprocessingmodel.JobAsset `json:"validAssets"`
+	Assets          []mediaprocessingmodel.JobAsset `json:"assets"`
 	ParallelResults []ParallelResult                `json:"parallelResults"`
 }
 
 // ParallelResult captures the generic output of parallel branches
 type ParallelResult struct {
 	Body struct {
-		Thumbnails []mediaprocessingmodel.JobAsset `json:"thumbnails"`
+		Thumbnails []mediaprocessingmodel.JobAsset `json:"generatedAssets"`
 		// Future: Videos []...
 	} `json:"body"`
 }
@@ -35,13 +35,13 @@ type ParallelResult struct {
 func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessingmodel.LambdaResponse, error) {
 	// LOG: Full input (careful with size in prod, ok for debug)
 	inputJSON, _ := json.Marshal(event)
-	logger.Info("Consolidate Lambda started", "batch_id", event.BatchID, "raw_input_size", len(inputJSON))
+	logger.Info("Consolidate Lambda started", "job_id", event.JobID, "listing_id", event.ListingID, "raw_input_size", len(inputJSON))
 
 	// Map: SourceKey -> Output Payload
 	resultsMap := make(map[string]*mediaprocessingmodel.MediaProcessingJobPayload)
 
 	// 1. Initialize with original assets
-	for _, asset := range event.ValidAssets {
+	for _, asset := range event.Assets {
 		resultsMap[asset.Key] = &mediaprocessingmodel.MediaProcessingJobPayload{
 			RawKey:  asset.Key, // The Backend looks for THIS
 			Outputs: make(map[string]string),
@@ -79,14 +79,16 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 	// LOG: Final output to be sent to backend
 	outputJSON, _ := json.Marshal(finalOutputs)
 	logger.Info("Consolidation complete",
-		"batch_id", event.BatchID,
+		"job_id", event.JobID,
 		"output_items", len(finalOutputs),
 		"payload_preview", string(outputJSON),
 	)
 
 	return mediaprocessingmodel.LambdaResponse{
 		Body: map[string]any{
-			"outputs": finalOutputs,
+			"jobId":     event.JobID,
+			"listingId": event.ListingID,
+			"outputs":   finalOutputs,
 		},
 	}, nil
 }

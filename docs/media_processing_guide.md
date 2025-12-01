@@ -8,38 +8,34 @@
 ## 2. Visão Geral do Fluxo (alto nível)
 1. **Manifesto de upload**: frontend envia lista de arquivos que serão enviados (tipo, orientação, extensão, tamanho estimado, checksum). Backend valida permissão e status do listing.
 2. **Emissão de URLs pré-assinadas**: backend retorna URLs PUT S3 com metadados obrigatórios. Fotógrafo envia diretamentre para o bucket dedicado `toq-listing-medias`, sempre dentro do diretório raiz `/{listingId}/`. Listings classificados como empreendimento em construção permitem que o **owner** autenticado (ou representante designado) gere URLs para projetos e renders sem depender do fotógrafo.
-3. **Confirmação de upload**: após concluir todos os uploads com sucesso HTTP 200 na S3, frontend chama endpoint de confirmação entregando o manifesto final com ETags retornadas pelo S3.
-4. **Orquestração assíncrona**: backend persiste lote, muda status interno do lote para `RECEIVED` e publica job em SQS para pipeline de processamento.
-5. **Pipeline AWS**: Step Functions + Lambdas (Go) validam entradas, geram thumbnails, transcoding de vídeo, compactações (ZIP), atualizam estado do job na SQS/DynamoRDS.
-6. **Atualização do domínio**: worker backend recebe callback da Step Function (webhook ou fila de saída), atualiza DB (`listing_media_batches`), cria registros de mídias processadas e atualiza listing para `listingmodel.StatusPendingOwnerApproval`.
-7. **Distribuição**: APIs de download (expostas via `POST`) retornam URLs GET pré-assinadas para ZIP completo, mídias individuais e thumbnails (com TTL configurável). Frontend pode exibir progresso consultando endpoint de status.
+3. **Processamento Incremental**: após o upload de um ou mais arquivos, o frontend chama o endpoint de processamento (`/process`). O backend identifica os assets em estado `PENDING_UPLOAD`, atualiza para `PROCESSING` e dispara o pipeline assíncrono (Step Functions).
+4. **Pipeline AWS**: Step Functions + Lambdas (Go) validam entradas, geram thumbnails, transcoding de vídeo e atualizam o status de cada asset individualmente.
+5. **Feedback Visual**: O frontend pode consultar o status de cada asset e exibir thumbnails assim que estiverem prontos, sem esperar o lote todo.
+6. **Gestão de Mídia**: O usuário pode reordenar, renomear ou excluir assets a qualquer momento antes da finalização.
+7. **Finalização**: Quando satisfeito, o usuário solicita a finalização (`/complete`). O backend dispara o pipeline de geração de ZIP e avança o status do Listing para `StatusPendingOwnerApproval`.
+8. **Distribuição**: APIs de download retornam URLs para o ZIP completo e mídias individuais.
 
 ## 3. Estrutura de Domínio e Persistência
 - **Novos modelos core (`internal/core/model/media_processing_model`)**
-  - `MediaBatch`: representa um lote de uploads (campos sugeridos: `ID`, `ListingID`, `PhotographerUserID`, `Status` = `PENDING_UPLOAD|RECEIVED|PROCESSING|FAILED|READY`, `UploadManifest`, `ProcessingMetadata`).
-  - `MediaAsset`: item individual associado a um lote (`MediaBatchID`, `Type` = `PHOTO_VERTICAL|PHOTO_HORIZONTAL|VIDEO_VERTICAL|VIDEO_HORIZONTAL|THUMBNAIL|ZIP|PROJECT_DOC|PROJECT_RENDER`, `SourceKey`, `ProcessedKey`, `ThumbnailKey`, `Checksum`, `ContentType`, `Resolution`, `DurationSeconds`, `Title`, `Sequence`). Os campos `Title` e `Sequence` são persistidos e vinculados ao objeto S3 para ordenação do carrossel/prateleira de projetos e exibição ao cliente.
-  - `MediaProcessingJob`: metadados de execução assíncrona (`BatchID`, `ExternalJobID` do Step Functions, timestamps, mensagens de erro).
+  - `MediaAsset`: item individual (campos: `ID`, `ListingID`, `Type`, `Sequence`, `Status`, `S3KeyRaw`, `S3KeyProcessed`, `Title`, `Metadata`). A unicidade é garantida por `(ListingID, Type, Sequence)`.
+  - `MediaProcessingJob`: metadados de execução assíncrona (`JobID`, `ListingID`, `ExternalID`, `Status`, `Payload`).
 
 ## 4. Endpoints HTTP (Left Adapter)
-Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo das requisições (padrão adotado pelo projeto). Handlers em `internal/adapter/left/http/handlers/listing_handlers/` (um arquivo por handler). Autorização: somente fotógrafo designado ou roles administrativas conforme política de permissionamento.
+Todos sob `/api/v2/listings/media/*`.
 
 ### 4.1 `POST /api/v2/listings/media/uploads` — Solicitar URLs de upload
-- **Objetivo**: cliente envia manifesto contendo arquivos que pretende subir.
+- **Objetivo**: cliente envia lista de arquivos para upload.
 - **Request Body**
   ```json
   {
     "listingId": 123,
-    "batchReference": "2025-11-11T14:00Z-slot-123",
     "files": [
       {
-        "clientId": "photo-vertical-1",
-        "mediaType": "PHOTO_VERTICAL",
-        "orientation": "VERTICAL",
-        "filename": "livingroom_vert_01.jpg",
+        "clientId": "photo-1",
+        "mediaType": "PHOTO_HORIZONTAL",
         "contentType": "image/jpeg",
-        "bytes": 4231987,
+        "bytes": 5000000,
         "checksum": "sha256:...",
-        "title": "Sala Social",
         "sequence": 1
       }
     ]
@@ -48,56 +44,40 @@ Todos sob `/api/v2/listings/media/*`, com `listingId` presente apenas no corpo d
 - **Response 201**
   ```json
   {
-    "batchId": "UUID",
-    "uploadUrlTtlSeconds": 900,
     "files": [
       {
-        "clientId": "photo-vertical-1",
+        "clientId": "photo-1",
         "uploadUrl": "https://s3/...",
-        "method": "PUT",
-        "headers": {
-          "Content-Type": "image/jpeg",
-          "x-amz-checksum-sha256": "..."
-        },
-        "s3Key": "123/raw/photo/vertical/photo-vertical-1.jpg",
-        "title": "Sala Social",
-        "sequence": 1
-      }
-    ]
-  }
-  ```
-  *Nota: O caminho S3 não inclui mais segmentos de data (YYYY-MM-DD).*
-
-### 4.2 `POST /api/v2/listings/media/uploads/complete` — Confirmação de upload
-- **Request Body**
-  ```json
-  {
-    "listingId": 123,
-    "batchId": "UUID",
-    "files": [
-      {
-        "clientId": "photo-vertical-1",
-        "s3Key": "123/raw/photo/vertical/...",
-        "etag": "\"9b2cf535f27731c974343645a3985328\"",
-        "bytes": 4231987
+        "s3Key": "123/raw/photo/horizontal/uuid.jpg"
       }
     ]
   }
   ```
 
-### 4.3 `POST /api/v2/listings/media/uploads/status` — Status do processamento
+### 4.2 `POST /api/v2/listings/media/uploads/process` — Disparar Processamento
+- **Objetivo**: Inicia o processamento dos arquivos que foram enviados (status `PENDING_UPLOAD`).
 - **Request Body**
   ```json
   {
-    "listingId": 123,
-    "batchId": "UUID"
+    "listingId": 123
   }
   ```
-- **Response 200**
+- **Response 202 (Accepted)**
+
+### 4.3 `POST /api/v2/listings/media/uploads/complete` — Finalizar e Gerar ZIP
+- **Objetivo**: Consolida as mídias, gera o ZIP final e avança o status do listing.
+- **Request Body**
   ```json
   {
-    "batchId": "UUID",
-    "status": "PROCESSING",
+    "listingId": 123
+  }
+  ```
+
+### 4.4 `POST /api/v2/listings/media/update` — Atualizar Metadados
+- **Objetivo**: Atualizar título ou sequência de um asset.
+
+### 4.5 `DELETE /api/v2/listings/media` — Remover Asset
+- **Objetivo**: Remover um asset (arquivos e registro).
     "submittedAt": "2025-11-11T17:03:12Z",
     "processing": {
       "jobId": "arn:aws:states:...",

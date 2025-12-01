@@ -288,13 +288,10 @@ func RegisterListingRoutes(
 		// Media processing routes
 		media := listings.Group("/media")
 		{
-			// Upload batch management
-			media.POST("/uploads", listingHandler.CreateUploadBatch)            // CreateUploadBatch - request signed upload URLs
-			media.POST("/uploads/complete", listingHandler.CompleteUploadBatch) // CompleteUploadBatch - confirm uploads and start processing
-			media.POST("/uploads/retry", listingHandler.RetryMediaBatch)        // RetryMediaBatch - retry failed batch
+			// Upload management
+			media.POST("/uploads", listingHandler.RequestUploadURLs) // RequestUploadURLs - request signed upload URLs
 
-			// Status and downloads
-			media.POST("/status", listingHandler.GetBatchStatus)      // GetBatchStatus - poll processing status
+			// Downloads
 			media.POST("/downloads", listingHandler.ListDownloadURLs) // ListDownloadURLs - get signed download URLs for processed assets
 		}
 

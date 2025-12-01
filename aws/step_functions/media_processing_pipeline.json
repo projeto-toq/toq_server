@@ -134,46 +134,12 @@
           "Next": "ReportFailure"
         }
       ],
-      "Next": "CreateZipBundle"
-    },
-    "CreateZipBundle": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-zip-staging",
-      "Parameters": {
-        "jobId.$": "$.jobId",
-        "batchId.$": "$.validation.batchId",
-        "listingId.$": "$.validation.listingId",
-        "validAssets.$": "$.validation.validAssets",
-        "parallelResults.$": "$.parallelResults"
-      },
-      "ResultPath": "$.zipResult",
-      "TimeoutSeconds": 1800,
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "States.TaskFailed"
-          ],
-          "IntervalSeconds": 10,
-          "MaxAttempts": 2,
-          "BackoffRate": 2.0
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "ResultPath": "$.error",
-          "Next": "ReportFailure"
-        }
-      ],
       "Next": "ConsolidateResults"
     },
     "ConsolidateResults": {
       "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-consolidate-staging",
       "Parameters": {
-        "batchId.$": "$.validation.batchId",
         "listingId.$": "$.validation.listingId",
         "validAssets.$": "$.validation.validAssets",
         "parallelResults.$": "$.parallelResults"
@@ -209,12 +175,9 @@
           "jobId.$": "$.jobId",
           "status": "SUCCEEDED",
           "provider": "STEP_FUNCTIONS",
-          "batchId.$": "States.Format('{}', $.validation.batchId)",
           "listingId.$": "States.Format('{}', $.validation.listingId)",
           "traceparent": null,
-          "outputs.$": "$.consolidation.body.outputs",
-          "assetsZipped.$": "$.zipResult.body.assetsZipped",
-          "zipBundles.$": "$.zipResult.body.zipBundles"
+          "outputs.$": "$.consolidation.body.outputs"
         }
       },
       "TimeoutSeconds": 120,
@@ -239,7 +202,6 @@
       "Parameters": {
         "body": {
           "jobId.$": "$.jobId",
-          "batchId.$": "States.Format('{}', $.batchId)",
           "listingId.$": "States.Format('{}', $.listingId)",
           "status": "VALIDATION_FAILED",
           "error.$": "$.error"
@@ -254,7 +216,6 @@
       "Parameters": {
         "body": {
           "jobId.$": "$.jobId",
-          "batchId.$": "States.Format('{}', $.validation.batchId)",
           "listingId.$": "States.Format('{}', $.validation.listingId)",
           "status": "PROCESSING_FAILED",
           "error.$": "$.error"

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	"github.com/projeto-toq/toq_server/internal/core/domain/dto"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	mediaprocessingqueue "github.com/projeto-toq/toq_server/internal/core/port/right/queue/mediaprocessingqueue"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -16,12 +17,16 @@ import (
 
 // MediaProcessingServiceInterface exposes orchestration helpers for listing media batches.
 type MediaProcessingServiceInterface interface {
-	CreateUploadBatch(ctx context.Context, input CreateUploadBatchInput) (CreateUploadBatchOutput, error)
-	CompleteUploadBatch(ctx context.Context, input CompleteUploadBatchInput) (CompleteUploadBatchOutput, error)
-	GetBatchStatus(ctx context.Context, input GetBatchStatusInput) (GetBatchStatusOutput, error)
-	ListDownloadURLs(ctx context.Context, input ListDownloadURLsInput) (ListDownloadURLsOutput, error)
-	RetryMediaBatch(ctx context.Context, input RetryMediaBatchInput) (RetryMediaBatchOutput, error)
-	HandleProcessingCallback(ctx context.Context, input HandleProcessingCallbackInput) (HandleProcessingCallbackOutput, error)
+	RequestUploadURLs(ctx context.Context, input dto.RequestUploadURLsInput) (dto.RequestUploadURLsOutput, error)
+	ProcessMedia(ctx context.Context, input dto.ProcessMediaInput) error
+	ListDownloadURLs(ctx context.Context, input dto.ListDownloadURLsInput) (dto.ListDownloadURLsOutput, error)
+
+	// Management
+	UpdateMedia(ctx context.Context, input dto.UpdateMediaInput) error
+	DeleteMedia(ctx context.Context, input dto.DeleteMediaInput) error
+
+	// Legacy/Internal
+	HandleProcessingCallback(ctx context.Context, input dto.HandleProcessingCallbackInput) (dto.HandleProcessingCallbackOutput, error)
 }
 
 // Config centralizes tunable parameters leveraged by the service.

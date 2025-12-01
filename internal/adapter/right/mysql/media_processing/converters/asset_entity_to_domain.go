@@ -5,27 +5,28 @@ import (
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
-// AssetEntityToDomain converte uma entidade SQL em domínio.
+// AssetEntityToDomain converts DB entity to domain.
 func AssetEntityToDomain(entity mediaprocessingentities.AssetEntity) mediaprocessingmodel.MediaAsset {
-	record := mediaprocessingmodel.MediaAssetRecord{
-		ID:             entity.ID,
-		BatchID:        entity.BatchID,
-		ListingID:      0,
-		AssetType:      mediaprocessingmodel.MediaAssetType(entity.AssetType),
-		Orientation:    mediaprocessingmodel.MediaAssetOrientation(entity.Orientation.String),
-		Filename:       entity.Filename,
-		ContentType:    entity.ContentType,
-		Sequence:       entity.Sequence,
-		SizeInBytes:    entity.SizeBytes,
-		Checksum:       entity.Checksum,
-		RawObjectKey:   entity.RawObjectKey,
-		ProcessedKey:   entity.ProcessedKey.String,
-		ThumbnailKey:   entity.ThumbnailKey.String,
-		Width:          uint16(entity.Width.Int64),
-		Height:         uint16(entity.Height.Int64),
-		DurationMillis: uint32(entity.DurationMillis.Int64),
-		Metadata:       decodeStringMap(entity.Metadata),
+	asset := mediaprocessingmodel.NewMediaAsset(
+		entity.ListingID,
+		mediaprocessingmodel.MediaAssetType(entity.AssetType),
+		entity.Sequence,
+	)
+	asset.SetID(entity.ID)
+	asset.SetStatus(mediaprocessingmodel.MediaAssetStatus(entity.Status))
+
+	if entity.S3KeyRaw.Valid {
+		asset.SetS3KeyRaw(entity.S3KeyRaw.String)
+	}
+	if entity.S3KeyProcessed.Valid {
+		asset.SetS3KeyProcessed(entity.S3KeyProcessed.String)
+	}
+	if entity.Title.Valid {
+		asset.SetTitle(entity.Title.String)
+	}
+	if entity.Metadata.Valid {
+		asset.SetMetadata(entity.Metadata.String)
 	}
 
-	return mediaprocessingmodel.RestoreMediaAsset(record)
+	return asset
 }

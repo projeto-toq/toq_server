@@ -2,23 +2,15 @@ package mediaprocessingentities
 
 import "database/sql"
 
-// AssetEntity representa registros de listing_media_assets.
+// AssetEntity represents records in media_assets table.
 type AssetEntity struct {
-	ID             uint64
-	BatchID        uint64
-	AssetType      string
-	Orientation    sql.NullString
-	RawObjectKey   string // DB: raw_object_key
-	ProcessedKey   sql.NullString
-	ThumbnailKey   sql.NullString
-	Checksum       string // DB: checksum
-	ContentType    string
-	Filename       string         // DB: filename
-	SizeBytes      int64          // DB: size_bytes
-	Width          sql.NullInt64  // DB: width
-	Height         sql.NullInt64  // DB: height
-	DurationMillis sql.NullInt64  // DB: duration_millis
-	Title          sql.NullString // DB: title
-	Sequence       uint8
-	Metadata       sql.NullString // DB: metadata (JSON)
+	ID             uint64         `db:"id"`
+	ListingID      uint64         `db:"listing_id"`
+	AssetType      string         `db:"asset_type"`
+	Sequence       uint8          `db:"sequence"`
+	Status         string         `db:"status"`
+	S3KeyRaw       sql.NullString `db:"s3_key_raw"`
+	S3KeyProcessed sql.NullString `db:"s3_key_processed"`
+	Title          sql.NullString `db:"title"`
+	Metadata       sql.NullString `db:"metadata"`
 }

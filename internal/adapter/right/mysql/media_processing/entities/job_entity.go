@@ -2,15 +2,14 @@ package mediaprocessingentities
 
 import "database/sql"
 
-// JobEntity representa registros em listing_media_jobs.
+// JobEntity represents records in media_jobs.
 type JobEntity struct {
-	ID         uint64
-	BatchID    uint64
-	ListingID  uint64 // Populated via JOIN with listing_media_batches
-	Status     string
-	Provider   string
-	ExternalID sql.NullString
-	Payload    sql.NullString
-	StartedAt  sql.NullTime
-	FinishedAt sql.NullTime
+	ID         uint64         `db:"id"`
+	ListingID  uint64         `db:"listing_id"`
+	Status     string         `db:"status"`
+	Provider   string         `db:"provider"`
+	ExternalID sql.NullString `db:"external_id"`
+	Payload    sql.NullString `db:"payload"`
+	StartedAt  sql.NullTime   `db:"started_at"`
+	FinishedAt sql.NullTime   `db:"finished_at"`
 }

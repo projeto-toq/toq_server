@@ -1,0 +1,86 @@
+{
+    "Comment": "TOQ Media Finalization Pipeline - Staging",
+    "StartAt": "CreateZipBundle",
+    "States": {
+        "CreateZipBundle": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-zip-staging",
+            "Parameters": {
+                "jobId.$": "$.jobId",
+                "listingId.$": "$.listingId",
+                "assets.$": "$.assets"
+            },
+            "ResultPath": "$.zipResult",
+            "TimeoutSeconds": 1800,
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 10,
+                    "MaxAttempts": 2,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "ResultPath": "$.error",
+                    "Next": "ReportFailure"
+                }
+            ],
+            "Next": "FinalizeAndCallback"
+        },
+        "FinalizeAndCallback": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-callback-dispatch-staging",
+            "Parameters": {
+                "statusCode": 200,
+                "body": {
+                    "jobId.$": "$.jobId",
+                    "status": "SUCCEEDED",
+                    "provider": "STEP_FUNCTIONS_FINALIZATION",
+                    "listingId.$": "States.Format('{}', $.listingId)",
+                    "assetsZipped.$": "$.zipResult.body.assetsZipped",
+                    "zipBundles.$": "$.zipResult.body.zipBundles"
+                }
+            },
+            "TimeoutSeconds": 120,
+            "Retry": [
+                {
+                    "ErrorEquals": [
+                        "States.TaskFailed"
+                    ],
+                    "IntervalSeconds": 5,
+                    "MaxAttempts": 3,
+                    "BackoffRate": 2.0
+                }
+            ],
+            "Next": "FinalizationSucceeded"
+        },
+        "FinalizationSucceeded": {
+            "Type": "Succeed"
+        },
+        "ReportFailure": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-callback-dispatch-staging",
+            "Parameters": {
+                "body": {
+                    "jobId.$": "$.jobId",
+                    "listingId.$": "States.Format('{}', $.listingId)",
+                    "status": "FINALIZATION_FAILED",
+                    "error.$": "$.error"
+                }
+            },
+            "TimeoutSeconds": 60,
+            "Next": "FinalizationFailed"
+        },
+        "FinalizationFailed": {
+            "Type": "Fail",
+            "Error": "MediaFinalizationFailed",
+            "Cause": "Failed during media finalization workflow"
+        }
+    }
+}

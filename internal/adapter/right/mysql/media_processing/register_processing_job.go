@@ -9,8 +9,8 @@ import (
 )
 
 const insertProcessingJobQuery = `
-INSERT INTO listing_media_jobs (
-    batch_id,
+INSERT INTO media_jobs (
+    listing_id,
     status,
     provider,
     external_job_id,
@@ -29,7 +29,7 @@ func (a *MediaProcessingAdapter) RegisterProcessingJob(ctx context.Context, tx *
 	// Note: retry_count, last_error, callback_raw are not present in the current DB schema
 	// and are omitted from persistence.
 	result, err := a.ExecContext(ctx, tx, "insert", insertProcessingJobQuery,
-		entity.BatchID,
+		entity.ListingID,
 		entity.Status,
 		entity.Provider,
 		entity.ExternalID,

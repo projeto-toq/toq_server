@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"path"
 	"regexp"
@@ -79,7 +80,7 @@ func resolveTTL(primary, fallback, def int) int {
 }
 
 // GenerateRawUploadURL builds a pre-signed PUT URL for raw uploads.
-func (a *ListingMediaStorageAdapter) GenerateRawUploadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset) (storageport.SignedURL, error) {
+func (a *ListingMediaStorageAdapter) GenerateRawUploadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset, contentType, checksum string) (storageport.SignedURL, error) {
 	ctx = utils.ContextWithLogger(ctx)
 	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "ListingMediaStorage.GenerateRawUploadURL")
 	if err != nil {
@@ -92,12 +93,12 @@ func (a *ListingMediaStorageAdapter) GenerateRawUploadURL(ctx context.Context, l
 		return storageport.SignedURL{}, err
 	}
 
-	key := asset.RawObjectKey()
+	key := asset.S3KeyRaw()
 	if key == "" {
 		key = a.buildObjectKey(listingID, "raw", asset)
 	}
 
-	checksum, err := normalizeChecksum(asset.Checksum())
+	checksum, err = normalizeChecksum(checksum)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		return storageport.SignedURL{}, derrors.Validation("invalid checksum", map[string]string{"checksum": err.Error()})
@@ -106,7 +107,7 @@ func (a *ListingMediaStorageAdapter) GenerateRawUploadURL(ctx context.Context, l
 	input := &s3.PutObjectInput{
 		Bucket:      aws.String(a.bucket),
 		Key:         aws.String(key),
-		ContentType: aws.String(resolveContentType(asset.ContentType())),
+		ContentType: aws.String(resolveContentType(contentType)),
 	}
 	if checksum != "" {
 		input.ChecksumSHA256 = aws.String(checksum)
@@ -260,10 +261,14 @@ func (a *ListingMediaStorageAdapter) buildObjectKey(listingID uint64, stage stri
 		mediaTypeSegment = "misc"
 	}
 
-	metadata := asset.Metadata()
-	reference := metadata["client_id"]
+	var metaMap map[string]string
+	if asset.Metadata() != "" {
+		_ = json.Unmarshal([]byte(asset.Metadata()), &metaMap)
+	}
+
+	reference := metaMap["client_id"]
 	if reference == "" {
-		reference = metadata["clientId"]
+		reference = metaMap["clientId"]
 	}
 	if reference == "" && asset.Sequence() > 0 {
 		reference = fmt.Sprintf("seq-%02d", asset.Sequence())
@@ -276,7 +281,11 @@ func (a *ListingMediaStorageAdapter) buildObjectKey(listingID uint64, stage stri
 		reference = uuid.NewString()
 	}
 
-	filename := sanitizeFilename(asset.Filename(), asset.ContentType())
+	filename := metaMap["filename"]
+	if filename == "" {
+		filename = "file"
+	}
+	filename = sanitizeFilename(filename, metaMap["content_type"])
 	// dateSegment removed to keep path clean
 	// dateSegment := time.Now().UTC().Format("2006-01-02")
 
@@ -284,23 +293,18 @@ func (a *ListingMediaStorageAdapter) buildObjectKey(listingID uint64, stage stri
 }
 
 func (a *ListingMediaStorageAdapter) resolveProcessedKey(listingID uint64, asset mediaprocessingmodel.MediaAsset) string {
-	switch asset.AssetType() {
-	case mediaprocessingmodel.MediaAssetTypeThumbnail:
-		if asset.ThumbnailKey() != "" {
-			return asset.ThumbnailKey()
-		}
-		return a.buildObjectKey(listingID, "thumb", asset)
-	case mediaprocessingmodel.MediaAssetTypeZip:
-		if asset.ProcessedKey() != "" {
-			return asset.ProcessedKey()
-		}
-		return a.buildObjectKey(listingID, "zip", asset)
-	default:
-		if asset.ProcessedKey() != "" {
-			return asset.ProcessedKey()
-		}
-		return a.buildObjectKey(listingID, "processed", asset)
+	if asset.S3KeyProcessed() != "" {
+		return asset.S3KeyProcessed()
 	}
+
+	stage := "processed"
+	if asset.AssetType() == mediaprocessingmodel.MediaAssetTypeThumbnail {
+		stage = "thumb"
+	} else if asset.AssetType() == mediaprocessingmodel.MediaAssetTypeZip {
+		stage = "zip"
+	}
+
+	return a.buildObjectKey(listingID, stage, asset)
 }
 
 func mediaTypePathSegment(assetType mediaprocessingmodel.MediaAssetType) string {

@@ -59,7 +59,6 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 
 			var rawPayload struct {
 				JobID     uint64          `json:"jobId"`
-				BatchID   uint64          `json:"batchId"`
 				ListingID uint64          `json:"listingId"`
 				Assets    json.RawMessage `json:"assets"`
 				Retry     uint16          `json:"retry"`
@@ -95,7 +94,6 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 
 			payload := mediaprocessingmodel.StepFunctionPayload{
 				JobID:     rawPayload.JobID,
-				BatchID:   rawPayload.BatchID,
 				ListingID: rawPayload.ListingID,
 				Assets:    assets,
 			}
@@ -110,11 +108,11 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 			})
 
 			if err != nil {
-				logger.Error("Failed to start Step Function", "error", err, "batch_id", payload.BatchID)
+				logger.Error("Failed to start Step Function", "error", err, "job_id", payload.JobID)
 				return mediaprocessingmodel.StepFunctionPayload{}, err // Fail the lambda so SQS retries
 			}
 
-			logger.Info("Started Step Function execution", "batch_id", payload.BatchID)
+			logger.Info("Started Step Function execution", "job_id", payload.JobID)
 		}
 
 		return mediaprocessingmodel.StepFunctionPayload{}, nil // Return empty success
@@ -128,7 +126,7 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 
 	// LOG: Start with context
 	logger.Info("Validate Lambda started",
-		"batch_id", event.BatchID,
+		"job_id", event.JobID,
 		"listing_id", event.ListingID,
 		"input_assets_count", len(event.Assets),
 	)
@@ -137,7 +135,7 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 
 	for _, asset := range event.Assets {
 		// LOG: Checking each asset
-		logger.Debug("Validating asset", "key", asset.Key, "batch_id", event.BatchID)
+		logger.Debug("Validating asset", "key", asset.Key, "job_id", event.JobID)
 
 		headOutput, err := s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 			Bucket: &bucket,
@@ -148,7 +146,7 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 			// LOG: Specific failure
 			logger.Error("Asset validation failed",
 				"key", asset.Key,
-				"batch_id", event.BatchID,
+				"job_id", event.JobID,
 				"error", err,
 			)
 			continue
@@ -168,7 +166,7 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 		logger.Debug("Asset valid", "key", asset.Key, "size", asset.Size)
 	}
 
-	event.ValidAssets = validAssets
+	event.Assets = validAssets
 
 	// Check for videos
 	for _, asset := range validAssets {
@@ -180,7 +178,7 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 
 	// LOG: Final summary
 	logger.Info("Validation complete",
-		"batch_id", event.BatchID,
+		"job_id", event.JobID,
 		"valid_count", len(validAssets),
 		"invalid_count", len(event.Assets)-len(validAssets),
 		"has_videos", event.HasVideos,

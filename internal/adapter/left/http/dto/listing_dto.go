@@ -995,49 +995,36 @@ type CancelPhotoSessionRequest struct {
 // Media Processing DTOs
 // ====================================================================================================
 
-// CreateUploadBatchRequest represents the payload used to request signed URLs for raw media uploads
+// RequestUploadURLsRequest represents the payload used to request signed URLs for raw media uploads
 //
 // This DTO is used to initialize a media upload batch for a listing.
 // The service validates the manifest, generates signed S3 URLs, and returns upload instructions.
-type CreateUploadBatchRequest struct {
+type RequestUploadURLsRequest struct {
 	// ListingIdentityID identifies the listing receiving the batch
 	// Must correspond to a listing in PENDING_PHOTO_PROCESSING status
 	// Example: 123
 	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"123"`
 
-	// BatchReference helps the frontend correlate retries
-	// Typically a timestamp or session identifier
-	// Maximum 120 characters
-	// Example: "2025-11-16T14:00Z-slot-123"
-	BatchReference string `json:"batchReference" binding:"required,max=120" example:"2025-11-16T14:00Z-slot-123"`
-
 	// Files enumerates every asset to upload, preserving carousel order and metadata
 	// Minimum 1 file, maximum defined by environment configuration (default 60)
 	// Each file must have unique clientId and sequence
-	Files []CreateUploadBatchFileRequest `json:"files" binding:"required,min=1,dive"`
+	Files []RequestUploadFileRequest `json:"files" binding:"required,min=1,dive"`
 }
 
-// CreateUploadBatchFileRequest describes a single asset to be uploaded by the client
+// RequestUploadFileRequest describes a single asset to be uploaded by the client
 //
 // Each file in the manifest must provide complete metadata for validation and storage organization.
-type CreateUploadBatchFileRequest struct {
-	// ClientID is a unique identifier assigned by the client (frontend)
-	// Used to correlate upload confirmation and error messages
-	// Must be unique within the batch
-	// Example: "photo-001"
-	ClientID string `json:"clientId" binding:"required" example:"photo-001"`
-
+type RequestUploadFileRequest struct {
 	// AssetType categorizes the media for processing and display
 	// Allowed values: PHOTO_VERTICAL, PHOTO_HORIZONTAL, VIDEO_VERTICAL, VIDEO_HORIZONTAL,
 	//                 THUMBNAIL, ZIP, PROJECT_DOC, PROJECT_RENDER
 	// Example: "PHOTO_VERTICAL"
 	AssetType string `json:"assetType" binding:"required" example:"PHOTO_VERTICAL"`
 
-	// Orientation specifies the intended display orientation
-	// Required for photo and video types
-	// Allowed values: VERTICAL, HORIZONTAL
-	// Example: "VERTICAL"
-	Orientation string `json:"orientation,omitempty" example:"VERTICAL"`
+	// Orientation specifies the visual orientation of the asset
+	// Allowed values: PORTRAIT, LANDSCAPE
+	// Example: "PORTRAIT"
+	Orientation string `json:"orientation" binding:"required" example:"PORTRAIT"`
 
 	// Filename is the original filename from the client device
 	// Used for download metadata and logging
@@ -1075,31 +1062,30 @@ type CreateUploadBatchFileRequest struct {
 	Metadata map[string]string `json:"metadata,omitempty"`
 }
 
-// CreateUploadBatchResponse returns signed URLs ready to be used by the uploader
+// RequestUploadURLsResponse returns signed URLs ready to be used by the uploader
 //
-// The client must use these signed URLs to upload files to S3, then call CompleteUploadBatch.
-type CreateUploadBatchResponse struct {
+// The client must use these signed URLs to upload files to S3.
+type RequestUploadURLsResponse struct {
 	// ListingIdentityID confirms the listing receiving the uploads
 	ListingIdentityID uint64 `json:"listingIdentityId" example:"123"`
-
-	// BatchID is the unique identifier for this upload batch
-	// Required for subsequent CompleteUploadBatch and status polling calls
-	BatchID uint64 `json:"batchId" example:"456"`
 
 	// UploadURLTTLSeconds indicates how long the signed URLs remain valid
 	// Typically 900 seconds (15 minutes)
 	UploadURLTTLSeconds int `json:"uploadUrlTtlSeconds" example:"900"`
 
 	// Files contains upload instructions for each asset in the manifest
-	Files []UploadInstructionResponse `json:"files"`
+	Files []RequestUploadInstructionResponse `json:"files"`
 }
 
 // UploadInstructionResponse carries the information required to perform a PUT upload to S3
 //
 // The client must execute an HTTP PUT request to UploadURL with the specified headers.
-type UploadInstructionResponse struct {
-	// ClientID matches the clientId from the request for correlation
-	ClientID string `json:"clientId" example:"photo-001"`
+type RequestUploadInstructionResponse struct {
+	// AssetType matches the assetType from the request
+	AssetType string `json:"assetType" example:"PHOTO_VERTICAL"`
+
+	// Sequence matches the sequence from the request
+	Sequence uint8 `json:"sequence" example:"1"`
 
 	// UploadURL is the pre-signed S3 URL for uploading the file
 	// Valid for the duration specified in UploadURLTTLSeconds
@@ -1117,9 +1103,6 @@ type UploadInstructionResponse struct {
 	// Format: /{listingIdentityId}/raw/{assetType}/{YYYY-MM-DD}/{filename}
 	// Example: "123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"
 	ObjectKey string `json:"objectKey" example:"123/raw/PHOTO_VERTICAL/2025-11-16/IMG_20231116_140530.jpg"`
-
-	// Sequence matches the sequence from the request
-	Sequence uint8 `json:"sequence" example:"1"`
 
 	// Title matches the title from the request
 	Title string `json:"title,omitempty" example:"Vista frontal do imóvel"`
@@ -1257,9 +1240,8 @@ type ListDownloadURLsRequest struct {
 	// ListingIdentityID identifies the listing owning the assets
 	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"123"`
 
-	// BatchID identifies the specific batch to retrieve downloads for
-	// If zero, the most recent READY batch will be used
-	BatchID uint64 `json:"batchId,omitempty" example:"456"`
+	// AssetTypes filters the results by asset type
+	AssetTypes []string `json:"assetTypes,omitempty" example:"PHOTO_VERTICAL,VIDEO_HORIZONTAL"`
 }
 
 // ListDownloadURLsResponse returns signed URLs for processed assets within a batch
@@ -1269,17 +1251,6 @@ type ListDownloadURLsResponse struct {
 	// ListingIdentityID confirms the listing
 	ListingIdentityID uint64 `json:"listingIdentityId" example:"123"`
 
-	// BatchID confirms the batch
-	BatchID uint64 `json:"batchId" example:"456"`
-
-	// GeneratedAt indicates when the signed URLs were created
-	// RFC3339 format timestamp
-	GeneratedAt string `json:"generatedAt" example:"2025-11-16T15:30:00Z"`
-
-	// TTLSeconds indicates how long the signed URLs remain valid
-	// Typically 3600 seconds (1 hour)
-	TTLSeconds int `json:"ttlSeconds" example:"3600"`
-
 	// Downloads contains signed URLs for each processed asset
 	Downloads []DownloadEntryResponse `json:"downloads"`
 }
@@ -1288,29 +1259,24 @@ type ListDownloadURLsResponse struct {
 //
 // Each entry provides download links for the processed file and optional preview/thumbnail.
 type DownloadEntryResponse struct {
-	// ClientID matches the original clientId for correlation
-	ClientID string `json:"clientId" example:"photo-001"`
 
 	// AssetType matches the original assetType
 	AssetType string `json:"assetType" example:"PHOTO_VERTICAL"`
 
-	// Title matches the original title
-	Title string `json:"title,omitempty" example:"Vista frontal do imóvel"`
-
 	// Sequence matches the original sequence
 	Sequence uint8 `json:"sequence" example:"1"`
 
-	// URL is the pre-signed S3 URL for downloading the processed file
-	// Valid for the duration specified in TTLSeconds
-	URL string `json:"url" example:"https://s3.amazonaws.com/bucket/processed-key?X-Amz-Algorithm=..."`
+	// Status indicates the processing status
+	Status string `json:"status" example:"PROCESSED"`
 
-	// ExpiresAt indicates when the signed URL expires
-	// RFC3339 format timestamp
-	ExpiresAt string `json:"expiresAt" example:"2025-11-16T16:30:00Z"`
+	// Title matches the original title
+	Title string `json:"title,omitempty" example:"Vista frontal do imóvel"`
 
-	// PreviewURL is the pre-signed S3 URL for downloading a thumbnail/preview
-	// Empty if no thumbnail was generated
-	PreviewURL string `json:"previewUrl,omitempty" example:"https://s3.amazonaws.com/bucket/thumbnail-key?X-Amz-Algorithm=..."`
+	// URL is the signed GET URL for the processed file
+	URL string `json:"url,omitempty" example:"https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."`
+
+	// PreviewURL is the signed GET URL for the thumbnail (if available)
+	PreviewURL string `json:"previewUrl,omitempty" example:"https://s3.amazonaws.com/bucket/thumb?X-Amz-Algorithm=..."`
 
 	// Metadata contains additional asset information
 	Metadata map[string]string `json:"metadata,omitempty"`

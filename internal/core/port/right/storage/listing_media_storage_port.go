@@ -9,7 +9,7 @@ import (
 
 // ListingMediaStoragePort exposes the contract with the storage provider used for raw/processed media.
 type ListingMediaStoragePort interface {
-	GenerateRawUploadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset) (SignedURL, error)
+	GenerateRawUploadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset, contentType, checksum string) (SignedURL, error)
 	GenerateProcessedDownloadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset) (SignedURL, error)
 	ValidateObjectChecksum(ctx context.Context, bucketKey string, expectedChecksum string) (StorageObjectMetadata, error)
 	DeleteObject(ctx context.Context, bucketKey string) error

@@ -11,11 +11,10 @@ import (
 )
 
 const selectProcessingJobByIDQuery = `
-SELECT j.id, j.batch_id, b.listing_id, j.status, j.provider, j.external_job_id, j.output_payload_json,
-       j.started_at, j.finished_at
-FROM listing_media_jobs j
-JOIN listing_media_batches b ON j.batch_id = b.id
-WHERE j.id = ?
+SELECT id, listing_id, status, provider, external_job_id, output_payload_json,
+       started_at, finished_at
+FROM media_jobs
+WHERE id = ?
 `
 
 // GetProcessingJobByID retorna os metadados de um job específico.
@@ -27,7 +26,6 @@ func (a *MediaProcessingAdapter) GetProcessingJobByID(ctx context.Context, tx *s
 	var entity mediaprocessingentities.JobEntity
 	if err := row.Scan(
 		&entity.ID,
-		&entity.BatchID,
 		&entity.ListingID,
 		&entity.Status,
 		&entity.Provider,

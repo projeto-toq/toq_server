@@ -77,4 +77,4 @@ aws lambda update-function-code --function-name listing-media-callback-staging -
 - **S3 Paths**:
   - Raw: `/{listingId}/raw/{mediaType}/{uuid}.{ext}`
   - Processed: `/{listingId}/processed/{mediaType}/{size}/{uuid}.{ext}`
-  - Zip: `/{listingId}/processed/zip/{batchId}.zip`
+  - Zip: `/{listingId}/processed/zip/{listingId}.zip`

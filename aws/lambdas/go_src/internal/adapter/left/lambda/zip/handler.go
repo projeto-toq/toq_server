@@ -26,9 +26,9 @@ type ZipOutput struct {
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
-	h.logger.Info("Zip Lambda started", "batch_id", event.BatchID, "assets_count", len(event.ValidAssets))
+	h.logger.Info("Zip Lambda started", "job_id", event.JobID, "listing_id", event.ListingID, "assets_count", len(event.Assets))
 
-	if len(event.ValidAssets) == 0 {
+	if len(event.Assets) == 0 {
 		return mediaprocessingmodel.LambdaResponse{
 			Body: ZipOutput{
 				ZipKey:       "",
@@ -40,7 +40,7 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 
 	// Determine source keys
 	var sourceKeys []string
-	for _, asset := range event.ValidAssets {
+	for _, asset := range event.Assets {
 		sourceKeys = append(sourceKeys, asset.Key)
 	}
 
@@ -50,7 +50,7 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 		bucket = "toq-listing-medias"
 	}
 
-	zipKey := fmt.Sprintf("processed/zip/%d.zip", event.BatchID)
+	zipKey := fmt.Sprintf("processed/zip/%d.zip", event.ListingID)
 
 	err := h.service.CreateZip(ctx, bucket, sourceKeys, zipKey)
 	if err != nil {
@@ -61,7 +61,7 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 	return mediaprocessingmodel.LambdaResponse{
 		Body: ZipOutput{
 			ZipKey:       zipKey,
-			AssetsZipped: len(event.ValidAssets),
+			AssetsZipped: len(event.Assets),
 			ZipBundles:   []string{zipKey},
 		},
 	}, nil

@@ -5,7 +5,6 @@ import "time"
 // MediaProcessingJob describes an asynchronous job tracked in the database.
 type MediaProcessingJob struct {
 	id           uint64
-	batchID      uint64
 	listingID    uint64
 	status       MediaProcessingJobStatus
 	provider     MediaProcessingProvider
@@ -21,7 +20,6 @@ type MediaProcessingJob struct {
 // MediaProcessingJobRecord rehydrates a job from persistent storage.
 type MediaProcessingJobRecord struct {
 	ID           uint64
-	BatchID      uint64
 	ListingID    uint64
 	Status       MediaProcessingJobStatus
 	Provider     MediaProcessingProvider
@@ -38,7 +36,6 @@ type MediaProcessingJobRecord struct {
 func RestoreMediaProcessingJob(record MediaProcessingJobRecord) MediaProcessingJob {
 	return MediaProcessingJob{
 		id:           record.ID,
-		batchID:      record.BatchID,
 		listingID:    record.ListingID,
 		status:       record.Status,
 		provider:     record.Provider,
@@ -52,9 +49,8 @@ func RestoreMediaProcessingJob(record MediaProcessingJobRecord) MediaProcessingJ
 	}
 }
 
-func NewMediaProcessingJob(batchID, listingID uint64, provider MediaProcessingProvider) MediaProcessingJob {
+func NewMediaProcessingJob(listingID uint64, provider MediaProcessingProvider) MediaProcessingJob {
 	return MediaProcessingJob{
-		batchID:   batchID,
 		listingID: listingID,
 		provider:  provider,
 		status:    MediaProcessingJobStatusPending,
@@ -63,7 +59,6 @@ func NewMediaProcessingJob(batchID, listingID uint64, provider MediaProcessingPr
 
 func (j *MediaProcessingJob) ID() uint64                        { return j.id }
 func (j *MediaProcessingJob) SetID(id uint64)                   { j.id = id }
-func (j *MediaProcessingJob) BatchID() uint64                   { return j.batchID }
 func (j *MediaProcessingJob) ListingID() uint64                 { return j.listingID }
 func (j *MediaProcessingJob) Status() MediaProcessingJobStatus  { return j.status }
 func (j *MediaProcessingJob) Provider() MediaProcessingProvider { return j.provider }
@@ -114,11 +109,9 @@ type JobAsset struct {
 // StepFunctionPayload is the unified payload for Step Functions.
 type StepFunctionPayload struct {
 	JobID       uint64     `json:"jobId"` // Added
-	BatchID     uint64     `json:"batchId"`
 	ListingID   uint64     `json:"listingId"`
-	Assets      []JobAsset `json:"assets"`      // Raw input
-	ValidAssets []JobAsset `json:"validAssets"` // Validation output
-	HasVideos   bool       `json:"hasVideos"`   // Flag for video processing
+	Assets      []JobAsset `json:"assets"`    // Raw input
+	HasVideos   bool       `json:"hasVideos"` // Flag for video processing
 	Traceparent string     `json:"traceparent"`
 }
 
@@ -140,7 +133,6 @@ type MediaProcessingJobPayload struct {
 // MediaProcessingJobMessage is the payload sent to SQS/Step Functions.
 type MediaProcessingJobMessage struct {
 	JobID     uint64     `json:"jobId"`
-	BatchID   uint64     `json:"batchId"`
 	ListingID uint64     `json:"listingId"`
 	Assets    []JobAsset `json:"assets"`
 	Retry     uint16     `json:"retry"`
