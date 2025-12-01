@@ -10,8 +10,9 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	mediaprocessingqueue "github.com/projeto-toq/toq_server/internal/core/port/right/queue/mediaprocessingqueue"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
-	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/mediaprocessingrepository"
+	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	workflowport "github.com/projeto-toq/toq_server/internal/core/port/right/workflow"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 )
 
@@ -24,6 +25,7 @@ type MediaProcessingServiceInterface interface {
 	// Management
 	UpdateMedia(ctx context.Context, input dto.UpdateMediaInput) error
 	DeleteMedia(ctx context.Context, input dto.DeleteMediaInput) error
+	CompleteMedia(ctx context.Context, input dto.CompleteMediaInput) error
 
 	// Legacy/Internal
 	HandleProcessingCallback(ctx context.Context, input dto.HandleProcessingCallbackInput) (dto.HandleProcessingCallbackOutput, error)
@@ -44,6 +46,7 @@ type mediaProcessingService struct {
 	globalService        globalservice.GlobalServiceInterface
 	storage              storageport.ListingMediaStoragePort
 	queue                mediaprocessingqueue.QueuePortInterface
+	workflow             workflowport.WorkflowPortInterface
 	cfg                  Config
 	now                  func() time.Time
 	allowedContentLookup map[string]struct{}

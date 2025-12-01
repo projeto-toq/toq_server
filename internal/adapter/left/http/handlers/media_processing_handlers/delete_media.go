@@ -1,21 +1,18 @@
-package listinghandlers
+package mediaprocessinghandlers
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	httpdto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/projeto-toq/toq_server/internal/core/domain/dto"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-var _ = httpdto.ErrorResponse{}
-
 // DeleteMedia removes a media asset.
 // @Summary Delete media asset
 // @Description Removes a specific media asset from the listing.
-// @Tags Listings Media
+// @Tags Media Processing
 // @Accept json
 // @Produce json
 // @Param request body dto.DeleteMediaInput true "Delete Request"
@@ -23,8 +20,8 @@ var _ = httpdto.ErrorResponse{}
 // @Failure 400 {object} httpdto.ErrorResponse "Validation Error"
 // @Failure 404 {object} httpdto.ErrorResponse "Asset Not Found"
 // @Failure 500 {object} httpdto.ErrorResponse "Internal Server Error"
-// @Router /api/v2/listings/media [delete]
-func (lh *ListingHandler) DeleteMedia(c *gin.Context) {
+// @Router /api/v2/media/delete [delete]
+func (h *MediaProcessingHandler) DeleteMedia(c *gin.Context) {
 	var input dto.DeleteMediaInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_PAYLOAD", err.Error())
@@ -38,7 +35,7 @@ func (lh *ListingHandler) DeleteMedia(c *gin.Context) {
 	}
 	input.RequestedBy = userID
 
-	if err := lh.mediaProcessingService.DeleteMedia(c.Request.Context(), input); err != nil {
+	if err := h.service.DeleteMedia(c.Request.Context(), input); err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}

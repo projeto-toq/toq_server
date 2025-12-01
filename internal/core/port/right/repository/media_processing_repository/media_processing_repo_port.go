@@ -1,4 +1,4 @@
-package mediaprocessingrepository
+package media_processing_repository
 
 import (
 	"context"

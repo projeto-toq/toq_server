@@ -12,4 +12,7 @@ type StoragePort interface {
 
 	// Upload stores an object and returns its location/error
 	Upload(ctx context.Context, bucket, key string, body io.Reader, contentType string) error
+
+	// GetMetadata retrieves object metadata (size, etag)
+	GetMetadata(ctx context.Context, bucket, key string) (int64, string, error)
 }

@@ -8,6 +8,7 @@ import (
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	mediaprocessinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/media_processing_handlers"
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
@@ -60,6 +61,7 @@ func SetupRoutes(
 	authHandler := handlers.AuthHandler
 	userHandler := handlers.UserHandler
 	listingHandler := handlers.ListingHandler
+	mediaProcessingHandler := handlers.MediaProcessingHandler
 	adminHandler := handlers.AdminHandler
 	scheduleHandler := handlers.ScheduleHandler
 	holidayHandler := handlers.HolidayHandler
@@ -70,7 +72,7 @@ func SetupRoutes(
 	{
 		mediaProcessing := internal.Group("/media-processing")
 		{
-			mediaProcessing.POST("/callback", listingHandler.HandleProcessingCallback)
+			mediaProcessing.POST("/callback", mediaProcessingHandler.HandleProcessingCallback)
 		}
 	}
 
@@ -85,7 +87,7 @@ func SetupRoutes(
 	RegisterUserRoutes(v1, authHandler, userHandler, activityTracker, permissionService)
 
 	// Register listing routes with dependencies
-	RegisterListingRoutes(v1, listingHandler, activityTracker, permissionService)
+	RegisterListingRoutes(v1, listingHandler, mediaProcessingHandler, activityTracker, permissionService)
 
 	// Register admin routes with dependencies
 	RegisterAdminRoutes(v1, adminHandler, holidayHandler, activityTracker, permissionService)
@@ -260,6 +262,7 @@ func RegisterScheduleRoutes(
 func RegisterListingRoutes(
 	router *gin.RouterGroup,
 	listingHandler *listinghandlers.ListingHandler,
+	mediaProcessingHandler *mediaprocessinghandlers.MediaProcessingHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
 ) {
@@ -289,14 +292,14 @@ func RegisterListingRoutes(
 		media := listings.Group("/media")
 		{
 			// Upload management
-			media.POST("/uploads", listingHandler.RequestUploadURLs)      // RequestUploadURLs - request signed upload URLs
-			media.POST("/uploads/process", listingHandler.ProcessMedia)   // ProcessMedia - trigger async processing
-			media.POST("/uploads/complete", listingHandler.CompleteMedia) // CompleteMedia - finalize and zip
-			media.POST("/update", listingHandler.UpdateMedia)             // UpdateMedia - update metadata
-			media.DELETE("", listingHandler.DeleteMedia)                  // DeleteMedia - remove asset
+			media.POST("/uploads", mediaProcessingHandler.RequestUploadURLs)      // RequestUploadURLs - request signed upload URLs
+			media.POST("/uploads/process", mediaProcessingHandler.ProcessMedia)   // ProcessMedia - trigger async processing
+			media.POST("/uploads/complete", mediaProcessingHandler.CompleteMedia) // CompleteMedia - finalize and zip
+			media.POST("/update", mediaProcessingHandler.UpdateMedia)             // UpdateMedia - update metadata
+			media.DELETE("", mediaProcessingHandler.DeleteMedia)                  // DeleteMedia - remove asset
 
 			// Downloads
-			media.POST("/downloads", listingHandler.ListDownloadURLs) // ListDownloadURLs - get signed download URLs for processed assets
+			media.POST("/downloads", mediaProcessingHandler.ListDownloadURLs) // ListDownloadURLs - get signed download URLs for processed assets
 		}
 
 		// Individual listing operations

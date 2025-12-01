@@ -1,4 +1,4 @@
-package listinghandlers
+package mediaprocessinghandlers
 
 import (
 	"net/http"
@@ -28,7 +28,7 @@ import (
 //	@Failure		409		{object}	dto.ErrorResponse	"There is another open batch"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/listings/media/uploads [post]
-func (lh *ListingHandler) RequestUploadURLs(c *gin.Context) {
+func (h *MediaProcessingHandler) RequestUploadURLs(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
@@ -49,7 +49,7 @@ func (lh *ListingHandler) RequestUploadURLs(c *gin.Context) {
 		input.RequestedBy = userID
 	}
 
-	output, err := lh.mediaProcessingService.RequestUploadURLs(ctx, input)
+	output, err := h.service.RequestUploadURLs(ctx, input)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

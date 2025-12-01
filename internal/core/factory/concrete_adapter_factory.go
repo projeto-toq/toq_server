@@ -17,6 +17,7 @@ import (
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	mediaprocessinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/media_processing_handlers"
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
@@ -303,12 +304,23 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	listingHandlerPort := listinghandlers.NewListingHandlerAdapter(
 		listingService,
 		globalService,
-		mediaProcessingService,
 	)
 
 	listingHandler, ok := listingHandlerPort.(*listinghandlers.ListingHandler)
 	if !ok {
 		slog.Error("factory.http_handlers.listing_cast_failed")
+		return HTTPHandlers{}
+	}
+
+	// Create media processing handler
+	mediaProcessingHandlerPort := mediaprocessinghandlers.NewMediaProcessingHandler(
+		mediaProcessingService,
+		slog.Default(),
+	)
+
+	mediaProcessingHandler, ok := mediaProcessingHandlerPort.(*mediaprocessinghandlers.MediaProcessingHandler)
+	if !ok {
+		slog.Error("factory.http_handlers.media_processing_cast_failed")
 		return HTTPHandlers{}
 	}
 
@@ -357,13 +369,14 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	slog.Info("Successfully created all HTTP handlers")
 
 	return HTTPHandlers{
-		UserHandler:         userHandler,
-		ListingHandler:      listingHandler,
-		AuthHandler:         authHandler,
-		MetricsHandler:      metricsHandler,
-		AdminHandler:        adminHandler,
-		ScheduleHandler:     scheduleHandler,
-		HolidayHandler:      holidayHandler,
-		PhotoSessionHandler: photoSessionHandler,
+		UserHandler:            userHandler,
+		ListingHandler:         listingHandler,
+		MediaProcessingHandler: mediaProcessingHandler,
+		AuthHandler:            authHandler,
+		MetricsHandler:         metricsHandler,
+		AdminHandler:           adminHandler,
+		ScheduleHandler:        scheduleHandler,
+		HolidayHandler:         holidayHandler,
+		PhotoSessionHandler:    photoSessionHandler,
 	}
 }

@@ -1,4 +1,4 @@
-package listinghandlers
+package mediaprocessinghandlers
 
 import (
 	"net/http"
@@ -28,7 +28,7 @@ import (
 //	@Failure		404		{object}	dto.ErrorResponse	"Listing not found"
 //	@Failure		500		{object}	dto.ErrorResponse	"Internal server error"
 //	@Router			/listings/media/downloads [post]
-func (lh *ListingHandler) ListDownloadURLs(c *gin.Context) {
+func (h *MediaProcessingHandler) ListDownloadURLs(c *gin.Context) {
 	baseCtx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 	ctx, spanEnd, err := coreutils.GenerateTracer(baseCtx)
 	if err != nil {
@@ -44,7 +44,7 @@ func (lh *ListingHandler) ListDownloadURLs(c *gin.Context) {
 	}
 
 	input := converters.DTOToListDownloadURLsInput(request)
-	output, err := lh.mediaProcessingService.ListDownloadURLs(ctx, input)
+	output, err := h.service.ListDownloadURLs(ctx, input)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, err)
 		return

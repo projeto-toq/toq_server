@@ -7,7 +7,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	"github.com/projeto-toq/toq_server/internal/core/domain/dto"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
-	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/mediaprocessingrepository"
+	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 

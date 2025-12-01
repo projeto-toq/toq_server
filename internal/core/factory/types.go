@@ -8,6 +8,7 @@ import (
 	authhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/auth_handlers"
 	holidayhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/holiday_handlers"
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
+	mediaprocessinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/media_processing_handlers"
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
@@ -28,7 +29,7 @@ import (
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
-	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/mediaprocessingrepository"
+	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
 	photosessionrepo "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	propertycoveragerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/property_coverage_repository"
@@ -81,14 +82,15 @@ type RepositoryAdapters struct {
 
 // HTTPHandlers agrupa todos os handlers HTTP
 type HTTPHandlers struct {
-	UserHandler         *userhandlers.UserHandler
-	ListingHandler      *listinghandlers.ListingHandler
-	AuthHandler         *authhandlers.AuthHandler
-	MetricsHandler      *metricshandlers.MetricsHandler
-	AdminHandler        *adminhandlers.AdminHandler
-	ScheduleHandler     *schedulehandlers.ScheduleHandler
-	HolidayHandler      *holidayhandlers.HolidayHandler
-	PhotoSessionHandler *photosessionhandlers.PhotoSessionHandler
+	UserHandler            *userhandlers.UserHandler
+	ListingHandler         *listinghandlers.ListingHandler
+	MediaProcessingHandler *mediaprocessinghandlers.MediaProcessingHandler
+	AuthHandler            *authhandlers.AuthHandler
+	MetricsHandler         *metricshandlers.MetricsHandler
+	AdminHandler           *adminhandlers.AdminHandler
+	ScheduleHandler        *schedulehandlers.ScheduleHandler
+	HolidayHandler         *holidayhandlers.HolidayHandler
+	PhotoSessionHandler    *photosessionhandlers.PhotoSessionHandler
 }
 
 // MetricsAdapter contém o adapter de métricas

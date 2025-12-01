@@ -1,4 +1,4 @@
-package listinghandlers
+package mediaprocessinghandlers
 
 import (
 	"net/http"
@@ -9,7 +9,17 @@ import (
 )
 
 // HandleProcessingCallback handles the callback from the media processing pipeline
-func (h *ListingHandler) HandleProcessingCallback(c *gin.Context) {
+// @Summary Handle processing callback
+// @Description Receives status updates from the media processing pipeline.
+// @Tags Media Processing
+// @Accept json
+// @Produce json
+// @Param request body mediaprocessingmodel.MediaProcessingCallback true "Callback Payload"
+// @Success 200 {object} map[string]string "Success"
+// @Failure 400 {object} map[string]string "Validation Error"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /api/v2/media/callback [post]
+func (h *MediaProcessingHandler) HandleProcessingCallback(c *gin.Context) {
 	var req mediaprocessingmodel.MediaProcessingCallback
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -42,7 +52,7 @@ func (h *ListingHandler) HandleProcessingCallback(c *gin.Context) {
 		Error:   req.FailureReason,
 	}
 
-	_, err := h.mediaProcessingService.HandleProcessingCallback(c.Request.Context(), input)
+	_, err := h.service.HandleProcessingCallback(c.Request.Context(), input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

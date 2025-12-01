@@ -3,7 +3,7 @@ package mysqlmediaprocessingadapter
 import (
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
-	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/mediaprocessingrepository"
+	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 )
 
 // MediaProcessingAdapter implementa o repositório de mídia no MySQL.

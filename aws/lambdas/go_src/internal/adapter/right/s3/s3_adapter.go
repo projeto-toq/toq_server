@@ -50,3 +50,26 @@ func (a *S3Adapter) Upload(ctx context.Context, bucket, key string, body io.Read
 	}
 	return nil
 }
+
+// GetMetadata retrieves object metadata
+func (a *S3Adapter) GetMetadata(ctx context.Context, bucket, key string) (int64, string, error) {
+	resp, err := a.client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return 0, "", fmt.Errorf("failed to head object: %w", err)
+	}
+
+	var size int64
+	if resp.ContentLength != nil {
+		size = *resp.ContentLength
+	}
+
+	var etag string
+	if resp.ETag != nil {
+		etag = *resp.ETag
+	}
+
+	return size, etag, nil
+}
