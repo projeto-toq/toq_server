@@ -120,22 +120,15 @@ func (s *mediaProcessingService) DeleteMedia(ctx context.Context, input dto.Dele
 	committed = true
 
 	// Cleanup Storage (Best effort, after commit)
-	// We don't want to fail the request if S3 deletion fails, but we should log it.
-	// Or we could do it before commit? If S3 fails, we rollback DB?
-	// Usually S3 is not transactional. If we delete from S3 and DB commit fails, we lost data.
-	// If we delete from DB and S3 deletion fails, we have orphaned files (better).
-	// So we do S3 deletion after DB commit.
-
+	// Deletes all associated files (Raw, Processed, Thumbnails, etc.)
 	go func() {
 		bgCtx := context.Background() // Use background context for async cleanup
-		if asset.S3KeyRaw() != "" {
-			if err := s.storage.DeleteObject(bgCtx, asset.S3KeyRaw()); err != nil {
-				utils.LoggerFromContext(ctx).Warn("service.media.delete.s3_raw_failed", "key", asset.S3KeyRaw(), "err", err)
-			}
-		}
-		if asset.S3KeyProcessed() != "" {
-			if err := s.storage.DeleteObject(bgCtx, asset.S3KeyProcessed()); err != nil {
-				utils.LoggerFromContext(ctx).Warn("service.media.delete.s3_processed_failed", "key", asset.S3KeyProcessed(), "err", err)
+		keysToDelete := asset.GetAllS3Keys()
+
+		for _, key := range keysToDelete {
+			if err := s.storage.DeleteObject(bgCtx, key); err != nil {
+				// Log warning but continue trying to delete other keys
+				utils.LoggerFromContext(ctx).Warn("service.media.delete.s3_failed", "key", key, "err", err)
 			}
 		}
 	}()

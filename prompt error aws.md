@@ -9,26 +9,17 @@
 Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_useful_commands.md`, `docs/aws_media_processing_implementation_summary.md` e `aws/README.md` decrevem o atual sistema de media processing, ou como deveria estar funcionando, ja que nem todas as etapas do processo já foram testadas.
 
 Existem os seguinte erros detectados:
-1. o endpoint `POST /listings/media/uploads/complete` sendo chamado com o body:
-```json
-{
-  "listingIdentityId": 51
-}
-```
 
-está retornando:
-```json
-{
-    "code": 409,
-    "details": null,
-    "message": "no processed assets found to finalize"
-}
-```
+1. o endpoint `/listings/media/uploads/process POST` chamado após o upload das medias altera os registros da tabela media_assets para o status "processing" mas o processamento em si não é iniciado ou termina com erro, pois os arquivos de mídia não são encontrados no bucket S3 e o status nunca vai para processed ou failed.
+
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
+**Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
+**Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
+**Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**
 - **`docs/toq_server_go_guide.md`** — Guia completo do projeto (seções 1-17)
@@ -44,9 +35,7 @@ Assim:
 2. **Identifique a causa raiz** apresente evidencias no código
 3. **Proponha plano detalhado** com code skeletons
 4. **Não implemente código** — apenas análise e planejamento
-5. **Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
-6. **Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
-7. **Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
+
 ---
 
 ## 📋 Formato do Plano

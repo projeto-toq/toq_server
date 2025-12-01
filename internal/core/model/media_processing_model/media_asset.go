@@ -2,6 +2,7 @@ package mediaprocessingmodel
 
 import (
 	"database/sql"
+	"encoding/json"
 )
 
 // MediaAsset represents a single media file associated with a listing.
@@ -74,4 +75,33 @@ func (a *MediaAsset) Metadata() string {
 }
 func (a *MediaAsset) SetMetadata(metadata string) {
 	a.metadata = sql.NullString{String: metadata, Valid: metadata != ""}
+}
+
+// GetAllS3Keys returns all S3 keys associated with this asset,
+// including Raw, Processed, and any keys found in Metadata.
+func (a *MediaAsset) GetAllS3Keys() []string {
+	keys := make([]string, 0)
+
+	// Add explicit keys
+	if k := a.S3KeyRaw(); k != "" {
+		keys = append(keys, k)
+	}
+	if k := a.S3KeyProcessed(); k != "" {
+		keys = append(keys, k)
+	}
+
+	// Parse metadata for additional keys (thumbnails, resized versions)
+	if metaJSON := a.Metadata(); metaJSON != "" {
+		var metaMap map[string]string
+		if err := json.Unmarshal([]byte(metaJSON), &metaMap); err == nil {
+			for _, v := range metaMap {
+				if v != "" {
+					// Simple heuristic: assume values in metadata are keys if they are not empty.
+					keys = append(keys, v)
+				}
+			}
+		}
+	}
+
+	return keys
 }

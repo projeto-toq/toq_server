@@ -70,7 +70,22 @@ func (s *mediaProcessingService) RequestUploadURLs(ctx context.Context, input dt
 	var uploadTTLSeconds int
 
 	for _, file := range validatedFiles {
-		asset := mediaprocessingmodel.NewMediaAsset(uint64(input.ListingIdentityID), file.AssetType, file.Sequence)
+		// IDEMPOTENCY CHECK: Try to find existing asset first to preserve S3 Key
+		existingAsset, err := s.repo.GetAssetBySequence(ctx, tx, uint64(input.ListingIdentityID), file.AssetType, file.Sequence)
+
+		var asset mediaprocessingmodel.MediaAsset
+		if err == nil {
+			// Asset exists: reuse it to keep the same S3 Key (idempotency)
+			asset = existingAsset
+		} else if errors.Is(err, sql.ErrNoRows) {
+			// Asset does not exist: create new
+			asset = mediaprocessingmodel.NewMediaAsset(uint64(input.ListingIdentityID), file.AssetType, file.Sequence)
+		} else {
+			utils.SetSpanError(ctx, err)
+			logger.Error("service.media.request_upload.get_asset_error", "err", err, "listing_identity_id", input.ListingIdentityID)
+			return dto.RequestUploadURLsOutput{}, derrors.Infra("failed to check existing asset", err)
+		}
+
 		asset.SetTitle(file.Title)
 
 		// Prepare metadata
@@ -89,6 +104,7 @@ func (s *mediaProcessingService) RequestUploadURLs(ctx context.Context, input dt
 		asset.SetMetadata(string(metaBytes))
 
 		// Generate Signed URL
+		// NOTE: If asset.S3KeyRaw is already set (from DB), the adapter will reuse it.
 		signedURL, genErr := s.storage.GenerateRawUploadURL(ctx, uint64(input.ListingIdentityID), asset, file.ContentType, file.Checksum)
 		if genErr != nil {
 			utils.SetSpanError(ctx, genErr)
@@ -97,6 +113,10 @@ func (s *mediaProcessingService) RequestUploadURLs(ctx context.Context, input dt
 		}
 
 		asset.SetS3KeyRaw(signedURL.ObjectKey)
+		// Reset status to PENDING_UPLOAD in case it was failed/processed, allowing re-upload
+		if asset.Status() == mediaprocessingmodel.MediaAssetStatusFailed || asset.Status() == mediaprocessingmodel.MediaAssetStatusProcessed {
+			asset.SetStatus(mediaprocessingmodel.MediaAssetStatusPendingUpload)
+		}
 
 		// Upsert Asset
 		if err := s.repo.UpsertAsset(ctx, tx, asset); err != nil {

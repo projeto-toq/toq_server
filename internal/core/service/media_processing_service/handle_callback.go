@@ -7,6 +7,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	"github.com/projeto-toq/toq_server/internal/core/domain/dto"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
+	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -45,7 +46,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	switch input.Status {
 	case "SUCCEEDED":
 		jobStatus = mediaprocessingmodel.MediaProcessingJobStatusSucceeded
-	case "FAILED":
+	case "FAILED", "PROCESSING_FAILED", "VALIDATION_FAILED", "TIMED_OUT": // Catch all failure modes
 		jobStatus = mediaprocessingmodel.MediaProcessingJobStatusFailed
 	default:
 		jobStatus = mediaprocessingmodel.MediaProcessingJobStatusRunning
@@ -53,10 +54,33 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 	if jobStatus.IsTerminal() {
 		job.MarkCompleted(jobStatus, mediaprocessingmodel.MediaProcessingJobPayload{}, s.nowUTC())
+		if input.FailureReason != "" {
+			job.AppendError(input.FailureReason)
+		}
 	}
 
 	if err := s.repo.UpdateProcessingJob(ctx, tx, job); err != nil {
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to update job", err)
+	}
+
+	// FAIL-SAFE: If job failed globally, mark all associated assets as FAILED
+	// This prevents assets from being stuck in PROCESSING forever.
+	if jobStatus == mediaprocessingmodel.MediaProcessingJobStatusFailed && len(input.Results) == 0 {
+		// We need to find assets that were part of this job.
+		// Since we don't have a direct link in the callback if Results is empty,
+		// we assume all PROCESSING assets for this listing are affected.
+		filter := mediaprocessingrepository.AssetFilter{
+			Status: []mediaprocessingmodel.MediaAssetStatus{mediaprocessingmodel.MediaAssetStatusProcessing},
+		}
+		assets, err := s.repo.ListAssets(ctx, tx, job.ListingIdentityID(), filter, nil)
+		if err == nil {
+			for _, asset := range assets {
+				asset.SetStatus(mediaprocessingmodel.MediaAssetStatusFailed)
+				_ = s.repo.UpsertAsset(ctx, tx, asset)
+			}
+		} else {
+			logger.Error("service.media.callback.fail_assets_error", "err", err, "listing_identity_id", job.ListingIdentityID())
+		}
 	}
 
 	// Update assets based on results

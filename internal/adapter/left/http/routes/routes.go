@@ -296,7 +296,7 @@ func RegisterListingRoutes(
 			media.POST("/uploads/process", mediaProcessingHandler.ProcessMedia)   // ProcessMedia - trigger async processing
 			media.POST("/uploads/complete", mediaProcessingHandler.CompleteMedia) // CompleteMedia - finalize and zip
 			media.POST("/update", mediaProcessingHandler.UpdateMedia)             // UpdateMedia - update metadata
-			media.DELETE("", mediaProcessingHandler.DeleteMedia)                  // DeleteMedia - remove asset
+			media.DELETE("/delete", mediaProcessingHandler.DeleteMedia)           // DeleteMedia - remove asset
 
 			// Retrieval
 			media.GET("", mediaProcessingHandler.ListMedia)                      // ListMedia - list assets with pagination

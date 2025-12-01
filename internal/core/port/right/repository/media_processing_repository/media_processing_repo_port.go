@@ -12,6 +12,7 @@ type RepositoryInterface interface {
 	// New methods for granular asset management
 	UpsertAsset(ctx context.Context, tx *sql.Tx, asset mediaprocessingmodel.MediaAsset) error
 	GetAsset(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) (mediaprocessingmodel.MediaAsset, error)
+	GetAssetBySequence(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) (mediaprocessingmodel.MediaAsset, error)
 	GetAssetByID(ctx context.Context, tx *sql.Tx, assetID uint64) (mediaprocessingmodel.MediaAsset, error)
 	GetAssetByRawKey(ctx context.Context, tx *sql.Tx, rawKey string) (mediaprocessingmodel.MediaAsset, error)
 	ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter AssetFilter, pagination *Pagination) ([]mediaprocessingmodel.MediaAsset, error)
