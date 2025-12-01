@@ -113,8 +113,10 @@ func (s *mediaProcessingService) RequestUploadURLs(ctx context.Context, input dt
 		}
 
 		asset.SetS3KeyRaw(signedURL.ObjectKey)
-		// Reset status to PENDING_UPLOAD in case it was failed/processed, allowing re-upload
-		if asset.Status() == mediaprocessingmodel.MediaAssetStatusFailed || asset.Status() == mediaprocessingmodel.MediaAssetStatusProcessed {
+		// Reset status to PENDING_UPLOAD in case it was failed/processed/processing, allowing re-upload
+		if asset.Status() == mediaprocessingmodel.MediaAssetStatusFailed ||
+			asset.Status() == mediaprocessingmodel.MediaAssetStatusProcessed ||
+			asset.Status() == mediaprocessingmodel.MediaAssetStatusProcessing {
 			asset.SetStatus(mediaprocessingmodel.MediaAssetStatusPendingUpload)
 		}
 

@@ -140,8 +140,8 @@
       "Type": "Task",
       "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-consolidate-staging",
       "Parameters": {
-        "listingId.$": "$.validation.listingId",
-        "validAssets.$": "$.validation.validAssets",
+        "listingIdentityId.$": "$.validation.listingIdentityId",
+        "assets.$": "$.validation.validAssets",
         "parallelResults.$": "$.parallelResults"
       },
       "ResultPath": "$.consolidation",
@@ -175,7 +175,7 @@
           "jobId.$": "$.jobId",
           "status": "SUCCEEDED",
           "provider": "STEP_FUNCTIONS",
-          "listingId.$": "States.Format('{}', $.validation.listingId)",
+          "listingIdentityId.$": "States.Format('{}', $.validation.listingIdentityId)",
           "traceparent": null,
           "outputs.$": "$.consolidation.body.outputs"
         }
@@ -202,7 +202,7 @@
       "Parameters": {
         "body": {
           "jobId.$": "$.jobId",
-          "listingId.$": "States.Format('{}', $.listingId)",
+          "listingIdentityId.$": "States.Format('{}', $.listingIdentityId)",
           "status": "VALIDATION_FAILED",
           "error.$": "$.error"
         }
@@ -216,7 +216,7 @@
       "Parameters": {
         "body": {
           "jobId.$": "$.jobId",
-          "listingId.$": "States.Format('{}', $.validation.listingId)",
+          "listingIdentityId.$": "States.Format('{}', $.validation.listingIdentityId)",
           "status": "PROCESSING_FAILED",
           "error.$": "$.error"
         }
