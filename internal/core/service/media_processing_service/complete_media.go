@@ -58,7 +58,7 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 	filter := mediaprocessingrepository.AssetFilter{
 		Status: []mediaprocessingmodel.MediaAssetStatus{mediaprocessingmodel.MediaAssetStatusProcessed},
 	}
-	assets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), filter)
+	assets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), filter, nil)
 	if err != nil {
 		return derrors.Infra("failed to list processed assets", err)
 	}

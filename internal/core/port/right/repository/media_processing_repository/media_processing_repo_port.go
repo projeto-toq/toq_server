@@ -14,7 +14,8 @@ type RepositoryInterface interface {
 	GetAsset(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) (mediaprocessingmodel.MediaAsset, error)
 	GetAssetByID(ctx context.Context, tx *sql.Tx, assetID uint64) (mediaprocessingmodel.MediaAsset, error)
 	GetAssetByRawKey(ctx context.Context, tx *sql.Tx, rawKey string) (mediaprocessingmodel.MediaAsset, error)
-	ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter AssetFilter) ([]mediaprocessingmodel.MediaAsset, error)
+	ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter AssetFilter, pagination *Pagination) ([]mediaprocessingmodel.MediaAsset, error)
+	CountAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter AssetFilter) (int64, error)
 	DeleteAsset(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) error
 
 	RegisterProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) (uint64, error)
@@ -22,8 +23,17 @@ type RepositoryInterface interface {
 	UpdateProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) error
 }
 
+// Pagination define opções de paginação para repositórios.
+type Pagination struct {
+	Page  int
+	Limit int
+	Sort  string
+	Order string
+}
+
 // AssetFilter narrows down asset lookups.
 type AssetFilter struct {
 	AssetTypes []mediaprocessingmodel.MediaAssetType
 	Status     []mediaprocessingmodel.MediaAssetStatus
+	Sequence   *uint8
 }

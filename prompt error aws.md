@@ -1,24 +1,41 @@
-### Engenheiro de Software Go Sênior — Análise e Refatoração TOQ Server
+### Engenheiro de Software Go Sênior e AWS Admin Senior — Análise e Refatoração TOQ Server
 
-**Objetivo:** Atuar como engenheiro Go sênior para analisar código existente, entender claramente o erro apresentado e identificar a causa raiz do problema para propor planos detalhados de refatoração. Toda a interação deve ser feita em português.
+**Objetivo:** Atuar como engenheiro Go sênior e AWS admin senior, para analisar código existente, entender claramente o erro apresentado e identificar a causa raiz do problema para propor planos detalhados de refatoração. Toda a interação deve ser feita em português.
 
 ---
 
 ## 🎯 Problema / Solicitação
 
-o endpoint de POST `/listings` tem o campo complex que é extremamente necessário para o permitir buscas de listing por complex, porém este campo não pode ser obrigatório, pois existem listings que não pertencem a complexos.
-Adicionalmente existem campos de building_floors, unit_tower, unit_floor e unit_number que também são necessários para listings que pertencem a complexos, mas que podem não estar sendo validados corretamente no momento da criação do listing.
+Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_useful_commands.md`, `docs/aws_media_processing_implementation_summary.md` e `aws/README.md` decrevem o atual sistema de media processing, ou como deveria estar funcionando, ja que nem todas as etapas do processo já foram testadas.
 
-Assim, é necessário que durante a criação de listing, seja:
-- efetuada a verificação do zip_code fornecido, através do adapter `internal/adapter/right/cep`, para confirmar os dados de endereço passados pelo usuário; os dados obtidos do cep se sobrepoe a quaisquer dados de endereço fornecidos, com exceção de complement e neighborhood;
-- em seguida efetuar a busca do complex associado ao zip_code e number, se existir, através do `GetComplexByAddress(ctx context.Context, input GetComplexByAddressInput) (propertycoveragemodel.ManagedComplexInterface, error)`;
-- com os dados do complex obtidos, confirmar se complex foi populado e se foi populado corretamente;
-    - verificar se os campos building_floors, unit_tower, unit_floor e unit_number são coerentes com os dados do complex;
+Existem os seguinte erros detectados:
+1. o endpoint `POST /listings/media/download` sendo chamado com o body:
+```json
+{
+  "listingIdentityId": 51,
+  "requests": [
+    {
+      "assetType": "PHOTO_VERTICAL",
+      "resolution": "medium",
+      "sequence": 1
+    }
+  ]
+}
+```
 
+está retornando:
+```json
+{
+    "listingIdentityId": 51,
+    "urls": []
+}
+```
     
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
-2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
+2. Verfique se todas as opções de tamanho de foto (thumbnail, small, medium, large, original) estão sendo corretamente tratadas no código.
+3. O swagger necessita de exemplos e de todas as opções para tamnhos disponíveis.
+4. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**
@@ -35,7 +52,9 @@ Assim:
 2. **Identifique a causa raiz** apresente evidencias no código
 3. **Proponha plano detalhado** com code skeletons
 4. **Não implemente código** — apenas análise e planejamento
-
+5. **Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
+6. **Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
+7. **Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
 ---
 
 ## 📋 Formato do Plano

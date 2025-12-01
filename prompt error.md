@@ -6,23 +6,19 @@
 
 ## 🎯 Problema / Solicitação
 
-O processo de conversão das fotos para tamanhos menores está com es seguintes problemas:
-1) O tamnho `tiny` deve ser renomeado para thumbnail
-2) O armazenamento no bucket S3 está atualmente com a seguinte ordem:
-    processed/tiny/photo/vertical/2025-11-28/* e deveria ser
-    processed/photo/vertical/thumbnail | small | medium | large/*
-3) A data que está sendo colocada no path do bucket, em processed e raw deve ser eliminada.
-4) O zip está sendo criado com a data no caminho e deve ser eliminado também.
-5) As fotos ao serem convertidas estão sendo rotaticionadas indevidamente, em 90 graus no sentido antihorário.
-
-Estamos rodando numa instancia EC2, e as credenciais ADMIN estão em `configs/aws_credentials`, porntao voce pode usar a console para investigar detlhadamente o que ocorreu com os SQS, Lambdas, Step Functions, S3 etc.
-Caso necessite algum comando SUDO, envie no terminal que digito a senha.
-Comandos devem ser enviados individualmente, um por vez.
+Ao executar o endpoint `POST /listings/media/uploads/process` recebo o seguinte erro:
+```json
+{
+    "code": 401,
+    "details": null,
+    "message": "User ID not found in context"
+}
+```
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual dos lambdas e identifique a causa raiz do problema
-2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
-3. Implemente as alterações na AWS para que tudo funcione corretamente.
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
+2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual `docs/toq_server_go_guide.md` (observabilidade, erros, transações, etc).
+
 ---
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**

@@ -140,7 +140,7 @@ func (a *ListingMediaStorageAdapter) GenerateRawUploadURL(ctx context.Context, l
 }
 
 // GenerateProcessedDownloadURL builds a pre-signed GET URL for processed assets.
-func (a *ListingMediaStorageAdapter) GenerateProcessedDownloadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset) (storageport.SignedURL, error) {
+func (a *ListingMediaStorageAdapter) GenerateProcessedDownloadURL(ctx context.Context, listingID uint64, asset mediaprocessingmodel.MediaAsset, resolution string) (storageport.SignedURL, error) {
 	ctx = utils.ContextWithLogger(ctx)
 	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "ListingMediaStorage.GenerateProcessedDownloadURL")
 	if err != nil {
@@ -153,7 +153,7 @@ func (a *ListingMediaStorageAdapter) GenerateProcessedDownloadURL(ctx context.Co
 		return storageport.SignedURL{}, err
 	}
 
-	key := a.resolveProcessedKey(listingID, asset)
+	key := a.resolveProcessedKey(listingID, asset, resolution)
 	presignOutput, err := a.getPresigner.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(a.bucket),
 		Key:    aws.String(key),
@@ -164,6 +164,42 @@ func (a *ListingMediaStorageAdapter) GenerateProcessedDownloadURL(ctx context.Co
 		utils.SetSpanError(ctx, err)
 		logger := utils.LoggerFromContext(ctx)
 		logger.Error("adapter.s3.listing.generate_download_url_failed", "listing_id", listingID, "key", key, "error", err)
+		return storageport.SignedURL{}, derrors.Infra("failed to generate download URL", err)
+	}
+
+	return storageport.SignedURL{
+		URL:       presignOutput.URL,
+		Method:    httpMethodGet,
+		Headers:   map[string]string{},
+		ExpiresIn: a.downloadTTL,
+		ObjectKey: key,
+	}, nil
+}
+
+// GenerateDownloadURL builds a pre-signed GET URL for any key.
+func (a *ListingMediaStorageAdapter) GenerateDownloadURL(ctx context.Context, key string) (storageport.SignedURL, error) {
+	ctx = utils.ContextWithLogger(ctx)
+	ctx, spanEnd, err := utils.GenerateBusinessTracer(ctx, "ListingMediaStorage.GenerateDownloadURL")
+	if err != nil {
+		return storageport.SignedURL{}, derrors.Infra("failed to create tracer", err)
+	}
+	defer spanEnd()
+
+	if err := a.ensureClients(); err != nil {
+		utils.SetSpanError(ctx, err)
+		return storageport.SignedURL{}, err
+	}
+
+	presignOutput, err := a.getPresigner.PresignGetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(a.bucket),
+		Key:    aws.String(key),
+	}, func(opts *s3.PresignOptions) {
+		opts.Expires = a.downloadTTL
+	})
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger := utils.LoggerFromContext(ctx)
+		logger.Error("adapter.s3.listing.generate_generic_download_url_failed", "key", key, "error", err)
 		return storageport.SignedURL{}, derrors.Infra("failed to generate download URL", err)
 	}
 
@@ -271,7 +307,14 @@ func (a *ListingMediaStorageAdapter) buildObjectKey(listingID uint64, stage stri
 		reference = metaMap["clientId"]
 	}
 	if reference == "" && asset.Sequence() > 0 {
-		reference = fmt.Sprintf("seq-%02d", asset.Sequence())
+		prefix := "seq"
+		assetTypeStr := string(asset.AssetType())
+		if strings.Contains(assetTypeStr, "VERTICAL") {
+			prefix = "vertical"
+		} else if strings.Contains(assetTypeStr, "HORIZONTAL") {
+			prefix = "horizontal"
+		}
+		reference = fmt.Sprintf("%s-%02d", prefix, asset.Sequence())
 	}
 	if reference == "" {
 		reference = fmt.Sprintf("asset-%s", uuid.NewString())
@@ -292,19 +335,65 @@ func (a *ListingMediaStorageAdapter) buildObjectKey(listingID uint64, stage stri
 	return fmt.Sprintf("%d/%s/%s/%s-%s", listingID, stage, mediaTypeSegment, reference, filename)
 }
 
-func (a *ListingMediaStorageAdapter) resolveProcessedKey(listingID uint64, asset mediaprocessingmodel.MediaAsset) string {
+// extractFilename helper to get the filename part from existing keys or metadata
+func (a *ListingMediaStorageAdapter) extractFilename(asset mediaprocessingmodel.MediaAsset) string {
+	// Tenta extrair do S3KeyProcessed se existir
 	if asset.S3KeyProcessed() != "" {
-		return asset.S3KeyProcessed()
+		_, file := path.Split(asset.S3KeyProcessed())
+		if file != "" {
+			return file
+		}
+	}
+	// Tenta do S3KeyRaw
+	if asset.S3KeyRaw() != "" {
+		_, file := path.Split(asset.S3KeyRaw())
+		if file != "" {
+			return file
+		}
 	}
 
+	// Fallback para metadata
+	var metaMap map[string]string
+	if asset.Metadata() != "" {
+		_ = json.Unmarshal([]byte(asset.Metadata()), &metaMap)
+	}
+
+	filename := metaMap["filename"]
+	if filename != "" {
+		return sanitizeFilename(filename, metaMap["content_type"])
+	}
+
+	// Fallback final
+	return fmt.Sprintf("asset-%d-%d.bin", asset.ListingIdentityID(), asset.Sequence())
+}
+
+func (a *ListingMediaStorageAdapter) resolveProcessedKey(listingID uint64, asset mediaprocessingmodel.MediaAsset, resolution string) string {
+	// 1. Se for ZIP, não tem resolução
+	if asset.AssetType() == mediaprocessingmodel.MediaAssetTypeZip {
+		if asset.S3KeyProcessed() != "" {
+			return asset.S3KeyProcessed()
+		}
+		return a.buildObjectKey(listingID, "processed", asset)
+	}
+
+	// 2. Determinar componentes básicos
 	stage := "processed"
 	if asset.AssetType() == mediaprocessingmodel.MediaAssetTypeThumbnail {
 		stage = "thumb"
-	} else if asset.AssetType() == mediaprocessingmodel.MediaAssetTypeZip {
-		stage = "zip"
 	}
 
-	return a.buildObjectKey(listingID, stage, asset)
+	mediaTypeSegment := mediaTypePathSegment(asset.AssetType())
+
+	// 3. Obter nome do arquivo
+	filename := a.extractFilename(asset)
+
+	// 4. Construir caminho: {listingId}/{stage}/{mediaType}/{resolution}/{filename}
+	if resolution == "" {
+		resolution = "original"
+	}
+
+	// /{listingId}/processed/{mediaType}/{size}/{uuid}.{ext}
+	return fmt.Sprintf("%d/%s/%s/%s/%s", listingID, stage, mediaTypeSegment, resolution, filename)
 }
 
 func mediaTypePathSegment(assetType mediaprocessingmodel.MediaAssetType) string {

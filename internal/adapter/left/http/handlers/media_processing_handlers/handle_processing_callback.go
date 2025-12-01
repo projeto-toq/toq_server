@@ -4,22 +4,22 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	domaindto "github.com/projeto-toq/toq_server/internal/core/domain/dto"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
 // HandleProcessingCallback handles the callback from the media processing pipeline
-// @Summary Handle processing callback
-// @Description Receives status updates from the media processing pipeline.
-// @Tags Media Processing
-// @Accept json
-// @Produce json
-// @Param request body mediaprocessingmodel.MediaProcessingCallback true "Callback Payload"
-// @Success 200 {object} map[string]string "Success"
-// @Failure 400 {object} map[string]string "Validation Error"
-// @Failure 500 {object} map[string]string "Internal Server Error"
-// @Router /api/v2/media/callback [post]
 func (h *MediaProcessingHandler) HandleProcessingCallback(c *gin.Context) {
+	baseCtx := utils.EnrichContextWithRequestInfo(c.Request.Context(), c)
+	ctx, spanEnd, err := utils.GenerateTracer(baseCtx)
+	if err != nil {
+		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
+		return
+	}
+	defer spanEnd()
+
 	var req mediaprocessingmodel.MediaProcessingCallback
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -49,11 +49,9 @@ func (h *MediaProcessingHandler) HandleProcessingCallback(c *gin.Context) {
 		JobID:   req.JobID,
 		Status:  string(req.Status),
 		Results: results,
-		Error:   req.FailureReason,
 	}
 
-	_, err := h.service.HandleProcessingCallback(c.Request.Context(), input)
-	if err != nil {
+	if _, err := h.service.HandleProcessingCallback(ctx, input); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

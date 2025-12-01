@@ -298,8 +298,9 @@ func RegisterListingRoutes(
 			media.POST("/update", mediaProcessingHandler.UpdateMedia)             // UpdateMedia - update metadata
 			media.DELETE("", mediaProcessingHandler.DeleteMedia)                  // DeleteMedia - remove asset
 
-			// Downloads
-			media.POST("/downloads", mediaProcessingHandler.ListDownloadURLs) // ListDownloadURLs - get signed download URLs for processed assets
+			// Retrieval
+			media.GET("", mediaProcessingHandler.ListMedia)                      // ListMedia - list assets with pagination
+			media.POST("/download", mediaProcessingHandler.GenerateDownloadURLs) // GenerateDownloadURLs - get signed download URLs
 		}
 
 		// Individual listing operations

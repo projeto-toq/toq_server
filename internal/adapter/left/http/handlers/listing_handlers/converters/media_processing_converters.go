@@ -1,6 +1,8 @@
 package converters
 
 import (
+	"encoding/json"
+
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	domaindto "github.com/projeto-toq/toq_server/internal/core/domain/dto"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
@@ -50,34 +52,83 @@ func RequestUploadURLsOutputToDTO(output domaindto.RequestUploadURLsOutput) dto.
 	}
 }
 
-// DTOToListDownloadURLsInput converts HTTP request to service input
-func DTOToListDownloadURLsInput(req dto.ListDownloadURLsRequest) domaindto.ListDownloadURLsInput {
-	assetTypes := make([]mediaprocessingmodel.MediaAssetType, 0, len(req.AssetTypes))
-	for _, at := range req.AssetTypes {
-		assetTypes = append(assetTypes, mediaprocessingmodel.MediaAssetType(at))
-	}
-
-	return domaindto.ListDownloadURLsInput{
-		ListingIdentityID: int64(req.ListingIdentityID),
-		AssetTypes:        assetTypes,
+// DTOToListMediaInput converts HTTP request to service input
+func DTOToListMediaInput(req dto.ListMediaRequest) domaindto.ListMediaInput {
+	return domaindto.ListMediaInput{
+		ListingIdentityID: req.ListingIdentityID,
+		AssetType:         req.AssetType,
+		Sequence:          req.Sequence,
+		Page:              req.Page,
+		Limit:             req.Limit,
+		Sort:              req.Sort,
+		Order:             req.Order,
 	}
 }
 
-// ListDownloadURLsOutputToDTO converts service output to HTTP response
-func ListDownloadURLsOutputToDTO(output domaindto.ListDownloadURLsOutput) dto.ListDownloadURLsResponse {
-	downloads := make([]dto.DownloadEntryResponse, 0, len(output.Assets))
-	for _, d := range output.Assets {
-		downloads = append(downloads, dto.DownloadEntryResponse{
-			AssetType: string(d.AssetType),
-			Sequence:  d.Sequence,
-			Status:    string(d.Status),
-			Title:     d.Title,
-			URL:       d.DownloadURL,
+// ListMediaOutputToDTO converts service output to HTTP response
+func ListMediaOutputToDTO(output domaindto.ListMediaOutput) dto.ListMediaResponse {
+	data := make([]dto.MediaAssetResponse, 0, len(output.Assets))
+	for _, a := range output.Assets {
+		var metaMap map[string]string
+		if metaStr := a.Metadata(); metaStr != "" {
+			_ = json.Unmarshal([]byte(metaStr), &metaMap)
+		}
+
+		data = append(data, dto.MediaAssetResponse{
+			ID:                a.ID(),
+			ListingIdentityID: a.ListingIdentityID(),
+			AssetType:         string(a.AssetType()),
+			Sequence:          a.Sequence(),
+			Status:            string(a.Status()),
+			Title:             a.Title(),
+			Metadata:          metaMap,
+			S3KeyRaw:          a.S3KeyRaw(),
+			S3KeyProcessed:    a.S3KeyProcessed(),
 		})
 	}
 
-	return dto.ListDownloadURLsResponse{
-		ListingIdentityID: uint64(output.ListingIdentityID),
-		Downloads:         downloads,
+	return dto.ListMediaResponse{
+		Data: data,
+		Pagination: dto.PaginationResponse{
+			Page:  output.Page,
+			Limit: output.Limit,
+			Total: output.TotalCount,
+		},
+	}
+}
+
+// DTOToGenerateDownloadURLsInput converts HTTP request to service input
+func DTOToGenerateDownloadURLsInput(req dto.GenerateDownloadURLsRequest) domaindto.GenerateDownloadURLsInput {
+	requests := make([]domaindto.DownloadRequestItemInput, 0, len(req.Requests))
+	for _, r := range req.Requests {
+		requests = append(requests, domaindto.DownloadRequestItemInput{
+			AssetType:  mediaprocessingmodel.MediaAssetType(r.AssetType),
+			Sequence:   r.Sequence,
+			Resolution: r.Resolution,
+		})
+	}
+
+	return domaindto.GenerateDownloadURLsInput{
+		ListingIdentityID: req.ListingIdentityID,
+		Requests:          requests,
+	}
+}
+
+// GenerateDownloadURLsOutputToDTO converts service output to HTTP response
+func GenerateDownloadURLsOutputToDTO(output domaindto.GenerateDownloadURLsOutput) dto.GenerateDownloadURLsResponse {
+	urls := make([]dto.DownloadURLResponse, 0, len(output.Urls))
+	for _, u := range output.Urls {
+		urls = append(urls, dto.DownloadURLResponse{
+			AssetType:  string(u.AssetType),
+			Sequence:   u.Sequence,
+			Resolution: u.Resolution,
+			Url:        u.Url,
+			ExpiresIn:  u.ExpiresIn,
+		})
+	}
+
+	return dto.GenerateDownloadURLsResponse{
+		ListingIdentityID: output.ListingIdentityID,
+		Urls:              urls,
 	}
 }

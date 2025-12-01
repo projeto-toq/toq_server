@@ -1315,3 +1315,67 @@ type RetryMediaBatchResponse struct {
 	// Status indicates the current batch status (typically PROCESSING)
 	Status string `json:"status" example:"PROCESSING"`
 }
+
+// --- List Media (GET) ---
+
+// ListMediaRequest define filtros e paginação para consulta de mídias.
+type ListMediaRequest struct {
+	ListingIdentityID uint64 `form:"listingIdentityId" binding:"required,min=1"`
+	AssetType         string `form:"assetType,omitempty"`
+	Sequence          *uint8 `form:"sequence,omitempty"`
+
+	// Paginação e Ordenação
+	Page  int    `form:"page,default=1" binding:"min=1"`
+	Limit int    `form:"limit,default=20" binding:"min=1,max=100"`
+	Sort  string `form:"sort,default=sequence" binding:"omitempty,oneof=sequence id"`
+	Order string `form:"order,default=asc" binding:"omitempty,oneof=asc desc"`
+}
+
+// ListMediaResponse retorna a lista paginada com TODAS as informações do modelo.
+type ListMediaResponse struct {
+	Data       []MediaAssetResponse `json:"data"`
+	Pagination PaginationResponse   `json:"pagination"`
+}
+
+// MediaAssetResponse espelha o modelo de domínio completo.
+type MediaAssetResponse struct {
+	ID                uint64            `json:"id"`
+	ListingIdentityID uint64            `json:"listingIdentityId"`
+	AssetType         string            `json:"assetType"`
+	Sequence          uint8             `json:"sequence"`
+	Status            string            `json:"status"`
+	Title             string            `json:"title,omitempty"`
+	Metadata          map[string]string `json:"metadata,omitempty"`
+	S3KeyRaw          string            `json:"s3KeyRaw,omitempty"`
+	S3KeyProcessed    string            `json:"s3KeyProcessed,omitempty"`
+}
+
+// --- Generate Download URLs (POST) ---
+
+// GenerateDownloadURLsRequest solicita URLs assinadas para itens específicos.
+type GenerateDownloadURLsRequest struct {
+	ListingIdentityID uint64                `json:"listingIdentityId" binding:"required,min=1"`
+	Requests          []DownloadRequestItem `json:"requests" binding:"required,min=1,dive"`
+}
+
+// DownloadRequestItem combina a chave do asset com a resolução desejada.
+type DownloadRequestItem struct {
+	AssetType string `json:"assetType" binding:"required" example:"PHOTO_VERTICAL"`
+	Sequence  uint8  `json:"sequence" binding:"required" example:"1"`
+	// Resolution options: thumbnail, small, medium, large, original
+	Resolution string `json:"resolution" binding:"required,oneof=thumbnail small medium large original" enums:"thumbnail,small,medium,large,original" example:"medium"`
+}
+
+// GenerateDownloadURLsResponse retorna as URLs geradas.
+type GenerateDownloadURLsResponse struct {
+	ListingIdentityID uint64                `json:"listingIdentityId"`
+	Urls              []DownloadURLResponse `json:"urls"`
+}
+
+type DownloadURLResponse struct {
+	AssetType  string `json:"assetType"`
+	Sequence   uint8  `json:"sequence"`
+	Resolution string `json:"resolution"`
+	Url        string `json:"url"`
+	ExpiresIn  int    `json:"expiresIn"`
+}

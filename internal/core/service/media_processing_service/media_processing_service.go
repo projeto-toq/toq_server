@@ -20,7 +20,10 @@ import (
 type MediaProcessingServiceInterface interface {
 	RequestUploadURLs(ctx context.Context, input dto.RequestUploadURLsInput) (dto.RequestUploadURLsOutput, error)
 	ProcessMedia(ctx context.Context, input dto.ProcessMediaInput) error
-	ListDownloadURLs(ctx context.Context, input dto.ListDownloadURLsInput) (dto.ListDownloadURLsOutput, error)
+
+	// New methods
+	GenerateDownloadURLs(ctx context.Context, input dto.GenerateDownloadURLsInput) (dto.GenerateDownloadURLsOutput, error)
+	ListMedia(ctx context.Context, input dto.ListMediaInput) (dto.ListMediaOutput, error)
 
 	// Management
 	UpdateMedia(ctx context.Context, input dto.UpdateMediaInput) error

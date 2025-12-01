@@ -62,7 +62,7 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 	filter := mediaprocessingrepository.AssetFilter{
 		Status: []mediaprocessingmodel.MediaAssetStatus{mediaprocessingmodel.MediaAssetStatusPendingUpload},
 	}
-	assets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), filter)
+	assets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), filter, nil)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		return derrors.Infra("failed to list pending assets", err)

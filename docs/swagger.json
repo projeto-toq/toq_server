@@ -4407,226 +4407,6 @@
                 }
             }
         },
-        "/api/v2/listings/media": {
-            "delete": {
-                "description": "Removes a specific media asset from the listing.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings Media"
-                ],
-                "summary": "Delete media asset",
-                "parameters": [
-                    {
-                        "description": "Delete Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.DeleteMediaInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Asset deleted",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Validation Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Asset Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v2/listings/media/update": {
-            "post": {
-                "description": "Updates the title or metadata of a specific media asset.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings Media"
-                ],
-                "summary": "Update media asset",
-                "parameters": [
-                    {
-                        "description": "Update Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.UpdateMediaInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Asset updated",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Validation Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Asset Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v2/listings/media/uploads/complete": {
-            "post": {
-                "description": "Consolidates media, generates ZIP, and advances listing status.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings Media"
-                ],
-                "summary": "Complete media processing",
-                "parameters": [
-                    {
-                        "description": "Completion Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.CompleteMediaInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Processing completed",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Validation Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Listing Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v2/listings/media/uploads/process": {
-            "post": {
-                "description": "Starts the asynchronous processing pipeline for assets in PENDING_UPLOAD status.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Listings Media"
-                ],
-                "summary": "Trigger media processing",
-                "parameters": [
-                    {
-                        "description": "Processing Request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.ProcessMediaInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "202": {
-                        "description": "Processing started",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Validation Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Listing Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/auth/agency": {
             "post": {
                 "description": "Create a new agency account with user information",
@@ -5799,14 +5579,14 @@
                 }
             }
         },
-        "/listings/media/downloads": {
-            "post": {
+        "/listings/media": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Finds the most recent READY batch for a listing and generates time-limited signed S3 URLs for downloading processed assets (optimized images/videos). Includes preview URLs for thumbnails. Returns 204 if no READY batch exists.",
+                "description": "Retrieves a paginated list of media assets for a listing, with optional filtering by asset type.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5816,27 +5596,52 @@
                 "tags": [
                     "Listings Media"
                 ],
-                "summary": "Get signed download URLs for processed media",
+                "summary": "List media assets",
                 "parameters": [
                     {
-                        "description": "Listing identification",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest"
-                        }
+                        "type": "integer",
+                        "description": "Listing Identity ID",
+                        "name": "listingIdentityId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Asset Type",
+                        "name": "assetType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order",
+                        "name": "order",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Download URLs generated",
+                        "description": "Media assets list",
                         "schema": {
-                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse"
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListMediaResponse"
                         }
-                    },
-                    "204": {
-                        "description": "No READY batch available"
                     },
                     "400": {
                         "description": "Invalid request",
@@ -5864,6 +5669,207 @@
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/media/delete": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Removes a specific media asset from the listing.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Delete media asset",
+                "parameters": [
+                    {
+                        "description": "Delete Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.DeleteMediaInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Asset deleted",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Asset Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/media/download": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generates time-limited signed S3 URLs for specific assets and resolutions.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Generate signed download URLs",
+                "parameters": [
+                    {
+                        "description": "Download requests",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Download URLs generated",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/media/update": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates the title or metadata of a specific media asset.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Update media asset",
+                "parameters": [
+                    {
+                        "description": "Update Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.UpdateMediaInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Asset updated",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Asset Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -5939,6 +5945,132 @@
                     },
                     "500": {
                         "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/media/uploads/complete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Marks the upload batch as complete and triggers finalization steps.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Complete media upload",
+                "parameters": [
+                    {
+                        "description": "Completion Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.CompleteMediaInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Upload completed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/media/uploads/process": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Starts the asynchronous processing pipeline for assets in PENDING_UPLOAD status.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Trigger media processing",
+                "parameters": [
+                    {
+                        "description": "Processing Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.ProcessMediaInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Processing started",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -10599,45 +10731,53 @@
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadEntryResponse": {
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadRequestItem": {
             "type": "object",
+            "required": [
+                "assetType",
+                "resolution",
+                "sequence"
+            ],
             "properties": {
                 "assetType": {
-                    "description": "AssetType matches the original assetType",
                     "type": "string",
                     "example": "PHOTO_VERTICAL"
                 },
-                "metadata": {
-                    "description": "Metadata contains additional asset information",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "previewUrl": {
-                    "description": "PreviewURL is the signed GET URL for the thumbnail (if available)",
+                "resolution": {
+                    "description": "Resolution options: thumbnail, small, medium, large, original",
                     "type": "string",
-                    "example": "https://s3.amazonaws.com/bucket/thumb?X-Amz-Algorithm=..."
+                    "enum": [
+                        "thumbnail",
+                        "small",
+                        "medium",
+                        "large",
+                        "original"
+                    ],
+                    "example": "medium"
                 },
                 "sequence": {
-                    "description": "Sequence matches the original sequence",
                     "type": "integer",
                     "example": 1
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadURLResponse": {
+            "type": "object",
+            "properties": {
+                "assetType": {
+                    "type": "string"
                 },
-                "status": {
-                    "description": "Status indicates the processing status",
-                    "type": "string",
-                    "example": "PROCESSED"
+                "expiresIn": {
+                    "type": "integer"
                 },
-                "title": {
-                    "description": "Title matches the original title",
-                    "type": "string",
-                    "example": "Vista frontal do imóvel"
+                "resolution": {
+                    "type": "string"
+                },
+                "sequence": {
+                    "type": "integer"
                 },
                 "url": {
-                    "description": "URL is the signed GET URL for the processed file",
-                    "type": "string",
-                    "example": "https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=..."
+                    "type": "string"
                 }
             }
         },
@@ -10652,6 +10792,40 @@
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsRequest": {
+            "type": "object",
+            "required": [
+                "listingIdentityId",
+                "requests"
+            ],
+            "properties": {
+                "listingIdentityId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "requests": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadRequestItem"
+                    }
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsResponse": {
+            "type": "object",
+            "properties": {
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "urls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadURLResponse"
+                    }
                 }
             }
         },
@@ -11005,48 +11179,6 @@
                 }
             }
         },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest": {
-            "type": "object",
-            "required": [
-                "listingIdentityId"
-            ],
-            "properties": {
-                "assetTypes": {
-                    "description": "AssetTypes filters the results by asset type",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "PHOTO_VERTICAL",
-                        "VIDEO_HORIZONTAL"
-                    ]
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID identifies the listing owning the assets",
-                    "type": "integer",
-                    "minimum": 1,
-                    "example": 123
-                }
-            }
-        },
-        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse": {
-            "type": "object",
-            "properties": {
-                "downloads": {
-                    "description": "Downloads contains signed URLs for each processed asset",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadEntryResponse"
-                    }
-                },
-                "listingIdentityId": {
-                    "description": "ListingIdentityID confirms the listing",
-                    "type": "integer",
-                    "example": 123
-                }
-            }
-        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsRequest": {
             "type": "object",
             "required": [
@@ -11105,6 +11237,20 @@
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
                         }
                     ]
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListMediaResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaAssetResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
                 }
             }
         },
@@ -11730,6 +11876,41 @@
                     "description": "Version is the sequential version number (1, 2, 3, ...)",
                     "type": "integer",
                     "example": 2
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaAssetResponse": {
+            "type": "object",
+            "properties": {
+                "assetType": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "listingIdentityId": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "s3KeyProcessed": {
+                    "type": "string"
+                },
+                "s3KeyRaw": {
+                    "type": "string"
+                },
+                "sequence": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },

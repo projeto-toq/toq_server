@@ -1061,36 +1061,40 @@ definitions:
       success:
         type: boolean
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadEntryResponse:
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadRequestItem:
     properties:
       assetType:
-        description: AssetType matches the original assetType
         example: PHOTO_VERTICAL
         type: string
-      metadata:
-        additionalProperties:
-          type: string
-        description: Metadata contains additional asset information
-        type: object
-      previewUrl:
-        description: PreviewURL is the signed GET URL for the thumbnail (if available)
-        example: https://s3.amazonaws.com/bucket/thumb?X-Amz-Algorithm=...
+      resolution:
+        description: 'Resolution options: thumbnail, small, medium, large, original'
+        enum:
+        - thumbnail
+        - small
+        - medium
+        - large
+        - original
+        example: medium
         type: string
       sequence:
-        description: Sequence matches the original sequence
         example: 1
         type: integer
-      status:
-        description: Status indicates the processing status
-        example: PROCESSED
+    required:
+    - assetType
+    - resolution
+    - sequence
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadURLResponse:
+    properties:
+      assetType:
         type: string
-      title:
-        description: Title matches the original title
-        example: Vista frontal do imóvel
+      expiresIn:
+        type: integer
+      resolution:
         type: string
+      sequence:
+        type: integer
       url:
-        description: URL is the signed GET URL for the processed file
-        example: https://s3.amazonaws.com/bucket/key?X-Amz-Algorithm=...
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse:
@@ -1101,6 +1105,29 @@ definitions:
         type: object
       message:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsRequest:
+    properties:
+      listingIdentityId:
+        minimum: 1
+        type: integer
+      requests:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadRequestItem'
+        minItems: 1
+        type: array
+    required:
+    - listingIdentityId
+    - requests
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsResponse:
+    properties:
+      listingIdentityId:
+        type: integer
+      urls:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadURLResponse'
+        type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetBaseFeaturesResponse:
     properties:
@@ -1342,36 +1369,6 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
     type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest:
-    properties:
-      assetTypes:
-        description: AssetTypes filters the results by asset type
-        example:
-        - PHOTO_VERTICAL
-        - VIDEO_HORIZONTAL
-        items:
-          type: string
-        type: array
-      listingIdentityId:
-        description: ListingIdentityID identifies the listing owning the assets
-        example: 123
-        minimum: 1
-        type: integer
-    required:
-    - listingIdentityId
-    type: object
-  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse:
-    properties:
-      downloads:
-        description: Downloads contains signed URLs for each processed asset
-        items:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadEntryResponse'
-        type: array
-      listingIdentityId:
-        description: ListingIdentityID confirms the listing
-        example: 123
-        type: integer
-    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingVersionsRequest:
     properties:
       includeDeleted:
@@ -1423,6 +1420,15 @@ definitions:
         allOf:
         - $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
         description: Pagination provides metadata for navigating the result set
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListMediaResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaAssetResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse:
     properties:
@@ -1853,6 +1859,29 @@ definitions:
         description: Version is the sequential version number (1, 2, 3, ...)
         example: 2
         type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaAssetResponse:
+    properties:
+      assetType:
+        type: string
+      id:
+        type: integer
+      listingIdentityId:
+        type: integer
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      s3KeyProcessed:
+        type: string
+      s3KeyRaw:
+        type: string
+      sequence:
+        type: integer
+      status:
+        type: string
+      title:
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse:
     properties:
@@ -6227,151 +6256,6 @@ paths:
       summary: Update system user data
       tags:
       - Admin Users
-  /api/v2/listings/media:
-    delete:
-      consumes:
-      - application/json
-      description: Removes a specific media asset from the listing.
-      parameters:
-      - description: Delete Request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.DeleteMediaInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Asset deleted
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Validation Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Asset Not Found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      summary: Delete media asset
-      tags:
-      - Listings Media
-  /api/v2/listings/media/update:
-    post:
-      consumes:
-      - application/json
-      description: Updates the title or metadata of a specific media asset.
-      parameters:
-      - description: Update Request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.UpdateMediaInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Asset updated
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Validation Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Asset Not Found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      summary: Update media asset
-      tags:
-      - Listings Media
-  /api/v2/listings/media/uploads/complete:
-    post:
-      consumes:
-      - application/json
-      description: Consolidates media, generates ZIP, and advances listing status.
-      parameters:
-      - description: Completion Request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.CompleteMediaInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Processing completed
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Validation Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Listing Not Found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      summary: Complete media processing
-      tags:
-      - Listings Media
-  /api/v2/listings/media/uploads/process:
-    post:
-      consumes:
-      - application/json
-      description: Starts the asynchronous processing pipeline for assets in PENDING_UPLOAD
-        status.
-      parameters:
-      - description: Processing Request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.ProcessMediaInput'
-      produces:
-      - application/json
-      responses:
-        "202":
-          description: Processing started
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Validation Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "404":
-          description: Listing Not Found
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
-      summary: Trigger media processing
-      tags:
-      - Listings Media
   /auth/agency:
     post:
       consumes:
@@ -7184,29 +7068,45 @@ paths:
       summary: Get base features
       tags:
       - Listings
-  /listings/media/downloads:
-    post:
+  /listings/media:
+    get:
       consumes:
       - application/json
-      description: Finds the most recent READY batch for a listing and generates time-limited
-        signed S3 URLs for downloading processed assets (optimized images/videos).
-        Includes preview URLs for thumbnails. Returns 204 if no READY batch exists.
+      description: Retrieves a paginated list of media assets for a listing, with
+        optional filtering by asset type.
       parameters:
-      - description: Listing identification
-        in: body
-        name: request
+      - description: Listing Identity ID
+        in: query
+        name: listingIdentityId
         required: true
-        schema:
-          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsRequest'
+        type: integer
+      - description: Asset Type
+        in: query
+        name: assetType
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order
+        in: query
+        name: order
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Download URLs generated
+          description: Media assets list
           schema:
-            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListDownloadURLsResponse'
-        "204":
-          description: No READY batch available
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListMediaResponse'
         "400":
           description: Invalid request
           schema:
@@ -7229,7 +7129,135 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get signed download URLs for processed media
+      summary: List media assets
+      tags:
+      - Listings Media
+  /listings/media/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a specific media asset from the listing.
+      parameters:
+      - description: Delete Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.DeleteMediaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Asset deleted
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Asset Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete media asset
+      tags:
+      - Listings Media
+  /listings/media/download:
+    post:
+      consumes:
+      - application/json
+      description: Generates time-limited signed S3 URLs for specific assets and resolutions.
+      parameters:
+      - description: Download requests
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Download URLs generated
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate signed download URLs
+      tags:
+      - Listings Media
+  /listings/media/update:
+    post:
+      consumes:
+      - application/json
+      description: Updates the title or metadata of a specific media asset.
+      parameters:
+      - description: Update Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.UpdateMediaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Asset updated
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Asset Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update media asset
       tags:
       - Listings Media
   /listings/media/uploads:
@@ -7281,6 +7309,87 @@ paths:
       security:
       - BearerAuth: []
       summary: Request upload URLs for a listing media batch
+      tags:
+      - Listings Media
+  /listings/media/uploads/complete:
+    post:
+      consumes:
+      - application/json
+      description: Marks the upload batch as complete and triggers finalization steps.
+      parameters:
+      - description: Completion Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.CompleteMediaInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Upload completed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Complete media upload
+      tags:
+      - Listings Media
+  /listings/media/uploads/process:
+    post:
+      consumes:
+      - application/json
+      description: Starts the asynchronous processing pipeline for assets in PENDING_UPLOAD
+        status.
+      parameters:
+      - description: Processing Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_domain_dto.ProcessMediaInput'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Processing started
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Validation Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Trigger media processing
       tags:
       - Listings Media
   /listings/options:

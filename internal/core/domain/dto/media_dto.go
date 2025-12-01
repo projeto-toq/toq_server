@@ -94,3 +94,48 @@ type ProcessingResult struct {
 type HandleProcessingCallbackOutput struct {
 	Success bool `json:"success"`
 }
+
+// ListMediaInput define a entrada para o serviço de listagem.
+type ListMediaInput struct {
+	ListingIdentityID uint64
+	AssetType         string
+	Sequence          *uint8
+	Page              int
+	Limit             int
+	Sort              string
+	Order             string
+}
+
+// ListMediaOutput define a saída do serviço de listagem.
+type ListMediaOutput struct {
+	Assets     []mediaprocessingmodel.MediaAsset
+	TotalCount int64
+	Page       int
+	Limit      int
+}
+
+// GenerateDownloadURLsInput define a entrada para geração de URLs.
+type GenerateDownloadURLsInput struct {
+	ListingIdentityID uint64
+	Requests          []DownloadRequestItemInput
+}
+
+type DownloadRequestItemInput struct {
+	AssetType  mediaprocessingmodel.MediaAssetType
+	Sequence   uint8
+	Resolution string
+}
+
+// GenerateDownloadURLsOutput define a saída com as URLs geradas.
+type GenerateDownloadURLsOutput struct {
+	ListingIdentityID uint64
+	Urls              []DownloadURLOutput
+}
+
+type DownloadURLOutput struct {
+	AssetType  mediaprocessingmodel.MediaAssetType
+	Sequence   uint8
+	Resolution string
+	Url        string
+	ExpiresIn  int
+}

@@ -7,7 +7,10 @@ type MediaProcessingHandlerPort interface {
 	// Upload & Processing Flow
 	RequestUploadURLs(c *gin.Context)
 	ProcessMedia(c *gin.Context)
-	ListDownloadURLs(c *gin.Context)
+
+	// Retrieval
+	ListMedia(c *gin.Context)
+	GenerateDownloadURLs(c *gin.Context)
 
 	// Management
 	UpdateMedia(c *gin.Context)

@@ -20,7 +20,7 @@ WHERE listing_identity_id = ?
 `
 
 // ListAssets retrieves assets for a listing with optional filters.
-func (a *MediaProcessingAdapter) ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter mediaprocessingrepository.AssetFilter) ([]mediaprocessingmodel.MediaAsset, error) {
+func (a *MediaProcessingAdapter) ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter mediaprocessingrepository.AssetFilter, pagination *mediaprocessingrepository.Pagination) ([]mediaprocessingmodel.MediaAsset, error) {
 	query := listAssetsBaseQuery
 	args := []interface{}{listingIdentityID}
 
@@ -42,7 +42,32 @@ func (a *MediaProcessingAdapter) ListAssets(ctx context.Context, tx *sql.Tx, lis
 		query += fmt.Sprintf(" AND status IN (%s)", strings.Join(placeholders, ","))
 	}
 
-	query += " ORDER BY asset_type, sequence"
+	if filter.Sequence != nil {
+		query += " AND sequence = ?"
+		args = append(args, *filter.Sequence)
+	}
+
+	// Ordenação e Paginação
+	if pagination != nil {
+		sortField := "sequence"
+		if pagination.Sort == "id" {
+			sortField = "id"
+		}
+
+		sortOrder := "ASC"
+		if strings.ToUpper(pagination.Order) == "DESC" {
+			sortOrder = "DESC"
+		}
+
+		query += fmt.Sprintf(" ORDER BY %s %s", sortField, sortOrder)
+
+		if pagination.Limit > 0 {
+			query += " LIMIT ? OFFSET ?"
+			args = append(args, pagination.Limit, (pagination.Page-1)*pagination.Limit)
+		}
+	} else {
+		query += " ORDER BY asset_type, sequence"
+	}
 
 	rows, err := a.QueryContext(ctx, tx, "list_assets", query, args...)
 	if err != nil {

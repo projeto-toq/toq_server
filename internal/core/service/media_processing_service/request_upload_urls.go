@@ -84,6 +84,10 @@ func (s *mediaProcessingService) RequestUploadURLs(ctx context.Context, input dt
 		metaMap["checksum"] = file.Checksum
 		metaMap["size_bytes"] = fmt.Sprintf("%d", file.Bytes)
 
+		// Set metadata JSON
+		metaBytes, _ := json.Marshal(metaMap)
+		asset.SetMetadata(string(metaBytes))
+
 		// Generate Signed URL
 		signedURL, genErr := s.storage.GenerateRawUploadURL(ctx, uint64(input.ListingIdentityID), asset, file.ContentType, file.Checksum)
 		if genErr != nil {
@@ -93,10 +97,6 @@ func (s *mediaProcessingService) RequestUploadURLs(ctx context.Context, input dt
 		}
 
 		asset.SetS3KeyRaw(signedURL.ObjectKey)
-
-		// Set metadata JSON
-		metaBytes, _ := json.Marshal(metaMap)
-		asset.SetMetadata(string(metaBytes))
 
 		// Upsert Asset
 		if err := s.repo.UpsertAsset(ctx, tx, asset); err != nil {
