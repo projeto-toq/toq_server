@@ -83,9 +83,9 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 
 	// Prepare payload for Step Function
 	jobMsg := mediaprocessingmodel.MediaProcessingJobMessage{
-		JobID:     jobID,
-		ListingID: uint64(input.ListingIdentityID),
-		Assets:    make([]mediaprocessingmodel.JobAsset, 0, len(assets)),
+		JobID:             jobID,
+		ListingIdentityID: uint64(input.ListingIdentityID),
+		Assets:            make([]mediaprocessingmodel.JobAsset, 0, len(assets)),
 	}
 
 	for _, asset := range assets {

@@ -4,62 +4,62 @@ import "time"
 
 // MediaProcessingJob describes an asynchronous job tracked in the database.
 type MediaProcessingJob struct {
-	id           uint64
-	listingID    uint64
-	status       MediaProcessingJobStatus
-	provider     MediaProcessingProvider
-	externalID   string
-	payload      MediaProcessingJobPayload
-	retryCount   uint16
-	startedAt    *time.Time
-	completedAt  *time.Time
-	lastError    string
-	callbackBody string
+	id                uint64
+	listingIdentityID uint64
+	status            MediaProcessingJobStatus
+	provider          MediaProcessingProvider
+	externalID        string
+	payload           MediaProcessingJobPayload
+	retryCount        uint16
+	startedAt         *time.Time
+	completedAt       *time.Time
+	lastError         string
+	callbackBody      string
 }
 
 // MediaProcessingJobRecord rehydrates a job from persistent storage.
 type MediaProcessingJobRecord struct {
-	ID           uint64
-	ListingID    uint64
-	Status       MediaProcessingJobStatus
-	Provider     MediaProcessingProvider
-	ExternalID   string
-	Payload      MediaProcessingJobPayload
-	RetryCount   uint16
-	StartedAt    *time.Time
-	CompletedAt  *time.Time
-	LastError    string
-	CallbackBody string
+	ID                uint64
+	ListingIdentityID uint64
+	Status            MediaProcessingJobStatus
+	Provider          MediaProcessingProvider
+	ExternalID        string
+	Payload           MediaProcessingJobPayload
+	RetryCount        uint16
+	StartedAt         *time.Time
+	CompletedAt       *time.Time
+	LastError         string
+	CallbackBody      string
 }
 
 // RestoreMediaProcessingJob rebuilds a job from a storage record.
 func RestoreMediaProcessingJob(record MediaProcessingJobRecord) MediaProcessingJob {
 	return MediaProcessingJob{
-		id:           record.ID,
-		listingID:    record.ListingID,
-		status:       record.Status,
-		provider:     record.Provider,
-		externalID:   record.ExternalID,
-		payload:      record.Payload,
-		retryCount:   record.RetryCount,
-		startedAt:    record.StartedAt,
-		completedAt:  record.CompletedAt,
-		lastError:    record.LastError,
-		callbackBody: record.CallbackBody,
+		id:                record.ID,
+		listingIdentityID: record.ListingIdentityID,
+		status:            record.Status,
+		provider:          record.Provider,
+		externalID:        record.ExternalID,
+		payload:           record.Payload,
+		retryCount:        record.RetryCount,
+		startedAt:         record.StartedAt,
+		completedAt:       record.CompletedAt,
+		lastError:         record.LastError,
+		callbackBody:      record.CallbackBody,
 	}
 }
 
-func NewMediaProcessingJob(listingID uint64, provider MediaProcessingProvider) MediaProcessingJob {
+func NewMediaProcessingJob(listingIdentityID uint64, provider MediaProcessingProvider) MediaProcessingJob {
 	return MediaProcessingJob{
-		listingID: listingID,
-		provider:  provider,
-		status:    MediaProcessingJobStatusPending,
+		listingIdentityID: listingIdentityID,
+		provider:          provider,
+		status:            MediaProcessingJobStatusPending,
 	}
 }
 
 func (j *MediaProcessingJob) ID() uint64                        { return j.id }
 func (j *MediaProcessingJob) SetID(id uint64)                   { j.id = id }
-func (j *MediaProcessingJob) ListingID() uint64                 { return j.listingID }
+func (j *MediaProcessingJob) ListingIdentityID() uint64         { return j.listingIdentityID }
 func (j *MediaProcessingJob) Status() MediaProcessingJobStatus  { return j.status }
 func (j *MediaProcessingJob) Provider() MediaProcessingProvider { return j.provider }
 func (j *MediaProcessingJob) ExternalID() string                { return j.externalID }
@@ -108,11 +108,11 @@ type JobAsset struct {
 
 // StepFunctionPayload is the unified payload for Step Functions.
 type StepFunctionPayload struct {
-	JobID       uint64     `json:"jobId"` // Added
-	ListingID   uint64     `json:"listingId"`
-	Assets      []JobAsset `json:"assets"`    // Raw input
-	HasVideos   bool       `json:"hasVideos"` // Flag for video processing
-	Traceparent string     `json:"traceparent"`
+	JobID             uint64     `json:"jobId"` // Added
+	ListingIdentityID uint64     `json:"listingIdentityId"`
+	Assets            []JobAsset `json:"assets"`    // Raw input
+	HasVideos         bool       `json:"hasVideos"` // Flag for video processing
+	Traceparent       string     `json:"traceparent"`
 }
 
 // LambdaResponse wraps the output to match Step Functions expectation ($.body).
@@ -132,10 +132,10 @@ type MediaProcessingJobPayload struct {
 
 // MediaProcessingJobMessage is the payload sent to SQS/Step Functions.
 type MediaProcessingJobMessage struct {
-	JobID     uint64     `json:"jobId"`
-	ListingID uint64     `json:"listingId"`
-	Assets    []JobAsset `json:"assets"`
-	Retry     uint16     `json:"retry"`
+	JobID             uint64     `json:"jobId"`
+	ListingIdentityID uint64     `json:"listingIdentityId"`
+	Assets            []JobAsset `json:"assets"`
+	Retry             uint16     `json:"retry"`
 }
 
 // MediaProcessingCallback represents the structure received from the async workflow.

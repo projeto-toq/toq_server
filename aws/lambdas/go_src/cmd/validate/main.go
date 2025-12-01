@@ -58,10 +58,10 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 			logger.Info("Processing SQS record", "message_id", record.MessageId)
 
 			var rawPayload struct {
-				JobID     uint64          `json:"jobId"`
-				ListingID uint64          `json:"listingId"`
-				Assets    json.RawMessage `json:"assets"`
-				Retry     uint16          `json:"retry"`
+				JobID             uint64          `json:"jobId"`
+				ListingIdentityID uint64          `json:"listingIdentityId"`
+				Assets            json.RawMessage `json:"assets"`
+				Retry             uint16          `json:"retry"`
 			}
 
 			if err := json.Unmarshal([]byte(record.Body), &rawPayload); err != nil {
@@ -93,9 +93,9 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 			}
 
 			payload := mediaprocessingmodel.StepFunctionPayload{
-				JobID:     rawPayload.JobID,
-				ListingID: rawPayload.ListingID,
-				Assets:    assets,
+				JobID:             rawPayload.JobID,
+				ListingIdentityID: rawPayload.ListingIdentityID,
+				Assets:            assets,
 			}
 
 			// Start Step Function
@@ -127,7 +127,7 @@ func HandleRequest(ctx context.Context, rawEvent json.RawMessage) (mediaprocessi
 	// LOG: Start with context
 	logger.Info("Validate Lambda started",
 		"job_id", event.JobID,
-		"listing_id", event.ListingID,
+		"listing_identity_id", event.ListingIdentityID,
 		"input_assets_count", len(event.Assets),
 	)
 

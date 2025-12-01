@@ -11,17 +11,17 @@ import (
 // JobEntityToDomain converts DB entity to domain.
 func JobEntityToDomain(entity mediaprocessingentities.JobEntity) mediaprocessingmodel.MediaProcessingJob {
 	record := mediaprocessingmodel.MediaProcessingJobRecord{
-		ID:           entity.ID,
-		ListingID:    entity.ListingID,
-		Status:       mediaprocessingmodel.MediaProcessingJobStatus(entity.Status),
-		Provider:     mediaprocessingmodel.MediaProcessingProvider(entity.Provider),
-		ExternalID:   entity.ExternalID.String,
-		Payload:      decodeJobPayload(entity.Payload),
-		RetryCount:   0,
-		StartedAt:    timePtrFromNull(entity.StartedAt),
-		CompletedAt:  timePtrFromNull(entity.FinishedAt),
-		LastError:    "",
-		CallbackBody: "",
+		ID:                entity.ID,
+		ListingIdentityID: entity.ListingIdentityID,
+		Status:            mediaprocessingmodel.MediaProcessingJobStatus(entity.Status),
+		Provider:          mediaprocessingmodel.MediaProcessingProvider(entity.Provider),
+		ExternalID:        entity.ExternalID.String,
+		Payload:           decodeJobPayload(entity.Payload),
+		RetryCount:        0,
+		StartedAt:         timePtrFromNull(entity.StartedAt),
+		CompletedAt:       timePtrFromNull(entity.FinishedAt),
+		LastError:         "",
+		CallbackBody:      "",
 	}
 
 	return mediaprocessingmodel.RestoreMediaProcessingJob(record)

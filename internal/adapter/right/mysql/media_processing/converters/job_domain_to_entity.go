@@ -11,14 +11,14 @@ import (
 // JobDomainToEntity converts domain to DB entity.
 func JobDomainToEntity(job mediaprocessingmodel.MediaProcessingJob) mediaprocessingentities.JobEntity {
 	return mediaprocessingentities.JobEntity{
-		ID:         job.ID(),
-		ListingID:  job.ListingID(),
-		Status:     string(job.Status()),
-		Provider:   string(job.Provider()),
-		ExternalID: nullString(job.ExternalID()),
-		Payload:    EncodeJobPayload(job.Payload()),
-		StartedAt:  nullTimeFromPtr(job.StartedAt()),
-		FinishedAt: nullTimeFromPtr(job.CompletedAt()),
+		ID:                job.ID(),
+		ListingIdentityID: job.ListingIdentityID(),
+		Status:            string(job.Status()),
+		Provider:          string(job.Provider()),
+		ExternalID:        nullString(job.ExternalID()),
+		Payload:           EncodeJobPayload(job.Payload()),
+		StartedAt:         nullTimeFromPtr(job.StartedAt()),
+		FinishedAt:        nullTimeFromPtr(job.CompletedAt()),
 	}
 }
 

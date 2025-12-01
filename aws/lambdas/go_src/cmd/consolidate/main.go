@@ -18,10 +18,10 @@ func init() {
 
 // ConsolidateInput represents the combined input from Step Function
 type ConsolidateInput struct {
-	JobID           string                          `json:"jobId"`
-	ListingID       uint64                          `json:"listingId"`
-	Assets          []mediaprocessingmodel.JobAsset `json:"assets"`
-	ParallelResults []ParallelResult                `json:"parallelResults"`
+	JobID             string                          `json:"jobId"`
+	ListingIdentityID uint64                          `json:"listingIdentityId"`
+	Assets            []mediaprocessingmodel.JobAsset `json:"assets"`
+	ParallelResults   []ParallelResult                `json:"parallelResults"`
 }
 
 // ParallelResult captures the generic output of parallel branches
@@ -35,7 +35,7 @@ type ParallelResult struct {
 func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessingmodel.LambdaResponse, error) {
 	// LOG: Full input (careful with size in prod, ok for debug)
 	inputJSON, _ := json.Marshal(event)
-	logger.Info("Consolidate Lambda started", "job_id", event.JobID, "listing_id", event.ListingID, "raw_input_size", len(inputJSON))
+	logger.Info("Consolidate Lambda started", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "raw_input_size", len(inputJSON))
 
 	// Map: SourceKey -> Output Payload
 	resultsMap := make(map[string]*mediaprocessingmodel.MediaProcessingJobPayload)
@@ -86,9 +86,9 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 
 	return mediaprocessingmodel.LambdaResponse{
 		Body: map[string]any{
-			"jobId":     event.JobID,
-			"listingId": event.ListingID,
-			"outputs":   finalOutputs,
+			"jobId":             event.JobID,
+			"listingIdentityId": event.ListingIdentityID,
+			"outputs":           finalOutputs,
 		},
 	}, nil
 }

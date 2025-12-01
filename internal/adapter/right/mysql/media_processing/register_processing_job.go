@@ -9,14 +9,14 @@ import (
 )
 
 const insertProcessingJobQuery = `
-INSERT INTO media_jobs (
-    listing_id,
+INSERT INTO media_processing_jobs (
+    listing_identity_id,
     status,
     provider,
-    external_job_id,
-    output_payload_json,
+    external_id,
+    payload,
     started_at,
-    finished_at
+    completed_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?)
 `
 
@@ -29,7 +29,7 @@ func (a *MediaProcessingAdapter) RegisterProcessingJob(ctx context.Context, tx *
 	// Note: retry_count, last_error, callback_raw are not present in the current DB schema
 	// and are omitted from persistence.
 	result, err := a.ExecContext(ctx, tx, "insert", insertProcessingJobQuery,
-		entity.ListingID,
+		entity.ListingIdentityID,
 		entity.Status,
 		entity.Provider,
 		entity.ExternalID,

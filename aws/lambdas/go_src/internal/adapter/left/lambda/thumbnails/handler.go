@@ -29,7 +29,7 @@ type ThumbnailOutput struct {
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
-	h.logger.Info("Thumbnails Lambda started", "job_id", event.JobID, "listing_id", event.ListingID, "assets_to_process", len(event.Assets))
+	h.logger.Info("Thumbnails Lambda started", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "assets_to_process", len(event.Assets))
 
 	allGeneratedAssets := make([]mediaprocessingmodel.JobAsset, 0)
 	bucket := os.Getenv("MEDIA_BUCKET")

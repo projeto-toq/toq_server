@@ -10,7 +10,7 @@ import (
 
 const upsertAssetQuery = `
 INSERT INTO media_assets (
-    listing_id,
+    listing_identity_id,
     asset_type,
     sequence,
     status,
@@ -32,7 +32,7 @@ func (a *MediaProcessingAdapter) UpsertAsset(ctx context.Context, tx *sql.Tx, as
 	entity := mediaprocessingconverters.AssetDomainToEntity(asset)
 
 	_, err := a.ExecContext(ctx, tx, "upsert_asset", upsertAssetQuery,
-		entity.ListingID,
+		entity.ListingIdentityID,
 		entity.AssetType,
 		entity.Sequence,
 		entity.Status,

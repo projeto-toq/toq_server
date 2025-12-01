@@ -7,30 +7,30 @@ import (
 // MediaAsset represents a single media file associated with a listing.
 // Audit fields removed as per project standard.
 type MediaAsset struct {
-	id             uint64
-	listingID      uint64
-	assetType      MediaAssetType
-	sequence       uint8
-	status         MediaAssetStatus
-	s3KeyRaw       sql.NullString
-	s3KeyProcessed sql.NullString
-	title          sql.NullString
-	metadata       sql.NullString // JSON string
+	id                uint64
+	listingIdentityID uint64
+	assetType         MediaAssetType
+	sequence          uint8
+	status            MediaAssetStatus
+	s3KeyRaw          sql.NullString
+	s3KeyProcessed    sql.NullString
+	title             sql.NullString
+	metadata          sql.NullString // JSON string
 }
 
 // NewMediaAsset creates a new MediaAsset instance.
-func NewMediaAsset(listingID uint64, assetType MediaAssetType, sequence uint8) MediaAsset {
+func NewMediaAsset(listingIdentityID uint64, assetType MediaAssetType, sequence uint8) MediaAsset {
 	return MediaAsset{
-		listingID: listingID,
-		assetType: assetType,
-		sequence:  sequence,
-		status:    MediaAssetStatusPendingUpload,
+		listingIdentityID: listingIdentityID,
+		assetType:         assetType,
+		sequence:          sequence,
+		status:            MediaAssetStatusPendingUpload,
 	}
 }
 
 func (a *MediaAsset) ID() uint64                   { return a.id }
 func (a *MediaAsset) SetID(id uint64)              { a.id = id }
-func (a *MediaAsset) ListingID() uint64            { return a.listingID }
+func (a *MediaAsset) ListingIdentityID() uint64    { return a.listingIdentityID }
 func (a *MediaAsset) AssetType() MediaAssetType    { return a.assetType }
 func (a *MediaAsset) Sequence() uint8              { return a.sequence }
 func (a *MediaAsset) Status() MediaAssetStatus     { return a.status }

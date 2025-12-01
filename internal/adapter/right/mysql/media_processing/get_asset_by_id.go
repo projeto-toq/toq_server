@@ -11,7 +11,7 @@ import (
 
 const getAssetByIDQuery = `
 SELECT
-    id, listing_id, asset_type, sequence, status, s3_key_raw, s3_key_processed, title, metadata
+    id, listing_identity_id, asset_type, sequence, status, s3_key_raw, s3_key_processed, title, metadata
 FROM media_assets
 WHERE id = ?
 `
@@ -21,7 +21,7 @@ func (a *MediaProcessingAdapter) GetAssetByID(ctx context.Context, tx *sql.Tx, a
 	var entity mediaprocessingentities.AssetEntity
 	err := a.QueryRowContext(ctx, tx, "get_asset_by_id", getAssetByIDQuery, assetID).Scan(
 		&entity.ID,
-		&entity.ListingID,
+		&entity.ListingIdentityID,
 		&entity.AssetType,
 		&entity.Sequence,
 		&entity.Status,

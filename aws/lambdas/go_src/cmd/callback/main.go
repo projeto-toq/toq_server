@@ -34,10 +34,10 @@ func init() {
 
 func HandleRequest(ctx context.Context, event map[string]any) error {
 	// Extract IDs for log
-	var batchID, jobID, listingID any
+	var batchID, jobID, listingIdentityID any
 	batchID, _ = event["batchId"]
 	jobID, _ = event["jobId"]
-	listingID, _ = event["listingId"]
+	listingIdentityID, _ = event["listingIdentityId"]
 
 	// Check if event is wrapped in "body" (Step Function output)
 	var payloadToSend any = event
@@ -52,13 +52,13 @@ func HandleRequest(ctx context.Context, event map[string]any) error {
 			if jobID == nil {
 				jobID, _ = bodyMap["jobId"]
 			}
-			if listingID == nil {
-				listingID, _ = bodyMap["listingId"]
+			if listingIdentityID == nil {
+				listingIdentityID, _ = bodyMap["listingIdentityId"]
 			}
 		}
 	}
 
-	logger.Info("Callback Lambda started", "job_id", jobID, "listing_id", listingID, "batch_id", batchID)
+	logger.Info("Callback Lambda started", "job_id", jobID, "listing_identity_id", listingIdentityID, "batch_id", batchID)
 
 	if callbackURL == "" {
 		logger.Error("CALLBACK_URL not set")

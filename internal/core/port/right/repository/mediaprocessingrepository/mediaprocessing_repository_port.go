@@ -11,11 +11,11 @@ import (
 type RepositoryInterface interface {
 	// New methods for granular asset management
 	UpsertAsset(ctx context.Context, tx *sql.Tx, asset mediaprocessingmodel.MediaAsset) error
-	GetAsset(ctx context.Context, tx *sql.Tx, listingID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) (mediaprocessingmodel.MediaAsset, error)
+	GetAsset(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) (mediaprocessingmodel.MediaAsset, error)
 	GetAssetByID(ctx context.Context, tx *sql.Tx, assetID uint64) (mediaprocessingmodel.MediaAsset, error)
 	GetAssetByRawKey(ctx context.Context, tx *sql.Tx, rawKey string) (mediaprocessingmodel.MediaAsset, error)
-	ListAssets(ctx context.Context, tx *sql.Tx, listingID uint64, filter AssetFilter) ([]mediaprocessingmodel.MediaAsset, error)
-	DeleteAsset(ctx context.Context, tx *sql.Tx, listingID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) error
+	ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter AssetFilter) ([]mediaprocessingmodel.MediaAsset, error)
+	DeleteAsset(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) error
 
 	RegisterProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) (uint64, error)
 	GetProcessingJobByID(ctx context.Context, tx *sql.Tx, jobID uint64) (mediaprocessingmodel.MediaProcessingJob, error)

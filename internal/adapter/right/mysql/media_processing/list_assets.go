@@ -14,15 +14,15 @@ import (
 
 const listAssetsBaseQuery = `
 SELECT
-    id, listing_id, asset_type, sequence, status, s3_key_raw, s3_key_processed, title, metadata
+    id, listing_identity_id, asset_type, sequence, status, s3_key_raw, s3_key_processed, title, metadata
 FROM media_assets
-WHERE listing_id = ?
+WHERE listing_identity_id = ?
 `
 
 // ListAssets retrieves assets for a listing with optional filters.
-func (a *MediaProcessingAdapter) ListAssets(ctx context.Context, tx *sql.Tx, listingID uint64, filter mediaprocessingrepository.AssetFilter) ([]mediaprocessingmodel.MediaAsset, error) {
+func (a *MediaProcessingAdapter) ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter mediaprocessingrepository.AssetFilter) ([]mediaprocessingmodel.MediaAsset, error) {
 	query := listAssetsBaseQuery
-	args := []interface{}{listingID}
+	args := []interface{}{listingIdentityID}
 
 	if len(filter.AssetTypes) > 0 {
 		placeholders := make([]string, len(filter.AssetTypes))
@@ -55,7 +55,7 @@ func (a *MediaProcessingAdapter) ListAssets(ctx context.Context, tx *sql.Tx, lis
 		var entity mediaprocessingentities.AssetEntity
 		if err := rows.Scan(
 			&entity.ID,
-			&entity.ListingID,
+			&entity.ListingIdentityID,
 			&entity.AssetType,
 			&entity.Sequence,
 			&entity.Status,

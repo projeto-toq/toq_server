@@ -11,9 +11,9 @@ import (
 )
 
 const selectProcessingJobByIDQuery = `
-SELECT id, listing_id, status, provider, external_job_id, output_payload_json,
-       started_at, finished_at
-FROM media_jobs
+SELECT id, listing_identity_id, status, provider, external_id, payload,
+       started_at, completed_at
+FROM media_processing_jobs
 WHERE id = ?
 `
 
@@ -26,7 +26,7 @@ func (a *MediaProcessingAdapter) GetProcessingJobByID(ctx context.Context, tx *s
 	var entity mediaprocessingentities.JobEntity
 	if err := row.Scan(
 		&entity.ID,
-		&entity.ListingID,
+		&entity.ListingIdentityID,
 		&entity.Status,
 		&entity.Provider,
 		&entity.ExternalID,

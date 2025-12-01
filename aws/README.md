@@ -50,23 +50,10 @@ export AWS_REGION=us-east-1
 
 ### Updating Functions
 
-Run the following commands to update the code for each function:
+Run the following script to update the code for all functions:
 
 ```bash
-# Update Thumbnails Lambda
-aws lambda update-function-code --function-name listing-media-thumbnails-staging --zip-file fileb://aws/lambdas/bin/thumbnails.zip
-
-# Update Zip Lambda
-aws lambda update-function-code --function-name listing-media-zip-staging --zip-file fileb://aws/lambdas/bin/zip.zip
-
-# Update Validate Lambda
-aws lambda update-function-code --function-name listing-media-validate-staging --zip-file fileb://aws/lambdas/bin/validate.zip
-
-# Update Consolidate Lambda
-aws lambda update-function-code --function-name listing-media-consolidate-staging --zip-file fileb://aws/lambdas/bin/consolidate.zip
-
-# Update Callback Lambda
-aws lambda update-function-code --function-name listing-media-callback-staging --zip-file fileb://aws/lambdas/bin/callback.zip
+./scripts/deploy_lambdas.sh
 ```
 
 ## Architecture Notes

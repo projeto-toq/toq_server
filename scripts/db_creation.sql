@@ -883,100 +883,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`listing_media_batches`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`listing_media_batches` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`listing_media_batches` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` INT UNSIGNED NOT NULL,
-  `photographer_user_id` INT UNSIGNED NOT NULL,
-  `status` ENUM('PENDING_UPLOAD', 'RECEIVED', 'PROCESSING', 'FAILED', 'READY') NOT NULL,
-  `upload_manifest_json` JSON NOT NULL,
-  `processing_metadata_json` JSON NULL,
-  `received_at` DATETIME(6) NULL,
-  `processing_started_at` DATETIME(6) NULL,
-  `processing_finished_at` DATETIME(6) NULL,
-  `error_code` VARCHAR(50) NULL,
-  `error_detail` TEXT NULL,
-  `deleted_at` DATETIME(6) NULL,
-  PRIMARY KEY (`id`),
-  INDEX `idx_listing_status` (`listing_id` ASC, `status` ASC) INVISIBLE,
-  INDEX `idx_listing_recent` (`listing_id` ASC, `id` DESC) VISIBLE,
-  INDEX `fk_batches_photographer_idx` (`photographer_user_id` ASC) VISIBLE,
-  CONSTRAINT `fk_batches_listing`
-    FOREIGN KEY (`listing_id`)
-    REFERENCES `toq_db`.`listing_identities` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_batches_photographer`
-    FOREIGN KEY (`photographer_user_id`)
-    REFERENCES `toq_db`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `toq_db`.`listing_media_assets`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`listing_media_assets` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`listing_media_assets` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `batch_id` INT UNSIGNED NOT NULL,
-  `asset_type` ENUM('PHOTO_VERTICAL', 'PHOTO_HORIZONTAL', 'VIDEO_VERTICAL', 'VIDEO_HORIZONTAL', 'THUMBNAIL', 'ZIP', 'PROJECT_DOC', 'PROJECT_RENDER') NOT NULL,
-  `orientation` ENUM('VERTICAL', 'HORIZONTAL') NULL,
-  `raw_object_key` VARCHAR(512) NOT NULL,
-  `processed_key` VARCHAR(512) NULL,
-  `thumbnail_key` VARCHAR(512) NULL,
-  `checksum` CHAR(64) NOT NULL,
-  `content_type` VARCHAR(100) NOT NULL,
-  `filename` VARCHAR(255) NOT NULL,
-  `size_bytes` BIGINT NOT NULL,
-  `width` SMALLINT UNSIGNED NULL,
-  `height` SMALLINT UNSIGNED NULL,
-  `duration_millis` INT UNSIGNED NULL,
-  `title` VARCHAR(252) NULL,
-  `sequence` INT UNSIGNED NULL,
-  `metadata` JSON NULL,
-  PRIMARY KEY (`id`),
-  INDEX `uk_batch_sequence` (`batch_id` ASC, `sequence` ASC) INVISIBLE,
-  INDEX `idx_batch_type` (`batch_id` ASC, `asset_type` ASC) VISIBLE,
-  CONSTRAINT `fk_assets_batch`
-    FOREIGN KEY (`batch_id`)
-    REFERENCES `toq_db`.`listing_media_batches` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `toq_db`.`listing_media_jobs`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`listing_media_jobs` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`listing_media_jobs` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `batch_id` INT UNSIGNED NOT NULL,
-  `external_job_id` VARCHAR(255) NULL,
-  `provider` ENUM('STEP_FUNCTIONS', 'MEDIACONVERT') NOT NULL,
-  `status` VARCHAR(50) NOT NULL,
-  `input_payload_json` JSON NULL,
-  `output_payload_json` JSON NULL,
-  `started_at` DATETIME(6) NULL,
-  `finished_at` DATETIME(6) NULL,
-  PRIMARY KEY (`id`),
-  INDEX `idx_batch_job` (`batch_id` ASC, `started_at` ASC) VISIBLE,
-  CONSTRAINT `fk_jobs_batch`
-    FOREIGN KEY (`batch_id`)
-    REFERENCES `toq_db`.`listing_media_batches` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `toq_db`.`vertical_complexes`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `toq_db`.`vertical_complexes` ;
@@ -1099,6 +1005,59 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`no_complex_zip_codes` (
   `sector` TINYINT UNSIGNED NOT NULL,
   `type` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`media_assets`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`media_assets` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`media_assets` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `listing_identity_id` INT UNSIGNED NOT NULL,
+  `asset_type` VARCHAR(50) NOT NULL,
+  `sequence` INT NOT NULL,
+  `status` VARCHAR(50) NOT NULL,
+  `s3_key_raw` VARCHAR(255) NULL,
+  `s3_key_processed` VARCHAR(255) NULL,
+  `title` VARCHAR(255) NULL,
+  `metadata` JSON NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_listing_asset_seq` (`listing_identity_id` ASC, `asset_type` ASC, `sequence` ASC) INVISIBLE,
+  INDEX `idx_listing_status` (`listing_identity_id` ASC, `status` ASC) VISIBLE,
+  CONSTRAINT `fk_media_assets_identity`
+    FOREIGN KEY (`listing_identity_id`)
+    REFERENCES `toq_db`.`listing_identities` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`media_processing_jobs`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`media_processing_jobs` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`media_processing_jobs` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `listing_identity_id` INT UNSIGNED NOT NULL,
+  `status` VARCHAR(50) NOT NULL,
+  `provider` VARCHAR(50) NOT NULL,
+  `external_id` VARCHAR(255) NULL,
+  `payload` JSON NULL,
+  `retry_count` SMALLINT NULL DEFAULT 0,
+  `started_at` TIMESTAMP NULL,
+  `completed_at` TIMESTAMP NULL,
+  `last_error` TEXT NULL,
+  `callback_body` TEXT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_media_job_identity` (`listing_identity_id` ASC) INVISIBLE,
+  CONSTRAINT `fk_media_jobs_identity`
+    FOREIGN KEY (`listing_identity_id`)
+    REFERENCES `toq_db`.`listing_identities` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 -- begin attached script 'script'

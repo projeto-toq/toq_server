@@ -8,7 +8,7 @@ import (
 // AssetEntityToDomain converts DB entity to domain.
 func AssetEntityToDomain(entity mediaprocessingentities.AssetEntity) mediaprocessingmodel.MediaAsset {
 	asset := mediaprocessingmodel.NewMediaAsset(
-		entity.ListingID,
+		entity.ListingIdentityID,
 		mediaprocessingmodel.MediaAssetType(entity.AssetType),
 		entity.Sequence,
 	)

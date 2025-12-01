@@ -77,7 +77,8 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 			continue // Skip this asset but try others
 		}
 
-		if result.Status == "PROCESSED" {
+		switch result.Status {
+		case "PROCESSED":
 			asset.SetStatus(mediaprocessingmodel.MediaAssetStatusProcessed)
 			if result.ProcessedKey != "" {
 				asset.SetS3KeyProcessed(result.ProcessedKey)
@@ -103,7 +104,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 				metaBytes, _ := json.Marshal(currentMeta)
 				asset.SetMetadata(string(metaBytes))
 			}
-		} else if result.Status == "FAILED" {
+		case "FAILED":
 			asset.SetStatus(mediaprocessingmodel.MediaAssetStatusFailed)
 			// Maybe store error in metadata?
 			if result.Error != "" {

@@ -21,11 +21,7 @@ aws sts get-caller-identity
 ./scripts/build_lambdas.sh
 
 # Atualizar código das funções (Deploy)
-aws lambda update-function-code --function-name listing-media-thumbnails-staging --zip-file fileb://aws/lambdas/bin/thumbnails.zip
-aws lambda update-function-code --function-name listing-media-zip-staging --zip-file fileb://aws/lambdas/bin/zip.zip
-aws lambda update-function-code --function-name listing-media-validate-staging --zip-file fileb://aws/lambdas/bin/validate.zip
-aws lambda update-function-code --function-name listing-media-consolidate-staging --zip-file fileb://aws/lambdas/bin/consolidate.zip
-aws lambda update-function-code --function-name listing-media-callback-staging --zip-file fileb://aws/lambdas/bin/callback.zip
+./scripts/deploy_lambdas.sh
 ```
 
 ---

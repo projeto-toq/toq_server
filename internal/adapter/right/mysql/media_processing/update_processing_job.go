@@ -10,13 +10,13 @@ import (
 )
 
 const updateProcessingJobQuery = `
-UPDATE media_jobs
+UPDATE media_processing_jobs
 SET 
     status = ?, 
-    external_job_id = ?,
-    output_payload_json = ?,
+    external_id = ?,
+    payload = ?,
     started_at = ?,
-    finished_at = ?
+    completed_at = ?
 WHERE id = ?
 `
 
