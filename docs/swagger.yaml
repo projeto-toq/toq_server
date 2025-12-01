@@ -7178,7 +7178,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Generates time-limited signed S3 URLs for specific assets and resolutions.
+      description: 'Generates time-limited signed S3 URLs for specific assets. Supports
+        requesting multiple assets/resolutions at once. Valid resolutions: thumbnail
+        (200px), small (400px), medium (800px), large (1200px), original.'
       parameters:
       - description: Download requests
         in: body
@@ -7186,6 +7188,10 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsRequest'
+        x-example: '{"listingIdentityId": 51, "requests": [{"assetType": "PHOTO_VERTICAL",
+          "sequence": 1, "resolution": "thumbnail"}, {"assetType": "PHOTO_HORIZONTAL",
+          "sequence": 2, "resolution": "large"}, {"assetType": "VIDEO_VERTICAL", "sequence":
+          1, "resolution": "original"}]}'
       produces:
       - application/json
       responses:

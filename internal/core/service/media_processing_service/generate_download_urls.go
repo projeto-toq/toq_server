@@ -71,15 +71,16 @@ func (s *mediaProcessingService) GenerateDownloadURLs(ctx context.Context, input
 			}
 			signedURL, err = s.storage.GenerateDownloadURL(ctx, asset.S3KeyRaw())
 		} else {
-			// Standard flow: must be processed
-			if asset.Status() != mediaprocessingmodel.MediaAssetStatusProcessed {
+			// Standard flow: must be processed OR processing (for incremental feedback)
+			// We allow generating the URL if status is PROCESSED or PROCESSING.
+			if asset.Status() != mediaprocessingmodel.MediaAssetStatusProcessed && asset.Status() != mediaprocessingmodel.MediaAssetStatusProcessing {
 				logger.Warn("service.media.generate_urls.asset_status_invalid",
 					"listing_id", input.ListingIdentityID,
 					"asset_type", req.AssetType,
 					"sequence", req.Sequence,
 					"current_status", asset.Status(),
-					"expected_status", mediaprocessingmodel.MediaAssetStatusProcessed)
-				continue // Skip if not processed
+					"expected_status", "PROCESSED or PROCESSING")
+				continue // Skip if PENDING_UPLOAD or FAILED
 			}
 			signedURL, err = s.storage.GenerateProcessedDownloadURL(ctx, uint64(input.ListingIdentityID), asset, req.Resolution)
 		}

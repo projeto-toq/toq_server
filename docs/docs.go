@@ -5756,7 +5756,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Generates time-limited signed S3 URLs for specific assets and resolutions.",
+                "description": "Generates time-limited signed S3 URLs for specific assets. Supports requesting multiple assets/resolutions at once. Valid resolutions: thumbnail (200px), small (400px), medium (800px), large (1200px), original.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5769,6 +5769,7 @@ const docTemplate = `{
                 "summary": "Generate signed download URLs",
                 "parameters": [
                     {
+                        "x-example": "{\"listingIdentityId\": 51, \"requests\": [{\"assetType\": \"PHOTO_VERTICAL\", \"sequence\": 1, \"resolution\": \"thumbnail\"}, {\"assetType\": \"PHOTO_HORIZONTAL\", \"sequence\": 2, \"resolution\": \"large\"}, {\"assetType\": \"VIDEO_VERTICAL\", \"sequence\": 1, \"resolution\": \"original\"}]}",
                         "description": "Download requests",
                         "name": "request",
                         "in": "body",

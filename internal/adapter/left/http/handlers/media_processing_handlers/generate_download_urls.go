@@ -14,12 +14,12 @@ import (
 // GenerateDownloadURLs generates signed download URLs for specific assets
 //
 //	@Summary		Generate signed download URLs
-//	@Description	Generates time-limited signed S3 URLs for specific assets and resolutions.
+//	@Description	Generates time-limited signed S3 URLs for specific assets. Supports requesting multiple assets/resolutions at once. Valid resolutions: thumbnail (200px), small (400px), medium (800px), large (1200px), original.
 //	@Tags			Listings Media
 //	@Accept			json
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			request	body		dto.GenerateDownloadURLsRequest	true	"Download requests"
+//	@Param			request	body		dto.GenerateDownloadURLsRequest	true	"Download requests" Extensions(x-example={"listingIdentityId": 51, "requests": [{"assetType": "PHOTO_VERTICAL", "sequence": 1, "resolution": "thumbnail"}, {"assetType": "PHOTO_HORIZONTAL", "sequence": 2, "resolution": "large"}, {"assetType": "VIDEO_VERTICAL", "sequence": 1, "resolution": "original"}]})
 //	@Success		200		{object}	dto.GenerateDownloadURLsResponse	"Download URLs generated"
 //	@Failure		400		{object}	dto.ErrorResponse	"Invalid request"
 //	@Failure		401		{object}	dto.ErrorResponse	"Unauthorized"

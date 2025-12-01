@@ -30,11 +30,15 @@ está retornando:
     "urls": []
 }
 ```
-    
+O log mostra:
+```json
+{"time":"2025-12-01T16:46:24.711881602Z","level":"WARN","msg":"service.media.generate_urls.asset_status_invalid","request_id":"e9d3ec34-fbb1-4f6c-949f-c462478ed2ed","listing_id":51,"asset_type":"PHOTO_VERTICAL","sequence":1,"current_status":"PROCESSING","expected_status":"PROCESSED"}
+```
+
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
 2. Verfique se todas as opções de tamanho de foto (thumbnail, small, medium, large, original) estão sendo corretamente tratadas no código.
-3. O swagger necessita de exemplos e de todas as opções para tamnhos disponíveis.
+3. O swagger necessita de exemplos e de todas as opções para tamnhos disponíveis. veja o endpoint `PUT /listings` que tem estes exemplos.
 4. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 
