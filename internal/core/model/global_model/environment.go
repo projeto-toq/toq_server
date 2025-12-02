@@ -152,6 +152,10 @@ type Environment struct {
 			UploadURLTTLSeconds   int `yaml:"upload_url_ttl_seconds"`
 			DownloadURLTTLSeconds int `yaml:"download_url_ttl_seconds"`
 		} `yaml:"storage"`
+		Workflow struct {
+			FinalizationStateMachineARN string `yaml:"finalization_state_machine_arn"`
+			Region                      string `yaml:"region"`
+		} `yaml:"workflow"`
 		Queue struct {
 			URL      string `yaml:"url"`
 			RetryURL string `yaml:"retry_url"`

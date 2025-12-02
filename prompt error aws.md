@@ -10,32 +10,24 @@ Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_usefu
 
 Existem os seguinte erros detectados:
 
-1. o endpoint `/listings/media/uploads/process POST` chamado após o upload das medias altera os registros da tabela media_assets para o status "processing" mas o processamento em si ou termina com erro ou o callback está errado, pois os arquivos de mídia  são encontrados no bucket S3 e o status nunca vai para processed ou failed.
-
-o seguinte log está sendo gerado:
+1. ao chamar o endpoint `/listings/media/uploads/complete POST` recebo o erro 500 e o seguinte log está sendo gerado:
 
 ```json
-{"time":"2025-12-02T11:57:56.061509688Z","level":"INFO","msg":"handler.media.callback.forward","job_id":0,"status":"SUCCEEDED","provider":"STEP_FUNCTIONS"}
-{"time":"2025-12-02T11:57:56.0615612Z","level":"INFO","msg":"service.media.callback.received","request_id":"326cd09f-9232-4fdd-a75a-8e0ccffaa0a8","job_id":0,"status":"SUCCEEDED"}
-{"time":"2025-12-02T11:57:56.063547717Z","level":"ERROR","msg":"HTTP Error","request_id":"326cd09f-9232-4fdd-a75a-8e0ccffaa0a8","request_id":"326cd09f-9232-4fdd-a75a-8e0ccffaa0a8","method":"POST","path":"/api/v2/listings/media/callback","status":500,"duration":2188803,"size":57,"client_ip":"98.92.37.232","user_agent":"Go-http-client/2.0","trace_id":"74bd78cb39876bcefe3002d8c1218919","span_id":"8e503b98ea36ad02","errors":["failed to get job"]}
-{"time":"2025-12-02T11:58:16.269909585Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:57012"}
-{"time":"2025-12-02T11:58:16.270175383Z","level":"INFO","msg":"handler.media.callback.forward","job_id":0,"status":"SUCCEEDED","provider":"STEP_FUNCTIONS"}
-{"time":"2025-12-02T11:58:16.270215564Z","level":"INFO","msg":"service.media.callback.received","request_id":"2a85f957-b947-476b-8ac3-b7b96da4ef59","job_id":0,"status":"SUCCEEDED"}
-{"time":"2025-12-02T11:58:16.272153789Z","level":"ERROR","msg":"HTTP Error","request_id":"2a85f957-b947-476b-8ac3-b7b96da4ef59","request_id":"2a85f957-b947-476b-8ac3-b7b96da4ef59","method":"POST","path":"/api/v2/listings/media/callback","status":500,"duration":2111340,"size":57,"client_ip":"98.92.37.232","user_agent":"Go-http-client/2.0","trace_id":"dcb183e50a529aad2b17b37aae6b2c39","span_id":"7c81cb488c8f1461","errors":["failed to get job"]}
+{"time":"2025-12-02T15:47:13.083515424Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/uploads/complete","remote_addr":"127.0.0.1:37822"}
+{"time":"2025-12-02T15:47:13.084841853Z","level":"INFO","msg":"permission.check.allowed","request_id":"48866c16-aada-4bfd-a864-3e00ecbd4064","user_id":3,"action":"POST:/api/v2/listings/media/uploads/complete","permission_id":116}
+{"time":"2025-12-02T15:47:13.102530304Z","level":"ERROR","msg":"HTTP Error","request_id":"48866c16-aada-4bfd-a864-3e00ecbd4064","request_id":"48866c16-aada-4bfd-a864-3e00ecbd4064","method":"POST","path":"/api/v2/listings/media/uploads/complete","status":500,"duration":18878706,"size":46,"client_ip":"134.0.6.237","user_agent":"PostmanRuntime/7.49.1","trace_id":"e89a4c9873dedc4b4d2b75e1e145dcfc","span_id":"00249e267be0dcb9","user_id":3,"user_role_id":3,"function":"github.com/projeto-toq/toq_server/internal/core/utils.InternalError","file":"/codigos/go_code/toq_server/internal/core/utils/http_errors.go","line":248,"stack":["github.com/projeto-toq/toq_server/internal/core/utils.InternalError (http_errors.go:248)"],"error_code":500,"error_message":"Internal server error","errors":["HTTP 500: Internal server error"]}
+
 ```
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
-2. refaça o fluxo completo de media processing, via curl/aws console/acesso mysql/cli confirmando que todas as etapas estejam corretamente implementadas e integradas, ou detectanto a causa raiz, utilizando: 
+2. Caso necessite consultar para detectar a causa raiz, utilize: 
     2.1.**Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
     2.2.**Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
     2.3.**Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
     2.4.**O usuário fotografo tem nationalId = 60966100301, password = Vieg@s123 e deviceToken = fcm_device_token_postman_photographer1** 
 3. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
-**Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
-**Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
-**Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**
 - **`docs/toq_server_go_guide.md`** — Guia completo do projeto (seções 1-17)

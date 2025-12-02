@@ -78,6 +78,7 @@ func NewMediaProcessingService(
 	globalService globalservice.GlobalServiceInterface,
 	storage storageport.ListingMediaStoragePort,
 	queue mediaprocessingqueue.QueuePortInterface,
+	workflow workflowport.WorkflowPortInterface,
 	cfg Config,
 ) (MediaProcessingServiceInterface, error) {
 	if repo == nil {
@@ -94,6 +95,9 @@ func NewMediaProcessingService(
 	}
 	if queue == nil {
 		return nil, derrors.Infra("media processing queue adapter not configured", nil)
+	}
+	if workflow == nil {
+		return nil, derrors.Infra("media processing workflow adapter not configured", nil)
 	}
 
 	if cfg.MaxFilesPerBatch <= 0 {
@@ -124,6 +128,7 @@ func NewMediaProcessingService(
 		globalService:        globalService,
 		storage:              storage,
 		queue:                queue,
+		workflow:             workflow,
 		cfg:                  cfg,
 		now:                  time.Now,
 		allowedContentLookup: lookup,

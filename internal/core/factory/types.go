@@ -24,6 +24,7 @@ import (
 	mediaprocessingqueue "github.com/projeto-toq/toq_server/internal/core/port/right/queue/mediaprocessingqueue"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	workflowport "github.com/projeto-toq/toq_server/internal/core/port/right/workflow"
 
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
@@ -55,6 +56,7 @@ type ExternalServiceAdapters struct {
 	ListingMediaStorage     storageport.ListingMediaStoragePort
 	MediaProcessingQueue    mediaprocessingqueue.QueuePortInterface
 	MediaProcessingCallback mediaprocessingcallbackport.CallbackPortInterface
+	MediaProcessingWorkflow workflowport.WorkflowPortInterface
 	CloseFunc               func() error // Função para cleanup de recursos
 }
 

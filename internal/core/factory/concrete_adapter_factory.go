@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
@@ -36,6 +37,7 @@ import (
 	smsadapter "github.com/projeto-toq/toq_server/internal/adapter/right/sms"
 
 	// Storage adapters - AWS S3 (substituindo GCS)
+	awsstepfunctionsadapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws/step_functions"
 	s3adapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws_s3"
 	sqsmediaprocessingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws_sqs/media_processing"
 	stepfunctionscallbackadapter "github.com/projeto-toq/toq_server/internal/adapter/right/step_functions"
@@ -70,6 +72,7 @@ import (
 
 	mediaprocessingcallbackport "github.com/projeto-toq/toq_server/internal/core/port/right/functions/mediaprocessingcallback"
 	mediaprocessingqueue "github.com/projeto-toq/toq_server/internal/core/port/right/queue/mediaprocessingqueue"
+	workflowport "github.com/projeto-toq/toq_server/internal/core/port/right/workflow"
 )
 
 // ConcreteAdapterFactory implementa a interface AdapterFactory
@@ -163,6 +166,8 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 
 	callbackAdapter := stepfunctionscallbackadapter.NewMediaProcessingCallbackAdapter(env)
 
+	workflowAdapter := buildWorkflowAdapter(ctx, env)
+
 	slog.Info("Successfully created all external service adapters")
 
 	return ExternalServiceAdapters{
@@ -173,8 +178,40 @@ func (f *ConcreteAdapterFactory) CreateExternalServiceAdapters(ctx context.Conte
 		ListingMediaStorage:     listingMediaStorage,
 		MediaProcessingQueue:    mediaQueue,
 		MediaProcessingCallback: callbackAdapter,
+		MediaProcessingWorkflow: workflowAdapter,
 		CloseFunc:               s3Close, // Função de cleanup do S3
 	}, nil
+}
+
+func buildWorkflowAdapter(ctx context.Context, env *globalmodel.Environment) workflowport.WorkflowPortInterface {
+	if env == nil {
+		slog.Warn("adapter.stepfunctions.workflow.env_missing")
+		return nil
+	}
+
+	arn := env.MediaProcessing.Workflow.FinalizationStateMachineARN
+	if arn == "" {
+		slog.Warn("adapter.stepfunctions.workflow.arn_missing")
+		return nil
+	}
+
+	region := env.MediaProcessing.Workflow.Region
+	if region == "" {
+		region = env.S3.Region
+	}
+	if region == "" {
+		slog.Warn("adapter.stepfunctions.workflow.region_missing")
+		return nil
+	}
+
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	if err != nil {
+		slog.Error("adapter.stepfunctions.workflow.config_error", "region", region, "error", err)
+		return nil
+	}
+
+	slog.Info("adapter.stepfunctions.workflow.created", "region", region, "arn", arn)
+	return awsstepfunctionsadapter.NewStepFunctionsAdapter(cfg, arn)
 }
 
 // CreateStorageAdapters cria adapters de armazenamento (Database e Cache)

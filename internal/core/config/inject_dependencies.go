@@ -343,6 +343,12 @@ func (c *config) InitMediaProcessingService() {
 		return
 	}
 
+	if c.externalServiceAdapters.MediaProcessingWorkflow == nil {
+		slog.Warn("MediaProcessingWorkflow not available - service will be nil")
+		c.mediaProcessingService = nil
+		return
+	}
+
 	// Create service configuration from environment
 	cfg := mediaprocessingservice.NewConfigFromEnvironment(&c.env)
 
@@ -353,6 +359,7 @@ func (c *config) InitMediaProcessingService() {
 		c.globalService,
 		c.externalServiceAdapters.ListingMediaStorage,
 		c.externalServiceAdapters.MediaProcessingQueue,
+		c.externalServiceAdapters.MediaProcessingWorkflow,
 		cfg,
 	)
 
