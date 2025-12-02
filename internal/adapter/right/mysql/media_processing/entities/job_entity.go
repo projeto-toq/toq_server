@@ -12,4 +12,6 @@ type JobEntity struct {
 	Payload           sql.NullString `db:"payload"`
 	StartedAt         sql.NullTime   `db:"started_at"`
 	FinishedAt        sql.NullTime   `db:"finished_at"`
+	LastError         sql.NullString `db:"last_error"`
+	CallbackBody      sql.NullString `db:"callback_body"`
 }

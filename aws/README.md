@@ -56,6 +56,16 @@ Run the following script to update the code for all functions:
 ./scripts/deploy_lambdas.sh
 ```
 
+The script now also updates the Step Functions definition (`listing-media-processing-sm-staging`) using the file `aws/step_functions/media_processing_pipeline.json`, ensuring the callback payload stays aligned (`provider`, `traceparent`, `error.code`, `outputs[].errorCode`).
+
+To update only the state machine (for example, após ajustar a definição mas sem rebuild das lambdas), execute:
+
+```bash
+aws stepfunctions update-state-machine \
+  --state-machine-arn arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging \
+  --definition file://aws/step_functions/media_processing_pipeline.json
+```
+
 ## Architecture Notes
 
 - **Runtime**: `provided.al2023` (Go custom runtime).

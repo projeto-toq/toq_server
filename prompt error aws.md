@@ -10,12 +10,17 @@ Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_usefu
 
 Existem os seguinte erros detectados:
 
-1. o endpoint `/listings/media/uploads/process POST` chamado após o upload das medias altera os registros da tabela media_assets para o status "processing" mas o processamento em si não é iniciado ou termina com erro, pois os arquivos de mídia não são encontrados no bucket S3 e o status nunca vai para processed ou failed.
+1. o endpoint `/listings/media/uploads/process POST` chamado após o upload das medias altera os registros da tabela media_assets para o status "processing" mas o processamento em si ou termina com erro ou o callback está errado, pois os arquivos de mídia  são encontrados no bucket S3 e o status nunca vai para processed ou failed.
 
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.
-2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
+2. refaça o fluxo completo de media processing, via curl/aws console/acesso mysql/cli confirmando que todas as etapas estejam corretamente implementadas e integradas, ou detectanto a causa raiz, utilizando: 
+    2.1.**Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
+    2.2.**Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
+    2.3.**Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
+    2.4.**O usuário fotografo tem nationalId = 60966100301, password = Vieg@s123 e deviceToken = fcm_device_token_postman_photographer1** 
+3. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
 **Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
 **Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto

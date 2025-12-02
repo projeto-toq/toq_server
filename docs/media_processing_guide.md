@@ -168,7 +168,45 @@ Todos sob `/api/v2/listings/media/*`.
 5. **Atualização de metadados finais (Lambda #4)**
   - Consolida dados e persiste.
 6. **Callback para backend**
-  - Step Functions envia payload para endpoint interno.
+  - Step Functions consolida saídas das branches, agrega erros de thumbnail/validação e envia payload padronizado para o backend.
+
+### 6.2 Estrutura do Payload de Callback
+
+O payload enviado pelo Step Functions para o endpoint `/api/v2/listings/media/callback` segue o contrato abaixo. Todos os identificadores são numéricos e já convertidos para string pelo backend apenas no limite HTTP:
+
+```json
+{
+  "jobId": 123456,
+  "listingIdentityId": 987654,
+  "provider": "STEP_FUNCTIONS",
+  "status": "SUCCEEDED",
+  "failureReason": "",
+  "error": null,
+  "traceparent": "00-<trace-id>-<span-id>-01",
+  "outputs": [
+    {
+      "rawKey": "987654/raw/photo/horizontal/uuid.jpg",
+      "processedKey": "987654/processed/photo/horizontal/large/uuid.jpg",
+      "thumbnailKey": "987654/processed/photo/horizontal/thumbnail/uuid.jpg",
+      "outputs": {
+        "thumbnail_PHOTO_HORIZONTAL": "987654/processed/photo/horizontal/thumbnail/uuid.jpg"
+      },
+      "errorCode": "",
+      "errorMessage": ""
+    }
+  ]
+}
+```
+
+Em cenários de falha:
+
+- `status` assume valores `VALIDATION_FAILED`, `PROCESSING_FAILED` ou `FAILED`.
+- `error` é um objeto com as chaves `code` e `message`, ambos gerados a partir da exceção capturada na Step Function.
+- `failureReason` replica o resumo de erro de alto nível.
+- Quando a Lambda de thumbnails falha em itens específicos, cada output recebe `errorCode` (`THUMBNAIL_PROCESSING_FAILED`) e `errorMessage` com detalhes. Esses campos são persistidos no metadata do asset pelo backend.
+- Se a validação falhou para um asset, o Consolidate marca `errorCode = VALIDATION_ERROR` e propaga a mensagem original.
+
+> **Observabilidade**: A Lambda `listing-media-callback-staging` loga o resumo das falhas antes de invocar o backend, agrupando códigos de erro e preservando `traceparent`. Após o callback, o serviço core (`HandleProcessingCallback`) agrega os mesmos códigos ao `MediaProcessingJob.LastError` e incrementa contadores de falha por asset.
 
 ## 7. Convenções de Segurança e Compliance
 - **Controle de acesso**: validar `PhotographerUserID`.

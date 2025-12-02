@@ -16,8 +16,10 @@ INSERT INTO media_processing_jobs (
     external_id,
     payload,
     started_at,
-    completed_at
-) VALUES (?, ?, ?, ?, ?, ?, ?)
+	completed_at,
+	last_error,
+	callback_body
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 // RegisterProcessingJob cria um novo job associado ao lote.
@@ -26,8 +28,6 @@ func (a *MediaProcessingAdapter) RegisterProcessingJob(ctx context.Context, tx *
 	observer := a.ObserveOnComplete("insert", insertProcessingJobQuery)
 	defer observer()
 
-	// Note: retry_count, last_error, callback_raw are not present in the current DB schema
-	// and are omitted from persistence.
 	result, err := a.ExecContext(ctx, tx, "insert", insertProcessingJobQuery,
 		entity.ListingIdentityID,
 		entity.Status,
@@ -36,6 +36,8 @@ func (a *MediaProcessingAdapter) RegisterProcessingJob(ctx context.Context, tx *
 		entity.Payload,
 		entity.StartedAt,
 		entity.FinishedAt,
+		entity.LastError,
+		entity.CallbackBody,
 	)
 	if err != nil {
 		return 0, err

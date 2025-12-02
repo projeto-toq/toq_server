@@ -22,6 +22,11 @@ aws sts get-caller-identity
 
 # Atualizar código das funções (Deploy)
 ./scripts/deploy_lambdas.sh
+
+# Atualizar somente a definição do Step Functions (quando necessário)
+aws stepfunctions update-state-machine \
+  --state-machine-arn arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging \
+  --definition file://aws/step_functions/media_processing_pipeline.json
 ```
 
 ---

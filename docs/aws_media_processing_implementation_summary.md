@@ -128,3 +128,18 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
 ### Runtime
 - **Runtime:** `provided.al2023`
 - **Build:** Binários compilados estaticamente via `./scripts/build_lambdas.sh`.
+
+---
+
+## 6. AWS Step Functions - Orquestração
+
+- **Nome:** `listing-media-processing-sm-staging`
+- **ARN:** `arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging`
+- **Definição:** `aws/step_functions/media_processing_pipeline.json`
+- **Principais estados:**
+  1. `ValidateRawAssets` (Lambda `listing-media-validate-staging`) — normaliza assets e injeta `hasVideos`, `traceparent` e erros de validação diretamente no payload.
+  2. `ParallelProcessing` — executa geração de thumbnails e, condicionalmente, job MediaConvert.
+  3. `ConsolidateResults` — agrega resultados, atribui `errorCode` (`VALIDATION_ERROR`, `THUMBNAIL_PROCESSING_FAILED`, etc.) e repassa `traceparent`.
+  4. `FinalizeAndCallback` — envia a estrutura unificada para a Lambda de callback.
+- **Caminhos de erro:** `ValidationFailed` e `ReportFailure` publicam payload padronizado com campos `status`, `failureReason`, objeto `error { code, message }`, `outputs` vazio e `traceparent`.
+- **Observabilidade:** A Lambda `callback` registra os códigos de erro agregados antes do POST e o backend persiste os mesmos valores em `MediaProcessingJob.LastError`, permitindo correlacionar os ativos falhos.

@@ -20,4 +20,9 @@ aws lambda update-function-code --function-name listing-media-consolidate-stagin
 echo "Deploying callback..."
 aws lambda update-function-code --function-name listing-media-callback-staging --zip-file fileb://aws/lambdas/bin/callback.zip > /dev/null
 
+echo "Updating Step Functions definition..."
+aws stepfunctions update-state-machine \
+	--state-machine-arn arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging \
+	--definition file://aws/step_functions/media_processing_pipeline.json > /dev/null
+
 echo "Deployment complete."

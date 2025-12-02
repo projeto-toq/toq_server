@@ -68,6 +68,7 @@ import (
 	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 
+	mediaprocessingcallbackport "github.com/projeto-toq/toq_server/internal/core/port/right/functions/mediaprocessingcallback"
 	mediaprocessingqueue "github.com/projeto-toq/toq_server/internal/core/port/right/queue/mediaprocessingqueue"
 )
 
@@ -275,6 +276,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	photoSessionService photosessionservice.PhotoSessionServiceInterface,
 	mediaProcessingService mediaprocessingservice.MediaProcessingServiceInterface,
 	metricsAdapter *MetricsAdapter,
+	callbackValidator mediaprocessingcallbackport.CallbackPortInterface,
 	hmacValidator *hmacauth.Validator,
 ) HTTPHandlers {
 	slog.Info("Creating HTTP handlers")
@@ -316,6 +318,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	mediaProcessingHandlerPort := mediaprocessinghandlers.NewMediaProcessingHandler(
 		mediaProcessingService,
 		slog.Default(),
+		callbackValidator,
 	)
 
 	mediaProcessingHandler, ok := mediaProcessingHandlerPort.(*mediaprocessinghandlers.MediaProcessingHandler)

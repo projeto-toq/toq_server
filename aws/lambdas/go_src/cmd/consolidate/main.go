@@ -18,18 +18,27 @@ func init() {
 
 // ConsolidateInput represents the combined input from Step Function
 type ConsolidateInput struct {
-	JobID             string                          `json:"jobId"`
+	JobID             uint64                          `json:"jobId"`
 	ListingIdentityID uint64                          `json:"listingIdentityId"`
 	Assets            []mediaprocessingmodel.JobAsset `json:"assets"`
 	ParallelResults   []ParallelResult                `json:"parallelResults"`
+	Traceparent       string                          `json:"traceparent"`
 }
 
 // ParallelResult captures the generic output of parallel branches
 type ParallelResult struct {
 	Body struct {
 		Thumbnails []mediaprocessingmodel.JobAsset `json:"generatedAssets"`
+		Errors     []ThumbnailError                `json:"errors"`
 		// Future: Videos []...
 	} `json:"body"`
+}
+
+// ThumbnailError resumes failures reported by the thumbnail branch.
+type ThumbnailError struct {
+	SourceKey    string `json:"sourceKey"`
+	ErrorCode    string `json:"errorCode"`
+	ErrorMessage string `json:"errorMessage"`
 }
 
 func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessingmodel.LambdaResponse, error) {
@@ -75,6 +84,19 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 				logger.Warn("Orphaned thumbnail found", "source_key", thumb.SourceKey, "thumb_key", thumb.Key)
 			}
 		}
+
+		if len(event.ParallelResults[0].Body.Errors) > 0 {
+			logger.Warn("Thumbnail branch reported errors", "count", len(event.ParallelResults[0].Body.Errors))
+			for _, err := range event.ParallelResults[0].Body.Errors {
+				payload, exists := resultsMap[err.SourceKey]
+				if !exists {
+					logger.Warn("Thumbnail error without matching asset", "source_key", err.SourceKey, "error_code", err.ErrorCode)
+					continue
+				}
+				payload.ErrorCode = err.ErrorCode
+				payload.ErrorMessage = err.ErrorMessage
+			}
+		}
 	}
 
 	// 3. Convert to final list
@@ -91,13 +113,21 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 		"payload_preview", string(outputJSON),
 	)
 
-	return mediaprocessingmodel.LambdaResponse{
-		Body: map[string]any{
-			"jobId":             event.JobID,
-			"listingIdentityId": event.ListingIdentityID,
-			"outputs":           finalOutputs,
-		},
-	}, nil
+	responseBody := map[string]any{
+		"jobId":             event.JobID,
+		"listingIdentityId": event.ListingIdentityID,
+		"provider":          string(mediaprocessingmodel.MediaProcessingProviderStepFunctions),
+		"status":            string(mediaprocessingmodel.MediaProcessingJobStatusSucceeded),
+		"failureReason":     "",
+		"error":             nil,
+		"outputs":           finalOutputs,
+	}
+
+	if event.Traceparent != "" {
+		responseBody["traceparent"] = event.Traceparent
+	}
+
+	return mediaprocessingmodel.LambdaResponse{Body: responseBody}, nil
 }
 
 func main() {

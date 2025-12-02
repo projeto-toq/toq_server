@@ -20,8 +20,8 @@ func JobEntityToDomain(entity mediaprocessingentities.JobEntity) mediaprocessing
 		RetryCount:        0,
 		StartedAt:         timePtrFromNull(entity.StartedAt),
 		CompletedAt:       timePtrFromNull(entity.FinishedAt),
-		LastError:         "",
-		CallbackBody:      "",
+		LastError:         entity.LastError.String,
+		CallbackBody:      entity.CallbackBody.String,
 	}
 
 	return mediaprocessingmodel.RestoreMediaProcessingJob(record)

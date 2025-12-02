@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -72,6 +73,7 @@ func HandleRequest(ctx context.Context, event map[string]any) error {
 
 	// LOG: The CRITICAL payload arriving at the backend
 	logger.Info("Sending callback payload", "payload", string(payloadBytes))
+	emitCallbackTelemetry(jobID, listingIdentityID, payloadToSend)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", callbackURL, bytes.NewReader(payloadBytes))
 	if err != nil {
@@ -111,4 +113,59 @@ func HandleRequest(ctx context.Context, event map[string]any) error {
 
 func main() {
 	lambda.Start(HandleRequest)
+}
+
+func emitCallbackTelemetry(jobID, listingIdentityID any, payload any) {
+	bodyMap, ok := payload.(map[string]any)
+	if !ok {
+		return
+	}
+
+	status := strings.ToUpper(strings.TrimSpace(getStringFromMap(bodyMap, "status")))
+	failureReason := strings.TrimSpace(getStringFromMap(bodyMap, "failureReason"))
+
+	var callbackErrorCode string
+	if errPayload, ok := bodyMap["error"].(map[string]any); ok {
+		callbackErrorCode = strings.ToUpper(strings.TrimSpace(getStringFromMap(errPayload, "code")))
+	}
+
+	assetErrors := make(map[string]int)
+	if outputs, ok := bodyMap["outputs"].([]any); ok {
+		for _, output := range outputs {
+			outputMap, ok := output.(map[string]any)
+			if !ok {
+				continue
+			}
+			code := strings.ToUpper(strings.TrimSpace(getStringFromMap(outputMap, "errorCode")))
+			if code == "" {
+				continue
+			}
+			assetErrors[code]++
+		}
+	}
+
+	if status == "SUCCEEDED" && len(assetErrors) == 0 && callbackErrorCode == "" {
+		return
+	}
+
+	logger.Warn("Callback payload telemetry",
+		"job_id", jobID,
+		"listing_identity_id", listingIdentityID,
+		"status", status,
+		"failure_reason", failureReason,
+		"callback_error_code", callbackErrorCode,
+		"asset_error_codes", assetErrors,
+	)
+}
+
+func getStringFromMap(source map[string]any, key string) string {
+	if raw, ok := source[key]; ok {
+		switch value := raw.(type) {
+		case string:
+			return value
+		case fmt.Stringer:
+			return value.String()
+		}
+	}
+	return ""
 }

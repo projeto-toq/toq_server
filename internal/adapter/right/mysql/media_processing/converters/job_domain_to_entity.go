@@ -19,6 +19,8 @@ func JobDomainToEntity(job mediaprocessingmodel.MediaProcessingJob) mediaprocess
 		Payload:           EncodeJobPayload(job.Payload()),
 		StartedAt:         nullTimeFromPtr(job.StartedAt()),
 		FinishedAt:        nullTimeFromPtr(job.CompletedAt()),
+		LastError:         nullString(job.LastError()),
+		CallbackBody:      nullString(job.CallbackBody()),
 	}
 }
 

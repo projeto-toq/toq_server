@@ -16,7 +16,9 @@ SET
     external_id = ?,
     payload = ?,
     started_at = ?,
-    completed_at = ?
+	completed_at = ?,
+	last_error = ?,
+	callback_body = ?
 WHERE id = ?
 `
 
@@ -42,6 +44,8 @@ func (a *MediaProcessingAdapter) UpdateProcessingJob(ctx context.Context, tx *sq
 		entity.Payload,
 		entity.StartedAt,
 		entity.FinishedAt,
+		entity.LastError,
+		entity.CallbackBody,
 		entity.ID,
 	)
 	if err != nil {

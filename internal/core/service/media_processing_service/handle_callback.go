@@ -3,6 +3,8 @@ package mediaprocessingservice
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	"github.com/projeto-toq/toq_server/internal/core/domain/dto"
@@ -41,6 +43,14 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to get job", err)
 	}
 
+	if input.ListingIdentityID != 0 && job.ListingIdentityID() != input.ListingIdentityID {
+		logger.Warn("service.media.callback.listing_mismatch", "job_id", input.JobID, "job_listing", job.ListingIdentityID(), "payload_listing", input.ListingIdentityID)
+	}
+
+	if input.RawPayload != "" {
+		job.SetCallbackBody(input.RawPayload)
+	}
+
 	// Map status string to enum
 	var jobStatus mediaprocessingmodel.MediaProcessingJobStatus
 	switch input.Status {
@@ -54,8 +64,24 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 	if jobStatus.IsTerminal() {
 		job.MarkCompleted(jobStatus, mediaprocessingmodel.MediaProcessingJobPayload{}, s.nowUTC())
+
+		errorFragments := make([]string, 0, 4)
+		if input.ErrorCode != "" {
+			errorFragments = append(errorFragments, fmt.Sprintf("code=%s", input.ErrorCode))
+		}
+		if input.Error != "" {
+			errorFragments = append(errorFragments, input.Error)
+		}
 		if input.FailureReason != "" {
-			job.AppendError(input.FailureReason)
+			errorFragments = append(errorFragments, input.FailureReason)
+		}
+		if len(input.ErrorMetadata) > 0 {
+			if metaBytes, marshalErr := json.Marshal(input.ErrorMetadata); marshalErr == nil {
+				errorFragments = append(errorFragments, fmt.Sprintf("meta=%s", string(metaBytes)))
+			}
+		}
+		if len(errorFragments) > 0 {
+			job.AppendError(strings.Join(errorFragments, " | "))
 		}
 	}
 
@@ -83,8 +109,18 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		}
 	}
 
+	failedCount := 0
+	errorCodeHistogram := make(map[string]int)
+
 	// Update assets based on results
 	for _, result := range input.Results {
+		if strings.EqualFold(result.Status, "FAILED") {
+			failedCount++
+		}
+		if result.ErrorCode != "" {
+			errorCodeHistogram[result.ErrorCode]++
+		}
+
 		var asset mediaprocessingmodel.MediaAsset
 		var err error
 		if result.AssetID != 0 {
@@ -131,12 +167,17 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		case "FAILED":
 			asset.SetStatus(mediaprocessingmodel.MediaAssetStatusFailed)
 			// Maybe store error in metadata?
-			if result.Error != "" {
+			if result.Error != "" || result.ErrorCode != "" {
 				currentMeta := make(map[string]string)
 				if asset.Metadata() != "" {
 					_ = json.Unmarshal([]byte(asset.Metadata()), &currentMeta)
 				}
-				currentMeta["error"] = result.Error
+				if result.Error != "" {
+					currentMeta["error"] = result.Error
+				}
+				if result.ErrorCode != "" {
+					currentMeta["errorCode"] = result.ErrorCode
+				}
 				metaBytes, _ := json.Marshal(currentMeta)
 				asset.SetMetadata(string(metaBytes))
 			}
@@ -146,6 +187,31 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 			logger.Error("service.media.callback.update_asset_failed", "asset_id", asset.ID(), "err", err)
 			return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to update asset", err)
 		}
+	}
+
+	if len(input.Results) > 0 {
+		if failedCount > 0 || input.ErrorCode != "" {
+			logger.Warn("service.media.callback.assets_failed",
+				"job_id", input.JobID,
+				"failed_assets", failedCount,
+				"error_codes", errorCodeHistogram,
+				"callback_error_code", input.ErrorCode,
+				"callback_error_metadata", input.ErrorMetadata,
+			)
+		} else {
+			logger.Info("service.media.callback.assets_processed",
+				"job_id", input.JobID,
+				"processed_assets", len(input.Results),
+			)
+		}
+	} else if input.ErrorCode != "" || input.Error != "" {
+		logger.Warn("service.media.callback.no_results_failure",
+			"job_id", input.JobID,
+			"status", input.Status,
+			"callback_error_code", input.ErrorCode,
+			"callback_error", input.Error,
+			"callback_error_metadata", input.ErrorMetadata,
+		)
 	}
 
 	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {

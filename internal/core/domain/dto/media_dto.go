@@ -75,11 +75,16 @@ type DeleteMediaInput struct {
 
 // HandleProcessingCallbackInput defines the payload received from the processing pipeline.
 type HandleProcessingCallbackInput struct {
-	JobID         uint64             `json:"jobId"`
-	Status        string             `json:"status"` // "SUCCEEDED", "FAILED"
-	Results       []ProcessingResult `json:"results"`
-	Error         string             `json:"error,omitempty"`
-	FailureReason string             `json:"failureReason,omitempty"`
+	JobID             uint64             `json:"jobId"`
+	ListingIdentityID uint64             `json:"listingIdentityId"`
+	Provider          string             `json:"provider"`
+	Status            string             `json:"status"` // "SUCCEEDED", "FAILED"
+	Results           []ProcessingResult `json:"results"`
+	Error             string             `json:"error,omitempty"`
+	ErrorCode         string             `json:"errorCode,omitempty"`
+	ErrorMetadata     map[string]string  `json:"errorMetadata,omitempty"`
+	FailureReason     string             `json:"failureReason,omitempty"`
+	RawPayload        string             `json:"-"`
 }
 
 type ProcessingResult struct {
@@ -90,6 +95,7 @@ type ProcessingResult struct {
 	ThumbnailKey string            `json:"thumbnailKey,omitempty"`
 	Metadata     map[string]string `json:"metadata,omitempty"`
 	Error        string            `json:"error,omitempty"`
+	ErrorCode    string            `json:"errorCode,omitempty"`
 }
 
 type HandleProcessingCallbackOutput struct {

@@ -4,9 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	httpdto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
-	domaindto "github.com/projeto-toq/toq_server/internal/core/domain/dto"
-	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -20,39 +19,35 @@ func (h *MediaProcessingHandler) HandleProcessingCallback(c *gin.Context) {
 	}
 	defer spanEnd()
 
-	var req mediaprocessingmodel.MediaProcessingCallback
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// Validate shared secret when configured.
+	if h.callbackValidator != nil {
+		signature := c.GetHeader("X-Toq-Signature")
+		if err := h.callbackValidator.ValidateSharedSecret(ctx, signature); err != nil {
+			httperrors.SendHTTPErrorObj(c, err)
+			return
+		}
+	} else if h.logger != nil {
+		h.logger.Warn("handler.media.callback.validator_missing")
+	}
+
+	request, err := httpdto.BindMediaProcessingCallbackRequest(c.Request)
+	if err != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_CALLBACK", err.Error())
 		return
 	}
 
-	results := make([]domaindto.ProcessingResult, 0, len(req.Outputs))
-	for _, output := range req.Outputs {
-		status := "PROCESSED"
-		errorMsg := ""
-		if output.ErrorCode != "" {
-			status = "FAILED"
-			errorMsg = output.ErrorMessage
-		}
-
-		results = append(results, domaindto.ProcessingResult{
-			RawKey:       output.RawKey,
-			Status:       status,
-			ProcessedKey: output.ProcessedKey,
-			ThumbnailKey: output.ThumbnailKey,
-			Metadata:     output.Outputs,
-			Error:        errorMsg,
-		})
+	input, err := toHandleProcessingCallbackInput(request)
+	if err != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_CALLBACK", err.Error())
+		return
 	}
 
-	input := domaindto.HandleProcessingCallbackInput{
-		JobID:   req.JobID,
-		Status:  string(req.Status),
-		Results: results,
+	if h.logger != nil {
+		h.logger.Info("handler.media.callback.forward", "job_id", input.JobID, "status", input.Status, "provider", input.Provider)
 	}
 
 	if _, err := h.service.HandleProcessingCallback(ctx, input); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 

@@ -142,7 +142,8 @@
       "Parameters": {
         "listingIdentityId.$": "$.validation.listingIdentityId",
         "assets.$": "$.validation.validAssets",
-        "parallelResults.$": "$.parallelResults"
+        "parallelResults.$": "$.parallelResults",
+        "traceparent.$": "$.traceparent"
       },
       "ResultPath": "$.consolidation",
       "Retry": [
@@ -171,14 +172,7 @@
       "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-callback-dispatch-staging",
       "Parameters": {
         "statusCode": 200,
-        "body": {
-          "jobId.$": "$.jobId",
-          "status": "SUCCEEDED",
-          "provider": "STEP_FUNCTIONS",
-          "listingIdentityId.$": "States.Format('{}', $.validation.listingIdentityId)",
-          "traceparent": null,
-          "outputs.$": "$.consolidation.body.outputs"
-        }
+        "body.$": "$.consolidation.body"
       },
       "TimeoutSeconds": 120,
       "Retry": [
@@ -202,9 +196,16 @@
       "Parameters": {
         "body": {
           "jobId.$": "$.jobId",
-          "listingIdentityId.$": "States.Format('{}', $.listingIdentityId)",
+          "listingIdentityId.$": "$.listingIdentityId",
+          "provider": "STEP_FUNCTIONS",
           "status": "VALIDATION_FAILED",
-          "error.$": "$.error"
+          "failureReason.$": "$.error.Error",
+          "error": {
+            "code.$": "$.error.Error",
+            "message.$": "$.error.Cause"
+          },
+          "outputs": [],
+          "traceparent.$": "$.traceparent"
         }
       },
       "TimeoutSeconds": 60,
@@ -216,9 +217,16 @@
       "Parameters": {
         "body": {
           "jobId.$": "$.jobId",
-          "listingIdentityId.$": "States.Format('{}', $.validation.listingIdentityId)",
+          "listingIdentityId.$": "$.listingIdentityId",
+          "provider": "STEP_FUNCTIONS",
           "status": "PROCESSING_FAILED",
-          "error.$": "$.error"
+          "failureReason.$": "$.error.Error",
+          "error": {
+            "code.$": "$.error.Error",
+            "message.$": "$.error.Cause"
+          },
+          "outputs": [],
+          "traceparent.$": "$.traceparent"
         }
       },
       "TimeoutSeconds": 60,

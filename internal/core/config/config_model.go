@@ -25,6 +25,7 @@ import (
 	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
 	emailport "github.com/projeto-toq/toq_server/internal/core/port/right/email"
 	fcmport "github.com/projeto-toq/toq_server/internal/core/port/right/fcm"
+	mediaprocessingcallbackport "github.com/projeto-toq/toq_server/internal/core/port/right/functions/mediaprocessingcallback"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
@@ -403,8 +404,6 @@ func (c *config) LoadEnv() error {
 	return nil
 }
 
-// InitializeLog inicializa o sistema de logging
-
 // InitializeDatabase inicializa a conexão com o banco de dados
 func (c *config) InitializeDatabase() {
 	if c.database != nil {
@@ -501,6 +500,10 @@ func (c *config) InitializeHTTP() {
 // SetupHTTPHandlersAndRoutes configura os handlers e as rotas HTTP
 func (c *config) SetupHTTPHandlersAndRoutes() {
 	// Criar handlers HTTP
+	var callbackValidator mediaprocessingcallbackport.CallbackPortInterface
+	if c.externalServiceAdapters != nil {
+		callbackValidator = c.externalServiceAdapters.MediaProcessingCallback
+	}
 	c.httpHandlers = c.adapterFactory.CreateHTTPHandlers(
 		c.ginRouter,
 		c.userService,
@@ -513,6 +516,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.photoSessionService,
 		c.mediaProcessingService,
 		c.metricsAdapter,
+		callbackValidator,
 		c.hmacValidator,
 	)
 

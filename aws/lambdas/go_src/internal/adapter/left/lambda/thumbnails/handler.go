@@ -26,12 +26,21 @@ func NewHandler(service *imageprocessing.ThumbnailService, logger *slog.Logger) 
 type ThumbnailOutput struct {
 	Status          string                          `json:"status"`
 	GeneratedAssets []mediaprocessingmodel.JobAsset `json:"generatedAssets"`
+	Errors          []ThumbnailError                `json:"errors"`
+}
+
+// ThumbnailError captures failures during thumbnail processing so the pipeline can propagate telemetry.
+type ThumbnailError struct {
+	SourceKey    string `json:"sourceKey"`
+	ErrorCode    string `json:"errorCode"`
+	ErrorMessage string `json:"errorMessage"`
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
 	h.logger.Info("Thumbnails Lambda started", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "assets_to_process", len(event.Assets))
 
 	allGeneratedAssets := make([]mediaprocessingmodel.JobAsset, 0)
+	collectedErrors := make([]ThumbnailError, 0)
 	bucket := os.Getenv("MEDIA_BUCKET")
 	if bucket == "" {
 		bucket = "toq-listing-medias"
@@ -48,6 +57,11 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 		generatedKeys, err := h.service.ProcessImage(ctx, bucket, asset.Key)
 		if err != nil {
 			h.logger.Error("Failed to process asset", "key", asset.Key, "error", err)
+			collectedErrors = append(collectedErrors, ThumbnailError{
+				SourceKey:    asset.Key,
+				ErrorCode:    "THUMBNAIL_PROCESSING_FAILED",
+				ErrorMessage: err.Error(),
+			})
 			continue
 		}
 
@@ -66,6 +80,7 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 		Body: ThumbnailOutput{
 			Status:          "SUCCESS",
 			GeneratedAssets: allGeneratedAssets,
+			Errors:          collectedErrors,
 		},
 	}, nil
 }
