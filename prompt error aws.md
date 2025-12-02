@@ -12,6 +12,16 @@ Existem os seguinte erros detectados:
 
 1. o endpoint `/listings/media/uploads/process POST` chamado após o upload das medias altera os registros da tabela media_assets para o status "processing" mas o processamento em si ou termina com erro ou o callback está errado, pois os arquivos de mídia  são encontrados no bucket S3 e o status nunca vai para processed ou failed.
 
+o seguinte log está sendo gerado:
+
+```json
+{"time":"2025-12-02T11:40:52.590547561Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:38706"}
+{"time":"2025-12-02T11:40:52.591177129Z","level":"INFO","msg":"HTTP Response","request_id":"0bff1e7b-abc2-42e0-a8de-44c184e6b957","request_id":"0bff1e7b-abc2-42e0-a8de-44c184e6b957","method":"POST","path":"/api/v2/listings/media/callback","status":403,"duration":147974,"size":66,"client_ip":"54.81.142.135","user_agent":"Go-http-client/2.0","trace_id":"c903602269791861c28e13bde4790840","span_id":"345b9f779bad4acc"}
+{"time":"2025-12-02T11:41:02.790366719Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:47904"}
+{"time":"2025-12-02T11:41:02.790643737Z","level":"INFO","msg":"HTTP Response","request_id":"d9f92917-03f4-4588-89f1-906641ba907c","request_id":"d9f92917-03f4-4588-89f1-906641ba907c","method":"POST","path":"/api/v2/listings/media/callback","status":403,"duration":119163,"size":66,"client_ip":"54.81.142.135","user_agent":"Go-http-client/2.0","trace_id":"89ebf4581d9072ed93f3b60a61469a12","span_id":"6f932808b78c93c0"}
+{"time":"2025-12-02T11:41:22.989921457Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:57132"}
+{"time":"2025-12-02T11:41:22.990211976Z","level":"INFO","msg":"HTTP Response","request_id":"028db0fb-9a2d-4d93-bd60-de5f6d2e9a3d","request_id":"028db0fb-9a2d-4d93-bd60-de5f6d2e9a3d","method":"POST","path":"/api/v2/listings/media/callback","status":403,"duration":124623,"size":66,"client_ip":"54.81.142.135","user_agent":"Go-http-client/2.0","trace_id":"c38b556f3fd7cad055ad1c10f4079c3e","span_id":"b2d506a3648fe049"}
+```
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.

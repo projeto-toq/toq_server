@@ -34,14 +34,14 @@ func (h *MediaProcessingHandler) HandleProcessingCallback(c *gin.Context) {
 	}
 	defer spanEnd()
 
-	if err := h.validateSharedSecret(ctx, c.GetHeader("X-Toq-Signature")); err != nil {
-		httperrors.SendHTTPErrorObj(c, err)
-		return
-	}
-
 	request, err := httpdto.BindMediaProcessingCallbackRequest(c.Request)
 	if err != nil {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_CALLBACK", err.Error())
+		return
+	}
+
+	if err := h.validateSharedSecret(ctx, c.GetHeader("X-Toq-Signature"), request.RawBody); err != nil {
+		httperrors.SendHTTPErrorObj(c, err)
 		return
 	}
 
@@ -63,12 +63,12 @@ func (h *MediaProcessingHandler) HandleProcessingCallback(c *gin.Context) {
 	c.JSON(http.StatusOK, httpdto.SuccessResponse(gin.H{"status": "accepted"}))
 }
 
-func (h *MediaProcessingHandler) validateSharedSecret(ctx context.Context, signature string) error {
+func (h *MediaProcessingHandler) validateSharedSecret(ctx context.Context, signature string, payload []byte) error {
 	if h.callbackValidator == nil {
 		if h.logger != nil {
 			h.logger.Warn("handler.media.callback.validator_missing")
 		}
 		return nil
 	}
-	return h.callbackValidator.ValidateSharedSecret(ctx, signature)
+	return h.callbackValidator.ValidateSignature(ctx, signature, payload)
 }
