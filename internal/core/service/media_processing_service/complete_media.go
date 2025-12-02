@@ -21,6 +21,7 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
 	if input.ListingIdentityID == 0 {
@@ -29,6 +30,8 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("service.media.complete.tx_start_error", "err", txErr, "listing_identity_id", input.ListingIdentityID)
 		return derrors.Infra("failed to start transaction", txErr)
 	}
 
@@ -36,7 +39,8 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 	defer func() {
 		if !committed {
 			if rbErr := s.globalService.RollbackTransaction(ctx, tx); rbErr != nil {
-				logger.Error("service.media.complete.rollback_error", "err", rbErr)
+				utils.SetSpanError(ctx, rbErr)
+				logger.Error("service.media.complete.rollback_error", "err", rbErr, "listing_identity_id", input.ListingIdentityID)
 			}
 		}
 	}()
@@ -47,6 +51,8 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 		if errors.Is(err, sql.ErrNoRows) {
 			return derrors.NotFound("listing not found")
 		}
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.get_listing_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return derrors.Infra("failed to load listing", err)
 	}
 
@@ -58,77 +64,60 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 	// We do not filter by status initially to detect pending/processing items
 	allAssets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), mediaprocessingrepository.AssetFilter{}, nil)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.list_assets_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return derrors.Infra("failed to list assets", err)
 	}
 
-	if len(allAssets) == 0 {
-		return derrors.Conflict("no assets found for this listing")
-	}
-
-	// 3. Validate Asset Statuses
-	var processedAssets []mediaprocessingmodel.MediaAsset
-	for _, asset := range allAssets {
-		switch asset.Status() {
-		case mediaprocessingmodel.MediaAssetStatusProcessing:
-			return derrors.Conflict("assets are still processing, please wait")
-		case mediaprocessingmodel.MediaAssetStatusPendingUpload:
-			return derrors.Conflict("assets are pending upload, please call /process endpoint first")
-		case mediaprocessingmodel.MediaAssetStatusFailed:
-			return derrors.Conflict("some assets failed processing, please remove or retry them")
-		case mediaprocessingmodel.MediaAssetStatusProcessed:
-			processedAssets = append(processedAssets, asset)
-		}
-	}
-
-	if len(processedAssets) == 0 {
-		return derrors.Conflict("no processed assets found to finalize")
+	processedAssets, err := ensureAssetsReadyForFinalization(allAssets)
+	if err != nil {
+		return err
 	}
 
 	// 4. Register ZIP Job
 	job := mediaprocessingmodel.NewMediaProcessingJob(uint64(input.ListingIdentityID), mediaprocessingmodel.MediaProcessingProviderStepFunctions)
 	jobID, err := s.repo.RegisterProcessingJob(ctx, tx, job)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.register_job_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return derrors.Infra("failed to register zip job", err)
 	}
+	job.SetID(jobID)
 
 	// 5. Trigger Finalization Pipeline
-	jobAssets := make([]mediaprocessingmodel.JobAsset, 0, len(processedAssets))
-	for _, a := range processedAssets {
-		jobAssets = append(jobAssets, mediaprocessingmodel.JobAsset{
-			Key:  a.S3KeyProcessed(),
-			Type: string(a.AssetType()),
-		})
-	}
-
-	finalizationInput := mediaprocessingmodel.MediaFinalizationInput{
-		JobID:     jobID,
-		ListingID: uint64(input.ListingIdentityID),
-		Assets:    jobAssets,
-	}
+	finalizationInput := buildFinalizationInput(jobID, uint64(input.ListingIdentityID), processedAssets)
 
 	executionARN, err := s.workflow.StartMediaFinalization(ctx, finalizationInput)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.start_workflow_error", "err", err, "listing_identity_id", input.ListingIdentityID, "job_id", jobID)
 		return derrors.Infra("failed to start finalization workflow", err)
 	}
 
 	// Update job with execution ARN
 	job.MarkRunning(executionARN, s.now())
 	if err := s.repo.UpdateProcessingJob(ctx, tx, job); err != nil {
-		logger.Error("service.media.complete.update_job_error", "err", err)
-		// Non-critical, workflow is running
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.update_job_error", "err", err, "listing_identity_id", input.ListingIdentityID, "job_id", jobID)
+		return derrors.Infra("failed to persist job state", err)
 	}
 
 	// 5. Advance Listing Status
 	listing.SetStatus(listingmodel.StatusPendingOwnerApproval)
 	if err := s.listingRepo.UpdateListingVersion(ctx, tx, listing); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.update_listing_error", "err", err, "listing_identity_id", input.ListingIdentityID)
 		return derrors.Infra("failed to update listing status", err)
 	}
 
 	// Commit
 	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.commit_error", "err", err, "listing_identity_id", input.ListingIdentityID, "job_id", jobID)
 		return derrors.Infra("failed to commit transaction", err)
 	}
 	committed = true
 
+	logger.Info("service.media.complete.started_zip", "listing_identity_id", input.ListingIdentityID, "job_id", jobID, "execution_arn", executionARN, "assets_count", len(processedAssets))
 	return nil
 }

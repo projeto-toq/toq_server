@@ -106,3 +106,43 @@ aws lambda update-function-configuration \
   --function-name listing-media-validate-staging \
   --environment Variables={ENV=staging,MEDIA_BUCKET=toq-listing-medias,NEW_VAR=value}
 ```
+
+---
+
+## Step Functions - Finalização de ZIP
+
+```bash
+# Listar execuções recentes do state machine
+aws stepfunctions list-executions \
+  --state-machine-arn arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging \
+  --max-results 10
+
+# Descrever uma execução específica (usa executionArn gravado no log service.media.complete.started_zip)
+aws stepfunctions describe-execution \
+  --execution-arn <execution_arn>
+
+# Baixar o histórico completo de eventos (útil para saber se CreateZipBundle falhou)
+aws stepfunctions get-execution-history \
+  --execution-arn <execution_arn> \
+  --max-results 200 \
+  --reverse-order
+```
+
+---
+
+## Banco de Dados - `media_processing_jobs`
+
+```bash
+# Entrar no container MySQL padrão do docker-compose
+docker compose exec mysql mysql -utoq -ptoq toq_server <<'SQL'
+SELECT id, listing_identity_id, status, external_id, started_at, completed_at, last_error
+  FROM media_processing_jobs
+  WHERE listing_identity_id = 12345
+  ORDER BY id DESC
+  LIMIT 5;
+SQL
+
+# Conferir rapidamente o job que recebeu o executionArn
+mysql -h 127.0.0.1 -P 3306 -utoq -ptoq toq_server \
+  -e "SELECT id, external_id, callback_body FROM media_processing_jobs WHERE id = <job_id>;"
+```

@@ -10,12 +10,12 @@ Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_usefu
 
 Existem os seguinte erros detectados:
 
-1. ao chamar o endpoint `/listings/media/uploads/complete POST` recebo o erro 500 e o seguinte log está sendo gerado:
+1. ao chamar o endpoint `/listings/media/uploads/complete POST` o processo termina, o status do listing é atualizado mas o seguinte log está sendo gerado e o zip não é gerado:
 
 ```json
-{"time":"2025-12-02T15:47:13.083515424Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/uploads/complete","remote_addr":"127.0.0.1:37822"}
-{"time":"2025-12-02T15:47:13.084841853Z","level":"INFO","msg":"permission.check.allowed","request_id":"48866c16-aada-4bfd-a864-3e00ecbd4064","user_id":3,"action":"POST:/api/v2/listings/media/uploads/complete","permission_id":116}
-{"time":"2025-12-02T15:47:13.102530304Z","level":"ERROR","msg":"HTTP Error","request_id":"48866c16-aada-4bfd-a864-3e00ecbd4064","request_id":"48866c16-aada-4bfd-a864-3e00ecbd4064","method":"POST","path":"/api/v2/listings/media/uploads/complete","status":500,"duration":18878706,"size":46,"client_ip":"134.0.6.237","user_agent":"PostmanRuntime/7.49.1","trace_id":"e89a4c9873dedc4b4d2b75e1e145dcfc","span_id":"00249e267be0dcb9","user_id":3,"user_role_id":3,"function":"github.com/projeto-toq/toq_server/internal/core/utils.InternalError","file":"/codigos/go_code/toq_server/internal/core/utils/http_errors.go","line":248,"stack":["github.com/projeto-toq/toq_server/internal/core/utils.InternalError (http_errors.go:248)"],"error_code":500,"error_message":"Internal server error","errors":["HTTP 500: Internal server error"]}
+{"time":"2025-12-02T16:09:27.122867929Z","level":"ERROR","msg":"service.media.complete.update_job_error","request_id":"bfdca1f8-130c-43a1-8b9f-c769d3c190aa","err":"sql: no rows in result set"}
+{"time":"2025-12-02T16:09:27.133145287Z","level":"INFO","msg":"HTTP Request","request_id":"bfdca1f8-130c-43a1-8b9f-c769d3c190aa","request_id":"bfdca1f8-130c-43a1-8b9f-c769d3c190aa","method":"POST","path":"/api/v2/listings/media/uploads/complete","status":200,"duration":118919875,"size":29,"client_ip":"134.0.6.237","user_agent":"PostmanRuntime/7.49.1","trace_id":"c6aa359ee3180423131ccd359f00fa65","span_id":"c9845a6753ca375c","user_id":3,"user_role_id":3}
+
 
 ```
 

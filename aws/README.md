@@ -75,3 +75,20 @@ aws stepfunctions update-state-machine \
   - Raw: `/{listingId}/raw/{mediaType}/{uuid}.{ext}`
   - Processed: `/{listingId}/processed/{mediaType}/{size}/{uuid}.{ext}`
   - Zip: `/{listingId}/processed/zip/{listingId}.zip`
+
+## Troubleshooting - Finalização de ZIP
+1. Chame `POST /api/v2/listings/media/uploads/complete` e capture `listing_identity_id` no log. Em caso de sucesso, procure por `service.media.complete.started_zip`; o log traz `job_id` e `execution_arn`.
+2. Com o `job_id` em mãos, consulte a tabela MySQL:
+  ```bash
+  mysql -h 127.0.0.1 -P 3306 -utoq -ptoq toq_server \
+    -e "SELECT id,status,external_id,started_at,last_error FROM media_processing_jobs WHERE id = <job_id>;"
+  ```
+  O campo `external_id` deve coincidir com o `execution_arn` retornado pelo Step Functions.
+3. Para inspecionar o workflow, execute:
+  ```bash
+  aws stepfunctions describe-execution --execution-arn <execution_arn>
+  aws stepfunctions get-execution-history --execution-arn <execution_arn> --reverse-order --max-results 200
+  ```
+  Falhas em `CreateZipBundle` ou `FinalizeAndCallback` aparecem no histórico; o backend replica os detalhes em `media_processing_jobs.callback_body`.
+4. Se o campo `status` permanecer `PENDING` ou `RUNNING` por mais de alguns minutos, revise as Lambdas de zip/consolidation (`aws logs tail /aws/lambda/listing-media-zip-staging --follow`).
+5. Após `status=SUCCEEDED`, o callback atualiza os assets e disponibiliza o ZIP em `/{listingId}/processed/zip/`. Confirme com `aws s3 ls s3://toq-listing-medias/<listingId>/processed/zip/`.
