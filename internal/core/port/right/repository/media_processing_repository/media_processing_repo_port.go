@@ -18,6 +18,7 @@ type RepositoryInterface interface {
 	ListAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter AssetFilter, pagination *Pagination) ([]mediaprocessingmodel.MediaAsset, error)
 	CountAssets(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, filter AssetFilter) (int64, error)
 	DeleteAsset(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, assetType mediaprocessingmodel.MediaAssetType, sequence uint8) error
+	BulkUpdateAssetStatus(ctx context.Context, tx *sql.Tx, listingIdentityID uint64, fromStatus, toStatus mediaprocessingmodel.MediaAssetStatus) error
 
 	RegisterProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) (uint64, error)
 	GetProcessingJobByID(ctx context.Context, tx *sql.Tx, jobID uint64) (mediaprocessingmodel.MediaProcessingJob, error)

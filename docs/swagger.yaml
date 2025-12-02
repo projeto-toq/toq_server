@@ -1883,6 +1883,46 @@ definitions:
       title:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackError:
+    properties:
+      code:
+        type: string
+      details:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackRequest:
+    properties:
+      error:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackError'
+      executionArn:
+        type: string
+      externalId:
+        type: string
+      failureReason:
+        type: string
+      jobId:
+        items:
+          type: integer
+        type: array
+      listingIdentityId:
+        items:
+          type: integer
+        type: array
+      outputs:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaProcessingJobPayload'
+        type: array
+      provider:
+        type: string
+      status:
+        type: string
+      traceparent:
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse:
     properties:
       blocking:
@@ -3138,6 +3178,23 @@ definitions:
     - MediaAssetTypeZip
     - MediaAssetTypeProjectDoc
     - MediaAssetTypeProjectRender
+  github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaProcessingJobPayload:
+    properties:
+      errorCode:
+        type: string
+      errorMessage:
+        type: string
+      outputs:
+        additionalProperties:
+          type: string
+        type: object
+      processedKey:
+        type: string
+      rawKey:
+        type: string
+      thumbnailKey:
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource:
     enum:
     - BOOKING
@@ -7130,6 +7187,45 @@ paths:
       security:
       - BearerAuth: []
       summary: List media assets
+      tags:
+      - Listings Media
+  /listings/media/callback:
+    post:
+      consumes:
+      - application/json
+      description: Validates the shared secret, parses the Step Functions callback
+        payload, updates internal state and returns 200.
+      parameters:
+      - description: HMAC signature generated in the callback lambda
+        in: header
+        name: X-Toq-Signature
+        type: string
+      - description: Callback payload forwarded by Step Functions
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Callback acknowledged
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse'
+        "400":
+          description: Invalid callback payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Invalid shared secret
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      summary: Receive async media processing callback
       tags:
       - Listings Media
   /listings/media/delete:

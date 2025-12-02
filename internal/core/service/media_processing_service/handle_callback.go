@@ -2,6 +2,7 @@ package mediaprocessingservice
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -9,7 +10,6 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	"github.com/projeto-toq/toq_server/internal/core/domain/dto"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
-	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -20,11 +20,14 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	}
 	defer spanEnd()
 
+	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 	logger.Info("service.media.callback.received", "job_id", input.JobID, "status", input.Status)
 
 	tx, txErr := s.globalService.StartTransaction(ctx)
 	if txErr != nil {
+		utils.SetSpanError(ctx, txErr)
+		logger.Error("service.media.callback.tx_start_error", "err", txErr, "job_id", input.JobID)
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to start transaction", txErr)
 	}
 
@@ -40,6 +43,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	// Update Job Status
 	job, err := s.repo.GetProcessingJobByID(ctx, tx, input.JobID)
 	if err != nil {
+		utils.SetSpanError(ctx, err)
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to get job", err)
 	}
 
@@ -86,26 +90,16 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	}
 
 	if err := s.repo.UpdateProcessingJob(ctx, tx, job); err != nil {
+		utils.SetSpanError(ctx, err)
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to update job", err)
 	}
 
 	// FAIL-SAFE: If job failed globally, mark all associated assets as FAILED
 	// This prevents assets from being stuck in PROCESSING forever.
 	if jobStatus == mediaprocessingmodel.MediaProcessingJobStatusFailed && len(input.Results) == 0 {
-		// We need to find assets that were part of this job.
-		// Since we don't have a direct link in the callback if Results is empty,
-		// we assume all PROCESSING assets for this listing are affected.
-		filter := mediaprocessingrepository.AssetFilter{
-			Status: []mediaprocessingmodel.MediaAssetStatus{mediaprocessingmodel.MediaAssetStatusProcessing},
-		}
-		assets, err := s.repo.ListAssets(ctx, tx, job.ListingIdentityID(), filter, nil)
-		if err == nil {
-			for _, asset := range assets {
-				asset.SetStatus(mediaprocessingmodel.MediaAssetStatusFailed)
-				_ = s.repo.UpsertAsset(ctx, tx, asset)
-			}
-		} else {
-			logger.Error("service.media.callback.fail_assets_error", "err", err, "listing_identity_id", job.ListingIdentityID())
+		if err := s.repo.BulkUpdateAssetStatus(ctx, tx, job.ListingIdentityID(), mediaprocessingmodel.MediaAssetStatusProcessing, mediaprocessingmodel.MediaAssetStatusFailed); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("service.media.callback.bulk_fail_assets_error", "err", err, "listing_identity_id", job.ListingIdentityID())
 		}
 	}
 
@@ -121,20 +115,10 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 			errorCodeHistogram[result.ErrorCode]++
 		}
 
-		var asset mediaprocessingmodel.MediaAsset
-		var err error
-		if result.AssetID != 0 {
-			asset, err = s.repo.GetAssetByID(ctx, tx, result.AssetID)
-		} else if result.RawKey != "" {
-			asset, err = s.repo.GetAssetByRawKey(ctx, tx, result.RawKey)
-		} else {
-			logger.Error("service.media.callback.missing_identifier", "result", result)
+		asset, assetErr := s.getAssetForCallback(ctx, tx, result)
+		if assetErr != nil {
+			logger.Error("service.media.callback.asset_lookup_error", "asset_id", result.AssetID, "raw_key", result.RawKey, "err", assetErr)
 			continue
-		}
-
-		if err != nil {
-			logger.Error("service.media.callback.asset_not_found", "asset_id", result.AssetID, "raw_key", result.RawKey, "err", err)
-			continue // Skip this asset but try others
 		}
 
 		switch result.Status {
@@ -184,6 +168,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		}
 
 		if err := s.repo.UpsertAsset(ctx, tx, asset); err != nil {
+			utils.SetSpanError(ctx, err)
 			logger.Error("service.media.callback.update_asset_failed", "asset_id", asset.ID(), "err", err)
 			return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to update asset", err)
 		}
@@ -215,9 +200,21 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	}
 
 	if err := s.globalService.CommitTransaction(ctx, tx); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.callback.tx_commit_error", "err", err, "job_id", input.JobID)
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to commit transaction", err)
 	}
 	committed = true
 
 	return dto.HandleProcessingCallbackOutput{Success: true}, nil
+}
+
+func (s *mediaProcessingService) getAssetForCallback(ctx context.Context, tx *sql.Tx, result dto.ProcessingResult) (mediaprocessingmodel.MediaAsset, error) {
+	if result.AssetID != 0 {
+		return s.repo.GetAssetByID(ctx, tx, result.AssetID)
+	}
+	if result.RawKey != "" {
+		return s.repo.GetAssetByRawKey(ctx, tx, result.RawKey)
+	}
+	return mediaprocessingmodel.MediaAsset{}, derrors.Validation("missing asset identifier", map[string]any{"result": result})
 }

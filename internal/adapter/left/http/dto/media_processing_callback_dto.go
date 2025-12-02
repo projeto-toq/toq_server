@@ -18,6 +18,7 @@ type MediaProcessingCallbackRequest struct {
 	ExternalID        string                                           `json:"externalId"`
 	Status            string                                           `json:"status"`
 	Provider          string                                           `json:"provider"`
+	Traceparent       string                                           `json:"traceparent"`
 	Outputs           []mediaprocessingmodel.MediaProcessingJobPayload `json:"outputs"`
 	FailureReason     string                                           `json:"failureReason"`
 	Error             *MediaProcessingCallbackError                    `json:"error"`

@@ -67,21 +67,15 @@ func SetupRoutes(
 	holidayHandler := handlers.HolidayHandler
 	photoSessionHandler := handlers.PhotoSessionHandler
 
-	// Internal routes (system-to-system)
-	internal := router.Group("/internal")
-	{
-		mediaProcessing := internal.Group("/media-processing")
-		{
-			mediaProcessing.POST("/callback", mediaProcessingHandler.HandleProcessingCallback)
-		}
-	}
-
 	// API base routes (v2)
 	base := "/api/v2"
 	if versionProvider != nil {
 		base = versionProvider.BasePath()
 	}
 	v1 := router.Group(base)
+
+	// Public callback (Step Functions webhook) - bypass auth but honors version provider
+	router.POST(base+"/listings/media/callback", mediaProcessingHandler.HandleProcessingCallback)
 
 	// Register user routes with dependencies
 	RegisterUserRoutes(v1, authHandler, userHandler, activityTracker, permissionService)

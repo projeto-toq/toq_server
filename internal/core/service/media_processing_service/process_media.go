@@ -58,9 +58,12 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 		return derrors.Conflict("listing is not awaiting media processing")
 	}
 
-	// Find assets that need processing
+	// Find assets that need processing (new uploads or failed attempts)
 	filter := mediaprocessingrepository.AssetFilter{
-		Status: []mediaprocessingmodel.MediaAssetStatus{mediaprocessingmodel.MediaAssetStatusPendingUpload},
+		Status: []mediaprocessingmodel.MediaAssetStatus{
+			mediaprocessingmodel.MediaAssetStatusPendingUpload,
+			mediaprocessingmodel.MediaAssetStatusFailed,
+		},
 	}
 	assets, err := s.repo.ListAssets(ctx, tx, uint64(input.ListingIdentityID), filter, nil)
 	if err != nil {
@@ -69,8 +72,7 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 	}
 
 	if len(assets) == 0 {
-		logger.Info("service.media.process.no_pending_assets", "listing_identity_id", input.ListingIdentityID)
-		return nil // Idempotent success
+		return derrors.Validation("no assets available for processing", map[string]any{"listingIdentityId": input.ListingIdentityID})
 	}
 
 	// Register Job first to get ID
@@ -89,6 +91,11 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 	}
 
 	for _, asset := range assets {
+		if asset.S3KeyRaw() == "" {
+			logger.Warn("service.media.process.asset_missing_raw_key", "asset_id", asset.ID(), "listing_identity_id", input.ListingIdentityID)
+			continue
+		}
+
 		jobMsg.Assets = append(jobMsg.Assets, mediaprocessingmodel.JobAsset{
 			Key:  asset.S3KeyRaw(),
 			Type: string(asset.AssetType()),
@@ -100,6 +107,10 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 			utils.SetSpanError(ctx, err)
 			return derrors.Infra("failed to update asset status", err)
 		}
+	}
+
+	if len(jobMsg.Assets) == 0 {
+		return derrors.Validation("no assets ready for processing", map[string]any{"listingIdentityId": input.ListingIdentityID})
 	}
 
 	// Send to Queue (which triggers Step Function)

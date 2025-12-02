@@ -84,6 +84,7 @@ type HandleProcessingCallbackInput struct {
 	ErrorCode         string             `json:"errorCode,omitempty"`
 	ErrorMetadata     map[string]string  `json:"errorMetadata,omitempty"`
 	FailureReason     string             `json:"failureReason,omitempty"`
+	Traceparent       string             `json:"traceparent,omitempty"`
 	RawPayload        string             `json:"-"`
 }
 

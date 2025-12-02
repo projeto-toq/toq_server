@@ -5676,6 +5676,64 @@
                 }
             }
         },
+        "/listings/media/callback": {
+            "post": {
+                "description": "Validates the shared secret, parses the Step Functions callback payload, updates internal state and returns 200.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Receive async media processing callback",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "HMAC signature generated in the callback lambda",
+                        "name": "X-Toq-Signature",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Callback payload forwarded by Step Functions",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Callback acknowledged",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid callback payload",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid shared secret",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/listings/media/delete": {
             "delete": {
                 "security": [
@@ -11915,6 +11973,67 @@
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackRequest": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackError"
+                },
+                "executionArn": {
+                    "type": "string"
+                },
+                "externalId": {
+                    "type": "string"
+                },
+                "failureReason": {
+                    "type": "string"
+                },
+                "jobId": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "listingIdentityId": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "outputs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaProcessingJobPayload"
+                    }
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "traceparent": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse": {
             "type": "object",
             "properties": {
@@ -13635,6 +13754,32 @@
                 "MediaAssetTypeProjectDoc",
                 "MediaAssetTypeProjectRender"
             ]
+        },
+        "github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaProcessingJobPayload": {
+            "type": "object",
+            "properties": {
+                "errorCode": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "outputs": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "processedKey": {
+                    "type": "string"
+                },
+                "rawKey": {
+                    "type": "string"
+                },
+                "thumbnailKey": {
+                    "type": "string"
+                }
+            }
         },
         "github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource": {
             "type": "string",

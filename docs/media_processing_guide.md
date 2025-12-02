@@ -172,7 +172,7 @@ Todos sob `/api/v2/listings/media/*`.
 
 ### 6.2 Estrutura do Payload de Callback
 
-O payload enviado pelo Step Functions para o endpoint `/api/v2/listings/media/callback` segue o contrato abaixo. Todos os identificadores são numéricos e já convertidos para string pelo backend apenas no limite HTTP:
+O payload enviado pelo Step Functions para o endpoint `/api/v2/listings/media/callback` segue o contrato abaixo. Todos os identificadores são numéricos e já convertidos para string pelo backend apenas no limite HTTP. **Importante:** o dispatcher precisa enviar o header `X-Toq-Signature` com o mesmo segredo configurado em `MEDIA_PROCESSING_CALLBACK_SECRET`; caso contrário o callback é rejeitado com `401`.
 
 ```json
 {

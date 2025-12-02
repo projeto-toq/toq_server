@@ -74,6 +74,7 @@ func toHandleProcessingCallbackInput(request httpdto.MediaProcessingCallbackRequ
 		ErrorCode:         errorCode,
 		ErrorMetadata:     errorMetadata,
 		FailureReason:     request.FailureReason,
+		Traceparent:       strings.TrimSpace(request.Traceparent),
 		RawPayload:        string(request.RawBody),
 	}
 

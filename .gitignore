@@ -18,6 +18,9 @@
 # Config directory
 /configs/
 
+# Images directory
+/images/
+
 # MySQL data is now stored outside the project
 # /codigos/mysql_data (external directory)
 
