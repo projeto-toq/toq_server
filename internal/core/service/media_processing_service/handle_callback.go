@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -43,7 +44,12 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	// Update Job Status
 	job, err := s.repo.GetProcessingJobByID(ctx, tx, input.JobID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			logger.Warn("service.media.callback.job_not_found", "job_id", input.JobID)
+			return dto.HandleProcessingCallbackOutput{}, derrors.NotFound("processing job not found")
+		}
 		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.callback.get_job_error", "err", err, "job_id", input.JobID)
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to get job", err)
 	}
 
@@ -91,6 +97,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 	if err := s.repo.UpdateProcessingJob(ctx, tx, job); err != nil {
 		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.callback.update_job_error", "err", err, "job_id", input.JobID)
 		return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to update job", err)
 	}
 

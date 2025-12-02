@@ -26,13 +26,7 @@ import (
 // @Failure     500              {object} httpdto.ErrorResponse                "Internal error"
 // @Router      /listings/media/callback [post]
 func (h *MediaProcessingHandler) HandleProcessingCallback(c *gin.Context) {
-	baseCtx := utils.EnrichContextWithRequestInfo(c.Request.Context(), c)
-	ctx, spanEnd, err := utils.GenerateTracer(baseCtx)
-	if err != nil {
-		httperrors.SendHTTPError(c, http.StatusInternalServerError, "TRACER_ERROR", "Failed to generate tracer")
-		return
-	}
-	defer spanEnd()
+	ctx := utils.EnrichContextWithRequestInfo(c.Request.Context(), c)
 
 	request, err := httpdto.BindMediaProcessingCallbackRequest(c.Request)
 	if err != nil {

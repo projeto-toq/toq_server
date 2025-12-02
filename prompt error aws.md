@@ -15,12 +15,13 @@ Existem os seguinte erros detectados:
 o seguinte log está sendo gerado:
 
 ```json
-{"time":"2025-12-02T11:40:52.590547561Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:38706"}
-{"time":"2025-12-02T11:40:52.591177129Z","level":"INFO","msg":"HTTP Response","request_id":"0bff1e7b-abc2-42e0-a8de-44c184e6b957","request_id":"0bff1e7b-abc2-42e0-a8de-44c184e6b957","method":"POST","path":"/api/v2/listings/media/callback","status":403,"duration":147974,"size":66,"client_ip":"54.81.142.135","user_agent":"Go-http-client/2.0","trace_id":"c903602269791861c28e13bde4790840","span_id":"345b9f779bad4acc"}
-{"time":"2025-12-02T11:41:02.790366719Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:47904"}
-{"time":"2025-12-02T11:41:02.790643737Z","level":"INFO","msg":"HTTP Response","request_id":"d9f92917-03f4-4588-89f1-906641ba907c","request_id":"d9f92917-03f4-4588-89f1-906641ba907c","method":"POST","path":"/api/v2/listings/media/callback","status":403,"duration":119163,"size":66,"client_ip":"54.81.142.135","user_agent":"Go-http-client/2.0","trace_id":"89ebf4581d9072ed93f3b60a61469a12","span_id":"6f932808b78c93c0"}
-{"time":"2025-12-02T11:41:22.989921457Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:57132"}
-{"time":"2025-12-02T11:41:22.990211976Z","level":"INFO","msg":"HTTP Response","request_id":"028db0fb-9a2d-4d93-bd60-de5f6d2e9a3d","request_id":"028db0fb-9a2d-4d93-bd60-de5f6d2e9a3d","method":"POST","path":"/api/v2/listings/media/callback","status":403,"duration":124623,"size":66,"client_ip":"54.81.142.135","user_agent":"Go-http-client/2.0","trace_id":"c38b556f3fd7cad055ad1c10f4079c3e","span_id":"b2d506a3648fe049"}
+{"time":"2025-12-02T11:57:56.061509688Z","level":"INFO","msg":"handler.media.callback.forward","job_id":0,"status":"SUCCEEDED","provider":"STEP_FUNCTIONS"}
+{"time":"2025-12-02T11:57:56.0615612Z","level":"INFO","msg":"service.media.callback.received","request_id":"326cd09f-9232-4fdd-a75a-8e0ccffaa0a8","job_id":0,"status":"SUCCEEDED"}
+{"time":"2025-12-02T11:57:56.063547717Z","level":"ERROR","msg":"HTTP Error","request_id":"326cd09f-9232-4fdd-a75a-8e0ccffaa0a8","request_id":"326cd09f-9232-4fdd-a75a-8e0ccffaa0a8","method":"POST","path":"/api/v2/listings/media/callback","status":500,"duration":2188803,"size":57,"client_ip":"98.92.37.232","user_agent":"Go-http-client/2.0","trace_id":"74bd78cb39876bcefe3002d8c1218919","span_id":"8e503b98ea36ad02","errors":["failed to get job"]}
+{"time":"2025-12-02T11:58:16.269909585Z","level":"INFO","msg":"Request received","method":"POST","path":"/api/v2/listings/media/callback","remote_addr":"127.0.0.1:57012"}
+{"time":"2025-12-02T11:58:16.270175383Z","level":"INFO","msg":"handler.media.callback.forward","job_id":0,"status":"SUCCEEDED","provider":"STEP_FUNCTIONS"}
+{"time":"2025-12-02T11:58:16.270215564Z","level":"INFO","msg":"service.media.callback.received","request_id":"2a85f957-b947-476b-8ac3-b7b96da4ef59","job_id":0,"status":"SUCCEEDED"}
+{"time":"2025-12-02T11:58:16.272153789Z","level":"ERROR","msg":"HTTP Error","request_id":"2a85f957-b947-476b-8ac3-b7b96da4ef59","request_id":"2a85f957-b947-476b-8ac3-b7b96da4ef59","method":"POST","path":"/api/v2/listings/media/callback","status":500,"duration":2111340,"size":57,"client_ip":"98.92.37.232","user_agent":"Go-http-client/2.0","trace_id":"dcb183e50a529aad2b17b37aae6b2c39","span_id":"7c81cb488c8f1461","errors":["failed to get job"]}
 ```
 
 Assim:

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -42,6 +43,13 @@ type ThumbnailError struct {
 }
 
 func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessingmodel.LambdaResponse, error) {
+	if event.JobID == 0 {
+		return mediaprocessingmodel.LambdaResponse{}, fmt.Errorf("jobId is required")
+	}
+	if event.ListingIdentityID == 0 {
+		return mediaprocessingmodel.LambdaResponse{}, fmt.Errorf("listingIdentityId is required")
+	}
+
 	// LOG: Full input (careful with size in prod, ok for debug)
 	inputJSON, _ := json.Marshal(event)
 	logger.Info("Consolidate Lambda started", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "raw_input_size", len(inputJSON))
@@ -65,29 +73,28 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 	}
 
 	// 2. Process Parallel Results (Thumbnails)
-	if len(event.ParallelResults) > 0 {
-		thumbs := event.ParallelResults[0].Body.Thumbnails
-		logger.Info("Processing thumbnails results", "count", len(thumbs))
+	for idx, branch := range event.ParallelResults {
+		thumbs := branch.Body.Thumbnails
+		if len(thumbs) > 0 {
+			logger.Info("Processing thumbnails results", "branch_index", idx, "count", len(thumbs))
+		}
 
 		for _, thumb := range thumbs {
-			if payload, exists := resultsMap[thumb.SourceKey]; exists {
-				// Map thumbnail
-				payload.Outputs["thumbnail_"+thumb.Type] = thumb.Key
+			payload, exists := resultsMap[thumb.SourceKey]
+			if !exists {
+				logger.Warn("Thumbnail without matching asset", "source_key", thumb.SourceKey, "thumb_key", thumb.Key)
+				continue
+			}
 
-				// Define main thumbnail (e.g., MEDIUM)
-				if thumb.Type == "THUMBNAIL_MEDIUM" {
-					payload.ThumbnailKey = thumb.Key
-				}
-
-				logger.Debug("Mapped thumbnail", "source", thumb.SourceKey, "thumb", thumb.Key)
-			} else {
-				logger.Warn("Orphaned thumbnail found", "source_key", thumb.SourceKey, "thumb_key", thumb.Key)
+			payload.Outputs["thumbnail_"+thumb.Type] = thumb.Key
+			if thumb.Type == "THUMBNAIL_MEDIUM" {
+				payload.ThumbnailKey = thumb.Key
 			}
 		}
 
-		if len(event.ParallelResults[0].Body.Errors) > 0 {
-			logger.Warn("Thumbnail branch reported errors", "count", len(event.ParallelResults[0].Body.Errors))
-			for _, err := range event.ParallelResults[0].Body.Errors {
+		if len(branch.Body.Errors) > 0 {
+			logger.Warn("Thumbnail branch reported errors", "branch_index", idx, "count", len(branch.Body.Errors))
+			for _, err := range branch.Body.Errors {
 				payload, exists := resultsMap[err.SourceKey]
 				if !exists {
 					logger.Warn("Thumbnail error without matching asset", "source_key", err.SourceKey, "error_code", err.ErrorCode)
