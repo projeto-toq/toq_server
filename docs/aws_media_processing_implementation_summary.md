@@ -136,5 +136,6 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
   1. `ValidateRawAssets` (Lambda `listing-media-validate-staging`) — normaliza assets e injeta `hasVideos`, `traceparent` e erros de validação diretamente no payload.
   2. `ParallelProcessing` — executa geração de thumbnails e, condicionalmente, job MediaConvert.
   3. `ConsolidateResults` — agrega resultados, atribui `errorCode` (`VALIDATION_ERROR`, `THUMBNAIL_PROCESSING_FAILED`, etc.) e repassa `traceparent`.
+     - A Lambda `Consolidate` passou a preencher explicitamente `processedKey` escolhendo a melhor resolução disponível (`large` → `medium` → `small` → `thumbnail`) e sempre inclui `thumbnailKey` quando gerado. Assim nenhum asset chega ao backend com status `PROCESSED` sem a chave final gravada em S3.
   4. `FinalizeAndCallback` — envia a estrutura unificada para a Lambda de callback.
 > **Correlação Banco ↔ Step Functions (Nov/2025):** O serviço `CompleteMedia` grava o `job_id` em `media_processing_jobs` e atualiza imediatamente o registro com o `executionArn` retornado pelo Step Functions de finalização. Assim, qualquer `executionArn` encontrado em `service.media.complete.started_zip` pode ser rastreado no banco (`media_processing_jobs.external_id`) e vice-versa.

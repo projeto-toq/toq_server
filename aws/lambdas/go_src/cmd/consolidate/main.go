@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	consolidateservice "github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/service/consolidate"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
@@ -54,23 +55,7 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 	inputJSON, _ := json.Marshal(event)
 	logger.Info("Consolidate Lambda started", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "raw_input_size", len(inputJSON))
 
-	// Map: SourceKey -> Output Payload
-	resultsMap := make(map[string]*mediaprocessingmodel.MediaProcessingJobPayload)
-
-	// 1. Initialize with original assets
-	for _, asset := range event.Assets {
-		payload := &mediaprocessingmodel.MediaProcessingJobPayload{
-			RawKey:  asset.Key, // The Backend looks for THIS
-			Outputs: make(map[string]string),
-		}
-
-		if asset.Error != "" {
-			payload.ErrorCode = "VALIDATION_ERROR"
-			payload.ErrorMessage = asset.Error
-		}
-
-		resultsMap[asset.Key] = payload
-	}
+	accumulators := consolidateservice.InitializePayloads(event.Assets)
 
 	// 2. Process Parallel Results (Thumbnails)
 	for idx, branch := range event.ParallelResults {
@@ -80,37 +65,22 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 		}
 
 		for _, thumb := range thumbs {
-			payload, exists := resultsMap[thumb.SourceKey]
+			accumulator, exists := accumulators[thumb.SourceKey]
 			if !exists {
 				logger.Warn("Thumbnail without matching asset", "source_key", thumb.SourceKey, "thumb_key", thumb.Key)
 				continue
 			}
 
-			payload.Outputs["thumbnail_"+thumb.Type] = thumb.Key
-			if thumb.Type == "THUMBNAIL_MEDIUM" {
-				payload.ThumbnailKey = thumb.Key
-			}
+			consolidateservice.MapGeneratedAsset(accumulator, thumb)
 		}
 
 		if len(branch.Body.Errors) > 0 {
 			logger.Warn("Thumbnail branch reported errors", "branch_index", idx, "count", len(branch.Body.Errors))
-			for _, err := range branch.Body.Errors {
-				payload, exists := resultsMap[err.SourceKey]
-				if !exists {
-					logger.Warn("Thumbnail error without matching asset", "source_key", err.SourceKey, "error_code", err.ErrorCode)
-					continue
-				}
-				payload.ErrorCode = err.ErrorCode
-				payload.ErrorMessage = err.ErrorMessage
-			}
+			consolidateservice.ApplyBranchErrors(accumulators, toBranchErrors(branch.Body.Errors))
 		}
 	}
 
-	// 3. Convert to final list
-	finalOutputs := make([]mediaprocessingmodel.MediaProcessingJobPayload, 0, len(resultsMap))
-	for _, payload := range resultsMap {
-		finalOutputs = append(finalOutputs, *payload)
-	}
+	finalOutputs := consolidateservice.FlattenPayloads(accumulators)
 
 	// LOG: Final output to be sent to backend
 	outputJSON, _ := json.Marshal(finalOutputs)
@@ -135,6 +105,18 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 	}
 
 	return mediaprocessingmodel.LambdaResponse{Body: responseBody}, nil
+}
+
+func toBranchErrors(errors []ThumbnailError) []consolidateservice.BranchError {
+	converted := make([]consolidateservice.BranchError, 0, len(errors))
+	for _, err := range errors {
+		converted = append(converted, consolidateservice.BranchError{
+			SourceKey:    err.SourceKey,
+			ErrorCode:    err.ErrorCode,
+			ErrorMessage: err.ErrorMessage,
+		})
+	}
+	return converted
 }
 
 func main() {

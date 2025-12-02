@@ -115,7 +115,9 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 	// Update assets based on results
 	for _, result := range input.Results {
-		if strings.EqualFold(result.Status, "FAILED") {
+		resultStatus := strings.ToUpper(result.Status)
+		resultFailed := resultStatus == "FAILED"
+		if resultFailed {
 			failedCount++
 		}
 		if result.ErrorCode != "" {
@@ -128,55 +130,22 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 			continue
 		}
 
-		switch result.Status {
-		case "PROCESSED":
-			asset.SetStatus(mediaprocessingmodel.MediaAssetStatusProcessed)
-			if result.ProcessedKey != "" {
-				asset.SetS3KeyProcessed(result.ProcessedKey)
-			}
-
-			// Ensure metadata map exists if we have thumbnail
-			if result.ThumbnailKey != "" {
-				if result.Metadata == nil {
-					result.Metadata = make(map[string]string)
-				}
-				result.Metadata["thumbnailKey"] = result.ThumbnailKey
-			}
-
-			if len(result.Metadata) > 0 {
-				// Merge metadata
-				currentMeta := make(map[string]string)
-				if asset.Metadata() != "" {
-					_ = json.Unmarshal([]byte(asset.Metadata()), &currentMeta)
-				}
-				for k, v := range result.Metadata {
-					currentMeta[k] = v
-				}
-				metaBytes, _ := json.Marshal(currentMeta)
-				asset.SetMetadata(string(metaBytes))
-			}
-		case "FAILED":
-			asset.SetStatus(mediaprocessingmodel.MediaAssetStatusFailed)
-			// Maybe store error in metadata?
-			if result.Error != "" || result.ErrorCode != "" {
-				currentMeta := make(map[string]string)
-				if asset.Metadata() != "" {
-					_ = json.Unmarshal([]byte(asset.Metadata()), &currentMeta)
-				}
-				if result.Error != "" {
-					currentMeta["error"] = result.Error
-				}
-				if result.ErrorCode != "" {
-					currentMeta["errorCode"] = result.ErrorCode
-				}
-				metaBytes, _ := json.Marshal(currentMeta)
-				asset.SetMetadata(string(metaBytes))
+		updatedAsset, mergeErr := s.applyProcessingResult(ctx, asset, result)
+		if mergeErr != nil {
+			utils.SetSpanError(ctx, mergeErr)
+			logger.Warn("service.media.callback.asset_result_error", "asset_id", asset.ID(), "err", mergeErr)
+			if errors.Is(mergeErr, errProcessedAssetMissingKey) {
+				errorCodeHistogram["MISSING_PROCESSED_KEY"]++
 			}
 		}
 
-		if err := s.repo.UpsertAsset(ctx, tx, asset); err != nil {
+		if updatedAsset.Status() == mediaprocessingmodel.MediaAssetStatusFailed && !resultFailed {
+			failedCount++
+		}
+
+		if err := s.repo.UpsertAsset(ctx, tx, updatedAsset); err != nil {
 			utils.SetSpanError(ctx, err)
-			logger.Error("service.media.callback.update_asset_failed", "asset_id", asset.ID(), "err", err)
+			logger.Error("service.media.callback.update_asset_failed", "asset_id", updatedAsset.ID(), "err", err)
 			return dto.HandleProcessingCallbackOutput{}, derrors.Infra("failed to update asset", err)
 		}
 	}

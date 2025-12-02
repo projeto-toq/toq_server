@@ -10,13 +10,16 @@ Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_usefu
 
 Existem os seguinte erros detectados:
 
-1. ao chamar o endpoint `/listings/media/uploads/complete POST` o processo termina, o status do listing é atualizado mas o seguinte log está sendo gerado e o zip não é gerado:
+1. ao chamar o endpoint `/listings/media/uploads/complete POST` para o "listingIdentityId": 28 recebo a seguinte resposta:
 
 ```json
-{"time":"2025-12-02T16:09:27.122867929Z","level":"ERROR","msg":"service.media.complete.update_job_error","request_id":"bfdca1f8-130c-43a1-8b9f-c769d3c190aa","err":"sql: no rows in result set"}
-{"time":"2025-12-02T16:09:27.133145287Z","level":"INFO","msg":"HTTP Request","request_id":"bfdca1f8-130c-43a1-8b9f-c769d3c190aa","request_id":"bfdca1f8-130c-43a1-8b9f-c769d3c190aa","method":"POST","path":"/api/v2/listings/media/uploads/complete","status":200,"duration":118919875,"size":29,"client_ip":"134.0.6.237","user_agent":"PostmanRuntime/7.49.1","trace_id":"c6aa359ee3180423131ccd359f00fa65","span_id":"c9845a6753ca375c","user_id":3,"user_role_id":3}
-
-
+{
+    "code": 409,
+    "details": {
+        "asset": "assetId:64"
+    },
+    "message": "processed assets are missing finalized keys"
+}
 ```
 
 Assim:
