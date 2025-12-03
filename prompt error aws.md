@@ -10,17 +10,10 @@ Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_usefu
 
 Existem os seguinte erros detectados:
 
-1. ao chamar o endpoint `/listings/media/uploads/complete POST` para o "listingIdentityId": 28 recebo a seguinte resposta:
+1. ao chamar o endpoint `/listings/media/uploads/complete POST` para o "listingIdentityId": 28, recebo a mensagem de exito, porem;
+1) o zip não foi gerado na S3;
+2) algumas fotos convertidas, estão sendo rotacionadas em 90 graus anti-horario;
 
-```json
-{
-    "code": 409,
-    "details": {
-        "asset": "assetId:64"
-    },
-    "message": "processed assets are missing finalized keys"
-}
-```
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md` e o código identifique a causa raiz do problema.

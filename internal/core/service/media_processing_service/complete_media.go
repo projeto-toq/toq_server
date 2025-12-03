@@ -85,7 +85,7 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 	job.SetID(jobID)
 
 	// 5. Trigger Finalization Pipeline
-	finalizationInput := buildFinalizationInput(jobID, uint64(input.ListingIdentityID), processedAssets)
+	finalizationInput := buildFinalizationInput(ctx, jobID, uint64(input.ListingIdentityID), processedAssets)
 
 	executionARN, err := s.workflow.StartMediaFinalization(ctx, finalizationInput)
 	if err != nil {

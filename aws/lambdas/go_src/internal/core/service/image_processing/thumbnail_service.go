@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"image/jpeg"
+	"io"
 	"path"
 	"regexp"
 	"strings"
@@ -24,59 +26,81 @@ func NewThumbnailService(storage port.StoragePort) *ThumbnailService {
 }
 
 func (s *ThumbnailService) ProcessImage(ctx context.Context, bucket, key string) ([]string, error) {
-	// 1. Download
+	data, err := s.downloadBytes(ctx, bucket, key)
+	if err != nil {
+		return nil, err
+	}
+
+	img, err := s.decodeWithOrientation(data)
+	if err != nil {
+		return nil, err
+	}
+
+	generatedKeys := make([]string, 0, len(targetSizes))
+	for _, size := range targetSizes {
+		newKey, err := s.persistVariant(ctx, bucket, key, size, img)
+		if err != nil {
+			return nil, err
+		}
+		generatedKeys = append(generatedKeys, newKey)
+	}
+
+	return generatedKeys, nil
+}
+
+var targetSizes = []struct {
+	Name  string
+	Width int
+}{
+	{Name: "thumbnail", Width: 200},
+	{Name: "small", Width: 400},
+	{Name: "medium", Width: 800},
+	{Name: "large", Width: 1200},
+}
+
+func (s *ThumbnailService) downloadBytes(ctx context.Context, bucket, key string) ([]byte, error) {
 	reader, err := s.storage.Download(ctx, bucket, key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download image: %w", err)
 	}
 	defer reader.Close()
 
-	// 2. Decode with auto-orientation (fixes rotation issues)
-	// imaging.Decode handles EXIF orientation automatically
-	img, err := imaging.Decode(reader)
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read image: %w", err)
+	}
+	return data, nil
+}
+
+func (s *ThumbnailService) decodeWithOrientation(data []byte) (image.Image, error) {
+	img, err := imaging.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
+	orientation := readOrientation(data)
+	return normalizeOrientation(img, orientation), nil
+}
 
-	// 3. Define sizes
-	// "tiny" renamed to "thumbnail" as requested
-	sizes := []struct {
-		Name  string
-		Width int
-	}{
-		{Name: "thumbnail", Width: 200},
-		{Name: "small", Width: 400},
-		{Name: "medium", Width: 800},
-		{Name: "large", Width: 1200},
+func (s *ThumbnailService) persistVariant(ctx context.Context, bucket, originalKey string, size struct {
+	Name  string
+	Width int
+}, img image.Image) (string, error) {
+	resizedImg := imaging.Resize(img, size.Width, 0, imaging.Lanczos)
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, resizedImg, &jpeg.Options{Quality: 85}); err != nil {
+		return "", fmt.Errorf("failed to encode resized image %s: %w", size.Name, err)
 	}
 
-	var generatedKeys []string
-
-	// 4. Process each size
-	for _, size := range sizes {
-		resizedImg := imaging.Resize(img, size.Width, 0, imaging.Lanczos)
-
-		// Encode to JPEG
-		var buf bytes.Buffer
-		if err := jpeg.Encode(&buf, resizedImg, &jpeg.Options{Quality: 85}); err != nil {
-			return nil, fmt.Errorf("failed to encode resized image %s: %w", size.Name, err)
-		}
-
-		// Generate new key
-		newKey, err := s.generateKey(key, size.Name)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate key for %s: %w", size.Name, err)
-		}
-
-		// Upload
-		if err := s.storage.Upload(ctx, bucket, newKey, &buf, "image/jpeg"); err != nil {
-			return nil, fmt.Errorf("failed to upload %s: %w", size.Name, err)
-		}
-
-		generatedKeys = append(generatedKeys, newKey)
+	newKey, err := s.generateKey(originalKey, size.Name)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate key for %s: %w", size.Name, err)
 	}
 
-	return generatedKeys, nil
+	if err := s.storage.Upload(ctx, bucket, newKey, bytes.NewReader(buf.Bytes()), "image/jpeg"); err != nil {
+		return "", fmt.Errorf("failed to upload %s: %w", size.Name, err)
+	}
+
+	return newKey, nil
 }
 
 // generateKey transforms the raw key into the processed key

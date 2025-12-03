@@ -45,15 +45,15 @@ func (a *StepFunctionsAdapter) StartMediaFinalization(ctx context.Context, input
 	out, err := a.client.StartExecution(ctx, &sfn.StartExecutionInput{
 		StateMachineArn: aws.String(a.finalizationARN),
 		Input:           aws.String(payload),
-		Name:            aws.String(fmt.Sprintf("finalization-%d-%d", input.ListingID, input.JobID)),
+		Name:            aws.String(fmt.Sprintf("finalization-%d-%d", input.ListingIdentityID, input.JobID)),
 	})
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("adapter.stepfunctions.start_execution_error", "err", err, "listing_id", input.ListingID, "job_id", input.JobID)
+		logger.Error("adapter.stepfunctions.start_execution_error", "err", err, "listing_identity_id", input.ListingIdentityID, "job_id", input.JobID)
 		return "", err
 	}
 
-	logger.Info("adapter.stepfunctions.start_execution_success", "execution_arn", *out.ExecutionArn, "listing_id", input.ListingID, "job_id", input.JobID)
+	logger.Info("adapter.stepfunctions.start_execution_success", "execution_arn", *out.ExecutionArn, "listing_identity_id", input.ListingIdentityID, "job_id", input.JobID)
 	return *out.ExecutionArn, nil
 }
 

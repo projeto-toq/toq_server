@@ -7,8 +7,9 @@
             "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-zip-staging",
             "Parameters": {
                 "jobId.$": "$.jobId",
-                "listingId.$": "$.listingId",
-                "assets.$": "$.assets"
+                "listingIdentityId.$": "$.listingIdentityId",
+                "assets.$": "$.assets",
+                "traceparent.$": "$.traceparent"
             },
             "ResultPath": "$.zipResult",
             "TimeoutSeconds": 1800,
@@ -42,7 +43,8 @@
                     "jobId.$": "$.jobId",
                     "status": "SUCCEEDED",
                     "provider": "STEP_FUNCTIONS_FINALIZATION",
-                    "listingId.$": "States.Format('{}', $.listingId)",
+                    "listingIdentityId.$": "States.Format('{}', $.listingIdentityId)",
+                    "traceparent.$": "$.traceparent",
                     "assetsZipped.$": "$.zipResult.body.assetsZipped",
                     "zipBundles.$": "$.zipResult.body.zipBundles"
                 }
@@ -69,8 +71,9 @@
             "Parameters": {
                 "body": {
                     "jobId.$": "$.jobId",
-                    "listingId.$": "States.Format('{}', $.listingId)",
+                    "listingIdentityId.$": "States.Format('{}', $.listingIdentityId)",
                     "status": "FINALIZATION_FAILED",
+                    "traceparent.$": "$.traceparent",
                     "error.$": "$.error"
                 }
             },
