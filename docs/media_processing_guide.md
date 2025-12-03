@@ -1,248 +1,273 @@
-# Guia de Processamento de Mídias — Listings em Status `PENDING_PHOTO_PROCESSING`
+# Guia de Processamento de Mídias — Listings em `PENDING_PHOTO_PROCESSING`
 
 ## 1. Contexto e Objetivo
-- Fluxo vigente: `listingmodel.StatusPendingPhotoProcessing` indica que a sessão de fotos foi concluída e o fotógrafo precisa subir mídias brutas (fotos/vídeos) para posterior tratamento.
-- Objetivo deste guia: alinhar backend, frontend e plataforma sobre o processo completo de upload, processamento assíncrono e disponibilização de mídias finais (ZIP completo, mídias individuais e thumbnails), respeitando arquitetura hexagonal, segurança e escalabilidade do TOQ Server.
-- Escopo: novas APIs REST (`/api/v2`), serviços core, adapters S3/SQS/Lambda/MediaConvert, modelos de domínio, monitoramento e contratos com o frontend.
+- `listingmodel.StatusPendingPhotoProcessing` indica que a sessão de fotos terminou e o fotógrafo precisa subir mídias brutas para o bucket `toq-listing-medias`.
+- Toda a orquestração backend usa `listingIdentityId` (não `listingId`). Esse identificador aparece em todas as chaves S3, registros de banco (`listing_media_assets`, `media_processing_jobs`) e payloads AWS.
+- Este guia descreve o comportamento implementado em `internal/core/service/media_processing_service`, adapters S3/SQS/Step Functions e as Lambdas Go em `aws/lambdas/go_src`.
+- Objetivo: alinhar frontend, backend e plataforma sobre contratos HTTP, estrutura dos jobs, observabilidade e como depurar falhas.
 
-## 2. Visão Geral do Fluxo (alto nível)
-1. **Manifesto de upload**: frontend envia lista de arquivos que serão enviados (tipo, orientação, extensão, tamanho estimado, checksum). Backend valida permissão e status do listing.
-2. **Emissão de URLs pré-assinadas**: backend retorna URLs PUT S3 com metadados obrigatórios. Fotógrafo envia diretamentre para o bucket dedicado `toq-listing-medias`, sempre dentro do diretório raiz `/{listingId}/`. Listings classificados como empreendimento em construção permitem que o **owner** autenticado (ou representante designado) gere URLs para projetos e renders sem depender do fotógrafo.
-3. **Processamento Incremental**: após o upload de um ou mais arquivos, o frontend chama o endpoint de processamento (`/process`). O backend identifica os assets em estado `PENDING_UPLOAD`, atualiza para `PROCESSING` e dispara o pipeline assíncrono (Step Functions).
-4. **Pipeline AWS**: Step Functions + Lambdas (Go) validam entradas, geram thumbnails, transcoding de vídeo e atualizam o status de cada asset individualmente.
-5. **Feedback Visual**: O frontend pode consultar o status de cada asset e exibir thumbnails assim que estiverem prontos, sem esperar o lote todo.
-6. **Gestão de Mídia**: O usuário pode reordenar, renomear ou excluir assets a qualquer momento antes da finalização.
-7. **Finalização**: Quando satisfeito, o usuário solicita a finalização (`/complete`). O backend dispara o pipeline de geração de ZIP e avança o status do Listing para `StatusPendingOwnerApproval`.
-8. **Distribuição**: APIs de download retornam URLs para o ZIP completo e mídias individuais.
+## 2. Fluxo ponta a ponta (alto nível)
+1. **Manifesto de upload** – o cliente chama `POST /api/v2/listings/media/uploads` enviando `listingIdentityId` + lista de arquivos (`assetType`, `sequence`, `bytes`, `checksum`). O serviço valida status do listing e limites configurados.
+2. **URLs pré-assinadas** – a resposta entrega URLs PUT com TTL (default 900s) e cabeçalhos obrigatórios (`Content-Type`, `x-amz-checksum-sha256`). O cliente envia diretamente para `toq-listing-medias/<listingIdentityId>/raw/...`.
+3. **Processamento incremental** – `POST /uploads/process` move assets `PENDING_UPLOAD`/`FAILED` para `PROCESSING`, registra um job em `media_processing_jobs` e publica uma mensagem SQS `listing-media-processing-staging`.
+4. **Pipeline AWS** – Step Functions `listing-media-processing-sm-staging` valida objetos, gera thumbnails (Lambda `listing-media-thumbnails-staging`), dispara MediaConvert para vídeos e consolida os resultados via Lambda `listing-media-consolidate-staging`.
+5. **Callback** – a Lambda `listing-media-callback-staging` envia `POST /api/v2/listings/media/callback` com assinatura `X-Toq-Signature`. O serviço `HandleProcessingCallback` atualiza assets individuais e o job.
+6. **Gestão** – o usuário pode listar, renomear (`POST /update`) ou excluir (`DELETE /delete`) assets `PROCESSED`/`FAILED` antes da finalização.
+7. **Finalização** – `POST /uploads/complete` confirma que todos os assets estão `PROCESSED`, altera o listing para `StatusPendingOwnerApproval`, registra novo job e dispara Step Functions `listing-media-finalization-sm-staging` (Lambda `listing-media-zip-staging`).
+8. **Distribuição** – `POST /media/download` gera URLs GET assinadas (TTL default 3600s) para cada asset ou para o ZIP `/<listingIdentityId>/processed/zip/<jobId>.zip`.
 
-## 3. Estrutura de Domínio e Persistência
-- **Novos modelos core (`internal/core/model/media_processing_model`)**
-  - `MediaAsset`: item individual (campos: `ID`, `ListingID`, `Type`, `Sequence`, `Status`, `S3KeyRaw`, `S3KeyProcessed`, `Title`, `Metadata`). A unicidade é garantida por `(ListingID, Type, Sequence)`.
-  - `MediaProcessingJob`: metadados de execução assíncrona (`JobID`, `ListingID`, `ExternalID`, `Status`, `Payload`).
+## 3. Modelos de domínio e persistência
+- **MediaAsset (`internal/core/model/media_processing_model/media_asset.go`)**
+	- Chaves: `(listingIdentityId, assetType, sequence)`.
+	- Campos relevantes: `Status` (`PENDING_UPLOAD`, `PROCESSING`, `PROCESSED`, `FAILED`), `S3KeyRaw`, `S3KeyProcessed`, `Metadata` (JSON com `clientId`, `filename`, etc.).
+- **MediaProcessingJob (`internal/core/model/media_processing_model/media_job.go`)**
+	- Campos: `id`, `listingIdentityId`, `status` (`PENDING`, `RUNNING`, `SUCCEEDED`, `FAILED`), `provider` (`STEP_FUNCTIONS`, `STEP_FUNCTIONS_FINALIZATION`), `externalId` (ARN do Step Functions), `payload` (último callback), `lastError`, `callbackBody`.
+	- `ApplyFinalizationPayload` guarda `zipBundles` e `assetsZipped`.
+- **Persistência**
+	- `media_processing_jobs.external_id` espelha `executionArn`.
+	- `media_processing_jobs.callback_body` mantém o JSON bruto recebido do pipeline para auditoria.
+	- `listing_media_assets` guarda tanto as chaves S3 quanto metadados usados nos presigns (sequência, título, etc.).
 
-## 4. Endpoints HTTP (Left Adapter)
-Todos sob `/api/v2/listings/media/*`.
-
-### 4.1 `POST /api/v2/listings/media/uploads` — Solicitar URLs de upload
-- **Objetivo**: cliente envia lista de arquivos para upload.
-- **Request Body**
-  ```json
-  {
-    "listingId": 123,
-    "files": [
-      {
-        "clientId": "photo-1",
-        "mediaType": "PHOTO_HORIZONTAL",
-        "contentType": "image/jpeg",
-        "bytes": 5000000,
-        "checksum": "sha256:...",
-        "sequence": 1
-      }
-    ]
-  }
-  ```
-- **Response 201**
-  ```json
-  {
-    "files": [
-      {
-        "clientId": "photo-1",
-        "uploadUrl": "https://s3/...",
-        "s3Key": "123/raw/photo/horizontal/uuid.jpg"
-      }
-    ]
-  }
-  ```
-
-### 4.2 `POST /api/v2/listings/media/uploads/process` — Disparar Processamento
-- **Objetivo**: Inicia o processamento dos arquivos que foram enviados (status `PENDING_UPLOAD`).
-- **Request Body**
-  ```json
-  {
-    "listingId": 123
-  }
-  ```
-- **Response 202 (Accepted)**
-
-### 4.3 `POST /api/v2/listings/media/uploads/complete` — Finalizar e Gerar ZIP
-- **Objetivo**: Consolida as mídias, gera o ZIP final e avança o status do listing.
-- **Request Body**
-  ```json
-  {
-    "listingId": 123
-  }
-  ```
-
-### 4.4 `POST /api/v2/listings/media/update` — Atualizar Metadados
-- **Objetivo**: Atualizar título ou sequência de um asset.
-
-### 4.5 `DELETE /api/v2/listings/media` — Remover Asset
-- **Objetivo**: Remover um asset (arquivos e registro).
-    "submittedAt": "2025-11-11T17:03:12Z",
-    "processing": {
-      "jobId": "arn:aws:states:...",
-      "steps": [
-        { "name": "validate-raw-assets", "status": "SUCCEEDED" },
-        { "name": "image-thumbnails", "status": "RUNNING" },
-        { "name": "video-transcode", "status": "PENDING" }
-      ]
-    },
-    "availableDownloads": [
-      {
-        "type": "ZIP_FULL",
-        "ready": false
-      },
-      {
-        "type": "THUMBNAILS",
-        "ready": true
-      }
-    ]
-  }
-  ```
-
-### 4.4 `POST /api/v2/listings/media/downloads/query` — URLs de download
-- **Request Body**
-  ```json
-  {
-    "listingId": 123,
-    "batchId": "UUID"
-  }
-  ```
-- **Response 200**
-  ```json
-  {
-    "batchId": "UUID",
-    "generatedAt": "2025-11-11T18:22:00Z",
-    "ttlSeconds": 3600,
-    "downloads": [
-      {
-        "type": "ZIP_FULL",
-        "url": "https://s3/...",
-        "expiresAt": "2025-11-11T19:22:00Z"
-      },
-      {
-        "type": "PHOTO_VERTICAL",
-        "items": [
-          {
-            "label": "Sala - Vertical",
-            "preview": "https://cdn/.../thumbnail/photo.jpg",
-            "url": "https://s3/.../large/photo.jpg",
-            "resolution": "4000x6000",
-            "title": "Sala Social",
-            "sequence": 1
-          }
-        ]
-      }
-    ]
-  }
-  ```
-
-## 5. Serviços Core e Dependências (Hexagonal)
-- **Service**: `internal/core/service/media_processing_service`
-- **Ports**: `mediaprocessingrepository`, `storageport`, `queueport`.
-
-## 6. AWS — Serviços Recomendados e Justificativas
-- **Amazon S3**: armazenamento de mídias brutas e processadas.
-  - Prefixos: `/{listingId}/raw/{mediaType}/` e `/{listingId}/processed/{mediaType}/{size}/`.
-  - Tamanhos de imagem: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px).
-- **AWS SQS**: desacopla API HTTP do pipeline.
-- **AWS Step Functions**: orquestra pipeline.
-- **AWS Lambda (Go)**:
-  - `validate`: Validação de manifesto.
-  - `thumbnails`: Redimensionamento e correção de rotação (EXIF).
-  - `zip`: Geração de pacotes para download.
-  - `consolidate`: Agregação de resultados.
-  - `callback`: Notificação ao backend.
-
-### 6.1 Sequência detalhada do pipeline de processamento
-1. **Ingestão e validação (Lambda #1)**
-  - Disparada ao mudar `MediaBatch` para `RECEIVED`.
-2. **Geração de thumbnails (Lambda #2)**
-  - Usa `disintegration/imaging` (Go) para processar imagens.
-  - Outputs: escreve versões `thumbnail`, `small`, `medium`, `large` no bucket.
-3. **Transcodificação de vídeos (AWS MediaConvert)**
-  - Step Functions cria job MediaConvert.
-4. **Geração de ZIPs (Lambda #3)**
-  - Lambda monta pacote ZIP com todas as mídias processadas.
-  - Estrutura interna do ZIP é limpa (sem pastas de sistema).
-5. **Atualização de metadados finais (Lambda #4)**
-  - Consolida dados e persiste.
-6. **Callback para backend**
-  - Step Functions consolida saídas das branches, agrega erros de thumbnail/validação e envia payload padronizado para o backend.
-
-### 6.2 Estrutura do Payload de Callback
-
-O payload enviado pelo Step Functions para o endpoint `/api/v2/listings/media/callback` segue o contrato abaixo. Todos os identificadores são numéricos e já convertidos para string pelo backend apenas no limite HTTP. **Importante:** o dispatcher precisa enviar o header `X-Toq-Signature` calculado como `hex(hmac_sha256(MEDIA_PROCESSING_CALLBACK_SECRET, raw_body))`; caso contrário o callback é rejeitado com `401`.
-
-```bash
-BODY='{"status":"SUCCEEDED","jobId":123}'
-SIGNATURE=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$MEDIA_PROCESSING_CALLBACK_SECRET" -binary | xxd -p -c 256)
-curl -X POST "$CALLBACK_URL" \
-  -H "Content-Type: application/json" \
-  -H "X-Toq-Signature: $SIGNATURE" \
-  -d "$BODY"
-```
-
+## 4. Endpoints HTTP (`/api/v2/listings/media`)
+### 4.1 `POST /listings/media/uploads`
+Request:
 ```json
 {
-  "jobId": 123456,
-  "listingIdentityId": 987654,
-  "provider": "STEP_FUNCTIONS",
-  "status": "SUCCEEDED",
-  "failureReason": "",
-  "error": null,
-  "traceparent": "00-<trace-id>-<span-id>-01",
-  "outputs": [
-    {
-      "rawKey": "987654/raw/photo/horizontal/uuid.jpg",
-      "processedKey": "987654/processed/photo/horizontal/large/uuid.jpg",
-      "thumbnailKey": "987654/processed/photo/horizontal/thumbnail/uuid.jpg",
-      "outputs": {
-        "thumbnail_PHOTO_HORIZONTAL": "987654/processed/photo/horizontal/thumbnail/uuid.jpg"
-      },
-      "errorCode": "",
-      "errorMessage": ""
-    }
-  ]
+	"listingIdentityId": 123,
+	"files": [
+		{
+			"assetType": "PHOTO_HORIZONTAL",
+			"sequence": 1,
+			"filename": "IMG_2907.jpg",
+			"contentType": "image/jpeg",
+			"bytes": 5242880,
+			"checksum": "sha256:4ee0c4...",
+			"title": "Sala social",
+			"metadata": {
+				"clientId": "photo-1",
+				"orientation": "LANDSCAPE"
+			}
+		}
+	]
+}
+```
+Response (`RequestUploadURLsResponse`):
+```json
+{
+	"listingIdentityId": 123,
+	"uploadUrlTtlSeconds": 900,
+	"files": [
+		{
+			"assetType": "PHOTO_HORIZONTAL",
+			"sequence": 1,
+			"uploadUrl": "https://toq-listing-medias.s3.amazonaws.com/123/raw/photo/horizontal/horizontal-01-IMG_2907.jpg?...",
+			"method": "PUT",
+			"headers": {
+				"Content-Type": "image/jpeg",
+				"x-amz-checksum-sha256": "TuDE4w=="
+			},
+			"objectKey": "123/raw/photo/horizontal/horizontal-01-IMG_2907.jpg"
+		}
+	]
 }
 ```
 
-Em cenários de falha:
+### 4.2 `POST /listings/media/uploads/process`
+Body:
+```json
+{ "listingIdentityId": 123 }
+```
+Pré-condições: listing em `PENDING_PHOTO_PROCESSING` ou `REJECTED_BY_OWNER`. O serviço registra `media_processing_jobs` (status `PENDING`), marca assets como `PROCESSING` e envia `MediaProcessingJobMessage` para SQS.
 
-- `status` assume valores `VALIDATION_FAILED`, `PROCESSING_FAILED` ou `FAILED`.
-- `error` é um objeto com as chaves `code` e `message`, ambos gerados a partir da exceção capturada na Step Function.
-- `failureReason` replica o resumo de erro de alto nível.
-- Quando a Lambda de thumbnails falha em itens específicos, cada output recebe `errorCode` (`THUMBNAIL_PROCESSING_FAILED`) e `errorMessage` com detalhes. Esses campos são persistidos no metadata do asset pelo backend.
-- Se a validação falhou para um asset, o Consolidate marca `errorCode = VALIDATION_ERROR` e propaga a mensagem original.
+### 4.3 `GET /listings/media`
+Query params: `listingIdentityId` (obrigatório), `assetType`, `sequence`, `page`, `limit`, `sort` (`sequence|id`), `order` (`asc|desc`).
+Response:
+```json
+{
+	"data": [
+		{
+			"id": 42,
+			"listingIdentityId": 123,
+			"assetType": "PHOTO_VERTICAL",
+			"sequence": 1,
+			"status": "PROCESSED",
+			"title": "Entrada",
+			"metadata": {
+				"clientId": "photo-3"
+			},
+			"s3KeyRaw": "123/raw/photo/vertical/vertical-03-IMG_2705.jpg",
+			"s3KeyProcessed": "123/processed/photo/vertical/large/vertical-03-IMG_2705.jpg"
+		}
+	],
+	"pagination": { "page": 1, "limit": 20, "total": 4 }
+}
+```
 
-> **Observabilidade**: A Lambda `listing-media-callback-staging` loga o resumo das falhas antes de invocar o backend, agrupando códigos de erro e preservando `traceparent`. Após o callback, o serviço core (`HandleProcessingCallback`) agrega os mesmos códigos ao `MediaProcessingJob.LastError` e incrementa contadores de falha por asset.
+### 4.4 `POST /listings/media/update`
+Body:
+```json
+{
+	"listingIdentityId": 123,
+	"assetType": "PHOTO_VERTICAL",
+	"sequence": 1,
+	"title": "Varanda gourmet",
+	"metadata": {
+		"tag": "capa"
+	}
+}
+```
 
-## 7. Convenções de Segurança e Compliance
-- **Controle de acesso**: validar `PhotographerUserID`.
-- **Prefixos S3**: `/{listingId}/raw/{mediaType}/` e `/{listingId}/processed/{mediaType}/{size}/`.
-- **TTL de URLs**: upload 15 min, download 60 min.
-- **Checksums**: exigir `x-amz-checksum-sha256`.
+### 4.5 `DELETE /listings/media/delete`
+Body:
+```json
+{
+	"listingIdentityId": 123,
+	"assetType": "PHOTO_VERTICAL",
+	"sequence": 1
+}
+```
+O serviço remove o registro via transação e, após commit, executa limpeza assíncrona no S3 para todas as chaves retornadas por `asset.GetAllS3Keys()`.
 
-## 8. Orquestração Assíncrona & Estados
-- **Estados do lote**: `PENDING_UPLOAD`, `RECEIVED`, `PROCESSING`, `READY`, `FAILED`.
+### 4.6 `POST /listings/media/download`
+Body:
+```json
+{
+	"listingIdentityId": 123,
+	"requests": [
+		{ "assetType": "PHOTO_VERTICAL", "sequence": 1, "resolution": "thumbnail" },
+		{ "assetType": "PHOTO_HORIZONTAL", "sequence": 2, "resolution": "large" },
+		{ "assetType": "VIDEO_VERTICAL", "sequence": 1, "resolution": "original" }
+	]
+}
+```
+Response: lista de URLs GET assinadas com `expiresIn` configurado (default 3600s).
 
-## 9. Observabilidade
-- **Tracing**: `utils.GenerateTracer`.
-- **Métricas**: Prometheus counters e histograms.
+### 4.7 `POST /listings/media/uploads/complete`
+Body:
+```json
+{ "listingIdentityId": 123 }
+```
+Valida que todos os assets retornados por `ListAssets` estão com `Status=PROCESSED` e `s3_key_processed` não vazio (`ensureAssetsReadyForFinalization`). Cria um job `STEP_FUNCTIONS_FINALIZATION`, chama `StartMediaFinalization`, atualiza `media_processing_jobs` com `external_id` e move o listing para `StatusPendingOwnerApproval`.
 
-## 10. Considerações para o Frontend
-- Fazer upload direto via `fetch`/XHR com `PUT`.
-- Respeitar headers obrigatórios.
-- Exibir progresso através do endpoint de status.
-- Para download final, usar URLs GET pré-assinadas.
+### 4.8 `POST /listings/media/callback`
+- Header obrigatório: `X-Toq-Signature = hex(hmac_sha256(CALLBACK_SECRET, raw_body))`.
+- Payload (`MediaProcessingCallbackRequest`):
+```json
+{
+	"executionArn": "arn:aws:states:us-east-1:058264253741:execution:listing-media-processing-sm-staging:process-28-20",
+	"jobId": "20",
+	"listingIdentityId": "28",
+	"externalId": "arn:aws:states:us-east-1:058264253741:execution:listing-media-processing-sm-staging:process-28-20",
+	"status": "SUCCEEDED",
+	"provider": "STEP_FUNCTIONS",
+	"traceparent": "00-2b63e64e71537bb0327788965465ed16-45348f2c8c2a34bf-01",
+	"outputs": [
+		{
+			"rawKey": "28/raw/photo/horizontal/horizontal-01-IMG_2907.jpg",
+			"processedKey": "28/processed/photo/horizontal/large/horizontal-01-IMG_2907.jpg",
+			"thumbnailKey": "28/processed/photo/horizontal/thumbnail/horizontal-01-IMG_2907.jpg",
+			"outputs": {
+				"large_photo_horizontal": "28/processed/photo/horizontal/large/horizontal-01-IMG_2907.jpg"
+			},
+			"errorCode": "",
+			"errorMessage": ""
+		}
+	],
+	"assetsZipped": 0,
+	"zipBundles": [],
+	"failureReason": "",
+	"error": null
+}
+```
+Para o pipeline de zip, `provider = STEP_FUNCTIONS_FINALIZATION`, `status` pode ser `SUCCEEDED` ou `FINALIZATION_FAILED`, e `zipBundles` contém chaves como `"28/processed/zip/21.zip"`.
 
-## 11. Finalização do ZIP e Rastreamento Operacional
-1. O backend só aceita `POST /api/v2/listings/media/uploads/complete` quando **todos** os assets estiverem com status `PROCESSED` e possuírem `s3_key_processed` gravado. Qualquer asset `PENDING_UPLOAD`, `PROCESSING` ou `FAILED` gera erro 409 orientando o usuário a corrigir o lote (Regra de Serviço — Guia Seção 7.1).
-  - O Step Functions `Consolidate` agora grava o `processedKey` obrigatório derivando sempre a versão `large` (fallback para `medium → small → thumbnail` caso necessário) e adiciona `thumbnailKey` quando disponível. Isso garante que o callback nunca promova um asset para `PROCESSED` sem a chave finalizada.
-2. Ao iniciar a finalização, o serviço `CompleteMedia` cria um registro em `media_processing_jobs`, persiste o `job_id` recém-criado e, após receber o `executionArn` do Step Functions `listing-media-processing-sm-staging`, atualiza o mesmo registro com os campos `external_id`, `status=RUNNING` e `started_at`. Isso garante rastreabilidade 1:1 entre banco e AWS (Espelhamento Port ↔ Adapter — Seção 2.1).
-3. O log `service.media.complete.started_zip` (nível INFO) contém `listing_identity_id`, `job_id`, `execution_arn` e `assets_count`. Use-o como ponto de partida em incidentes: primeiro busque o `job_id`, em seguida verifique o Step Functions via `aws stepfunctions describe-execution --execution-arn <arn>` e finalmente cheque o estado no banco.
-4. Caso seja necessário validar rapidamente o banco, a query `SELECT id,status,external_id,started_at,completed_at,last_error FROM media_processing_jobs WHERE listing_identity_id = <ID> ORDER BY id DESC LIMIT 5;` deve retornar o job recém-criado. `status` deve migrar para `RUNNING` imediatamente após o log acima.
-5. Em falhas do Step Functions finalizador (`CreateZipBundle` ou `FinalizeAndCallback`), o callback registra `status=FINALIZATION_FAILED`. O backend persiste o payload em `media_processing_jobs.callback_body/last_error`, permitindo reproduzir a análise sem acessar diretamente os logs da Lambda.
+## 5. Orquestração AWS
 
----
-Este documento é ponto de partida oficial para desenvolvimento paralelo frontend/backend. Qualquer alteração de contrato deve ser negociada e refletida aqui antes da implementação.
+### 5.1 Produção do job
+`ProcessMedia` cria um `MediaProcessingJobMessage`:
+```json
+{
+	"jobId": 21,
+	"listingIdentityId": 28,
+	"assets": [
+		{ "key": "28/raw/photo/horizontal/horizontal-01-IMG_2907.jpg", "type": "PHOTO_HORIZONTAL" }
+	],
+	"retry": 0
+}
+```
+Mensagem vai para `listing-media-processing-staging` (atributos SQS: `ListingIdentityId`, `JobId`, `RetryCount`, `Traceparent`). Retries usam `listing-media-processing-dlq-staging`.
+
+### 5.2 Step Functions `listing-media-processing-sm-staging`
+Estados:
+1. **ValidateRawAssets** (`listing-media-validate-staging`) – HEAD nos objetos, injeta `hasVideos`, normaliza payload.
+2. **ParallelProcessing**
+	 - `GenerateThumbnails` (`listing-media-thumbnails-staging`) escreve `processed/photo/.../{thumbnail|small|medium|large}/`.
+	 - `CheckVideoProcessing` -> `ProcessVideos` (AWS MediaConvert) quando `hasVideos=true`.
+3. **ConsolidateResults** (`listing-media-consolidate-staging`) – reconcilia outputs, define `processedKey` (preferência `large > medium > small > thumbnail`) e `thumbnailKey`, propaga `errorCode` (`THUMBNAIL_PROCESSING_FAILED`, `VALIDATION_ERROR`, etc.).
+4. **FinalizeAndCallback** (`listing-media-callback-dispatch-staging`) – envia payload assinado para o backend.
+5. **ValidationFailed/ReportFailure** – mesmas Lambda de callback, com `status=VALIDATION_FAILED` ou `PROCESSING_FAILED`.
+
+### 5.3 Finalização `listing-media-finalization-sm-staging`
+1. **CreateZipBundle** (`listing-media-zip-staging`) – recebe `MediaFinalizationInput` com todos os `S3KeyProcessed`; escreve `/<listingIdentityId>/processed/zip/<jobId>.zip`.
+2. **FinalizeAndCallback** (`listing-media-callback-dispatch-staging`) – envia `status=SUCCEEDED`, `provider=STEP_FUNCTIONS_FINALIZATION`, `zipBundles` e `assetsZipped`.
+3. **ReportFailure** – envia `status=FINALIZATION_FAILED` para o backend.
+
+### 5.4 Lambdas
+| Função | Descrição |
+| --- | --- |
+| `listing-media-validate-staging` | Confere existência dos objetos, checksum, constrói `traceparent`. |
+| `listing-media-thumbnails-staging` | Usa `disintegration/imaging` para gerar tamanhos `thumbnail/small/medium/large` e corrigir EXIF. |
+| `listing-media-zip-staging` | Consolida chaves processadas em um ZIP, garantindo nome `/<listingIdentityId>/processed/zip/<jobId>.zip`. |
+| `listing-media-consolidate-staging` | Monta `outputs[]`, define `processedKey`/`thumbnailKey`, agrega erros por asset. |
+| `listing-media-callback-staging` | Recebe eventos (inclusive `body` vindo da Step Function) e faz POST para o backend com assinatura HMAC. |
+
+## 6. Estrutura S3 (`toq-listing-medias`)
+- **Raw uploads:** `/{listingIdentityId}/raw/{mediaTypeSegment}/{reference}-{filename}`  
+	- `mediaTypeSegment` via `mediaTypePathSegment`: `photo/horizontal`, `photo/vertical`, `video/horizontal`, `project/doc`, etc.
+	- `reference` deriva de `metadata.clientId` ou `sequence` (`horizontal-01`, `vertical-03`, ...).
+- **Processed assets:** `/{listingIdentityId}/processed/{mediaTypeSegment}/{size}/{filename}`  
+	- `size ∈ {thumbnail, small, medium, large, original}`.
+	- Vídeos processados ficam em `video/{orientation}/original`.
+- **ZIP bundles:** `/{listingIdentityId}/processed/zip/{jobId}.zip`.
+- **TTL padrão:** upload URLs 900s, download URLs 3600s (configuráveis via `env.yaml`).
+- **Checksum:** `ListingMediaStorageAdapter` aceita SHA-256 em hex (`sha256:...`) ou Base64 e converte para o formato exigido pelo S3 (`x-amz-checksum-sha256`).
+
+## 7. Observabilidade e logs
+- Todas as operações passam por `utils.GenerateTracer` e propagam `traceparent` para SQS/Step Functions.
+- Logs úteis:
+	- `service.media.process.started` – confirma `job_id`, `assets_count`.
+	- `service.media.callback.asset_lookup_error` – indica que não foi possível casar `rawKey` com um asset; geralmente erro de payload.
+	- `service.media.complete.started_zip` – contém `execution_arn` da finalização.
+- Banco:
+	```sql
+	SELECT id, listing_identity_id, status, external_id, started_at, completed_at, last_error
+		FROM media_processing_jobs
+	 WHERE listing_identity_id = 28
+	 ORDER BY id DESC LIMIT 5;
+	```
+	`callback_body` mantém o JSON recebido (útil para reproducibilidade).
+- Callback Lambda loga payloads com `asset_error_codes` quando `status != SUCCEEDED`.
+- Métricas: counters/histograms expostos via Prometheus nos adapters instrumentados.
+
+## 8. Estados e regras de negócio
+- **Assets**
+	- `PENDING_UPLOAD` → após presign; só `ProcessMedia` muda para `PROCESSING`.
+	- `PROCESSING` → aguardando Step Functions; `HandleProcessingCallback` promove para `PROCESSED` ou `FAILED`.
+	- `FAILED` → pode ser reprocessado via novo `POST /uploads/process` ou removido (`DELETE /delete`).
+	- `PROCESSED` → necessário `s3_key_processed` válido para permitir finalização e download.
+- **Listings**
+	- `CompleteMedia` só aceita listings em `PENDING_PHOTO_PROCESSING` com todos os assets `PROCESSED`; após iniciar o Step Functions de zip, status muda para `StatusPendingOwnerApproval`.
+- **Segurança**
+	- Todos os endpoints (exceto `/media/callback`) exigem Bearer token, auth middleware + permission middleware.
+	- Callback rejeita requisições sem `X-Toq-Signature` válido.
+- **Limites configuráveis** (`env.yaml`)
+	- `MaxFilesPerBatch`, `MaxFileBytes`, `MaxTotalBytes`, lista de MIME types permitidos, flag `AllowOwnerProjectUploads`.
+
+## 9. Checklist operacional
+1. **Uploads falhando** – verificar `listing_media_assets` se `s3_key_raw` foi preenchido e usar `aws s3 ls s3://toq-listing-medias/<listingIdentityId>/raw/`.
+2. **Processamento parado** – procurar `service.media.process.started` com `listing_identity_id`; usar `aws sqs receive-message ...listing-media-processing-staging`.
+3. **Callback com `THUMBNAIL_PROCESSING_FAILED`** – conferir objeto `rawKey` (precisa conter `raw/` no caminho), pois o consolidator deriva as demais chaves com base nesse padrão.
+4. **ZIP não gerado** – usar `media_processing_jobs.external_id` para descrever a execução `listing-media-finalization-sm-staging` e checar logs da Lambda `listing-media-zip-staging`.
+5. **Assinatura inválida** – garantir que `CALLBACK_SECRET` usado pela Lambda corresponde a `MEDIA_PROCESSING_CALLBACK_SECRET` configurado no backend.
+
+Este documento reflete o comportamento atual do código. Alterações em contratos, fluxos ou infraestrutura devem ser atualizadas aqui antes de qualquer rollout.

@@ -27,6 +27,10 @@ aws sts get-caller-identity
 aws stepfunctions update-state-machine \
   --state-machine-arn arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-processing-sm-staging \
   --definition file://aws/step_functions/media_processing_pipeline.json
+
+aws stepfunctions update-state-machine \
+  --state-machine-arn arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-finalization-sm-staging \
+  --definition file://aws/step_functions/media_finalization_pipeline.json
 ```
 
 ---
@@ -43,11 +47,15 @@ aws s3api get-bucket-encryption --bucket toq-listing-medias
 # Ver lifecycle rules
 aws s3api get-bucket-lifecycle-configuration --bucket toq-listing-medias
 
-# Upload manual de teste
+# Upload manual de teste (123 = listingIdentityId)
 aws s3 cp test-file.jpg s3://toq-listing-medias/123/raw/photo/vertical/test-file.jpg
 
 # Download de objeto processado
 aws s3 cp s3://toq-listing-medias/123/processed/photo/vertical/thumbnail/test-file.jpg ./
+
+# Conferir ZIP gerado para um job específico (jobId = 21)
+aws s3 ls s3://toq-listing-medias/123/processed/zip/
+aws s3 cp s3://toq-listing-medias/123/processed/zip/21.zip ./
 ```
 
 ---
@@ -68,7 +76,7 @@ aws sqs get-queue-attributes \
 # Enviar mensagem de teste
 aws sqs send-message \
   --queue-url https://sqs.us-east-1.amazonaws.com/058264253741/listing-media-processing-staging \
-  --message-body '{"jobId":123,"listingId":456,"assets":[{"key":"456/raw/photo/horizontal/test.jpg","type":"PHOTO_HORIZONTAL"}]}' \
+  --message-body '{"jobId":123,"listingIdentityId":456,"assets":[{"key":"456/raw/photo/horizontal/test.jpg","type":"PHOTO_HORIZONTAL"}]}' \
   --message-attributes '{"Traceparent":{"DataType":"String","StringValue":"00-trace-id-123"}}'
 
 # Purgar fila (CUIDADO!)
@@ -92,7 +100,7 @@ aws lambda list-functions --query 'Functions[?contains(FunctionName, `listing-me
 # Invocar Lambda manualmente
 aws lambda invoke \
   --function-name listing-media-validate-staging \
-  --payload '{"jobId":123,"listingId":456,"assets":[{"key":"456/raw/photo/horizontal/test.jpg","type":"PHOTO_HORIZONTAL"}]}' \
+  --payload '{"jobId":123,"listingIdentityId":456,"assets":[{"key":"456/raw/photo/horizontal/test.jpg","type":"PHOTO_HORIZONTAL"}]}' \
   response.json
 
 # Ver logs recentes
@@ -109,7 +117,7 @@ aws lambda update-function-configuration \
 
 ---
 
-## Step Functions - Finalização de ZIP
+## Step Functions - Processamento (listing-media-processing-sm-staging)
 
 ```bash
 # Listar execuções recentes do state machine
@@ -126,6 +134,25 @@ aws stepfunctions get-execution-history \
   --execution-arn <execution_arn> \
   --max-results 200 \
   --reverse-order
+
+## Step Functions - Finalização (listing-media-finalization-sm-staging)
+
+```bash
+# Listar execuções (usado após POST /uploads/complete)
+aws stepfunctions list-executions \
+  --state-machine-arn arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-finalization-sm-staging \
+  --max-results 10
+
+# Descrever execução do ZIP (use executionArn salvo em media_processing_jobs.external_id)
+aws stepfunctions describe-execution \
+  --execution-arn <execution_arn>
+
+# Histórico completo para investigar falhas em CreateZipBundle ou FinalizeAndCallback
+aws stepfunctions get-execution-history \
+  --execution-arn <execution_arn> \
+  --max-results 200 \
+  --reverse-order
+```
 ```
 
 ---

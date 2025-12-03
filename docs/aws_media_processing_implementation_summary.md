@@ -30,12 +30,13 @@
 - **Lifecycle Rule:** `raw/` → Glacier após 180 dias
 
 ### Estrutura de Pastas (Atualizado)
-- **Raw (Upload):** `/{listingId}/raw/{mediaType}/{uuid}.{ext}`
-  - *Nota:* Segmentos de data (YYYY-MM-DD) foram removidos para simplificar a estrutura.
-- **Processed (Thumbnails):** `/{listingId}/processed/{mediaType}/{size}/{uuid}.{ext}`
-  - Tamanhos: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px).
-- **Zip Bundles:** `/{listingId}/processed/zip/{listingId}.zip`
-  - Conteúdo interno do Zip é limpo (sem prefixos `processed/` ou datas).
+- **Raw (Upload):** `/{listingIdentityId}/raw/{mediaTypeSegment}/{reference}-{filename}`
+  - `mediaTypeSegment` segue `mediaTypePathSegment` (`photo/horizontal`, `video/vertical`, `project/doc`, etc.).
+  - O `reference` deriva de `metadata.clientId` ou `sequence` (`horizontal-01`, `vertical-03`), evitando datas no caminho.
+- **Processed:** `/{listingIdentityId}/processed/{mediaTypeSegment}/{size}/{filename}`
+  - Tamanhos suportados: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px), `original` (fallback para vídeos/documentos).
+- **Zip Bundles:** `/{listingIdentityId}/processed/zip/{jobId}.zip`
+  - O arquivo recebe o `jobId` gerado pelo serviço `CompleteMedia`, garantindo rastreabilidade 1:1 com `media_processing_jobs`.
 
 ### Bucket de Logs
 - **Nome:** `toq-logs-staging`
@@ -56,6 +57,18 @@
 - **Long Polling:** 20 segundos
 - **Criptografia:** SSE-KMS
 - **Redrive Policy:** 5 tentativas → DLQ
+- **Payload publicado:**
+  ```json
+  {
+    "jobId": 21,
+    "listingIdentityId": 28,
+    "assets": [
+      { "key": "28/raw/photo/horizontal/horizontal-01-IMG_2907.jpg", "type": "PHOTO_HORIZONTAL" }
+    ],
+    "retry": 0
+  }
+  ```
+  A mensagem inclui atributos SQS (`ListingIdentityId`, `JobId`, `RetryCount`, `Traceparent`) para facilitar rastreamento.
 
 ### Dead Letter Queue (DLQ)
 - **Nome:** `listing-media-processing-dlq-staging`
@@ -123,7 +136,7 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
    - Cria arquivo ZIP contendo todas as mídias processadas.
    - Limpa estrutura de pastas interna (remove prefixos de sistema).
 4. **Consolidate (`listing-media-consolidate-staging`)**: Agrega resultados do processamento paralelo.
-5. **Callback (`listing-media-callback-staging`)**: Envia webhook de volta ao backend.
+5. **Callback Dispatch (`listing-media-callback-staging`, exposta como `listing-media-callback-dispatch-staging`)**: Envia webhook de volta ao backend com assinatura `X-Toq-Signature` e preserva `traceparent`.
 
 ### Runtime
 - **Runtime:** `provided.al2023`
@@ -133,9 +146,16 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
 
 ## 6. AWS Step Functions - Orquestração
 
-  1. `ValidateRawAssets` (Lambda `listing-media-validate-staging`) — normaliza assets e injeta `hasVideos`, `traceparent` e erros de validação diretamente no payload.
-  2. `ParallelProcessing` — executa geração de thumbnails e, condicionalmente, job MediaConvert.
-  3. `ConsolidateResults` — agrega resultados, atribui `errorCode` (`VALIDATION_ERROR`, `THUMBNAIL_PROCESSING_FAILED`, etc.) e repassa `traceparent`.
-     - A Lambda `Consolidate` passou a preencher explicitamente `processedKey` escolhendo a melhor resolução disponível (`large` → `medium` → `small` → `thumbnail`) e sempre inclui `thumbnailKey` quando gerado. Assim nenhum asset chega ao backend com status `PROCESSED` sem a chave final gravada em S3.
-  4. `FinalizeAndCallback` — envia a estrutura unificada para a Lambda de callback.
-> **Correlação Banco ↔ Step Functions (Nov/2025):** O serviço `CompleteMedia` grava o `job_id` em `media_processing_jobs` e atualiza imediatamente o registro com o `executionArn` retornado pelo Step Functions de finalização. Assim, qualquer `executionArn` encontrado em `service.media.complete.started_zip` pode ser rastreado no banco (`media_processing_jobs.external_id`) e vice-versa.
+### 6.1 Processamento (`listing-media-processing-sm-staging`)
+1. **ValidateRawAssets** (`listing-media-validate-staging`) — normaliza assets, garante que cada `rawKey` existe e injeta `hasVideos`, `traceparent` e erros de validação no payload.
+2. **ParallelProcessing** — executa geração de thumbnails e, condicionalmente, job MediaConvert para vídeos.
+3. **ConsolidateResults** — agrega resultados, atribui `errorCode` (`VALIDATION_ERROR`, `THUMBNAIL_PROCESSING_FAILED`, etc.) e repassa `traceparent`.
+  - A Lambda `Consolidate` preenche `processedKey` escolhendo a melhor resolução disponível (`large` → `medium` → `small` → `thumbnail`) e sempre inclui `thumbnailKey` quando gerado.
+4. **FinalizeAndCallback** — envia a estrutura unificada para `listing-media-callback-dispatch-staging`, que chama o backend.
+
+### 6.2 Finalização (`listing-media-finalization-sm-staging`)
+1. **CreateZipBundle** (`listing-media-zip-staging`) recebe `MediaFinalizationInput` com todos os `processedKey` e grava `/<listingIdentityId>/processed/zip/<jobId>.zip`.
+2. **FinalizeAndCallback** — responde com `provider=STEP_FUNCTIONS_FINALIZATION`, `status=SUCCEEDED`, `zipBundles` e `assetsZipped`.
+3. **ReportFailure** — em caso de erro, envia `status=FINALIZATION_FAILED` e detalha o motivo no callback.
+
+> **Correlação Banco ↔ Step Functions (Nov/2025):** O serviço `ProcessMedia` registra o job e armazena o `executionArn` do workflow de processamento. `CompleteMedia` cria um novo job, dispara `listing-media-finalization-sm-staging` via `workflow.StartMediaFinalization` e atualiza `media_processing_jobs.external_id` com o ARN de finalização. Assim, qualquer `executionArn` encontrado em `service.media.complete.started_zip` pode ser rastreado no banco e vice-versa.
