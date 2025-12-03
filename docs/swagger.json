@@ -11993,6 +11993,9 @@
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackRequest": {
             "type": "object",
             "properties": {
+                "assetsZipped": {
+                    "type": "integer"
+                },
                 "error": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackError"
                 },
@@ -12031,6 +12034,12 @@
                 },
                 "traceparent": {
                     "type": "string"
+                },
+                "zipBundles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -13758,6 +13767,9 @@
         "github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaProcessingJobPayload": {
             "type": "object",
             "properties": {
+                "assetsZipped": {
+                    "type": "integer"
+                },
                 "errorCode": {
                     "type": "string"
                 },
@@ -13778,6 +13790,12 @@
                 },
                 "thumbnailKey": {
                     "type": "string"
+                },
+                "zipBundles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

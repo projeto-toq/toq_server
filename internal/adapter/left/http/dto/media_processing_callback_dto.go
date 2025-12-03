@@ -20,6 +20,8 @@ type MediaProcessingCallbackRequest struct {
 	Provider          string                                           `json:"provider"`
 	Traceparent       string                                           `json:"traceparent"`
 	Outputs           []mediaprocessingmodel.MediaProcessingJobPayload `json:"outputs"`
+	AssetsZipped      int                                              `json:"assetsZipped,omitempty"`
+	ZipBundles        []string                                         `json:"zipBundles,omitempty"`
 	FailureReason     string                                           `json:"failureReason"`
 	Error             *MediaProcessingCallbackError                    `json:"error"`
 	RawBody           []byte                                           `json:"-"`

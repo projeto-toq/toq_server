@@ -80,6 +80,8 @@ type HandleProcessingCallbackInput struct {
 	Provider          string             `json:"provider"`
 	Status            string             `json:"status"` // "SUCCEEDED", "FAILED"
 	Results           []ProcessingResult `json:"results"`
+	AssetsZipped      int                `json:"assetsZipped,omitempty"`
+	ZipBundles        []string           `json:"zipBundles,omitempty"`
 	Error             string             `json:"error,omitempty"`
 	ErrorCode         string             `json:"errorCode,omitempty"`
 	ErrorMetadata     map[string]string  `json:"errorMetadata,omitempty"`

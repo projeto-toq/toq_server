@@ -83,6 +83,13 @@ func (j *MediaProcessingJob) CompletedAt() *time.Time {
 func (j *MediaProcessingJob) LastError() string    { return j.lastError }
 func (j *MediaProcessingJob) CallbackBody() string { return j.callbackBody }
 
+// EnsureStartedAt sets the initial start timestamp if not already defined.
+func (j *MediaProcessingJob) EnsureStartedAt(startedAt time.Time) {
+	if j.startedAt == nil {
+		j.startedAt = &startedAt
+	}
+}
+
 func (j *MediaProcessingJob) MarkRunning(externalID string, startedAt time.Time) {
 	j.status = MediaProcessingJobStatusRunning
 	j.externalID = externalID
@@ -101,6 +108,16 @@ func (j *MediaProcessingJob) AppendError(message string) {
 
 func (j *MediaProcessingJob) SetCallbackBody(body string) {
 	j.callbackBody = body
+}
+
+// ApplyFinalizationPayload stores metadata returned by the zip pipeline.
+func (j *MediaProcessingJob) ApplyFinalizationPayload(bundles []string, assetsZipped int) {
+	if len(bundles) > 0 {
+		j.payload.ZipBundles = append([]string{}, bundles...)
+	} else {
+		j.payload.ZipBundles = nil
+	}
+	j.payload.AssetsZipped = assetsZipped
 }
 
 // JobAsset defines the contract between Backend -> SQS -> Lambdas.
@@ -135,6 +152,8 @@ type MediaProcessingJobPayload struct {
 	Outputs      map[string]string `json:"outputs"`
 	ErrorCode    string            `json:"errorCode"`
 	ErrorMessage string            `json:"errorMessage"`
+	ZipBundles   []string          `json:"zipBundles,omitempty"`
+	AssetsZipped int               `json:"assetsZipped,omitempty"`
 }
 
 // MediaProcessingJobMessage is the payload sent to SQS/Step Functions.

@@ -12000,6 +12000,9 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackRequest": {
             "type": "object",
             "properties": {
+                "assetsZipped": {
+                    "type": "integer"
+                },
                 "error": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackError"
                 },
@@ -12038,6 +12041,12 @@ const docTemplate = `{
                 },
                 "traceparent": {
                     "type": "string"
+                },
+                "zipBundles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -13765,6 +13774,9 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaProcessingJobPayload": {
             "type": "object",
             "properties": {
+                "assetsZipped": {
+                    "type": "integer"
+                },
                 "errorCode": {
                     "type": "string"
                 },
@@ -13785,6 +13797,12 @@ const docTemplate = `{
                 },
                 "thumbnailKey": {
                     "type": "string"
+                },
+                "zipBundles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

@@ -1896,6 +1896,8 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackRequest:
     properties:
+      assetsZipped:
+        type: integer
       error:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaProcessingCallbackError'
       executionArn:
@@ -1922,6 +1924,10 @@ definitions:
         type: string
       traceparent:
         type: string
+      zipBundles:
+        items:
+          type: string
+        type: array
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse:
     properties:
@@ -3180,6 +3186,8 @@ definitions:
     - MediaAssetTypeProjectRender
   github_com_projeto-toq_toq_server_internal_core_model_media_processing_model.MediaProcessingJobPayload:
     properties:
+      assetsZipped:
+        type: integer
       errorCode:
         type: string
       errorMessage:
@@ -3194,6 +3202,10 @@ definitions:
         type: string
       thumbnailKey:
         type: string
+      zipBundles:
+        items:
+          type: string
+        type: array
     type: object
   github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource:
     enum:
