@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer para Verificação Diária do Certificado SSL
+Requires=certificate-check.service
+
+[Timer]
+OnCalendar=daily
+OnCalendar=09:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

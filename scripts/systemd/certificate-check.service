@@ -1,0 +1,13 @@
+[Unit]
+Description=Verificação de Expiração do Certificado SSL
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/codigos/go_code/toq_server/scripts/check-certificate-expiry.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
