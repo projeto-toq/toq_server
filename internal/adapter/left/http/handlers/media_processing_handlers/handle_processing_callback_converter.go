@@ -47,6 +47,8 @@ func toHandleProcessingCallbackInput(request httpdto.MediaProcessingCallbackRequ
 		Results:           mapOutputsToResults(request.Outputs),
 		AssetsZipped:      request.AssetsZipped,
 		ZipBundles:        cloneStringSlice(request.ZipBundles),
+		ZipSizeBytes:      request.ZipSizeBytes,
+		UnzippedSizeBytes: request.UnzippedSizeBytes,
 		Error:             payloadError,
 		ErrorCode:         errorCode,
 		ErrorMetadata:     errorMetadata,

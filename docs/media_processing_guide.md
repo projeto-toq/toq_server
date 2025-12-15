@@ -14,7 +14,7 @@
 5. **Callback** – a Lambda `listing-media-callback-staging` envia `POST /api/v2/listings/media/callback` com assinatura `X-Toq-Signature`. O serviço `HandleProcessingCallback` atualiza assets individuais e o job.
 6. **Gestão** – o usuário pode listar, renomear (`POST /update`) ou excluir (`DELETE /delete`) assets `PROCESSED`/`FAILED` antes da finalização.
 7. **Finalização** – `POST /uploads/complete` confirma que todos os assets estão `PROCESSED`, altera o listing para `StatusPendingOwnerApproval`, registra novo job e dispara Step Functions `listing-media-finalization-sm-staging` (Lambda `listing-media-zip-staging`).
-8. **Distribuição** – `POST /media/download` gera URLs GET assinadas (TTL default 3600s) para cada asset ou para o ZIP `/<listingIdentityId>/processed/zip/<jobId>.zip`.
+8. **Distribuição** – `POST /media/download` gera URLs GET assinadas (TTL default 3600s) para cada asset ou para o ZIP `/<listingIdentityId>/processed/zip/listing-media.zip`.
 
 ## 3. Modelos de domínio e persistência
 - **MediaAsset (`internal/core/model/media_processing_model/media_asset.go`)**
@@ -22,7 +22,7 @@
 	- Campos relevantes: `Status` (`PENDING_UPLOAD`, `PROCESSING`, `PROCESSED`, `FAILED`), `S3KeyRaw`, `S3KeyProcessed`, `Metadata` (JSON com `clientId`, `filename`, etc.).
 - **MediaProcessingJob (`internal/core/model/media_processing_model/media_job.go`)**
 	- Campos: `id`, `listingIdentityId`, `status` (`PENDING`, `RUNNING`, `SUCCEEDED`, `FAILED`), `provider` (`STEP_FUNCTIONS`, `STEP_FUNCTIONS_FINALIZATION`), `externalId` (ARN do Step Functions), `payload` (último callback), `lastError`, `callbackBody`.
-	- `ApplyFinalizationPayload` guarda `zipBundles` e `assetsZipped`.
+	- `ApplyFinalizationPayload` guarda `zipBundles`, `assetsZipped`, `zipSizeBytes` e `unzippedSizeBytes` para o bundle final.
 - **Persistência**
 	- `media_processing_jobs.external_id` espelha `executionArn`.
 	- `media_processing_jobs.callback_body` mantém o JSON bruto recebido do pipeline para auditoria.
@@ -99,7 +99,14 @@ Response:
 			"s3KeyProcessed": "123/processed/photo/vertical/large/vertical-03-IMG_2705.jpg"
 		}
 	],
-	"pagination": { "page": 1, "limit": 20, "total": 4 }
+	"pagination": { "page": 1, "limit": 20, "total": 4 },
+	"zipBundle": {
+		"bundleKey": "123/processed/zip/listing-media.zip",
+		"assetsCount": 42,
+		"zipSizeBytes": 83886080,
+		"estimatedExtractedBytes": 209715200,
+		"completedAt": "2025-01-03T15:04:05Z"
+	}
 }
 ```
 
@@ -175,11 +182,13 @@ Valida que todos os assets retornados por `ListAssets` estão com `Status=PROCES
 	],
 	"assetsZipped": 0,
 	"zipBundles": [],
+	"zipSizeBytes": 0,
+	"unzippedSizeBytes": 0,
 	"failureReason": "",
 	"error": null
 }
 ```
-Para o pipeline de zip, `provider = STEP_FUNCTIONS_FINALIZATION`, `status` pode ser `SUCCEEDED` ou `FINALIZATION_FAILED`, e `zipBundles` contém chaves como `"28/processed/zip/21.zip"`.
+Para o pipeline de zip, `provider = STEP_FUNCTIONS_FINALIZATION`, `status` pode ser `SUCCEEDED` ou `FINALIZATION_FAILED`, e `zipBundles` contém chaves como `"28/processed/zip/listing-media.zip"` acompanhadas de `zipSizeBytes` e `unzippedSizeBytes`.
 
 ## 5. Orquestração AWS
 
@@ -208,7 +217,7 @@ Estados:
 5. **ValidationFailed/ReportFailure** – mesmas Lambda de callback, com `status=VALIDATION_FAILED` ou `PROCESSING_FAILED`.
 
 ### 5.3 Finalização `listing-media-finalization-sm-staging`
-1. **CreateZipBundle** (`listing-media-zip-staging`) – recebe `MediaFinalizationInput` com todos os `S3KeyProcessed`; escreve `/<listingIdentityId>/processed/zip/<jobId>.zip`.
+1. **CreateZipBundle** (`listing-media-zip-staging`) – recebe `MediaFinalizationInput` com todos os `S3KeyProcessed`; escreve `/<listingIdentityId>/processed/zip/listing-media.zip`.
 2. **FinalizeAndCallback** (`listing-media-callback-dispatch-staging`) – envia `status=SUCCEEDED`, `provider=STEP_FUNCTIONS_FINALIZATION`, `zipBundles` e `assetsZipped`.
 3. **ReportFailure** – envia `status=FINALIZATION_FAILED` para o backend.
 
@@ -217,7 +226,7 @@ Estados:
 | --- | --- |
 | `listing-media-validate-staging` | Confere existência dos objetos, checksum, constrói `traceparent`. |
 | `listing-media-thumbnails-staging` | Usa `disintegration/imaging` para gerar tamanhos `thumbnail/small/medium/large` e corrigir EXIF. |
-| `listing-media-zip-staging` | Consolida chaves processadas em um ZIP, garantindo nome `/<listingIdentityId>/processed/zip/<jobId>.zip`. |
+| `listing-media-zip-staging` | Consolida chaves processadas em um ZIP, garantindo nome `/<listingIdentityId>/processed/zip/listing-media.zip`. |
 | `listing-media-consolidate-staging` | Monta `outputs[]`, define `processedKey`/`thumbnailKey`, agrega erros por asset. |
 | `listing-media-callback-staging` | Recebe eventos (inclusive `body` vindo da Step Function) e faz POST para o backend com assinatura HMAC. |
 
@@ -228,7 +237,7 @@ Estados:
 - **Processed assets:** `/{listingIdentityId}/processed/{mediaTypeSegment}/{size}/{filename}`  
 	- `size ∈ {thumbnail, small, medium, large, original}`.
 	- Vídeos processados ficam em `video/{orientation}/original`.
-- **ZIP bundles:** `/{listingIdentityId}/processed/zip/{jobId}.zip`.
+- **ZIP bundles:** `/{listingIdentityId}/processed/zip/listing-media.zip`.
 - **TTL padrão:** upload URLs 900s, download URLs 3600s (configuráveis via `env.yaml`).
 - **Checksum:** `ListingMediaStorageAdapter` aceita SHA-256 em hex (`sha256:...`) ou Base64 e converte para o formato exigido pelo S3 (`x-amz-checksum-sha256`).
 

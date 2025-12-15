@@ -1333,8 +1333,9 @@ type ListMediaRequest struct {
 
 // ListMediaResponse retorna a lista paginada com TODAS as informações do modelo.
 type ListMediaResponse struct {
-	Data       []MediaAssetResponse `json:"data"`
-	Pagination PaginationResponse   `json:"pagination"`
+	Data       []MediaAssetResponse    `json:"data"`
+	Pagination PaginationResponse      `json:"pagination"`
+	ZipBundle  *MediaZipBundleResponse `json:"zipBundle,omitempty"`
 }
 
 // MediaAssetResponse espelha o modelo de domínio completo.
@@ -1348,6 +1349,15 @@ type MediaAssetResponse struct {
 	Metadata          map[string]string `json:"metadata,omitempty"`
 	S3KeyRaw          string            `json:"s3KeyRaw,omitempty"`
 	S3KeyProcessed    string            `json:"s3KeyProcessed,omitempty"`
+}
+
+// MediaZipBundleResponse expõe os metadados do bundle zipado.
+type MediaZipBundleResponse struct {
+	BundleKey               string `json:"bundleKey"`
+	AssetsCount             int    `json:"assetsCount"`
+	ZipSizeBytes            int64  `json:"zipSizeBytes"`
+	EstimatedExtractedBytes int64  `json:"estimatedExtractedBytes"`
+	CompletedAt             string `json:"completedAt,omitempty"`
 }
 
 // --- Generate Download URLs (POST) ---

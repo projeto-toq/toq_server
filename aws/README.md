@@ -85,7 +85,7 @@ aws stepfunctions update-state-machine \
 - **S3 Paths**:
   - Raw: `/{listingIdentityId}/raw/{mediaTypeSegment}/{reference}-{filename}`
   - Processed: `/{listingIdentityId}/processed/{mediaTypeSegment}/{size}/{filename}`
-  - Zip: `/{listingIdentityId}/processed/zip/{jobId}.zip` (um ZIP por job registrado em `media_processing_jobs`)
+  - Zip: `/{listingIdentityId}/processed/zip/listing-media.zip` (ZIP único sobrescrito a cada finalização bem-sucedida)
 
 ## Troubleshooting - Finalização de ZIP
 1. Chame `POST /api/v2/listings/media/uploads/complete` e capture `listing_identity_id` no log. Em caso de sucesso, procure por `service.media.complete.started_zip`; o log traz `job_id` e `execution_arn` de `listing-media-finalization-sm-staging`.
@@ -102,4 +102,4 @@ aws stepfunctions update-state-machine \
   ```
   Falhas em `CreateZipBundle` ou `FinalizeAndCallback` aparecem no histórico; o backend replica os detalhes em `media_processing_jobs.callback_body`.
 4. Se o campo `status` permanecer `PENDING` ou `RUNNING` por mais de alguns minutos, revise as Lambdas de zip/consolidation (`aws logs tail /aws/lambda/listing-media-zip-staging --follow`).
-5. Após `status=SUCCEEDED`, o callback atualiza os assets e disponibiliza o ZIP em `/{listingIdentityId}/processed/zip/<jobId>.zip`. Confirme com `aws s3 ls s3://toq-listing-medias/<listingIdentityId>/processed/zip/`.
+5. Após `status=SUCCEEDED`, o callback atualiza os assets e disponibiliza o ZIP em `/{listingIdentityId}/processed/zip/listing-media.zip`. Confirme com `aws s3 ls s3://toq-listing-medias/<listingIdentityId>/processed/zip/`.

@@ -22,6 +22,8 @@ type MediaProcessingCallbackRequest struct {
 	Outputs           []mediaprocessingmodel.MediaProcessingJobPayload `json:"outputs"`
 	AssetsZipped      int                                              `json:"assetsZipped,omitempty"`
 	ZipBundles        []string                                         `json:"zipBundles,omitempty"`
+	ZipSizeBytes      int64                                            `json:"zipSizeBytes,omitempty"`
+	UnzippedSizeBytes int64                                            `json:"unzippedSizeBytes,omitempty"`
 	FailureReason     string                                           `json:"failureReason"`
 	Error             *MediaProcessingCallbackError                    `json:"error"`
 	RawBody           []byte                                           `json:"-"`

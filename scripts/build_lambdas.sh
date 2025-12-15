@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Obter diretório raiz absoluto
+# Obter diretório raiz absoluto (assume execução a partir da raiz do repositório)
 ROOT_DIR=$(pwd)
 SRC_DIR="$ROOT_DIR/aws/lambdas/go_src"
 BIN_DIR="$ROOT_DIR/aws/lambdas/bin"
@@ -10,8 +10,24 @@ BIN_DIR="$ROOT_DIR/aws/lambdas/bin"
 rm -rf "$BIN_DIR"
 mkdir -p "$BIN_DIR"
 
-# Lista de todas as lambdas do pipeline
-LAMBDAS=("validate" "thumbnails" "zip" "consolidate" "callback")
+# Descobrir dinamicamente todas as lambdas dentro de aws/lambdas/go_src/cmd
+shopt -s nullglob
+lambda_dirs=("$SRC_DIR"/cmd/*/)
+shopt -u nullglob
+
+if [ ${#lambda_dirs[@]} -eq 0 ]; then
+    echo "❌ Nenhuma lambda encontrada em $SRC_DIR/cmd"
+    exit 1
+fi
+
+LAMBDAS=()
+for dir in "${lambda_dirs[@]}"; do
+    LAMBDAS+=("$(basename "$dir")")
+done
+
+# Ordena para builds determinísticos
+IFS=$'\n' LAMBDAS=($(printf '%s\n' "${LAMBDAS[@]}" | sort))
+unset IFS
 
 echo "🚀 Starting Lambda Build Process..."
 

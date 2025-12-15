@@ -73,7 +73,13 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 	}
 
 	if jobStatus.IsTerminal() {
-		job.MarkCompleted(jobStatus, mediaprocessingmodel.MediaProcessingJobPayload{}, s.nowUTC())
+		payload := mediaprocessingmodel.MediaProcessingJobPayload{}
+		if jobStatus == mediaprocessingmodel.MediaProcessingJobStatusSucceeded &&
+			job.Provider() == mediaprocessingmodel.MediaProcessingProviderStepFunctionsFinalization {
+			job.ApplyFinalizationPayload(input.ZipBundles, input.AssetsZipped, input.ZipSizeBytes, input.UnzippedSizeBytes)
+			payload = job.Payload()
+		}
+		job.MarkCompleted(jobStatus, payload, s.nowUTC())
 
 		errorFragments := make([]string, 0, 4)
 		if input.ErrorCode != "" {

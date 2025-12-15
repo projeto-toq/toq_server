@@ -2,6 +2,7 @@ package converters
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	domaindto "github.com/projeto-toq/toq_server/internal/core/domain/dto"
@@ -87,6 +88,21 @@ func ListMediaOutputToDTO(output domaindto.ListMediaOutput) dto.ListMediaRespons
 		})
 	}
 
+	var zipBundle *dto.MediaZipBundleResponse
+	if output.ZipBundle != nil {
+		completedAt := ""
+		if output.ZipBundle.CompletedAt != nil {
+			completedAt = output.ZipBundle.CompletedAt.UTC().Format(time.RFC3339)
+		}
+		zipBundle = &dto.MediaZipBundleResponse{
+			BundleKey:               output.ZipBundle.BundleKey,
+			AssetsCount:             output.ZipBundle.AssetsCount,
+			ZipSizeBytes:            output.ZipBundle.ZipSizeBytes,
+			EstimatedExtractedBytes: output.ZipBundle.EstimatedExtractedBytes,
+			CompletedAt:             completedAt,
+		}
+	}
+
 	return dto.ListMediaResponse{
 		Data: data,
 		Pagination: dto.PaginationResponse{
@@ -94,6 +110,7 @@ func ListMediaOutputToDTO(output domaindto.ListMediaOutput) dto.ListMediaRespons
 			Limit: output.Limit,
 			Total: output.TotalCount,
 		},
+		ZipBundle: zipBundle,
 	}
 }
 

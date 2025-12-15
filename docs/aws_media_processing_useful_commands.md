@@ -53,9 +53,9 @@ aws s3 cp test-file.jpg s3://toq-listing-medias/123/raw/photo/vertical/test-file
 # Download de objeto processado
 aws s3 cp s3://toq-listing-medias/123/processed/photo/vertical/thumbnail/test-file.jpg ./
 
-# Conferir ZIP gerado para um job específico (jobId = 21)
+# Conferir ZIP consolidado mais recente
 aws s3 ls s3://toq-listing-medias/123/processed/zip/
-aws s3 cp s3://toq-listing-medias/123/processed/zip/21.zip ./
+aws s3 cp s3://toq-listing-medias/123/processed/zip/listing-media.zip ./
 ```
 
 ---

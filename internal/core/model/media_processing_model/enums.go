@@ -52,8 +52,9 @@ const (
 type MediaProcessingProvider string
 
 const (
-	MediaProcessingProviderStepFunctions MediaProcessingProvider = "STEP_FUNCTIONS"
-	MediaProcessingProviderMediaConvert  MediaProcessingProvider = "MEDIACONVERT"
+	MediaProcessingProviderStepFunctions             MediaProcessingProvider = "STEP_FUNCTIONS"
+	MediaProcessingProviderStepFunctionsFinalization MediaProcessingProvider = "STEP_FUNCTIONS_FINALIZATION"
+	MediaProcessingProviderMediaConvert              MediaProcessingProvider = "MEDIACONVERT"
 )
 
 // MediaProcessingJobStatus mirrors the async job state reported by Step Functions/MediaConvert.

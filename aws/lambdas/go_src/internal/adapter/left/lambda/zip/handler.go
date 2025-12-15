@@ -21,10 +21,14 @@ func NewHandler(service *zip.ZipService, logger *slog.Logger) *Handler {
 }
 
 type ZipOutput struct {
-	ZipKey       string   `json:"zipKey"`
-	AssetsZipped int      `json:"assetsZipped"`
-	ZipBundles   []string `json:"zipBundles"`
+	ZipKey            string   `json:"zipKey"`
+	AssetsZipped      int      `json:"assetsZipped"`
+	ZipBundles        []string `json:"zipBundles"`
+	ZipSizeBytes      int64    `json:"zipSizeBytes"`
+	UnzippedSizeBytes int64    `json:"unzippedSizeBytes"`
 }
+
+const listingMediaZipObject = "listing-media.zip"
 
 func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.StepFunctionPayload) (mediaprocessingmodel.LambdaResponse, error) {
 	h.logger.Info("lambda.zip.start", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "assets_count", len(event.Assets))
@@ -38,25 +42,34 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 	if len(sourceKeys) == 0 {
 		h.logger.Warn("lambda.zip.no_assets", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID)
 		return mediaprocessingmodel.LambdaResponse{
-			Body: ZipOutput{ZipKey: "", AssetsZipped: 0, ZipBundles: []string{}},
+			Body: ZipOutput{ZipKey: "", AssetsZipped: 0, ZipBundles: []string{}, ZipSizeBytes: 0, UnzippedSizeBytes: 0},
 		}, nil
 	}
 
 	bucket := h.resolveBucket()
 	destinationKey := buildZipKey(event.ListingIdentityID, event.JobID)
 
-	if err := h.service.CreateZip(ctx, bucket, sourceKeys, destinationKey); err != nil {
+	unzippedBytes, zipBytes, err := h.service.CreateZip(ctx, bucket, sourceKeys, destinationKey)
+	if err != nil {
 		h.logger.Error("lambda.zip.create_zip_error", "error", err, "bucket", bucket, "destination", destinationKey)
 		return mediaprocessingmodel.LambdaResponse{}, err
 	}
 
-	h.logger.Info("lambda.zip.completed", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "zip_key", destinationKey)
+	h.logger.Info("lambda.zip.completed",
+		"job_id", event.JobID,
+		"listing_identity_id", event.ListingIdentityID,
+		"zip_key", destinationKey,
+		"zip_size_bytes", zipBytes,
+		"unzipped_size_bytes", unzippedBytes,
+	)
 
 	return mediaprocessingmodel.LambdaResponse{
 		Body: ZipOutput{
-			ZipKey:       destinationKey,
-			AssetsZipped: len(sourceKeys),
-			ZipBundles:   []string{destinationKey},
+			ZipKey:            destinationKey,
+			AssetsZipped:      len(sourceKeys),
+			ZipBundles:        []string{destinationKey},
+			ZipSizeBytes:      zipBytes,
+			UnzippedSizeBytes: unzippedBytes,
 		},
 	}, nil
 }
@@ -79,8 +92,8 @@ func (h *Handler) resolveBucket() string {
 	return bucket
 }
 
-func buildZipKey(listingID, jobID uint64) string {
-	return fmt.Sprintf("%d/processed/zip/%d.zip", listingID, jobID)
+func buildZipKey(listingID, _ uint64) string {
+	return fmt.Sprintf("%d/processed/zip/%s", listingID, listingMediaZipObject)
 }
 
 func extractAssetKeys(assets []mediaprocessingmodel.JobAsset) []string {

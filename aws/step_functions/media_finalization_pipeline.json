@@ -46,7 +46,9 @@
                     "listingIdentityId.$": "States.Format('{}', $.listingIdentityId)",
                     "traceparent.$": "$.traceparent",
                     "assetsZipped.$": "$.zipResult.body.assetsZipped",
-                    "zipBundles.$": "$.zipResult.body.zipBundles"
+                    "zipBundles.$": "$.zipResult.body.zipBundles",
+                    "zipSizeBytes.$": "$.zipResult.body.zipSizeBytes",
+                    "unzippedSizeBytes.$": "$.zipResult.body.unzippedSizeBytes"
                 }
             },
             "TimeoutSeconds": 120,

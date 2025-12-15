@@ -5,20 +5,27 @@ export AWS_SHARED_CREDENTIALS_FILE=/codigos/go_code/toq_server/configs/aws_crede
 export AWS_PROFILE=admin
 export AWS_REGION=us-east-1
 
-echo "Deploying validate..."
-aws lambda update-function-code --function-name listing-media-validate-staging --zip-file fileb://aws/lambdas/bin/validate.zip > /dev/null
+ROOT_DIR=$(pwd)
+BIN_DIR="$ROOT_DIR/aws/lambdas/bin"
 
-echo "Deploying thumbnails..."
-aws lambda update-function-code --function-name listing-media-thumbnails-staging --zip-file fileb://aws/lambdas/bin/thumbnails.zip > /dev/null
+shopt -s nullglob
+zip_files=("$BIN_DIR"/*.zip)
+shopt -u nullglob
 
-echo "Deploying zip..."
-aws lambda update-function-code --function-name listing-media-zip-staging --zip-file fileb://aws/lambdas/bin/zip.zip > /dev/null
+if [ ${#zip_files[@]} -eq 0 ]; then
+	echo "❌ Nenhum artefato encontrado em $BIN_DIR. Execute scripts/build_lambdas.sh antes."
+	exit 1
+fi
 
-echo "Deploying consolidate..."
-aws lambda update-function-code --function-name listing-media-consolidate-staging --zip-file fileb://aws/lambdas/bin/consolidate.zip > /dev/null
+for zip_file in "${zip_files[@]}"; do
+	lambda=$(basename "$zip_file" .zip)
+	function_name="listing-media-${lambda}-staging"
 
-echo "Deploying callback..."
-aws lambda update-function-code --function-name listing-media-callback-staging --zip-file fileb://aws/lambdas/bin/callback.zip > /dev/null
+	echo "Deploying $lambda..."
+	aws lambda update-function-code \
+		--function-name "$function_name" \
+		--zip-file "fileb://$zip_file" > /dev/null
+done
 
 echo "Updating Step Functions definition..."
 aws stepfunctions update-state-machine \

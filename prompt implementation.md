@@ -6,7 +6,7 @@
 
 ## 🎯 Solicitação
 
-Ao chamar o endpoint `GET /listings/media` deveriamos receber o tamanho do arquivo zip que fica no bucket S3 no caminho `toq-listing-medias/{listing_id}/processed/zip` bem como o tamanho estimado do espaço necessaário ao descompactar o arquivo. Caso não exista o arquivo zip ainda, deveriamos retornar `null` para ambos os tamanhos.
+Ao chamar o endpoint `GET /listings/media` deveriamos receber o tamanho do arquivo zip que fica no bucket S3 no caminho `toq-listing-medias/{listing_id}/processed/zip/listing-media.zip` bem como o tamanho estimado do espaço necessaário ao descompactar o arquivo. Caso não exista o arquivo zip ainda, deveriamos retornar `null` para ambos os tamanhos.
 
 Assim:
 1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md` e identifique a melhor forma de implementar a mudança.

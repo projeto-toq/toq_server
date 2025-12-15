@@ -1,6 +1,10 @@
 package dto
 
-import mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
+import (
+	"time"
+
+	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
+)
 
 // RequestUploadURLsInput defines the input for generating upload URLs.
 type RequestUploadURLsInput struct {
@@ -82,6 +86,8 @@ type HandleProcessingCallbackInput struct {
 	Results           []ProcessingResult `json:"results"`
 	AssetsZipped      int                `json:"assetsZipped,omitempty"`
 	ZipBundles        []string           `json:"zipBundles,omitempty"`
+	ZipSizeBytes      int64              `json:"zipSizeBytes,omitempty"`
+	UnzippedSizeBytes int64              `json:"unzippedSizeBytes,omitempty"`
 	Error             string             `json:"error,omitempty"`
 	ErrorCode         string             `json:"errorCode,omitempty"`
 	ErrorMetadata     map[string]string  `json:"errorMetadata,omitempty"`
@@ -122,6 +128,16 @@ type ListMediaOutput struct {
 	TotalCount int64
 	Page       int
 	Limit      int
+	ZipBundle  *ListMediaZipBundle
+}
+
+// ListMediaZipBundle describes the finalized archive returned alongside the assets list.
+type ListMediaZipBundle struct {
+	BundleKey               string
+	AssetsCount             int
+	ZipSizeBytes            int64
+	EstimatedExtractedBytes int64
+	CompletedAt             *time.Time
 }
 
 // GenerateDownloadURLsInput define a entrada para geração de URLs.

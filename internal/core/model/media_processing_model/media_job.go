@@ -111,13 +111,15 @@ func (j *MediaProcessingJob) SetCallbackBody(body string) {
 }
 
 // ApplyFinalizationPayload stores metadata returned by the zip pipeline.
-func (j *MediaProcessingJob) ApplyFinalizationPayload(bundles []string, assetsZipped int) {
+func (j *MediaProcessingJob) ApplyFinalizationPayload(bundles []string, assetsZipped int, zipSizeBytes, unzippedSizeBytes int64) {
 	if len(bundles) > 0 {
 		j.payload.ZipBundles = append([]string{}, bundles...)
 	} else {
 		j.payload.ZipBundles = nil
 	}
 	j.payload.AssetsZipped = assetsZipped
+	j.payload.ZipSizeBytes = zipSizeBytes
+	j.payload.UnzippedSizeBytes = unzippedSizeBytes
 }
 
 // JobAsset defines the contract between Backend -> SQS -> Lambdas.
@@ -146,14 +148,16 @@ type LambdaResponse struct {
 
 // MediaProcessingJobPayload keeps information serialized from the async provider.
 type MediaProcessingJobPayload struct {
-	RawKey       string            `json:"rawKey"`
-	ProcessedKey string            `json:"processedKey"`
-	ThumbnailKey string            `json:"thumbnailKey"`
-	Outputs      map[string]string `json:"outputs"`
-	ErrorCode    string            `json:"errorCode"`
-	ErrorMessage string            `json:"errorMessage"`
-	ZipBundles   []string          `json:"zipBundles,omitempty"`
-	AssetsZipped int               `json:"assetsZipped,omitempty"`
+	RawKey            string            `json:"rawKey"`
+	ProcessedKey      string            `json:"processedKey"`
+	ThumbnailKey      string            `json:"thumbnailKey"`
+	Outputs           map[string]string `json:"outputs"`
+	ErrorCode         string            `json:"errorCode"`
+	ErrorMessage      string            `json:"errorMessage"`
+	ZipBundles        []string          `json:"zipBundles,omitempty"`
+	AssetsZipped      int               `json:"assetsZipped,omitempty"`
+	ZipSizeBytes      int64             `json:"zipSizeBytes,omitempty"`
+	UnzippedSizeBytes int64             `json:"unzippedSizeBytes,omitempty"`
 }
 
 // MediaProcessingJobMessage is the payload sent to SQS/Step Functions.

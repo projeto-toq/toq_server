@@ -48,5 +48,7 @@ func isEmptyJobPayload(payload mediaprocessingmodel.MediaProcessingJobPayload) b
 		payload.ErrorCode == "" &&
 		payload.ErrorMessage == "" &&
 		len(payload.ZipBundles) == 0 &&
-		payload.AssetsZipped == 0
+		payload.AssetsZipped == 0 &&
+		payload.ZipSizeBytes == 0 &&
+		payload.UnzippedSizeBytes == 0
 }

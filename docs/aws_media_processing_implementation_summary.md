@@ -35,8 +35,8 @@
   - O `reference` deriva de `metadata.clientId` ou `sequence` (`horizontal-01`, `vertical-03`), evitando datas no caminho.
 - **Processed:** `/{listingIdentityId}/processed/{mediaTypeSegment}/{size}/{filename}`
   - Tamanhos suportados: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px), `original` (fallback para vídeos/documentos).
-- **Zip Bundles:** `/{listingIdentityId}/processed/zip/{jobId}.zip`
-  - O arquivo recebe o `jobId` gerado pelo serviço `CompleteMedia`, garantindo rastreabilidade 1:1 com `media_processing_jobs`.
+- **Zip Bundles:** `/{listingIdentityId}/processed/zip/listing-media.zip`
+  - O arquivo é sobrescrito a cada finalização bem-sucedida, mantendo sempre a versão mais recente do bundle ZIP disponível para download.
 
 ### Bucket de Logs
 - **Nome:** `toq-logs-staging`
@@ -154,7 +154,7 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
 4. **FinalizeAndCallback** — envia a estrutura unificada para `listing-media-callback-dispatch-staging`, que chama o backend.
 
 ### 6.2 Finalização (`listing-media-finalization-sm-staging`)
-1. **CreateZipBundle** (`listing-media-zip-staging`) recebe `MediaFinalizationInput` com todos os `processedKey` e grava `/<listingIdentityId>/processed/zip/<jobId>.zip`.
+1. **CreateZipBundle** (`listing-media-zip-staging`) recebe `MediaFinalizationInput` com todos os `processedKey` e grava `/<listingIdentityId>/processed/zip/listing-media.zip`.
 2. **FinalizeAndCallback** — responde com `provider=STEP_FUNCTIONS_FINALIZATION`, `status=SUCCEEDED`, `zipBundles` e `assetsZipped`.
 3. **ReportFailure** — em caso de erro, envia `status=FINALIZATION_FAILED` e detalha o motivo no callback.
 

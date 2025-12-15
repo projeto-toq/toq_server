@@ -22,17 +22,19 @@ func NewZipService(storage port.StoragePort) *ZipService {
 	}
 }
 
-// CreateZip creates a zip file from the given keys and uploads it to the destination key
-func (s *ZipService) CreateZip(ctx context.Context, bucket string, sourceKeys []string, destinationKey string) error {
+// CreateZip creates a zip file from the given keys and uploads it to the destination key.
+// It returns the total bytes read from the source objects (unzipped) and the final archive size.
+func (s *ZipService) CreateZip(ctx context.Context, bucket string, sourceKeys []string, destinationKey string) (int64, int64, error) {
 	buf := new(bytes.Buffer)
 	zipWriter := zip.NewWriter(buf)
+	var uncompressedBytes int64
 
 	for _, key := range sourceKeys {
 		// 1. Download file
 		reader, err := s.storage.Download(ctx, bucket, key)
 		if err != nil {
 			// Log error but maybe continue? For now, fail.
-			return fmt.Errorf("failed to download %s: %w", key, err)
+			return 0, 0, fmt.Errorf("failed to download %s: %w", key, err)
 		}
 
 		// 2. Determine internal path in zip
@@ -46,27 +48,30 @@ func (s *ZipService) CreateZip(ctx context.Context, bucket string, sourceKeys []
 		writer, err := zipWriter.CreateHeader(header)
 		if err != nil {
 			reader.Close()
-			return fmt.Errorf("failed to create zip header for %s: %w", key, err)
+			return 0, 0, fmt.Errorf("failed to create zip header for %s: %w", key, err)
 		}
 
 		// 4. Copy content
-		_, err = io.Copy(writer, reader)
+		written, err := io.Copy(writer, reader)
 		reader.Close()
 		if err != nil {
-			return fmt.Errorf("failed to write %s to zip: %w", key, err)
+			return 0, 0, fmt.Errorf("failed to write %s to zip: %w", key, err)
 		}
+		uncompressedBytes += written
 	}
 
 	if err := zipWriter.Close(); err != nil {
-		return fmt.Errorf("failed to close zip writer: %w", err)
+		return 0, 0, fmt.Errorf("failed to close zip writer: %w", err)
 	}
+
+	zipBytes := int64(buf.Len())
 
 	// 5. Upload zip
 	if err := s.storage.Upload(ctx, bucket, destinationKey, buf, "application/zip"); err != nil {
-		return fmt.Errorf("failed to upload zip to %s: %w", destinationKey, err)
+		return 0, 0, fmt.Errorf("failed to upload zip to %s: %w", destinationKey, err)
 	}
 
-	return nil
+	return uncompressedBytes, zipBytes, nil
 }
 
 // cleanPath removes 'processed/' prefix and date segments to create a clean internal zip path
