@@ -28,6 +28,9 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 		return ListAgendaOutput{}, err
 	}
 
+	sortField := sanitizeAgendaSortField(input.SortField)
+	sortOrder := sanitizeAgendaSortOrder(input.SortOrder)
+
 	loc := input.Location
 	if loc == nil {
 		loc = time.UTC
@@ -105,13 +108,7 @@ func (s *photoSessionService) ListAgenda(ctx context.Context, input ListAgendaIn
 	}
 
 	sort.Slice(slots, func(i, j int) bool {
-		if slots[i].Start.Equal(slots[j].Start) {
-			if slots[i].End.Equal(slots[j].End) {
-				return slots[i].EntryID < slots[j].EntryID
-			}
-			return slots[i].End.Before(slots[j].End)
-		}
-		return slots[i].Start.Before(slots[j].Start)
+		return compareAgendaSlots(slots[i], slots[j], sortField, sortOrder)
 	})
 
 	total := len(slots)
@@ -138,6 +135,52 @@ type bookingDetails struct {
 	BookingID uint64
 	Listing   *ListingInfo
 	Status    photosessionmodel.BookingStatus
+}
+
+func sanitizeAgendaSortField(field AgendaSortField) AgendaSortField {
+	switch field {
+	case AgendaSortFieldEndDate, AgendaSortFieldEntryType, AgendaSortFieldStartDate:
+		return field
+	default:
+		return defaultAgendaSortField
+	}
+}
+
+func sanitizeAgendaSortOrder(order AgendaSortOrder) AgendaSortOrder {
+	switch order {
+	case AgendaSortOrderDesc:
+		return AgendaSortOrderDesc
+	default:
+		return defaultAgendaSortOrder
+	}
+}
+
+func compareAgendaSlots(a, b AgendaSlot, sortField AgendaSortField, sortOrder AgendaSortOrder) bool {
+	if sortOrder == AgendaSortOrderDesc {
+		return compareAgendaSlotsAsc(b, a, sortField)
+	}
+	return compareAgendaSlotsAsc(a, b, sortField)
+}
+
+func compareAgendaSlotsAsc(a, b AgendaSlot, sortField AgendaSortField) bool {
+	switch sortField {
+	case AgendaSortFieldEndDate:
+		return compareTimeThenID(a.End, b.End, a.EntryID, b.EntryID)
+	case AgendaSortFieldEntryType:
+		if a.EntryType == b.EntryType {
+			return compareTimeThenID(a.Start, b.Start, a.EntryID, b.EntryID)
+		}
+		return string(a.EntryType) < string(b.EntryType)
+	default:
+		return compareTimeThenID(a.Start, b.Start, a.EntryID, b.EntryID)
+	}
+}
+
+func compareTimeThenID(aTime, bTime time.Time, aID, bID uint64) bool {
+	if aTime.Equal(bTime) {
+		return aID < bID
+	}
+	return aTime.Before(bTime)
 }
 
 func (s *photoSessionService) buildAgendaSlot(entry photosessionmodel.AgendaEntryInterface, loc *time.Location, bookingsMap map[uint64]bookingDetails) AgendaSlot {
@@ -262,6 +305,7 @@ func (s *photoSessionService) loadBookingsForEntries(ctx context.Context, tx *sq
 				Neighborhood:      listing.Neighborhood(),
 				City:              listing.City(),
 				State:             listing.State(),
+				Status:            listing.Status().String(),
 			},
 		}
 	}

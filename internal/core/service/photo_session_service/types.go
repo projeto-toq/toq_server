@@ -85,7 +85,26 @@ type ListAgendaInput struct {
 	Size           int
 	Location       *time.Location
 	EntryType      *photosessionmodel.AgendaEntryType
+	SortField      AgendaSortField
+	SortOrder      AgendaSortOrder
 }
+
+// AgendaSortField enumerates sortable fields for agenda listing.
+type AgendaSortField string
+
+const (
+	AgendaSortFieldStartDate AgendaSortField = "startDate"
+	AgendaSortFieldEndDate   AgendaSortField = "endDate"
+	AgendaSortFieldEntryType AgendaSortField = "entryType"
+)
+
+// AgendaSortOrder represents sorting direction.
+type AgendaSortOrder string
+
+const (
+	AgendaSortOrderAsc  AgendaSortOrder = "asc"
+	AgendaSortOrderDesc AgendaSortOrder = "desc"
+)
 
 // ListAgendaOutput describes the agenda listing result.
 type ListAgendaOutput struct {
@@ -108,6 +127,7 @@ type ListingInfo struct {
 	Neighborhood      string `json:"neighborhood"`
 	City              string `json:"city"`
 	State             string `json:"state"`
+	Status            string `json:"status"`
 }
 
 // AgendaSlot represents an agenda entry rendered to clients.

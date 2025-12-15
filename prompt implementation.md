@@ -6,14 +6,13 @@
 
 ## 🎯 Solicitação
 
-Ao chamar o endpoint PUT 
-Qual o procedimento neste caso?
+Ao chamar o endpoint `GET /listings/media` deveriamos receber o tamanho do arquivo zip que fica no bucket S3 no caminho `toq-listing-medias/{listing_id}/processed/zip` bem como o tamanho estimado do espaço necessaário ao descompactar o arquivo. Caso não exista o arquivo zip ainda, deveriamos retornar `null` para ambos os tamanhos.
 
 Assim:
 1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md` e identifique a melhor forma de implementar a mudança.
 2. Proponha um plano detalhado de implementação incluindo:
    - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
-   - Code Skeletons: esqueletos para cada arquivo novo/alterado (handlers, services, repositories, DTOs, entities, converters) conforme templates da Seção 8 do guia.
+   - O Codigo completo a ser implementado (handlers, services, repositories, DTOs, entities, converters), fazendo com a implementação seja simples e sem mais análises.
    - Estrutura de Diretórios: organização final seguindo a Regra de Espelhamento (Seção 2.1 do guia).
    - Ordem de Execução: etapas numeradas com dependências.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
@@ -62,16 +61,6 @@ Mostre organização final seguindo **Regra de Espelhamento (Seção 2.1 do guia
 
 ### 4. Ordem de Execução
 Etapas numeradas com dependências
-
-### 5. Checklist de Conformidade
-Valide contra **seções específicas do guia**:
-- [ ] Arquitetura hexagonal (Seção 1)
-- [ ] Regra de Espelhamento Port ↔ Adapter (Seção 2.1)
-- [ ] InstrumentedAdapter em repos (Seção 7.3)
-- [ ] Transações via globalService (Seção 7.1)
-- [ ] Tracing/Logging/Erros (Seções 5, 7, 9)
-- [ ] Documentação (Seção 8)
-- [ ] Sem anti-padrões (Seção 14)
 
 ---
 

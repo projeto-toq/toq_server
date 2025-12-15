@@ -30,6 +30,8 @@ const (
 // @Param        size      query int    false "Page size (defaults to 20, max 100)"
 // @Param        timezone  query string false "Timezone identifier" default(America/Sao_Paulo)
 // @Param        entryType query string false "Filter by entry type" Enums(PHOTO_SESSION, BLOCK, TIME_OFF, HOLIDAY)
+// @Param        sortField query string false "Sort field" Enums(startDate, endDate, entryType) default(startDate)
+// @Param        sortOrder query string false "Sort direction" Enums(asc, desc) default(asc)
 // @Success      200 {object} photosessionservices.ListAgendaOutput
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse
@@ -90,6 +92,8 @@ func (h *PhotoSessionHandler) ListAgenda(c *gin.Context) {
 		Size:           size,
 		Location:       loc,
 		EntryType:      entryTypeFilter,
+		SortField:      photosessionservices.AgendaSortField(query.SortField),
+		SortOrder:      photosessionservices.AgendaSortOrder(query.SortOrder),
 	}
 
 	output, dErr := h.service.ListAgenda(c.Request.Context(), input)

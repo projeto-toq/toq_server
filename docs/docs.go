@@ -6857,6 +6857,29 @@ const docTemplate = `{
                         "description": "Filter by entry type",
                         "name": "entryType",
                         "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "startDate",
+                            "endDate",
+                            "entryType"
+                        ],
+                        "type": "string",
+                        "default": "startDate",
+                        "description": "Sort field",
+                        "name": "sortField",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "asc",
+                        "description": "Sort direction",
+                        "name": "sortOrder",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -13943,6 +13966,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "state": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "street": {

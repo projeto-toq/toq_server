@@ -7,6 +7,8 @@ type ListAgendaQuery struct {
 	Page      int     `form:"page" binding:"omitempty,min=1" example:"1"`
 	Size      int     `form:"size" binding:"omitempty,min=1" example:"20"`
 	EntryType *string `form:"entryType" binding:"omitempty,oneof=PHOTO_SESSION BLOCK TIME_OFF HOLIDAY" example:"PHOTO_SESSION"`
+	SortField string  `form:"sortField" binding:"omitempty,oneof=startDate endDate entryType" example:"startDate"`
+	SortOrder string  `form:"sortOrder" binding:"omitempty,oneof=asc desc" example:"asc"`
 }
 
 // UpdateSessionStatusRequest defines the payload for updating a session's status.

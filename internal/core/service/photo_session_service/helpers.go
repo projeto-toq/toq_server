@@ -68,6 +68,20 @@ func validateListAgendaInput(input ListAgendaInput) error {
 	if input.Page < 0 {
 		return derrors.Validation("page must be zero or greater", nil)
 	}
+	if input.SortField != "" {
+		switch input.SortField {
+		case AgendaSortFieldStartDate, AgendaSortFieldEndDate, AgendaSortFieldEntryType:
+		default:
+			return derrors.Validation("invalid sortField", map[string]any{"sortField": input.SortField})
+		}
+	}
+	if input.SortOrder != "" {
+		switch input.SortOrder {
+		case AgendaSortOrderAsc, AgendaSortOrderDesc:
+		default:
+			return derrors.Validation("invalid sortOrder", map[string]any{"sortOrder": input.SortOrder})
+		}
+	}
 	return nil
 }
 

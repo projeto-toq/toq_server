@@ -3303,6 +3303,8 @@ definitions:
         type: string
       state:
         type: string
+      status:
+        type: string
       street:
         type: string
       title:
@@ -7977,6 +7979,23 @@ paths:
         - HOLIDAY
         in: query
         name: entryType
+        type: string
+      - default: startDate
+        description: Sort field
+        enum:
+        - startDate
+        - endDate
+        - entryType
+        in: query
+        name: sortField
+        type: string
+      - default: asc
+        description: Sort direction
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sortOrder
         type: string
       produces:
       - application/json

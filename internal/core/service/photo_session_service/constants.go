@@ -9,6 +9,8 @@ const (
 	defaultAgendaPage      = 1
 	defaultAgendaSize      = 20
 	maxAgendaPageSize      = 100
+	defaultAgendaSortField = AgendaSortFieldStartDate
+	defaultAgendaSortOrder = AgendaSortOrderAsc
 	defaultServiceAreaPage = 1
 	defaultServiceAreaSize = 20
 	maxServiceAreaPageSize = 100
