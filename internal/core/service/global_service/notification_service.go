@@ -42,6 +42,9 @@ type NotificationRequest struct {
 
 	// Token é necessário para FCM, conterá o deviceToken
 	Token string `json:"token,omitempty"`
+
+	// Data contém o payload adicional enviado para clientes FCM
+	Data map[string]string `json:"data,omitempty"`
 }
 
 // UnifiedNotificationService interface para o novo sistema de notificação unificado
@@ -258,6 +261,7 @@ func (ns *unifiedNotificationService) sendFCM(ctx context.Context, request Notif
 		Icon:        request.ImageURL, // ImageURL é usado como ícone
 		DeviceToken: request.Token,
 		To:          "", // FCM não usa To, usa DeviceToken
+		Data:        cloneStringMap(request.Data),
 	}
 
 	// Enviar através do adapter FCM
@@ -270,4 +274,15 @@ func (ns *unifiedNotificationService) sendFCM(ctx context.Context, request Notif
 
 	logger.Info("notification.fcm_sent", "token", request.Token, "title", request.Subject)
 	return nil
+}
+
+func cloneStringMap(input map[string]string) map[string]string {
+	if len(input) == 0 {
+		return nil
+	}
+	cloned := make(map[string]string, len(input))
+	for key, value := range input {
+		cloned[key] = value
+	}
+	return cloned
 }

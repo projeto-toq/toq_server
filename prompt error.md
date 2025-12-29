@@ -6,18 +6,15 @@
 
 ## 🎯 Problema / Solicitação
 
-Ao executar o endpoint `POST /listings/media/uploads/process` recebo o seguinte erro:
-```json
-{
-    "code": 401,
-    "details": null,
-    "message": "User ID not found in context"
-}
-```
+Após diversas refatorações os status dos listing, cuja fonte da verdade é `/codigos/go_code/toq_server/internal/core/model/listing_model/constants.go`, não estão refletidos corretamente em outras partes do sistema como :
+`/codigos/go_code/toq_server/internal/adapter/left/http/handlers/listing_handlers/list_listings_handler.go`
+`/codigos/go_code/toq_server/internal/core/service/listing_service/create_draft_version.go`
+
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual `docs/toq_server_go_guide.md` (observabilidade, erros, transações, etc).
+3. Garanta que todos os lugares que utilizem cópias/imagens dos status dos listings estejam alinhados com a fonte da verdade em `internal/core/model/listing_model/constants.go`.
 
 ---
 

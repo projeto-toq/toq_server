@@ -1,0 +1,11 @@
+{
+  "title": "Midias do anuncio {{listing_title}} prontas para revisao",
+  "body": "As novas midias do anuncio {{listing_title}} estao prontas. Revise e aprove ou rejeite para liberar a publicacao.",
+  "orientation_msg": "Acesse o app TOQ para aprovar ou rejeitar as midias geradas antes de publicar.",
+  "data": {
+    "listing_id": "{{listing_id}}",
+    "listing_version": "{{listing_version}}",
+    "listing_title": "{{listing_title}}",
+    "orientation_msg": "{{orientation_msg}}"
+  }
+}

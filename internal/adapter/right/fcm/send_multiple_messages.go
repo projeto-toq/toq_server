@@ -60,6 +60,7 @@ func (f *FCMAdapter) sendBatch(ctx context.Context, message globalmodel.Notifica
 			Body:     message.Body,
 			ImageURL: message.Icon,
 		},
+		Data:   message.Data,
 		Tokens: tokens,
 	}
 

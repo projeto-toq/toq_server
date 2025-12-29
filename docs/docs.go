@@ -11340,6 +11340,9 @@ const docTemplate = `{
                 },
                 "pagination": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse"
+                },
+                "zipBundle": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaZipBundleResponse"
                 }
             }
         },
@@ -12065,11 +12068,37 @@ const docTemplate = `{
                 "traceparent": {
                     "type": "string"
                 },
+                "unzippedSizeBytes": {
+                    "type": "integer"
+                },
                 "zipBundles": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "zipSizeBytes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaZipBundleResponse": {
+            "type": "object",
+            "properties": {
+                "assetsCount": {
+                    "type": "integer"
+                },
+                "bundleKey": {
+                    "type": "string"
+                },
+                "completedAt": {
+                    "type": "string"
+                },
+                "estimatedExtractedBytes": {
+                    "type": "integer"
+                },
+                "zipSizeBytes": {
+                    "type": "integer"
                 }
             }
         },
@@ -13821,11 +13850,17 @@ const docTemplate = `{
                 "thumbnailKey": {
                     "type": "string"
                 },
+                "unzippedSizeBytes": {
+                    "type": "integer"
+                },
                 "zipBundles": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "zipSizeBytes": {
+                    "type": "integer"
                 }
             }
         },

@@ -118,6 +118,11 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 	}
 	committed = true
 
+	if err := s.notifyOwnerMediaReady(ctx, listing); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("service.media.complete.owner_notification_error", "err", err, "listing_identity_id", input.ListingIdentityID, "job_id", jobID)
+	}
+
 	logger.Info("service.media.complete.started_zip", "listing_identity_id", input.ListingIdentityID, "job_id", jobID, "execution_arn", executionARN, "assets_count", len(processedAssets))
 	return nil
 }

@@ -1429,6 +1429,8 @@ definitions:
         type: array
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+      zipBundle:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaZipBundleResponse'
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListPhotographerSlotsResponse:
     properties:
@@ -1924,10 +1926,27 @@ definitions:
         type: string
       traceparent:
         type: string
+      unzippedSizeBytes:
+        type: integer
       zipBundles:
         items:
           type: string
         type: array
+      zipSizeBytes:
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.MediaZipBundleResponse:
+    properties:
+      assetsCount:
+        type: integer
+      bundleKey:
+        type: string
+      completedAt:
+        type: string
+      estimatedExtractedBytes:
+        type: integer
+      zipSizeBytes:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.OwnerAgendaSummaryEntryResponse:
     properties:
@@ -3202,10 +3221,14 @@ definitions:
         type: string
       thumbnailKey:
         type: string
+      unzippedSizeBytes:
+        type: integer
       zipBundles:
         items:
           type: string
         type: array
+      zipSizeBytes:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_core_model_photo_session_model.AgendaEntrySource:
     enum:

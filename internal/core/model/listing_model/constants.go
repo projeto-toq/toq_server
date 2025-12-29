@@ -3,39 +3,41 @@ package listingmodel
 type ListingStatus uint8
 
 const (
-	// StatusDraft: O anúncio está sendo criado pelo proprietário e permanece invisível ao público.
+	// 0 StatusDraft: O anúncio está sendo criado pelo proprietário e permanece invisível ao público.
 	StatusDraft ListingStatus = iota + 1
-	// StatusPendingAvailability: Anúncio criado, aguardando criação de agenda de disponibilidades do imóvel
+	// 1 StatusPendingAvailability: Anúncio criado, aguardando criação de agenda de disponibilidades do imóvel
 	StatusPendingAvailability
-	// StatusPendingPhotoScheduling: Anúncio criado e aguardando o agendamento da sessão de fotos.
+	// 2 StatusPendingPhotoScheduling: Anúncio criado e aguardando o agendamento da sessão de fotos.
 	StatusPendingPhotoScheduling
-	// StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. ag confirmação
+	// 3 StatusPendingPhotoConfirmation: Solicitado fotos para slot disponível. ag confirmação
 	StatusPendingPhotoConfirmation
-	// StatusPhotosScheduled: Sessão de fotos agendada, aguardando execução.
+	// 4 StatusPhotosScheduled: Sessão de fotos agendada, aguardando execução.
 	StatusPhotosScheduled
-	// StatusPendingPhotoProcessing: Sessão concluída, aguardando tratamento e upload das fotos.
+	// 5 StatusPendingPhotoProcessing: Sessão concluída, aguardando tratamento e upload das fotos.
 	StatusPendingPhotoProcessing
-	// StatusPendingOwnerApproval: Materiais revisados e aguardando aprovação final do proprietário.
+	// 6 StatusPendingOwnerApproval: Materiais revisados e aguardando aprovação final do proprietário.
 	StatusPendingOwnerApproval
-	// StatusRejectedByOwner: Versão final reprovada pelo proprietário (ex.: não aprovou as fotos).
+	// 7 StatusRejectedByOwner: Versão final reprovada pelo proprietário (ex.: não aprovou as fotos).
 	StatusRejectedByOwner
-	// StatusPendingAdminReview: Proprietário aprovou, aguardando revisão do time administrativo antes da publicação.
+	// 8 StatusPendingAdminReview: Proprietário aprovou, aguardando revisão do time administrativo antes da publicação.
 	StatusPendingAdminReview
-	// StatusPublished: Anúncio ativo e visível publicamente.
+	// 9 StatusReady: Anúncio aprovado e pronto para publicação (estado intermediário, não exposto externamente).
+	StatusReady
+	// 10 StatusPublished: Anúncio ativo e visível publicamente.
 	StatusPublished
-	// StatusUnderOffer: Anúncio publicado que recebeu uma ou mais propostas.
+	// 11 StatusUnderOffer: Anúncio publicado que recebeu uma ou mais propostas.
 	StatusUnderOffer
-	// StatusUnderNegotiation: Uma proposta foi aceita e a negociação está em andamento.
+	// 12 StatusUnderNegotiation: Uma proposta foi aceita e a negociação está em andamento.
 	StatusUnderNegotiation
-	// StatusClosed: O imóvel foi comercializado (vendido ou alugado) e o processo foi encerrado.
+	// 13 StatusClosed: O imóvel foi comercializado (vendido ou alugado) e o processo foi encerrado.
 	StatusClosed
-	// StatusSuspended: Anúncio pausado temporariamente pelo proprietário ou administrador.
+	// 14 StatusSuspended: Anúncio pausado temporariamente pelo proprietário ou administrador.
 	StatusSuspended
-	// StatusExpired: Prazo de validade do anúncio encerrou sem negociação concluída.
+	// 15 StatusExpired: Prazo de validade do anúncio encerrou sem negociação concluída.
 	StatusExpired
-	// StatusArchived: Anúncio removido do catálogo e mantido apenas para histórico.
+	// 16 StatusArchived: Anúncio removido do catálogo e mantido apenas para histórico.
 	StatusArchived
-	// StatusNeedsRevision: Anúncio reprovado e aguardando ajustes antes de retornar ao fluxo de criação.
+	// 17 StatusNeedsRevision: Anúncio reprovado e aguardando ajustes antes de retornar ao fluxo de criação.
 	StatusNeedsRevision
 )
 
@@ -59,6 +61,8 @@ func (s ListingStatus) String() string {
 		return "REJECTED_BY_OWNER"
 	case StatusPendingAdminReview:
 		return "PENDING_ADMIN_REVIEW"
+	case StatusReady:
+		return "READY"
 	case StatusPublished:
 		return "PUBLISHED"
 	case StatusUnderOffer:

@@ -24,6 +24,7 @@ func (f *FCMAdapter) SendSingleMessage(ctx context.Context, message globalmodel.
 			Body:     message.Body,
 			ImageURL: message.Icon,
 		},
+		Data:  message.Data,
 		Token: string(message.DeviceToken),
 	}
 	response, err := f.client.Send(ctx, iMessage)

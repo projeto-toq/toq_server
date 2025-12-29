@@ -7,4 +7,5 @@ type Notification struct {
 	Icon        string
 	Name        string
 	DeviceToken string
+	Data        map[string]string
 }
