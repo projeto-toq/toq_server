@@ -67,7 +67,7 @@ func (ls *listingService) createDraftVersion(ctx context.Context, tx *sql.Tx, in
 	logger := utils.LoggerFromContext(ctx)
 
 	// Check if draft version already exists (idempotency)
-	draftVersion, draftErr := ls.getDraftVersion(ctx, tx, input.ListingIdentityID)
+	draftVersion, draftErr := ls.listingRepository.GetDraftVersionByListingIdentityID(ctx, tx, input.ListingIdentityID)
 	if draftErr != nil && !errors.Is(draftErr, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, draftErr)
 		logger.Error("listing.create_draft.get_draft_error", "err", draftErr, "listing_identity_id", input.ListingIdentityID)
@@ -148,52 +148,11 @@ func (ls *listingService) createDraftVersion(ctx context.Context, tx *sql.Tx, in
 	return output, nil
 }
 
-func (ls *listingService) getDraftVersion(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (listingmodel.ListingVersionInterface, error) {
-	// Query for existing draft version
-	query := `
-		SELECT 
-			lv.id, lv.user_id, lv.listing_identity_id, lv.code, lv.version, lv.status,
-			lv.title, lv.zip_code, lv.street, lv.number, lv.complement, lv.neighborhood, 
-			lv.city, lv.state, lv.type, lv.owner, lv.land_size, lv.corner, lv.non_buildable, 
-			lv.buildable, lv.delivered, lv.who_lives, lv.description, lv.transaction, 
-			lv.sell_net, lv.rent_net, lv.condominium, lv.annual_tax, lv.monthly_tax, 
-			lv.annual_ground_rent, lv.monthly_ground_rent, lv.exchange, lv.exchange_perc, 
-			lv.installment, lv.financing, lv.visit, lv.tenant_name, lv.tenant_email, 
-			lv.tenant_phone, lv.accompanying, lv.deleted,
-			li.listing_uuid, li.active_version_id
-		FROM listing_versions lv
-		JOIN listing_identities li ON lv.listing_identity_id = li.id
-		WHERE li.id = ? 
-		  AND lv.status = 1 
-		  AND lv.deleted = 0
-		  AND li.deleted = 0
-		LIMIT 1
-	`
-
-	// Use repository's query capabilities - this is temporary until we add GetDraftVersion to repository
-	// For now, return ErrNoRows which will be handled correctly by the caller
-	_, _ = query, tx
-	return nil, sql.ErrNoRows
-}
-
 func (ls *listingService) validateStatusForDraftCreation(status listingmodel.ListingStatus) *utils.HTTPError {
-	allowedStatuses := []listingmodel.ListingStatus{
-		listingmodel.StatusSuspended,                // 14
-		listingmodel.StatusRejectedByOwner,          // 8
-		listingmodel.StatusPendingPhotoProcessing,   // 6
-		listingmodel.StatusPhotosScheduled,          // 5
-		listingmodel.StatusPendingPhotoConfirmation, // 4
-		listingmodel.StatusPendingPhotoScheduling,   // 3
-		listingmodel.StatusPendingAvailability,      // 2
+	if listingmodel.StatusAllowsDraftClone(status) {
+		return nil
 	}
 
-	for _, allowed := range allowedStatuses {
-		if status == allowed {
-			return nil
-		}
-	}
-
-	// Status-specific error messages
 	switch status {
 	case listingmodel.StatusPublished:
 		return utils.ConflictError("Listing is published. Suspend it via status update before creating a draft version")

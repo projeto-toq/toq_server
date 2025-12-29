@@ -33,10 +33,11 @@ func (la *ListingAdapter) GetDraftVersionByListingIdentityID(ctx context.Context
 		FROM listing_versions lv
 		JOIN listing_identities li ON lv.listing_identity_id = li.id
 		WHERE lv.listing_identity_id = ? 
-		  AND lv.status = 1
+		  AND lv.status = ?
 		  AND lv.id != COALESCE(li.active_version_id, 0)
 		  AND lv.deleted = 0
+		  AND li.deleted = 0
 		LIMIT 1
 	`
-	return la.GetListingByQuery(ctx, tx, query, listingIdentityID)
+	return la.GetListingByQuery(ctx, tx, query, listingIdentityID, listingmodel.StatusDraft)
 }

@@ -236,7 +236,7 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 
 // validateComplexRules checks if the input unit details match the complex configuration.
 // If the complex configuration is incomplete (e.g., no towers defined), it accepts the user input.
-func (ls *listingService) validateComplexRules(ctx context.Context, complex propertycoveragemodel.ManagedComplexInterface, input CreateListingInput) error {
+func (ls *listingService) validateComplexRules(_ context.Context, complex propertycoveragemodel.ManagedComplexInterface, input CreateListingInput) error {
 	// Only validate for types that require unit details
 	if input.PropertyType != globalmodel.Apartment && input.PropertyType != globalmodel.CommercialFloor {
 		return nil

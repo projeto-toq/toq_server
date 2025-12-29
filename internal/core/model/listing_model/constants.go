@@ -42,46 +42,10 @@ const (
 )
 
 func (s ListingStatus) String() string {
-	switch s {
-	case StatusDraft:
-		return "DRAFT"
-	case StatusPendingAvailability:
-		return "PENDING_AVAILABILITY"
-	case StatusPendingPhotoScheduling:
-		return "PENDING_PHOTO_SCHEDULING"
-	case StatusPendingPhotoConfirmation:
-		return "PENDING_PHOTO_CONFIRMATION"
-	case StatusPhotosScheduled:
-		return "PHOTOS_SCHEDULED"
-	case StatusPendingPhotoProcessing:
-		return "PENDING_PHOTO_PROCESSING"
-	case StatusPendingOwnerApproval:
-		return "PENDING_OWNER_APPROVAL"
-	case StatusRejectedByOwner:
-		return "REJECTED_BY_OWNER"
-	case StatusPendingAdminReview:
-		return "PENDING_ADMIN_REVIEW"
-	case StatusReady:
-		return "READY"
-	case StatusPublished:
-		return "PUBLISHED"
-	case StatusUnderOffer:
-		return "UNDER_OFFER"
-	case StatusUnderNegotiation:
-		return "UNDER_NEGOTIATION"
-	case StatusClosed:
-		return "CLOSED"
-	case StatusSuspended:
-		return "SUSPENDED"
-	case StatusExpired:
-		return "EXPIRED"
-	case StatusArchived:
-		return "ARCHIVED"
-	case StatusNeedsRevision:
-		return "NEEDS_REVISION"
-	default:
-		return "UNKNOWN"
+	if desc, ok := descriptorByStatus[s]; ok {
+		return desc.Slug
 	}
+	return "UNKNOWN"
 }
 
 type PropertyOwner uint8

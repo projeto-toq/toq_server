@@ -249,44 +249,12 @@ func parseListingStatus(raw string) (*listingmodel.ListingStatus, error) {
 		return nil, nil
 	}
 
-	// Try numeric parsing first
-	if numeric, numErr := strconv.Atoi(trimmed); numErr == nil {
-		status := listingmodel.ListingStatus(numeric)
-		if status >= listingmodel.StatusDraft && status <= listingmodel.StatusNeedsRevision {
-			return &status, nil
-		}
-		return nil, fmt.Errorf("invalid listing status value")
+	status, err := listingmodel.ParseListingStatus(trimmed)
+	if err != nil {
+		return nil, fmt.Errorf("invalid listing status: %w", err)
 	}
 
-	// Try enum name parsing (normalize and map)
-	upper := strings.ToUpper(trimmed)
-	normalized := strings.ReplaceAll(strings.ReplaceAll(upper, " ", ""), "-", "")
-	normalized = strings.ReplaceAll(normalized, "_", "")
-
-	mapping := map[string]listingmodel.ListingStatus{
-		"DRAFT":                    listingmodel.StatusDraft,
-		"PENDINGAVAILABILITY":      listingmodel.StatusPendingAvailability,
-		"PENDINGPHOTOSCHEDULING":   listingmodel.StatusPendingPhotoScheduling,
-		"PENDINGPHOTOCONFIRMATION": listingmodel.StatusPendingPhotoConfirmation,
-		"PHOTOSSCHEDULED":          listingmodel.StatusPhotosScheduled,
-		"PENDINGPHOTOPROCESSING":   listingmodel.StatusPendingPhotoProcessing,
-		"PENDINGOWNERAPPROVAL":     listingmodel.StatusPendingOwnerApproval,
-		"REJECTEDBYOWNER":          listingmodel.StatusRejectedByOwner,
-		"PENDINGADMINREVIEW":       listingmodel.StatusPendingAdminReview,
-		"PUBLISHED":                listingmodel.StatusPublished,
-		"UNDEROFFER":               listingmodel.StatusUnderOffer,
-		"UNDERNEGOTIATION":         listingmodel.StatusUnderNegotiation,
-		"CLOSED":                   listingmodel.StatusClosed,
-		"SUSPENDED":                listingmodel.StatusSuspended,
-		"EXPIRED":                  listingmodel.StatusExpired,
-		"ARCHIVED":                 listingmodel.StatusArchived,
-		"NEEDSREVISION":            listingmodel.StatusNeedsRevision,
-	}
-	if status, ok := mapping[normalized]; ok {
-		return &status, nil
-	}
-
-	return nil, fmt.Errorf("invalid listing status")
+	return &status, nil
 }
 
 // parseOptionalUint32 parses optional uint32 from string
