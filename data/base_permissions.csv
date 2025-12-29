@@ -121,3 +121,5 @@ id;name;action;description;is_active
 120;"HTTP Photographer Listing Media Update";"POST:/api/v2/listings/media/update";"Atualiza metadados de mídia de listing";1
 121;"HTTP Photographer Listing Media Delete";"DELETE:/api/v2/listings/media/delete";"Apaga mídia de listing";1
 122;"HTTP Listing Media List";"GET:/api/v2/listings/media";"Lista as mídia de um listing com paginação";1
+123;"HTTP Owner Change Listing Status";"POST:/api/v2/listings/status";"Permite que o proprietário altere o status do listing";1
+124;"HTTP Owner Listing Media Approve";"POST:/api/v2/listings/media/approve";"Permite que o proprietário aprove ou recuse os materiais de mídia do listing";1
