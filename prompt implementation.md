@@ -6,8 +6,15 @@
 
 ## 🎯 Solicitação
 
-A `func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.CompleteMediaInput) error` encerra o processamento de mídia, atualizando o status e armazenando metadados relacionados.
-Após o commmit, que garante que a transação foi bem sucedida, é necessário enviar um push notification ao owner, dono do anuncio, infromando que o processamento foi concluído e que ele necessita aprovar/rejeitar as medias geradas.
+Após a aprovação do proprietário sobre as medias do listing, este será alterado para o status de `StatusReady`.
+Neste status o listing estará apto para ser publicado no marketplace e para tanto é necessário criar um endpoint de alteração de status do listing.
+O endpoint deverá ser `POST /listings/status` e receberá o listing_identity_id e um enum com (Publish, Suspend) e deverá ficar sob a TAG `Listings`.
+O listing deverá ir para o status `StatusPublished` se o enum selecionado for `Publish` e `StatusReady` se for `Suspend`.
+O endpoint deverá validar se o usuário que está fazendo a requisição é o owner do listing.
+O endpoint deverá validar se o listing está no status `StatusReady` para ir para `StatusPublished` e `StatusPublished` ou `StatusUnderOffer` ou `StatusUnderNegotiation` para ir para `StatusReady`, caso contrário deverá retornar erro 400.
+O handler deverá estar em `/codigos/go_code/toq_server/internal/adapter/left/http/handlers/listing_handlers`
+O service deverá estar em `/codigos/go_code/toq_server/internal/core/service/listing_service`
+
 
 Assim:
 1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md` e identifique a melhor forma de implementar a mudança.

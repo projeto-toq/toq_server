@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
 
@@ -75,6 +76,19 @@ type DeleteMediaInput struct {
 	AssetType         mediaprocessingmodel.MediaAssetType `json:"assetType" validate:"required"`
 	Sequence          uint8                               `json:"sequence" validate:"required,gt=0"`
 	RequestedBy       uint64                              `json:"-"`
+}
+
+// ListingMediaApprovalInput carries owner approval data into the service layer.
+type ListingMediaApprovalInput struct {
+	ListingIdentityID int64
+	Approve           bool
+	RequestedBy       uint64
+}
+
+// ListingMediaApprovalOutput exposes the resulting listing status after owner decision.
+type ListingMediaApprovalOutput struct {
+	ListingIdentityID int64
+	NewStatus         listingmodel.ListingStatus
 }
 
 // HandleProcessingCallbackInput defines the payload received from the processing pipeline.

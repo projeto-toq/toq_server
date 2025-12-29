@@ -22,6 +22,7 @@ TOQ Server implements a **version-aware listing architecture** to preserve histo
 - `GET /listings/versions?listingIdentityId={id}` - Lists all versions
 - `POST /listings/versions/promote` - Promotes draft to active
 - `DELETE /listings/versions/discard` - Discards unpromoted draft
+- `POST /listings/media/approve` - Owner approves or rejects processed media (see `LISTING_APPROVAL_ADMIN_REVIEW`)
 
 ### Database Schema
 ```
@@ -34,6 +35,10 @@ listing_identities (UUID, user_id, code, active_version_id)
 ```
 
 For complete flow details, see `docs/procedimento_de_criação_de_novo_anuncio.md`.
+
+### Owner approval feature flag
+
+- `LISTING_APPROVAL_ADMIN_REVIEW` (default `false`) controls whether approved listings move to `StatusPendingAdminReview` (true) or directly to `StatusReady` (false). Configure it via environment variable (overrides YAML) to enforce backoffice validation after the owner accepts the media batch.
 
 ## Execução em duas instâncias (nohup + F5)
 - **Instância principal (nohup)**: execute `nohup ./bin/toq_server &` sem variáveis extras. O servidor sobe com `ENVIRONMENT=homo`, porta `:8080`, workers em execução e telemetria/exporters habilitados (OTLP + Prometheus + Loki).

@@ -291,6 +291,7 @@ func RegisterListingRoutes(
 			media.POST("/uploads/complete", mediaProcessingHandler.CompleteMedia) // CompleteMedia - finalize and zip
 			media.POST("/update", mediaProcessingHandler.UpdateMedia)             // UpdateMedia - update metadata
 			media.DELETE("/delete", mediaProcessingHandler.DeleteMedia)           // DeleteMedia - remove asset
+			media.POST("/approve", mediaProcessingHandler.ApproveListingMedia)    // ApproveListingMedia - owner approval
 
 			// Retrieval
 			media.GET("", mediaProcessingHandler.ListMedia)                      // ListMedia - list assets with pagination
@@ -306,13 +307,12 @@ func RegisterListingRoutes(
 		listings.POST("/versions/promote", listingHandler.PromoteListingVersion)
 		listings.POST("/versions/discard", listingHandler.DiscardDraftVersion)
 		listings.POST("/versions", listingHandler.ListListingVersions)
+		listings.POST("/status", listingHandler.ChangeListingStatus)
 		listings.GET("/:id/status", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetListingStatus
 
 		// Owner operations
 		listings.POST("/:id/approve", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ApproveListing
 		listings.POST("/:id/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // RejectListing
-		listings.POST("/:id/suspend", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SuspendListing
-		listings.POST("/:id/release", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ReleaseListing
 		listings.POST("/:id/copy", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // CopyListing
 
 		// Realtor operations

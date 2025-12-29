@@ -25,6 +25,7 @@ type ListingHandlerPort interface {
 	SuspendListing(c *gin.Context)
 	ReleaseListing(c *gin.Context)
 	CopyListing(c *gin.Context)
+	ChangeListingStatus(c *gin.Context)
 	ShareListing(c *gin.Context)
 	AddFavoriteListing(c *gin.Context)
 	RemoveFavoriteListing(c *gin.Context)

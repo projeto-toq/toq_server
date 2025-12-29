@@ -15,6 +15,7 @@
 6. **Gestão** – o usuário pode listar, renomear (`POST /update`) ou excluir (`DELETE /delete`) assets `PROCESSED`/`FAILED` antes da finalização.
 7. **Finalização** – `POST /uploads/complete` confirma que todos os assets estão `PROCESSED`, altera o listing para `StatusPendingOwnerApproval`, registra novo job e dispara Step Functions `listing-media-finalization-sm-staging` (Lambda `listing-media-zip-staging`).
 8. **Distribuição** – `POST /media/download` gera URLs GET assinadas (TTL default 3600s) para cada asset ou para o ZIP `/<listingIdentityId>/processed/zip/listing-media.zip`.
+9. **Aprovação do proprietário** – `POST /media/approve` permite que o owner aceite ou rejeite os materiais. Quando `LISTING_APPROVAL_ADMIN_REVIEW=true`, aprovações vão para `StatusPendingAdminReview`; caso contrário, avançam direto para `StatusReady`. Rejeições retornam o fluxo para `StatusRejectedByOwner`.
 
 ## 3. Modelos de domínio e persistência
 - **MediaAsset (`internal/core/model/media_processing_model/media_asset.go`)**
@@ -189,6 +190,20 @@ Valida que todos os assets retornados por `ListAssets` estão com `Status=PROCES
 }
 ```
 Para o pipeline de zip, `provider = STEP_FUNCTIONS_FINALIZATION`, `status` pode ser `SUCCEEDED` ou `FINALIZATION_FAILED`, e `zipBundles` contém chaves como `"28/processed/zip/listing-media.zip"` acompanhadas de `zipSizeBytes` e `unzippedSizeBytes`.
+
+### 4.9 `POST /listings/media/approve`
+Body:
+```json
+{
+	"listingIdentityId": 123,
+	"approve": true
+}
+```
+Regras:
+- Apenas o owner autêntico pode aprovar/rejeitar.
+- O listing precisa estar em `StatusPendingOwnerApproval`, caso contrário retorna 400.
+- `LISTING_APPROVAL_ADMIN_REVIEW=true` move aprovações para `StatusPendingAdminReview`; quando `false`, o status final é `StatusReady`.
+- Rejeições retornam o status para `StatusRejectedByOwner`, permitindo novos uploads/edições.
 
 ## 5. Orquestração AWS
 

@@ -52,6 +52,7 @@ type ListingServiceInterface interface {
 	CreateDraftVersion(ctx context.Context, input CreateDraftVersionInput) (CreateDraftVersionOutput, error)
 	UpdateListing(ctx context.Context, input UpdateListingInput) (err error)
 	PromoteListingVersion(ctx context.Context, input PromoteListingVersionInput) error
+	ChangeListingStatus(ctx context.Context, input ChangeListingStatusInput) (ChangeListingStatusOutput, error)
 	DiscardDraftVersion(ctx context.Context, input DiscardDraftVersionInput) error
 	ListListingVersions(ctx context.Context, input ListListingVersionsInput) (ListListingVersionsOutput, error)
 	GetAllListingsByUser(ctx context.Context, userID int64) (listings []listingmodel.ListingInterface, err error)

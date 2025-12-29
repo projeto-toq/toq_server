@@ -831,6 +831,50 @@ definitions:
       slug:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusRequest:
+    properties:
+      action:
+        description: |-
+          Action determines the transition to apply.
+          Allowed values: PUBLISH (READY → PUBLISHED) or SUSPEND (PUBLISHED/UNDER_OFFER/UNDER_NEGOTIATION → READY).
+          Example: "PUBLISH"
+        enum:
+        - PUBLISH
+        - SUSPEND
+        example: PUBLISH
+        type: string
+      listingIdentityId:
+        description: |-
+          ListingIdentityID identifies the listing identity (listing_identities.id) that will change status.
+          Must be greater than zero and belong to the authenticated owner.
+          Example: 1024
+        example: 1024
+        minimum: 1
+        type: integer
+    required:
+    - action
+    - listingIdentityId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusResponse:
+    properties:
+      activeVersionId:
+        description: ActiveVersionID is the version affected by the transition.
+        example: 5003
+        type: integer
+      listingIdentityId:
+        description: ListingIdentityID is the identity that had its active version
+          updated.
+        example: 1024
+        type: integer
+      newStatus:
+        description: NewStatus is the resulting status after the action.
+        example: PUBLISHED
+        type: string
+      previousStatus:
+        description: PreviousStatus is the status before the change.
+        example: READY
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse:
     properties:
       city:
@@ -1780,6 +1824,30 @@ definitions:
         type: integer
       priority:
         type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalRequest:
+    properties:
+      approve:
+        example: true
+        type: boolean
+      listingIdentityId:
+        example: 42
+        minimum: 1
+        type: integer
+    required:
+    - listingIdentityId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalResponse:
+    properties:
+      decision:
+        example: approved
+        type: string
+      listingIdentityId:
+        example: 42
+        type: integer
+      newStatus:
+        example: PENDING_ADMIN_REVIEW
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse:
     properties:
@@ -7226,6 +7294,51 @@ paths:
       summary: List media assets
       tags:
       - Listings Media
+  /listings/media/approve:
+    post:
+      consumes:
+      - application/json
+      description: Owner-only endpoint that validates the listing status (PENDING_OWNER_APPROVAL)
+        and applies the requested decision.
+      parameters:
+      - description: Owner decision payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Decision applied
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalResponse'
+        "400":
+          description: Listing not awaiting owner approval
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Only the owner can approve/reject
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Approve or reject listing media
+      tags:
+      - Listings Media
   /listings/media/callback:
     post:
       consumes:
@@ -7757,6 +7870,55 @@ paths:
       summary: List available photographer slots
       tags:
       - Listing Photo Sessions
+  /listings/status:
+    post:
+      consumes:
+      - application/json
+      description: Allows the listing owner to publish (READY → PUBLISHED) or suspend
+        (PUBLISHED/UNDER_OFFER/UNDER_NEGOTIATION → READY) the active version.
+      parameters:
+      - description: Listing status change payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Transition applied
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update listing publication status
+      tags:
+      - Listings
   /listings/versions:
     post:
       consumes:

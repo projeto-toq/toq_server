@@ -16,6 +16,7 @@ type MediaProcessingHandlerPort interface {
 	UpdateMedia(c *gin.Context)
 	DeleteMedia(c *gin.Context)
 	CompleteMedia(c *gin.Context) // Finalização manual/zip
+	ApproveListingMedia(c *gin.Context)
 
 	// Callbacks (Internal/Webhook)
 	HandleProcessingCallback(c *gin.Context)

@@ -2,6 +2,7 @@ package mediaprocessingservice
 
 import (
 	"context"
+	"os"
 	"strings"
 	"time"
 
@@ -29,6 +30,7 @@ type MediaProcessingServiceInterface interface {
 	UpdateMedia(ctx context.Context, input dto.UpdateMediaInput) error
 	DeleteMedia(ctx context.Context, input dto.DeleteMediaInput) error
 	CompleteMedia(ctx context.Context, input dto.CompleteMediaInput) error
+	HandleOwnerMediaApproval(ctx context.Context, input dto.ListingMediaApprovalInput) (dto.ListingMediaApprovalOutput, error)
 
 	// Legacy/Internal
 	HandleProcessingCallback(ctx context.Context, input dto.HandleProcessingCallbackInput) (dto.HandleProcessingCallbackOutput, error)
@@ -41,6 +43,7 @@ type Config struct {
 	MaxFileBytes            int64
 	AllowedContentTypes     []string
 	AllowOwnerProjectUpload bool
+	RequireAdminReview      bool
 }
 
 type mediaProcessingService struct {
@@ -67,6 +70,16 @@ func NewConfigFromEnvironment(env *globalmodel.Environment) Config {
 	cfg.MaxFileBytes = env.MediaProcessing.Limits.MaxFileBytes
 	cfg.AllowedContentTypes = append(cfg.AllowedContentTypes, env.MediaProcessing.Limits.AllowedContentTypes...)
 	cfg.AllowOwnerProjectUpload = env.MediaProcessing.Features.AllowOwnerProjectUploads
+	cfg.RequireAdminReview = env.MediaProcessing.Features.ListingApprovalAdminReview
+
+	if raw := strings.TrimSpace(os.Getenv("LISTING_APPROVAL_ADMIN_REVIEW")); raw != "" {
+		switch strings.ToLower(raw) {
+		case "true", "1", "yes":
+			cfg.RequireAdminReview = true
+		case "false", "0", "no":
+			cfg.RequireAdminReview = false
+		}
+	}
 
 	return cfg
 }

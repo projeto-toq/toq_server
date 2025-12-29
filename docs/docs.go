@@ -5683,6 +5683,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/listings/media/approve": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Owner-only endpoint that validates the listing status (PENDING_OWNER_APPROVAL) and applies the requested decision.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Approve or reject listing media",
+                "parameters": [
+                    {
+                        "description": "Owner decision payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Decision applied",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Listing not awaiting owner approval",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Only the owner can approve/reject",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/listings/media/callback": {
             "post": {
                 "description": "Validates the shared secret, parses the Step Functions callback payload, updates internal state and returns 200.",
@@ -6479,6 +6548,81 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/status": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows the listing owner to publish (READY → PUBLISHED) or suspend (PUBLISHED/UNDER_OFFER/UNDER_NEGOTIATION → READY) the active version.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings"
+                ],
+                "summary": "Update listing publication status",
+                "parameters": [
+                    {
+                        "description": "Listing status change payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transition applied",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
                         }
@@ -10471,6 +10615,55 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "listingIdentityId"
+            ],
+            "properties": {
+                "action": {
+                    "description": "Action determines the transition to apply.\nAllowed values: PUBLISH (READY → PUBLISHED) or SUSPEND (PUBLISHED/UNDER_OFFER/UNDER_NEGOTIATION → READY).\nExample: \"PUBLISH\"",
+                    "type": "string",
+                    "enum": [
+                        "PUBLISH",
+                        "SUSPEND"
+                    ],
+                    "example": "PUBLISH"
+                },
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing identity (listing_identities.id) that will change status.\nMust be greater than zero and belong to the authenticated owner.\nExample: 1024",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1024
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ChangeListingStatusResponse": {
+            "type": "object",
+            "properties": {
+                "activeVersionId": {
+                    "description": "ActiveVersionID is the version affected by the transition.",
+                    "type": "integer",
+                    "example": 5003
+                },
+                "listingIdentityId": {
+                    "description": "ListingIdentityID is the identity that had its active version updated.",
+                    "type": "integer",
+                    "example": 1024
+                },
+                "newStatus": {
+                    "description": "NewStatus is the resulting status after the action.",
+                    "type": "string",
+                    "example": "PUBLISHED"
+                },
+                "previousStatus": {
+                    "description": "PreviousStatus is the status before the change.",
+                    "type": "string",
+                    "example": "READY"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse": {
             "type": "object",
             "properties": {
@@ -11861,6 +12054,40 @@ const docTemplate = `{
                 },
                 "priority": {
                     "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalRequest": {
+            "type": "object",
+            "required": [
+                "listingIdentityId"
+            ],
+            "properties": {
+                "approve": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "listingIdentityId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 42
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingMediaApprovalResponse": {
+            "type": "object",
+            "properties": {
+                "decision": {
+                    "type": "string",
+                    "example": "approved"
+                },
+                "listingIdentityId": {
+                    "type": "integer",
+                    "example": 42
+                },
+                "newStatus": {
+                    "type": "string",
+                    "example": "PENDING_ADMIN_REVIEW"
                 }
             }
         },

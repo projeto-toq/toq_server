@@ -197,6 +197,37 @@ type StartListingResponse struct {
 	Status            string `json:"status" example:"DRAFT"`
 }
 
+// ChangeListingStatusRequest represents owner-driven transitions between READY and PUBLISHED states.
+//
+// This DTO is used by POST /listings/status and requires authentication. Only the listing owner can
+// publish or suspend a listing, and the service validates both ownership and status transitions.
+type ChangeListingStatusRequest struct {
+	// ListingIdentityID identifies the listing identity (listing_identities.id) that will change status.
+	// Must be greater than zero and belong to the authenticated owner.
+	// Example: 1024
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required,min=1" example:"1024"`
+
+	// Action determines the transition to apply.
+	// Allowed values: PUBLISH (READY → PUBLISHED) or SUSPEND (PUBLISHED/UNDER_OFFER/UNDER_NEGOTIATION → READY).
+	// Example: "PUBLISH"
+	Action string `json:"action" binding:"required,oneof=PUBLISH SUSPEND" example:"PUBLISH"`
+}
+
+// ChangeListingStatusResponse echoes the updated metadata after applying the transition.
+type ChangeListingStatusResponse struct {
+	// ListingIdentityID is the identity that had its active version updated.
+	ListingIdentityID int64 `json:"listingIdentityId" example:"1024"`
+
+	// ActiveVersionID is the version affected by the transition.
+	ActiveVersionID int64 `json:"activeVersionId" example:"5003"`
+
+	// PreviousStatus is the status before the change.
+	PreviousStatus string `json:"previousStatus" example:"READY"`
+
+	// NewStatus is the resulting status after the action.
+	NewStatus string `json:"newStatus" example:"PUBLISHED"`
+}
+
 // CreateDraftVersionRequest represents request for creating a draft version from active listing
 type CreateDraftVersionRequest struct {
 	ListingIdentityID int64 `json:"listingIdentityId" binding:"required"`
@@ -734,17 +765,6 @@ type ListListingVersionsResponse struct {
 
 // DeleteListingResponse represents response for deleting a listing
 type DeleteListingResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
-// ChangeListingStatusRequest represents request for changing listing status
-type ChangeListingStatusRequest struct {
-	Status string `json:"status" binding:"required"`
-}
-
-// ChangeListingStatusResponse represents response for changing listing status
-type ChangeListingStatusResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
@@ -1336,6 +1356,19 @@ type ListMediaResponse struct {
 	Data       []MediaAssetResponse    `json:"data"`
 	Pagination PaginationResponse      `json:"pagination"`
 	ZipBundle  *MediaZipBundleResponse `json:"zipBundle,omitempty"`
+}
+
+// ListingMediaApprovalRequest represents owner approval/rejection payload.
+type ListingMediaApprovalRequest struct {
+	ListingIdentityID uint64 `json:"listingIdentityId" binding:"required,min=1" example:"42"`
+	Approve           bool   `json:"approve" example:"true"`
+}
+
+// ListingMediaApprovalResponse echoes the new status after the decision.
+type ListingMediaApprovalResponse struct {
+	ListingIdentityID uint64 `json:"listingIdentityId" example:"42"`
+	Decision          string `json:"decision" example:"approved"`
+	NewStatus         string `json:"newStatus" example:"PENDING_ADMIN_REVIEW"`
 }
 
 // MediaAssetResponse espelha o modelo de domínio completo.

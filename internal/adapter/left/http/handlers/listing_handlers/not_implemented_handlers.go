@@ -19,12 +19,6 @@ func (lh *ListingHandler) GetListingByComplexId(c *gin.Context) {
 	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "GetListingByComplexId service method not implemented yet")
 }
 
-// ChangeListingStatus handles changing a listing's status
-// Service method not implemented yet
-func (lh *ListingHandler) ChangeListingStatus(c *gin.Context) {
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "ChangeListingStatus service method not implemented yet")
-}
-
 // GetUserListingsByStatus handles getting user listings filtered by status
 // Service method not implemented yet
 func (lh *ListingHandler) GetUserListingsByStatus(c *gin.Context) {

@@ -171,7 +171,8 @@ type Environment struct {
 			AllowedContentTypes []string `yaml:"allowed_content_types"`
 		} `yaml:"limits"`
 		Features struct {
-			AllowOwnerProjectUploads bool `yaml:"allow_owner_project_uploads"`
+			AllowOwnerProjectUploads   bool `yaml:"allow_owner_project_uploads"`
+			ListingApprovalAdminReview bool `yaml:"listing_approval_admin_review"`
 		} `yaml:"features"`
 	} `yaml:"media_processing"`
 	GCS struct {
