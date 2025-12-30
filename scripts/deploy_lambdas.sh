@@ -7,6 +7,9 @@ export AWS_REGION=us-east-1
 
 ROOT_DIR=$(pwd)
 BIN_DIR="$ROOT_DIR/aws/lambdas/bin"
+POLICY_FILE="$ROOT_DIR/aws/step_functions/updated_policy.json"
+IAM_ROLE_NAME=${IAM_ROLE_NAME:-"toq-media-processing-backend-staging"}
+IAM_POLICY_NAME=${IAM_POLICY_NAME:-"toq-media-processing-backend-inline"}
 
 shopt -s nullglob
 zip_files=("$BIN_DIR"/*.zip)
@@ -26,6 +29,17 @@ for zip_file in "${zip_files[@]}"; do
 		--function-name "$function_name" \
 		--zip-file "fileb://$zip_file" > /dev/null
 done
+
+if [ ! -f "$POLICY_FILE" ]; then
+	echo "❌ Política não encontrada em $POLICY_FILE"
+	exit 1
+fi
+
+echo "Updating IAM inline policy for role $IAM_ROLE_NAME..."
+aws iam put-role-policy \
+	--role-name "$IAM_ROLE_NAME" \
+	--policy-name "$IAM_POLICY_NAME" \
+	--policy-document "file://$POLICY_FILE" > /dev/null
 
 echo "Updating Step Functions definition..."
 aws stepfunctions update-state-machine \

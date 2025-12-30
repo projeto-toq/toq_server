@@ -37,6 +37,14 @@
             ]
         },
         {
+            "Sid": "StartFinalizationWorkflow",
+            "Effect": "Allow",
+            "Action": [
+                "states:StartExecution"
+            ],
+            "Resource": "arn:aws:states:us-east-1:058264253741:stateMachine:listing-media-finalization-sm-staging"
+        },
+        {
             "Sid": "CloudWatchLogs",
             "Effect": "Allow",
             "Action": [

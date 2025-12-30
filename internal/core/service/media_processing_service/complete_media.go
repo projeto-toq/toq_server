@@ -10,6 +10,7 @@ import (
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
+	"github.com/projeto-toq/toq_server/internal/core/port/right/workflow"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -89,6 +90,14 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 
 	executionARN, err := s.workflow.StartMediaFinalization(ctx, finalizationInput)
 	if err != nil {
+		if errors.Is(err, workflow.ErrFinalizationAccessDenied) {
+			logger.Error("service.media.complete.workflow_denied", "listing_identity_id", input.ListingIdentityID, "job_id", jobID)
+			return derrors.Forbidden(
+				"media finalization temporarily unavailable",
+				derrors.WithDetails(map[string]any{"reason": "workflow_access_denied"}),
+			)
+		}
+
 		utils.SetSpanError(ctx, err)
 		logger.Error("service.media.complete.start_workflow_error", "err", err, "listing_identity_id", input.ListingIdentityID, "job_id", jobID)
 		return derrors.Infra("failed to start finalization workflow", err)

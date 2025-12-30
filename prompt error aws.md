@@ -6,17 +6,16 @@
 
 ## 🎯 Problema / Solicitação
 
-A aplicação toq_server, que é este projeto, é consumido por um front-end flutter com uma versão web. Esta versão web está apresentando erros de cors ao acessar imagens hospedadas em buckets S3 na AWS.
-O bucket S3 tem o nome de `toq-listing-medias` e está na região us-east-1. Existe um outro bucket chamado `toq-user-medias` na mesma região.
-A versão web está rodando neste servidor que é uma instancia AWS EC2 com NGINX como servidor web.
+Usuário está reportando que ao executar `POST /listings/media/uploads/complete` recebe o erro 500 Internal Server Error.
+Existem entradas de LOG com erro em logs/toq_server.log.
+A execução deste endpoint deve gerar um ZIP no bucket S3 segundo os lambdas e steps em aws/* e este ZIP não existe no bucket S3.
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código de toq_server, as configurações de CORS da AWS e do NGINX e identifique a causa raiz do problema.
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código de toq_server, as configurações da AWS e identifique a causa raiz do problema.
 2. Caso necessite consultas além do código para confirmar a causa raiz, utilize: 
     2.1.**Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
     2.2.**Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
     2.3.**Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
-    2.4.**O usuário fotografo tem nationalId = 60966100301, password = Vieg@s123 e deviceToken = fcm_device_token_postman_photographer1** 
 3. Estamos buscando a causa raiz do problema, não a solução imediata e rápida.
 4. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
 
