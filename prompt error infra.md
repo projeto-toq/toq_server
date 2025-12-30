@@ -1,25 +1,22 @@
-### Engenheiro de Software Go Sênior e AWS Admin Senior — Análise e Refatoração TOQ Server
+### Engenheiro de Software Go Sênior — Análise e Refatoração TOQ Server
 
-**Objetivo:** Atuar como engenheiro Linux e AWS admin senior, para analisar as configurações existente, entender claramente o erro apresentado e identificar a causa raiz do problema para propor planos detalhados de refatoração. Toda a interação deve ser feita em português.
+**Objetivo:** Atuar como engenheiro Go sênior para analisar código existente, entender claramente o erro apresentado e identificar a causa raiz do problema para propor planos detalhados de refatoração. Toda a interação deve ser feita em português.
 
 ---
 
 ## 🎯 Problema / Solicitação
 
-A aplicação toq_server, que é este projeto, é consumido por um front-end flutter com uma versão web. Esta versão web está apresentando erros de cors ao acessar imagens hospedadas em buckets S3 na AWS.
-O bucket S3 tem o nome de `toq-listing-medias` e está na região us-east-1. Existe um outro bucket chamado `toq-user-medias` na mesma região.
-A versão web está rodando neste servidor que é uma instancia AWS EC2 com NGINX como servidor web.
+Após diversas refatorações os status dos listing, cuja fonte da verdade é `/codigos/go_code/toq_server/internal/core/model/listing_model/constants.go`, não estão refletidos corretamente em outras partes do sistema como :
+`/codigos/go_code/toq_server/internal/adapter/left/http/handlers/listing_handlers/list_listings_handler.go`
+`/codigos/go_code/toq_server/internal/core/service/listing_service/create_draft_version.go`
+
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código de toq_server, as configurações de CORS da AWS e do NGINX e identifique a causa raiz do problema.
-2. Caso necessite consultas além do código para confirmar a causa raiz, utilize: 
-    2.1.**Se necessita acessar a console AWS**, use as credenciais em configs/aws_credentials
-    2.2.**Se necessita consutar o banco de dados**, o MySql está rodando em docker e o docker-compose.yml está na raiz do projeto
-    2.3.**Se necessita acessar algo com sudo** envie o comando na CLI que digito a senha.
-    2.4.**O usuário fotografo tem nationalId = 60966100301, password = Vieg@s123 e deviceToken = fcm_device_token_postman_photographer1** 
-3. Estamos buscando a causa raiz do problema, não a solução imediata e rápida.
-4. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual (observabilidade, erros, transações, etc).
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
+2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual `docs/toq_server_go_guide.md` (observabilidade, erros, transações, etc).
+3. Garanta que todos os lugares que utilizem cópias/imagens dos status dos listings estejam alinhados com a fonte da verdade em `internal/core/model/listing_model/constants.go`.
 
+---
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**
 - **`docs/toq_server_go_guide.md`** — Guia completo do projeto (seções 1-17)
