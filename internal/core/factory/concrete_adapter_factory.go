@@ -22,6 +22,7 @@ import (
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
+	visithandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/visit_handlers"
 
 	// Metrics adapter
 	prometheusadapter "github.com/projeto-toq/toq_server/internal/adapter/right/prometheus"
@@ -68,6 +69,7 @@ import (
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	scheduleservice "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	visitservice "github.com/projeto-toq/toq_server/internal/core/service/visit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 
 	mediaprocessingcallbackport "github.com/projeto-toq/toq_server/internal/core/port/right/functions/mediaprocessingcallback"
@@ -308,6 +310,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	listingService listingservice.ListingServiceInterface,
 	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface,
 	scheduleService scheduleservice.ScheduleServiceInterface,
+	visitService visitservice.Service,
 	holidayService holidayservice.HolidayServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
 	photoSessionService photosessionservice.PhotoSessionServiceInterface,
@@ -400,6 +403,16 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		globalService,
 	)
 
+	visitHandlerPort := visithandlers.NewVisitHandler(
+		visitService,
+	)
+
+	visitHandler, ok := visitHandlerPort.(*visithandlers.VisitHandler)
+	if !ok {
+		slog.Error("factory.http_handlers.visit_cast_failed")
+		return HTTPHandlers{}
+	}
+
 	// Create metrics handler (optional)
 	var metricsHandler *handlers.MetricsHandler
 	if metricsAdapter != nil {
@@ -418,5 +431,6 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		ScheduleHandler:        scheduleHandler,
 		HolidayHandler:         holidayHandler,
 		PhotoSessionHandler:    photoSessionHandler,
+		VisitHandler:           visitHandler,
 	}
 }

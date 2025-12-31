@@ -20,18 +20,23 @@ type rowScanner interface {
 // maintaining strict column order matching the SELECT queries in repository methods.
 //
 // Column Order (MUST match all SELECT queries):
-//  1. id              → VisitEntity.ID
-//  2. listing_id      → VisitEntity.ListingID
-//  3. owner_id        → VisitEntity.OwnerID
-//  4. realtor_id      → VisitEntity.RealtorID
-//  5. scheduled_start → VisitEntity.ScheduledStart
-//  6. scheduled_end   → VisitEntity.ScheduledEnd
-//  7. status          → VisitEntity.Status
-//  8. cancel_reason   → VisitEntity.CancelReason (sql.NullString)
-//  9. notes           → VisitEntity.Notes (sql.NullString)
+//  1. id                   → VisitEntity.ID
+//  2. listing_identity_id  → VisitEntity.ListingIdentityID
+//  3. listing_version      → VisitEntity.ListingVersion
+//  4. user_id              → VisitEntity.RequesterUserID
+//  5. owner_user_id        → VisitEntity.OwnerUserID
+//  6. scheduled_start      → VisitEntity.ScheduledStart
+//  7. scheduled_end        → VisitEntity.ScheduledEnd
+//  8. duration_minutes     → VisitEntity.DurationMinutes
+//  9. status               → VisitEntity.Status
 //
-// 10. created_by      → VisitEntity.CreatedBy
-// 11. updated_by      → VisitEntity.UpdatedBy (sql.NullInt64)
+// 10. type                 → VisitEntity.Type
+// 11. source               → VisitEntity.Source (sql.NullString)
+// 12. realtor_notes        → VisitEntity.RealtorNotes (sql.NullString)
+// 13. owner_notes          → VisitEntity.OwnerNotes (sql.NullString)
+// 14. rejection_reason     → VisitEntity.RejectionReason (sql.NullString)
+// 15. cancel_reason        → VisitEntity.CancelReason (sql.NullString)
+// 16. first_owner_action_at→ VisitEntity.FirstOwnerActionAt (sql.NullTime)
 //
 // Parameters:
 //   - scanner: rowScanner interface (sql.Row or sql.Rows)
@@ -52,19 +57,24 @@ type rowScanner interface {
 func scanVisitEntity(scanner rowScanner) (entities.VisitEntity, error) {
 	var visit entities.VisitEntity
 
-	// Scan all 11 columns in exact order matching SELECT queries
+	// Scan all columns in exact order matching SELECT queries
 	if err := scanner.Scan(
 		&visit.ID,
-		&visit.ListingID,
-		&visit.OwnerID,
-		&visit.RealtorID,
+		&visit.ListingIdentityID,
+		&visit.ListingVersion,
+		&visit.RequesterUserID,
+		&visit.OwnerUserID,
 		&visit.ScheduledStart,
 		&visit.ScheduledEnd,
+		&visit.DurationMinutes,
 		&visit.Status,
-		&visit.CancelReason, // sql.NullString handles NULL
-		&visit.Notes,        // sql.NullString handles NULL
-		&visit.CreatedBy,
-		&visit.UpdatedBy, // sql.NullInt64 handles NULL
+		&visit.Type,
+		&visit.Source,
+		&visit.RealtorNotes,
+		&visit.OwnerNotes,
+		&visit.RejectionReason,
+		&visit.CancelReason,
+		&visit.FirstOwnerActionAt,
 	); err != nil {
 		return entities.VisitEntity{}, err
 	}

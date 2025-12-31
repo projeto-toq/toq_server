@@ -12,6 +12,7 @@ import (
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
+	visithandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/visit_handlers"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
 	"github.com/projeto-toq/toq_server/internal/core/factory"
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
@@ -66,6 +67,7 @@ func SetupRoutes(
 	scheduleHandler := handlers.ScheduleHandler
 	holidayHandler := handlers.HolidayHandler
 	photoSessionHandler := handlers.PhotoSessionHandler
+	visitHandler := handlers.VisitHandler
 
 	// API base routes (v2)
 	base := "/api/v2"
@@ -88,6 +90,9 @@ func SetupRoutes(
 
 	// Register schedule routes (authenticated)
 	RegisterScheduleRoutes(v1, scheduleHandler, activityTracker, permissionService)
+
+	// Register visit routes (authenticated)
+	RegisterVisitRoutes(v1, visitHandler, activityTracker, permissionService)
 
 	// Register photographer routes (authenticated)
 	RegisterPhotographerRoutes(v1, photoSessionHandler, activityTracker, permissionService)
@@ -252,6 +257,25 @@ func RegisterScheduleRoutes(
 	}
 }
 
+// RegisterVisitRoutes registers visit-related routes with authentication and permissions applied.
+func RegisterVisitRoutes(
+	router *gin.RouterGroup,
+	visitHandler *visithandlers.VisitHandler,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
+	visits := router.Group("/visits")
+	visits.Use(middlewares.AuthMiddleware(activityTracker))
+	visits.Use(middlewares.PermissionMiddleware(permissionService))
+	{
+		visits.POST("", visitHandler.CreateVisit)
+		visits.POST("/status", visitHandler.UpdateVisitStatus)
+		visits.GET("/owner", visitHandler.ListVisitsOwner)
+		visits.GET("/realtor", visitHandler.ListVisitsRealtor)
+		visits.GET("/:visitId", visitHandler.GetVisit)
+	}
+}
+
 // RegisterListingRoutes registers all listing-related routes with middleware dependencies
 func RegisterListingRoutes(
 	router *gin.RouterGroup,
@@ -327,19 +351,6 @@ func RegisterListingRoutes(
 		// Offers
 		listings.POST("/:id/offers", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // CreateOffer
 		listings.GET("/:id/offers", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetOffers
-	}
-
-	// Visit management (all require authentication)
-	visits := router.Group("/visits")
-	// Apply security middlewares to authenticated routes
-	visits.Use(middlewares.AuthMiddleware(activityTracker))
-	visits.Use(middlewares.PermissionMiddleware(permissionService))
-	{
-		visits.GET("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })              // GetAllVisits
-		visits.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // CancelVisit
-		visits.POST("/:id/confirm", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ConfirmVisitDone
-		visits.POST("/:id/approve", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ApproveVisiting
-		visits.POST("/:id/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // RejectVisiting
 	}
 
 	// Offer management (all require authentication)

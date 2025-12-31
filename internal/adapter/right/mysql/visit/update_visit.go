@@ -56,19 +56,27 @@ func (a *VisitAdapter) UpdateVisit(ctx context.Context, tx *sql.Tx, visit listin
 
 	// UPDATE query with all mutable fields
 	// Note: WHERE id = ? ensures we only update the target visit
-	query := `UPDATE listing_visits SET listing_id = ?, owner_id = ?, realtor_id = ?, scheduled_start = ?, scheduled_end = ?, status = ?, cancel_reason = ?, notes = ?, updated_by = ? WHERE id = ?`
+	query := `UPDATE listing_visits
+		SET listing_identity_id = ?, listing_version = ?, user_id = ?, owner_user_id = ?, scheduled_start = ?, scheduled_end = ?, duration_minutes = ?, status = ?, type = ?, source = ?, realtor_notes = ?, owner_notes = ?, rejection_reason = ?, cancel_reason = ?, first_owner_action_at = ?
+		WHERE id = ?`
 
 	// Execute update via instrumented adapter
 	result, err := a.ExecContext(ctx, tx, "update_visit", query,
-		entity.ListingID,
-		entity.OwnerID,
-		entity.RealtorID,
+		entity.ListingIdentityID,
+		entity.ListingVersion,
+		entity.RequesterUserID,
+		entity.OwnerUserID,
 		entity.ScheduledStart,
 		entity.ScheduledEnd,
+		entity.DurationMinutes,
 		entity.Status,
+		entity.Type,
+		entity.Source,
+		entity.RealtorNotes,
+		entity.OwnerNotes,
+		entity.RejectionReason,
 		entity.CancelReason,
-		entity.Notes,
-		entity.UpdatedBy,
+		entity.FirstOwnerActionAt,
 		entity.ID,
 	)
 	if err != nil {

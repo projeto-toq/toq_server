@@ -6,9 +6,8 @@
 
 ## 🎯 Problema / Solicitação
 
-Usuário está reportando que ao executar `POST /listings/media/uploads/complete` recebe o erro 500 Internal Server Error.
-Existem entradas de LOG com erro em logs/toq_server.log.
-A execução deste endpoint deve gerar um ZIP no bucket S3 segundo os lambdas e steps em aws/* e este ZIP não existe no bucket S3.
+Usuário está reportando que após retirar o `blob` do CSP esta apresentado erro ao tentar chamar a URL blob:https://gca..... 
+Isso ocorre na browser rodando aplicação flutter web ao tentar carregar uma imagem e é criada internamente pelo navegador quando você seleciona arquivos. Isso é inevitável e faz parte da API do navegador (File API).
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código de toq_server, as configurações da AWS e identifique a causa raiz do problema.

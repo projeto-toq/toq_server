@@ -12,6 +12,7 @@ import (
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
+	visithandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/visit_handlers"
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
@@ -93,6 +94,7 @@ type HTTPHandlers struct {
 	ScheduleHandler        *schedulehandlers.ScheduleHandler
 	HolidayHandler         *holidayhandlers.HolidayHandler
 	PhotoSessionHandler    *photosessionhandlers.PhotoSessionHandler
+	VisitHandler           *visithandlers.VisitHandler
 }
 
 // MetricsAdapter contém o adapter de métricas

@@ -39,6 +39,7 @@ import (
 	sessionservice "github.com/projeto-toq/toq_server/internal/core/service/session_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	validationservice "github.com/projeto-toq/toq_server/internal/core/service/validation_service"
+	visitservice "github.com/projeto-toq/toq_server/internal/core/service/visit_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 	"gopkg.in/yaml.v3"
@@ -67,6 +68,7 @@ type config struct {
 	photoSessionService     photosessionservices.PhotoSessionServiceInterface
 	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface
 	mediaProcessingService  mediaprocessingservice.MediaProcessingServiceInterface
+	visitService            visitservice.Service
 	metricsAdapter          *factory.MetricsAdapter
 	cep                     cepport.CEPPortInterface
 	cpf                     cpfport.CPFPortInterface
@@ -96,6 +98,7 @@ type ConfigInterface interface {
 	InitUserHandler()
 	InitHolidayService()
 	InitScheduleService()
+	InitVisitService()
 	InitMediaProcessingService()
 	InitPropertyCoverageService()
 	InitPhotoSessionService()
@@ -250,6 +253,7 @@ func (c *config) initializeServices() {
 	c.InitPermissionHandler()
 	c.InitHolidayService()
 	c.InitScheduleService()
+	c.InitVisitService()
 	c.InitPhotoSessionService()
 	c.InitPropertyCoverageService()
 	c.InitListingHandler()
@@ -511,6 +515,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.listingService,
 		c.propertyCoverageService,
 		c.scheduleService,
+		c.visitService,
 		c.holidayService,
 		c.permissionService,
 		c.photoSessionService,

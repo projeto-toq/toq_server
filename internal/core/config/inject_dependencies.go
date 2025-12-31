@@ -17,6 +17,7 @@ import (
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	visitservice "github.com/projeto-toq/toq_server/internal/core/service/visit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
 
@@ -279,6 +280,42 @@ func (c *config) InitScheduleService() {
 		c.repositoryAdapters.Listing,
 		c.globalService,
 		serviceConfig,
+	)
+}
+
+func (c *config) InitVisitService() {
+	slog.Debug("Initializing Visit Service")
+
+	if c.repositoryAdapters == nil {
+		slog.Error("repositoryAdapters is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Visit == nil {
+		slog.Error("repositoryAdapters.Visit is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Listing == nil {
+		slog.Error("repositoryAdapters.Listing is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Schedule == nil {
+		slog.Error("repositoryAdapters.Schedule is nil")
+		return
+	}
+
+	if c.globalService == nil {
+		slog.Error("globalService is nil")
+		return
+	}
+
+	c.visitService = visitservice.NewService(
+		c.globalService,
+		c.repositoryAdapters.Visit,
+		c.repositoryAdapters.Listing,
+		c.repositoryAdapters.Schedule,
 	)
 }
 

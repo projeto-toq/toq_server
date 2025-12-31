@@ -66,22 +66,22 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	conditions := make([]string, 0)
 	args := make([]any, 0)
 
-	// Filter by listing (exact match)
-	if filter.ListingID != nil {
-		conditions = append(conditions, "listing_id = ?")
-		args = append(args, *filter.ListingID)
+	// Filter by listing identity (exact match)
+	if filter.ListingIdentityID != nil {
+		conditions = append(conditions, "listing_identity_id = ?")
+		args = append(args, *filter.ListingIdentityID)
 	}
 
-	// Filter by property owner (exact match)
-	if filter.OwnerID != nil {
-		conditions = append(conditions, "owner_id = ?")
-		args = append(args, *filter.OwnerID)
+	// Filter by owner user (exact match)
+	if filter.OwnerUserID != nil {
+		conditions = append(conditions, "owner_user_id = ?")
+		args = append(args, *filter.OwnerUserID)
 	}
 
-	// Filter by realtor (exact match)
-	if filter.RealtorID != nil {
-		conditions = append(conditions, "realtor_id = ?")
-		args = append(args, *filter.RealtorID)
+	// Filter by requester user (exact match)
+	if filter.RequesterUserID != nil {
+		conditions = append(conditions, "user_id = ?")
+		args = append(args, *filter.RequesterUserID)
 	}
 
 	// Filter by status array (IN clause for multiple statuses)
@@ -92,6 +92,16 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 			args = append(args, string(status))
 		}
 		conditions = append(conditions, fmt.Sprintf("status IN (%s)", strings.Join(placeholders, ",")))
+	}
+
+	// Filter by types array (IN clause)
+	if len(filter.Types) > 0 {
+		placeholders := make([]string, len(filter.Types))
+		for i, visitType := range filter.Types {
+			placeholders[i] = "?"
+			args = append(args, string(visitType))
+		}
+		conditions = append(conditions, fmt.Sprintf("type IN (%s)", strings.Join(placeholders, ",")))
 	}
 
 	// Filter by time range (visits ending after 'from')
@@ -128,7 +138,7 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	// Execute main SELECT query with pagination
 	// Note: ORDER BY scheduled_start ensures chronological listing
 	query := fmt.Sprintf(`
-		SELECT id, listing_id, owner_id, realtor_id, scheduled_start, scheduled_end, status, cancel_reason, notes, created_by, updated_by
+		SELECT id, listing_identity_id, listing_version, user_id, owner_user_id, scheduled_start, scheduled_end, duration_minutes, status, type, source, realtor_notes, owner_notes, rejection_reason, cancel_reason, first_owner_action_at
 		FROM listing_visits
 		WHERE %s
 		ORDER BY scheduled_start ASC

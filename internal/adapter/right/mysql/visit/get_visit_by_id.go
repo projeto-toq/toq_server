@@ -16,7 +16,7 @@ import (
 //
 // This function fetches a single visit record without any soft delete filtering
 // (table does not have a 'deleted' column). All visits are retrievable regardless
-// of their status (PENDING_OWNER, CONFIRMED, CANCELLED, DONE).
+// of their status (PENDING, APPROVED, REJECTED, CANCELLED, COMPLETED, NO_SHOW).
 //
 // Parameters:
 //   - ctx: Context for tracing, cancellation, and logging. Must contain request metadata.
@@ -50,7 +50,7 @@ func (a *VisitAdapter) GetVisitByID(ctx context.Context, tx *sql.Tx, id int64) (
 
 	// Query selects all columns from listing_visits for the specified ID
 	// No status filter: all visit states are retrievable (business rule)
-	query := `SELECT id, listing_id, owner_id, realtor_id, scheduled_start, scheduled_end, status, cancel_reason, notes, created_by, updated_by FROM listing_visits WHERE id = ?`
+	query := `SELECT id, listing_identity_id, listing_version, user_id, owner_user_id, scheduled_start, scheduled_end, duration_minutes, status, type, source, realtor_notes, owner_notes, rejection_reason, cancel_reason, first_owner_action_at FROM listing_visits WHERE id = ?`
 
 	// Execute query using instrumented adapter (auto-generates metrics + tracing)
 	row := a.QueryRowContext(ctx, tx, "get_visit_by_id", query, id)

@@ -1069,6 +1069,41 @@ definitions:
     - endDate
     - startDate
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateVisitRequest:
+    properties:
+      listingIdentityId:
+        example: 123
+        type: integer
+      realtorNotes:
+        example: Client prefers afternoon
+        maxLength: 2000
+        type: string
+      scheduledEnd:
+        example: "2025-01-10T14:30:00Z"
+        type: string
+      scheduledStart:
+        example: "2025-01-10T14:00:00Z"
+        type: string
+      source:
+        enum:
+        - APP
+        - WEB
+        - ADMIN
+        example: APP
+        type: string
+      type:
+        enum:
+        - WITH_CLIENT
+        - REALTOR_ONLY
+        - CONTENT_PRODUCTION
+        example: WITH_CLIENT
+        type: string
+    required:
+    - listingIdentityId
+    - scheduledEnd
+    - scheduledStart
+    - type
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse:
     properties:
       message:
@@ -3007,6 +3042,36 @@ definitions:
       zipCode:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateVisitStatusRequest:
+    properties:
+      action:
+        enum:
+        - APPROVE
+        - REJECT
+        - CANCEL
+        - COMPLETE
+        - NO_SHOW
+        example: APPROVE
+        type: string
+      cancelReason:
+        example: Client emergency
+        maxLength: 2000
+        type: string
+      ownerNotes:
+        example: Ring the bell
+        maxLength: 2000
+        type: string
+      rejectionReason:
+        example: Slot unavailable
+        maxLength: 2000
+        type: string
+      visitId:
+        example: 456
+        type: integer
+    required:
+    - action
+    - visitId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserCreateRequest:
     properties:
       bornAt:
@@ -3190,6 +3255,68 @@ definitions:
       valid:
         example: true
         type: boolean
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse:
+    properties:
+      cancelReason:
+        type: string
+      createdAt:
+        example: "2025-01-09T12:00:00Z"
+        type: string
+      durationMinutes:
+        example: 30
+        type: integer
+      firstOwnerActionAt:
+        example: "2025-01-10T14:05:00Z"
+        type: string
+      id:
+        example: 456
+        type: integer
+      listingIdentityId:
+        example: 123
+        type: integer
+      listingVersion:
+        example: 1
+        type: integer
+      ownerNotes:
+        type: string
+      ownerUserId:
+        example: 10
+        type: integer
+      realtorNotes:
+        type: string
+      rejectionReason:
+        type: string
+      requesterUserId:
+        example: 5
+        type: integer
+      scheduledEnd:
+        example: "2025-01-10T14:30:00Z"
+        type: string
+      scheduledStart:
+        example: "2025-01-10T14:00:00Z"
+        type: string
+      source:
+        example: APP
+        type: string
+      status:
+        example: PENDING
+        type: string
+      type:
+        example: WITH_CLIENT
+        type: string
+      updatedAt:
+        example: "2025-01-09T12:15:00Z"
+        type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO:
     description: Additional floor information for warehouses (mezanino, second floor,
@@ -9758,6 +9885,293 @@ paths:
       summary: Get active user role status
       tags:
       - User
+  /visits:
+    post:
+      consumes:
+      - application/json
+      description: Creates a visit request using listing availability.
+      parameters:
+      - description: Visit payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateVisitRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Request a visit
+      tags:
+      - Visits
+  /visits/{visitId}:
+    get:
+      description: Retrieves a visit by its identifier.
+      parameters:
+      - description: Visit ID
+        in: path
+        name: visitId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get visit by ID
+      tags:
+      - Visits
+  /visits/owner:
+    get:
+      description: Lists visits filtered for the authenticated owner.
+      parameters:
+      - description: Listing identity filter
+        example: 123
+        in: query
+        name: listingIdentityId
+        type: integer
+      - collectionFormat: multi
+        description: Statuses
+        in: query
+        items:
+          type: string
+        name: status
+        type: array
+      - collectionFormat: multi
+        description: Visit types
+        in: query
+        items:
+          type: string
+        name: type
+        type: array
+      - description: Start date/time (RFC3339)
+        example: '"2025-01-01T00:00:00Z"'
+        in: query
+        name: from
+        type: string
+      - description: End date/time (RFC3339)
+        example: '"2025-01-31T23:59:59Z"'
+        in: query
+        name: to
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List visits for owners
+      tags:
+      - Visits
+  /visits/realtor:
+    get:
+      description: Lists visits filtered for the authenticated requester/realtor.
+      parameters:
+      - description: Listing identity filter
+        example: 123
+        in: query
+        name: listingIdentityId
+        type: integer
+      - collectionFormat: multi
+        description: Statuses
+        in: query
+        items:
+          type: string
+        name: status
+        type: array
+      - collectionFormat: multi
+        description: Visit types
+        in: query
+        items:
+          type: string
+        name: type
+        type: array
+      - description: Start date/time (RFC3339)
+        example: '"2025-01-01T00:00:00Z"'
+        in: query
+        name: from
+        type: string
+      - description: End date/time (RFC3339)
+        example: '"2025-01-31T23:59:59Z"'
+        in: query
+        name: to
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List visits for requesters
+      tags:
+      - Visits
+  /visits/status:
+    post:
+      consumes:
+      - application/json
+      description: Approve, reject, cancel, complete, or mark a visit as no-show.
+      parameters:
+      - description: Status payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateVisitStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update visit status
+      tags:
+      - Visits
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

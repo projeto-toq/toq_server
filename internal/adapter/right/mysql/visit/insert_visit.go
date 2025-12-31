@@ -57,25 +57,46 @@ func (a *VisitAdapter) InsertVisit(ctx context.Context, tx *sql.Tx, visit listin
 
 	// INSERT query with all fields except id (AUTO_INCREMENT)
 	// Note: created_by and updated_by populated from service layer
-	query := `INSERT INTO listing_visits (listing_id, owner_id, realtor_id, scheduled_start, scheduled_end, status, cancel_reason, notes, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO listing_visits (
+		listing_identity_id,
+		listing_version,
+		user_id,
+		owner_user_id,
+		scheduled_start,
+		scheduled_end,
+		duration_minutes,
+		status,
+		type,
+		source,
+		realtor_notes,
+		owner_notes,
+		rejection_reason,
+		cancel_reason,
+		first_owner_action_at
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	// Execute insert via instrumented adapter (metrics + tracing)
 	result, err := a.ExecContext(ctx, tx, "insert_visit", query,
-		entity.ListingID,
-		entity.OwnerID,
-		entity.RealtorID,
+		entity.ListingIdentityID,
+		entity.ListingVersion,
+		entity.RequesterUserID,
+		entity.OwnerUserID,
 		entity.ScheduledStart,
 		entity.ScheduledEnd,
+		entity.DurationMinutes,
 		entity.Status,
+		entity.Type,
+		entity.Source,
+		entity.RealtorNotes,
+		entity.OwnerNotes,
+		entity.RejectionReason,
 		entity.CancelReason,
-		entity.Notes,
-		entity.CreatedBy,
-		entity.UpdatedBy,
+		entity.FirstOwnerActionAt,
 	)
 	if err != nil {
 		// Mark span as error for distributed tracing
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.visit.insert.exec_error", "listing_id", entity.ListingID, "err", err)
+		logger.Error("mysql.visit.insert.exec_error", "listing_identity_id", entity.ListingIdentityID, "err", err)
 		return 0, fmt.Errorf("insert visit: %w", err)
 	}
 
@@ -83,7 +104,7 @@ func (a *VisitAdapter) InsertVisit(ctx context.Context, tx *sql.Tx, visit listin
 	id, err := result.LastInsertId()
 	if err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.visit.insert.last_id_error", "listing_id", entity.ListingID, "err", err)
+		logger.Error("mysql.visit.insert.last_id_error", "listing_identity_id", entity.ListingIdentityID, "err", err)
 		return 0, fmt.Errorf("visit last insert id: %w", err)
 	}
 

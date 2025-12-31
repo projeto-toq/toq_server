@@ -18,6 +18,7 @@ import (
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
+	visitservice "github.com/projeto-toq/toq_server/internal/core/service/visit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils/hmacauth"
 )
 
@@ -53,6 +54,7 @@ type AdapterFactory interface {
 		listingService listingservices.ListingServiceInterface,
 		propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface,
 		scheduleService scheduleservices.ScheduleServiceInterface,
+		visitService visitservice.Service,
 		holidayService holidayservices.HolidayServiceInterface,
 		permissionService permissionservices.PermissionServiceInterface,
 		photoSessionService photosessionservices.PhotoSessionServiceInterface,

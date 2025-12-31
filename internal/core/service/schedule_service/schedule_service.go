@@ -3,6 +3,7 @@ package scheduleservices
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -27,6 +28,10 @@ type ScheduleServiceInterface interface {
 	DeleteBlockEntry(ctx context.Context, input DeleteEntryInput) error
 	GetAvailability(ctx context.Context, filter schedulemodel.AvailabilityFilter) (AvailabilityResult, error)
 	FinishListingAgenda(ctx context.Context, input FinishListingAgendaInput) error
+	CreateVisitEntry(ctx context.Context, agendaID uint64, visitID uint64, start, end time.Time, pending bool) (schedulemodel.AgendaEntryInterface, error)
+	UpdateVisitEntryType(ctx context.Context, entryID uint64, newType schedulemodel.EntryType, blocking bool) (schedulemodel.AgendaEntryInterface, error)
+	DeleteVisitEntry(ctx context.Context, entryID uint64) error
+	CheckVisitConflict(ctx context.Context, agendaID uint64, start, end time.Time, excludeEntryID *uint64) (bool, error)
 }
 
 type scheduleService struct {

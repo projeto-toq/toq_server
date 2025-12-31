@@ -23,11 +23,12 @@ A regra de negócio preve:
 5. Deve haver um contador de tempo desde o envio do pedido de visitas até aceite/recusa do proprietário.
    5.1. Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis
    5.2. Esta informação deve ser armazenada para futuras análises de performance do owner e será mostrada em seus anuncios. EX: "Respondeu 90% dos pedidos de visita em até 2 horas".
+6. O arquivo `/codigos/go_code/toq_server/docs/visit_system_implementation_plan.md` foi um plano de implementação criado pelo time mas possui diversos erros e inconsistencias.
 
 
 Assim:
-1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md` e identifique a melhor forma de implementar a nova funcionalidade.
-2. Proponha um plano detalhado de implementação incluindo:
+1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md`, leia o plano de implementação em `/codigos/go_code/toq_server/docs/visit_system_implementation_plan.md` e identifique a melhor forma de implementar a nova funcionalidade.
+2. Proponha um plano detalhado de implementação, alterando o `/codigos/go_code/toq_server/docs/visit_system_implementation_plan.md` incluindo:
    - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
    - O Codigo completo a ser implementado (handlers, services, repositories, DTOs, entities, converters), fazendo com a implementação seja simples e sem mais análises.
    - Estrutura de Diretórios: organização final seguindo a Regra de Espelhamento (Seção 2.1 do guia).

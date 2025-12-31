@@ -2,16 +2,17 @@ package listingmodel
 
 import "time"
 
-// VisitListFilter constrains visit lookups for owners or realtors.
+// VisitListFilter constrains visit lookups for owners or requesters.
 type VisitListFilter struct {
-	ListingID *int64
-	OwnerID   *int64
-	RealtorID *int64
-	Statuses  []VisitStatus
-	From      *time.Time
-	To        *time.Time
-	Page      int
-	Limit     int
+	ListingIdentityID *int64
+	OwnerUserID       *int64
+	RequesterUserID   *int64
+	Statuses          []VisitStatus
+	Types             []VisitMode
+	From              *time.Time
+	To                *time.Time
+	Page              int
+	Limit             int
 }
 
 // VisitListResult holds a paginated visit collection.

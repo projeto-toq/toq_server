@@ -30,25 +30,43 @@ func ToVisitModel(e entities.VisitEntity) listingmodel.VisitInterface {
 
 	// Map mandatory fields (NOT NULL in schema)
 	visit.SetID(e.ID)
-	visit.SetListingID(e.ListingID)
-	visit.SetOwnerID(e.OwnerID)
-	visit.SetRealtorID(e.RealtorID)
+	visit.SetListingIdentityID(e.ListingIdentityID)
+	visit.SetListingVersion(e.ListingVersion)
+	visit.SetRequesterUserID(e.RequesterUserID)
+	visit.SetOwnerUserID(e.OwnerUserID)
 	visit.SetScheduledStart(e.ScheduledStart)
 	visit.SetScheduledEnd(e.ScheduledEnd)
+	visit.SetDurationMinutes(e.DurationMinutes)
 	visit.SetStatus(listingmodel.VisitStatus(e.Status))
-	visit.SetCreatedBy(e.CreatedBy)
+	visit.SetType(listingmodel.VisitMode(e.Type))
+
+	if e.Source.Valid {
+		visit.SetSource(e.Source.String)
+	}
 
 	// Map optional fields (NULL in schema) - check Valid before accessing
+	if e.Source.Valid {
+		visit.SetSource(e.Source.String)
+	}
+
+	if e.RealtorNotes.Valid {
+		visit.SetRealtorNotes(e.RealtorNotes.String)
+	}
+
+	if e.OwnerNotes.Valid {
+		visit.SetOwnerNotes(e.OwnerNotes.String)
+	}
+
+	if e.RejectionReason.Valid {
+		visit.SetRejectionReason(e.RejectionReason.String)
+	}
+
 	if e.CancelReason.Valid {
 		visit.SetCancelReason(e.CancelReason.String)
 	}
 
-	if e.Notes.Valid {
-		visit.SetNotes(e.Notes.String)
-	}
-
-	if e.UpdatedBy.Valid {
-		visit.SetUpdatedBy(e.UpdatedBy.Int64)
+	if e.FirstOwnerActionAt.Valid {
+		visit.SetFirstOwnerActionAt(e.FirstOwnerActionAt.Time)
 	}
 
 	return visit

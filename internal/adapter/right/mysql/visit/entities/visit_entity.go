@@ -14,9 +14,9 @@ import (
 // Schema Mapping:
 //   - Database: listing_visits table (InnoDB, utf8mb4_unicode_ci)
 //   - Primary Key: id (INT UNSIGNED AUTO_INCREMENT)
-//   - Foreign Keys: listing_id → listings(id), owner_id → users(id), realtor_id → users(id)
+//   - Foreign Keys: listing_identity_id → listing_identities(id), user_id → users(id)
 //   - Indexes: idx_visit_listing, idx_visit_scheduled_start (recommended)
-//   - Status: ENUM('PENDING_OWNER', 'CONFIRMED', 'CANCELLED', 'DONE')
+//   - Status: ENUM('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED', 'NO_SHOW')
 //
 // NULL Handling:
 //   - sql.NullString: Used for VARCHAR/TEXT columns that allow NULL
@@ -35,17 +35,19 @@ type VisitEntity struct {
 	// ID is the visit's unique identifier (PRIMARY KEY, AUTO_INCREMENT)
 	ID int64
 
-	// ListingID is the foreign key to the listings table (NOT NULL, INT UNSIGNED)
-	// References the listing being visited
-	ListingID int64
+	// ListingIdentityID is the foreign key to the listing_identities table (NOT NULL, INT UNSIGNED)
+	// References the listing identity being visited (all versions)
+	ListingIdentityID int64
 
-	// OwnerID is the foreign key to the users table (NOT NULL, INT UNSIGNED)
-	// References the property owner who receives the visit request
-	OwnerID int64
+	// ListingVersion stores the listing version visible when the visit was requested (NOT NULL, TINYINT UNSIGNED)
+	ListingVersion uint8
 
-	// RealtorID is the foreign key to the users table (NOT NULL, INT UNSIGNED)
-	// References the realtor who requests/conducts the visit
-	RealtorID int64
+	// RequesterUserID is the foreign key to the users table (NOT NULL, INT UNSIGNED)
+	// References the user (realtor/buyer) who requests the visit
+	RequesterUserID int64
+
+	// OwnerUserID is the listing owner (NOT NULL, INT UNSIGNED)
+	OwnerUserID int64
 
 	// ScheduledStart is the visit start date/time (NOT NULL, DATETIME)
 	// Stored in UTC, converted to America/Sao_Paulo in service layer
@@ -55,24 +57,34 @@ type VisitEntity struct {
 	// Stored in UTC, must be after ScheduledStart (validated in service layer)
 	ScheduledEnd time.Time
 
+	// DurationMinutes is the visit duration in minutes (NOT NULL, SMALLINT)
+	DurationMinutes int64
+
 	// Status is the visit workflow state (NOT NULL, ENUM)
-	// Allowed values: 'PENDING_OWNER', 'CONFIRMED', 'CANCELLED', 'DONE'
+	// Allowed values: 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED', 'NO_SHOW'
 	// State transitions validated in service layer
 	Status string
+
+	// Type indicates the kind of visit (NOT NULL, ENUM)
+	// Allowed values: WITH_CLIENT, REALTOR_ONLY, CONTENT_PRODUCTION
+	Type string
+
+	// Source identifies where the visit was created (e.g., APP, WEB)
+	Source sql.NullString
+
+	// RealtorNotes stores notes from the requester/realtor
+	RealtorNotes sql.NullString
+
+	// OwnerNotes stores notes from the owner
+	OwnerNotes sql.NullString
+
+	// RejectionReason stores owner rejection reason
+	RejectionReason sql.NullString
 
 	// CancelReason explains why the visit was cancelled (NULL, VARCHAR(255))
 	// Required when Status='CANCELLED', NULL otherwise
 	CancelReason sql.NullString
 
-	// Notes contains additional information about the visit (NULL, TEXT)
-	// Optional field for extra context or instructions
-	Notes sql.NullString
-
-	// CreatedBy is the user ID who created this visit record (NOT NULL, INT UNSIGNED)
-	// Audit field for tracking record origin
-	CreatedBy int64
-
-	// UpdatedBy is the user ID who last updated this visit (NULL, INT UNSIGNED)
-	// Audit field for tracking record modifications
-	UpdatedBy sql.NullInt64
+	// FirstOwnerActionAt stores when the owner first approved/rejected the visit (NULL, DATETIME)
+	FirstOwnerActionAt sql.NullTime
 }
