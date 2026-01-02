@@ -26,8 +26,6 @@ var listingStatusDescriptors = []ListingStatusDescriptor{
 	{Status: StatusPendingAdminReview, Slug: "PENDING_ADMIN_REVIEW", AllowsDraftClone: false},
 	{Status: StatusReady, Slug: "READY", AllowsDraftClone: false},
 	{Status: StatusPublished, Slug: "PUBLISHED", AllowsDraftClone: false},
-	{Status: StatusUnderOffer, Slug: "UNDER_OFFER", AllowsDraftClone: false},
-	{Status: StatusUnderNegotiation, Slug: "UNDER_NEGOTIATION", AllowsDraftClone: false},
 	{Status: StatusClosed, Slug: "CLOSED", AllowsDraftClone: false},
 	{Status: StatusSuspended, Slug: "SUSPENDED", AllowsDraftClone: true},
 	{Status: StatusExpired, Slug: "EXPIRED", AllowsDraftClone: false},

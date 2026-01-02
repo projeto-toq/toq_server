@@ -128,7 +128,7 @@ func resolveTargetStatus(current listingmodel.ListingStatus, action ListingStatu
 		}
 		return listingmodel.StatusPublished, nil
 	case ListingStatusActionSuspend:
-		if current != listingmodel.StatusPublished && current != listingmodel.StatusUnderOffer && current != listingmodel.StatusUnderNegotiation {
+		if current != listingmodel.StatusPublished {
 			return 0, utils.BadRequest("Listing must be PUBLISHED, UNDER_OFFER or UNDER_NEGOTIATION to suspend")
 		}
 		return listingmodel.StatusReady, nil

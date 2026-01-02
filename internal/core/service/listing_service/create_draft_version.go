@@ -156,7 +156,7 @@ func (ls *listingService) validateStatusForDraftCreation(status listingmodel.Lis
 	switch status {
 	case listingmodel.StatusPublished:
 		return utils.ConflictError("Listing is published. Suspend it via status update before creating a draft version")
-	case listingmodel.StatusUnderNegotiation, listingmodel.StatusPendingAdminReview, listingmodel.StatusPendingOwnerApproval:
+	case listingmodel.StatusPendingAdminReview, listingmodel.StatusPendingOwnerApproval:
 		return utils.NewHTTPErrorWithSource(423, "Listing is locked in workflow and cannot be copied")
 	case listingmodel.StatusExpired, listingmodel.StatusArchived, listingmodel.StatusClosed:
 		return utils.NewHTTPErrorWithSource(410, "Listing is permanently closed and cannot be edited")

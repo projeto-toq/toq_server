@@ -9398,7 +9398,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Creates a visit request using listing availability.",
+                "description": "Validates lead time (visits.min_hours_ahead), horizon (visits.max_days_ahead), and listing availability before creating a visit.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9410,6 +9410,19 @@ const docTemplate = `{
                 ],
                 "summary": "Request a visit",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Device ID",
+                        "name": "X-Device-Id",
+                        "in": "header"
+                    },
                     {
                         "description": "Visit payload",
                         "name": "request",
@@ -9473,7 +9486,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Lists visits filtered for the authenticated owner.",
+                "description": "Lists visits for the authenticated owner with status/type/time filters (RFC3339) and pagination (max 50 per page).",
                 "produces": [
                     "application/json"
                 ],
@@ -9585,7 +9598,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Lists visits filtered for the authenticated requester/realtor.",
+                "description": "Lists visits for the authenticated requester/realtor with status/type/time filters (RFC3339) and pagination (max 50 per page).",
                 "produces": [
                     "application/json"
                 ],
