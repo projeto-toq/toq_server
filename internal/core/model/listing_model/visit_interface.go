@@ -30,34 +30,20 @@ type VisitInterface interface {
 	ScheduledEnd() time.Time
 	SetScheduledEnd(value time.Time)
 
-	DurationMinutes() int64
-	SetDurationMinutes(value int64)
-
 	Status() VisitStatus
 	SetStatus(value VisitStatus)
-
-	Type() VisitMode
-	SetType(value VisitMode)
 
 	Source() (string, bool)
 	SetSource(value string)
 	ClearSource()
 
-	RealtorNotes() (string, bool)
-	SetRealtorNotes(value string)
-	ClearRealtorNotes()
-
-	OwnerNotes() (string, bool)
-	SetOwnerNotes(value string)
-	ClearOwnerNotes()
+	Notes() (string, bool)
+	SetNotes(value string)
+	ClearNotes()
 
 	RejectionReason() (string, bool)
 	SetRejectionReason(value string)
 	ClearRejectionReason()
-
-	CancelReason() (string, bool)
-	SetCancelReason(value string)
-	ClearCancelReason()
 
 	FirstOwnerActionAt() (time.Time, bool)
 	SetFirstOwnerActionAt(value time.Time)
@@ -75,6 +61,9 @@ type VisitInterface interface {
 
 	UpdatedAt() time.Time
 	SetUpdatedAt(value time.Time)
+
+	RequestedAt() time.Time
+	SetRequestedAt(value time.Time)
 }
 
 func NewVisit() VisitInterface {

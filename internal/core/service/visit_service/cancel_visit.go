@@ -69,7 +69,7 @@ func (s *visitService) CancelVisit(ctx context.Context, visitID int64, reason st
 	}
 
 	visit.SetStatus(listingmodel.VisitStatusCancelled)
-	visit.SetCancelReason(reason)
+	visit.SetRejectionReason(reason)
 	visit.SetUpdatedBy(actorID)
 
 	if err = s.visitRepo.UpdateVisit(ctx, tx, visit); err != nil {

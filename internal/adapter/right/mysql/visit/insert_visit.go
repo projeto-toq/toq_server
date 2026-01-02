@@ -55,43 +55,43 @@ func (a *VisitAdapter) InsertVisit(ctx context.Context, tx *sql.Tx, visit listin
 	// Convert domain model to database entity (handles sql.Null* conversions)
 	entity := converters.ToVisitEntity(visit)
 
+	// Derive persisted date/time columns from scheduled start/end (schema stores them separately)
+	startUTC := entity.ScheduledStart.UTC()
+	endUTC := entity.ScheduledEnd.UTC()
+	scheduledDate := startUTC.Format("2006-01-02")
+	scheduledTimeStart := startUTC.Format("15:04:05")
+	scheduledTimeEnd := endUTC.Format("15:04:05")
+
 	// INSERT query with all fields except id (AUTO_INCREMENT)
-	// Note: created_by and updated_by populated from service layer
 	query := `INSERT INTO listing_visits (
 		listing_identity_id,
 		listing_version,
 		user_id,
-		owner_user_id,
-		scheduled_start,
-		scheduled_end,
-		duration_minutes,
+		scheduled_date,
+		scheduled_time_start,
+		scheduled_time_end,
 		status,
-		type,
 		source,
-		realtor_notes,
-		owner_notes,
+		notes,
 		rejection_reason,
-		cancel_reason,
-		first_owner_action_at
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		first_owner_action_at,
+		requested_at
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	// Execute insert via instrumented adapter (metrics + tracing)
 	result, err := a.ExecContext(ctx, tx, "insert_visit", query,
 		entity.ListingIdentityID,
 		entity.ListingVersion,
 		entity.RequesterUserID,
-		entity.OwnerUserID,
-		entity.ScheduledStart,
-		entity.ScheduledEnd,
-		entity.DurationMinutes,
+		scheduledDate,
+		scheduledTimeStart,
+		scheduledTimeEnd,
 		entity.Status,
-		entity.Type,
 		entity.Source,
-		entity.RealtorNotes,
-		entity.OwnerNotes,
+		entity.Notes,
 		entity.RejectionReason,
-		entity.CancelReason,
 		entity.FirstOwnerActionAt,
+		entity.RequestedAt,
 	)
 	if err != nil {
 		// Mark span as error for distributed tracing

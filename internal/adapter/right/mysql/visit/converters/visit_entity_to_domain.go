@@ -22,7 +22,6 @@ import (
 //   - visit: VisitInterface with all fields converted to domain types
 //
 // NULL Field Handling:
-//   - CancelReason: Only set if Valid=true (optional field)
 //   - Notes: Only set if Valid=true (optional field)
 //   - UpdatedBy: Only set if Valid=true (optional audit field)
 func ToVisitModel(e entities.VisitEntity) listingmodel.VisitInterface {
@@ -36,37 +35,27 @@ func ToVisitModel(e entities.VisitEntity) listingmodel.VisitInterface {
 	visit.SetOwnerUserID(e.OwnerUserID)
 	visit.SetScheduledStart(e.ScheduledStart)
 	visit.SetScheduledEnd(e.ScheduledEnd)
-	visit.SetDurationMinutes(e.DurationMinutes)
 	visit.SetStatus(listingmodel.VisitStatus(e.Status))
-	visit.SetType(listingmodel.VisitMode(e.Type))
 
 	if e.Source.Valid {
 		visit.SetSource(e.Source.String)
 	}
 
 	// Map optional fields (NULL in schema) - check Valid before accessing
-	if e.Source.Valid {
-		visit.SetSource(e.Source.String)
-	}
-
-	if e.RealtorNotes.Valid {
-		visit.SetRealtorNotes(e.RealtorNotes.String)
-	}
-
-	if e.OwnerNotes.Valid {
-		visit.SetOwnerNotes(e.OwnerNotes.String)
+	if e.Notes.Valid {
+		visit.SetNotes(e.Notes.String)
 	}
 
 	if e.RejectionReason.Valid {
 		visit.SetRejectionReason(e.RejectionReason.String)
 	}
 
-	if e.CancelReason.Valid {
-		visit.SetCancelReason(e.CancelReason.String)
-	}
-
 	if e.FirstOwnerActionAt.Valid {
 		visit.SetFirstOwnerActionAt(e.FirstOwnerActionAt.Time)
+	}
+
+	if !e.RequestedAt.IsZero() {
+		visit.SetRequestedAt(e.RequestedAt)
 	}
 
 	return visit

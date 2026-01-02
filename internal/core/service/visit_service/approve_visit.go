@@ -66,7 +66,7 @@ func (s *visitService) ApproveVisit(ctx context.Context, visitID int64, ownerNot
 	}
 	visit.SetStatus(listingmodel.VisitStatusApproved)
 	if ownerNotes != "" {
-		visit.SetOwnerNotes(ownerNotes)
+		visit.SetNotes(ownerNotes)
 	}
 	visit.SetUpdatedBy(actorID)
 

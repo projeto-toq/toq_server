@@ -46,7 +46,7 @@ func (h *VisitHandler) UpdateVisitStatus(c *gin.Context) {
 
 	switch action {
 	case "APPROVE":
-		visit, svcErr = h.visitService.ApproveVisit(ctx, req.VisitID, strings.TrimSpace(req.OwnerNotes))
+		visit, svcErr = h.visitService.ApproveVisit(ctx, req.VisitID, strings.TrimSpace(req.Notes))
 	case "REJECT":
 		reason := strings.TrimSpace(req.RejectionReason)
 		if reason == "" {
@@ -55,16 +55,16 @@ func (h *VisitHandler) UpdateVisitStatus(c *gin.Context) {
 		}
 		visit, svcErr = h.visitService.RejectVisit(ctx, req.VisitID, reason)
 	case "CANCEL":
-		reason := strings.TrimSpace(req.CancelReason)
+		reason := strings.TrimSpace(req.RejectionReason)
 		if reason == "" {
-			httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("cancelReason", "is required for CANCEL"))
+			httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("rejectionReason", "is required for CANCEL"))
 			return
 		}
 		visit, svcErr = h.visitService.CancelVisit(ctx, req.VisitID, reason)
 	case "COMPLETE":
-		visit, svcErr = h.visitService.CompleteVisit(ctx, req.VisitID, strings.TrimSpace(req.OwnerNotes))
+		visit, svcErr = h.visitService.CompleteVisit(ctx, req.VisitID, strings.TrimSpace(req.Notes))
 	case "NO_SHOW":
-		visit, svcErr = h.visitService.MarkNoShow(ctx, req.VisitID, strings.TrimSpace(req.OwnerNotes))
+		visit, svcErr = h.visitService.MarkNoShow(ctx, req.VisitID, strings.TrimSpace(req.Notes))
 	default:
 		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("action", "must be one of APPROVE, REJECT, CANCEL, COMPLETE, NO_SHOW"))
 		return

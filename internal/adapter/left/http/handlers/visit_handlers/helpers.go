@@ -17,11 +17,6 @@ func buildVisitFilter(query dto.VisitListQuery, actorID int64, asOwner bool) (li
 		return listingmodel.VisitListFilter{}, err
 	}
 
-	types, err := parseVisitTypes(query.Types)
-	if err != nil {
-		return listingmodel.VisitListFilter{}, err
-	}
-
 	from, err := parseOptionalTime("from", query.From)
 	if err != nil {
 		return listingmodel.VisitListFilter{}, err
@@ -50,7 +45,6 @@ func buildVisitFilter(query dto.VisitListQuery, actorID int64, asOwner bool) (li
 
 	filter := listingmodel.VisitListFilter{
 		Statuses: statuses,
-		Types:    types,
 		From:     from,
 		To:       to,
 		Page:     page,
@@ -81,21 +75,6 @@ func parseVisitStatuses(raw []string) ([]listingmodel.VisitStatus, error) {
 		statuses = append(statuses, status)
 	}
 	return statuses, nil
-}
-
-func parseVisitTypes(raw []string) ([]listingmodel.VisitMode, error) {
-	normalized := normalizeMulti(raw)
-	types := make([]listingmodel.VisitMode, 0, len(normalized))
-	for _, item := range normalized {
-		visitType := listingmodel.VisitMode(strings.ToUpper(strings.TrimSpace(item)))
-		switch visitType {
-		case listingmodel.VisitModeWithClient, listingmodel.VisitModeRealtorOnly, listingmodel.VisitModeContentProduction:
-			types = append(types, visitType)
-		default:
-			return nil, coreutils.ValidationError("type", "invalid visit type")
-		}
-	}
-	return types, nil
 }
 
 func parseOptionalTime(field, value string) (*time.Time, error) {

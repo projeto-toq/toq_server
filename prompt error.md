@@ -6,122 +6,31 @@
 
 ## 🎯 Problema / Solicitação
 
-Ao solicitar um visita ao imovel através do endpoint `POST /visits` com o body:
+Ao aprovar uma visita ao imovel através do endpoint `POST /visits/status` com o body:
 
 ```json
 {
-  "listingIdentityId": 2,
-  "scheduledEnd": "2026-01-04T10:59:00Z",
-  "scheduledStart": "2026-01-04T09:59:00Z",
-  "type": "WITH_CLIENT",
-  "realtorNotes": "Client prefers morning",
-  "source": "APP"
+  "action": "APPROVE",
+  "visitId": 1,
+  "notes": "Owner approved without constraints"
 }
 ```
 
 recebo como resposta:
 ```json
 {
-    "code": 409,
+    "code": 500,
     "details": null,
-    "message": "Requested slot is not available"
+    "message": "Internal server error"
 }
 ```
 
-entretanto a consulta ao endpoint `GET /schedules/listing/availability?listingIdentityId=2&rangeFrom=2026-01-03T08:00:00Z&rangeTo=2026-01-10T08:00:00Z&slotDurationMinute=60&page=1&limit=20` retorna :
+e estas entraddas no log:
 
 ```json
-{
-    "slots": [
-        {
-            "startsAt": "2026-01-03T08:00:00Z",
-            "endsAt": "2026-01-03T09:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T09:00:00Z",
-            "endsAt": "2026-01-03T10:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T10:00:00Z",
-            "endsAt": "2026-01-03T11:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T11:00:00Z",
-            "endsAt": "2026-01-03T12:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T12:00:00Z",
-            "endsAt": "2026-01-03T13:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T13:00:00Z",
-            "endsAt": "2026-01-03T14:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T14:00:00Z",
-            "endsAt": "2026-01-03T15:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T15:00:00Z",
-            "endsAt": "2026-01-03T16:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T16:00:00Z",
-            "endsAt": "2026-01-03T17:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T17:00:00Z",
-            "endsAt": "2026-01-03T18:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-03T18:00:00Z",
-            "endsAt": "2026-01-03T19:00:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T07:59:00Z",
-            "endsAt": "2026-01-04T08:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T08:59:00Z",
-            "endsAt": "2026-01-04T09:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T09:59:00Z",
-            "endsAt": "2026-01-04T10:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T10:59:00Z",
-            "endsAt": "2026-01-04T11:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T11:59:00Z",
-            "endsAt": "2026-01-04T12:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T12:59:00Z",
-            "endsAt": "2026-01-04T13:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T13:59:00Z",
-            "endsAt": "2026-01-04T14:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T14:59:00Z",
-            "endsAt": "2026-01-04T15:59:00Z"
-        },
-        {
-            "startsAt": "2026-01-04T15:59:00Z",
-            "endsAt": "2026-01-04T16:59:00Z"
-        }
-    ],
-    "pagination": {
-        "page": 1,
-        "limit": 20,
-        "total": 76,
-        "totalPages": 4
-    },
-    "timezone": "UTC"
-}
+{"time":"2026-01-02T14:59:12.921933019Z","level":"ERROR","msg":"mysql.listing.update_owner_response_stats.exec_error","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","error":"Error 1264 (22003): Out of range value for column 'owner_avg_response_time_seconds' at row 1","listing_identity_id":2}
+{"time":"2026-01-02T14:59:12.922107853Z","level":"ERROR","msg":"visit.approve.owner_response_metrics_error","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","visit_id":1,"err":"update owner response stats: Error 1264 (22003): Out of range value for column 'owner_avg_response_time_seconds' at row 1"}
+{"time":"2026-01-02T14:59:12.922968288Z","level":"ERROR","msg":"HTTP Error","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","method":"POST","path":"/api/v2/visits/status","status":500,"duration":9862177,"size":61,"client_ip":"78.152.121.74","user_agent":"PostmanRuntime/7.51.0","user_id":2,"user_role_id":6,"errors":["update owner response stats: Error 1264 (22003): Out of range value for column 'owner_avg_response_time_seconds' at row 1"]}
 ```
 
 

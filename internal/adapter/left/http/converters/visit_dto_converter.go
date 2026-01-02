@@ -26,17 +26,11 @@ func CreateVisitDTOToInput(req dto.CreateVisitRequest) (visitservice.CreateVisit
 		return visitservice.CreateVisitInput{}, coreutils.ValidationError("scheduledStart", "must be before scheduledEnd")
 	}
 
-	visitType, err := parseVisitType(req.Type)
-	if err != nil {
-		return visitservice.CreateVisitInput{}, err
-	}
-
 	input := visitservice.CreateVisitInput{
 		ListingIdentityID: req.ListingIdentityID,
 		ScheduledStart:    start,
 		ScheduledEnd:      end,
-		Type:              visitType,
-		RealtorNotes:      strings.TrimSpace(req.RealtorNotes),
+		Notes:             strings.TrimSpace(req.Notes),
 		Source:            strings.TrimSpace(req.Source),
 	}
 
@@ -57,36 +51,32 @@ func VisitDomainToResponse(visit listingmodel.VisitInterface) dto.VisitResponse 
 		OwnerUserID:       visit.OwnerUserID(),
 		ScheduledStart:    visit.ScheduledStart().Format(time.RFC3339),
 		ScheduledEnd:      visit.ScheduledEnd().Format(time.RFC3339),
-		DurationMinutes:   visit.DurationMinutes(),
 		Status:            string(visit.Status()),
-		Type:              string(visit.Type()),
-		CreatedAt:         visit.CreatedAt().Format(time.RFC3339),
-		UpdatedAt:         visit.UpdatedAt().Format(time.RFC3339),
 	}
 
 	if source, ok := visit.Source(); ok {
 		response.Source = source
 	}
 
-	if notes, ok := visit.RealtorNotes(); ok {
-		response.RealtorNotes = notes
-	}
-
-	if notes, ok := visit.OwnerNotes(); ok {
-		response.OwnerNotes = notes
+	if notes, ok := visit.Notes(); ok {
+		response.Notes = notes
 	}
 
 	if reason, ok := visit.RejectionReason(); ok {
 		response.RejectionReason = reason
 	}
 
-	if reason, ok := visit.CancelReason(); ok {
-		response.CancelReason = reason
-	}
-
 	if ts, ok := visit.FirstOwnerActionAt(); ok {
 		formatted := ts.Format(time.RFC3339)
 		response.FirstOwnerActionAt = &formatted
+	}
+
+	if !visit.CreatedAt().IsZero() {
+		response.CreatedAt = visit.CreatedAt().Format(time.RFC3339)
+	}
+
+	if !visit.UpdatedAt().IsZero() {
+		response.UpdatedAt = visit.UpdatedAt().Format(time.RFC3339)
 	}
 
 	return response
@@ -114,17 +104,6 @@ func VisitListToResponse(result listingmodel.VisitListResult, page, limit int) d
 			Total:      result.Total,
 			TotalPages: visitTotalPages(result.Total, limit),
 		},
-	}
-}
-
-func parseVisitType(raw string) (listingmodel.VisitMode, error) {
-	normalized := strings.ToUpper(strings.TrimSpace(raw))
-	visitType := listingmodel.VisitMode(normalized)
-	switch visitType {
-	case listingmodel.VisitModeWithClient, listingmodel.VisitModeRealtorOnly, listingmodel.VisitModeContentProduction:
-		return visitType, nil
-	default:
-		return "", coreutils.ValidationError("type", "invalid visit type")
 	}
 }
 

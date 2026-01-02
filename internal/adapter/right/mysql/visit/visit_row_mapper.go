@@ -24,19 +24,16 @@ type rowScanner interface {
 //  2. listing_identity_id  → VisitEntity.ListingIdentityID
 //  3. listing_version      → VisitEntity.ListingVersion
 //  4. user_id              → VisitEntity.RequesterUserID
-//  5. owner_user_id        → VisitEntity.OwnerUserID
+//  5. owner_user_id (derived) → VisitEntity.OwnerUserID
 //  6. scheduled_start      → VisitEntity.ScheduledStart
 //  7. scheduled_end        → VisitEntity.ScheduledEnd
-//  8. duration_minutes     → VisitEntity.DurationMinutes
-//  9. status               → VisitEntity.Status
+//  8. status               → VisitEntity.Status
+//  9. source               → VisitEntity.Source (sql.NullString)
 //
-// 10. type                 → VisitEntity.Type
-// 11. source               → VisitEntity.Source (sql.NullString)
-// 12. realtor_notes        → VisitEntity.RealtorNotes (sql.NullString)
-// 13. owner_notes          → VisitEntity.OwnerNotes (sql.NullString)
-// 14. rejection_reason     → VisitEntity.RejectionReason (sql.NullString)
-// 15. cancel_reason        → VisitEntity.CancelReason (sql.NullString)
-// 16. first_owner_action_at→ VisitEntity.FirstOwnerActionAt (sql.NullTime)
+// 10. notes                → VisitEntity.Notes (sql.NullString)
+// 11. rejection_reason     → VisitEntity.RejectionReason (sql.NullString)
+// 12. first_owner_action_at→ VisitEntity.FirstOwnerActionAt (sql.NullTime)
+// 13. requested_at         → VisitEntity.RequestedAt
 //
 // Parameters:
 //   - scanner: rowScanner interface (sql.Row or sql.Rows)
@@ -66,15 +63,12 @@ func scanVisitEntity(scanner rowScanner) (entities.VisitEntity, error) {
 		&visit.OwnerUserID,
 		&visit.ScheduledStart,
 		&visit.ScheduledEnd,
-		&visit.DurationMinutes,
 		&visit.Status,
-		&visit.Type,
 		&visit.Source,
-		&visit.RealtorNotes,
-		&visit.OwnerNotes,
+		&visit.Notes,
 		&visit.RejectionReason,
-		&visit.CancelReason,
 		&visit.FirstOwnerActionAt,
+		&visit.RequestedAt,
 	); err != nil {
 		return entities.VisitEntity{}, err
 	}

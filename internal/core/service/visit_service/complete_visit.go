@@ -59,7 +59,7 @@ func (s *visitService) CompleteVisit(ctx context.Context, visitID int64, ownerNo
 
 	visit.SetStatus(listingmodel.VisitStatusCompleted)
 	if ownerNotes != "" {
-		visit.SetOwnerNotes(ownerNotes)
+		visit.SetNotes(ownerNotes)
 	}
 	visit.SetUpdatedBy(actorID)
 

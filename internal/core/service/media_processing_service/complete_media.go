@@ -57,8 +57,8 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 		return derrors.Infra("failed to load listing", err)
 	}
 
-	if listing.Status() != listingmodel.StatusPendingPhotoProcessing {
-		return derrors.Conflict("listing is not in PENDING_PHOTO_PROCESSING status")
+	if listing.Status() != listingmodel.StatusPendingPhotoProcessing && listing.Status() != listingmodel.StatusRejectedByOwner {
+		return derrors.Conflict("listing is not in PENDING_PHOTO_PROCESSING or REJECTED_BY_OWNER status")
 	}
 
 	// 2. Fetch ALL assets to validate state

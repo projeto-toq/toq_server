@@ -1074,7 +1074,7 @@ definitions:
       listingIdentityId:
         example: 123
         type: integer
-      realtorNotes:
+      notes:
         example: Client prefers afternoon
         maxLength: 2000
         type: string
@@ -1091,18 +1091,10 @@ definitions:
         - ADMIN
         example: APP
         type: string
-      type:
-        enum:
-        - WITH_CLIENT
-        - REALTOR_ONLY
-        - CONTENT_PRODUCTION
-        example: WITH_CLIENT
-        type: string
     required:
     - listingIdentityId
     - scheduledEnd
     - scheduledStart
-    - type
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DeleteAccountResponse:
     properties:
@@ -3053,12 +3045,8 @@ definitions:
         - NO_SHOW
         example: APPROVE
         type: string
-      cancelReason:
-        example: Client emergency
-        maxLength: 2000
-        type: string
-      ownerNotes:
-        example: Ring the bell
+      notes:
+        example: Owner approved with constraints
         maxLength: 2000
         type: string
       rejectionReason:
@@ -3267,14 +3255,9 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse:
     properties:
-      cancelReason:
-        type: string
       createdAt:
         example: "2025-01-09T12:00:00Z"
         type: string
-      durationMinutes:
-        example: 30
-        type: integer
       firstOwnerActionAt:
         example: "2025-01-10T14:05:00Z"
         type: string
@@ -3287,13 +3270,11 @@ definitions:
       listingVersion:
         example: 1
         type: integer
-      ownerNotes:
+      notes:
         type: string
       ownerUserId:
         example: 10
         type: integer
-      realtorNotes:
-        type: string
       rejectionReason:
         type: string
       requesterUserId:
@@ -3310,9 +3291,6 @@ definitions:
         type: string
       status:
         example: PENDING
-        type: string
-      type:
-        example: WITH_CLIENT
         type: string
       updatedAt:
         example: "2025-01-09T12:15:00Z"

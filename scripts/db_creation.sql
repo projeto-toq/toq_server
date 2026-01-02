@@ -643,7 +643,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_visits` (
   `status` ENUM('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED', 'NO_SHOW') NOT NULL DEFAULT 'PENDING',
   `source` ENUM('APP', 'WEB', 'ADMIN') NOT NULL DEFAULT 'APP',
   `notes` TEXT NULL,
-  `reject_reason` VARCHAR(255) NULL,
+  `rejection_reason` VARCHAR(255) NULL,
   `first_owner_action_at` DATETIME NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_visits_listing_identity_idx` (`listing_identity_id` ASC) INVISIBLE,

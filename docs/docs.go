@@ -11416,15 +11416,14 @@ const docTemplate = `{
             "required": [
                 "listingIdentityId",
                 "scheduledEnd",
-                "scheduledStart",
-                "type"
+                "scheduledStart"
             ],
             "properties": {
                 "listingIdentityId": {
                     "type": "integer",
                     "example": 123
                 },
-                "realtorNotes": {
+                "notes": {
                     "type": "string",
                     "maxLength": 2000,
                     "example": "Client prefers afternoon"
@@ -11445,15 +11444,6 @@ const docTemplate = `{
                         "ADMIN"
                     ],
                     "example": "APP"
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "WITH_CLIENT",
-                        "REALTOR_ONLY",
-                        "CONTENT_PRODUCTION"
-                    ],
-                    "example": "WITH_CLIENT"
                 }
             }
         },
@@ -14193,15 +14183,10 @@ const docTemplate = `{
                     ],
                     "example": "APPROVE"
                 },
-                "cancelReason": {
+                "notes": {
                     "type": "string",
                     "maxLength": 2000,
-                    "example": "Client emergency"
-                },
-                "ownerNotes": {
-                    "type": "string",
-                    "maxLength": 2000,
-                    "example": "Ring the bell"
+                    "example": "Owner approved with constraints"
                 },
                 "rejectionReason": {
                     "type": "string",
@@ -14493,16 +14478,9 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse": {
             "type": "object",
             "properties": {
-                "cancelReason": {
-                    "type": "string"
-                },
                 "createdAt": {
                     "type": "string",
                     "example": "2025-01-09T12:00:00Z"
-                },
-                "durationMinutes": {
-                    "type": "integer",
-                    "example": 30
                 },
                 "firstOwnerActionAt": {
                     "type": "string",
@@ -14520,15 +14498,12 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
-                "ownerNotes": {
+                "notes": {
                     "type": "string"
                 },
                 "ownerUserId": {
                     "type": "integer",
                     "example": 10
-                },
-                "realtorNotes": {
-                    "type": "string"
                 },
                 "rejectionReason": {
                     "type": "string"
@@ -14552,10 +14527,6 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "PENDING"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "WITH_CLIENT"
                 },
                 "updatedAt": {
                     "type": "string",

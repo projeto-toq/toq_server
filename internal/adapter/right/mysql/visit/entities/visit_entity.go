@@ -46,45 +46,30 @@ type VisitEntity struct {
 	// References the user (realtor/buyer) who requests the visit
 	RequesterUserID int64
 
-	// OwnerUserID is the listing owner (NOT NULL, INT UNSIGNED)
+	// OwnerUserID is derived from listing_identities.user_id (not persisted in listing_visits)
 	OwnerUserID int64
 
 	// ScheduledStart is the visit start date/time (NOT NULL, DATETIME)
 	// Stored in UTC, converted to America/Sao_Paulo in service layer
 	ScheduledStart time.Time
-
-	// ScheduledEnd is the visit end date/time (NOT NULL, DATETIME)
-	// Stored in UTC, must be after ScheduledStart (validated in service layer)
-	ScheduledEnd time.Time
-
-	// DurationMinutes is the visit duration in minutes (NOT NULL, SMALLINT)
-	DurationMinutes int64
+	ScheduledEnd   time.Time
 
 	// Status is the visit workflow state (NOT NULL, ENUM)
 	// Allowed values: 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED', 'NO_SHOW'
 	// State transitions validated in service layer
 	Status string
 
-	// Type indicates the kind of visit (NOT NULL, ENUM)
-	// Allowed values: WITH_CLIENT, REALTOR_ONLY, CONTENT_PRODUCTION
-	Type string
-
 	// Source identifies where the visit was created (e.g., APP, WEB)
 	Source sql.NullString
 
-	// RealtorNotes stores notes from the requester/realtor
-	RealtorNotes sql.NullString
+	// Notes stores requester/owner notes in a single field (TEXT)
+	Notes sql.NullString
 
-	// OwnerNotes stores notes from the owner
-	OwnerNotes sql.NullString
-
-	// RejectionReason stores owner rejection reason
+	// RejectionReason stores owner rejection reason or cancellation context
 	RejectionReason sql.NullString
 
-	// CancelReason explains why the visit was cancelled (NULL, VARCHAR(255))
-	// Required when Status='CANCELLED', NULL otherwise
-	CancelReason sql.NullString
-
-	// FirstOwnerActionAt stores when the owner first approved/rejected the visit (NULL, DATETIME)
 	FirstOwnerActionAt sql.NullTime
+
+	// RequestedAt stores when the visit was requested; used for owner response time metrics (non-audit).
+	RequestedAt time.Time
 }

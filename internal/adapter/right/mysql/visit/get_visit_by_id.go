@@ -48,9 +48,23 @@ func (a *VisitAdapter) GetVisitByID(ctx context.Context, tx *sql.Tx, id int64) (
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	// Query selects all columns from listing_visits for the specified ID
-	// No status filter: all visit states are retrievable (business rule)
-	query := `SELECT id, listing_identity_id, listing_version, user_id, owner_user_id, scheduled_start, scheduled_end, duration_minutes, status, type, source, realtor_notes, owner_notes, rejection_reason, cancel_reason, first_owner_action_at FROM listing_visits WHERE id = ?`
+	// Query selects all required columns from listing_visits for the specified ID
+	// Scheduled start/end are reconstructed from date + time columns to preserve existing schema
+	query := `SELECT 
+		id,
+		listing_identity_id,
+		listing_version,
+		user_id,
+		(SELECT user_id FROM listing_identities li WHERE li.id = listing_visits.listing_identity_id LIMIT 1) AS owner_user_id,
+		CAST(CONCAT(scheduled_date, ' ', scheduled_time_start) AS DATETIME) AS scheduled_start,
+		CAST(CONCAT(scheduled_date, ' ', scheduled_time_end) AS DATETIME) AS scheduled_end,
+		status,
+		source,
+		notes,
+		rejection_reason,
+		first_owner_action_at,
+		requested_at
+		FROM listing_visits WHERE id = ?`
 
 	// Execute query using instrumented adapter (auto-generates metrics + tracing)
 	row := a.QueryRowContext(ctx, tx, "get_visit_by_id", query, id)

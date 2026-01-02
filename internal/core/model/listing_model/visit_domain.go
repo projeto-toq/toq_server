@@ -2,14 +2,6 @@ package listingmodel
 
 import "time"
 
-type VisitMode string
-
-const (
-	VisitModeWithClient        VisitMode = "WITH_CLIENT"
-	VisitModeRealtorOnly       VisitMode = "REALTOR_ONLY"
-	VisitModeContentProduction VisitMode = "CONTENT_PRODUCTION"
-)
-
 type visit struct {
 	id                int64
 	listingIdentityID int64
@@ -18,21 +10,16 @@ type visit struct {
 	ownerUserID       int64
 	scheduledStart    time.Time
 	scheduledEnd      time.Time
-	durationMinutes   int64
 	status            VisitStatus
-	visitMode         VisitMode
 	source            string
 	sourceValid       bool
-	realtorNotes      string
-	realtorNotesValid bool
-	ownerNotes        string
-	ownerNotesValid   bool
+	notes             string
+	notesValid        bool
 	rejectionReason   string
 	rejectionValid    bool
-	cancelReason      string
-	cancelValid       bool
 	firstOwnerAction  time.Time
 	firstOwnerValid   bool
+	requestedAt       time.Time
 	createdBy         int64
 	updatedBy         int64
 	updatedValid      bool
@@ -101,28 +88,12 @@ func (v *visit) SetScheduledEnd(value time.Time) {
 	v.scheduledEnd = value
 }
 
-func (v *visit) DurationMinutes() int64 {
-	return v.durationMinutes
-}
-
-func (v *visit) SetDurationMinutes(value int64) {
-	v.durationMinutes = value
-}
-
 func (v *visit) Status() VisitStatus {
 	return v.status
 }
 
 func (v *visit) SetStatus(value VisitStatus) {
 	v.status = value
-}
-
-func (v *visit) Type() VisitMode {
-	return v.visitMode
-}
-
-func (v *visit) SetType(value VisitMode) {
-	v.visitMode = value
 }
 
 func (v *visit) Source() (string, bool) {
@@ -139,32 +110,18 @@ func (v *visit) ClearSource() {
 	v.sourceValid = false
 }
 
-func (v *visit) RealtorNotes() (string, bool) {
-	return v.realtorNotes, v.realtorNotesValid
+func (v *visit) Notes() (string, bool) {
+	return v.notes, v.notesValid
 }
 
-func (v *visit) SetRealtorNotes(value string) {
-	v.realtorNotes = value
-	v.realtorNotesValid = true
+func (v *visit) SetNotes(value string) {
+	v.notes = value
+	v.notesValid = true
 }
 
-func (v *visit) ClearRealtorNotes() {
-	v.realtorNotes = ""
-	v.realtorNotesValid = false
-}
-
-func (v *visit) OwnerNotes() (string, bool) {
-	return v.ownerNotes, v.ownerNotesValid
-}
-
-func (v *visit) SetOwnerNotes(value string) {
-	v.ownerNotes = value
-	v.ownerNotesValid = true
-}
-
-func (v *visit) ClearOwnerNotes() {
-	v.ownerNotes = ""
-	v.ownerNotesValid = false
+func (v *visit) ClearNotes() {
+	v.notes = ""
+	v.notesValid = false
 }
 
 func (v *visit) RejectionReason() (string, bool) {
@@ -181,20 +138,6 @@ func (v *visit) ClearRejectionReason() {
 	v.rejectionValid = false
 }
 
-func (v *visit) CancelReason() (string, bool) {
-	return v.cancelReason, v.cancelValid
-}
-
-func (v *visit) SetCancelReason(value string) {
-	v.cancelReason = value
-	v.cancelValid = true
-}
-
-func (v *visit) ClearCancelReason() {
-	v.cancelReason = ""
-	v.cancelValid = false
-}
-
 func (v *visit) FirstOwnerActionAt() (time.Time, bool) {
 	return v.firstOwnerAction, v.firstOwnerValid
 }
@@ -207,6 +150,14 @@ func (v *visit) SetFirstOwnerActionAt(value time.Time) {
 func (v *visit) ClearFirstOwnerActionAt() {
 	v.firstOwnerAction = time.Time{}
 	v.firstOwnerValid = false
+}
+
+func (v *visit) RequestedAt() time.Time {
+	return v.requestedAt
+}
+
+func (v *visit) SetRequestedAt(value time.Time) {
+	v.requestedAt = value
 }
 
 func (v *visit) CreatedBy() int64 {

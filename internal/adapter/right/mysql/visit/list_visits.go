@@ -66,6 +66,9 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	conditions := make([]string, 0)
 	args := make([]any, 0)
 
+	scheduledStartExpr := "CAST(CONCAT(scheduled_date, ' ', scheduled_time_start) AS DATETIME)"
+	scheduledEndExpr := "CAST(CONCAT(scheduled_date, ' ', scheduled_time_end) AS DATETIME)"
+
 	// Filter by listing identity (exact match)
 	if filter.ListingIdentityID != nil {
 		conditions = append(conditions, "listing_identity_id = ?")
@@ -74,7 +77,7 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 
 	// Filter by owner user (exact match)
 	if filter.OwnerUserID != nil {
-		conditions = append(conditions, "owner_user_id = ?")
+		conditions = append(conditions, "listing_identity_id IN (SELECT id FROM listing_identities WHERE user_id = ?)")
 		args = append(args, *filter.OwnerUserID)
 	}
 
@@ -94,25 +97,15 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 		conditions = append(conditions, fmt.Sprintf("status IN (%s)", strings.Join(placeholders, ",")))
 	}
 
-	// Filter by types array (IN clause)
-	if len(filter.Types) > 0 {
-		placeholders := make([]string, len(filter.Types))
-		for i, visitType := range filter.Types {
-			placeholders[i] = "?"
-			args = append(args, string(visitType))
-		}
-		conditions = append(conditions, fmt.Sprintf("type IN (%s)", strings.Join(placeholders, ",")))
-	}
-
 	// Filter by time range (visits ending after 'from')
 	if filter.From != nil {
-		conditions = append(conditions, "scheduled_end >= ?")
+		conditions = append(conditions, fmt.Sprintf("%s >= ?", scheduledEndExpr))
 		args = append(args, *filter.From)
 	}
 
 	// Filter by time range (visits starting before 'to')
 	if filter.To != nil {
-		conditions = append(conditions, "scheduled_start <= ?")
+		conditions = append(conditions, fmt.Sprintf("%s <= ?", scheduledStartExpr))
 		args = append(args, *filter.To)
 	}
 
@@ -136,14 +129,27 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	limit, offset := defaultPagination(filter.Limit, filter.Page, visitsMaxPageSize)
 
 	// Execute main SELECT query with pagination
-	// Note: ORDER BY scheduled_start ensures chronological listing
+	// Note: ORDER BY reconstructed scheduled_start ensures chronological listing
 	query := fmt.Sprintf(`
-		SELECT id, listing_identity_id, listing_version, user_id, owner_user_id, scheduled_start, scheduled_end, duration_minutes, status, type, source, realtor_notes, owner_notes, rejection_reason, cancel_reason, first_owner_action_at
+		SELECT 
+			id,
+			listing_identity_id,
+			listing_version,
+			user_id,
+			(SELECT user_id FROM listing_identities li WHERE li.id = listing_visits.listing_identity_id LIMIT 1) AS owner_user_id,
+			%s AS scheduled_start,
+			%s AS scheduled_end,
+			status,
+			source,
+			notes,
+			rejection_reason,
+			first_owner_action_at,
+			requested_at
 		FROM listing_visits
 		WHERE %s
-		ORDER BY scheduled_start ASC
+		ORDER BY %s ASC
 		LIMIT ? OFFSET ?
-	`, where)
+	`, scheduledStartExpr, scheduledEndExpr, where, scheduledStartExpr)
 
 	// Append limit and offset to args (after filter args)
 	params := append(make([]any, 0, len(args)+2), args...)

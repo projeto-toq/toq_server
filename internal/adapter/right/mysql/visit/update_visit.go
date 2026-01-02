@@ -54,10 +54,17 @@ func (a *VisitAdapter) UpdateVisit(ctx context.Context, tx *sql.Tx, visit listin
 	// Convert domain model to database entity
 	entity := converters.ToVisitEntity(visit)
 
+	// Derive persisted date/time columns from scheduled start/end (schema stores them separately)
+	startUTC := entity.ScheduledStart.UTC()
+	endUTC := entity.ScheduledEnd.UTC()
+	scheduledDate := startUTC.Format("2006-01-02")
+	scheduledTimeStart := startUTC.Format("15:04:05")
+	scheduledTimeEnd := endUTC.Format("15:04:05")
+
 	// UPDATE query with all mutable fields
 	// Note: WHERE id = ? ensures we only update the target visit
 	query := `UPDATE listing_visits
-		SET listing_identity_id = ?, listing_version = ?, user_id = ?, owner_user_id = ?, scheduled_start = ?, scheduled_end = ?, duration_minutes = ?, status = ?, type = ?, source = ?, realtor_notes = ?, owner_notes = ?, rejection_reason = ?, cancel_reason = ?, first_owner_action_at = ?
+		SET listing_identity_id = ?, listing_version = ?, user_id = ?, scheduled_date = ?, scheduled_time_start = ?, scheduled_time_end = ?, status = ?, source = ?, notes = ?, rejection_reason = ?, first_owner_action_at = ?, requested_at = ?
 		WHERE id = ?`
 
 	// Execute update via instrumented adapter
@@ -65,18 +72,15 @@ func (a *VisitAdapter) UpdateVisit(ctx context.Context, tx *sql.Tx, visit listin
 		entity.ListingIdentityID,
 		entity.ListingVersion,
 		entity.RequesterUserID,
-		entity.OwnerUserID,
-		entity.ScheduledStart,
-		entity.ScheduledEnd,
-		entity.DurationMinutes,
+		scheduledDate,
+		scheduledTimeStart,
+		scheduledTimeEnd,
 		entity.Status,
-		entity.Type,
 		entity.Source,
-		entity.RealtorNotes,
-		entity.OwnerNotes,
+		entity.Notes,
 		entity.RejectionReason,
-		entity.CancelReason,
 		entity.FirstOwnerActionAt,
+		entity.RequestedAt,
 		entity.ID,
 	)
 	if err != nil {

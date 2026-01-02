@@ -21,9 +21,18 @@ func (s *visitService) recordOwnerResponseMetrics(ctx context.Context, tx *sql.T
 
 	visit.SetFirstOwnerActionAt(actionTime)
 
-	delta := actionTime.Sub(visit.CreatedAt())
+	requestedAt := visit.RequestedAt()
+	if requestedAt.IsZero() {
+		requestedAt = visit.ScheduledStart()
+	}
+
+	delta := actionTime.Sub(requestedAt)
 	if delta < 0 {
 		delta = 0
+	}
+	maxDelta := 24 * time.Hour * 365
+	if delta > maxDelta {
+		delta = maxDelta
 	}
 
 	deltaSeconds := int64(delta / time.Second)

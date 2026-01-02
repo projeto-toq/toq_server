@@ -15,8 +15,7 @@ type CreateVisitInput struct {
 	ListingIdentityID int64
 	ScheduledStart    time.Time
 	ScheduledEnd      time.Time
-	Type              listingmodel.VisitMode
-	RealtorNotes      string
+	Notes             string
 	Source            string
 }
 
@@ -102,22 +101,23 @@ func (s *visitService) CreateVisit(ctx context.Context, input CreateVisitInput) 
 		}
 	}
 
+	now := time.Now().UTC()
+
 	visit = listingmodel.NewVisit()
 	visit.SetListingIdentityID(input.ListingIdentityID)
 	visit.SetListingVersion(activeVersion.Version())
 	visit.SetRequesterUserID(requesterID)
 	visit.SetOwnerUserID(listingIdentity.UserID)
+	visit.SetRequestedAt(now)
 	visit.SetScheduledStart(input.ScheduledStart)
 	visit.SetScheduledEnd(input.ScheduledEnd)
-	visit.SetDurationMinutes(int64(input.ScheduledEnd.Sub(input.ScheduledStart).Minutes()))
 	visit.SetStatus(listingmodel.VisitStatusPending)
-	visit.SetType(input.Type)
 	visit.SetCreatedBy(requesterID)
 	if input.Source != "" {
 		visit.SetSource(input.Source)
 	}
-	if input.RealtorNotes != "" {
-		visit.SetRealtorNotes(input.RealtorNotes)
+	if input.Notes != "" {
+		visit.SetNotes(input.Notes)
 	}
 
 	visitID, err := s.visitRepo.InsertVisit(ctx, tx, visit)

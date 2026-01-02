@@ -8,7 +8,6 @@ type VisitListFilter struct {
 	OwnerUserID       *int64
 	RequesterUserID   *int64
 	Statuses          []VisitStatus
-	Types             []VisitMode
 	From              *time.Time
 	To                *time.Time
 	Page              int

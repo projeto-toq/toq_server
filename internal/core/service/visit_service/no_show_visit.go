@@ -59,7 +59,7 @@ func (s *visitService) MarkNoShow(ctx context.Context, visitID int64, ownerNotes
 
 	visit.SetStatus(listingmodel.VisitStatusNoShow)
 	if ownerNotes != "" {
-		visit.SetOwnerNotes(ownerNotes)
+		visit.SetNotes(ownerNotes)
 	}
 	visit.SetUpdatedBy(actorID)
 
