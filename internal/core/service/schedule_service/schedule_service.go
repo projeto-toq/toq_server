@@ -32,6 +32,7 @@ type ScheduleServiceInterface interface {
 	UpdateVisitEntryType(ctx context.Context, entryID uint64, newType schedulemodel.EntryType, blocking bool) (schedulemodel.AgendaEntryInterface, error)
 	DeleteVisitEntry(ctx context.Context, entryID uint64) error
 	CheckVisitConflict(ctx context.Context, agendaID uint64, start, end time.Time, excludeEntryID *uint64) (bool, error)
+	CheckSlotAvailability(ctx context.Context, filter schedulemodel.AvailabilityFilter, slot schedulemodel.ScheduleRange) (bool, error)
 }
 
 type scheduleService struct {

@@ -123,3 +123,8 @@ id;name;action;description;is_active
 122;"HTTP Listing Media List";"GET:/api/v2/listings/media";"Lista as mídia de um listing com paginação";1
 123;"HTTP Owner Change Listing Status";"POST:/api/v2/listings/status";"Permite que o proprietário altere o status do listing";1
 124;"HTTP Owner Listing Media Approve";"POST:/api/v2/listings/media/approve";"Permite que o proprietário aprove ou recuse os materiais de mídia do listing";1
+125;"HTTP Realtor Request Visit";"POST:/api/v2/visits";"Permite ao Realtor solicitar uma visita para um listing";1
+126;"HTTP Owner Get Visits";"GET:/api/v2/visits/owner";"Permite ao Owner listar visitas solicitadas para seus listings";1
+127;"HTTP Realtor Get Visits";"GET:/api/v2/visits/realtor";"Permite ao Realtor listar suas visitas agendadas";1
+128;"HTTP Owner/Realtor Update Visit Status";"POST:/api/v2/visits/status";"Permite ao Owner/Realtor atualizar o status de uma visita";1
+129;"HTTP Owner/Realtor Get Visit Detail";"GET:/api/v2/visits/{visitId}";"Permite ao Owner/Realtor consultar detalhes de uma visita agendada";1

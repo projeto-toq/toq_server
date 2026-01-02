@@ -8,6 +8,7 @@ import (
 	schedulerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/schedule_repository"
 	visitrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/visit_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 )
 
 // Service exposes visit orchestration operations.
@@ -23,12 +24,13 @@ type Service interface {
 }
 
 // NewService wires the visit service dependencies.
-func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface, config Config) Service {
+func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface, scheduleSvc scheduleservices.ScheduleServiceInterface, config Config) Service {
 	return &visitService{
 		globalService: gs,
 		visitRepo:     visitRepo,
 		listingRepo:   listingRepo,
 		scheduleRepo:  scheduleRepo,
+		scheduleSvc:   scheduleSvc,
 		config:        config,
 	}
 }
@@ -38,5 +40,6 @@ type visitService struct {
 	visitRepo     visitrepository.VisitRepositoryInterface
 	listingRepo   listingrepository.ListingRepoPortInterface
 	scheduleRepo  schedulerepository.ScheduleRepositoryInterface
+	scheduleSvc   scheduleservices.ScheduleServiceInterface
 	config        Config
 }

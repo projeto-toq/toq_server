@@ -322,6 +322,7 @@ func (c *config) InitVisitService() {
 		c.repositoryAdapters.Visit,
 		c.repositoryAdapters.Listing,
 		c.repositoryAdapters.Schedule,
+		c.scheduleService,
 		serviceConfig,
 	)
 }
