@@ -40,7 +40,7 @@ func (s *visitService) ApproveVisit(ctx context.Context, visitID int64, ownerNot
 		}
 	}()
 
-	visit, entry, hasEntry, err := s.loadVisitAndEntry(ctx, tx, visitID)
+	visit, err := s.loadVisit(ctx, tx, visitID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +48,22 @@ func (s *visitService) ApproveVisit(ctx context.Context, visitID int64, ownerNot
 		return nil, utils.ConflictError("Only pending visits can be approved")
 	}
 
+	agenda, agErr := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, visit.ListingIdentityID())
+	if agErr != nil {
+		if agErr == sql.ErrNoRows {
+			return nil, utils.NotFoundError("Agenda")
+		}
+		utils.SetSpanError(ctx, agErr)
+		logger.Error("visit.approve.get_agenda_error", "listing_identity_id", visit.ListingIdentityID(), "err", agErr)
+		return nil, utils.InternalError("")
+	}
+
 	now := time.Now().UTC()
-	markFirstOwnerActionIfEmpty(visit, now)
+	if err := s.recordOwnerResponseMetrics(ctx, tx, visit, actorID, now); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("visit.approve.owner_response_metrics_error", "visit_id", visitID, "err", err)
+		return nil, err
+	}
 	visit.SetStatus(listingmodel.VisitStatusApproved)
 	if ownerNotes != "" {
 		visit.SetOwnerNotes(ownerNotes)
@@ -65,37 +79,10 @@ func (s *visitService) ApproveVisit(ctx context.Context, visitID int64, ownerNot
 		return nil, utils.InternalError("")
 	}
 
-	if !hasEntry {
-		agenda, agErr := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, visit.ListingIdentityID())
-		if agErr != nil {
-			if agErr == sql.ErrNoRows {
-				return nil, utils.NotFoundError("Agenda")
-			}
-			utils.SetSpanError(ctx, agErr)
-			logger.Error("visit.approve.get_agenda_error", "listing_identity_id", visit.ListingIdentityID(), "err", agErr)
-			return nil, utils.InternalError("")
-		}
-		entry = schedulemodel.NewAgendaEntry()
-		entry.SetAgendaID(agenda.ID())
-		entry.SetVisitID(uint64(visit.ID()))
-		entry.SetStartsAt(visit.ScheduledStart())
-		entry.SetEndsAt(visit.ScheduledEnd())
-	}
-
-	entry.SetEntryType(schedulemodel.EntryTypeVisitConfirmed)
-	entry.SetBlocking(true)
-	if hasEntry {
-		if err = s.scheduleRepo.UpdateEntry(ctx, tx, entry); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("visit.approve.update_entry_error", "visit_id", visitID, "err", err)
-			return nil, utils.InternalError("")
-		}
-	} else {
-		if _, err = s.scheduleRepo.InsertEntry(ctx, tx, entry); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("visit.approve.insert_entry_error", "visit_id", visitID, "err", err)
-			return nil, utils.InternalError("")
-		}
+	if err = s.ensureVisitEntries(ctx, tx, agenda, visit, schedulemodel.EntryTypeVisitConfirmed, true); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("visit.approve.ensure_entries_error", "visit_id", visitID, "err", err)
+		return nil, utils.InternalError("")
 	}
 
 	if commitErr := s.globalService.CommitTransaction(ctx, tx); commitErr != nil {
@@ -104,6 +91,9 @@ func (s *visitService) ApproveVisit(ctx context.Context, visitID int64, ownerNot
 		return nil, utils.InternalError("")
 	}
 	committed = true
+
+	s.notifyVisitStatusOwner(ctx, visit)
+	s.notifyVisitStatusRealtor(ctx, visit)
 
 	return visit, nil
 }

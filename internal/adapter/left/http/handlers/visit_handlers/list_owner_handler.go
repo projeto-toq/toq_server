@@ -13,7 +13,7 @@ import (
 // ListVisitsOwner handles GET /visits/owner.
 //
 // @Summary     List visits for owners
-// @Description Lists visits filtered for the authenticated owner.
+// @Description Lists visits for the authenticated owner with status/type/time filters (RFC3339) and pagination (max 50 per page).
 // @Tags        Visits
 // @Produce     json
 // @Security    BearerAuth

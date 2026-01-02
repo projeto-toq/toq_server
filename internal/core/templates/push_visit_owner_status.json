@@ -1,0 +1,13 @@
+{
+    "title": "Visita {{status}} para o anúncio {{listing_identity_id}}",
+    "body": "Atualização da visita {{visit_id}} agendada para {{scheduled_start}}.",
+    "orientation_msg": "Consulte os detalhes e atualize o andamento se necessário.",
+    "data": {
+        "visit_id": "{{visit_id}}",
+        "listing_identity_id": "{{listing_identity_id}}",
+        "scheduled_start": "{{scheduled_start}}",
+        "scheduled_end": "{{scheduled_end}}",
+        "status": "{{status}}",
+        "role": "owner"
+    }
+}

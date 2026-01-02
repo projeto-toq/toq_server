@@ -13,7 +13,7 @@ import (
 // ListVisitsRealtor handles GET /visits/realtor.
 //
 // @Summary     List visits for requesters
-// @Description Lists visits filtered for the authenticated requester/realtor.
+// @Description Lists visits for the authenticated requester/realtor with status/type/time filters (RFC3339) and pagination (max 50 per page).
 // @Tags        Visits
 // @Produce     json
 // @Security    BearerAuth

@@ -23,12 +23,13 @@ type Service interface {
 }
 
 // NewService wires the visit service dependencies.
-func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface) Service {
+func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface, config Config) Service {
 	return &visitService{
 		globalService: gs,
 		visitRepo:     visitRepo,
 		listingRepo:   listingRepo,
 		scheduleRepo:  scheduleRepo,
+		config:        config,
 	}
 }
 
@@ -37,4 +38,5 @@ type visitService struct {
 	visitRepo     visitrepository.VisitRepositoryInterface
 	listingRepo   listingrepository.ListingRepoPortInterface
 	scheduleRepo  schedulerepository.ScheduleRepositoryInterface
+	config        Config
 }

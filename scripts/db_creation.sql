@@ -111,6 +111,9 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_identities` (
   `user_id` INT UNSIGNED NOT NULL,
   `code` MEDIUMINT NOT NULL,
   `active_version_id` INT UNSIGNED NULL,
+  `owner_avg_response_time_seconds` INT UNSIGNED NULL,
+  `owner_total_visits_responded` INT UNSIGNED NOT NULL DEFAULT 0,
+  `owner_last_response_at` DATETIME NULL,
   `deleted` TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
@@ -631,20 +634,31 @@ DROP TABLE IF EXISTS `toq_db`.`listing_visits` ;
 
 CREATE TABLE IF NOT EXISTS `toq_db`.`listing_visits` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `listing_id` INT UNSIGNED NOT NULL,
-  `owner_id` INT UNSIGNED NOT NULL,
-  `realtor_id` INT UNSIGNED NOT NULL,
-  `scheduled_start` DATETIME NOT NULL,
-  `scheduled_end` DATETIME NOT NULL,
-  `status` ENUM('PENDING_OWNER', 'CONFIRMED', 'CANCELLED', 'DONE') NOT NULL,
-  `cancel_reason` VARCHAR(255) NULL,
+  `listing_identity_id` INT UNSIGNED NOT NULL,
+  `listing_version` INT UNSIGNED NOT NULL DEFAULT 1,
+  `user_id` INT UNSIGNED NOT NULL,
+  `scheduled_date` DATE NOT NULL,
+  `scheduled_time_start` TIME NOT NULL,
+  `scheduled_time_end` TIME NOT NULL,
+  `status` ENUM('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED', 'NO_SHOW') NOT NULL DEFAULT 'PENDING',
+  `source` ENUM('APP', 'WEB', 'ADMIN') NOT NULL DEFAULT 'APP',
   `notes` TEXT NULL,
+  `reject_reason` VARCHAR(255) NULL,
+  `first_owner_action_at` DATETIME NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_visit_listing_idx` (`listing_id` ASC) VISIBLE,
-  CONSTRAINT `fk_visit_listing`
-    FOREIGN KEY (`listing_id`)
+  INDEX `fk_visits_listing_identity_idx` (`listing_identity_id` ASC) INVISIBLE,
+  INDEX `fk_visits_user_idx` (`user_id` ASC) INVISIBLE,
+  INDEX `idx_scheduled_date` (`scheduled_date` ASC) INVISIBLE,
+  INDEX `idx_status` (`status` ASC) INVISIBLE,
+  CONSTRAINT `fk_visits_listing_identity`
+    FOREIGN KEY (`listing_identity_id`)
     REFERENCES `toq_db`.`listing_identities` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_visits_user`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 

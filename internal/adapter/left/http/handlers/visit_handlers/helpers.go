@@ -9,6 +9,8 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+const maxVisitPageSize = 50
+
 func buildVisitFilter(query dto.VisitListQuery, actorID int64, asOwner bool) (listingmodel.VisitListFilter, error) {
 	statuses, err := parseVisitStatuses(query.Statuses)
 	if err != nil {
@@ -30,6 +32,10 @@ func buildVisitFilter(query dto.VisitListQuery, actorID int64, asOwner bool) (li
 		return listingmodel.VisitListFilter{}, err
 	}
 
+	if from != nil && to != nil && from.After(*to) {
+		return listingmodel.VisitListFilter{}, coreutils.ValidationError("from", "must be before or equal to 'to'")
+	}
+
 	page := query.Page
 	limit := query.Limit
 	if page <= 0 {
@@ -37,6 +43,9 @@ func buildVisitFilter(query dto.VisitListQuery, actorID int64, asOwner bool) (li
 	}
 	if limit <= 0 {
 		limit = 20
+	}
+	if limit > maxVisitPageSize {
+		limit = maxVisitPageSize
 	}
 
 	filter := listingmodel.VisitListFilter{

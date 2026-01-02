@@ -43,7 +43,7 @@ func (s *visitService) RejectVisit(ctx context.Context, visitID int64, reason st
 		}
 	}()
 
-	visit, entry, hasEntry, err := s.loadVisitAndEntry(ctx, tx, visitID)
+	visit, err := s.loadVisit(ctx, tx, visitID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,22 @@ func (s *visitService) RejectVisit(ctx context.Context, visitID int64, reason st
 		return nil, utils.ConflictError("Only pending visits can be rejected")
 	}
 
+	agenda, agErr := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, visit.ListingIdentityID())
+	if agErr != nil {
+		if agErr == sql.ErrNoRows {
+			return nil, utils.NotFoundError("Agenda")
+		}
+		utils.SetSpanError(ctx, agErr)
+		logger.Error("visit.reject.get_agenda_error", "listing_identity_id", visit.ListingIdentityID(), "err", agErr)
+		return nil, utils.InternalError("")
+	}
+
 	now := time.Now().UTC()
-	markFirstOwnerActionIfEmpty(visit, now)
+	if err := s.recordOwnerResponseMetrics(ctx, tx, visit, actorID, now); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("visit.reject.owner_response_metrics_error", "visit_id", visitID, "err", err)
+		return nil, err
+	}
 	visit.SetStatus(listingmodel.VisitStatusRejected)
 	visit.SetRejectionReason(reason)
 	visit.SetUpdatedBy(actorID)
@@ -66,12 +80,10 @@ func (s *visitService) RejectVisit(ctx context.Context, visitID int64, reason st
 		return nil, utils.InternalError("")
 	}
 
-	if hasEntry {
-		if err = s.scheduleRepo.DeleteEntry(ctx, tx, entry.ID()); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("visit.reject.delete_entry_error", "entry_id", entry.ID(), "visit_id", visitID, "err", err)
-			return nil, utils.InternalError("")
-		}
+	if err = s.removeVisitEntries(ctx, tx, agenda, visit); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("visit.reject.remove_entries_error", "visit_id", visitID, "err", err)
+		return nil, utils.InternalError("")
 	}
 
 	if commitErr := s.globalService.CommitTransaction(ctx, tx); commitErr != nil {
@@ -80,6 +92,9 @@ func (s *visitService) RejectVisit(ctx context.Context, visitID int64, reason st
 		return nil, utils.InternalError("")
 	}
 	committed = true
+
+	s.notifyVisitStatusOwner(ctx, visit)
+	s.notifyVisitStatusRealtor(ctx, visit)
 
 	return visit, nil
 }

@@ -1,0 +1,13 @@
+{
+    "title": "Novo pedido de visita para o anúncio {{listing_identity_id}}",
+    "body": "Você recebeu um pedido de visita para {{scheduled_start}}.",
+    "orientation_msg": "Acesse o app TOQ para aprovar ou ajustar o horário da visita.",
+    "data": {
+        "visit_id": "{{visit_id}}",
+        "listing_identity_id": "{{listing_identity_id}}",
+        "scheduled_start": "{{scheduled_start}}",
+        "scheduled_end": "{{scheduled_end}}",
+        "status": "{{status}}",
+        "role": "owner"
+    }
+}

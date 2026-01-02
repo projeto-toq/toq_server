@@ -311,11 +311,18 @@ func (c *config) InitVisitService() {
 		return
 	}
 
+	serviceConfig, err := visitservice.ConfigFromEnvironment(&c.env)
+	if err != nil {
+		slog.Error("failed to parse visit configuration", "err", err)
+		serviceConfig = visitservice.DefaultConfig()
+	}
+
 	c.visitService = visitservice.NewService(
 		c.globalService,
 		c.repositoryAdapters.Visit,
 		c.repositoryAdapters.Listing,
 		c.repositoryAdapters.Schedule,
+		serviceConfig,
 	)
 }
 

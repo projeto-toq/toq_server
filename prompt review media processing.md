@@ -1,20 +1,39 @@
-### Engenheiro de Software Go Sênior/AWS Admin Senior — Análise e Refatoração TOQ Server
+### Engenheiro de Software Go Sênior — Análise e Refatoração TOQ Server
 
-**Objetivo:** Atuar como engenheiro Go sênior e AWS Admin sênior, para analisar código existente, identificar desvios das regras do projeto, implementações mal feitas ou mal arquitetadas, códigos errôneos e propor planos detalhados de refatoração/implementação. Toda a interação deve ser feita em português.
+**Objetivo:** Atuar como engenheiro Go sênior, para analisar código existente, identificar desvios das regras do projeto, implementações mal feitas ou mal arquitetadas, códigos errôneos e propor planos detalhados de refatoração/implementação. Toda a interação deve ser feita em português.
 
 ---
 
 ## 🎯 Problema / Solicitação
 
-Os documentos `docs/media_processing_guide.md`, `docs/aws_media_processing_useful_commands.md`, `docs/aws_media_processing_implementation_summary.md` e `aws/README.md` decrevem o atual sistema de media processing, ou como deveria estar funcionando, ja que nem todas as etapas do processo já foram testadas.
+O sistema de gestão de pedidos de visitas do TOQ Server foi implementado de forma incompleta e com diversos desvios das regras e padrões do projeto.
 
-Entretanto, algumas funções foram criadas como placeholder ou estão mal implementadas.
+A regra de negócio preve:
+1. O realtor envia um pedido de visita para o owner do imóvel.
+   1.1. O modelo da visita `/codigos/go_code/toq_server/internal/core/model/listing_model/visit_domain.go`.
+   1.2. O pedido de visita deve ser baseado na agenda de disponibilidade do imovle que o owner criou durante a criação do listing representada em `/codigos/go_code/toq_server/internal/core/model/schedule_model/agenda_domain.go`, portanto visitas fora da disponibilidade não podem ser solicitadas.
+   1.3. Um alerta do pedido de visita dever ser enviado ao owner do imóvel via push notification
+   1.4. Utilize o sistema de notificações já existente no TOQ Server em `/codigos/go_code/toq_server/internal/core/service/global_service/notification_service.go`
+2. O owner pode aceitar ou recusar o pedido de visita.
+   2.1. Ao aceitar o pedido de visita, o sistema deve bloquear o horário na agenda do imovel e na agenda do realtor para que não haja conflitos.
+   2.2. Ao aceitar o pedido de visita, o sistema deve enviar uma notificação ao realtor informando o aceite.
+   2.3. Ao recusar o pedido de visita, o sistema deve enviar uma notificação ao realtor informando a recusa.
+3. O realtor pode cancelar o pedido de visita a qualquer momento.
+   3.1. Ao cancelar o pedido de visita, o sistema deve enviar uma notificação ao owner informando o cancelamento e retirar da agenda do owner e do realtor o bloqueio do horário.
+4. Após a visita o realtor deve informar o status da visita (realizada, não realizada, reagendada).
+   4.1. O owner deve ser notificado sobre o status da visita.
+5. Deve haver um contador de tempo desde o envio do pedido de visitas até aceite/recusa do proprietário.
+   5.1. Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis
+   5.2. Esta informação deve ser armazenada para futuras análises de performance do owner e será mostrada em seus anuncios. EX: "Respondeu 90% dos pedidos de visita em até 2 horas".
+6. Visitas podem ser solicitadas X horas a partir do pedido e no máximo Y dias no futuro.
+   6.1. Estes valores X e Y devem ser configuráveis no env.yaml
+   6.2. Caso o realtor tente solicitar uma visita fora destes limites, o sistema deve rejeitar a solicitação com a mensagem apropriada.
 
 Portanto, o objetivo aqui é uma análise profunda e completa para identificara desvios/erros e propor um plano de refatoração detalhado.
 
-Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
-1. Analise o código de cada lambda, step function, SQS handler, services, adapters, entities, converters e DTOs envolvidos no processamento de mídia.
-2. Analise o código GO do projeto toq_server e o manual do projeto em `docs/toq_server_go_guide.md`
+Tarefas, após ler o guia do projeto em `docs/toq_server_go_guide.md`:
+1. Analise o código dos handler, services, adapters, entities, converters e DTOs envolvidos no processamento das vistas.
+2. Identifique todos os desvios e ausencias das regras de negócio, padrões e boas práticas descritas no guia do projeto (cite seções específicas) e na regra de negócio acima.
 3. Proponha um plano detalhado para atender ao descritos nos manuais incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
     3.1. A refatoração pode ser disruptiva, pois este é um ambiente de dev e não temos back compatibility.
     3.2. se for necessário alterar o modelo da base de dados, apresente no novo modelo de dados que o DBA fará manualmente.

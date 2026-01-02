@@ -3,6 +3,7 @@ package listingrepository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -80,6 +81,7 @@ type ListingRepoPortInterface interface {
 	SoftDeleteCatalogValue(ctx context.Context, tx *sql.Tx, category string, id uint8) error
 
 	UpdateListingStatus(ctx context.Context, tx *sql.Tx, listingID int64, newStatus listingmodel.ListingStatus, expectedCurrent listingmodel.ListingStatus) error
+	UpdateOwnerResponseStats(ctx context.Context, tx *sql.Tx, identityID int64, deltaSeconds int64, respondedAt time.Time) error
 }
 
 type ListingIdentityRecord struct {

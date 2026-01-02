@@ -1,0 +1,13 @@
+{
+    "title": "Status da visita {{visit_id}}: {{status}}",
+    "body": "A visita ao anúncio {{listing_identity_id}} para {{scheduled_start}} foi atualizada.",
+    "orientation_msg": "Verifique o app TOQ para acompanhar ou reagendar se necessário.",
+    "data": {
+        "visit_id": "{{visit_id}}",
+        "listing_identity_id": "{{listing_identity_id}}",
+        "scheduled_start": "{{scheduled_start}}",
+        "scheduled_end": "{{scheduled_end}}",
+        "status": "{{status}}",
+        "role": "realtor"
+    }
+}

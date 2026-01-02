@@ -1,6 +1,7 @@
 package dto
 
 // CreateVisitRequest represents the payload to request a new visit.
+// Lead time and horizon are enforced per configuration (visits.min_hours_ahead, visits.max_days_ahead).
 type CreateVisitRequest struct {
 	ListingIdentityID int64  `json:"listingIdentityId" binding:"required" example:"123"`
 	ScheduledStart    string `json:"scheduledStart" binding:"required" example:"2025-01-10T14:00:00Z"`
@@ -19,7 +20,7 @@ type UpdateVisitStatusRequest struct {
 	CancelReason    string `json:"cancelReason,omitempty" binding:"max=2000" example:"Client emergency"`
 }
 
-// VisitListQuery captures query parameters for visit listings.
+// VisitListQuery captures query parameters for visit listings (RFC3339 range, pagination capped at 50).
 type VisitListQuery struct {
 	ListingIdentityID int64    `form:"listingIdentityId"`
 	Statuses          []string `form:"status"`

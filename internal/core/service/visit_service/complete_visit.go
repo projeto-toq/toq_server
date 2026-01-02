@@ -39,12 +39,22 @@ func (s *visitService) CompleteVisit(ctx context.Context, visitID int64, ownerNo
 		}
 	}()
 
-	visit, entry, hasEntry, err := s.loadVisitAndEntry(ctx, tx, visitID)
+	visit, err := s.loadVisit(ctx, tx, visitID)
 	if err != nil {
 		return nil, err
 	}
 	if visit.Status() != listingmodel.VisitStatusApproved && visit.Status() != listingmodel.VisitStatusPending {
 		return nil, utils.ConflictError("Only pending or approved visits can be completed")
+	}
+
+	agenda, agErr := s.scheduleRepo.GetAgendaByListingIdentityID(ctx, tx, visit.ListingIdentityID())
+	if agErr != nil {
+		if agErr == sql.ErrNoRows {
+			return nil, utils.NotFoundError("Agenda")
+		}
+		utils.SetSpanError(ctx, agErr)
+		logger.Error("visit.complete.get_agenda_error", "listing_identity_id", visit.ListingIdentityID(), "err", agErr)
+		return nil, utils.InternalError("")
 	}
 
 	visit.SetStatus(listingmodel.VisitStatusCompleted)
@@ -62,14 +72,10 @@ func (s *visitService) CompleteVisit(ctx context.Context, visitID int64, ownerNo
 		return nil, utils.InternalError("")
 	}
 
-	if hasEntry {
-		entry.SetEntryType(schedulemodel.EntryTypeVisitConfirmed)
-		entry.SetBlocking(false)
-		if err = s.scheduleRepo.UpdateEntry(ctx, tx, entry); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("visit.complete.update_entry_error", "entry_id", entry.ID(), "visit_id", visitID, "err", err)
-			return nil, utils.InternalError("")
-		}
+	if err = s.ensureVisitEntries(ctx, tx, agenda, visit, schedulemodel.EntryTypeVisitConfirmed, false); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("visit.complete.ensure_entries_error", "visit_id", visitID, "err", err)
+		return nil, utils.InternalError("")
 	}
 
 	if commitErr := s.globalService.CommitTransaction(ctx, tx); commitErr != nil {
@@ -78,6 +84,9 @@ func (s *visitService) CompleteVisit(ctx context.Context, visitID int64, ownerNo
 		return nil, utils.InternalError("")
 	}
 	committed = true
+
+	s.notifyVisitStatusOwner(ctx, visit)
+	s.notifyVisitStatusRealtor(ctx, visit)
 
 	return visit, nil
 }

@@ -190,6 +190,10 @@ type Environment struct {
 			End   string `yaml:"end"`
 		} `yaml:"default_block_rules"`
 	} `yaml:"schedule"`
+	Visits struct {
+		MinHoursAhead int `yaml:"min_hours_ahead"`
+		MaxDaysAhead  int `yaml:"max_days_ahead"`
+	} `yaml:"visits"`
 	Profiles map[string]ProfileOverrides `yaml:"profiles"`
 	// Health endpoints are now integrated into the main HTTP server
 	// No separate health configuration needed

@@ -82,6 +82,10 @@ func (s *visitService) CreateVisit(ctx context.Context, input CreateVisitInput) 
 		return nil, utils.InternalError("")
 	}
 
+	if err := s.validateWindow(ctx, tx, agenda, input); err != nil {
+		return nil, err
+	}
+
 	// Basic conflict detection using blocking entries.
 	entries, err := s.scheduleRepo.ListEntriesBetween(ctx, tx, agenda.ID(), input.ScheduledStart, input.ScheduledEnd)
 	if err != nil {
@@ -124,16 +128,9 @@ func (s *visitService) CreateVisit(ctx context.Context, input CreateVisitInput) 
 	}
 	visit.SetID(visitID)
 
-	entry := schedulemodel.NewAgendaEntry()
-	entry.SetAgendaID(agenda.ID())
-	entry.SetVisitID(uint64(visitID))
-	entry.SetEntryType(schedulemodel.EntryTypeVisitPending)
-	entry.SetStartsAt(input.ScheduledStart)
-	entry.SetEndsAt(input.ScheduledEnd)
-	entry.SetBlocking(true)
-	if _, err = s.scheduleRepo.InsertEntry(ctx, tx, entry); err != nil {
+	if err = s.ensureVisitEntries(ctx, tx, agenda, visit, schedulemodel.EntryTypeVisitPending, true); err != nil {
 		utils.SetSpanError(ctx, err)
-		logger.Error("visit.create.insert_entry_error", "agenda_id", agenda.ID(), "visit_id", visitID, "err", err)
+		logger.Error("visit.create.ensure_entries_error", "agenda_id", agenda.ID(), "visit_id", visitID, "err", err)
 		return nil, utils.InternalError("")
 	}
 
@@ -143,6 +140,8 @@ func (s *visitService) CreateVisit(ctx context.Context, input CreateVisitInput) 
 		return nil, utils.InternalError("")
 	}
 	committed = true
+
+	s.notifyVisitRequested(ctx, visit)
 
 	return visit, nil
 }

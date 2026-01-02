@@ -6,8 +6,8 @@
 
 ## 🎯 Problema / Solicitação
 
-Usuário está reportando que após retirar o `blob` do CSP esta apresentado erro ao tentar chamar a URL blob:https://gca..... 
-Isso ocorre na browser rodando aplicação flutter web ao tentar carregar uma imagem e é criada internamente pelo navegador quando você seleciona arquivos. Isso é inevitável e faz parte da API do navegador (File API).
+Usuário está reportando o erro abaixo:
+`Connecting to 'https://toq-listing-medias.s3.us-east-1.amazonaws.com/3/processed/photo/horizontal/thumbnail/horizontal-01-scaled__MG_8240.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Checksum-Mode=ENABLED&X-Amz-Credential=ASIAQ3EGR6UW5EBMLSQB%2F20260102%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260102T113942Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDQaCXVzLWVhc3QtMSJIMEYCIQCsLKIDjmslUjfRb39kYHv%2Byk55N%2BF2GJzWEdbDCQwQegIhAL6yGSuxe83J2o7%2Fw6dpfdWSYQ4fHHYxaQodG6xElh2cKsYFCPz%2F%2F%2F%2F%2F%2F%2F%2F%2F%2...Wab32Firqmb%2FgkAyqV1mI8MiUGtIdcnnZf%2BcctpmIHnrMjcHp%2FiNSaNPmLzGsBePMv3qD4R4afYmgeldlaT07hPCqSN4GQSU%2F0ZBd9cBUz1qn6th4c2vTQwzc3eygY6sAFuZhY986ze8Gaz%2F8VOa%2Ff4S7ndsOQGbsNuSN5aFlzZzh4Y2h0ZHDG4EqoHiJFddI1nBeK0wS2AnBE7xFKYOXN7nHo287mhlRBlZas7U8Lt76AZCPe1Tmf7BzNWDS1HD%2FKmkbY6iqApxiJtEuQtNJ28iiuhJAi2PA9OzS7NbtJqcBqsQWoVKI2Ux%2FvKVkF01YC86Rs4dXOdIahvkdz%2FtcvG3AqDGaG0luF2zNdZ8xcZYA%3D%3D&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=4ca365577d76a51ce014f88cdf744365af35fd9bbca4345221c4b42144c306b7' violates the following Content Security Policy directive: "connect-src 'self' https://api.gca.dev.br https://toq-platform-assets.s3.amazonaws.com https://*.s3.amazonaws.com https://*.s3.sa-east-1.amazonaws.com https://www.gstatic.com https://fonts.gstatic.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com". The action has been blocked.`
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código de toq_server, as configurações da AWS e identifique a causa raiz do problema.

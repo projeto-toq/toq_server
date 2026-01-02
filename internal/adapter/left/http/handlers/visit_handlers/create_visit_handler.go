@@ -13,11 +13,13 @@ import (
 // CreateVisit handles POST /visits.
 //
 // @Summary     Request a visit
-// @Description Creates a visit request using listing availability.
+// @Description Validates lead time (visits.min_hours_ahead), horizon (visits.max_days_ahead), and listing availability before creating a visit.
 // @Tags        Visits
 // @Accept      json
 // @Produce     json
 // @Security    BearerAuth
+// @Param       Authorization header string true "Bearer token"
+// @Param       X-Device-Id   header string false "Device ID"
 // @Param       request body dto.CreateVisitRequest true "Visit payload"
 // @Success     201 {object} dto.VisitResponse
 // @Failure     400 {object} dto.ErrorResponse
