@@ -100,6 +100,7 @@ func splitIntoSlots(r timeRange, slot time.Duration) []AvailabilitySlot {
 	}
 
 	cursor := r.start
+	// Ranges are treated as half-open [start,end); allow slotEnd == r.end so the last slot ends exactly at the exclusive bound.
 	for cursor.Add(slot).After(cursor) && !cursor.Add(slot).After(r.end) {
 		slotEnd := cursor.Add(slot)
 		slots = append(slots, AvailabilitySlot{StartsAt: cursor, EndsAt: slotEnd})

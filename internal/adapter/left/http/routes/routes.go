@@ -272,7 +272,7 @@ func RegisterVisitRoutes(
 		visits.POST("/status", visitHandler.UpdateVisitStatus)
 		visits.GET("/owner", visitHandler.ListVisitsOwner)
 		visits.GET("/realtor", visitHandler.ListVisitsRealtor)
-		visits.GET("/:visitId", visitHandler.GetVisit)
+		visits.POST("/detail", visitHandler.GetVisit)
 	}
 }
 

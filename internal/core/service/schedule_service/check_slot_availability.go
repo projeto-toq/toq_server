@@ -61,6 +61,9 @@ func (s *scheduleService) CheckSlotAvailability(ctx context.Context, filter sche
 		return false, utils.InternalError("")
 	}
 
+	// listing_agenda_rules stores end_minute inclusive; normalize to half-open before fitting.
+	normalizeAvailabilityRulesToExclusive(data.Rules)
+
 	fits := availabilityEngineFits(normalizedSlot, loc, data)
 	return fits, nil
 }

@@ -127,4 +127,4 @@ id;name;action;description;is_active
 126;"HTTP Owner Get Visits";"GET:/api/v2/visits/owner";"Permite ao Owner listar visitas solicitadas para seus listings";1
 127;"HTTP Realtor Get Visits";"GET:/api/v2/visits/realtor";"Permite ao Realtor listar suas visitas agendadas";1
 128;"HTTP Owner/Realtor Update Visit Status";"POST:/api/v2/visits/status";"Permite ao Owner/Realtor atualizar o status de uma visita";1
-129;"HTTP Owner/Realtor Get Visit Detail";"GET:/api/v2/visits/{visitId}";"Permite ao Owner/Realtor consultar detalhes de uma visita agendada";1
+129;"HTTP Owner/Realtor Get Visit Detail";"POST:/api/v2/visits/detail";"Permite ao Owner/Realtor consultar detalhes de uma visita agendada";1

@@ -1291,6 +1291,15 @@ definitions:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetVisitDetailRequest:
+    properties:
+      visitId:
+        description: VisitID is the unique identifier of the visit to be retrieved.
+        example: 456
+        type: integer
+    required:
+    - visitId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.HolidayCalendarCreateRequest:
     properties:
       city:
@@ -9921,15 +9930,23 @@ paths:
       summary: Request a visit
       tags:
       - Visits
-  /visits/{visitId}:
-    get:
-      description: Retrieves a visit by its identifier.
+  /visits/detail:
+    post:
+      consumes:
+      - application/json
+      description: Retrieves a visit by its identifier provided in the request body.
       parameters:
-      - description: Visit ID
-        in: path
-        name: visitId
+      - description: Bearer token
+        in: header
+        name: Authorization
         required: true
-        type: integer
+        type: string
+      - description: Visit identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetVisitDetailRequest'
       produces:
       - application/json
       responses:
@@ -9959,7 +9976,7 @@ paths:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Get visit by ID
+      summary: Get visit detail
       tags:
       - Visits
   /visits/owner:

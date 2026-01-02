@@ -60,6 +60,9 @@ func (s *scheduleService) GetAvailability(ctx context.Context, filter schedulemo
 		return AvailabilityResult{}, utils.InternalError("")
 	}
 
+	// listing_agenda_rules stores end_minute as inclusive; engine consumes half-open [start,end) ranges.
+	normalizeAvailabilityRulesToExclusive(data.Rules)
+
 	result := availabilityEngineCompute(repoRange, loc, filter.SlotDurationMinute, filter.Pagination, data)
 	return result, nil
 }

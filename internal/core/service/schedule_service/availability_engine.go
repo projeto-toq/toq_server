@@ -103,6 +103,8 @@ func buildInitialAvailability(from, to time.Time) []*dailyAvailability {
 }
 
 // applyRules removes blocked ranges configured by agenda rules.
+// Rules must already be normalized to half-open semantics ([start,end)), meaning end_minute in DB is inclusive
+// and was converted to an exclusive upper bound before this step.
 func applyRules(days []*dailyAvailability, rules []schedulemodel.AgendaRuleInterface, from, to time.Time) {
 	for _, rule := range rules {
 		if !rule.IsActive() || rule.RuleType() != schedulemodel.RuleTypeBlock {

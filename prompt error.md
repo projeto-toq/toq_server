@@ -6,33 +6,102 @@
 
 ## 🎯 Problema / Solicitação
 
-Ao aprovar uma visita ao imovel através do endpoint `POST /visits/status` com o body:
+O endpoint de consulta de disponibilidades do listing `GET /schedules/listing/availability?listingIdentityId=2&rangeFrom=2026-01-03T08:00:00Z&rangeTo=2026-01-10T08:00:00Z&slotDurationMinute=60&page=1&limit=20` está retornando:
 
 ```json
 {
-  "action": "APPROVE",
-  "visitId": 1,
-  "notes": "Owner approved without constraints"
+    "slots": [
+        {
+            "startsAt": "2026-01-03T07:59:00-03:00",
+            "endsAt": "2026-01-03T08:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T08:59:00-03:00",
+            "endsAt": "2026-01-03T09:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T09:59:00-03:00",
+            "endsAt": "2026-01-03T10:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T10:59:00-03:00",
+            "endsAt": "2026-01-03T11:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T11:59:00-03:00",
+            "endsAt": "2026-01-03T12:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T12:59:00-03:00",
+            "endsAt": "2026-01-03T13:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T13:59:00-03:00",
+            "endsAt": "2026-01-03T14:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T14:59:00-03:00",
+            "endsAt": "2026-01-03T15:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T15:59:00-03:00",
+            "endsAt": "2026-01-03T16:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T16:59:00-03:00",
+            "endsAt": "2026-01-03T17:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-03T17:59:00-03:00",
+            "endsAt": "2026-01-03T18:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T07:59:00-03:00",
+            "endsAt": "2026-01-04T08:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T08:59:00-03:00",
+            "endsAt": "2026-01-04T09:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T10:59:00-03:00",
+            "endsAt": "2026-01-04T11:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T11:59:00-03:00",
+            "endsAt": "2026-01-04T12:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T12:59:00-03:00",
+            "endsAt": "2026-01-04T13:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T13:59:00-03:00",
+            "endsAt": "2026-01-04T14:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T14:59:00-03:00",
+            "endsAt": "2026-01-04T15:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T15:59:00-03:00",
+            "endsAt": "2026-01-04T16:59:00-03:00"
+        },
+        {
+            "startsAt": "2026-01-04T16:59:00-03:00",
+            "endsAt": "2026-01-04T17:59:00-03:00"
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 75,
+        "totalPages": 4
+    },
+    "timezone": "America/Sao_Paulo"
 }
 ```
-
-recebo como resposta:
-```json
-{
-    "code": 500,
-    "details": null,
-    "message": "Internal server error"
-}
-```
-
-e estas entraddas no log:
-
-```json
-{"time":"2026-01-02T14:59:12.921933019Z","level":"ERROR","msg":"mysql.listing.update_owner_response_stats.exec_error","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","error":"Error 1264 (22003): Out of range value for column 'owner_avg_response_time_seconds' at row 1","listing_identity_id":2}
-{"time":"2026-01-02T14:59:12.922107853Z","level":"ERROR","msg":"visit.approve.owner_response_metrics_error","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","visit_id":1,"err":"update owner response stats: Error 1264 (22003): Out of range value for column 'owner_avg_response_time_seconds' at row 1"}
-{"time":"2026-01-02T14:59:12.922968288Z","level":"ERROR","msg":"HTTP Error","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","request_id":"46accc34-3f13-401c-86a3-14b2fd4ccf22","method":"POST","path":"/api/v2/visits/status","status":500,"duration":9862177,"size":61,"client_ip":"78.152.121.74","user_agent":"PostmanRuntime/7.51.0","user_id":2,"user_role_id":6,"errors":["update owner response stats: Error 1264 (22003): Out of range value for column 'owner_avg_response_time_seconds' at row 1"]}
-```
-
+veja que sempre aparece no último minuto da hora (ex: 07:59, 08:59, 09:59). Isto está correto? Creio que o esperado seria 08:00, 09:00, 10:00, etc.
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
