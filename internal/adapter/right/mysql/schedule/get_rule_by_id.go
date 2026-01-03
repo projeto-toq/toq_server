@@ -12,8 +12,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetRuleByID retrieves a single agenda rule by id; tx required.
-// Returns sql.ErrNoRows when not found; infra errors are logged and propagated unchanged.
+// GetRuleByID retrieves a single agenda rule by id from listing_agenda_rules.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: required transaction for consistent reads alongside sibling operations.
+//   - ruleID: rule identifier.
+//
+// Returns: AgendaRuleInterface or sql.ErrNoRows when missing; driver errors for query/scan problems.
+// Observability: tracer span creation, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) GetRuleByID(ctx context.Context, tx *sql.Tx, ruleID uint64) (schedulemodel.AgendaRuleInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

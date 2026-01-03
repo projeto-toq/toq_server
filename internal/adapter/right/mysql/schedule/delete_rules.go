@@ -8,8 +8,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// DeleteRulesByAgenda hard-deletes all rules for an agenda; tx required to keep writes atomic.
-// Returns sql.ErrNoRows when no rule was removed; other infra errors are bubbled for service mapping.
+// DeleteRulesByAgenda hard-deletes all rules tied to an agenda.
+//
+// Parameters:
+//   - ctx: request-scoped context with tracing/logging.
+//   - tx: required transaction to maintain write atomicity.
+//   - agendaID: target agenda identifier.
+//
+// Returns: sql.ErrNoRows when no rule matched; driver errors for execution/rows affected failures.
+// Observability: initializes tracer, propagates logger, marks span on infra errors and logs with compact context.
 func (a *ScheduleAdapter) DeleteRulesByAgenda(ctx context.Context, tx *sql.Tx, agendaID uint64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

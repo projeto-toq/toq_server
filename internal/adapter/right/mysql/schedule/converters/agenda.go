@@ -7,7 +7,8 @@ import (
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 )
 
-// AgendaEntityToDomain converts AgendaEntity into the domain representation.
+// AgendaEntityToDomain converts an AgendaEntity into the domain representation.
+// Parameters: AgendaEntity with DB types; Returns: AgendaInterface with clean domain types.
 func AgendaEntityToDomain(e scheduleentity.AgendaEntity) schedulemodel.AgendaInterface {
 	agenda := schedulemodel.NewAgenda()
 	agenda.SetID(e.ID)
@@ -17,7 +18,8 @@ func AgendaEntityToDomain(e scheduleentity.AgendaEntity) schedulemodel.AgendaInt
 	return agenda
 }
 
-// AgendaDomainToEntity converts a domain agenda into its persistence shape.
+// AgendaDomainToEntity converts a domain agenda into its persistence shape for INSERT/UPDATE operations.
+// Parameters: AgendaInterface with domain getters; Returns: AgendaEntity mirroring listing_agendas schema.
 func AgendaDomainToEntity(model schedulemodel.AgendaInterface) scheduleentity.AgendaEntity {
 	return scheduleentity.AgendaEntity{
 		ID:                model.ID(),

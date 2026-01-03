@@ -26,8 +26,8 @@ type rowScanner interface {
 //   - Reduce duplication in per-method files while keeping methods concise (project guide)
 //
 // Flow:
-//   1. Scan row into SessionEntity (with sql.Null* fields to preserve NULL semantics)
-//   2. Convert entity to domain model using SessionEntityToDomain
+//  1. Scan row into SessionEntity (with sql.Null* fields to preserve NULL semantics)
+//  2. Convert entity to domain model using SessionEntityToDomain
 //
 // Parameters:
 //   - ctx: Context carrying tracing/logging

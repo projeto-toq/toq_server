@@ -8,6 +8,8 @@ import (
 )
 
 // EntryEntityToDomain converts an EntryEntity to the domain object.
+// NULL handling: sql.NullString/NullInt64 are mapped only when Valid; optional fields remain unset in domain.
+// Parameters: EntryEntity from DB scan; Returns: AgendaEntryInterface with domain types.
 func EntryEntityToDomain(e scheduleentity.EntryEntity) schedulemodel.AgendaEntryInterface {
 	entry := schedulemodel.NewAgendaEntry()
 	entry.SetID(e.ID)
@@ -29,6 +31,8 @@ func EntryEntityToDomain(e scheduleentity.EntryEntity) schedulemodel.AgendaEntry
 }
 
 // EntryDomainToEntity converts the domain entry into persistence shape handling NULLable fields.
+// Empty optional fields are encoded as NULL using sql.Null*; generated IDs may be zero for new records.
+// Parameters: AgendaEntryInterface with getters; Returns: EntryEntity ready for INSERT/UPDATE.
 func EntryDomainToEntity(model schedulemodel.AgendaEntryInterface) scheduleentity.EntryEntity {
 	var reason sql.NullString
 	if value, ok := model.Reason(); ok {

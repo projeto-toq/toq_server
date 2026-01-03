@@ -10,6 +10,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// InsertRules bulk-inserts agenda rules and sets generated IDs back on each domain rule.
+//
+// Parameters:
+//   - ctx: request-scoped context with tracing/logging metadata.
+//   - tx: required transaction to ensure atomicity with agenda/entry writes.
+//   - rules: slice of domain rules to insert; when empty the function is a no-op.
+//
+// Returns: first infrastructure error encountered; sql.ErrNoRows is not expected for bulk inserts.
+// Observability: span is created, logger propagated, span errors marked on infra failures.
 func (a *ScheduleAdapter) InsertRules(ctx context.Context, tx *sql.Tx, rules []schedulemodel.AgendaRuleInterface) error {
 	if len(rules) == 0 {
 		return nil

@@ -13,6 +13,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// ListBlockRules lists blocking rules filtered by owner, listing, and optional weekdays.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: optional transaction for consistent reads.
+//   - filter: owner/listing identifiers and optional weekdays slice.
+//
+// Returns: slice of AgendaRuleInterface (empty when none) or infrastructure errors; sql.ErrNoRows is not used.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) ListBlockRules(ctx context.Context, tx *sql.Tx, filter schedulemodel.BlockRulesFilter) ([]schedulemodel.AgendaRuleInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

@@ -6,6 +6,7 @@ import "time"
 // Responsibilities:
 //   - Represent refresh-session state without coupling to DB/HTTP concerns.
 //   - Provide getter/setter API for services and repositories to read/update fields.
+//
 // Usage: services orchestrate lifecycle; repositories persist via converters; handlers should not import this type directly.
 type SessionInterface interface {
 	// GetID returns the session primary key (0 when not persisted).

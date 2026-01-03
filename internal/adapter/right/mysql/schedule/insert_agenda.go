@@ -10,6 +10,18 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// InsertAgenda persists a new agenda row and returns the generated ID.
+//
+// Parameters:
+//   - ctx: request-scoped context used for tracing and logging.
+//   - tx: active transaction required to keep atomicity with subsequent rule/entry inserts.
+//   - agenda: domain agenda with listingIdentityID, ownerID and timezone populated.
+//
+// Returns:
+//   - uint64: generated primary key set back on the domain object.
+//   - error: infrastructure errors bubbled; sql.ErrNoRows is not expected for inserts.
+//
+// Observability: initializes tracer, propagates logger, marks span on infra errors, and logs failures with minimal context.
 func (a *ScheduleAdapter) InsertAgenda(ctx context.Context, tx *sql.Tx, agenda schedulemodel.AgendaInterface) (uint64, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

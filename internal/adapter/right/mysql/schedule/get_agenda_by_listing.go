@@ -12,8 +12,20 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetAgendaByListingIdentityID fetches the agenda for a listing_identity; tx required for consistent reads.
-// Returns sql.ErrNoRows when absent; does not apply business mapping.
+// GetAgendaByListingIdentityID fetches the agenda for a given listing_identity_id from listing_agendas.
+//
+// Parameters:
+//   - ctx: request-scoped context used for tracing and structured logging.
+//   - tx: optional transaction; when provided the query must run inside it to keep consistency with sibling operations.
+//   - listingIdentityID: target listing_identity_id foreign key.
+//
+// Returns:
+//   - AgendaInterface: populated with id, listingIdentityID, ownerID and timezone.
+//   - error: sql.ErrNoRows when no agenda exists; driver errors for query/scan issues.
+//
+// Observability:
+//   - Starts a tracer span (GenerateTracer) and ensures span is ended.
+//   - Uses ContextWithLogger for correlation ids; span error marked on infra failures.
 func (a *ScheduleAdapter) GetAgendaByListingIdentityID(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (schedulemodel.AgendaInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

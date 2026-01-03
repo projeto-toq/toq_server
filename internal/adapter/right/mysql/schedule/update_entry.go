@@ -10,6 +10,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// UpdateEntry updates mutable fields of an agenda entry.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: required transaction to keep write atomicity.
+//   - entry: domain entry with ID set and updated fields.
+//
+// Returns: sql.ErrNoRows when the entry no longer exists; driver errors for exec/rows affected failures.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry schedulemodel.AgendaEntryInterface) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

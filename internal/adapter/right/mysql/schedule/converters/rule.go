@@ -8,6 +8,7 @@ import (
 )
 
 // RuleEntityToDomain converts RuleEntity to the domain representation.
+// Parameters: RuleEntity scanned from DB; Returns: AgendaRuleInterface with domain types (Weekday, RuleType).
 func RuleEntityToDomain(e scheduleentity.RuleEntity) schedulemodel.AgendaRuleInterface {
 	rule := schedulemodel.NewAgendaRule()
 	rule.SetID(e.ID)
@@ -20,7 +21,8 @@ func RuleEntityToDomain(e scheduleentity.RuleEntity) schedulemodel.AgendaRuleInt
 	return rule
 }
 
-// RuleDomainsToEntities converts domain rules into persistence entities.
+// RuleDomainsToEntities converts domain rules into persistence entities for bulk inserts/updates.
+// Parameters: slice of AgendaRuleInterface; Returns: slice of RuleEntity mirroring listing_agenda_rules schema.
 func RuleDomainsToEntities(models []schedulemodel.AgendaRuleInterface) []scheduleentity.RuleEntity {
 	entities := make([]scheduleentity.RuleEntity, 0, len(models))
 	for _, model := range models {

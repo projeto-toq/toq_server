@@ -8,8 +8,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// DeleteRule removes a single agenda rule by id; tx required to keep write atomic.
-// Returns sql.ErrNoRows when no row matches; other infra errors are logged and bubbled.
+// DeleteRule removes a single agenda rule by id.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: required transaction to keep the delete atomic with sibling writes.
+//   - ruleID: target rule identifier.
+//
+// Returns: sql.ErrNoRows when no row matches; driver errors for execution/rows affected issues.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) DeleteRule(ctx context.Context, tx *sql.Tx, ruleID uint64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

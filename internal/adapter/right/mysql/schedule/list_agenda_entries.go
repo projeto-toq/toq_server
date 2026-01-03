@@ -14,6 +14,15 @@ import (
 
 const agendaDetailMaxPageSize = 100
 
+// ListAgendaEntries returns paginated agenda entries for a listing within a date window.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: optional transaction for consistent reads.
+//   - filter: owner/listing ids, time range, and pagination config.
+//
+// Returns: AgendaEntriesPage with entries slice (empty when none) and total count; infra errors bubbled.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, filter schedulemodel.AgendaDetailFilter) (schedulemodel.AgendaEntriesPage, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

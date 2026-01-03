@@ -14,6 +14,15 @@ import (
 
 const ownerSummaryMaxPageSize = 50
 
+// ListOwnerSummary returns a paginated summary of listings for an owner with their agenda entries within a date range.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: optional transaction for consistent reads when chained with other queries.
+//   - filter: owner id, optional listing ids, date range, and pagination config.
+//
+// Returns: OwnerSummaryResult with items (empty when no listings match) and total count; infra errors are bubbled.
+// Observability: tracer span on entry, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) ListOwnerSummary(ctx context.Context, tx *sql.Tx, filter schedulemodel.OwnerSummaryFilter) (schedulemodel.OwnerSummaryResult, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

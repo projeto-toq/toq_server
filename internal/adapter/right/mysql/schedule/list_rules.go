@@ -11,6 +11,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// ListRulesByAgenda lists all rules for an agenda ordered by weekday and start minute.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: optional transaction; use non-nil to keep consistency with sibling reads.
+//   - agendaID: target agenda identifier.
+//
+// Returns: slice of AgendaRuleInterface (empty when none) or infrastructure errors; sql.ErrNoRows is not used here.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) ListRulesByAgenda(ctx context.Context, tx *sql.Tx, agendaID uint64) ([]schedulemodel.AgendaRuleInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

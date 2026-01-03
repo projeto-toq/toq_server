@@ -12,8 +12,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetEntryByVisitID returns the agenda entry associated with a visit; tx required.
-// Returns sql.ErrNoRows when the visit has no entry; does not apply business mapping.
+// GetEntryByVisitID returns the agenda entry associated with a visit id.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: required transaction when consistency is needed.
+//   - visitID: visit identifier to search for.
+//
+// Returns: AgendaEntryInterface or sql.ErrNoRows when no entry is linked to the visit; infra errors are bubbled.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) GetEntryByVisitID(ctx context.Context, tx *sql.Tx, visitID uint64) (schedulemodel.AgendaEntryInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

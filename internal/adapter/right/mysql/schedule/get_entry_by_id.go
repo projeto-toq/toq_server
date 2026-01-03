@@ -12,8 +12,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetEntryByID fetches an agenda entry by id; tx required for consistent read.
-// Returns sql.ErrNoRows when missing; other infra errors are logged and bubbled.
+// GetEntryByID fetches an agenda entry by its primary key.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: required transaction when consistency with sibling operations is needed.
+//   - entryID: entry identifier.
+//
+// Returns: AgendaEntryInterface or sql.ErrNoRows when missing; driver errors for query/scan issues.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) GetEntryByID(ctx context.Context, tx *sql.Tx, entryID uint64) (schedulemodel.AgendaEntryInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

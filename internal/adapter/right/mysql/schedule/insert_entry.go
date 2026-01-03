@@ -10,8 +10,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// InsertEntry creates a new agenda entry; tx required for atomicity with related writes.
-// Sets the generated ID on the domain object; returns infra errors without business mapping.
+// InsertEntry creates a new agenda entry row and returns the generated ID.
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: required transaction to keep atomicity with related writes.
+//   - entry: domain entry; generated ID is set back on this object when successful.
+//
+// Returns: generated ID or infrastructure errors; sql.ErrNoRows is not expected for inserts.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) InsertEntry(ctx context.Context, tx *sql.Tx, entry schedulemodel.AgendaEntryInterface) (uint64, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

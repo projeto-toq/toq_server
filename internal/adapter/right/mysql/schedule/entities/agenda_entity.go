@@ -3,14 +3,15 @@
 package scheduleentity
 
 // AgendaEntity maps listing_agendas rows (InnoDB, utf8mb4) and is restricted to the MySQL adapter layer.
+// Schema summary: PRIMARY KEY (id), FK listing_identity_id -> listing_identities.id, owner_id -> users.id, timezone default 'America/Sao_Paulo'.
 // Use scheduleconverters for domain conversions; do not import domain packages here.
 type AgendaEntity struct {
-	// ID is the AUTO_INCREMENT primary key (INT UNSIGNED NOT NULL)
+	// ID is the AUTO_INCREMENT primary key (INT UNSIGNED NOT NULL).
 	ID uint64
-	// ListingIdentityID references listing_identities.id (INT UNSIGNED NOT NULL)
+	// ListingIdentityID references listing_identities.id (INT UNSIGNED NOT NULL, indexed fk_agenda_listing).
 	ListingIdentityID int64
-	// OwnerID references users.id (INT UNSIGNED NOT NULL)
+	// OwnerID references users.id (INT UNSIGNED NOT NULL) used for ownership scoping.
 	OwnerID int64
-	// Timezone is the Olson timezone string (VARCHAR NOT NULL, e.g., "America/Sao_Paulo")
+	// Timezone is the Olson timezone string (VARCHAR(50) NOT NULL, default 'America/Sao_Paulo').
 	Timezone string
 }

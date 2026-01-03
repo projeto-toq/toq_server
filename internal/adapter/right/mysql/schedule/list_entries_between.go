@@ -12,6 +12,16 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// ListEntriesBetween returns agenda entries overlapping the half-open interval [from, to).
+//
+// Parameters:
+//   - ctx: request-scoped context for tracing/logging.
+//   - tx: optional transaction for consistent reads.
+//   - agendaID: target agenda identifier.
+//   - from/to: time window boundaries (inclusive start, exclusive end).
+//
+// Returns: slice of AgendaEntryInterface (empty when none) or infrastructure errors; sql.ErrNoRows is not used here.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) ListEntriesBetween(ctx context.Context, tx *sql.Tx, agendaID uint64, from, to time.Time) ([]schedulemodel.AgendaEntryInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

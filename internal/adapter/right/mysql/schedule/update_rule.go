@@ -9,7 +9,15 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// UpdateRule updates an existing agenda rule definition.
+// UpdateRule updates an existing agenda rule definition in listing_agenda_rules.
+//
+// Parameters:
+//   - ctx: request-scoped context with tracing/logging.
+//   - tx: required transaction to keep write atomicity.
+//   - rule: domain rule carrying new values; rule.ID must be set.
+//
+// Returns: sql.ErrNoRows when the rule no longer exists; driver errors for exec/rows affected failures.
+// Observability: tracer span, logger propagation, span error marking on infra failures.
 func (a *ScheduleAdapter) UpdateRule(ctx context.Context, tx *sql.Tx, rule schedulemodel.AgendaRuleInterface) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
