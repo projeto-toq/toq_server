@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -19,7 +19,7 @@ func (a *ScheduleAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry sch
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	entity := converters.ToEntryEntity(entry)
+	entity := scheduleconverters.EntryDomainToEntity(entry)
 
 	query := `UPDATE listing_agenda_entries SET entry_type = ?, starts_at = ?, ends_at = ?, blocking = ?, reason = ?, visit_id = ?, photo_booking_id = ? WHERE id = ?`
 	result, execErr := a.ExecContext(ctx, tx, "update", query, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID, entity.ID)

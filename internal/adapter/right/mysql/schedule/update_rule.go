@@ -21,10 +21,22 @@ func (a *ScheduleAdapter) UpdateRule(ctx context.Context, tx *sql.Tx, rule sched
 
 	query := `UPDATE listing_agenda_rules SET agenda_id = ?, day_of_week = ?, start_minute = ?, end_minute = ?, rule_type = ?, is_active = ? WHERE id = ?`
 
-	if _, execErr := a.ExecContext(ctx, tx, "update", query, rule.AgendaID(), rule.DayOfWeek(), rule.StartMinutes(), rule.EndMinutes(), rule.RuleType(), rule.IsActive(), rule.ID()); execErr != nil {
+	result, execErr := a.ExecContext(ctx, tx, "update", query, rule.AgendaID(), rule.DayOfWeek(), rule.StartMinutes(), rule.EndMinutes(), rule.RuleType(), rule.IsActive(), rule.ID())
+	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.schedule.update_rule.exec_error", "rule_id", rule.ID(), "err", execErr)
 		return fmt.Errorf("update agenda rule: %w", execErr)
+	}
+
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.schedule.update_rule.rows_error", "rule_id", rule.ID(), "err", rowsErr)
+		return fmt.Errorf("agenda rule rows affected: %w", rowsErr)
+	}
+
+	if affected == 0 {
+		return sql.ErrNoRows
 	}
 
 	return nil

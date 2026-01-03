@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -19,7 +19,7 @@ func (a *ScheduleAdapter) InsertAgenda(ctx context.Context, tx *sql.Tx, agenda s
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	entity := converters.ToAgendaEntity(agenda)
+	entity := scheduleconverters.AgendaDomainToEntity(agenda)
 
 	query := `INSERT INTO listing_agendas (listing_identity_id, owner_id, timezone) VALUES (?, ?, ?)`
 	result, execErr := a.ExecContext(ctx, tx, "insert", query, entity.ListingIdentityID, entity.OwnerID, entity.Timezone)

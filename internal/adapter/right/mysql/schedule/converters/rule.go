@@ -1,14 +1,14 @@
-package converters
+package scheduleconverters
 
 import (
 	"time"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 )
 
-// ToRuleModel converts RuleEntity to domain.
-func ToRuleModel(e entity.RuleEntity) schedulemodel.AgendaRuleInterface {
+// RuleEntityToDomain converts RuleEntity to the domain representation.
+func RuleEntityToDomain(e scheduleentity.RuleEntity) schedulemodel.AgendaRuleInterface {
 	rule := schedulemodel.NewAgendaRule()
 	rule.SetID(e.ID)
 	rule.SetAgendaID(e.AgendaID)
@@ -20,11 +20,11 @@ func ToRuleModel(e entity.RuleEntity) schedulemodel.AgendaRuleInterface {
 	return rule
 }
 
-// ToRuleEntities converts domain models to persistence.
-func ToRuleEntities(models []schedulemodel.AgendaRuleInterface) []entity.RuleEntity {
-	entities := make([]entity.RuleEntity, 0, len(models))
+// RuleDomainsToEntities converts domain rules into persistence entities.
+func RuleDomainsToEntities(models []schedulemodel.AgendaRuleInterface) []scheduleentity.RuleEntity {
+	entities := make([]scheduleentity.RuleEntity, 0, len(models))
 	for _, model := range models {
-		entities = append(entities, entity.RuleEntity{
+		entities = append(entities, scheduleentity.RuleEntity{
 			ID:          model.ID(),
 			AgendaID:    model.AgendaID(),
 			DayOfWeek:   uint8(model.DayOfWeek()),

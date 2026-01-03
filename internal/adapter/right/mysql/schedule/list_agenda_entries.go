@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -69,13 +69,13 @@ func (a *ScheduleAdapter) ListAgendaEntries(ctx context.Context, tx *sql.Tx, fil
 
 	entries := make([]schedulemodel.AgendaEntryInterface, 0)
 	for rows.Next() {
-		var entryEntity entity.EntryEntity
+		var entryEntity scheduleentity.EntryEntity
 		if scanErr := rows.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.schedule.agenda_detail.scan_error", "listing_identity_id", filter.ListingIdentityID, "err", scanErr)
 			return schedulemodel.AgendaEntriesPage{}, fmt.Errorf("scan agenda entry: %w", scanErr)
 		}
-		entries = append(entries, converters.ToEntryModel(entryEntity))
+		entries = append(entries, scheduleconverters.EntryEntityToDomain(entryEntity))
 	}
 
 	if rowsErr := rows.Err(); rowsErr != nil {

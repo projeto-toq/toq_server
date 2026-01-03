@@ -1,14 +1,14 @@
-package converters
+package scheduleconverters
 
 import (
 	"database/sql"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 )
 
-// ToEntryModel converts an EntryEntity to the domain object.
-func ToEntryModel(e entity.EntryEntity) schedulemodel.AgendaEntryInterface {
+// EntryEntityToDomain converts an EntryEntity to the domain object.
+func EntryEntityToDomain(e scheduleentity.EntryEntity) schedulemodel.AgendaEntryInterface {
 	entry := schedulemodel.NewAgendaEntry()
 	entry.SetID(e.ID)
 	entry.SetAgendaID(e.AgendaID)
@@ -28,8 +28,8 @@ func ToEntryModel(e entity.EntryEntity) schedulemodel.AgendaEntryInterface {
 	return entry
 }
 
-// ToEntryEntity converts the domain entry into persistence shape.
-func ToEntryEntity(model schedulemodel.AgendaEntryInterface) entity.EntryEntity {
+// EntryDomainToEntity converts the domain entry into persistence shape handling NULLable fields.
+func EntryDomainToEntity(model schedulemodel.AgendaEntryInterface) scheduleentity.EntryEntity {
 	var reason sql.NullString
 	if value, ok := model.Reason(); ok {
 		reason = sql.NullString{String: value, Valid: true}
@@ -45,7 +45,7 @@ func ToEntryEntity(model schedulemodel.AgendaEntryInterface) entity.EntryEntity 
 		photoID = sql.NullInt64{Int64: int64(value), Valid: true}
 	}
 
-	return entity.EntryEntity{
+	return scheduleentity.EntryEntity{
 		ID:             model.ID(),
 		AgendaID:       model.AgendaID(),
 		EntryType:      string(model.EntryType()),

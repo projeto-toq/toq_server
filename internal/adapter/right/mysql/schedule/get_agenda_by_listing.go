@@ -6,12 +6,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// GetAgendaByListingIdentityID fetches the agenda for a listing_identity; tx required for consistent reads.
+// Returns sql.ErrNoRows when absent; does not apply business mapping.
 func (a *ScheduleAdapter) GetAgendaByListingIdentityID(ctx context.Context, tx *sql.Tx, listingIdentityID int64) (schedulemodel.AgendaInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -25,7 +27,7 @@ func (a *ScheduleAdapter) GetAgendaByListingIdentityID(ctx context.Context, tx *
 
 	row := a.QueryRowContext(ctx, tx, "select", query, listingIdentityID)
 
-	var agendaEntity entity.AgendaEntity
+	var agendaEntity scheduleentity.AgendaEntity
 	if err = row.Scan(&agendaEntity.ID, &agendaEntity.ListingIdentityID, &agendaEntity.OwnerID, &agendaEntity.Timezone); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -35,5 +37,5 @@ func (a *ScheduleAdapter) GetAgendaByListingIdentityID(ctx context.Context, tx *
 		return nil, fmt.Errorf("scan agenda by listing id: %w", err)
 	}
 
-	return converters.ToAgendaModel(agendaEntity), nil
+	return scheduleconverters.AgendaEntityToDomain(agendaEntity), nil
 }

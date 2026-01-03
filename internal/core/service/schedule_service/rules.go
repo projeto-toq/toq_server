@@ -198,6 +198,9 @@ func (s *scheduleService) UpdateRule(ctx context.Context, input UpdateRuleInput)
 	rule.SetActive(input.Active)
 
 	if err := s.scheduleRepo.UpdateRule(ctx, tx, rule); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, utils.NotFoundError("Agenda rule")
+		}
 		utils.SetSpanError(ctx, err)
 		logger.Error("schedule.rules.update.exec_error", "err", err, "rule_id", input.RuleID)
 		return nil, utils.InternalError("")
@@ -283,6 +286,9 @@ func (s *scheduleService) DeleteRule(ctx context.Context, input DeleteRuleInput)
 	}
 
 	if err := s.scheduleRepo.DeleteRule(ctx, tx, input.RuleID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.NotFoundError("Agenda rule")
+		}
 		utils.SetSpanError(ctx, err)
 		logger.Error("schedule.rules.delete.exec_error", "err", err, "rule_id", input.RuleID)
 		return utils.InternalError("")

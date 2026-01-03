@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -34,7 +34,7 @@ func (a *ScheduleAdapter) InsertRules(ctx context.Context, tx *sql.Tx, rules []s
 	defer cleanup()
 
 	for _, rule := range rules {
-		record := entity.RuleEntity{
+		record := scheduleentity.RuleEntity{
 			AgendaID:    rule.AgendaID(),
 			DayOfWeek:   uint8(rule.DayOfWeek()),
 			StartMinute: rule.StartMinutes(),

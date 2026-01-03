@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// InsertEntry creates a new agenda entry; tx required for atomicity with related writes.
+// Sets the generated ID on the domain object; returns infra errors without business mapping.
 func (a *ScheduleAdapter) InsertEntry(ctx context.Context, tx *sql.Tx, entry schedulemodel.AgendaEntryInterface) (uint64, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -19,7 +21,7 @@ func (a *ScheduleAdapter) InsertEntry(ctx context.Context, tx *sql.Tx, entry sch
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	entity := converters.ToEntryEntity(entry)
+	entity := scheduleconverters.EntryDomainToEntity(entry)
 
 	query := `INSERT INTO listing_agenda_entries (agenda_id, entry_type, starts_at, ends_at, blocking, reason, visit_id, photo_booking_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 	result, execErr := a.ExecContext(ctx, tx, "insert", query, entity.AgendaID, entity.EntryType, entity.StartsAt, entity.EndsAt, entity.Blocking, entity.Reason, entity.VisitID, entity.PhotoBookingID)

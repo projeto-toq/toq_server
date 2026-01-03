@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -172,7 +172,7 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, tx *sql.Tx, l
 	result := make(map[int64][]schedulemodel.SummaryEntry, len(listingIDs))
 
 	for rows.Next() {
-		var entryEntity entity.EntryEntity
+		var entryEntity scheduleentity.EntryEntity
 		var listingID int64
 		if scanErr := rows.Scan(
 			&entryEntity.ID,
@@ -191,7 +191,7 @@ func (a *ScheduleAdapter) fetchSummaryEntries(ctx context.Context, tx *sql.Tx, l
 			return nil, fmt.Errorf("scan owner summary entry: %w", scanErr)
 		}
 
-		entry := converters.ToEntryModel(entryEntity)
+		entry := scheduleconverters.EntryEntityToDomain(entryEntity)
 		summary := schedulemodel.SummaryEntry{
 			EntryType: entry.EntryType(),
 			StartsAt:  entry.StartsAt(),

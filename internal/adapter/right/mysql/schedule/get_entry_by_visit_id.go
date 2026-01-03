@@ -6,13 +6,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetEntryByVisitID returns the agenda entry associated with a visit, when present.
+// GetEntryByVisitID returns the agenda entry associated with a visit; tx required.
+// Returns sql.ErrNoRows when the visit has no entry; does not apply business mapping.
 func (a *ScheduleAdapter) GetEntryByVisitID(ctx context.Context, tx *sql.Tx, visitID uint64) (schedulemodel.AgendaEntryInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -25,7 +26,7 @@ func (a *ScheduleAdapter) GetEntryByVisitID(ctx context.Context, tx *sql.Tx, vis
 	query := `SELECT id, agenda_id, entry_type, starts_at, ends_at, blocking, reason, visit_id, photo_booking_id FROM listing_agenda_entries WHERE visit_id = ? LIMIT 1`
 	row := a.QueryRowContext(ctx, tx, "select", query, visitID)
 
-	var entryEntity entity.EntryEntity
+	var entryEntity scheduleentity.EntryEntity
 	if err = row.Scan(&entryEntity.ID, &entryEntity.AgendaID, &entryEntity.EntryType, &entryEntity.StartsAt, &entryEntity.EndsAt, &entryEntity.Blocking, &entryEntity.Reason, &entryEntity.VisitID, &entryEntity.PhotoBookingID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
@@ -35,5 +36,5 @@ func (a *ScheduleAdapter) GetEntryByVisitID(ctx context.Context, tx *sql.Tx, vis
 		return nil, fmt.Errorf("scan agenda entry by visit: %w", err)
 	}
 
-	return converters.ToEntryModel(entryEntity), nil
+	return scheduleconverters.EntryEntityToDomain(entryEntity), nil
 }

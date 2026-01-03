@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entity"
+	scheduleconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/converters"
+	scheduleentity "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule/entities"
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -55,13 +55,13 @@ func (a *ScheduleAdapter) ListBlockRules(ctx context.Context, tx *sql.Tx, filter
 
 	rules := make([]schedulemodel.AgendaRuleInterface, 0)
 	for rows.Next() {
-		var ruleEntity entity.RuleEntity
+		var ruleEntity scheduleentity.RuleEntity
 		if scanErr := rows.Scan(&ruleEntity.ID, &ruleEntity.AgendaID, &ruleEntity.DayOfWeek, &ruleEntity.StartMinute, &ruleEntity.EndMinute, &ruleEntity.RuleType, &ruleEntity.IsActive); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.schedule.list_block_rules.scan_error", "listing_identity_id", filter.ListingIdentityID, "err", scanErr)
 			return nil, fmt.Errorf("scan block rule: %w", scanErr)
 		}
-		rules = append(rules, converters.ToRuleModel(ruleEntity))
+		rules = append(rules, scheduleconverters.RuleEntityToDomain(ruleEntity))
 	}
 
 	if rowsErr := rows.Err(); rowsErr != nil {

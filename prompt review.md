@@ -12,7 +12,7 @@ O modelo de dados está descrito em `scripts/db_creation.sql`.
 
 Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto estão sendo seguidas corretamente na totalidade do código.
 
-Temos que revisar **todos os arquivos relacionados ao port e adapter** para garantir que estão em conformidade com as regras do guia do projeto.
+Temos que revisar **todos os arquivos do port de repositório e o adapter MySQL (incluindo suas entities/converters)** para garantir que estão em conformidade com as regras do guia do projeto.
 
 Tarefas, após ler o guia do projeto `docs/toq_server_go_guide.md`:
 1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.

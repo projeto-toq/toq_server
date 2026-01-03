@@ -8,6 +8,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// DeleteEntry removes a single agenda entry by id; tx is required.
+// Returns sql.ErrNoRows when no row matches; bubbles driver errors unchanged for infra diagnosis.
 func (a *ScheduleAdapter) DeleteEntry(ctx context.Context, tx *sql.Tx, entryID uint64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
