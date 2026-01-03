@@ -12,7 +12,21 @@ import (
 // Ensure interface method is implemented
 var _ sessionrepository.SessionRepoPortInterface = (*SessionAdapter)(nil)
 
-// DeleteExpiredSessions deletes sessions that are revoked and past expiry or absolutely expired; returns affected rows
+// DeleteExpiredSessions removes expired sessions (sliding or absolute) regardless of revoked flag.
+//
+// Behavior:
+//   - Expires when expires_at < UTC_TIMESTAMP() OR absolute_expires_at < UTC_TIMESTAMP()
+//   - Uses LIMIT to cap cleanup batch size (for cron/maintenance jobs)
+//   - Returns number of rows deleted; logs RowsAffected errors as warnings
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction (nil for standalone cron job)
+//   - limit: Maximum rows to delete in this call
+//
+// Returns:
+//   - int64: Rows deleted (best-effort if RowsAffected errors occur)
+//   - error: Infrastructure errors only (query/connection/tx)
 func (sa *SessionAdapter) DeleteExpiredSessions(ctx context.Context, tx *sql.Tx, limit int) (int64, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

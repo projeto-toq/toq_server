@@ -8,6 +8,19 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// MarkSessionRotated sets rotated_at to UTC_TIMESTAMP() for a session ID.
+//
+// Behavior:
+//   - Used during refresh flows to timestamp the latest rotation
+//   - Does not change rotation_counter or revoke status
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - id: Session primary key
+//
+// Returns:
+//   - error: Infrastructure errors; rows affected errors surfaced; missing rows treated as no-op
 func (sa *SessionAdapter) MarkSessionRotated(ctx context.Context, tx *sql.Tx, id int64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

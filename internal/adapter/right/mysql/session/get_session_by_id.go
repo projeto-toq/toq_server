@@ -11,6 +11,20 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// GetSessionByID retrieves a session by primary key regardless of revoked/expiration state.
+//
+// Behavior:
+//   - No filters on revoked/expires; caller decides how to treat stale/revoked sessions
+//   - Returns sql.ErrNoRows when the ID does not exist
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - id: Session primary key (AUTO_INCREMENT)
+//
+// Returns:
+//   - session: Domain session model
+//   - error: sql.ErrNoRows when missing; wrapped infra errors otherwise
 func (sa *SessionAdapter) GetSessionByID(ctx context.Context, tx *sql.Tx, id int64) (session sessionmodel.SessionInterface, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

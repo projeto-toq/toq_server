@@ -8,6 +8,19 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// RevokeSessionsByUserID sets revoked=true for all active sessions of a user.
+//
+// Behavior:
+//   - Filters revoked = false to avoid redundant updates
+//   - Treats absence of sessions as no-op; rows affected only logged
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - userID: Owner user ID
+//
+// Returns:
+//   - error: Infrastructure errors; rows affected warnings logged only
 func (sa *SessionAdapter) RevokeSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

@@ -6,7 +6,7 @@
 
 ## 🎯 Problema / Solicitação
 
-O adapter MySql em `/codigos/go_code/toq_server/internal/adapter/right/mysql/visit/visit_adapter.go` que implementa o port `/codigos/go_code/toq_server/internal/core/port/right/repository/visit_repository/visit_repository_interface.go` deveria seguir a totalidades das regras de arquitetura e documentação definidas no guia do projeto `docs/toq_server_go_guide.md`.
+O adapter MySql em `/codigos/go_code/toq_server/internal/adapter/right/mysql/schedule/schedule_adapter.go` que implementa o port  `/codigos/go_code/toq_server/internal/core/port/right/repository/schedule_repository/schedule_repository_interface.go` deveria seguir a totalidades das regras de arquitetura e documentação definidas no guia do projeto `docs/toq_server_go_guide.md`.
 
 O modelo de dados está descrito em `scripts/db_creation.sql`.
 
@@ -21,6 +21,7 @@ Tarefas, após ler o guia do projeto `docs/toq_server_go_guide.md`:
     3.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
 4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
+6. A documentação do código deve estar completa, seguindo as regras do guia do projeto. Tome como exemplo os port (`/codigos/go_code/toq_server/internal/core/port/right/repository/user_repository/user_repository_interface.go`) e adapter (`/codigos/go_code/toq_server/internal/adapter/right/mysql/user/user_adapter.go`) de user.
 
 ---
 

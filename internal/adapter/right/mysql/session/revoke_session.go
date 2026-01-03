@@ -8,6 +8,19 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// RevokeSession sets revoked=true for a session ID.
+//
+// Behavior:
+//   - Marks the session as revoked without altering expiration timestamps
+//   - Missing rows are treated as no-op (no explicit sql.ErrNoRows check)
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - id: Session primary key
+//
+// Returns:
+//   - error: Infrastructure errors; rows affected errors surfaced
 func (sa *SessionAdapter) RevokeSession(ctx context.Context, tx *sql.Tx, id int64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

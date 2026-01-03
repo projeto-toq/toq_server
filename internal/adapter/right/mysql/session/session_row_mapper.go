@@ -20,26 +20,30 @@ type rowScanner interface {
 
 // mapSessionFromScanner scans a database row into SessionEntity then converts to domain
 //
-// This function centralizes the row scanning logic and delegates conversion to the
-// dedicated converter. This ensures a single source of truth for DB → Domain mapping.
+// Purpose:
+//   - Provide a single source of truth for DB → Domain mapping for all session queries
+//   - Ensure consistent NULL handling across all read paths
+//   - Reduce duplication in per-method files while keeping methods concise (project guide)
 //
 // Flow:
-//  1. Scan row into SessionEntity (with proper sql.Null* handling)
-//  2. Convert entity to domain model via SessionEntityToDomain converter
+//   1. Scan row into SessionEntity (with sql.Null* fields to preserve NULL semantics)
+//   2. Convert entity to domain model using SessionEntityToDomain
 //
 // Parameters:
-//   - ctx: Context for error logging and tracing
-//   - scanner: Row or Rows interface implementing Scan()
-//   - operation: Operation name for contextual error messages (e.g., "get_by_id", "list")
+//   - ctx: Context carrying tracing/logging
+//   - scanner: Implements Scan (either *sql.Row or *sql.Rows)
+//   - operation: Operation name for logging/metrics (e.g., "get_by_id")
 //
 // Returns:
 //   - session: SessionInterface populated from row data
-//   - error: sql.ErrNoRows if no data, or scan/conversion errors
+//   - error: sql.ErrNoRows when no data; wrapped infrastructure errors otherwise
 //
-// Important:
-//   - Returns sql.ErrNoRows directly (no wrapping) for repository-level handling
-//   - Logs and marks span on scan errors (infrastructure failure)
-//   - Uses SessionEntityToDomain for all NULL → value conversions
+// Error Handling:
+//   - sql.ErrNoRows is returned verbatim for service-layer mapping (404/empty)
+//   - Infrastructure scan errors are logged, traced, and wrapped with operation context
+//
+// Usage:
+//   - Used by all read methods (get by id, get by hash, list by user) to keep behavior uniform
 func (sa *SessionAdapter) mapSessionFromScanner(ctx context.Context, scanner rowScanner, operation string) (sessionmodel.SessionInterface, error) {
 	// Prepare entity with sql.Null* types for proper NULL handling
 	var entity sessionentities.SessionEntity

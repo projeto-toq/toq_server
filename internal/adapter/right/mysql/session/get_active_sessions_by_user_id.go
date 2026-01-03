@@ -10,6 +10,24 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// GetActiveSessionsByUserID lists all active (non-revoked, non-expired) sessions for a user.
+//
+// Behavior:
+//   - Applies revoked = false and expires_at > UTC_TIMESTAMP()
+//   - Returns empty slice when no active sessions exist (no error)
+//   - Uses shared mapper for consistent NULL handling and conversions
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - userID: Owner user ID (FK users.id)
+//
+// Returns:
+//   - sessions: Slice of domain sessions (can be empty)
+//   - error: Infrastructure errors only; sql.ErrNoRows is not used for list operations
+//
+// Observability:
+//   - Starts span, logs query/scan errors, marks span on infra failures
 func (sa *SessionAdapter) GetActiveSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) (sessions []sessionmodel.SessionInterface, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

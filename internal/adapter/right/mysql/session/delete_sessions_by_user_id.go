@@ -8,7 +8,20 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// DeleteSessionsByUserID permanently removes all sessions for a given user
+// DeleteSessionsByUserID permanently removes all sessions for a given user (active or revoked).
+//
+// Behavior:
+//   - Hard deletes rows; cannot be undone
+//   - Accepts optional transaction; always uses provided tx when not nil
+//   - RowsAffected is logged but not bubbled up
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - userID: Owner user ID
+//
+// Returns:
+//   - error: Infrastructure errors only; missing rows treated as no-op
 func (sa *SessionAdapter) DeleteSessionsByUserID(ctx context.Context, tx *sql.Tx, userID int64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

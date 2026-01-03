@@ -9,6 +9,22 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// UpdateSessionRotation updates rotation_counter and last_refresh_at for a session ID (refresh flow).
+//
+// Behavior:
+//   - Sets rotation_counter to provided value (caller increments)
+//   - Sets last_refresh_at to provided timestamp (usually UTC now)
+//   - Missing rows treated as no-op; no explicit sql.ErrNoRows check
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - id: Session primary key
+//   - rotationCounter: New rotation counter value
+//   - lastRefreshAt: Timestamp of last refresh
+//
+// Returns:
+//   - error: Infrastructure errors; rows affected errors surfaced
 func (sa *SessionAdapter) UpdateSessionRotation(ctx context.Context, tx *sql.Tx, id int64, rotationCounter int, lastRefreshAt time.Time) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

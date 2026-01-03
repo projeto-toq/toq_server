@@ -11,6 +11,25 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// GetActiveSessionByRefreshHash returns the active (non-revoked, non-expired) session for a refresh hash.
+//
+// Behavior:
+//   - Filters on revoked = false and expires_at > UTC_TIMESTAMP() (sliding expiration)
+//   - Does NOT check absolute_expires_at here; absolute check is enforced in services
+//   - Returns sql.ErrNoRows when no active session matches (not found or expired)
+//
+// Parameters:
+//   - ctx: Tracing/logging context
+//   - tx: Optional transaction
+//   - hash: SHA-256 refresh token hash (unique)
+//
+// Returns:
+//   - session: Domain model populated from DB
+//   - error: sql.ErrNoRows when absent/expired; wrapped infra errors otherwise
+//
+// Observability:
+//   - Starts span via utils.GenerateTracer and propagates contextual logger
+//   - Logs debug on not found; logs error and marks span on infra failures
 func (sa *SessionAdapter) GetActiveSessionByRefreshHash(ctx context.Context, tx *sql.Tx, hash string) (session sessionmodel.SessionInterface, err error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
