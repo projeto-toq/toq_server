@@ -45,13 +45,15 @@ import (
 //  19. opt_status (TINYINT)
 //  20. last_activity_at (TIMESTAMP)
 //  21. deleted (TINYINT)
+//  22. blocked_until (DATETIME, nullable)
+//  23. permanently_blocked (TINYINT)
 //
 // Example Query That Uses This Scanner:
 //
 //	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state,
 //	    creci_validity, born_at, phone_number, email, zip_code, street, number, complement,
-//	    neighborhood, city, state, password, opt_status, last_activity_at, deleted
-//	    FROM users WHERE deleted = 0`
+//	    neighborhood, city, state, password, opt_status, last_activity_at, deleted, blocked_until,
+//	    permanently_blocked FROM users WHERE deleted = 0`
 func scanUserEntities(rows *sql.Rows) ([]userentity.UserEntity, error) {
 	var entities []userentity.UserEntity
 
@@ -79,6 +81,8 @@ func scanUserEntities(rows *sql.Rows) ([]userentity.UserEntity, error) {
 			&entity.OptStatus,
 			&entity.LastActivityAt,
 			&entity.Deleted,
+			&entity.BlockedUntil,
+			&entity.PermanentlyBlocked,
 		)
 		if err != nil {
 			return nil, err
@@ -116,9 +120,9 @@ type UserEntityWithRole struct {
 // associated role data in a type-safe manner.
 //
 // Query Structure Expected:
-//   - First 22 columns: user fields (see scanUserEntities)
-//   - Columns 23-26: user_role fields (id, role_id, status, is_active)
-//   - Columns 27-31: role fields (id, name, slug, description, is_system_role, is_active)
+//   - First 23 columns: user fields (see scanUserEntities)
+//   - Columns 24-27: user_role fields (id, role_id, status, is_active)
+//   - Columns 28-32: role fields (id, name, slug, description, is_system_role, is_active)
 //
 // Parameters:
 //   - rows: *sql.Rows from JOIN query (caller must close)
@@ -142,7 +146,7 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 		var roleIsSystemRole sql.NullInt64
 		var roleActive sql.NullInt64
 
-		// Scan user fields (21 columns)
+		// Scan user fields (23 columns)
 		err := rows.Scan(
 			&entity.User.ID,
 			&entity.User.FullName,
@@ -165,6 +169,8 @@ func scanUserEntitiesWithRoles(rows *sql.Rows) ([]UserEntityWithRole, error) {
 			&entity.User.OptStatus,
 			&entity.User.LastActivityAt,
 			&entity.User.Deleted,
+			&entity.User.BlockedUntil,
+			&entity.User.PermanentlyBlocked,
 			// Scan user_role fields (4 columns, may be NULL if no role)
 			&userRoleID,
 			&roleID,

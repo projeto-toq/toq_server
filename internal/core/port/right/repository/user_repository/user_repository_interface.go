@@ -1,3 +1,9 @@
+// Package userrepository exposes the UserRepoPortInterface contract mirrored by the MySQL adapter.
+//
+// Documentation rules (Section 8):
+// - All methods are described with purpose, transactional expectations, returned errors, and edge cases.
+// - Repositories return infrastructure errors (e.g., sql.ErrNoRows) and never map to HTTP.
+// - Callers are responsible for starting/committing transactions when required.
 package userrepository
 
 import (
@@ -11,170 +17,123 @@ import (
 )
 
 type UserRepoPortInterface interface {
+	// ListUsersWithFilters returns a paginated admin listing with role info; read-only (tx optional).
+	// Returns empty slice when no match; result.Total always set via COUNT DISTINCT.
 	ListUsersWithFilters(ctx context.Context, tx *sql.Tx, filter ListUsersFilter) (ListUsersResult, error)
+	// CreateAgencyInvite creates a new agency_invite; tx required for atomicity with related updates; returns constraint errors.
 	CreateAgencyInvite(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, phoneNumber string) (err error)
+	// CreateAgencyRelationship links agency↔realtor in agency_realtor_relations; tx required; returns created relation id.
 	CreateAgencyRelationship(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, realtor usermodel.UserInterface) (id int64, err error)
+	// CreateUser inserts a new user record; tx required; uniqueness violations bubble up; does not set roles.
 	CreateUser(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
+	// DeleteAgencyRealtorRelation removes agency↔realtor relation; tx required; returns rows deleted (sql.ErrNoRows if 0).
 	DeleteAgencyRealtorRelation(ctx context.Context, tx *sql.Tx, agencyID int64, realtorID int64) (deleted int64, err error)
+	// DeleteInviteByID removes agency_invite by id; tx required; returns rows deleted (sql.ErrNoRows if 0).
 	DeleteInviteByID(ctx context.Context, tx *sql.Tx, id int64) (deleted int64, err error)
+	// DeleteWrongSignInByUserID deletes temp_wrong_signin entry; tx required when part of unblock flow; returns rows deleted.
 	DeleteWrongSignInByUserID(ctx context.Context, tx *sql.Tx, userID int64) (deleted int64, err error)
+	// GetAgencyOfRealtor returns agency user for a realtor; tx optional; sql.ErrNoRows when relation not found.
 	GetAgencyOfRealtor(ctx context.Context, tx *sql.Tx, realtorID int64) (agency usermodel.UserInterface, err error)
+	// GetInviteByPhoneNumber finds active invite by phone; tx optional; sql.ErrNoRows when absent.
 	GetInviteByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (invite usermodel.InviteInterface, err error)
+	// GetRealtorsByAgency lists realtor users linked to an agency; tx optional; returns empty slice when none.
 	GetRealtorsByAgency(ctx context.Context, tx *sql.Tx, agencyID int64) (users []usermodel.UserInterface, err error)
+	// GetUserByID fetches non-deleted user by id; tx optional; sql.ErrNoRows if not found.
 	GetUserByID(ctx context.Context, tx *sql.Tx, id int64) (user usermodel.UserInterface, err error)
+	// GetUserByNationalID fetches non-deleted user by CPF/CNPJ; tx optional; sql.ErrNoRows if not found.
 	GetUserByNationalID(ctx context.Context, tx *sql.Tx, nationalID string) (user usermodel.UserInterface, err error)
+	// GetUserByPhoneNumber fetches non-deleted user by phone; tx optional; sql.ErrNoRows if not found.
 	GetUserByPhoneNumber(ctx context.Context, tx *sql.Tx, phoneNumber string) (user usermodel.UserInterface, err error)
+	// ListAllUsers lists all non-deleted users; tx optional; sql.ErrNoRows when table has zero active rows.
 	ListAllUsers(ctx context.Context, tx *sql.Tx) (users []usermodel.UserInterface, err error)
+	// GetUsersByRoleAndStatus lists users with an active role matching slug/status; tx optional; empty slice when none.
 	GetUsersByRoleAndStatus(ctx context.Context, tx *sql.Tx, role permissionmodel.RoleSlug, status globalmodel.UserRoleStatus) (users []usermodel.UserInterface, err error)
+	// GetUserValidations returns temp_user_validations by user id; tx optional; sql.ErrNoRows when absent.
 	GetUserValidations(ctx context.Context, tx *sql.Tx, id int64) (validation usermodel.ValidationInterface, err error)
+	// GetWrongSigninByUserID returns temp_wrong_signin row; tx optional; sql.ErrNoRows when absent.
 	GetWrongSigninByUserID(ctx context.Context, tx *sql.Tx, id int64) (wrongSignin usermodel.WrongSigninInterface, err error)
+	// UpdateAgencyInviteByID updates phone/agency of an invite; tx required; sql.ErrNoRows if id not found.
 	UpdateAgencyInviteByID(ctx context.Context, tx *sql.Tx, invite usermodel.InviteInterface) (err error)
+	// UpdateUserByID updates user fields except password/last_activity; tx required; sql.ErrNoRows if not found/deleted.
 	UpdateUserByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
+	// UpdateUserLastActivity sets last_activity_at for a user; tx optional; sql.ErrNoRows if not found/deleted.
 	UpdateUserLastActivity(ctx context.Context, tx *sql.Tx, id int64) (err error)
+	// BatchUpdateUserLastActivity bulk-updates last_activity_at; tx optional; expects len(userIDs)==len(timestamps).
 	BatchUpdateUserLastActivity(ctx context.Context, userIDs []int64, timestamps []int64) (err error)
+	// UpdateUserPasswordByID updates password hash; tx required; sql.ErrNoRows if not found/deleted.
 	UpdateUserPasswordByID(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (err error)
+	// UpdateUserValidations upserts temp_user_validations; tx required; never returns sql.ErrNoRows.
 	UpdateUserValidations(ctx context.Context, tx *sql.Tx, validation usermodel.ValidationInterface) (err error)
+	// UpdateWrongSignIn upserts temp_wrong_signin (failed attempts); tx required; never returns sql.ErrNoRows.
 	UpdateWrongSignIn(ctx context.Context, tx *sql.Tx, wrongSigin usermodel.WrongSigninInterface) (err error)
+	// UpdateUserRoleStatusByUserID updates status of active role by user_id; tx optional; sql.ErrNoRows if no active role.
 	UpdateUserRoleStatusByUserID(ctx context.Context, userID int64, status int) (err error)
+	// UpdateUserRoleStatus updates status of active role filtered by slug; tx required; sql.ErrNoRows if no active role/slug.
 	UpdateUserRoleStatus(ctx context.Context, tx *sql.Tx, userID int64, role permissionmodel.RoleSlug, status globalmodel.UserRoleStatus) error
+	// ResetUserWrongSigninAttempts deletes temp_wrong_signin row; tx required alongside unblock; sql.ErrNoRows if already absent.
 	ResetUserWrongSigninAttempts(ctx context.Context, tx *sql.Tx, userID int64) error
+	// HasUserDuplicate checks uniqueness for cpf/email/phone (excluding current id); tx optional; returns true when duplicate exists.
 	HasUserDuplicate(ctx context.Context, tx *sql.Tx, user usermodel.UserInterface) (exist bool, err error)
+	// ExistsEmailForAnotherUser checks if email belongs to another user; tx optional; returns boolean without sql.ErrNoRows.
 	ExistsEmailForAnotherUser(ctx context.Context, tx *sql.Tx, email string, excludeUserID int64) (bool, error)
+	// ExistsPhoneForAnotherUser checks if phone belongs to another user; tx optional; returns boolean without sql.ErrNoRows.
 	ExistsPhoneForAnotherUser(ctx context.Context, tx *sql.Tx, phone string, excludeUserID int64) (bool, error)
+	// DeleteExpiredValidations deletes temp_user_validations past expiration with limit; tx required for controlled cleanup; returns rows deleted.
 	DeleteExpiredValidations(ctx context.Context, tx *sql.Tx, limit int) (int64, error)
 
 	// UserRole operations
+	// CreateUserRole inserts user_role; tx required; returns created domain entity; constraint errors bubble up.
 	CreateUserRole(ctx context.Context, tx *sql.Tx, userRole usermodel.UserRoleInterface) (usermodel.UserRoleInterface, error)
+	// GetUserRolesByUserID lists all roles for a user; tx optional; empty slice when none.
 	GetUserRolesByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]usermodel.UserRoleInterface, error)
+	// GetActiveUserRoleByUserID fetches active role; tx optional; sql.ErrNoRows when no active role.
 	GetActiveUserRoleByUserID(ctx context.Context, tx *sql.Tx, userID int64) (usermodel.UserRoleInterface, error)
+	// GetUserRoleByUserIDAndRoleID fetches specific role mapping; tx optional; sql.ErrNoRows when absent.
 	GetUserRoleByUserIDAndRoleID(ctx context.Context, tx *sql.Tx, userID, roleID int64) (usermodel.UserRoleInterface, error)
+	// UpdateUserRole updates user_role fields; tx required; sql.ErrNoRows if id not found.
 	UpdateUserRole(ctx context.Context, tx *sql.Tx, userRole usermodel.UserRoleInterface) error
+	// DeleteUserRole hard-deletes user_role; tx required; sql.ErrNoRows if id not found.
 	DeleteUserRole(ctx context.Context, tx *sql.Tx, userRoleID int64) error
+	// DeactivateAllUserRoles sets is_active=0 for all roles of user; tx required; sql.ErrNoRows if none affected.
 	DeactivateAllUserRoles(ctx context.Context, tx *sql.Tx, userID int64) error
+	// ActivateUserRole sets is_active=1 for role/user pair; tx required; sql.ErrNoRows if pair not found.
 	ActivateUserRole(ctx context.Context, tx *sql.Tx, userID, roleID int64) error
 
 	// User blocking operations
 
-	// SetUserBlockedUntil sets temporary block expiration for a user
-	// Blocks user until specified timestamp (blocked_until column in users table)
-	// Used by signin flow after MaxWrongSigninAttempts reached (configured in env.yaml)
+	// SetUserBlockedUntil sets temporary block expiration (users.blocked_until); tx required; sql.ErrNoRows if user not found/deleted.
 	SetUserBlockedUntil(ctx context.Context, tx *sql.Tx, userID int64, blockedUntil time.Time) error
 
-	// ClearUserBlockedUntil clears temporary block for a user
-	// Sets blocked_until = NULL (unblocks user)
-	// Used by worker when blocked_until expires, or by signin on success
+	// ClearUserBlockedUntil sets blocked_until=NULL; tx required; sql.ErrNoRows if user not found/deleted.
 	ClearUserBlockedUntil(ctx context.Context, tx *sql.Tx, userID int64) error
 
-	// GetUsersWithExpiredBlock returns users whose blocked_until has passed
-	// Used by worker to automatically unblock users
-	// Returns empty slice if no expired blocks found (not an error)
+	// GetUsersWithExpiredBlock lists users with blocked_until <= NOW(); tx optional; empty slice when none.
 	GetUsersWithExpiredBlock(ctx context.Context, tx *sql.Tx) ([]usermodel.UserInterface, error)
 
-	// SetUserPermanentlyBlocked sets or clears permanent admin block
-	// Used by admin endpoints to permanently block/unblock users
+	// SetUserPermanentlyBlocked sets/clears permanently_blocked; tx required; clears blocked_until on unblock; sql.ErrNoRows if not found/deleted.
 	SetUserPermanentlyBlocked(ctx context.Context, tx *sql.Tx, userID int64, blocked bool) error
 
 	// ==================== Device Token Management ====================
 
-	// AddDeviceToken registers a new push notification token for a user device
-	// Uses INSERT ... ON DUPLICATE KEY UPDATE to handle token rotation for same device
-	// Returns the created/updated device token record
-	//
-	// Parameters:
-	//   - ctx: Context for tracing and cancellation
-	//   - tx: Database transaction (can be nil for standalone operation)
-	//   - userID: User's unique identifier
-	//   - deviceID: Unique device identifier (UUIDv4)
-	//   - token: FCM or APNs push notification token
-	//   - platform: Device platform ("android"/"ios"/"web") - optional
-	//
-	// Returns:
-	//   - token: Created device token record with ID
-	//   - error: Database errors
+	// AddDeviceToken upserts device_tokens scoped by user+device; tx optional; returns created/updated token; constraint errors bubble.
 	AddDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, deviceID, token string, platform *string) (usermodel.DeviceToken, error)
 
-	// RemoveDeviceToken deletes a specific push notification token
-	// Returns sql.ErrNoRows if token not found
-	//
-	// Parameters:
-	//   - ctx: Context for tracing
-	//   - tx: Database transaction (can be nil)
-	//   - userID: User's unique identifier
-	//   - token: The token string to remove
-	//
-	// Returns:
-	//   - error: sql.ErrNoRows if not found, or database errors
+	// RemoveDeviceToken deletes device_tokens by user+token; tx optional; sql.ErrNoRows when token absent.
 	RemoveDeviceToken(ctx context.Context, tx *sql.Tx, userID int64, token string) error
 
-	// RemoveAllDeviceTokensByUserID removes all tokens for a user (cleanup on logout/delete)
-	// Returns no error if user has no tokens (0 rows affected is success)
-	//
-	// Parameters:
-	//   - ctx: Context for tracing
-	//   - tx: Database transaction (can be nil)
-	//   - userID: User's unique identifier
-	//
-	// Returns:
-	//   - error: Database errors
+	// RemoveAllDeviceTokensByUserID bulk-deletes tokens for user; tx optional; 0 rows is success.
 	RemoveAllDeviceTokensByUserID(ctx context.Context, tx *sql.Tx, userID int64) error
 
-	// RemoveDeviceTokensByDeviceID removes all tokens for a specific device
-	// Used when device session is revoked or device is unregistered
-	// Returns no error if device has no tokens
-	//
-	// Parameters:
-	//   - ctx: Context for tracing
-	//   - tx: Database transaction (can be nil)
-	//   - userID: User's unique identifier
-	//   - deviceID: Unique device identifier
-	//
-	// Returns:
-	//   - error: Database errors
+	// RemoveDeviceTokensByDeviceID bulk-deletes tokens for user+device; tx optional; 0 rows is success.
 	RemoveDeviceTokensByDeviceID(ctx context.Context, tx *sql.Tx, userID int64, deviceID string) error
 
-	// ListDeviceTokensByUserID retrieves all tokens for a user
-	// Returns empty slice if user has no tokens (NOT sql.ErrNoRows)
-	//
-	// Parameters:
-	//   - ctx: Context for tracing
-	//   - tx: Database transaction (can be nil)
-	//   - userID: User's unique identifier
-	//
-	// Returns:
-	//   - tokens: Slice of device tokens
-	//   - error: Database errors
+	// ListDeviceTokensByUserID returns device_tokens for user; tx optional; empty slice when none.
 	ListDeviceTokensByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]usermodel.DeviceToken, error)
 
-	// ListDeviceTokenStringsByUserIDIfOptedIn retrieves FCM token strings for opted-in user
-	// Only returns tokens if user.opt_status = 1 and user.deleted = 0
-	// Returns empty slice if user opted out or deleted (NOT sql.ErrNoRows)
-	//
-	// Use Case: Targeted push notifications to single user
-	//
-	// Parameters:
-	//   - ctx: Context for tracing
-	//   - tx: Database transaction (can be nil)
-	//   - userID: User's unique identifier
-	//
-	// Returns:
-	//   - tokens: Slice of FCM token strings (DISTINCT)
-	//   - error: Database errors
+	// ListDeviceTokenStringsByUserIDIfOptedIn returns DISTINCT tokens for opted-in, non-deleted user; tx optional; empty slice otherwise.
 	ListDeviceTokenStringsByUserIDIfOptedIn(ctx context.Context, tx *sql.Tx, userID int64) ([]string, error)
 
-	// ListDeviceTokenStringsByOptedInUsers retrieves all tokens for all opted-in users
-	// Only returns tokens where user.opt_status = 1 and user.deleted = 0
-	// Returns empty slice if no users opted in (NOT sql.ErrNoRows)
-	//
-	// Use Case: Broadcast notifications to all opted-in users
-	// Warning: Can return large result set (thousands of tokens)
-	//
-	// Parameters:
-	//   - ctx: Context for tracing
-	//   - tx: Database transaction (can be nil)
-	//
-	// Returns:
-	//   - tokens: Slice of FCM token strings (DISTINCT)
-	//   - error: Database errors
+	// ListDeviceTokenStringsByOptedInUsers returns DISTINCT tokens for all opted-in, non-deleted users; tx optional; empty slice when none.
 	ListDeviceTokenStringsByOptedInUsers(ctx context.Context, tx *sql.Tx) ([]string, error)
 }
 

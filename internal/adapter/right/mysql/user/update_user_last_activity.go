@@ -20,7 +20,7 @@ import (
 //   - id: User ID whose last activity timestamp should be updated
 //
 // Returns:
-//   - error: Database errors (does NOT return error if user not found)
+//   - error: Database errors; returns sql.ErrNoRows when user is not found or is deleted (WHERE deleted = 0)
 //
 // Business Rules:
 //   - Always sets timestamp to current UTC time (NOW())

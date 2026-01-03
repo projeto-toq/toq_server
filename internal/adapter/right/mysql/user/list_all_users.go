@@ -48,7 +48,7 @@ func (ua *UserAdapter) ListAllUsers(ctx context.Context, tx *sql.Tx) (users []us
 
 	// Query all active users (deleted=0)
 	// Explicitly lists all 22 columns (no SELECT * per Section 8.3.2)
-	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted FROM users WHERE deleted = 0`
+	query := `SELECT id, full_name, nick_name, national_id, creci_number, creci_state, creci_validity, born_at, phone_number, email, zip_code, street, number, complement, neighborhood, city, state, password, opt_status, last_activity_at, deleted, blocked_until, permanently_blocked FROM users WHERE deleted = 0`
 
 	rows, queryErr := ua.QueryContext(ctx, tx, "select", query)
 	if queryErr != nil {

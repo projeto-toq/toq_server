@@ -21,13 +21,13 @@ import (
 //   - user: UserInterface with ID and new password hash set
 //
 // Returns:
-//   - error: sql.ErrNoRows if user not found, database errors
+//   - error: sql.ErrNoRows if user not found or deleted (WHERE deleted = 0), database errors
 //
 // Business Rules:
 //   - Password must be bcrypt hashed BEFORE calling this function
 //   - Updates only password field (all other fields remain unchanged)
 //   - Does NOT validate old password (service layer responsibility)
-//   - Does NOT check deleted status (updates any user, use with caution)
+//   - Checks deleted status (WHERE deleted = 0) to avoid updating soft-deleted users
 //
 // Security Considerations:
 //   - NEVER store plain text passwords

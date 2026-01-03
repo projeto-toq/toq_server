@@ -6,28 +6,21 @@
 
 ## 🎯 Problema / Solicitação
 
-O sistema de gestão de device_tokens é implementado:
-- pelo modelo model/user_model;
-- pelo serviço service/user_service;
-- pelo repositorio repository/device_token_repository;
-- pelo adapater mysql em mysql/device_token;
-- e pela persistencia representados por tabelas que podem ser consultadas pelo scripts/db_creation.sql.
+O adapter MySql em `/codigos/go_code/toq_server/internal/adapter/right/mysql/user/user_adapter.go` que implementa o port `/codigos/go_code/toq_server/internal/core/port/right/repository/user_repository/user_repository_interface.go` deveria seguir a totalidades das regras de arquitetura definidas no guia do projeto `docs/toq_server_go_guide.md`.
 
-Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto (docs/toq_server_go_guide.md) estão sendo seguidas corretamente.
+O modelo de dados está descrito em `scripts/db_creation.sql`.
 
-temos que revisar **todos os arquivos relacionados à gestão de device_tokens** para garantir que estão em conformidade com as regras do guia do projeto.
+Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto estão sendo seguidas corretamente na totalidade do código.
 
-Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
+temos que revisar **todos os arquivos relacionados ao port e adapter** para garantir que estão em conformidade com as regras do guia do projeto.
+
+Tarefas, após ler o guia do projeto `docs/toq_server_go_guide.md`:
 1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.
 2. Para cada desvio identificado, explique qual regra foi violada e o impacto disso no sistema.
 3. Proponha um plano detalhado para corrigir os desvios, incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
     3.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
 4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
-6. device_tokens deveria ter serviço e modelo separados?
-    6.1 se sim, o que não me parece pela simplicidade da funcionalidade, explique o porquê e proponha o plano de alteração.
-    6.2 se não, explique o porquê e proponha elimine o repository e o adapter mysql mesclando em user_service e user_model respectivamente.
-
 
 ---
 

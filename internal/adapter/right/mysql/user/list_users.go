@@ -175,15 +175,16 @@ func (ua *UserAdapter) ListUsersWithFilters(ctx context.Context, tx *sql.Tx, fil
 
 	// SELECT query with LEFT JOIN to include users without roles
 	baseSelect := `SELECT 
-        u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
-        u.born_at, u.phone_number, u.email, u.zip_code, u.street, u.number, u.complement,
-        u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted,
-        ur.id AS active_user_role_id, ur.role_id, ur.status, ur.is_active,
-        r.id AS role_id, r.name, r.slug, r.description, r.is_system_role, r.is_active
-        FROM users u
-        LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = 1
-        LEFT JOIN roles r ON r.id = ur.role_id
-    `
+		u.id, u.full_name, u.nick_name, u.national_id, u.creci_number, u.creci_state, u.creci_validity,
+		u.born_at, u.phone_number, u.email, u.zip_code, u.street, u.number, u.complement,
+		u.neighborhood, u.city, u.state, u.password, u.opt_status, u.last_activity_at, u.deleted,
+		u.blocked_until, u.permanently_blocked,
+		ur.id AS active_user_role_id, ur.role_id, ur.status, ur.is_active,
+		r.id AS role_id, r.name, r.slug, r.description, r.is_system_role, r.is_active
+		FROM users u
+		LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = 1
+		LEFT JOIN roles r ON r.id = ur.role_id
+	`
 
 	// Combine SELECT with WHERE and ORDER BY (newest first) + pagination
 	listQuery := baseSelect + " " + whereClause + " ORDER BY u.id DESC LIMIT ? OFFSET ?"
