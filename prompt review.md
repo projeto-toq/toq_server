@@ -6,13 +6,13 @@
 
 ## 🎯 Problema / Solicitação
 
-O adapter MySql em `/codigos/go_code/toq_server/internal/adapter/right/mysql/user/user_adapter.go` que implementa o port `/codigos/go_code/toq_server/internal/core/port/right/repository/user_repository/user_repository_interface.go` deveria seguir a totalidades das regras de arquitetura definidas no guia do projeto `docs/toq_server_go_guide.md`.
+O adapter MySql em `/codigos/go_code/toq_server/internal/adapter/right/mysql/visit/visit_adapter.go` que implementa o port `/codigos/go_code/toq_server/internal/core/port/right/repository/visit_repository/visit_repository_interface.go` deveria seguir a totalidades das regras de arquitetura e documentação definidas no guia do projeto `docs/toq_server_go_guide.md`.
 
 O modelo de dados está descrito em `scripts/db_creation.sql`.
 
 Após inúmeras refatorações e adições de funcionalidades, fica a dúvida se as regras definidas no guia do projeto estão sendo seguidas corretamente na totalidade do código.
 
-temos que revisar **todos os arquivos relacionados ao port e adapter** para garantir que estão em conformidade com as regras do guia do projeto.
+Temos que revisar **todos os arquivos relacionados ao port e adapter** para garantir que estão em conformidade com as regras do guia do projeto.
 
 Tarefas, após ler o guia do projeto `docs/toq_server_go_guide.md`:
 1. Analise o código de cada um dos arquivos em busca de desvios das regras do guia.
@@ -66,15 +66,8 @@ Mostre organização final seguindo **Regra de Espelhamento (Seção 2.1 do guia
 ### 4. Ordem de Execução
 Etapas numeradas com dependências
 
-### 5. Checklist de Conformidade
-Valide contra **seções específicas do guia**:
-- [ ] Arquitetura hexagonal (Seção 1)
-- [ ] Regra de Espelhamento Port ↔ Adapter (Seção 2.1)
-- [ ] InstrumentedAdapter em repos (Seção 7.3)
-- [ ] Transações via globalService (Seção 7.1)
-- [ ] Tracing/Logging/Erros (Seções 5, 7, 9)
-- [ ] Documentação (Seção 8)
-- [ ] Sem anti-padrões (Seção 14)
+### 5. DOcumentação
+- Garanta que todo o código está documentado conforme **Seção 8 do guia**
 
 ---
 
@@ -89,11 +82,3 @@ Valide contra **seções específicas do guia**:
 - ❌ Editar swagger.json/yaml manualmente
 - ❌ Executar git/go test
 - ❌ Mocks ou soluções temporárias
-
----
-
-## 📝 Documentação
-
-- **Código:** Inglês (seguir Seção 8 do guia)
-- **Plano:** Português (citar seções do guia ao justificar)
-- **Swagger:** `make swagger` (anotações no código)

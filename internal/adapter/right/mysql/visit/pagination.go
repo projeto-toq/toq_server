@@ -32,7 +32,7 @@ package mysqlvisitadapter
 // Usage:
 //
 //	limit, offset := defaultPagination(filter.Limit, filter.Page, visitsMaxPageSize)
-//	query := "SELECT * FROM visits LIMIT ? OFFSET ?"
+//	query := "SELECT id, listing_identity_id FROM listing_visits LIMIT ? OFFSET ?"
 func defaultPagination(limit, page, max int) (int, int) {
 	// Normalize limit: use max if invalid or exceeds maximum
 	if limit <= 0 || limit > max {

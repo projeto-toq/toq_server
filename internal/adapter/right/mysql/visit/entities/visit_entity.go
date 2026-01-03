@@ -5,32 +5,24 @@ import (
 	"time"
 )
 
-// VisitEntity represents a row from the listing_visits table in the database
+// VisitEntity represents a row from the listing_visits table in the database.
 //
-// This struct maps directly to the database schema for visit scheduling and tracking.
-// It uses sql.Null* types for nullable columns and should ONLY be used within
-// the MySQL adapter layer.
-//
-// Schema Mapping:
-//   - Database: listing_visits table (InnoDB, utf8mb4_unicode_ci)
+// Schema mapping (InnoDB, utf8mb4_unicode_ci):
 //   - Primary Key: id (INT UNSIGNED AUTO_INCREMENT)
 //   - Foreign Keys: listing_identity_id → listing_identities(id), user_id → users(id)
-//   - Indexes: idx_visit_listing, idx_visit_scheduled_start (recommended)
-//   - Status: ENUM('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED', 'NO_SHOW')
+//   - Indexes: fk_visits_listing_identity_idx, fk_visits_user_idx, idx_scheduled_date, idx_status
+//   - Status: ENUM('PENDING','APPROVED','REJECTED','CANCELLED','COMPLETED','NO_SHOW')
+//   - Source: ENUM('APP','WEB','ADMIN') DEFAULT 'APP'
+//   - requested_at: DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP (owner response metrics)
 //
-// NULL Handling:
-//   - sql.NullString: Used for VARCHAR/TEXT columns that allow NULL
-//   - sql.NullInt64: Used for INT columns that allow NULL (UpdatedBy)
-//   - Direct types: Used for NOT NULL columns
+// NULL handling:
+//   - sql.NullString for nullable TEXT/VARCHAR
+//   - sql.NullTime for nullable DATETIME
+//   - Direct types for NOT NULL columns
 //
-// Conversion:
-//   - To Domain: Use converters.ToVisitModel()
-//   - From Domain: Use converters.ToVisitEntity()
-//
-// Important:
-//   - DO NOT use this struct outside the adapter layer
-//   - DO NOT add business logic methods to this struct
-//   - DO NOT import core/model packages here
+// Usage rules:
+//   - Adapter layer only; convert via converters.ToVisitEntity/ToVisitModel
+//   - Keep field order aligned with SELECT statements in visit adapter functions
 type VisitEntity struct {
 	// ID is the visit's unique identifier (PRIMARY KEY, AUTO_INCREMENT)
 	ID int64
@@ -71,5 +63,6 @@ type VisitEntity struct {
 	FirstOwnerActionAt sql.NullTime
 
 	// RequestedAt stores when the visit was requested; used for owner response time metrics (non-audit).
+	// DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 	RequestedAt time.Time
 }

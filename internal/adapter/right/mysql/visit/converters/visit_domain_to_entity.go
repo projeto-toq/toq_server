@@ -8,26 +8,19 @@ import (
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 )
 
-// ToVisitEntity converts a domain VisitInterface to a database VisitEntity
+// ToVisitEntity converts a domain VisitInterface to a database VisitEntity.
 //
-// This converter handles the translation from clean domain types to database-specific
-// types (sql.Null*), preparing data for database insertion/update operations.
-//
-// Conversion Rules:
-//   - string → sql.NullString (Valid=true if non-empty)
-//   - int64 → sql.NullInt64 (Valid=true if value present)
-//   - VisitStatus enum → string (stored as ENUM in database)
+// Conversion rules:
+//   - string -> sql.NullString (Valid=true when non-empty)
+//   - VisitStatus -> string (ENUM persisted)
+//   - RequestedAt defaults to time.Now().UTC() when zero (aligns with DB default)
+//   - Source falls back to "APP" when absent to satisfy NOT NULL/ENUM default
 //
 // Parameters:
-//   - model: VisitInterface from core layer with all required fields populated
+//   - model: VisitInterface from core layer
 //
 // Returns:
-//   - entity: VisitEntity ready for database operations (INSERT/UPDATE)
-//
-// Important:
-//   - ID may be 0 for new records (populated by AUTO_INCREMENT)
-//   - Empty strings are converted to NULL for optional fields
-//   - Optional fields use (value, ok) pattern to check presence
+//   - VisitEntity ready for INSERT/UPDATE in listing_visits
 func ToVisitEntity(model listingmodel.VisitInterface) entities.VisitEntity {
 	// Map mandatory fields directly
 	entity := entities.VisitEntity{

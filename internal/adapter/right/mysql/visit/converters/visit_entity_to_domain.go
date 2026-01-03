@@ -5,25 +5,12 @@ import (
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 )
 
-// ToVisitModel converts a database VisitEntity to a domain VisitInterface
+// ToVisitModel converts a database VisitEntity to a domain VisitInterface.
 //
-// This converter handles the translation from database-specific types (sql.Null*)
-// to clean domain types, ensuring the core layer remains decoupled from database concerns.
-//
-// Conversion Rules:
-//   - sql.NullString → string (empty string if NULL)
-//   - sql.NullInt64 → int64 (0 if NULL, checked via Valid flag)
-//   - status string → VisitStatus enum type
-//
-// Parameters:
-//   - e: VisitEntity from database query with all fields populated
-//
-// Returns:
-//   - visit: VisitInterface with all fields converted to domain types
-//
-// NULL Field Handling:
-//   - Notes: Only set if Valid=true (optional field)
-//   - UpdatedBy: Only set if Valid=true (optional audit field)
+// Conversion rules:
+//   - sql.NullString -> optional setters only when Valid
+//   - status string -> VisitStatus enum
+//   - RequestedAt propagated only when non-zero (db default already set)
 func ToVisitModel(e entities.VisitEntity) listingmodel.VisitInterface {
 	visit := listingmodel.NewVisit()
 
