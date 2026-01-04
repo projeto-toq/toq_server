@@ -81,7 +81,7 @@
                                     },
                                     {
                                         "title": "Ver Logs Relacionados",
-                                        "url": "/d/toq-logs/toq-server-logs?orgId=1&var-trace_id=${__value.raw}&from=${__from}&to=${__to}",
+                                        "url": "/d/toq-logs/toq-server-logs?orgId=1&var-trace_id=${__value.raw}&var-request_id=${request_id}&from=${__from}&to=${__to}",
                                         "targetBlank": false
                                     }
                                 ]
@@ -168,7 +168,7 @@
                         "uid": "tempo"
                     },
                     "limit": 100,
-                    "query": "{.service.name=\"$service\"}",
+                    "query": "{ trace_id = \"$trace_id\" } or { request_id = \"$request_id\" } or { service.name = \"$service\" }",
                     "queryType": "traceql",
                     "refId": "A",
                     "tableType": "traces"
@@ -838,6 +838,26 @@
                 "hide": 0,
                 "label": "Trace ID",
                 "name": "trace_id",
+                "options": [
+                    {
+                        "selected": true,
+                        "text": "",
+                        "value": ""
+                    }
+                ],
+                "query": "",
+                "skipUrlSync": false,
+                "type": "textbox"
+            },
+            {
+                "current": {
+                    "selected": false,
+                    "text": "",
+                    "value": ""
+                },
+                "hide": 0,
+                "label": "Request ID",
+                "name": "request_id",
                 "options": [
                     {
                         "selected": true,

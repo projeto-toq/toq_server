@@ -6,22 +6,16 @@
 
 ## 🎯 Problema / Solicitação
 
-Existe um manual de observabilidade em `/codigos/go_code/toq_server/docs/observability/sre_guide.md` que foi criado na primeira implementaçÃo, mas nÃo deve ser tomado como fonte da verdade. As configurações efetivamente implementadas são a fonte da verdade.
-A telemetria do TOQ Server está sendo feita por:
-`/codigos/go_code/toq_server/internal/core/config/telemetry.go`.
-Grafana concentra a análise dos dados coletados de prometheus, tempo, loki. Todos rodando em Docker segundo `/codigos/go_code/toq_server/docker-compose.yml`.
-Ocorre que os logs sÃo hidratados e geram o seguinte registro no dashboard TOQ Server - Logs do grafana:
-```json
-{"body":"notification.async_send_error","severity":"ERROR","attributes":{"code.file.path":"/codigos/go_code/toq_server/internal/core/service/global_service/notification_service.go","code.function.name":"github.com/projeto-toq/toq_server/internal/core/service/global_service.(*unifiedNotificationService).SendNotification.func1","code.line.number":95,"deployment.environment":"homo","err":"HTTP 500: Internal server error","service.name":"toq_server","service.namespace":"projeto-toq","service.version":"2.0.0","to":"","token":"euho9KY_5EPUm-EnTMPAe6:APA91bGJ6alJhbEutQ7Nz3DyVt2JE6Yw5KHc0TUlF6QZmwmSnSSMM2b1fzSmdq92zB0fPkgf4yB_VyVmLtaKVyp8wTrGgrVqGJCDhJkWcdpKAapns5HMMb0","type":"unhandled: (globalservice.NotificationType) fcm"},"resources":{"deployment.environment":"homo","host.name":"bbf1a8bbc4e9","os.type":"linux","service.instance.id":"ip-172-31-81-196-2231546","service.name":"toq_server","service.namespace":"projeto-toq","service.version":"2.0.0","telemetry.sdk.language":"go","telemetry.sdk.name":"beyla","telemetry.sdk.version":"1.38.0"},"instrumentation_scope":{"name":"toq_server","version":"2.0.0"}}
-```
-Existe muita informaçÃo irrelevante neste log que dificulta a análise do problema, a mensgem de erro em si é `HTTP 500: Internal server error` o que nÃo ajuda a identificar a causa raiz do problema,
-Adicionamelmente não existe trace correspondente a esta entrada no log o que impossibilita a corelação do erro com o fluxo de execução do código.
-Por ser um servidor REST-API todo o fluxo de execução deveria ser rastreável via traces e logs correlacionados. Cada chamada http deve gerar um request-id único que deve ser propagado por todo o fluxo de execução do código, permitindo a correlação entre logs e traces. Entretanto existe um trace-id e um request-id diferente para cada log, o que indica que o trace-id e request-id não estão sendo propagados corretamente.
+Atualmente o Grafana é usado para apresentar Dashboards de observabilidade do TOQ Server.
+Existem 2 Dashboards que não estão funcionando corretamente:
+1. **Dashboard TOQ Server - Logs:** Apresenta os dados do Log estruturado, mas não possue uma forma de redirecionar diretamente ao Dashboard de Traces, baseado em request_id ou trace_id.
+2. **Dashboard TOQ Server - Traces:** Apresenta os dados do traces, mas não permite a correlação direta com os logs, baseado em request_id ou trace_id.
+Todos os componentes de observabilidade estão em docker `/codigos/go_code/toq_server/docker-compose.yml`.
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual, as configuraçoes, os dashboards atuais e identifique a causa raiz do problema
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual `docs/toq_server_go_guide.md` (observabilidade, erros, transações, etc).
-3. Leia atentamente as cofiguraçòes atuais dos containers para evitar quebraas. As última refatorações foram traumaticas por `assumir` configurações que não existiam e quebrar o ambiente.
+3. Garanta que existe uma funcionalide de nas versões em uso dos utilitários de observabilidade que permitam a solução proposta (ex: correlação logs/traces via request_id/trace_id)
 4. Ao final do plano deve haver uma atualização de `/codigos/go_code/toq_server/docs/observability/sre_guide.md`, readme.md e guia do projeto para refletir as mudanças propostas.
 ---
 

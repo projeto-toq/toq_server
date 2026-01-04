@@ -46,23 +46,18 @@ For complete flow details, see `docs/procedimento_de_criação_de_novo_anuncio.m
 - **Sobrescrita manual de porta**: defina `TOQ_HTTP_PORT` antes de iniciar o binário para forçar uma porta específica sem alterar o YAML.
 - **Observabilidade**: apenas perfis com telemetria habilitada exportam `/metrics`, spans OTLP e logs para Loki; não há mais labels de ambiente nos sinais coletados.
 
-## Observabilidade (Grafana + Prometheus + Loki + Jaeger)
-- Stack local: `docker compose up -d prometheus grafana loki otel-collector jaeger` (o serviço da aplicação roda fora do compose).
-- Endpoints expostos:
-  - Prometheus: `http://localhost:9091`, coleta `/metrics` do servidor e métricas host via collector.
-  - Grafana: `http://localhost:3000` (dashboards provisionados em `grafana/dashboard-files`).
-  - Loki: `http://localhost:3100` (logs estruturados).
-  - Jaeger: `http://localhost:16686` (traces distribuídos via OTLP).
-- Dashboards globais (pasta **TOQ Server**):
-  - `TOQ Server - Golden Signals`: latência p95/p99, taxa de erro 4xx/5xx, tráfego e saturação runtime.
-  - `TOQ Server - Dependencies`: Throughput de banco, cache, erros de infraestrutura e uso de recursos host.
-  - `TOQ Server - Observability Correlation`: visão integrada com alert pivots, logs Loki, traces Jaeger e spans lentos.
-  - `TOQ Server Logs`: exploração dedicada de logs estruturados com filtragem opcional por `request_id`.
-- Correlação rápida:
-  - Logs contêm `trace_id` e `span_id`; clique no campo derivado no painel de logs para abrir o trace no Jaeger.
-  - No Jaeger → Logs: use “View logs” no span para abrir a consulta já filtrada em Loki.
-- Prometheus dentro do compose resolve a aplicação via `host.docker.internal` (mapeado para o host). Se a instância de debug `:18080` não estiver ativa, o alvo correspondente aparecerá como `DOWN` — comportamento esperado.
-- Alertas recomendados (configurar no Grafana/Prometheus): latência p99 > 1s, taxa de erro 5xx > 1%, CPU > 85%, saturação de goroutines.
+## Observabilidade (Grafana + Prometheus + Loki + Tempo + Alloy)
+- Stack local: `docker compose up -d prometheus loki tempo alloy grafana` (a aplicação roda fora do compose).
+- Endpoints expostos: Prometheus `:9091`, Grafana `:3000`, Loki `:3100`, Tempo `:3200`, Alloy UI `:12345`.
+- Dashboards provisionados (pasta **TOQ Server**):
+  - `TOQ Server - Logs`: painel único de logs estruturados com links diretos para traces.
+  - `TOQ Server - Traces`: painel de traces com links de volta para logs.
+  - `TOQ Server - Golden Signals` e `TOQ Server - Dependencies` para métricas.
+- Correlação sem busca manual:
+  - Nos logs, clique em `trace_id` ou `request_id` → abre o dashboard de traces já filtrado e com o mesmo intervalo de tempo.
+  - Nos traces, clique em “Ver Logs Relacionados” → abre o dashboard de logs já filtrado pelo `trace_id` (e `request_id` quando disponível), preservando o intervalo.
+- Prometheus resolve a aplicação via `host.docker.internal`. Se a instância `:18080` estiver desligada, o alvo ficará `DOWN` (esperado).
+- Alertas sugeridos: p99 > 1s, erro 5xx > 1%, CPU > 85%, goroutines em saturação.
 
 ## API path conventions
 - Base path: `/api/v2`

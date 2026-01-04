@@ -15,6 +15,12 @@ datasources:
           url: '/d/toq-traces/toq-server-traces?orgId=1&var-trace_id=$${__value.raw}&from=$${__from}&to=$${__to}'
           urlDisplayLabel: Abrir Dashboard de Traces
           internal: false
+        - name: request_id
+          matcherRegex: '"request_id":"([0-9a-fA-F-]+)"'
+          datasourceUid: tempo
+          url: '/d/toq-traces/toq-server-traces?orgId=1&var-request_id=$${__value.raw}&from=$${__from}&to=$${__to}'
+          urlDisplayLabel: Abrir Trace por Request
+          internal: false
         - name: trace_id_explore
           matcherRegex: '"trace_id":"([0-9a-f]+)"'
           datasourceUid: tempo

@@ -109,6 +109,9 @@ A partir de **novembro de 2025**, os dashboards de logs e traces foram separados
 - **`$trace_id`** abre diretamente o trace correspondente no Tempo, permitindo navegar span a span.
 - **`$level`** filtra logs por severidade (DEBUG, INFO, WARN, ERROR).
 - **Derived fields:** no datasource Loki, o `trace_id` está configurado com links para dashboard de traces e Explore.
+- **Navegação sem busca manual:**
+  - Logs → Traces: clique em `trace_id` **ou** `request_id` para abrir o dashboard de traces já filtrado e com o mesmo intervalo de tempo.
+  - Traces → Logs: use “Ver Logs Relacionados” (coluna Trace ID) para abrir o dashboard de logs já filtrado por `trace_id`/`request_id`, preservando `from/to`.
 
 ### Fluxo de Investigação Recomendado (Atualizado)
 
@@ -163,6 +166,7 @@ Após aplicar as mudanças de separação de dashboards:
 - [ ] Clicar em "Ver Logs Relacionados" na tabela de traces abre dashboard de logs filtrado
 - [ ] Painel "Mapa de Serviços" exibe dependências (se houver mais de um serviço)
 - [ ] Links bidirecionais entre dashboards preservam time range (`from`/`to`)
+- [ ] Navegação não requer busca manual: dos logs para traces via `trace_id`/`request_id`; dos traces para logs via "Ver Logs Relacionados"
 
 ## Configurações
 

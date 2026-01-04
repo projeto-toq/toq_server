@@ -1971,6 +1971,7 @@ Checklist rápido de refatoração:
 - [ ] Erros de infra possuem `slog.Error` no ponto da falha e `SetSpanError`.
 - [ ] Erros de domínio são propagados sem `slog.Error`.
 - [ ] Logs usam campos em snake_case e mensagens curtas.
+- [ ] Dashboards provisionados preservam correlação: Logs → Traces via `trace_id`/`request_id`; Traces → Logs via datalink, sem busca manual.
 
 ## 16. Exemplos rápidos
 
