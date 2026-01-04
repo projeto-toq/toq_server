@@ -168,7 +168,7 @@
                         "uid": "tempo"
                     },
                     "limit": 100,
-                    "query": "{ trace_id = \"$trace_id\" } or { request_id = \"$request_id\" } or { service.name = \"$service\" }",
+                    "query": "{ .service.name = \"$service\" && span.request_id =~ \"$request_id\" }",
                     "queryType": "traceql",
                     "refId": "A",
                     "tableType": "traces"
@@ -831,9 +831,9 @@
             },
             {
                 "current": {
-                    "selected": false,
-                    "text": "",
-                    "value": ""
+                    "selected": true,
+                    "text": ".*",
+                    "value": ".*"
                 },
                 "hide": 0,
                 "label": "Trace ID",
@@ -841,8 +841,8 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "",
-                        "value": ""
+                        "text": ".*",
+                        "value": ".*"
                     }
                 ],
                 "query": "",
@@ -851,9 +851,9 @@
             },
             {
                 "current": {
-                    "selected": false,
-                    "text": "",
-                    "value": ""
+                    "selected": true,
+                    "text": ".*",
+                    "value": ".*"
                 },
                 "hide": 0,
                 "label": "Request ID",
@@ -861,8 +861,8 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "",
-                        "value": ""
+                        "text": ".*",
+                        "value": ".*"
                     }
                 ],
                 "query": "",

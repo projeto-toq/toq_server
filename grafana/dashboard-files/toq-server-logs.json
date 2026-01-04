@@ -67,7 +67,7 @@
                         "uid": "loki"
                     },
                     "editorMode": "code",
-                    "expr": "{job=~\".*toq_server.*\", service_name=~\"$service\", level=~\"$level\", request_id=~\"$request_id\", trace_id=~\"$trace_id\", method=~\"$method\", path=~\"$path\", status=~\"$status\"} |~ \"$search\"",
+                    "expr": "{job=~\".*toq_server.*\", service_name=~\"$service|.*\", level=~\"$level|.*\", request_id=~\"$request_id|.*\", trace_id=~\"$trace_id|.*\", method=~\"$method|.*\", path=~\"$path|.*\", status=~\"$status|.*\"} |~ \"$search\"",
                     "queryType": "range",
                     "refId": "A"
                 }
@@ -525,7 +525,7 @@
             {
                 "allValue": ".*",
                 "current": {
-                    "selected": false,
+                    "selected": true,
                     "text": "All",
                     "value": "$__all"
                 },
