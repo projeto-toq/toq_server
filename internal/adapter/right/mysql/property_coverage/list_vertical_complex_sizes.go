@@ -13,60 +13,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (a *PropertyCoverageAdapter) CreateVerticalComplexSize(ctx context.Context, tx *sql.Tx, size propertycoveragemodel.VerticalComplexSizeInterface) (int64, error) {
-	const query = `
-		INSERT INTO vertical_complex_sizes (
-			vertical_complex_id, size, description
-		) VALUES (?, ?, ?);
-	`
-
-	return a.execInsert(ctx, tx, query,
-		size.VerticalComplexID(),
-		size.Size(),
-		nullableString(size.Description()),
-	)
-}
-
-func (a *PropertyCoverageAdapter) UpdateVerticalComplexSize(ctx context.Context, tx *sql.Tx, size propertycoveragemodel.VerticalComplexSizeInterface) (int64, error) {
-	const query = `
-		UPDATE vertical_complex_sizes SET
-			vertical_complex_id = ?,
-			size = ?,
-			description = ?
-		WHERE id = ?
-		LIMIT 1;
-	`
-
-	return a.execUpdate(ctx, tx, query,
-		size.VerticalComplexID(),
-		size.Size(),
-		nullableString(size.Description()),
-		size.ID(),
-	)
-}
-
-func (a *PropertyCoverageAdapter) DeleteVerticalComplexSize(ctx context.Context, tx *sql.Tx, id int64) (int64, error) {
-	const query = "DELETE FROM vertical_complex_sizes WHERE id = ? LIMIT 1;"
-	return a.execUpdate(ctx, tx, query, id)
-}
-
-func (a *PropertyCoverageAdapter) GetVerticalComplexSize(ctx context.Context, tx *sql.Tx, id int64) (propertycoveragemodel.VerticalComplexSizeInterface, error) {
-	const query = `
-		SELECT id, vertical_complex_id, size, description
-		FROM vertical_complex_sizes
-		WHERE id = ?
-		LIMIT 1;
-	`
-
-	row := a.QueryRowContext(ctx, tx, "select", query, id)
-	var entity propertycoverageentities.VerticalComplexSizeEntity
-	if err := row.Scan(&entity.ID, &entity.VerticalComplexID, &entity.Size, &entity.Description); err != nil {
-		return nil, err
-	}
-
-	return propertycoverageconverters.VerticalComplexSizeEntityToDomain(entity), nil
-}
-
+// ListVerticalComplexSizes lista tamanhos de um complexo vertical; nunca retorna sql.ErrNoRows.
 func (a *PropertyCoverageAdapter) ListVerticalComplexSizes(ctx context.Context, tx *sql.Tx, params propertycoveragerepository.ListVerticalComplexSizesParams) ([]propertycoveragemodel.VerticalComplexSizeInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -92,11 +39,11 @@ func (a *PropertyCoverageAdapter) ListVerticalComplexSizes(ctx context.Context, 
 		args = append(args, params.Offset)
 	}
 
-	rows, err := a.QueryContext(ctx, tx, "select", builder.String(), args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.property_coverage.size.list.query_error", "err", err)
-		return nil, fmt.Errorf("list vertical sizes: %w", err)
+	rows, qErr := a.QueryContext(ctx, tx, "select", builder.String(), args...)
+	if qErr != nil {
+		utils.SetSpanError(ctx, qErr)
+		logger.Error("mysql.property_coverage.size.list.query_error", "err", qErr)
+		return nil, fmt.Errorf("list vertical sizes: %w", qErr)
 	}
 	defer rows.Close()
 
@@ -104,10 +51,10 @@ func (a *PropertyCoverageAdapter) ListVerticalComplexSizes(ctx context.Context, 
 
 	for rows.Next() {
 		var entity propertycoverageentities.VerticalComplexSizeEntity
-		if err := rows.Scan(&entity.ID, &entity.VerticalComplexID, &entity.Size, &entity.Description); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.property_coverage.size.list.scan_error", "err", err)
-			return nil, fmt.Errorf("scan size row: %w", err)
+		if scanErr := rows.Scan(&entity.ID, &entity.VerticalComplexID, &entity.Size, &entity.Description); scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.property_coverage.size.list.scan_error", "err", scanErr)
+			return nil, fmt.Errorf("scan size row: %w", scanErr)
 		}
 		result = append(result, propertycoverageconverters.VerticalComplexSizeEntityToDomain(entity))
 	}

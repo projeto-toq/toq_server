@@ -6,7 +6,7 @@
 
 ## 🎯 Problema / Solicitação
 
-O package mysqlscheduleadapter em `/codigos/go_code/toq_server/internal/adapter/right/mysql/schedule/*` que implementa o package schedulerepository  `/codigos/go_code/toq_server/internal/core/port/right/repository/schedule_repository/schedule_repository_interface.go` deveria seguir a totalidades das regras definidas no guia do projeto `docs/toq_server_go_guide.md`.
+O package mysqlpropertycoverageadapter em `/codigos/go_code/toq_server/internal/adapter/right/mysql/property_coverage/*` que implementa o package propertycoveragerepository em  `/codigos/go_code/toq_server/internal/core/port/right/repository/property_coverage_repository/property_coverage_repo_port.go` deveria seguir a totalidades das regras definidas no guia do projeto `docs/toq_server_go_guide.md`.
 
 O modelo de dados está descrito em `scripts/db_creation.sql`.
 
@@ -22,7 +22,7 @@ Tarefas, após ler o guia do projeto `docs/toq_server_go_guide.md`:
 4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
 6. A documentação do código deve estar completa, seguindo as regras do guia do projeto. Tome como exemplo a qualidade de documentação do port `/codigos/go_code/toq_server/internal/core/port/right/repository/user_repository/user_repository_interface.go` e adapter `/codigos/go_code/toq_server/internal/adapter/right/mysql/user/user_adapter.go` de user.
-
+7. POrque o package propertycoveragerepository em  `/codigos/go_code/toq_server/internal/core/port/right/repository/property_coverage_repository/property_coverage_repo_port.go` possui mais de um arquivo? todos os outros ports de repositório possuem apenas um arquivo. Justifique se for o caso de manter mais de um arquivo.
 ---
 
 ## 📘 Fonte da Verdade

@@ -6,7 +6,8 @@ import (
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 )
 
-// ManagedComplexEntity aggregates the common columns returned by admin queries.
+// ManagedComplexEntity agrega colunas comuns retornadas nas consultas admin de complexos.
+// Campos nullable usam sql.Null* para refletir o schema (street/number/neighborhood/reception_phone/main_registration).
 type ManagedComplexEntity struct {
 	ID               int64
 	Kind             propertycoveragemodel.CoverageKind
@@ -23,7 +24,7 @@ type ManagedComplexEntity struct {
 	PropertyTypes    uint16
 }
 
-// VerticalComplexTowerEntity mirrors the vertical_complex_towers table.
+// VerticalComplexTowerEntity espelha vertical_complex_towers (floors/total_units/units_per_floor são NOT NULL com default 0).
 type VerticalComplexTowerEntity struct {
 	ID                int64
 	VerticalComplexID int64
@@ -33,7 +34,7 @@ type VerticalComplexTowerEntity struct {
 	UnitsPerFloor     int
 }
 
-// VerticalComplexSizeEntity mirrors the vertical_complex_sizes table.
+// VerticalComplexSizeEntity espelha vertical_complex_sizes (description é nullable).
 type VerticalComplexSizeEntity struct {
 	ID                int64
 	VerticalComplexID int64
@@ -41,7 +42,7 @@ type VerticalComplexSizeEntity struct {
 	Description       sql.NullString
 }
 
-// HorizontalComplexZipCodeEntity mirrors the horizontal_complex_zip_codes table.
+// HorizontalComplexZipCodeEntity espelha horizontal_complex_zip_codes.
 type HorizontalComplexZipCodeEntity struct {
 	ID                  int64
 	HorizontalComplexID int64

@@ -8,12 +8,15 @@ import (
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 )
 
-// VerticalEntityToDomain converts a DB entity into a domain coverage object.
+// VerticalEntityToDomain converte entity de vertical_complexes para domínio CoverageInterface.
+// Valida bitmask e trata main_registration nullable.
 func VerticalEntityToDomain(entity propertycoverageentities.VerticalCoverageEntity) (propertycoveragemodel.CoverageInterface, error) {
 	coverage := propertycoveragemodel.NewCoverage()
 	coverage.SetSource(propertycoveragemodel.CoverageSourceVertical)
 	coverage.SetComplexName(entity.Name)
-	coverage.SetMainRegistration(entity.MainRegistration)
+	if entity.MainRegistration.Valid {
+		coverage.SetMainRegistration(entity.MainRegistration.String)
+	}
 
 	if entity.PropertyTypesBitmask < 0 {
 		return nil, fmt.Errorf("negative property type bitmask for vertical complex: %d", entity.PropertyTypesBitmask)

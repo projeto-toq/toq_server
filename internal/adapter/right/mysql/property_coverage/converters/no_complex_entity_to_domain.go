@@ -8,7 +8,8 @@ import (
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 )
 
-// NoComplexEntityToDomain converts the standalone coverage entity into the domain object.
+// NoComplexEntityToDomain converte entidade standalone (no_complex_zip_codes) para domínio CoverageInterface.
+// Valida bitmask não-negativo (schema unsigned) e marca Source como standalone.
 func NoComplexEntityToDomain(entity propertycoverageentities.NoComplexCoverageEntity) (propertycoveragemodel.CoverageInterface, error) {
 	coverage := propertycoveragemodel.NewCoverage()
 	coverage.SetSource(propertycoveragemodel.CoverageSourceStandalone)

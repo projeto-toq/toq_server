@@ -11,9 +11,12 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetNoComplexCoverage resolves the standalone coverage entry for the zip code.
+// GetNoComplexCoverage retorna cobertura standalone para o CEP; sql.ErrNoRows se inexistente.
 func (a *PropertyCoverageAdapter) GetNoComplexCoverage(ctx context.Context, tx *sql.Tx, zipCode string) (propertycoveragemodel.CoverageInterface, error) {
-	ctx, spanEnd, _ := utils.GenerateTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return nil, err
+	}
 	defer spanEnd()
 
 	ctx = utils.ContextWithLogger(ctx)
@@ -28,21 +31,21 @@ func (a *PropertyCoverageAdapter) GetNoComplexCoverage(ctx context.Context, tx *
 
 	row := a.QueryRowContext(ctx, tx, "select", query, zipCode)
 	var entity propertycoverageentities.NoComplexCoverageEntity
-	if err := row.Scan(&entity.ZipCode, &entity.PropertyTypesBitmask); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, err
+	if scanErr := row.Scan(&entity.ZipCode, &entity.PropertyTypesBitmask); scanErr != nil {
+		if scanErr == sql.ErrNoRows {
+			return nil, scanErr
 		}
 
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.property_coverage.get_no_complex.scan_error", "zip_code", zipCode, "err", err)
-		return nil, fmt.Errorf("get no-complex coverage: %w", err)
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.property_coverage.get_no_complex.scan_error", "zip_code", zipCode, "err", scanErr)
+		return nil, fmt.Errorf("get no-complex coverage: %w", scanErr)
 	}
 
-	coverage, err := propertycoverageconverters.NoComplexEntityToDomain(entity)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.property_coverage.get_no_complex.convert_error", "zip_code", zipCode, "err", err)
-		return nil, err
+	coverage, convErr := propertycoverageconverters.NoComplexEntityToDomain(entity)
+	if convErr != nil {
+		utils.SetSpanError(ctx, convErr)
+		logger.Error("mysql.property_coverage.get_no_complex.convert_error", "zip_code", zipCode, "err", convErr)
+		return nil, convErr
 	}
 
 	return coverage, nil

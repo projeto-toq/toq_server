@@ -13,50 +13,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-func (a *PropertyCoverageAdapter) CreateHorizontalComplexZipCode(ctx context.Context, tx *sql.Tx, zip propertycoveragemodel.HorizontalComplexZipCodeInterface) (int64, error) {
-	const query = `
-		INSERT INTO horizontal_complex_zip_codes (
-			horizontal_complex_id, zip_code
-		) VALUES (?, ?);
-	`
-
-	return a.execInsert(ctx, tx, query, zip.HorizontalComplexID(), zip.ZipCode())
-}
-
-func (a *PropertyCoverageAdapter) UpdateHorizontalComplexZipCode(ctx context.Context, tx *sql.Tx, zip propertycoveragemodel.HorizontalComplexZipCodeInterface) (int64, error) {
-	const query = `
-		UPDATE horizontal_complex_zip_codes SET
-			horizontal_complex_id = ?,
-			zip_code = ?
-		WHERE id = ?
-		LIMIT 1;
-	`
-
-	return a.execUpdate(ctx, tx, query, zip.HorizontalComplexID(), zip.ZipCode(), zip.ID())
-}
-
-func (a *PropertyCoverageAdapter) DeleteHorizontalComplexZipCode(ctx context.Context, tx *sql.Tx, id int64) (int64, error) {
-	const query = "DELETE FROM horizontal_complex_zip_codes WHERE id = ? LIMIT 1;"
-	return a.execUpdate(ctx, tx, query, id)
-}
-
-func (a *PropertyCoverageAdapter) GetHorizontalComplexZipCode(ctx context.Context, tx *sql.Tx, id int64) (propertycoveragemodel.HorizontalComplexZipCodeInterface, error) {
-	const query = `
-		SELECT id, horizontal_complex_id, zip_code
-		FROM horizontal_complex_zip_codes
-		WHERE id = ?
-		LIMIT 1;
-	`
-
-	row := a.QueryRowContext(ctx, tx, "select", query, id)
-	var entity propertycoverageentities.HorizontalComplexZipCodeEntity
-	if err := row.Scan(&entity.ID, &entity.HorizontalComplexID, &entity.ZipCode); err != nil {
-		return nil, err
-	}
-
-	return propertycoverageconverters.HorizontalComplexZipCodeEntityToDomain(entity), nil
-}
-
+// ListHorizontalComplexZipCodes lista CEPs vinculados a um complexo horizontal; nunca retorna sql.ErrNoRows.
 func (a *PropertyCoverageAdapter) ListHorizontalComplexZipCodes(ctx context.Context, tx *sql.Tx, params propertycoveragerepository.ListHorizontalComplexZipCodesParams) ([]propertycoveragemodel.HorizontalComplexZipCodeInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -89,11 +46,11 @@ func (a *PropertyCoverageAdapter) ListHorizontalComplexZipCodes(ctx context.Cont
 		args = append(args, params.Offset)
 	}
 
-	rows, err := a.QueryContext(ctx, tx, "select", builder.String(), args...)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.property_coverage.zip.list.query_error", "err", err)
-		return nil, fmt.Errorf("list horizontal zip codes: %w", err)
+	rows, qErr := a.QueryContext(ctx, tx, "select", builder.String(), args...)
+	if qErr != nil {
+		utils.SetSpanError(ctx, qErr)
+		logger.Error("mysql.property_coverage.zip.list.query_error", "err", qErr)
+		return nil, fmt.Errorf("list horizontal zip codes: %w", qErr)
 	}
 	defer rows.Close()
 
@@ -101,10 +58,10 @@ func (a *PropertyCoverageAdapter) ListHorizontalComplexZipCodes(ctx context.Cont
 
 	for rows.Next() {
 		var entity propertycoverageentities.HorizontalComplexZipCodeEntity
-		if err := rows.Scan(&entity.ID, &entity.HorizontalComplexID, &entity.ZipCode); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.property_coverage.zip.list.scan_error", "err", err)
-			return nil, fmt.Errorf("scan zip code row: %w", err)
+		if scanErr := rows.Scan(&entity.ID, &entity.HorizontalComplexID, &entity.ZipCode); scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.property_coverage.zip.list.scan_error", "err", scanErr)
+			return nil, fmt.Errorf("scan zip code row: %w", scanErr)
 		}
 		result = append(result, propertycoverageconverters.HorizontalComplexZipCodeEntityToDomain(entity))
 	}

@@ -11,9 +11,12 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetVerticalCoverage looks for a vertical complex matching the provided zip code and number.
+// GetVerticalCoverage busca cobertura vertical por CEP e número; sql.ErrNoRows quando não há match.
 func (a *PropertyCoverageAdapter) GetVerticalCoverage(ctx context.Context, tx *sql.Tx, zipCode, number string) (propertycoveragemodel.CoverageInterface, error) {
-	ctx, spanEnd, _ := utils.GenerateTracer(ctx)
+	ctx, spanEnd, err := utils.GenerateTracer(ctx)
+	if err != nil {
+		return nil, err
+	}
 	defer spanEnd()
 
 	ctx = utils.ContextWithLogger(ctx)
@@ -35,21 +38,21 @@ func (a *PropertyCoverageAdapter) GetVerticalCoverage(ctx context.Context, tx *s
 
 	row := a.QueryRowContext(ctx, tx, "select", query, zipCode, number, number)
 	var entity propertycoverageentities.VerticalCoverageEntity
-	if err := row.Scan(&entity.ID, &entity.Name, &entity.MainRegistration, &entity.PropertyTypesBitmask); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, err
+	if scanErr := row.Scan(&entity.ID, &entity.Name, &entity.MainRegistration, &entity.PropertyTypesBitmask); scanErr != nil {
+		if scanErr == sql.ErrNoRows {
+			return nil, scanErr
 		}
 
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.property_coverage.get_vertical.scan_error", "zip_code", zipCode, "number", number, "err", err)
-		return nil, fmt.Errorf("get vertical coverage: %w", err)
+		utils.SetSpanError(ctx, scanErr)
+		logger.Error("mysql.property_coverage.get_vertical.scan_error", "zip_code", zipCode, "number", number, "err", scanErr)
+		return nil, fmt.Errorf("get vertical coverage: %w", scanErr)
 	}
 
-	coverage, err := propertycoverageconverters.VerticalEntityToDomain(entity)
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("mysql.property_coverage.get_vertical.convert_error", "zip_code", zipCode, "number", number, "err", err)
-		return nil, err
+	coverage, convErr := propertycoverageconverters.VerticalEntityToDomain(entity)
+	if convErr != nil {
+		utils.SetSpanError(ctx, convErr)
+		logger.Error("mysql.property_coverage.get_vertical.convert_error", "zip_code", zipCode, "number", number, "err", convErr)
+		return nil, convErr
 	}
 
 	return coverage, nil
