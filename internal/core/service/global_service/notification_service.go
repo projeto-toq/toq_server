@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"go.opentelemetry.io/otel/trace"
+
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -79,26 +81,33 @@ func (ns *unifiedNotificationService) SendNotification(ctx context.Context, requ
 	ctx = coreutils.ContextWithLogger(ctx)
 
 	// Executar notificação em goroutine assíncrona
-	go func() {
-		// Criar contexto independente preservando Request ID
+	go func(parentCtx context.Context) {
 		notifyCtx := context.Background()
-		if requestID := ctx.Value(globalmodel.RequestIDKey); requestID != nil {
+
+		if sc := trace.SpanFromContext(parentCtx).SpanContext(); sc.IsValid() {
+			notifyCtx = trace.ContextWithSpanContext(notifyCtx, sc)
+		}
+
+		if requestID := parentCtx.Value(globalmodel.RequestIDKey); requestID != nil {
 			notifyCtx = context.WithValue(notifyCtx, globalmodel.RequestIDKey, requestID)
 		}
 
 		notifyCtx = coreutils.ContextWithLogger(notifyCtx)
+		notifyCtx, spanEnd, _ := coreutils.GenerateBusinessTracer(notifyCtx, "NotificationService.SendNotificationAsync")
+		defer spanEnd()
+
 		notifyLogger := coreutils.LoggerFromContext(notifyCtx)
 
 		// Chamar o método interno síncrono
-		err := ns.sendNotificationSync(notifyCtx, request)
-		if err != nil {
+		if err := ns.sendNotificationSync(notifyCtx, request); err != nil {
+			coreutils.SetSpanError(notifyCtx, err)
 			notifyLogger.Error("notification.async_send_error",
 				"type", request.Type,
 				"to", request.To,
 				"token", request.Token,
 				"err", err)
 		}
-	}()
+	}(ctx)
 
 	// Retorna imediatamente (sem aguardar o envio)
 	return nil

@@ -44,6 +44,9 @@ func StructuredLoggingMiddleware() gin.HandlerFunc {
 
 		// Get request info before processing
 		requestID := utils.GetRequestIDFromGinContext(c)
+		if requestID == "" {
+			requestID = utils.GetRequestIDFromContext(c.Request.Context())
+		}
 		clientIP := utils.GetClientIPFromGinContext(c)
 		// userAgent already declared above for filtering
 

@@ -9,6 +9,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/propagation"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
@@ -44,6 +45,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 		}
 
 		ctx := c.Request.Context()
+		ctx = otel.GetTextMapPropagator().Extract(ctx, propagation.HeaderCarrier(c.Request.Header))
 
 		// Get request ID for correlation with logs
 		requestID := utils.GetRequestIDFromGinContext(c)

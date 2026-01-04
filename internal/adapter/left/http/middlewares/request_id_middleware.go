@@ -22,8 +22,11 @@ func RequestIDMiddleware() gin.HandlerFunc {
 	}
 
 	return gin.HandlerFunc(func(c *gin.Context) {
-		// Generate a unique request ID
-		requestID := uuid.New().String()
+		// Reuse incoming request ID when provided; generate otherwise
+		requestID := strings.TrimSpace(c.GetHeader("X-Request-ID"))
+		if requestID == "" {
+			requestID = uuid.New().String()
+		}
 		path := c.Request.URL.Path
 		userAgent := c.Request.UserAgent()
 
