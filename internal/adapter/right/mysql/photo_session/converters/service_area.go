@@ -7,7 +7,8 @@ import (
 	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 )
 
-// ServiceAreaRowToModel converts a database row into a domain model instance.
+// ServiceAreaRowToModel converts a database row into a domain model instance, trimming city/state to avoid
+// persisting accidental whitespace differences.
 func ServiceAreaRowToModel(row entity.ServiceArea) photosessionmodel.PhotographerServiceAreaInterface {
 	model := photosessionmodel.NewPhotographerServiceArea()
 	model.SetID(row.ID)
@@ -17,7 +18,7 @@ func ServiceAreaRowToModel(row entity.ServiceArea) photosessionmodel.Photographe
 	return model
 }
 
-// ServiceAreaModelToRow converts a domain model into a persistence structure.
+// ServiceAreaModelToRow converts a domain model into a persistence structure ready for inserts/updates.
 func ServiceAreaModelToRow(model photosessionmodel.PhotographerServiceAreaInterface) entity.ServiceArea {
 	return entity.ServiceArea{
 		ID:                 model.ID(),

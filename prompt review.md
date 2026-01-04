@@ -6,7 +6,7 @@
 
 ## 🎯 Problema / Solicitação
 
-O package mysqlpropertycoverageadapter em `/codigos/go_code/toq_server/internal/adapter/right/mysql/property_coverage/*` que implementa o package propertycoveragerepository em  `/codigos/go_code/toq_server/internal/core/port/right/repository/property_coverage_repository/property_coverage_repo_port.go` deveria seguir a totalidades das regras definidas no guia do projeto `docs/toq_server_go_guide.md`.
+O package mysqlphotosessionadapter em `/codigos/go_code/toq_server/internal/adapter/right/mysql/photo_session/*` que implementa o package photosessionrepository em  `/codigos/go_code/toq_server/internal/core/port/right/repository/photo_session_repository/photo_session_repository_interface.go` deveria seguir a totalidades das regras definidas no guia do projeto `docs/toq_server_go_guide.md`.
 
 O modelo de dados está descrito em `scripts/db_creation.sql`.
 
@@ -21,8 +21,8 @@ Tarefas, após ler o guia do projeto `docs/toq_server_go_guide.md`:
     3.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.
 4. Organize o plano em uma estrutura clara, incluindo a ordem de execução das tarefas e a estrutura de diretórios final.
 5. Caso haja alguma sugestão de melhoria além da correção dos desvios, inclua no plano.
-6. A documentação do código deve estar completa, seguindo as regras do guia do projeto. Tome como exemplo a qualidade de documentação do port `/codigos/go_code/toq_server/internal/core/port/right/repository/user_repository/user_repository_interface.go` e adapter `/codigos/go_code/toq_server/internal/adapter/right/mysql/user/user_adapter.go` de user.
-7. POrque o package propertycoveragerepository em  `/codigos/go_code/toq_server/internal/core/port/right/repository/property_coverage_repository/property_coverage_repo_port.go` possui mais de um arquivo? todos os outros ports de repositório possuem apenas um arquivo. Justifique se for o caso de manter mais de um arquivo.
+6. A documentação do código deve estar completa, seguindo as regras do guia do projeto. No mesmo nível de detalhe e qualidade de documentação do port `/codigos/go_code/toq_server/internal/core/port/right/repository/user_repository/user_repository_interface.go` e adapter `/codigos/go_code/toq_server/internal/adapter/right/mysql/user/user_adapter.go` de user.
+
 ---
 
 ## 📘 Fonte da Verdade

@@ -10,6 +10,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// CreateEntries inserts multiple agenda rows, preserving input order in the returned IDs. No-op when entries is empty.
+// Expects a non-nil transaction when atomicity across multiple inserts is required; traces and logs infra errors.
 func (a *PhotoSessionAdapter) CreateEntries(ctx context.Context, tx *sql.Tx, entries []photosessionmodel.AgendaEntryInterface) ([]uint64, error) {
 	if len(entries) == 0 {
 		return nil, nil

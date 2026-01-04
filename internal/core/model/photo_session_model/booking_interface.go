@@ -20,6 +20,10 @@ type PhotoSessionBookingInterface interface {
 	SetStatus(status BookingStatus)
 	Reason() *string
 	SetReason(reason *string)
+	ReservationToken() *string
+	SetReservationToken(token *string)
+	ReservedUntil() time.Time
+	SetReservedUntil(value time.Time)
 }
 
 // NewPhotoSessionBooking creates a new mutable booking instance.

@@ -36,7 +36,7 @@ func (a *PhotoSessionAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry
 		reason = entity.Reason.String
 	}
 
-	_, execErr := a.ExecContext(
+	result, execErr := a.ExecContext(
 		ctx,
 		tx,
 		"update",
@@ -55,6 +55,17 @@ func (a *PhotoSessionAdapter) UpdateEntry(ctx context.Context, tx *sql.Tx, entry
 		utils.SetSpanError(ctx, execErr)
 		logger.Error("mysql.photo_session.update_entry.exec_error", "entry_id", entity.ID, "err", execErr)
 		return fmt.Errorf("update agenda entry: %w", execErr)
+	}
+
+	affected, rowsErr := result.RowsAffected()
+	if rowsErr != nil {
+		utils.SetSpanError(ctx, rowsErr)
+		logger.Error("mysql.photo_session.update_entry.rows_error", "entry_id", entity.ID, "err", rowsErr)
+		return fmt.Errorf("rows affected agenda entry: %w", rowsErr)
+	}
+
+	if affected == 0 {
+		return sql.ErrNoRows
 	}
 
 	return nil

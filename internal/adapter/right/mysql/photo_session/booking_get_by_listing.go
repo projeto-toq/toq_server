@@ -24,7 +24,7 @@ func (a *PhotoSessionAdapter) GetActiveBookingByListingIdentityID(ctx context.Co
 	logger := utils.LoggerFromContext(ctx)
 
 	// Busca bookings com status ativos: PENDING_APPROVAL, ACCEPTED ou ACTIVE
-	query := `SELECT id, agenda_entry_id, photographer_user_id, listing_identity_id, starts_at, ends_at, status, reason
+	query := `SELECT id, agenda_entry_id, photographer_user_id, listing_identity_id, starts_at, ends_at, status, reason, reservation_token, reserved_until
 		FROM photographer_photo_session_bookings 
 		WHERE listing_identity_id = ? 
 		AND status IN ('PENDING_APPROVAL', 'ACCEPTED', 'ACTIVE')
@@ -41,6 +41,8 @@ func (a *PhotoSessionAdapter) GetActiveBookingByListingIdentityID(ctx context.Co
 		&row.EndsAt,
 		&row.Status,
 		&row.Reason,
+		&row.ReservationToken,
+		&row.ReservedUntil,
 	)
 
 	if scanErr != nil {

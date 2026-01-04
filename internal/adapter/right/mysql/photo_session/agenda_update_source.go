@@ -8,6 +8,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// UpdateEntrySourceID sets the source_id for a single agenda entry; returns sql.ErrNoRows when the id is missing.
+// Transaction is optional but required for lock-based flows.
 func (a *PhotoSessionAdapter) UpdateEntrySourceID(ctx context.Context, tx *sql.Tx, entryID uint64, sourceID uint64) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {

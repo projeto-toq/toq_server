@@ -83,6 +83,9 @@ func (s *photoSessionService) UpdateTimeOff(ctx context.Context, input UpdateTim
 	}
 
 	if err := s.repo.UpdateEntry(ctx, tx, entry); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return TimeOffDetailResult{}, utils.NotFoundError("Time off")
+		}
 		utils.SetSpanError(ctx, err)
 		logger.Error("photo_session.update_time_off.repo_error", "time_off_id", input.TimeOffID, "err", err)
 		return TimeOffDetailResult{}, utils.InternalError("")

@@ -9,6 +9,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// DeleteEntriesBySource removes agenda entries for a photographer matching type/source (and optional source_id).
+// Requires a transaction for atomicity; returns sql.ErrNoRows when no rows are deleted.
 func (a *PhotoSessionAdapter) DeleteEntriesBySource(ctx context.Context, tx *sql.Tx, photographerID uint64, entryType photosessionmodel.AgendaEntryType, source photosessionmodel.AgendaEntrySource, sourceID *uint64) (int64, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
@@ -40,6 +42,10 @@ func (a *PhotoSessionAdapter) DeleteEntriesBySource(ctx context.Context, tx *sql
 		utils.SetSpanError(ctx, rowsErr)
 		logger.Error("mysql.photo_session.delete_entries.rows_error", "photographer_id", photographerID, "err", rowsErr)
 		return 0, fmt.Errorf("rows affected agenda entries: %w", rowsErr)
+	}
+
+	if affected == 0 {
+		return 0, sql.ErrNoRows
 	}
 
 	return affected, nil

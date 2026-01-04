@@ -11,12 +11,9 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// GetEntryByID fetches an agenda entry; returns sql.ErrNoRows when absent.
 func (a *PhotoSessionAdapter) GetEntryByID(ctx context.Context, tx *sql.Tx, entryID uint64) (photosessionmodel.AgendaEntryInterface, error) {
 	return a.getEntry(ctx, tx, entryID, false)
-}
-
-func (a *PhotoSessionAdapter) GetEntryByIDForUpdate(ctx context.Context, tx *sql.Tx, entryID uint64) (photosessionmodel.AgendaEntryInterface, error) {
-	return a.getEntry(ctx, tx, entryID, true)
 }
 
 func (a *PhotoSessionAdapter) getEntry(ctx context.Context, tx *sql.Tx, entryID uint64, forUpdate bool) (photosessionmodel.AgendaEntryInterface, error) {
@@ -30,7 +27,7 @@ func (a *PhotoSessionAdapter) getEntry(ctx context.Context, tx *sql.Tx, entryID 
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `SELECT id, photographer_user_id, entry_type, source, source_id, starts_at, ends_at, blocking, reason, timezone
-		FROM photographer_agenda_entries WHERE id = ?`
+        FROM photographer_agenda_entries WHERE id = ?`
 	if forUpdate {
 		query += " FOR UPDATE"
 	}

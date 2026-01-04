@@ -91,6 +91,9 @@ func (s *photoSessionService) deleteTimeOffInternal(ctx context.Context, tx *sql
 	}
 
 	if err := s.repo.DeleteEntryByID(ctx, tx, input.TimeOffID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return utils.NotFoundError("Time off")
+		}
 		utils.SetSpanError(ctx, err)
 		logger.Error("photo_session.time_off.delete.repo_error", "time_off_id", input.TimeOffID, "err", err)
 		return utils.InternalError("")

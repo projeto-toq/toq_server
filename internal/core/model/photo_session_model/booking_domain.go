@@ -11,6 +11,9 @@ type photoSessionBooking struct {
 	endsAt            time.Time
 	status            BookingStatus
 	reason            *string
+	reservationToken  *string
+	reservedUntil     time.Time
+	reservedValid     bool
 }
 
 func (b *photoSessionBooking) ID() uint64 { return b.id }
@@ -44,3 +47,14 @@ func (b *photoSessionBooking) SetStatus(status BookingStatus) { b.status = statu
 func (b *photoSessionBooking) Reason() *string { return b.reason }
 
 func (b *photoSessionBooking) SetReason(reason *string) { b.reason = reason }
+
+func (b *photoSessionBooking) ReservationToken() *string { return b.reservationToken }
+
+func (b *photoSessionBooking) SetReservationToken(token *string) { b.reservationToken = token }
+
+func (b *photoSessionBooking) ReservedUntil() time.Time { return b.reservedUntil }
+
+func (b *photoSessionBooking) SetReservedUntil(value time.Time) {
+	b.reservedUntil = value
+	b.reservedValid = true
+}
