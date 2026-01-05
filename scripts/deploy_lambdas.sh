@@ -13,6 +13,13 @@ FFMPEG_LAYER_NAME=${FFMPEG_LAYER_NAME:-"toq-ffmpeg-layer-staging"}
 FFMPEG_LAYER_ARN=${FFMPEG_LAYER_ARN:-""}
 FFMPEG_LAYER_ZIP="$BIN_DIR/ffmpeg-layer.zip"
 
+wait_lambda_updated() {
+	local fn="$1"
+	echo "⏳ Aguardando finalizar update de $fn..."
+	aws lambda wait function-updated --function-name "$fn"
+	echo "✅ Update concluído para $fn"
+}
+
 # Roles/policies to update (backend + step functions)
 IAM_ROLE_NAME=${IAM_ROLE_NAME:-"toq-media-processing-backend-staging"}
 IAM_POLICY_NAME=${IAM_POLICY_NAME:-"toq-media-processing-backend-inline"}
@@ -70,6 +77,7 @@ for zip_file in "${zip_files[@]}"; do
 		aws lambda update-function-code \
 			--function-name "$function_name" \
 			--zip-file "fileb://$zip_file" > /dev/null
+		wait_lambda_updated "$function_name"
 
 			# Update config for video thumbnails to ensure ffmpeg path is set and layer attached if provided
 			if [ "$lambda" = "video_thumbnails" ]; then
@@ -84,6 +92,7 @@ for zip_file in "${zip_files[@]}"; do
 						--function-name "$function_name" \
 						--environment "Variables={FFMPEG_PATH=/opt/bin/ffmpeg}" >/dev/null
 				fi
+				wait_lambda_updated "$function_name"
 			fi
 	fi
 done

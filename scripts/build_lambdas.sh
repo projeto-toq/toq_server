@@ -58,10 +58,10 @@ echo "🎉 All lambdas built successfully!"
 if [ -f "$FFMPEG_SRC_BIN" ]; then
     echo "📦 Empacotando layer FFmpeg..."
     TMP_LAYER_DIR=$(mktemp -d)
-    mkdir -p "$TMP_LAYER_DIR/opt/bin"
-    cp "$FFMPEG_SRC_BIN" "$TMP_LAYER_DIR/opt/bin/ffmpeg"
-    chmod +x "$TMP_LAYER_DIR/opt/bin/ffmpeg"
-    (cd "$TMP_LAYER_DIR" && zip -r "$FFMPEG_LAYER_ZIP" opt >/dev/null)
+    mkdir -p "$TMP_LAYER_DIR/bin"
+    cp "$FFMPEG_SRC_BIN" "$TMP_LAYER_DIR/bin/ffmpeg"
+    chmod +x "$TMP_LAYER_DIR/bin/ffmpeg"
+    (cd "$TMP_LAYER_DIR" && zip -r "$FFMPEG_LAYER_ZIP" bin >/dev/null)
     rm -rf "$TMP_LAYER_DIR"
     echo "✅ Layer FFmpeg criada em $FFMPEG_LAYER_ZIP"
 else
