@@ -71,9 +71,13 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 	// Map status string to enum
 	var jobStatus mediaprocessingmodel.MediaProcessingJobStatus
+	partialSuccess := false
 	switch input.Status {
 	case "SUCCEEDED":
 		jobStatus = mediaprocessingmodel.MediaProcessingJobStatusSucceeded
+	case "PARTIAL_SUCCESS":
+		jobStatus = mediaprocessingmodel.MediaProcessingJobStatusPartial
+		partialSuccess = true
 	case "FAILED", "PROCESSING_FAILED", "VALIDATION_FAILED", "TIMED_OUT": // Catch all failure modes
 		jobStatus = mediaprocessingmodel.MediaProcessingJobStatusFailed
 	default:
@@ -82,7 +86,7 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 	if jobStatus.IsTerminal() {
 		payload := mediaprocessingmodel.MediaProcessingJobPayload{}
-		if jobStatus == mediaprocessingmodel.MediaProcessingJobStatusSucceeded &&
+		if (jobStatus == mediaprocessingmodel.MediaProcessingJobStatusSucceeded || jobStatus == mediaprocessingmodel.MediaProcessingJobStatusPartial) &&
 			job.Provider() == mediaprocessingmodel.MediaProcessingProviderStepFunctionsFinalization {
 			job.ApplyFinalizationPayload(input.ZipBundles, input.AssetsZipped, input.ZipSizeBytes, input.UnzippedSizeBytes)
 			payload = job.Payload()
@@ -172,11 +176,13 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 				"error_codes", errorCodeHistogram,
 				"callback_error_code", input.ErrorCode,
 				"callback_error_metadata", input.ErrorMetadata,
+				"partial_success", partialSuccess,
 			)
 		} else {
 			logger.Info("service.media.callback.assets_processed",
 				"job_id", input.JobID,
 				"processed_assets", len(input.Results),
+				"partial_success", partialSuccess,
 			)
 		}
 	} else if input.ErrorCode != "" || input.Error != "" {

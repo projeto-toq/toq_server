@@ -96,7 +96,7 @@ type HandleProcessingCallbackInput struct {
 	JobID             uint64             `json:"jobId"`
 	ListingIdentityID uint64             `json:"listingIdentityId"`
 	Provider          string             `json:"provider"`
-	Status            string             `json:"status"` // "SUCCEEDED", "FAILED"
+	Status            string             `json:"status"` // "SUCCEEDED", "FAILED", "PARTIAL_SUCCESS"
 	ExecutionARN      string             `json:"executionArn,omitempty"`
 	Results           []ProcessingResult `json:"results"`
 	AssetsZipped      int                `json:"assetsZipped,omitempty"`

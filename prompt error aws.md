@@ -7,7 +7,11 @@
 ## 🎯 Problema / Solicitação
 
 Usuário está reportando que após o upload do video houve algum problema no processamento do video na AWS.
-Leia o log recente em `/codigos/go_code/toq_server/logs/toq_server.log` e identifique a causa raiz do problema.		
+Segue entrada do log:
+
+```
+{"time":"2026-01-05T15:55:03.824300164Z","level":"WARN","msg":"service.media.callback.no_results_failure","request_id":"8cf041a5b067399df439d5a1c7f494e1","job_id":37,"status":"PROCESSING_FAILED","callback_error_code":"ERRORSTRING","callback_error":"{\"errorMessage\":\"DERIVATIVE_ERRORS_DETECTED\",\"errorType\":\"errorString\"}","callback_error_metadata":null}
+```	
 
 
 Assim:

@@ -94,24 +94,33 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 		"payload_preview", string(outputJSON),
 	)
 
+	status := string(mediaprocessingmodel.MediaProcessingJobStatusSucceeded)
+	failureReason := ""
+	var callbackError any
+
+	if branchErrorsFound {
+		status = string(mediaprocessingmodel.MediaProcessingJobStatusPartial)
+		failureReason = "DERIVATIVE_ERRORS_DETECTED"
+		callbackError = map[string]any{
+			"code":    "DERIVATIVE_ERRORS_DETECTED",
+			"message": "one or more derivative branches reported errors",
+		}
+	}
+
 	responseBody := map[string]any{
 		"jobId":             event.JobID,
 		"listingIdentityId": event.ListingIdentityID,
 		"executionArn":      event.ExecutionArn,
 		"startedAt":         event.StartedAt,
 		"provider":          string(mediaprocessingmodel.MediaProcessingProviderStepFunctions),
-		"status":            string(mediaprocessingmodel.MediaProcessingJobStatusSucceeded),
-		"failureReason":     "",
-		"error":             nil,
+		"status":            status,
+		"failureReason":     failureReason,
+		"error":             callbackError,
 		"outputs":           finalOutputs,
 	}
 
 	if event.Traceparent != "" {
 		responseBody["traceparent"] = event.Traceparent
-	}
-
-	if branchErrorsFound {
-		return mediaprocessingmodel.LambdaResponse{}, fmt.Errorf("DERIVATIVE_ERRORS_DETECTED")
 	}
 
 	return mediaprocessingmodel.LambdaResponse{Body: responseBody}, nil

@@ -64,12 +64,13 @@ const (
 	MediaProcessingJobStatusPending   MediaProcessingJobStatus = "PENDING"
 	MediaProcessingJobStatusRunning   MediaProcessingJobStatus = "RUNNING"
 	MediaProcessingJobStatusSucceeded MediaProcessingJobStatus = "SUCCEEDED"
+	MediaProcessingJobStatusPartial   MediaProcessingJobStatus = "PARTIAL_SUCCESS"
 	MediaProcessingJobStatusFailed    MediaProcessingJobStatus = "FAILED"
 )
 
 // IsTerminal reports whether the async job reached a final outcome.
 func (s MediaProcessingJobStatus) IsTerminal() bool {
-	return s == MediaProcessingJobStatusSucceeded || s == MediaProcessingJobStatusFailed
+	return s == MediaProcessingJobStatusSucceeded || s == MediaProcessingJobStatusPartial || s == MediaProcessingJobStatusFailed
 }
 
 // MediaAssetStatus represents the lifecycle of a single media asset.
