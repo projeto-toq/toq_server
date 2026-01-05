@@ -106,6 +106,8 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 	)
 
 	validatedAssets := make([]mediaprocessingmodel.JobAsset, 0, len(event.Assets))
+	imageAssets := make([]mediaprocessingmodel.JobAsset, 0, len(event.Assets))
+	videoAssets := make([]mediaprocessingmodel.JobAsset, 0, len(event.Assets))
 	var firstVideoKey string
 
 	for _, asset := range event.Assets {
@@ -130,17 +132,24 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 
 		validatedAssets = append(validatedAssets, asset)
 
-		if firstVideoKey == "" && strings.Contains(strings.ToUpper(asset.Type), "VIDEO") {
-			firstVideoKey = asset.Key
+		if strings.Contains(strings.ToUpper(asset.Type), "VIDEO") {
+			videoAssets = append(videoAssets, asset)
+			if firstVideoKey == "" {
+				firstVideoKey = asset.Key
+			}
+		} else {
+			imageAssets = append(imageAssets, asset)
 		}
 	}
 
 	event.Assets = validatedAssets
+	event.ImageAssets = imageAssets
+	event.VideoAssets = videoAssets
+	event.HasImages = len(imageAssets) > 0
+	event.HasVideos = len(videoAssets) > 0
 
 	// Check for videos and prepare MediaConvert paths
 	if firstVideoKey != "" {
-		event.HasVideos = true
-
 		videoInput, videoOutput := deriveVideoPaths(s.bucket, firstVideoKey)
 		if videoInput != "" && videoOutput != "" {
 			event.VideoInput = videoInput
@@ -158,6 +167,9 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 	s.logger.Info("Validation complete",
 		"job_id", event.JobID,
 		"total_assets", len(validatedAssets),
+		"image_assets", len(imageAssets),
+		"video_assets", len(videoAssets),
+		"has_images", event.HasImages,
 		"has_videos", event.HasVideos,
 	)
 

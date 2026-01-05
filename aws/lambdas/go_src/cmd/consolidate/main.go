@@ -32,9 +32,9 @@ type ConsolidateInput struct {
 // ParallelResult captures the generic output of parallel branches
 type ParallelResult struct {
 	Body struct {
-		Thumbnails []mediaprocessingmodel.JobAsset `json:"generatedAssets"`
-		Errors     []ThumbnailError                `json:"errors"`
-		// Future: Videos []...
+		GeneratedAssets []mediaprocessingmodel.JobAsset `json:"generatedAssets"`
+		Errors          []ThumbnailError                `json:"errors"`
+		Status          string                          `json:"status"`
 	} `json:"body"`
 }
 
@@ -58,27 +58,29 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 	logger.Info("Consolidate Lambda started", "job_id", event.JobID, "listing_identity_id", event.ListingIdentityID, "raw_input_size", len(inputJSON))
 
 	accumulators := consolidateservice.InitializePayloads(event.Assets)
+	branchErrorsFound := false
 
 	// 2. Process Parallel Results (Thumbnails)
 	for idx, branch := range event.ParallelResults {
-		thumbs := branch.Body.Thumbnails
-		if len(thumbs) > 0 {
-			logger.Info("Processing thumbnails results", "branch_index", idx, "count", len(thumbs))
+		assets := branch.Body.GeneratedAssets
+		if len(assets) > 0 {
+			logger.Info("Processing generated assets from branch", "branch_index", idx, "count", len(assets))
 		}
 
-		for _, thumb := range thumbs {
-			accumulator, exists := accumulators[thumb.SourceKey]
+		for _, generated := range assets {
+			accumulator, exists := accumulators[generated.SourceKey]
 			if !exists {
-				logger.Warn("Thumbnail without matching asset", "source_key", thumb.SourceKey, "thumb_key", thumb.Key)
+				logger.Warn("Generated asset without matching source", "source_key", generated.SourceKey, "generated_key", generated.Key)
 				continue
 			}
 
-			consolidateservice.MapGeneratedAsset(accumulator, thumb)
+			consolidateservice.MapGeneratedAsset(accumulator, generated)
 		}
 
 		if len(branch.Body.Errors) > 0 {
-			logger.Warn("Thumbnail branch reported errors", "branch_index", idx, "count", len(branch.Body.Errors))
+			logger.Warn("Branch reported errors", "branch_index", idx, "count", len(branch.Body.Errors))
 			consolidateservice.ApplyBranchErrors(accumulators, toBranchErrors(branch.Body.Errors))
+			branchErrorsFound = true
 		}
 	}
 
@@ -106,6 +108,10 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 
 	if event.Traceparent != "" {
 		responseBody["traceparent"] = event.Traceparent
+	}
+
+	if branchErrorsFound {
+		return mediaprocessingmodel.LambdaResponse{}, fmt.Errorf("DERIVATIVE_ERRORS_DETECTED")
 	}
 
 	return mediaprocessingmodel.LambdaResponse{Body: responseBody}, nil

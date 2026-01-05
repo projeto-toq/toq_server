@@ -8,8 +8,14 @@ export AWS_REGION=us-east-1
 ROOT_DIR=$(pwd)
 BIN_DIR="$ROOT_DIR/aws/lambdas/bin"
 POLICY_FILE="$ROOT_DIR/aws/step_functions/updated_policy.json"
+DEFAULT_LAMBDA_ROLE_ARN="arn:aws:iam::058264253741:role/toq-media-processing-backend-staging"
+FFMPEG_LAYER_ARN=${FFMPEG_LAYER_ARN:-""}
+
+# Roles/policies to update (backend + step functions)
 IAM_ROLE_NAME=${IAM_ROLE_NAME:-"toq-media-processing-backend-staging"}
 IAM_POLICY_NAME=${IAM_POLICY_NAME:-"toq-media-processing-backend-inline"}
+STEP_ROLE_NAME=${STEP_ROLE_NAME:-"toq-media-processing-stepfunctions-staging"}
+STEP_POLICY_NAME=${STEP_POLICY_NAME:-"MediaProcessingStepFunctionsPolicy"}
 
 shopt -s nullglob
 zip_files=("$BIN_DIR"/*.zip)
@@ -23,11 +29,35 @@ fi
 for zip_file in "${zip_files[@]}"; do
 	lambda=$(basename "$zip_file" .zip)
 	function_name="listing-media-${lambda}-staging"
+	role_arn="${LAMBDA_ROLE_ARN:-$DEFAULT_LAMBDA_ROLE_ARN}"
 
 	echo "Deploying $lambda..."
+
+	# Create the function if it doesn't exist yet (new lambdas like video_thumbnails)
+	if ! aws lambda get-function --function-name "$function_name" >/dev/null 2>&1; then
+		echo "Function $function_name not found. Creating..."
+		aws lambda create-function \
+			--function-name "$function_name" \
+			--runtime provided.al2 \
+			--role "$role_arn" \
+			--handler bootstrap \
+			--timeout 300 \
+			--memory-size 1024 \
+			--zip-file "fileb://$zip_file" \
+			${FFMPEG_LAYER_ARN:+--layers "$FFMPEG_LAYER_ARN"} >/dev/null
+	else
 	aws lambda update-function-code \
 		--function-name "$function_name" \
 		--zip-file "fileb://$zip_file" > /dev/null
+
+		# Update layers/env only for video thumbnails (to avoid conflicts on other lambdas)
+		if [ "$lambda" = "video_thumbnails" ] && [ -n "$FFMPEG_LAYER_ARN" ]; then
+			aws lambda update-function-configuration \
+				--function-name "$function_name" \
+				--layers "$FFMPEG_LAYER_ARN" \
+				--environment "Variables={FFMPEG_PATH=/opt/ffmpeg/ffmpeg}" >/dev/null
+		fi
+	fi
 done
 
 if [ ! -f "$POLICY_FILE" ]; then
@@ -39,6 +69,12 @@ echo "Updating IAM inline policy for role $IAM_ROLE_NAME..."
 aws iam put-role-policy \
 	--role-name "$IAM_ROLE_NAME" \
 	--policy-name "$IAM_POLICY_NAME" \
+	--policy-document "file://$POLICY_FILE" > /dev/null
+
+echo "Updating IAM inline policy for role $STEP_ROLE_NAME..."
+aws iam put-role-policy \
+	--role-name "$STEP_ROLE_NAME" \
+	--policy-name "$STEP_POLICY_NAME" \
 	--policy-document "file://$POLICY_FILE" > /dev/null
 
 echo "Updating Step Functions definition..."

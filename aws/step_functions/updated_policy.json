@@ -10,6 +10,7 @@
             "Resource": [
                 "arn:aws:lambda:us-east-1:058264253741:function:listing-media-validate-staging",
                 "arn:aws:lambda:us-east-1:058264253741:function:listing-media-thumbnails-staging",
+                "arn:aws:lambda:us-east-1:058264253741:function:listing-media-video_thumbnails-staging",
                 "arn:aws:lambda:us-east-1:058264253741:function:listing-media-zip-staging",
                 "arn:aws:lambda:us-east-1:058264253741:function:listing-media-callback-dispatch-staging",
                 "arn:aws:lambda:us-east-1:058264253741:function:listing-media-consolidate-staging"
@@ -24,6 +25,19 @@
                 "mediaconvert:DescribeEndpoints"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "PassRoleForMediaConvert",
+            "Effect": "Allow",
+            "Action": [
+                "iam:PassRole"
+            ],
+            "Resource": "arn:aws:iam::058264253741:role/toq-media-processing-mediaconvert-staging",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "mediaconvert.amazonaws.com"
+                }
+            }
         },
         {
             "Sid": "SQSSendMessage",

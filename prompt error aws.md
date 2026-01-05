@@ -6,10 +6,8 @@
 
 ## 🎯 Problema / Solicitação
 
-Usuário está reportando que após o upload do video para o listiingIdentityId=1 houve algum problema no processamento do video na AWS.
-veja abaixo o estados da base `toq_db.media_processing_jobs`:
-# id	listing_identity_id	status	provider	external_id	payload	retry_count	started_at	completed_at	last_error	callback_body
-30	1	PENDING	STEP_FUNCTIONS			0				
+Usuário está reportando que após o upload do video houve algum problema no processamento do video na AWS.
+Leia o log recente em `/codigos/go_code/toq_server/logs/toq_server.log` e identifique a causa raiz do problema.		
 
 
 Assim:

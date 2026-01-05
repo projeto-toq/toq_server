@@ -54,6 +54,46 @@
           }
         },
         {
+          "StartAt": "CheckVideoThumbnails",
+          "States": {
+            "CheckVideoThumbnails": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.validation.hasVideos",
+                  "BooleanEquals": true,
+                  "Next": "GenerateVideoThumbnails"
+                }
+              ],
+              "Default": "SkipVideoThumbnails"
+            },
+            "GenerateVideoThumbnails": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:058264253741:function:listing-media-video_thumbnails-staging",
+              "InputPath": "$.validation",
+              "TimeoutSeconds": 600,
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "States.TaskFailed"
+                  ],
+                  "IntervalSeconds": 5,
+                  "MaxAttempts": 2,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "End": true
+            },
+            "SkipVideoThumbnails": {
+              "Type": "Pass",
+              "Result": {
+                "status": "no_videos_to_thumbnail"
+              },
+              "End": true
+            }
+          }
+        },
+        {
           "StartAt": "CheckVideoProcessing",
           "States": {
             "CheckVideoProcessing": {
@@ -89,11 +129,28 @@
                       },
                       "Outputs": [
                         {
+                          "ContainerSettings": {
+                            "Container": "MP4",
+                            "Mp4Settings": {
+                              "CslgAtom": "INCLUDE",
+                              "FreeSpaceBox": "EXCLUDE",
+                              "MoovPlacement": "PROGRESSIVE_DOWNLOAD"
+                            }
+                          },
                           "VideoDescription": {
                             "Width": 1920,
                             "Height": 1080,
                             "CodecSettings": {
-                              "Codec": "H_264"
+                              "Codec": "H_264",
+                              "H264Settings": {
+                                "RateControlMode": "QVBR",
+                                "QualityTuningLevel": "SINGLE_PASS_HQ",
+                                "QvbrSettings": {
+                                  "QvbrQualityLevel": 8
+                                },
+                                "MaxBitrate": 5000000,
+                                "SceneChangeDetect": "TRANSITION_DETECTION"
+                              }
                             }
                           }
                         }

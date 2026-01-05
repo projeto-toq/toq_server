@@ -136,8 +136,11 @@ type JobAsset struct {
 type StepFunctionPayload struct {
 	JobID             uint64     `json:"jobId"` // Added
 	ListingIdentityID uint64     `json:"listingIdentityId"`
-	Assets            []JobAsset `json:"assets"`    // Raw input
-	HasVideos         bool       `json:"hasVideos"` // Flag for video processing
+	Assets            []JobAsset `json:"assets"`          // Raw input (all types)
+	ImageAssets       []JobAsset `json:"imageAssets"`     // Filtered images for thumbnail branch
+	VideoAssets       []JobAsset `json:"videoAssets"`     // Filtered videos for video-specific branches
+	HasImages         bool       `json:"hasImages"`       // Flag for image processing branch
+	HasVideos         bool       `json:"hasVideos"`       // Flag for video processing branches
 	Traceparent       string     `json:"traceparent"`
 	ExecutionARN      string     `json:"executionArn,omitempty"`
 	StartedAt         string     `json:"startedAt,omitempty"`

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"strings"
 
 	imageprocessing "github.com/projeto-toq/toq_server/aws/lambdas/go_src/internal/core/service/image_processing"
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
@@ -46,11 +47,21 @@ func (h *Handler) HandleRequest(ctx context.Context, event mediaprocessingmodel.
 		bucket = "toq-listing-medias"
 	}
 
-	for i, asset := range event.Assets {
+	assets := event.ImageAssets
+	if len(assets) == 0 {
+		assets = event.Assets
+	}
+
+	for i, asset := range assets {
 		h.logger.Info("Inspecting asset", "index", i, "key", asset.Key, "type", asset.Type)
 
 		if asset.Error != "" {
 			h.logger.Warn("Skipping asset with previous error", "key", asset.Key, "error", asset.Error)
+			continue
+		}
+
+		if strings.Contains(strings.ToUpper(asset.Type), "VIDEO") {
+			h.logger.Info("Skipping video asset for image thumbnails", "key", asset.Key, "type", asset.Type)
 			continue
 		}
 
