@@ -2,6 +2,7 @@ package mediaprocessinghandlers
 
 import (
 	"strings"
+	"time"
 
 	httpdto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
@@ -19,6 +20,18 @@ func toHandleProcessingCallbackInput(request httpdto.MediaProcessingCallbackRequ
 	listingIdentityID, err := utils.ParseUintFromJSON(request.ListingIdentityID)
 	if err != nil {
 		return dto.HandleProcessingCallbackInput{}, derrors.Validation("invalid listing identifier", err.Error())
+	}
+
+	executionArn := strings.TrimSpace(request.ExecutionARN)
+
+	var startedAt *time.Time
+	if rawStarted := strings.TrimSpace(request.StartedAt); rawStarted != "" {
+		parsed, parseErr := utils.ParseRFC3339Relaxed("startedAt", rawStarted)
+		if parseErr != nil {
+			return dto.HandleProcessingCallbackInput{}, parseErr
+		}
+		parsedUTC := parsed.UTC()
+		startedAt = &parsedUTC
 	}
 
 	var payloadError string
@@ -44,6 +57,7 @@ func toHandleProcessingCallbackInput(request httpdto.MediaProcessingCallbackRequ
 		ListingIdentityID: listingIdentityID,
 		Provider:          strings.ToUpper(strings.TrimSpace(request.Provider)),
 		Status:            strings.ToUpper(strings.TrimSpace(request.Status)),
+		ExecutionARN:      executionArn,
 		Results:           mapOutputsToResults(request.Outputs),
 		AssetsZipped:      request.AssetsZipped,
 		ZipBundles:        cloneStringSlice(request.ZipBundles),
@@ -54,6 +68,7 @@ func toHandleProcessingCallbackInput(request httpdto.MediaProcessingCallbackRequ
 		ErrorMetadata:     errorMetadata,
 		FailureReason:     request.FailureReason,
 		Traceparent:       strings.TrimSpace(request.Traceparent),
+		StartedAt:         startedAt,
 		RawPayload:        string(request.RawBody),
 	}
 

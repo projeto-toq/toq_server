@@ -61,6 +61,14 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 		job.SetCallbackBody(input.RawPayload)
 	}
 
+	if input.ExecutionARN != "" && job.ExternalID() == "" {
+		job.SetExternalID(input.ExecutionARN)
+	}
+
+	if input.StartedAt != nil {
+		job.EnsureStartedAt(*input.StartedAt)
+	}
+
 	// Map status string to enum
 	var jobStatus mediaprocessingmodel.MediaProcessingJobStatus
 	switch input.Status {

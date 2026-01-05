@@ -13,6 +13,7 @@ import (
 // MediaProcessingCallbackRequest captures the raw callback payload from the async media pipeline.
 type MediaProcessingCallbackRequest struct {
 	ExecutionARN      string                                           `json:"executionArn"`
+	StartedAt         string                                           `json:"startedAt"`
 	JobID             json.RawMessage                                  `json:"jobId"`
 	ListingIdentityID json.RawMessage                                  `json:"listingIdentityId"`
 	ExternalID        string                                           `json:"externalId"`

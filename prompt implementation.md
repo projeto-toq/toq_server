@@ -6,36 +6,45 @@
 
 ## 🎯 Solicitação
 
-Quando um realtor navega pelos listings publicados ele precisa ter a possibilidade de enviar um pedido de visita ao owner do imóvel. Atualmente essa funcionalidade não existe no TOQ Server e precisa ser implementada.
-Em `/codigos/go_code/toq_server/docs/visits_system_specification.md`existe um rascunho de especificação do sistema de visitas que deve ser usado como referencia, e não fonte da verdade, para implementar essa funcionalidade. Os endpoints/payloads/respostas/enum devem ser seguidos sempre que for recomendado e interessante. Nenhum POST deve ter o id no path, sempre deve ser passado via body.
-A regra de negócio preve:
-1. O realtor envia um pedido de visita para o owner do imóvel.
-   1.1. O modelo da visita `/codigos/go_code/toq_server/internal/core/model/listing_model/visit_domain.go` é um rascunho do que deve ser utilizado para representar o pedido de visita. Deve ser adequado conforme a necessidade.
-   1.2. O pedido de visita deve ser baseado na agenda de disponibilidade que o owner criou durante a criação do listing representada em `/codigos/go_code/toq_server/internal/core/model/schedule_model/agenda_domain.go`.
-   1.3. O pedido de visita dever ser enviado ao owner do imóvel via push notification (utilize o sistema de notificações já existente no TOQ Server).
-2. O owner pode aceitar ou recusar o pedido de visita.
-   2.1. Ao aceitar o pedido de visita, o sistema deve bloquear o horário na agenda do owner e na agenda do realtor para que não haja conflitos.
-   2.2. Ao recusar o pedido de visita, o sistema deve enviar uma notificação ao realtor informando a recusa.
-3. O realtor pode cancelar o pedido de visita a qualquer momento.
-   3.1. Ao cancelar o pedido de visita, o sistema deve enviar uma notificação ao owner informando o cancelamento e retirar da agenda do owner e do realtor o bloqueio do horário.
-4. Após a visita o realtor deve informar o status da visita (realizada, não realizada, reagendada).
-   4.1. O owner deve ser notificado sobre o status da visita.
-5. Deve haver um contador de tempo desde o envio do pedido de visitas até aceite/recusa do proprietário.
-   5.1. Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis
-   5.2. Esta informação deve ser armazenada para futuras análises de performance do owner e será mostrada em seus anuncios. EX: "Respondeu 90% dos pedidos de visita em até 2 horas".
-6. O arquivo `/codigos/go_code/toq_server/docs/visit_system_implementation_plan.md` foi um plano de implementação criado pelo time mas possui diversos erros e inconsistencias.
+Quando um realtor navega pelos listings publicados ele precisa ter a possibilidade de enviar uma proposta ao owner do imóvel. Atualmente essa funcionalidade não existe no TOQ Server e precisa ser implementada.
 
+A regra de negócio preve:
+### Para CORRETOR:
+1. Enviar proposta para um imóvel
+2. Visualizar histórico de propostas enviadas
+3. Visualizar status de cada proposta
+4. Editar proposta (apenas se status = `pending`)
+5. Cancelar proposta (antes da aceitação)
+   
+### Para PROPRIETÁRIO:
+1. Visualizar propostas recebidas
+2. Aceitar proposta
+3. Recusar proposta (com motivo)
+4. Visualizar histórico de propostas recebidas e seus status
+
+1. O realtor envia uma proposta para o owner do imóvel.
+   1.1. A proposta pode ser enviada por um texto livre ou por um pdf(com tamanho máximo de 1MB). ambos devem ser armazenados na base de dados.
+   1.2. Deve ser enviado um push notification (utilize o sistema de notificações já existente no TOQ Server) quando uma proposta for enviada ao owner do imóvel.
+2. O owner pode aceitar ou recusar a proposta.
+   2.1. Ao aceitar ou recusar a proposta um push notificatioin deve ser enviado ao realtor informando o status da proposta.
+   2.2. Ao recusar a proposta o owner deve informar um motivo (texto livre).
+3. O realtor pode cancelar a proposta a qualquer momento antes do aceite pelo owner.
+   3.1. Ao cancelar a proposta, o sistema deve enviar uma notificação ao owner informando o cancelamento.
+4. Ambos realtor e owner podem visualizar o histórico de propostas enviadas/recebidas com seus respectivos status (pending, accepted, refused, cancelled).
+5. o listing deve ter um campo que indique se existe propsota aceita ou pendente.
+
+O plano em `/codigos/go_code/toq_server/docs/proposals_implementation_plan.md` foi criado para implementar este funcionalidade, mas não foi finalizado e não atende a totalidade dos requisitos. Sua tarefa é analisar o plano existente, o código do TOQ Server e propor ajustes para tornar este plano, um plano completo de implementação seguindo todas as regras e padrões do projeto.
 
 Assim:
-1. Analise o código atual model, service, handler, repository, dto, converter do projeto, leia o `toq_server_go_guide.md`, leia o plano de implementação em `/codigos/go_code/toq_server/docs/visit_system_implementation_plan.md` e identifique a melhor forma de implementar a nova funcionalidade.
-2. Proponha um plano detalhado de implementação, alterando o `/codigos/go_code/toq_server/docs/visit_system_implementation_plan.md` incluindo:
+1. Analise o `toq_server_go_guide.md` e identifique a melhor forma de implementar a nova funcionalidade.
+2. Proponha um plano detalhado de implementação incluindo:
    - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
    - O Codigo completo a ser implementado (handlers, services, repositories, DTOs, entities, converters), fazendo com a implementação seja simples e sem mais análises.
    - Estrutura de Diretórios: organização final seguindo a Regra de Espelhamento (Seção 2.1 do guia).
    - Ordem de Execução: etapas numeradas com dependências.
 3. Siga todas as regras e padrões do projeto conforme documentado no guia do TOQ
 4. Não se preocupe em garantir backend compatibilidade com versões anteriores, pois esta é uma alteração disruptiva.
-5. Em `scripts/db_creation.sql` existe o modelo de dados atual do banco. Proponha as alterações necessárias para suportar a nova funcionalidade (sem scripts de migração).
+5. Em `scripts/db_creation.sql` existe o modelo de dados atual do banco. Proponha as alterações necessárias para suportar a nova funcionalidade (sem scripts de migração), que será implemtnentada posteriormente por outro time.
 
 ---
 

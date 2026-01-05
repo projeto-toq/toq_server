@@ -12801,6 +12801,9 @@ const docTemplate = `{
                 "provider": {
                     "type": "string"
                 },
+                "startedAt": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 },

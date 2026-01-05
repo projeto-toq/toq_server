@@ -21,6 +21,7 @@ import (
 type MediaProcessingServiceInterface interface {
 	RequestUploadURLs(ctx context.Context, input dto.RequestUploadURLsInput) (dto.RequestUploadURLsOutput, error)
 	ProcessMedia(ctx context.Context, input dto.ProcessMediaInput) error
+	ReconcileStuckJobs(ctx context.Context, timeout time.Duration) error
 
 	// New methods
 	GenerateDownloadURLs(ctx context.Context, input dto.GenerateDownloadURLsInput) (dto.GenerateDownloadURLsOutput, error)

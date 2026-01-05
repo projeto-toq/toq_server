@@ -159,3 +159,10 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
 3. **ReportFailure** — em caso de erro, envia `status=FINALIZATION_FAILED` e detalha o motivo no callback.
 
 > **Correlação Banco ↔ Step Functions (Nov/2025):** O serviço `ProcessMedia` registra o job e armazena o `executionArn` do workflow de processamento. `CompleteMedia` cria um novo job, dispara `listing-media-finalization-sm-staging` via `workflow.StartMediaFinalization` e atualiza `media_processing_jobs.external_id` com o ARN de finalização. Assim, qualquer `executionArn` encontrado em `service.media.complete.started_zip` pode ser rastreado no banco e vice-versa.
+
+---
+
+## 7. Salvaguardas Operacionais (Jan/2026)
+
+- **Reconciliação de jobs travados:** worker interno roda a cada 5 minutos e marca como `FAILED` qualquer job `RUNNING` sem callback cujo `started_at` tenha ultrapassado `media_processing.workflow.stuck_job_timeout_minutes` (default 30). Assets em `PROCESSING` são igualmente marcados como `FAILED` para evitar pendência.
+- **Pré-checagem de uploads:** antes de publicar no SQS, o backend agora faz `HeadObject` nos `rawKey` envolvidos; se o objeto não existir ou estiver inacessível, retorna erro de validação imediatamente (não enfileira nem altera status dos assets).

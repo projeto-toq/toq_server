@@ -3,6 +3,7 @@ package media_processing_repository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	mediaprocessingmodel "github.com/projeto-toq/toq_server/internal/core/model/media_processing_model"
 )
@@ -24,6 +25,7 @@ type RepositoryInterface interface {
 	GetProcessingJobByID(ctx context.Context, tx *sql.Tx, jobID uint64) (mediaprocessingmodel.MediaProcessingJob, error)
 	UpdateProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) error
 	GetLatestFinalizationJob(ctx context.Context, tx *sql.Tx, listingIdentityID uint64) (mediaprocessingmodel.MediaProcessingJob, error)
+	ListStuckJobs(ctx context.Context, tx *sql.Tx, status mediaprocessingmodel.MediaProcessingJobStatus, startedBefore time.Time) ([]mediaprocessingmodel.MediaProcessingJob, error)
 }
 
 // Pagination define opções de paginação para repositórios.

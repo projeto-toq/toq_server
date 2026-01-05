@@ -142,6 +142,8 @@
       "Parameters": {
         "jobId.$": "$.jobId",
         "listingIdentityId.$": "$.validation.listingIdentityId",
+        "executionArn.$": "$$.Execution.Id",
+        "startedAt.$": "$$.Execution.StartTime",
         "assets.$": "$.validation.assets",
         "parallelResults.$": "$.parallelResults",
         "traceparent.$": "$.traceparent"
@@ -198,6 +200,8 @@
         "body": {
           "jobId.$": "$.jobId",
           "listingIdentityId.$": "$.listingIdentityId",
+          "executionArn.$": "$$.Execution.Id",
+          "startedAt.$": "$$.Execution.StartTime",
           "provider": "STEP_FUNCTIONS",
           "status": "VALIDATION_FAILED",
           "failureReason.$": "$.error.Error",
@@ -219,6 +223,8 @@
         "body": {
           "jobId.$": "$.jobId",
           "listingIdentityId.$": "$.listingIdentityId",
+          "executionArn.$": "$$.Execution.Id",
+          "startedAt.$": "$$.Execution.StartTime",
           "provider": "STEP_FUNCTIONS",
           "status": "PROCESSING_FAILED",
           "failureReason.$": "$.error.Error",

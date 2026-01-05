@@ -22,6 +22,8 @@ func init() {
 type ConsolidateInput struct {
 	JobID             uint64                          `json:"jobId"`
 	ListingIdentityID uint64                          `json:"listingIdentityId"`
+	ExecutionArn      string                          `json:"executionArn"`
+	StartedAt         string                          `json:"startedAt"`
 	Assets            []mediaprocessingmodel.JobAsset `json:"assets"`
 	ParallelResults   []ParallelResult                `json:"parallelResults"`
 	Traceparent       string                          `json:"traceparent"`
@@ -93,6 +95,8 @@ func HandleRequest(ctx context.Context, event ConsolidateInput) (mediaprocessing
 	responseBody := map[string]any{
 		"jobId":             event.JobID,
 		"listingIdentityId": event.ListingIdentityID,
+		"executionArn":      event.ExecutionArn,
+		"startedAt":         event.StartedAt,
 		"provider":          string(mediaprocessingmodel.MediaProcessingProviderStepFunctions),
 		"status":            string(mediaprocessingmodel.MediaProcessingJobStatusSucceeded),
 		"failureReason":     "",

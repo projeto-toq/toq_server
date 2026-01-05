@@ -3,7 +3,10 @@ package validate
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
+	"path"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -84,12 +87,13 @@ func (s *ValidateService) ProcessSQSEvent(ctx context.Context, records []events.
 		inputBytes, _ := json.Marshal(payload)
 		inputStr := string(inputBytes)
 
-		if err := s.workflow.StartExecution(ctx, s.smArn, inputStr); err != nil {
+		executionArn, err := s.workflow.StartExecution(ctx, s.smArn, inputStr)
+		if err != nil {
 			s.logger.Error("Failed to start Step Function", "error", err, "job_id", payload.JobID)
 			return err // Fail the lambda so SQS retries
 		}
 
-		s.logger.Info("Started Step Function execution", "job_id", payload.JobID)
+		s.logger.Info("Started Step Function execution", "job_id", payload.JobID, "execution_arn", executionArn)
 	}
 	return nil
 }
@@ -102,6 +106,7 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 	)
 
 	validatedAssets := make([]mediaprocessingmodel.JobAsset, 0, len(event.Assets))
+	var firstVideoKey string
 
 	for _, asset := range event.Assets {
 		s.logger.Debug("Validating asset", "key", asset.Key, "job_id", event.JobID)
@@ -124,15 +129,29 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 		}
 
 		validatedAssets = append(validatedAssets, asset)
+
+		if firstVideoKey == "" && strings.Contains(strings.ToUpper(asset.Type), "VIDEO") {
+			firstVideoKey = asset.Key
+		}
 	}
 
 	event.Assets = validatedAssets
 
-	// Check for videos
-	for _, asset := range validatedAssets {
-		if strings.Contains(asset.Type, "VIDEO") {
-			event.HasVideos = true
-			break
+	// Check for videos and prepare MediaConvert paths
+	if firstVideoKey != "" {
+		event.HasVideos = true
+
+		videoInput, videoOutput := deriveVideoPaths(s.bucket, firstVideoKey)
+		if videoInput != "" && videoOutput != "" {
+			event.VideoInput = videoInput
+			event.VideoOutputPath = videoOutput
+			s.logger.Info("Video processing paths prepared",
+				"job_id", event.JobID,
+				"video_input", videoInput,
+				"video_output_path", videoOutput,
+			)
+		} else {
+			s.logger.Warn("Could not derive video paths from asset key", "job_id", event.JobID, "asset_key", firstVideoKey)
 		}
 	}
 
@@ -143,4 +162,31 @@ func (s *ValidateService) ValidateAssets(ctx context.Context, event mediaprocess
 	)
 
 	return event, nil
+}
+
+var dateSegmentRegex = regexp.MustCompile(`\d{4}-\d{2}-\d{2}/`)
+
+func deriveVideoPaths(bucket, rawKey string) (string, string) {
+	if rawKey == "" || bucket == "" {
+		return "", ""
+	}
+
+	input := fmt.Sprintf("s3://%s/%s", bucket, rawKey)
+
+	parts := strings.SplitN(rawKey, "raw/", 2)
+	if len(parts) != 2 {
+		return input, ""
+	}
+
+	prefix := parts[0]
+	suffix := dateSegmentRegex.ReplaceAllString(parts[1], "")
+	mediaDir := path.Dir(suffix) // e.g., video/horizontal
+
+	if strings.TrimSpace(mediaDir) == "" {
+		return input, ""
+	}
+
+	output := fmt.Sprintf("s3://%s/%sprocessed/%s/original/", bucket, prefix, mediaDir)
+
+	return input, output
 }

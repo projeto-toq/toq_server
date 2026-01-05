@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	"github.com/projeto-toq/toq_server/internal/core/domain/dto"
@@ -75,6 +76,10 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 		return derrors.Validation("no assets available for processing", map[string]any{"listingIdentityId": input.ListingIdentityID})
 	}
 
+	if err := s.ensureRawObjectsExist(ctx, assets); err != nil {
+		return err
+	}
+
 	// Register Job first to get ID
 	job := mediaprocessingmodel.NewMediaProcessingJob(uint64(input.ListingIdentityID), mediaprocessingmodel.MediaProcessingProviderStepFunctions)
 	jobID, err := s.repo.RegisterProcessingJob(ctx, tx, job)
@@ -126,5 +131,31 @@ func (s *mediaProcessingService) ProcessMedia(ctx context.Context, input dto.Pro
 	committed = true
 
 	logger.Info("service.media.process.started", "listing_identity_id", input.ListingIdentityID, "assets_count", len(assets), "job_id", jobID)
+	return nil
+}
+
+func (s *mediaProcessingService) ensureRawObjectsExist(ctx context.Context, assets []mediaprocessingmodel.MediaAsset) error {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	seen := make(map[string]struct{})
+
+	for _, asset := range assets {
+		rawKey := strings.TrimSpace(asset.S3KeyRaw())
+		if rawKey == "" {
+			continue
+		}
+		if _, ok := seen[rawKey]; ok {
+			continue
+		}
+		seen[rawKey] = struct{}{}
+
+		if _, err := s.storage.ValidateObjectChecksum(ctx, rawKey, ""); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("service.media.process.raw_head_failed", "key", rawKey, "err", err)
+			return derrors.Validation("raw media file not found or inaccessible", map[string]any{"key": rawKey})
+		}
+	}
+
 	return nil
 }

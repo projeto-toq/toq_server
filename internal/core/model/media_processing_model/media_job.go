@@ -139,6 +139,10 @@ type StepFunctionPayload struct {
 	Assets            []JobAsset `json:"assets"`    // Raw input
 	HasVideos         bool       `json:"hasVideos"` // Flag for video processing
 	Traceparent       string     `json:"traceparent"`
+	ExecutionARN      string     `json:"executionArn,omitempty"`
+	StartedAt         string     `json:"startedAt,omitempty"`
+	VideoInput        string     `json:"videoInput,omitempty"`
+	VideoOutputPath   string     `json:"videoOutputPath,omitempty"`
 }
 
 // LambdaResponse wraps the output to match Step Functions expectation ($.body).

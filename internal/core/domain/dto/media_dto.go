@@ -97,6 +97,7 @@ type HandleProcessingCallbackInput struct {
 	ListingIdentityID uint64             `json:"listingIdentityId"`
 	Provider          string             `json:"provider"`
 	Status            string             `json:"status"` // "SUCCEEDED", "FAILED"
+	ExecutionARN      string             `json:"executionArn,omitempty"`
 	Results           []ProcessingResult `json:"results"`
 	AssetsZipped      int                `json:"assetsZipped,omitempty"`
 	ZipBundles        []string           `json:"zipBundles,omitempty"`
@@ -107,6 +108,7 @@ type HandleProcessingCallbackInput struct {
 	ErrorMetadata     map[string]string  `json:"errorMetadata,omitempty"`
 	FailureReason     string             `json:"failureReason,omitempty"`
 	Traceparent       string             `json:"traceparent,omitempty"`
+	StartedAt         *time.Time         `json:"startedAt,omitempty"`
 	RawPayload        string             `json:"-"`
 }
 

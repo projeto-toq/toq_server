@@ -19,13 +19,13 @@ func NewSfnAdapter(client *sfn.Client) port.WorkflowPort {
 	}
 }
 
-func (a *SfnAdapter) StartExecution(ctx context.Context, stateMachineArn string, input string) error {
-	_, err := a.client.StartExecution(ctx, &sfn.StartExecutionInput{
+func (a *SfnAdapter) StartExecution(ctx context.Context, stateMachineArn string, input string) (string, error) {
+	out, err := a.client.StartExecution(ctx, &sfn.StartExecutionInput{
 		StateMachineArn: aws.String(stateMachineArn),
 		Input:           aws.String(input),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to start execution: %w", err)
+		return "", fmt.Errorf("failed to start execution: %w", err)
 	}
-	return nil
+	return aws.ToString(out.ExecutionArn), nil
 }

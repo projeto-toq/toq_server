@@ -2026,6 +2026,8 @@ definitions:
         type: array
       provider:
         type: string
+      startedAt:
+        type: string
       status:
         type: string
       traceparent:

@@ -342,6 +342,27 @@ func (c *config) InitializeGoRoutines() {
 		logger.Warn("Validation cleaner prerequisites not met; skipping start")
 	}
 
+	// Start media processing reconciler to prevent stuck jobs
+	if c.mediaProcessingService != nil {
+		timeoutMinutes := c.env.MediaProcessing.Workflow.StuckJobTimeoutMinutes
+		if timeoutMinutes <= 0 {
+			timeoutMinutes = 30
+		}
+		reconciler := goroutines.NewMediaProcessingReconciler(
+			c.mediaProcessingService,
+			5*time.Minute,
+			time.Duration(timeoutMinutes)*time.Minute,
+		)
+		c.wg.Add(1)
+		go func(workerCtx context.Context) {
+			defer c.wg.Done()
+			reconciler.Start(workerCtx)
+		}(coreutils.ContextWithLogger(baseCtx))
+		logger.Info("Media processing reconciler started", "timeout_minutes", timeoutMinutes)
+	} else {
+		logger.Warn("Media processing service unavailable; skipping reconciler worker")
+	}
+
 }
 
 // SetActivityTrackerUserService conecta o activity tracker ao user service

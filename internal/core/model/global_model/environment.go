@@ -155,6 +155,7 @@ type Environment struct {
 		Workflow struct {
 			FinalizationStateMachineARN string `yaml:"finalization_state_machine_arn"`
 			Region                      string `yaml:"region"`
+			StuckJobTimeoutMinutes      int    `yaml:"stuck_job_timeout_minutes"`
 		} `yaml:"workflow"`
 		Queue struct {
 			URL      string `yaml:"url"`
