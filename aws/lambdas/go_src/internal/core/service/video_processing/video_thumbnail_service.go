@@ -25,9 +25,7 @@ type VideoThumbnailService struct {
 
 // NewVideoThumbnailService configures the service with sensible defaults and an injected storage adapter.
 func NewVideoThumbnailService(storage port.StoragePort, ffmpegPath string, seekSecond, width, quality int) *VideoThumbnailService {
-	if ffmpegPath == "" {
-		ffmpegPath = "/opt/ffmpeg/ffmpeg"
-	}
+	ffmpegPath = resolveFFmpegPath(ffmpegPath)
 	if seekSecond <= 0 {
 		seekSecond = 1
 	}
@@ -143,6 +141,26 @@ func (s *VideoThumbnailService) runFFmpeg(ctx context.Context, inputPath, output
 	}
 
 	return nil
+}
+
+func resolveFFmpegPath(fromEnv string) string {
+	candidates := []string{
+		strings.TrimSpace(fromEnv),
+		"/opt/bin/ffmpeg",
+		"/opt/ffmpeg/ffmpeg",
+	}
+
+	for _, cand := range candidates {
+		if cand == "" {
+			continue
+		}
+		if info, err := os.Stat(cand); err == nil && !info.IsDir() {
+			return cand
+		}
+	}
+
+	// fallback to original default to keep previous behavior
+	return "/opt/ffmpeg/ffmpeg"
 }
 
 func (s *VideoThumbnailService) generateKey(originalKey string) (string, error) {

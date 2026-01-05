@@ -9,7 +9,9 @@ ROOT_DIR=$(pwd)
 BIN_DIR="$ROOT_DIR/aws/lambdas/bin"
 POLICY_FILE="$ROOT_DIR/aws/step_functions/updated_policy.json"
 DEFAULT_LAMBDA_ROLE_ARN="arn:aws:iam::058264253741:role/toq-media-processing-backend-staging"
+FFMPEG_LAYER_NAME=${FFMPEG_LAYER_NAME:-"toq-ffmpeg-layer-staging"}
 FFMPEG_LAYER_ARN=${FFMPEG_LAYER_ARN:-""}
+FFMPEG_LAYER_ZIP="$BIN_DIR/ffmpeg-layer.zip"
 
 # Roles/policies to update (backend + step functions)
 IAM_ROLE_NAME=${IAM_ROLE_NAME:-"toq-media-processing-backend-staging"}
@@ -26,8 +28,26 @@ if [ ${#zip_files[@]} -eq 0 ]; then
 	exit 1
 fi
 
+# Publicar layer de FFmpeg se o zip existir
+if [ -f "$FFMPEG_LAYER_ZIP" ]; then
+	echo "Publicando layer FFmpeg a partir de $FFMPEG_LAYER_ZIP..."
+	FFMPEG_LAYER_ARN=$(aws lambda publish-layer-version \
+		--layer-name "$FFMPEG_LAYER_NAME" \
+		--zip-file "fileb://$FFMPEG_LAYER_ZIP" \
+		--compatible-runtimes provided.al2 \
+		--query 'LayerVersionArn' --output text)
+	echo "✅ Layer publicada: $FFMPEG_LAYER_ARN"
+else
+	echo "⚠️  Layer FFmpeg não encontrada em $FFMPEG_LAYER_ZIP. Prosseguindo sem atualizar layer."
+fi
+
 for zip_file in "${zip_files[@]}"; do
 	lambda=$(basename "$zip_file" .zip)
+	# Ignore layer artifact packaged as zip; handled separately above
+	if [ "$lambda" = "ffmpeg-layer" ]; then
+		echo "Skipping function deploy for ffmpeg-layer.zip (layer already published)."
+		continue
+	fi
 	function_name="listing-media-${lambda}-staging"
 	role_arn="${LAMBDA_ROLE_ARN:-$DEFAULT_LAMBDA_ROLE_ARN}"
 
@@ -44,19 +64,27 @@ for zip_file in "${zip_files[@]}"; do
 			--timeout 300 \
 			--memory-size 1024 \
 			--zip-file "fileb://$zip_file" \
-			${FFMPEG_LAYER_ARN:+--layers "$FFMPEG_LAYER_ARN"} >/dev/null
+			${FFMPEG_LAYER_ARN:+--layers "$FFMPEG_LAYER_ARN"} \
+			$( [ "$lambda" = "video_thumbnails" ] && echo --environment "Variables={FFMPEG_PATH=/opt/bin/ffmpeg}" ) >/dev/null
 	else
-	aws lambda update-function-code \
-		--function-name "$function_name" \
-		--zip-file "fileb://$zip_file" > /dev/null
+		aws lambda update-function-code \
+			--function-name "$function_name" \
+			--zip-file "fileb://$zip_file" > /dev/null
 
-		# Update layers/env only for video thumbnails (to avoid conflicts on other lambdas)
-		if [ "$lambda" = "video_thumbnails" ] && [ -n "$FFMPEG_LAYER_ARN" ]; then
-			aws lambda update-function-configuration \
-				--function-name "$function_name" \
-				--layers "$FFMPEG_LAYER_ARN" \
-				--environment "Variables={FFMPEG_PATH=/opt/ffmpeg/ffmpeg}" >/dev/null
-		fi
+			# Update config for video thumbnails to ensure ffmpeg path is set and layer attached if provided
+			if [ "$lambda" = "video_thumbnails" ]; then
+				if [ -n "$FFMPEG_LAYER_ARN" ]; then
+					aws lambda update-function-configuration \
+						--function-name "$function_name" \
+						--layers "$FFMPEG_LAYER_ARN" \
+						--environment "Variables={FFMPEG_PATH=/opt/bin/ffmpeg}" >/dev/null
+				else
+					echo "⚠️  FFMPEG_LAYER_ARN não definido; a função permanecerá sem layer."
+					aws lambda update-function-configuration \
+						--function-name "$function_name" \
+						--environment "Variables={FFMPEG_PATH=/opt/bin/ffmpeg}" >/dev/null
+				fi
+			fi
 	fi
 done
 

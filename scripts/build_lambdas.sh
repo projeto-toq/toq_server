@@ -5,10 +5,15 @@ set -e
 ROOT_DIR=$(pwd)
 SRC_DIR="$ROOT_DIR/aws/lambdas/go_src"
 BIN_DIR="$ROOT_DIR/aws/lambdas/bin"
+FFMPEG_SRC_BIN="$ROOT_DIR/aws/lambdas/ffmpeg/bin/ffmpeg"
+FFMPEG_LAYER_ZIP="$BIN_DIR/ffmpeg-layer.zip"
 
 # Limpar e recriar diretório de binários
 rm -rf "$BIN_DIR"
 mkdir -p "$BIN_DIR"
+
+# Preparar diretório da layer
+mkdir -p "$(dirname "$FFMPEG_SRC_BIN")"
 
 # Descobrir dinamicamente todas as lambdas dentro de aws/lambdas/go_src/cmd
 shopt -s nullglob
@@ -48,3 +53,18 @@ for lambda in "${LAMBDAS[@]}"; do
 done
 
 echo "🎉 All lambdas built successfully!"
+
+# Build da layer de FFmpeg (apenas se o binário existir)
+if [ -f "$FFMPEG_SRC_BIN" ]; then
+    echo "📦 Empacotando layer FFmpeg..."
+    TMP_LAYER_DIR=$(mktemp -d)
+    mkdir -p "$TMP_LAYER_DIR/opt/bin"
+    cp "$FFMPEG_SRC_BIN" "$TMP_LAYER_DIR/opt/bin/ffmpeg"
+    chmod +x "$TMP_LAYER_DIR/opt/bin/ffmpeg"
+    (cd "$TMP_LAYER_DIR" && zip -r "$FFMPEG_LAYER_ZIP" opt >/dev/null)
+    rm -rf "$TMP_LAYER_DIR"
+    echo "✅ Layer FFmpeg criada em $FFMPEG_LAYER_ZIP"
+else
+    echo "⚠️  Binário FFmpeg não encontrado em $FFMPEG_SRC_BIN — layer não será gerada."
+    echo "    Adicione o binário estático em aws/lambdas/ffmpeg/bin/ffmpeg para builds reprodutíveis."
+fi
