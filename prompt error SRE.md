@@ -7,16 +7,17 @@
 ## 🎯 Problema / Solicitação
 
 Atualmente o Grafana é usado para apresentar Dashboards de observabilidade do TOQ Server.
-Existem 2 Dashboards que não estão funcionando corretamente:
-1. **Dashboard TOQ Server - Logs:** Apresenta os dados do Log estruturado, mas não possue uma forma de redirecionar diretamente ao Dashboard de Traces, baseado em request_id ou trace_id.
-2. **Dashboard TOQ Server - Traces:** Apresenta os dados do traces, mas não permite a correlação direta com os logs, baseado em request_id ou trace_id.
+Existem 2 Dashboards principais:
+1. **Dashboard TOQ Server - Logs:** Apresenta os dados do Log estruturado
+2. **Dashboard TOQ Server - Traces:** Apresenta os dados do traces
 Todos os componentes de observabilidade estão em docker `/codigos/go_code/toq_server/docker-compose.yml`.
+No Dashboard TOQ Server - Logs: Na entrada de log com request_id 2d4edaf92bdca6337c962f50ce45cd67, ao clicar no trace-id d700b905abdd75e7202d5588ca3c21e3 (Ver Dashboard de Traces) o dashboard é aberto e fica eternamente buscando sem retornar nada.
+Analise todas as configurações, leiam manuais dos produtos relacionados, leia logs para determinar a causa raiz e sem fazer suposições, apresnete um plano para resolver definitivamente
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual, as configuraçoes, os dashboards atuais e identifique a causa raiz do problema
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual `docs/toq_server_go_guide.md` (observabilidade, erros, transações, etc).
-3. Garanta que existe uma funcionalide de nas versões em uso dos utilitários de observabilidade que permitam a solução proposta (ex: correlação logs/traces via request_id/trace_id)
-4. Ao final do plano deve haver uma atualização de `/codigos/go_code/toq_server/docs/observability/sre_guide.md`, readme.md e guia do projeto para refletir as mudanças propostas.
+
 ---
 
 **TODAS as regras de arquitetura, padrões de código, observabilidade e documentação estão em:**

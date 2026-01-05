@@ -37,102 +37,12 @@
         {
             "datasource": {
                 "type": "tempo",
-                "uid": "tempo"
+                "uid": "tempo-http"
             },
             "description": "Lista de traces do serviço. Clique no Trace ID para ver detalhes completos ou acessar logs relacionados.",
             "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "custom": {
-                        "align": "auto",
-                        "cellOptions": {
-                            "type": "auto"
-                        },
-                        "inspect": false,
-                        "filterable": true
-                    },
-                    "mappings": [],
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "green",
-                                "value": null
-                            }
-                        ]
-                    }
-                },
-                "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "Trace ID"
-                        },
-                        "properties": [
-                            {
-                                "id": "links",
-                                "value": [
-                                    {
-                                        "title": "Ver Detalhes do Trace",
-                                        "url": "/explore?left=%7B%22datasource%22%3A%22tempo%22%2C%22queries%22%3A%5B%7B%22query%22%3A%22${__value.raw}%22%2C%22queryType%22%3A%22traceql%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22${__from}%22%2C%22to%22%3A%22${__to}%22%7D%7D",
-                                        "targetBlank": true
-                                    },
-                                    {
-                                        "title": "Ver Logs Relacionados",
-                                        "url": "/d/toq-logs/toq-server-logs?orgId=1&var-trace_id=${__value.raw}&var-request_id=${request_id}&from=${__from}&to=${__to}",
-                                        "targetBlank": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "custom.cellOptions",
-                                "value": {
-                                    "type": "color-text"
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "Duração (ms)"
-                        },
-                        "properties": [
-                            {
-                                "id": "custom.cellOptions",
-                                "value": {
-                                    "type": "color-background"
-                                }
-                            },
-                            {
-                                "id": "thresholds",
-                                "value": {
-                                    "mode": "absolute",
-                                    "steps": [
-                                        {
-                                            "color": "green",
-                                            "value": null
-                                        },
-                                        {
-                                            "color": "yellow",
-                                            "value": 100
-                                        },
-                                        {
-                                            "color": "orange",
-                                            "value": 500
-                                        },
-                                        {
-                                            "color": "red",
-                                            "value": 1000
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                ]
+                "defaults": {},
+                "overrides": []
             },
             "gridPos": {
                 "h": 16,
@@ -141,25 +51,7 @@
                 "y": 0
             },
             "id": 1,
-            "options": {
-                "cellHeight": "sm",
-                "footer": {
-                    "countRows": true,
-                    "enablePagination": true,
-                    "fields": "",
-                    "reducer": [
-                        "sum"
-                    ],
-                    "show": true
-                },
-                "showHeader": true,
-                "sortBy": [
-                    {
-                        "desc": true,
-                        "displayName": "Início"
-                    }
-                ]
-            },
+            "options": {},
             "pluginVersion": "10.0.0",
             "targets": [
                 {
@@ -167,37 +59,13 @@
                         "type": "tempo",
                         "uid": "tempo"
                     },
-                    "limit": 100,
-                    "query": "{ .service.name = \"$service\" && span.request_id =~ \"$request_id\" }",
-                    "queryType": "traceql",
-                    "refId": "A",
-                    "tableType": "traces"
+                    "query": "$trace_id",
+                    "queryType": "traceId",
+                    "refId": "A"
                 }
             ],
             "title": "Traces do Serviço",
-            "transformations": [
-                {
-                    "id": "organize",
-                    "options": {
-                        "excludeByName": {},
-                        "indexByName": {
-                            "traceID": 0,
-                            "rootServiceName": 1,
-                            "rootTraceName": 2,
-                            "startTimeUnixNano": 3,
-                            "durationMs": 4
-                        },
-                        "renameByName": {
-                            "durationMs": "Duração (ms)",
-                            "rootServiceName": "Serviço",
-                            "rootTraceName": "Operação",
-                            "startTimeUnixNano": "Início",
-                            "traceID": "Trace ID"
-                        }
-                    }
-                }
-            ],
-            "type": "table"
+            "type": "traces"
         },
         {
             "datasource": {
@@ -831,9 +699,9 @@
             },
             {
                 "current": {
-                    "selected": true,
-                    "text": ".*",
-                    "value": ".*"
+                    "selected": false,
+                    "text": "",
+                    "value": ""
                 },
                 "hide": 0,
                 "label": "Trace ID",
@@ -841,8 +709,8 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": ".*",
-                        "value": ".*"
+                        "text": "",
+                        "value": ""
                     }
                 ],
                 "query": "",
@@ -985,6 +853,6 @@
     "timezone": "",
     "title": "TOQ Server - Traces",
     "uid": "toq-traces",
-    "version": 1,
+    "version": 2,
     "weekStart": ""
 }

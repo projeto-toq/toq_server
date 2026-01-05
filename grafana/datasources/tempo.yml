@@ -7,6 +7,47 @@ datasources:
     uid: tempo
     url: http://tempo:3200
     jsonData:
+      grpcServerUrl: tempo:9095
+      useGRPC: true
+      httpMethod: GET
+      tracesToLogs:
+        datasourceUid: loki
+        tags: ['service.name', 'request_id']
+        mappedTags:
+          - key: service.name
+            value: service_name
+        filterByTraceID: true
+        filterBySpanID: true
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+      tracesToMetrics:
+        datasourceUid: prometheus
+        tags:
+          - key: service.name
+            value: service
+        queries:
+          - name: 'Request Rate'
+            query: 'sum(rate(http_requests_total{service="$${service.name}"}[5m]))'
+          - name: 'Error Rate'
+            query: 'sum(rate(http_requests_total{service="$${service.name}", status=~"5.."}[5m]))'
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: loki
+    editable: false
+
+  - name: Tempo HTTP
+    type: tempo
+    access: proxy
+    uid: tempo-http
+    url: http://tempo:3200
+    jsonData:
+      grpcServerUrl: tempo:9095
+      useGRPC: true
       httpMethod: GET
       tracesToLogs:
         datasourceUid: loki

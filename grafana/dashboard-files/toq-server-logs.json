@@ -19,20 +19,7 @@
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
     "id": null,
-    "links": [
-        {
-            "asDropdown": false,
-            "icon": "external link",
-            "includeVars": true,
-            "keepTime": true,
-            "tags": [],
-            "targetBlank": false,
-            "title": "Ver Dashboard de Traces",
-            "tooltip": "Abrir dashboard de traces correlacionados",
-            "type": "link",
-            "url": "/d/toq-traces/toq-server-traces?orgId=1"
-        }
-    ],
+    "links": [],
     "panels": [
         {
             "datasource": {

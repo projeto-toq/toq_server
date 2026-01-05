@@ -1,6 +1,15 @@
 server:
   http_listen_port: 3200
+  grpc_listen_port: 9095
   log_level: info
+
+query_frontend:
+  max_outstanding_per_tenant: 200
+
+querier:
+  frontend_worker:
+    frontend_address: 127.0.0.1:9095
+  max_concurrent_queries: 8
 
 distributor:
   receivers:
