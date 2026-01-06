@@ -11,6 +11,8 @@ import (
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
 
+// GetCEP normalizes the input zip code, queries the CEP provider and maps provider
+// errors to HTTP-safe validation responses.
 func (gs *globalService) GetCEP(ctx context.Context, cep string) (cepmodel.CEPInterface, error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)

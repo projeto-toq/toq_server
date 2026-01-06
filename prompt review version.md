@@ -6,24 +6,11 @@
 
 ## 🎯 Problema / Solicitação
 
-Com a criação do modelo property_coverage_model, service property_coverage_service, adapter mysql property_coverage_repository e seu port, os endpoints
-- /admin/complexes** LIST/GET/POST/PUT/DELETE
-- /complex/sizes GET 
-estão utilizando os dados do antigo modelo complex e seus services/repositórios.
-
-Assim é necessário criar endpoints CRUD (LIST/GET/POST/PUT/DELETE) para gerir as tabelas:
-- horizontal_complexes e reboque horizontal_zip_codes
-- vertical_complexes e vertical_complex_sizes/vertical_complex_towers
-- no_complex_zipcodes 
-Estes endpoints estarão no path /admin/complexes/** e devem utilizar o novo modelo property_coverage_model, utilizando os novos services/repositórios criados.
-Estes endpoints substituirão os endpoints atuais de /admin/complexes** LIST/GET/POST/PUT/DELETE que utilizam o modelo complex.
-O endpoint /complex/sizes GET também deve ser alterado para utilizar a lógica do novo modelo property_coverage_model e serviços/repositórios, mas permance o path atual.
-
-O modelo complex handler/repositorid/adpater mysql e services está deprecated e deve ser removido do código, assim como todo o código morto que restar.
+O `package globalservice` provavelmente não está atendendo o guia do projeto `docs/toq_server_go_guide.md` em especial a seção 5 sobre entradas no log e seção 8 sobre documentação.
 
 ## Tarefas, após ler o guia do projeto (docs/toq_server_go_guide.md):
 1. Analise o código relevante para a solicitação, identificando todos os arquivos envolvidos (adapters, services, handlers, entities, converters).
-    1.1. Identifique desvios das regras de negócio e do guia do projeto (cite seções específicas).
+    1.1. Identifique desvios das regras do guia do projeto (cite seções específicas).
     1.2. Explique o impacto de cada desvio identificado.
 2. Proponha um plano detalhado para alteração, incluindo code skeletons para cada arquivo que precisa ser alterado ou criado.
     2.1. Caso a alteração seja apenas sobre a documentação, não é necessário apresentar o code skeleton.

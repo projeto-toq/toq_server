@@ -10,53 +10,53 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// NotificationType define os tipos de notificação suportados
+// NotificationType enumerates the supported notification channels.
 type NotificationType string
 
 const (
-	// NotificationTypeEmail representa notificação por e-mail
+	// NotificationTypeEmail sends e-mails via the configured adapter.
 	NotificationTypeEmail NotificationType = "email"
-	// NotificationTypeSMS representa notificação por SMS
+	// NotificationTypeSMS delivers SMS messages.
 	NotificationTypeSMS NotificationType = "sms"
-	// NotificationTypeFCM representa notificação push via Firebase Cloud Messaging
+	// NotificationTypeFCM sends push notifications via Firebase Cloud Messaging.
 	NotificationTypeFCM NotificationType = "fcm"
 )
 
-// NotificationRequest representa uma requisição de notificação
+// NotificationRequest represents the payload handled by the unified notification service.
 type NotificationRequest struct {
-	// Type define o tipo de notificação (email, sms, fcm)
+	// Type defines which adapter must be used (email, sms, fcm).
 	Type NotificationType `json:"type"`
 
-	// From é opcional e será usado na notificação de email
+	// From optionally overrides the sender when supported by the adapter (email only for now).
 	From string `json:"from,omitempty"`
 
-	// To é obrigatório para email e sms. Contém o número de telefone para SMS ou endereço de email para email
+	// To is required for email and SMS notifications (email address or E.164 phone).
 	To string `json:"to"`
 
-	// Subject é obrigatório para e-mail. Contém o subject do email ou title do FCM
+	// Subject is mandatory for email and FCM (used as email subject or push title).
 	Subject string `json:"subject"`
 
-	// Body é obrigatório para todos. Contém o corpo da mensagem
+	// Body carries the message content for every channel.
 	Body string `json:"body"`
 
-	// ImageURL é opcional e conterá imageURL do FCM
+	// ImageURL optionally enriches push notifications with images/icons.
 	ImageURL string `json:"imageUrl,omitempty"`
 
-	// Token é necessário para FCM, conterá o deviceToken
+	// Token is mandatory for FCM notifications (device token from clients).
 	Token string `json:"token,omitempty"`
 
-	// Data contém o payload adicional enviado para clientes FCM
+	// Data delivers additional key/value metadata to FCM clients.
 	Data map[string]string `json:"data,omitempty"`
 }
 
-// UnifiedNotificationService interface para o novo sistema de notificação unificado
+// UnifiedNotificationService centralizes all notification flows for the application.
 type UnifiedNotificationService interface {
-	// SendNotification envia uma notificação de forma ASSÍNCRONA (recomendado)
-	// Retorna imediatamente sem aguardar o envio
+	// SendNotification triggers an asynchronous delivery preserving trace/log context.
+	// It always returns immediately and should be preferred for user-facing flows.
 	SendNotification(ctx context.Context, request NotificationRequest) error
 
-	// SendNotificationSync envia uma notificação de forma SÍNCRONA (usar apenas quando necessário)
-	// Aguarda o envio completo antes de retornar
+	// SendNotificationSync blocks until the underlying adapter finishes the delivery.
+	// Use only when the caller must guarantee the delivery result.
 	SendNotificationSync(ctx context.Context, request NotificationRequest) error
 }
 
@@ -65,18 +65,15 @@ type unifiedNotificationService struct {
 	globalService *globalService
 }
 
-// NewUnifiedNotificationService cria uma nova instância do serviço de notificação unificado
+// NewUnifiedNotificationService creates a new orchestrator around the provided global service.
 func NewUnifiedNotificationService(gs *globalService) UnifiedNotificationService {
 	return &unifiedNotificationService{
 		globalService: gs,
 	}
 }
 
-// SendNotification envia uma notificação de forma assíncrona baseada no tipo especificado na requisição
-// Esta função é o ponto central do novo sistema de notificação, direcionando
-// cada requisição para o adapter apropriado baseado no tipo de notificação.
-// IMPORTANTE: Esta função é assíncrona por padrão para garantir que todas as
-// notificações não bloqueiem a resposta ao usuário.
+// SendNotification dispatches the request asynchronously propagating trace/log metadata
+// to the goroutine responsible for the real delivery.
 func (ns *unifiedNotificationService) SendNotification(ctx context.Context, request NotificationRequest) error {
 	ctx = coreutils.ContextWithLogger(ctx)
 
@@ -113,14 +110,13 @@ func (ns *unifiedNotificationService) SendNotification(ctx context.Context, requ
 	return nil
 }
 
-// SendNotificationSync envia uma notificação de forma SÍNCRONA
-// Use apenas quando realmente precisar aguardar o resultado do envio
+// SendNotificationSync executes the delivery inline. Prefer SendNotification unless
+// the caller must wait for third-party confirmation.
 func (ns *unifiedNotificationService) SendNotificationSync(ctx context.Context, request NotificationRequest) error {
 	return ns.sendNotificationSync(ctx, request)
 }
 
-// sendNotificationSync executa o envio síncrono da notificação
-// Este método é interno e contém a lógica real de envio
+// sendNotificationSync contains the synchronous delivery pipeline (tracing + validation + adapter dispatch).
 func (ns *unifiedNotificationService) sendNotificationSync(ctx context.Context, request NotificationRequest) error {
 	ctx, spanEnd, err := coreutils.GenerateTracer(ctx)
 	if err != nil {
@@ -133,19 +129,16 @@ func (ns *unifiedNotificationService) sendNotificationSync(ctx context.Context, 
 	ctx = coreutils.ContextWithLogger(ctx)
 	logger := coreutils.LoggerFromContext(ctx)
 
-	// Log da requisição de notificação
 	logger.Info("notification.processing",
 		"type", request.Type,
 		"to", request.To,
 		"subject", request.Subject)
 
-	// Validar a requisição antes de processar
 	if err := ns.validateRequest(request); err != nil {
-		logger.Error("notification.request_invalid", "err", err)
-		return coreutils.BadRequest("invalid notification request")
+		logger.Warn("notification.request_invalid", "err", err, "type", request.Type)
+		return coreutils.BadRequest(err.Error())
 	}
 
-	// Direcionar para o método apropriado baseado no tipo
 	switch request.Type {
 	case NotificationTypeEmail:
 		return ns.sendEmail(ctx, request)
@@ -154,70 +147,59 @@ func (ns *unifiedNotificationService) sendNotificationSync(ctx context.Context, 
 	case NotificationTypeFCM:
 		return ns.sendFCM(ctx, request)
 	default:
-		logger.Error("notification.type_invalid", "type", request.Type)
+		logger.Warn("notification.type_invalid", "type", request.Type)
 		return coreutils.BadRequest("unsupported notification type")
 	}
 }
 
-// validateRequest valida os campos obrigatórios da requisição baseado no tipo
-// Cada tipo de notificação tem requisitos específicos que são verificados aqui.
+// validateRequest enforces the required fields per notification type before dispatching.
 func (ns *unifiedNotificationService) validateRequest(request NotificationRequest) error {
-	// Body é obrigatório para todos os tipos
 	if request.Body == "" {
-		return fmt.Errorf("campo 'body' é obrigatório")
+		return fmt.Errorf("body is required for every notification type")
 	}
 
 	switch request.Type {
 	case NotificationTypeEmail:
-		// Para email: to e subject são obrigatórios
 		if request.To == "" {
-			return fmt.Errorf("campo 'to' é obrigatório para notificações por email")
+			return fmt.Errorf("email notifications require the recipient address")
 		}
 		if request.Subject == "" {
-			return fmt.Errorf("campo 'subject' é obrigatório para notificações por email")
+			return fmt.Errorf("email notifications require a subject")
 		}
 
 	case NotificationTypeSMS:
-		// Para SMS: to é obrigatório (número de telefone)
 		if request.To == "" {
-			return fmt.Errorf("campo 'to' é obrigatório para notificações por SMS")
+			return fmt.Errorf("sms notifications require the destination phone number")
 		}
 
 	case NotificationTypeFCM:
-		// Para FCM: token e subject são obrigatórios
 		if request.Token == "" {
-			return fmt.Errorf("campo 'token' é obrigatório para notificações FCM")
+			return fmt.Errorf("fcm notifications require the device token")
 		}
 		if request.Subject == "" {
-			return fmt.Errorf("campo 'subject' é obrigatório para notificações FCM (usado como title)")
+			return fmt.Errorf("fcm notifications require a subject/title")
 		}
 
 	default:
-		return fmt.Errorf("tipo de notificação não suportado: %s", request.Type)
+		return fmt.Errorf("unsupported notification type %s", request.Type)
 	}
 
 	return nil
 }
 
-// sendEmail processa notificação por email usando o email adapter
-// Converte a requisição para o formato esperado pelo adapter de email.
+// sendEmail adapts the request to the email adapter contract and propagates infra failures.
 func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request NotificationRequest) error {
 	ctx = coreutils.ContextWithLogger(ctx)
 	logger := coreutils.LoggerFromContext(ctx)
 	logger.Debug("notification.email_sending", "to", request.To, "subject", request.Subject)
 
-	// Construir a notificação no formato esperado pelo adapter
 	notification := globalmodel.Notification{
 		Title: request.Subject,
 		Body:  request.Body,
 		To:    request.To,
-		Icon:  "", // Email não usa ícone
+		Icon:  "", // Emails do not render icons
 	}
 
-	// Se From foi especificado, adicionar à notificação (implementação futura)
-	// Note: From field support to be implemented in email adapter
-
-	// Enviar através do adapter de email
 	err := ns.globalService.email.SendEmail(ctx, notification)
 	if err != nil {
 		coreutils.SetSpanError(ctx, err)
@@ -229,22 +211,19 @@ func (ns *unifiedNotificationService) sendEmail(ctx context.Context, request Not
 	return nil
 }
 
-// sendSMS processa notificação por SMS usando o SMS adapter
-// Converte a requisição para o formato esperado pelo adapter de SMS.
+// sendSMS adapts the request to the SMS adapter contract.
 func (ns *unifiedNotificationService) sendSMS(ctx context.Context, request NotificationRequest) error {
 	ctx = coreutils.ContextWithLogger(ctx)
 	logger := coreutils.LoggerFromContext(ctx)
 	logger.Debug("notification.sms_sending", "to", request.To)
 
-	// Construir a notificação no formato esperado pelo adapter
 	notification := globalmodel.Notification{
-		Title: request.Subject, // Subject opcional para SMS, usado como título se fornecido
+		Title: request.Subject, // Subject optional but forwarded when provided
 		Body:  request.Body,
 		To:    request.To,
-		Icon:  "", // SMS não usa ícone
+		Icon:  "",
 	}
 
-	// Enviar através do adapter de SMS
 	err := ns.globalService.sms.SendSms(notification)
 	if err != nil {
 		coreutils.SetSpanError(ctx, err)
@@ -256,24 +235,21 @@ func (ns *unifiedNotificationService) sendSMS(ctx context.Context, request Notif
 	return nil
 }
 
-// sendFCM processa notificação push usando o FCM adapter
-// Converte a requisição para o formato esperado pelo adapter FCM.
+// sendFCM adapts the request to the FCM adapter contract.
 func (ns *unifiedNotificationService) sendFCM(ctx context.Context, request NotificationRequest) error {
 	ctx = coreutils.ContextWithLogger(ctx)
 	logger := coreutils.LoggerFromContext(ctx)
 	logger.Debug("notification.fcm_sending", "token", request.Token, "title", request.Subject)
 
-	// Construir a notificação no formato esperado pelo adapter
 	notification := globalmodel.Notification{
-		Title:       request.Subject, // Subject é usado como title do push
+		Title:       request.Subject,
 		Body:        request.Body,
-		Icon:        request.ImageURL, // ImageURL é usado como ícone
+		Icon:        request.ImageURL,
 		DeviceToken: request.Token,
-		To:          "", // FCM não usa To, usa DeviceToken
+		To:          "",
 		Data:        cloneStringMap(request.Data),
 	}
 
-	// Enviar através do adapter FCM
 	err := ns.globalService.firebaseCloudMessage.SendSingleMessage(ctx, notification)
 	if err != nil {
 		coreutils.SetSpanError(ctx, err)
@@ -285,6 +261,7 @@ func (ns *unifiedNotificationService) sendFCM(ctx context.Context, request Notif
 	return nil
 }
 
+// cloneStringMap copies the provided map so downstream adapters can mutate safely.
 func cloneStringMap(input map[string]string) map[string]string {
 	if len(input) == 0 {
 		return nil

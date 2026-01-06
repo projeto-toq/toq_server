@@ -8,8 +8,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// GetUserIDFromContext extrai o ID do usuário do contexto.
-// O ID é injetado no contexto pelo interceptor de autenticação.
+// GetUserIDFromContext extracts the authenticated user ID from the context.
+// The authentication middleware injects the token payload using globalmodel.TokenKey.
 func (gs *globalService) GetUserIDFromContext(ctx context.Context) (int64, error) {
 	userInfos, ok := ctx.Value(globalmodel.TokenKey).(usermodel.UserInfos)
 	if !ok || userInfos.ID == 0 {

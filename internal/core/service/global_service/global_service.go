@@ -15,9 +15,11 @@ import (
 	globalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
-	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+// globalService implements GlobalServiceInterface and orchestrates cross-domain helpers
+// such as transactions, configuration lookups, notifications, and shared repositories.
 type globalService struct {
 	globalRepo           globalrepository.GlobalRepoPortInterface
 	userRepo             userrepository.UserRepoPortInterface
@@ -25,11 +27,12 @@ type globalService struct {
 	firebaseCloudMessage fcmport.FCMPortInterface
 	email                emailport.EmailPortInterface
 	sms                  smsport.SMSPortInterface
-	googleCludStorage    storageport.CloudStoragePortInterface
 	eventBus             events.Bus
 	metrics              metricsport.MetricsPortInterface
 }
 
+// NewGlobalService wires all global dependencies shared by multiple domains.
+// Metrics port is optional and may be nil on minimalist setups.
 func NewGlobalService(
 	globalRepo globalrepository.GlobalRepoPortInterface,
 	userRepo userrepository.UserRepoPortInterface,
@@ -37,7 +40,6 @@ func NewGlobalService(
 	firebaseCloudMessage fcmport.FCMPortInterface,
 	email emailport.EmailPortInterface,
 	sms smsport.SMSPortInterface,
-	googleCloudStorage storageport.CloudStoragePortInterface,
 	// optional metrics (can be nil in tests or minimal setups)
 	metrics metricsport.MetricsPortInterface,
 ) GlobalServiceInterface {
@@ -48,18 +50,19 @@ func NewGlobalService(
 		firebaseCloudMessage: firebaseCloudMessage,
 		email:                email,
 		sms:                  sms,
-		googleCludStorage:    googleCloudStorage,
 		eventBus:             events.NewInMemoryBus(),
 		metrics:              metrics,
 	}
 }
 
+// GlobalServiceInterface centralizes helpers required by multiple services (transactions,
+// configuration cache, notification fan-out, session events, etc.).
 type GlobalServiceInterface interface {
 	CreateAudit(ctx context.Context, tx *sql.Tx, table globalmodel.TableName, action string, executedBY ...int64) (err error)
 
 	GetConfiguration(ctx context.Context) (configuration map[string]string, err error)
 
-	// Novo sistema de notificação unificado
+	// Unified notification service accessor
 	GetUnifiedNotificationService() UnifiedNotificationService
 
 	// Event bus accessor (for publishing session events)
@@ -91,9 +94,29 @@ func (gs *globalService) GetMetrics() metricsport.MetricsPortInterface {
 }
 
 // ListDeviceTokensByUserIDIfOptedIn returns all push tokens for a user when promotional opt-in is active.
+// It enriches context with tracing/logging metadata before reaching the repository layer.
 func (gs *globalService) ListDeviceTokensByUserIDIfOptedIn(ctx context.Context, userID int64) ([]string, error) {
 	if gs.userRepo == nil {
 		return nil, fmt.Errorf("user repository not configured")
 	}
-	return gs.userRepo.ListDeviceTokenStringsByUserIDIfOptedIn(ctx, nil, userID)
+
+	ctx, spanEnd, tracerErr := utils.GenerateTracer(ctx)
+	if tracerErr != nil {
+		ctx = utils.ContextWithLogger(ctx)
+		utils.LoggerFromContext(ctx).Error("global.list_device_tokens.tracer_error", "err", tracerErr)
+		return nil, utils.InternalError("Failed to initialize device token tracing")
+	}
+	defer spanEnd()
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	tokens, err := gs.userRepo.ListDeviceTokenStringsByUserIDIfOptedIn(ctx, nil, userID)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("global.list_device_tokens.repo_error", "err", err, "user_id", userID)
+		return nil, utils.InternalError("Failed to list user device tokens")
+	}
+
+	return tokens, nil
 }

@@ -172,7 +172,6 @@ func (c *config) InitGlobalService() {
 		c.firebaseCloudMessaging,
 		c.email,
 		c.sms,
-		c.cloudStorage,
 		metrics,
 	)
 

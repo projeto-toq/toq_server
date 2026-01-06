@@ -1,7 +1,7 @@
 package globalservice
 
-// GetUnifiedNotificationService retorna uma instância do serviço de notificação unificado
-// Este método permite acesso ao novo sistema de notificação através da interface global.
+// GetUnifiedNotificationService exposes the unified notification orchestrator so other
+// services can dispatch notifications through a single entry point.
 func (gs *globalService) GetUnifiedNotificationService() UnifiedNotificationService {
 	return NewUnifiedNotificationService(gs)
 }

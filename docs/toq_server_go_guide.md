@@ -249,6 +249,7 @@ Transações: use o provedor padronizado (global_services/transactions). Service
   - `slog.Info`: eventos esperados de domínio (mudança de status, criação de recurso).
   - `slog.Warn`: anomalias/limites, condições não fatais (ex.: 429/423).
   - `slog.Error`: exclusivamente falhas de infraestrutura (DB, cache, providers externos, transações).
+    - **Diretiva**: escreva o `slog.Error` exatamente no ponto em que a falha ocorre (no adapter/service responsável) para evitar “eco” em camadas superiores e prevenir poluição do log.
   - Sempre derive o logger via `utils.LoggerFromContext(ctx)` para garantir `request_id`/`trace_id` automáticos; caso precise reaproveitar o logger, utilize `utils.ContextWithLogger(ctx)` antes de repassar para outras funções.
   - Em Repositórios, evite logs verbosos; sucesso no máximo `DEBUG` quando realmente necessário.
 - Erros e HTTP:
@@ -1972,6 +1973,7 @@ Checklist rápido de refatoração:
 - [ ] Erros de domínio são propagados sem `slog.Error`.
 - [ ] Logs usam campos em snake_case e mensagens curtas.
 - [ ] Dashboards provisionados preservam correlação: Logs → Traces via `trace_id`/`request_id`; Traces → Logs via datalink, sem busca manual.
+- [ ] Filtros Grafana usam `label=~"$var"` com `allValue=".*"`; não concatenar `|.*`, pois isso anula a filtragem de severidade/request_id.
 
 ## 16. Exemplos rápidos
 
