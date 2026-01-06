@@ -128,3 +128,11 @@ id;name;action;description;is_active
 127;"HTTP Realtor Get Visits";"GET:/api/v2/visits/realtor";"Permite ao Realtor listar suas visitas agendadas";1
 128;"HTTP Owner/Realtor Update Visit Status";"POST:/api/v2/visits/status";"Permite ao Owner/Realtor atualizar o status de uma visita";1
 129;"HTTP Owner/Realtor Get Visit Detail";"POST:/api/v2/visits/detail";"Permite ao Owner/Realtor consultar detalhes de uma visita agendada";1
+130;"HTTP Realtor Edit Proposal";"PUT:/api/v2/proposals";"Permite ao Realtor editar uma proposta para um listing";1
+131;"HTTP Realtor Create Proposal";"POST:/api/v2/proposals";"Permite ao Realtor criar e submeter uma proposta para um listing";1
+132;"HTTP Owner Accept Proposal";"POST:/api/v2/proposals/accept";"Permite ao Owner aceitar uma proposta para um listing";1
+133;"HTTP Realtor Cancel Proposal";"POST:/api/v2/proposals/cancel";"Permite ao Realtor cancelar uma proposta para um listing";1
+134;"HTTP Owner/Realtor Detail Proposal";"POST:/api/v2/proposals/detail";"Permite ao Owner/Realtor detalhar uma proposta de um listing";1
+135;"HTTP Realtor List Proposals";"GET:/api/v2/proposals/realtor";"Permite ao Realtor listar suas propostas com filtros e paginação";1
+136;"HTTP Owner List Proposals";"GET:/api/v2/proposals/owner";"Permite ao Owner listar propostas recebidas com filtros e paginação";1
+137;"HTTP Owner Reject Proposal";"POST:/api/v2/proposals/reject";"Permite ao Owner rejeitar uma proposta para um listing";1
