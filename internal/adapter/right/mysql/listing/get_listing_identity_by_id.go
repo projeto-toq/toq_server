@@ -21,14 +21,25 @@ func (la *ListingAdapter) GetListingIdentityByID(ctx context.Context, tx *sql.Tx
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, listing_uuid, user_id, code, active_version_id, deleted
-        FROM listing_identities
-        WHERE id = ?`
+	query := `SELECT id,
+		listing_uuid,
+		user_id,
+		code,
+		active_version_id,
+		deleted,
+		has_pending_proposal,
+		has_accepted_proposal,
+		accepted_proposal_id
+	FROM listing_identities
+	WHERE id = ?`
 
 	var (
 		activeVersion sql.NullInt64
 		deleted       sql.NullInt16
 		codeValue     sql.NullInt64
+		hasPending    sql.NullInt16
+		hasAccepted   sql.NullInt16
+		acceptedID    sql.NullInt64
 	)
 
 	row := la.QueryRowContext(ctx, tx, "select", query, identityID)
@@ -39,6 +50,9 @@ func (la *ListingAdapter) GetListingIdentityByID(ctx context.Context, tx *sql.Tx
 		&codeValue,
 		&activeVersion,
 		&deleted,
+		&hasPending,
+		&hasAccepted,
+		&acceptedID,
 	); scanErr != nil {
 		if scanErr == sql.ErrNoRows {
 			return record, sql.ErrNoRows
@@ -55,6 +69,9 @@ func (la *ListingAdapter) GetListingIdentityByID(ctx context.Context, tx *sql.Tx
 	if deleted.Valid {
 		record.Deleted = deleted.Int16 == 1
 	}
+	record.HasPendingProposal = hasPending.Valid && hasPending.Int16 == 1
+	record.HasAcceptedProposal = hasAccepted.Valid && hasAccepted.Int16 == 1
+	record.AcceptedProposalID = acceptedID
 
 	return record, nil
 }

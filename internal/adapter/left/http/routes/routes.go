@@ -10,6 +10,7 @@ import (
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	mediaprocessinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/media_processing_handlers"
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
+	proposalhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/proposal_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	visithandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/visit_handlers"
@@ -68,6 +69,7 @@ func SetupRoutes(
 	holidayHandler := handlers.HolidayHandler
 	photoSessionHandler := handlers.PhotoSessionHandler
 	visitHandler := handlers.VisitHandler
+	proposalHandler := handlers.ProposalHandler
 
 	// API base routes (v2)
 	base := "/api/v2"
@@ -84,6 +86,9 @@ func SetupRoutes(
 
 	// Register listing routes with dependencies
 	RegisterListingRoutes(v1, listingHandler, mediaProcessingHandler, activityTracker, permissionService)
+
+	// Register proposal routes (authenticated)
+	RegisterProposalRoutes(v1, proposalHandler, activityTracker, permissionService)
 
 	// Register admin routes with dependencies
 	RegisterAdminRoutes(v1, adminHandler, holidayHandler, activityTracker, permissionService)
@@ -382,6 +387,28 @@ func RegisterListingRoutes(
 	owners.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		owners.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateOwner
+	}
+}
+
+// RegisterProposalRoutes wires proposal-related endpoints under /proposals.
+func RegisterProposalRoutes(
+	router *gin.RouterGroup,
+	proposalHandler *proposalhandlers.ProposalHandler,
+	activityTracker *goroutines.ActivityTracker,
+	permissionService permissionservice.PermissionServiceInterface,
+) {
+	proposals := router.Group("/proposals")
+	proposals.Use(middlewares.AuthMiddleware(activityTracker))
+	proposals.Use(middlewares.PermissionMiddleware(permissionService))
+	{
+		proposals.POST("", proposalHandler.CreateProposal)
+		proposals.PUT("", proposalHandler.UpdateProposal)
+		proposals.POST("/cancel", proposalHandler.CancelProposal)
+		proposals.POST("/accept", proposalHandler.AcceptProposal)
+		proposals.POST("/reject", proposalHandler.RejectProposal)
+		proposals.GET("/realtor", proposalHandler.ListRealtorProposals)
+		proposals.GET("/owner", proposalHandler.ListOwnerProposals)
+		proposals.POST("/detail", proposalHandler.GetProposalDetail)
 	}
 }
 

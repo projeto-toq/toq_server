@@ -33,11 +33,10 @@ A regra de negócio preve:
 4. Ambos realtor e owner podem visualizar o histórico de propostas enviadas/recebidas com seus respectivos status (pending, accepted, refused, cancelled).
 5. o listing deve ter um campo que indique se existe propsota aceita ou pendente.
 
-O plano em `/codigos/go_code/toq_server/docs/proposals_implementation_plan.md` foi criado para implementar este funcionalidade, mas não foi finalizado e não atende a totalidade dos requisitos. Sua tarefa é analisar o plano existente, o código do TOQ Server e propor ajustes para tornar este plano, um plano completo de implementação seguindo todas as regras e padrões do projeto.
 
 Assim:
-1. Analise o `toq_server_go_guide.md` e identifique a melhor forma de implementar a nova funcionalidade.
-2. Proponha um plano detalhado de implementação incluindo:
+1. Analise o `toq_server_go_guide.md` e código GO e cofirme que a implememtação está aderete a regra de negócio.
+2. Caso haja alterações ou melhorias, proponha um plano detalhado de implementação incluindo:
    - Diagnóstico: arquivos envolvidos, justificativa da abordagem, impacto e melhorias possíveis.
    - O Codigo completo a ser implementado (handlers, services, repositories, DTOs, entities, converters), fazendo com a implementação seja simples e sem mais análises.
    - Estrutura de Diretórios: organização final seguindo a Regra de Espelhamento (Seção 2.1 do guia).

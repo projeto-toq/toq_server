@@ -1,69 +1,71 @@
 package proposalmodel
 
-import (
-	"database/sql"
-	"time"
-)
+import "time"
 
-// ProposalDocumentInterface defines a document attached to a proposal.
+// ProposalDocumentInterface now represents the stored PDF metadata and bytes.
 type ProposalDocumentInterface interface {
 	ID() int64
-	SetID(id int64)
+	SetID(int64)
 	ProposalID() int64
-	SetProposalID(id int64)
+	SetProposalID(int64)
 	FileName() string
-	SetFileName(v string)
-	FileType() string
-	SetFileType(v string)
-	FileURL() string
-	SetFileURL(v string)
+	SetFileName(string)
+	MimeType() string
+	SetMimeType(string)
 	FileSizeBytes() int64
-	SetFileSizeBytes(v int64)
+	SetFileSizeBytes(int64)
+	FileData() []byte
+	SetFileData([]byte)
 	UploadedAt() time.Time
-	SetUploadedAt(t time.Time)
+	SetUploadedAt(time.Time)
 }
 
-// ProposalDocument is the concrete implementation of ProposalDocumentInterface.
-type ProposalDocument struct {
+type proposalDocument struct {
 	id            int64
 	proposalID    int64
 	fileName      string
-	fileType      string
-	fileURL       string
+	mimeType      string
 	fileSizeBytes int64
+	fileData      []byte
 	uploadedAt    time.Time
 }
 
-// NewProposalDocument builds an empty proposal document domain object.
+// NewProposalDocument instantiates a domain document entity.
 func NewProposalDocument() ProposalDocumentInterface {
-	return &ProposalDocument{}
+	return &proposalDocument{}
 }
 
-func (d *ProposalDocument) ID() int64      { return d.id }
-func (d *ProposalDocument) SetID(id int64) { d.id = id }
-
-func (d *ProposalDocument) ProposalID() int64      { return d.proposalID }
-func (d *ProposalDocument) SetProposalID(id int64) { d.proposalID = id }
-
-func (d *ProposalDocument) FileName() string     { return d.fileName }
-func (d *ProposalDocument) SetFileName(v string) { d.fileName = v }
-
-func (d *ProposalDocument) FileType() string     { return d.fileType }
-func (d *ProposalDocument) SetFileType(v string) { d.fileType = v }
-
-func (d *ProposalDocument) FileURL() string     { return d.fileURL }
-func (d *ProposalDocument) SetFileURL(v string) { d.fileURL = v }
-
-func (d *ProposalDocument) FileSizeBytes() int64     { return d.fileSizeBytes }
-func (d *ProposalDocument) SetFileSizeBytes(v int64) { d.fileSizeBytes = v }
-
-func (d *ProposalDocument) UploadedAt() time.Time     { return d.uploadedAt }
-func (d *ProposalDocument) SetUploadedAt(t time.Time) { d.uploadedAt = t }
-
-// ValidateUploadedAt ensures uploadedAt is set when file metadata is present.
-func ValidateUploadedAt(value sql.NullTime) time.Time {
-	if value.Valid {
-		return value.Time
+func (d *proposalDocument) ID() int64 { return d.id }
+func (d *proposalDocument) SetID(id int64) {
+	d.id = id
+}
+func (d *proposalDocument) ProposalID() int64 { return d.proposalID }
+func (d *proposalDocument) SetProposalID(id int64) {
+	d.proposalID = id
+}
+func (d *proposalDocument) FileName() string { return d.fileName }
+func (d *proposalDocument) SetFileName(name string) {
+	d.fileName = name
+}
+func (d *proposalDocument) MimeType() string { return d.mimeType }
+func (d *proposalDocument) SetMimeType(mime string) {
+	d.mimeType = mime
+}
+func (d *proposalDocument) FileSizeBytes() int64 { return d.fileSizeBytes }
+func (d *proposalDocument) SetFileSizeBytes(size int64) {
+	d.fileSizeBytes = size
+}
+func (d *proposalDocument) FileData() []byte { return d.fileData }
+func (d *proposalDocument) SetFileData(data []byte) {
+	if data == nil {
+		d.fileData = nil
+		return
 	}
-	return time.Time{}
+	buffer := make([]byte, len(data))
+	copy(buffer, data)
+	d.fileData = buffer
+}
+func (d *proposalDocument) UploadedAt() time.Time { return d.uploadedAt }
+func (d *proposalDocument) SetUploadedAt(ts time.Time) {
+	d.uploadedAt = ts
 }

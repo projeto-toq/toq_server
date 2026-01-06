@@ -15,6 +15,7 @@ import (
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
+	proposalservice "github.com/projeto-toq/toq_server/internal/core/service/proposal_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	visitservice "github.com/projeto-toq/toq_server/internal/core/service/visit_service"
@@ -433,6 +434,36 @@ func (c *config) InitListingHandler() {
 		c.scheduleService,
 	)
 	// HTTP handler initialization is done during HTTP server setup
+}
+
+func (c *config) InitProposalService() {
+	slog.Debug("Initializing Proposal Service")
+
+	if c.repositoryAdapters == nil {
+		slog.Error("repositoryAdapters is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Proposal == nil {
+		slog.Error("repositoryAdapters.Proposal is nil")
+		return
+	}
+
+	if c.repositoryAdapters.Listing == nil {
+		slog.Error("repositoryAdapters.Listing is nil")
+		return
+	}
+
+	if c.globalService == nil {
+		slog.Error("globalService is nil")
+		return
+	}
+
+	c.proposalService = proposalservice.New(
+		c.repositoryAdapters.Proposal,
+		c.repositoryAdapters.Listing,
+		c.globalService,
+	)
 }
 
 func (c *config) InitPermissionHandler() {

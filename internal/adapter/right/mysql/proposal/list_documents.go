@@ -2,6 +2,7 @@ package mysqlproposaladapter
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/proposal/converters"
@@ -10,8 +11,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// ListDocuments returns all documents linked to a proposal ordered by uploaded_at desc.
-func (a *ProposalAdapter) ListDocuments(ctx context.Context, proposalID int64) ([]proposalmodel.ProposalDocumentInterface, error) {
+// ListDocuments returns proposal documents optionally loading the binary blob.
+func (a *ProposalAdapter) ListDocuments(ctx context.Context, tx *sql.Tx, proposalID int64, includeBlob bool) ([]proposalmodel.ProposalDocumentInterface, error) {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return nil, err
@@ -21,12 +22,17 @@ func (a *ProposalAdapter) ListDocuments(ctx context.Context, proposalID int64) (
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	query := `SELECT id, proposal_id, file_name, file_type, file_url, file_size_bytes, uploaded_at
+	blobExpr := "file_blob"
+	if !includeBlob {
+		blobExpr = "NULL AS file_blob"
+	}
+
+	query := fmt.Sprintf(`SELECT id, proposal_id, file_name, mime_type, file_size_bytes, %s, uploaded_at
 	FROM proposal_documents
 	WHERE proposal_id = ?
-	ORDER BY uploaded_at DESC`
+	ORDER BY uploaded_at DESC`, blobExpr)
 
-	rows, queryErr := a.QueryContext(ctx, nil, "list_proposal_documents", query, proposalID)
+	rows, queryErr := a.QueryContext(ctx, tx, "list_proposal_documents", query, proposalID)
 	if queryErr != nil {
 		utils.SetSpanError(ctx, queryErr)
 		logger.Error("mysql.proposal_document.list.query_error", "proposal_id", proposalID, "err", queryErr)
@@ -41,16 +47,16 @@ func (a *ProposalAdapter) ListDocuments(ctx context.Context, proposalID int64) (
 			&entity.ID,
 			&entity.ProposalID,
 			&entity.FileName,
-			&entity.FileType,
-			&entity.FileURL,
+			&entity.MimeType,
 			&entity.FileSizeBytes,
+			&entity.FileBlob,
 			&entity.UploadedAt,
 		); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.proposal_document.list.scan_error", "proposal_id", proposalID, "err", scanErr)
 			return nil, fmt.Errorf("scan proposal document: %w", scanErr)
 		}
-		documents = append(documents, converters.ToProposalDocumentModel(entity))
+		documents = append(documents, converters.ToProposalDocumentModel(entity, includeBlob))
 	}
 
 	if rowsErr := rows.Err(); rowsErr != nil {

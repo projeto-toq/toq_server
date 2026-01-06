@@ -10,6 +10,7 @@ import (
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	mediaprocessinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/media_processing_handlers"
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
+	proposalhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/proposal_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	visithandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/visit_handlers"
@@ -35,6 +36,7 @@ import (
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
 	photosessionrepo "github.com/projeto-toq/toq_server/internal/core/port/right/repository/photo_session_repository"
 	propertycoveragerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/property_coverage_repository"
+	proposalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/proposal_repository"
 	schedulerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/schedule_repository"
 	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
@@ -74,6 +76,7 @@ type RepositoryAdapters struct {
 	Global           globalrepoport.GlobalRepoPortInterface
 	PropertyCoverage propertycoveragerepository.RepositoryInterface
 	Listing          listingrepoport.ListingRepoPortInterface
+	Proposal         proposalrepository.Repository
 	MediaProcessing  mediaprocessingrepository.RepositoryInterface
 	Holiday          holidayrepository.HolidayRepositoryInterface
 	Schedule         schedulerepository.ScheduleRepositoryInterface
@@ -88,6 +91,7 @@ type HTTPHandlers struct {
 	UserHandler            *userhandlers.UserHandler
 	ListingHandler         *listinghandlers.ListingHandler
 	MediaProcessingHandler *mediaprocessinghandlers.MediaProcessingHandler
+	ProposalHandler        *proposalhandlers.ProposalHandler
 	AuthHandler            *authhandlers.AuthHandler
 	MetricsHandler         *metricshandlers.MetricsHandler
 	AdminHandler           *adminhandlers.AdminHandler

@@ -41,7 +41,7 @@
 - Sequence deve ser único apenas para cada tipo de media (photo vertical, photo horizontal, video vertical, video horizontal)
 - shared-secret do callback que está no env.yaml não está sendo usado
 - apagar uma media do bucket tem que apagar de raw e de processed
-
+- necessário goroutine de limpeza dos logs do S3
 
 
 

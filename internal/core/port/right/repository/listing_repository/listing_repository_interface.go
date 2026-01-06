@@ -82,15 +82,19 @@ type ListingRepoPortInterface interface {
 
 	UpdateListingStatus(ctx context.Context, tx *sql.Tx, listingID int64, newStatus listingmodel.ListingStatus, expectedCurrent listingmodel.ListingStatus) error
 	UpdateOwnerResponseStats(ctx context.Context, tx *sql.Tx, identityID int64, deltaSeconds int64, respondedAt time.Time) error
+	UpdateProposalFlags(ctx context.Context, tx *sql.Tx, input ProposalFlagsUpdate) error
 }
 
 type ListingIdentityRecord struct {
-	ID              int64
-	UUID            string
-	UserID          int64
-	Code            uint32
-	ActiveVersionID sql.NullInt64
-	Deleted         bool
+	ID                  int64
+	UUID                string
+	UserID              int64
+	Code                uint32
+	ActiveVersionID     sql.NullInt64
+	Deleted             bool
+	HasPendingProposal  bool
+	HasAcceptedProposal bool
+	AcceptedProposalID  sql.NullInt64
 }
 
 type ListListingVersionsFilter struct {
@@ -136,6 +140,14 @@ type ListListingsResult struct {
 
 type ListingRecord struct {
 	Listing listingmodel.ListingInterface
+}
+
+// ProposalFlagsUpdate aggregates the columns toggled by proposal flows.
+type ProposalFlagsUpdate struct {
+	ListingIdentityID  int64
+	HasPending         bool
+	HasAccepted        bool
+	AcceptedProposalID sql.NullInt64
 }
 
 // ListingEndUpdateData aggregates the raw values needed to validate the end-update flow.

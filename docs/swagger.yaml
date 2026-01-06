@@ -9,6 +9,14 @@ definitions:
       success:
         type: boolean
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AcceptProposalRequest:
+    properties:
+      proposalId:
+        minimum: 1
+        type: integer
+    required:
+    - proposalId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AddAlternativeUserRoleRequest:
     properties:
       creciNumber:
@@ -822,6 +830,14 @@ definitions:
     required:
     - photoSessionId
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CancelProposalRequest:
+    properties:
+      proposalId:
+        minimum: 1
+        type: integer
+    required:
+    - proposalId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse:
     properties:
       label:
@@ -1038,6 +1054,23 @@ definitions:
     properties:
       tokens:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateProposalRequest:
+    properties:
+      document:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDocumentUpload'
+      listingIdentityId:
+        example: 981
+        minimum: 1
+        type: integer
+      proposalText:
+        example: Gostaria de propor pagamento em 30 dias
+        maxLength: 5000
+        minLength: 1
+        type: string
+    required:
+    - listingIdentityId
+    - proposalText
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateRealtorRequest:
     properties:
@@ -1291,6 +1324,14 @@ definitions:
       user:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UserResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetProposalDetailRequest:
+    properties:
+      proposalId:
+        minimum: 1
+        type: integer
+    required:
+    - proposalId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetVisitDetailRequest:
     properties:
       visitId:
@@ -1531,6 +1572,15 @@ definitions:
         type: array
       timezone:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse'
+        type: array
+      total:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingAgendaDetailResponse:
     properties:
@@ -2214,6 +2264,68 @@ definitions:
       success:
         type: boolean
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDetailResponse:
+    properties:
+      documents:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDocumentResponse'
+        type: array
+      proposal:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDocumentResponse:
+    properties:
+      base64Payload:
+        type: string
+      fileName:
+        type: string
+      fileSizeBytes:
+        type: integer
+      id:
+        type: integer
+      mimeType:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDocumentUpload:
+    properties:
+      base64Payload:
+        type: string
+      fileName:
+        example: proposta.pdf
+        maxLength: 120
+        minLength: 1
+        type: string
+      mimeType:
+        enum:
+        - application/pdf
+        example: application/pdf
+        type: string
+    required:
+    - base64Payload
+    - fileName
+    - mimeType
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse:
+    properties:
+      acceptedAt:
+        type: string
+      cancelledAt:
+        type: string
+      documentsCount:
+        type: integer
+      id:
+        type: integer
+      listingIdentityId:
+        type: integer
+      proposalText:
+        type: string
+      rejectedAt:
+        type: string
+      rejectionReason:
+        type: string
+      status:
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RefreshTokenRequest:
     properties:
       refreshToken:
@@ -2225,6 +2337,19 @@ definitions:
     properties:
       tokens:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.TokensResponse'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RejectProposalRequest:
+    properties:
+      proposalId:
+        minimum: 1
+        type: integer
+      reason:
+        maxLength: 500
+        minLength: 1
+        type: string
+    required:
+    - proposalId
+    - reason
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestEmailChangeRequest:
     properties:
@@ -2985,6 +3110,22 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateProposalRequest:
+    properties:
+      document:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDocumentUpload'
+      proposalId:
+        example: 120
+        minimum: 1
+        type: integer
+      proposalText:
+        maxLength: 5000
+        minLength: 1
+        type: string
+    required:
+    - proposalId
+    - proposalText
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateSessionStatusRequest:
     properties:
@@ -8738,6 +8879,391 @@ paths:
       summary: Update photo session status (approve/reject/complete)
       tags:
       - Photographer
+  /proposals:
+    post:
+      consumes:
+      - application/json
+      description: Allows authenticated realtors to send a free-text proposal and
+        optional PDF attachment (≤1MB) for a listing identity they do not own.
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Proposal payload with optional PDF encoded in base64
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CreateProposalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse'
+        "400":
+          description: Invalid payload or PDF too large
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Authentication required
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Listing already has pending/accepted proposal
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Business validation failure
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Infrastructure failure
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Submit a proposal for a published listing
+      tags:
+      - Proposals
+    put:
+      consumes:
+      - application/json
+      description: Updates text and/or PDF while the proposal is still pending, ensuring
+        idempotency and actor ownership.
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Editable fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.UpdateProposalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Edit a pending proposal
+      tags:
+      - Proposals
+  /proposals/accept:
+    post:
+      consumes:
+      - application/json
+      description: Owners can accept a single pending proposal per listing, triggering
+        notifications and flag updates.
+      parameters:
+      - description: Proposal identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AcceptProposalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Accept a proposal
+      tags:
+      - Proposals
+  /proposals/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Realtor-owned proposals can be cancelled anytime before acceptance,
+        generating notifications to the owner.
+      parameters:
+      - description: Proposal identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CancelProposalRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancel a proposal before owner decision
+      tags:
+      - Proposals
+  /proposals/detail:
+    post:
+      consumes:
+      - application/json
+      description: Provides proposal metadata and the binary (base64) of any PDF attachments
+        for authorized actors.
+      parameters:
+      - description: Proposal identifier
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GetProposalDetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Retrieve proposal detail
+      tags:
+      - Proposals
+  /proposals/owner:
+    get:
+      description: Owners can see all proposals received across listings with the
+        same filters as realtors, scoped to identities they own.
+      parameters:
+      - collectionFormat: csv
+        description: Status filter
+        in: query
+        items:
+          type: string
+        name: status
+        type: array
+      - description: Listing identity
+        in: query
+        name: listingIdentityId
+        type: integer
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List owner proposals
+      tags:
+      - Proposals
+  /proposals/realtor:
+    get:
+      description: Returns paginated proposals created by the authenticated realtor,
+        supporting filters by status and listing identity.
+      parameters:
+      - collectionFormat: multi
+        description: Status filter
+        in: query
+        items:
+          type: string
+        name: status
+        type: array
+      - description: Listing identity
+        in: query
+        name: listingIdentityId
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List realtor proposals
+      tags:
+      - Proposals
+  /proposals/reject:
+    post:
+      consumes:
+      - application/json
+      description: Owners must provide a free text reason; realtor receives a push
+        notification with the status update.
+      parameters:
+      - description: Proposal identifier and reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RejectProposalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reject a proposal with reason
+      tags:
+      - Proposals
   /realtor/creci/upload-url:
     post:
       consumes:

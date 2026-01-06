@@ -20,6 +20,7 @@ import (
 	listinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/listing_handlers"
 	mediaprocessinghandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/media_processing_handlers"
 	photosessionhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/photo_session_handlers"
+	proposalhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/proposal_handlers"
 	schedulehandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/schedule_handlers"
 	userhandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/user_handlers"
 	visithandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/visit_handlers"
@@ -54,6 +55,7 @@ import (
 	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
 	mysqlphotosessionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/photo_session"
 	mysqlpropertycoverageadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/property_coverage"
+	mysqlproposaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/proposal"
 	mysqlscheduleadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/schedule"
 	sessionmysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/session"
 	mysqluseradapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/user"
@@ -67,6 +69,7 @@ import (
 	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservice "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
+	proposalservice "github.com/projeto-toq/toq_server/internal/core/service/proposal_service"
 	scheduleservice "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservice "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	visitservice "github.com/projeto-toq/toq_server/internal/core/service/visit_service"
@@ -261,6 +264,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Listing Repository
 	listingRepo := mysqllistingadapter.NewListingAdapter(database, metrics)
 
+	// Proposal Repository
+	proposalRepo := mysqlproposaladapter.NewProposalAdapter(database, metrics)
+
 	// Property Coverage Repository
 	propertyCoverageRepo := mysqlpropertycoverageadapter.NewPropertyCoverageAdapter(database, metrics)
 
@@ -292,6 +298,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 		Global:           globalRepo,
 		PropertyCoverage: propertyCoverageRepo,
 		Listing:          listingRepo,
+		Proposal:         proposalRepo,
 		MediaProcessing:  mediaProcessingRepo,
 		Holiday:          holidayRepo,
 		Schedule:         scheduleRepo,
@@ -308,6 +315,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	userService userservice.UserServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 	listingService listingservice.ListingServiceInterface,
+	proposalService proposalservice.Service,
 	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface,
 	scheduleService scheduleservice.ScheduleServiceInterface,
 	visitService visitservice.Service,
@@ -413,6 +421,13 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		return HTTPHandlers{}
 	}
 
+	var proposalHandler *proposalhandlers.ProposalHandler
+	if proposalService != nil {
+		proposalHandler = proposalhandlers.NewProposalHandler(proposalService)
+	} else {
+		slog.Warn("factory.http_handlers.proposal_service_nil")
+	}
+
 	// Create metrics handler (optional)
 	var metricsHandler *handlers.MetricsHandler
 	if metricsAdapter != nil {
@@ -425,6 +440,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		UserHandler:            userHandler,
 		ListingHandler:         listingHandler,
 		MediaProcessingHandler: mediaProcessingHandler,
+		ProposalHandler:        proposalHandler,
 		AuthHandler:            authHandler,
 		MetricsHandler:         metricsHandler,
 		AdminHandler:           adminHandler,

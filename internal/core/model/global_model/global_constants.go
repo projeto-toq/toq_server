@@ -23,6 +23,7 @@ const (
 	TableRoles     TableName = "roles"
 	TableUserRoles TableName = "user_roles"
 	TableListings  TableName = "listings"
+	TableProposals TableName = "proposals"
 )
 
 func (t TableName) String() string {

@@ -35,6 +35,7 @@ import (
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
+	proposalservice "github.com/projeto-toq/toq_server/internal/core/service/proposal_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	sessionservice "github.com/projeto-toq/toq_server/internal/core/service/session_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
@@ -62,6 +63,7 @@ type config struct {
 	globalService           globalservice.GlobalServiceInterface
 	userService             userservices.UserServiceInterface
 	listingService          listingservices.ListingServiceInterface
+	proposalService         proposalservice.Service
 	permissionService       permissionservices.PermissionServiceInterface
 	holidayService          holidayservices.HolidayServiceInterface
 	scheduleService         scheduleservices.ScheduleServiceInterface
@@ -101,6 +103,7 @@ type ConfigInterface interface {
 	InitVisitService()
 	InitMediaProcessingService()
 	InitPropertyCoverageService()
+	InitProposalService()
 	InitPhotoSessionService()
 	InitListingHandler()
 	InitPermissionHandler()
@@ -190,6 +193,9 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.Listing == nil {
 		slog.Error("repositories.Listing is nil")
 	}
+	if repositories.Proposal == nil {
+		slog.Error("repositories.Proposal is nil")
+	}
 	if repositories.Holiday == nil {
 		slog.Error("repositories.Holiday is nil")
 	}
@@ -215,6 +221,7 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 		Global:           repositories.Global,
 		PropertyCoverage: repositories.PropertyCoverage,
 		Listing:          repositories.Listing,
+		Proposal:         repositories.Proposal,
 		Holiday:          repositories.Holiday,
 		Schedule:         repositories.Schedule,
 		Visit:            repositories.Visit,
@@ -257,6 +264,7 @@ func (c *config) initializeServices() {
 	c.InitPhotoSessionService()
 	c.InitPropertyCoverageService()
 	c.InitListingHandler()
+	c.InitProposalService()
 	c.InitUserHandler()
 
 	slog.Info("All services initialized successfully")
@@ -534,6 +542,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.userService,
 		c.globalService,
 		c.listingService,
+		c.proposalService,
 		c.propertyCoverageService,
 		c.scheduleService,
 		c.visitService,

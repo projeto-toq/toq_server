@@ -2,6 +2,7 @@ package mysqlproposaladapter
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -10,8 +11,8 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// CreateDocument inserts a proposal document and sets its ID on the domain object.
-func (a *ProposalAdapter) CreateDocument(ctx context.Context, document proposalmodel.ProposalDocumentInterface) error {
+// CreateDocument inserts a proposal document row using the provided transaction.
+func (a *ProposalAdapter) CreateDocument(ctx context.Context, tx *sql.Tx, document proposalmodel.ProposalDocumentInterface) error {
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
 		return err
@@ -30,18 +31,18 @@ func (a *ProposalAdapter) CreateDocument(ctx context.Context, document proposalm
 	query := `INSERT INTO proposal_documents (
 		proposal_id,
 		file_name,
-		file_type,
-		file_url,
+		mime_type,
 		file_size_bytes,
+		file_blob,
 		uploaded_at
 	) VALUES (?,?,?,?,?,?)`
 
-	result, execErr := a.ExecContext(ctx, nil, "insert_proposal_document", query,
+	result, execErr := a.ExecContext(ctx, tx, "insert_proposal_document", query,
 		entity.ProposalID,
 		entity.FileName,
-		entity.FileType,
-		entity.FileURL,
+		entity.MimeType,
 		entity.FileSizeBytes,
+		entity.FileBlob,
 		entity.UploadedAt,
 	)
 	if execErr != nil {

@@ -16,6 +16,7 @@ import (
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
+	proposalservice "github.com/projeto-toq/toq_server/internal/core/service/proposal_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 	visitservice "github.com/projeto-toq/toq_server/internal/core/service/visit_service"
@@ -52,6 +53,7 @@ type AdapterFactory interface {
 		userService userservices.UserServiceInterface,
 		globalService globalservice.GlobalServiceInterface,
 		listingService listingservices.ListingServiceInterface,
+		proposalService proposalservice.Service,
 		propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface,
 		scheduleService scheduleservices.ScheduleServiceInterface,
 		visitService visitservice.Service,
