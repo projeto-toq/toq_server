@@ -42,7 +42,7 @@
 - shared-secret do callback que está no env.yaml não está sendo usado
 - apagar uma media do bucket tem que apagar de raw e de processed
 - necessário goroutine de limpeza dos logs do S3
-
+- tempo de respsota do owner deve estar nas consulta e detalhe do listing
 
 
 

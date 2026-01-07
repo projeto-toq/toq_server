@@ -37,6 +37,8 @@ type ListListingsInput struct {
 	MaxRentPrice       *float64                    // Optional maximum rent price
 	MinLandSize        *float64                    // Optional minimum land size (sq meters)
 	MaxLandSize        *float64                    // Optional maximum land size (sq meters)
+	MinSuites          *int                        // Optional minimum suite count (derived from features)
+	MaxSuites          *int                        // Optional maximum suite count (derived from features)
 	IncludeAllVersions bool                        // true: all versions; false: active only (default)
 
 	// Security context
@@ -158,6 +160,8 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		MaxRentPrice:       input.MaxRentPrice,
 		MinLandSize:        input.MinLandSize,
 		MaxLandSize:        input.MaxLandSize,
+		MinSuites:          input.MinSuites,
+		MaxSuites:          input.MaxSuites,
 		IncludeAllVersions: input.IncludeAllVersions,
 	}
 

@@ -1,6 +1,10 @@
 package listingmodel
 
-import globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+import (
+	"time"
+
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+)
 
 type ListingVersionInterface interface {
 	ID() int64
@@ -259,6 +263,14 @@ type ListingInterface interface {
 
 	IdentityID() int64
 	SetIdentityID(identityID int64)
+	CreatedAt() time.Time
+	SetCreatedAt(createdAt time.Time)
+	HasCreatedAt() bool
+	UnsetCreatedAt()
+	PriceUpdatedAt() time.Time
+	SetPriceUpdatedAt(priceUpdatedAt time.Time)
+	HasPriceUpdatedAt() bool
+	UnsetPriceUpdatedAt()
 	UUID() string
 	SetUUID(uuid string)
 	ActiveVersionID() int64

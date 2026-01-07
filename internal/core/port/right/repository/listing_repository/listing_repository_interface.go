@@ -108,30 +108,54 @@ type ListingVersionSummary struct {
 	IsActive bool
 }
 
+// PropertyUseFilter constrains listings to residential or commercial categories.
+type PropertyUseFilter uint8
+
+const (
+	PropertyUseUndefined PropertyUseFilter = iota
+	PropertyUseResidential
+	PropertyUseCommercial
+)
+
 type ListListingsFilter struct {
 	// Pagination
 	Page  int // 1-indexed page number (default: 1)
 	Limit int // Items per page (default: 20, max: 100)
 
 	// Sorting
-	SortBy    string // Field to sort by: id, status (default: id)
-	SortOrder string // Sort direction: asc, desc (default: desc)
+	SortBy    string
+	SortOrder string
 
 	// Filters
-	Status             *listingmodel.ListingStatus // Optional status filter
-	Code               *uint32                     // Optional exact code filter
-	Title              string                      // Optional wildcard title/description search
-	ZipCode            string                      // Optional wildcard zip code filter
-	City               string                      // Optional wildcard city filter
-	Neighborhood       string                      // Optional wildcard neighborhood filter
-	UserID             *int64                      // Optional owner user ID filter
-	MinSellPrice       *float64                    // Optional minimum sell price
-	MaxSellPrice       *float64                    // Optional maximum sell price
-	MinRentPrice       *float64                    // Optional minimum rent price
-	MaxRentPrice       *float64                    // Optional maximum rent price
-	MinLandSize        *float64                    // Optional minimum land size (sq meters)
-	MaxLandSize        *float64                    // Optional maximum land size (sq meters)
-	IncludeAllVersions bool                        // false: active only (default); true: all versions
+	Status             *listingmodel.ListingStatus
+	Code               *uint32
+	Title              string
+	ZipCode            string
+	Street             string
+	City               string
+	State              string
+	Neighborhood       string
+	Address            string
+	UserID             *int64
+	PropertyTypes      []globalmodel.PropertyType
+	TransactionTypes   []listingmodel.TransactionType
+	PropertyUse        PropertyUseFilter
+	MinBuiltArea       *float64
+	MaxBuiltArea       *float64
+	MinSuites          *int
+	MaxSuites          *int
+	MinSellPrice       *float64
+	MaxSellPrice       *float64
+	MinRentPrice       *float64
+	MaxRentPrice       *float64
+	MinLandSize        *float64
+	MaxLandSize        *float64
+	AcceptsExchange    *bool
+	AcceptsFinancing   *bool
+	OnlySold           bool
+	OnlyNewerThanHours *int
+	PriceUpdatedWithin *int
+	IncludeAllVersions bool
 }
 
 type ListListingsResult struct {

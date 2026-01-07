@@ -239,10 +239,14 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_versions` (
   `store_has_mezzanine` TINYINT NULL,
   `store_mezzanine_area` DECIMAL(10,2) NULL,
   `deleted` TINYINT UNSIGNED NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `price_updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `CODE` (`code` ASC, `version` ASC) VISIBLE,
   INDEX `fk_listings_user_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_listing_identities_idx` (`listing_identity_id` ASC) VISIBLE,
+  INDEX `idx_listing_versions_created_at` (`created_at` ASC) INVISIBLE,
+  INDEX `idx_listing_versions_price_updated` (`price_updated_at` ASC) VISIBLE,
   CONSTRAINT `fk_listings_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `toq_db`.`users` (`id`)

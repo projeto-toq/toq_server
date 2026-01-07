@@ -79,15 +79,17 @@ const listingSelectColumns = `
 		lv.warehouse_has_office_area,
 		lv.warehouse_office_area,
 		lv.store_has_mezzanine,
-		lv.store_mezzanine_area`
+		lv.store_mezzanine_area,
+		lv.created_at,
+		lv.price_updated_at`
 
 type rowScanner interface {
 	Scan(dest ...any) error
 }
 
-func scanListingEntity(row rowScanner) (listingentity.ListingEntity, error) {
+func scanListingEntity(row rowScanner, extraDest ...any) (listingentity.ListingEntity, error) {
 	entity := listingentity.ListingEntity{}
-	if err := row.Scan(
+	dest := []any{
 		&entity.ID,
 		&entity.ListingIdentityID,
 		&entity.ListingUUID,
@@ -156,7 +158,11 @@ func scanListingEntity(row rowScanner) (listingentity.ListingEntity, error) {
 		&entity.WarehouseOfficeArea,
 		&entity.StoreHasMezzanine,
 		&entity.StoreMezzanineArea,
-	); err != nil {
+		&entity.CreatedAt,
+		&entity.PriceUpdatedAt,
+	}
+	dest = append(dest, extraDest...)
+	if err := row.Scan(dest...); err != nil {
 		return listingentity.ListingEntity{}, err
 	}
 

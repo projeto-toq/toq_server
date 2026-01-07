@@ -123,6 +123,16 @@ type ListListingsRequest struct {
 	// Example: 500.75
 	MaxLandSize string `form:"maxLandSize,omitempty" example:"500.75"`
 
+	// MinSuites filters listings whose suite count (feature "Suites") is >= this value
+	// Optional - used with maxSuites to define suite range
+	// Example: 2
+	MinSuites string `form:"minSuites,omitempty" example:"2"`
+
+	// MaxSuites filters listings whose suite count (feature "Suites") is <= this value
+	// Optional - used with minSuites to define suite range
+	// Example: 4
+	MaxSuites string `form:"maxSuites,omitempty" example:"4"`
+
 	// IncludeAllVersions determines version filtering behavior
 	// false (default): Only active versions (linked via active_version_id)
 	// true: All versions (active + draft)

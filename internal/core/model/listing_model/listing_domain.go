@@ -1,6 +1,10 @@
 package listingmodel
 
-import globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+import (
+	"time"
+
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+)
 
 type listingVersion struct {
 	id                      int64
@@ -128,6 +132,10 @@ type listingVersion struct {
 	storeMezzanineArea              float64
 	storeMezzanineAreaValid         bool
 	warehouseAdditionalFloors       []WarehouseAdditionalFloorInterface
+	createdAt                       time.Time
+	createdAtValid                  bool
+	priceUpdatedAt                  time.Time
+	priceUpdatedValid               bool
 }
 
 func (l *listingVersion) ID() int64 {
@@ -784,6 +792,40 @@ func (l *listingVersion) HasDeleted() bool {
 func (l *listingVersion) UnsetDeleted() {
 	l.deleted = false
 	l.deletedValid = false
+}
+
+func (l *listingVersion) CreatedAt() time.Time {
+	return l.createdAt
+}
+
+func (l *listingVersion) SetCreatedAt(createdAt time.Time) {
+	l.createdAt = createdAt
+	l.createdAtValid = true
+}
+
+func (l *listingVersion) HasCreatedAt() bool {
+	return l.createdAtValid
+}
+
+func (l *listingVersion) UnsetCreatedAt() {
+	l.createdAtValid = false
+}
+
+func (l *listingVersion) PriceUpdatedAt() time.Time {
+	return l.priceUpdatedAt
+}
+
+func (l *listingVersion) SetPriceUpdatedAt(priceUpdatedAt time.Time) {
+	l.priceUpdatedAt = priceUpdatedAt
+	l.priceUpdatedValid = true
+}
+
+func (l *listingVersion) HasPriceUpdatedAt() bool {
+	return l.priceUpdatedValid
+}
+
+func (l *listingVersion) UnsetPriceUpdatedAt() {
+	l.priceUpdatedValid = false
 }
 
 // CompletionForecast represents completion forecast for properties under construction (month/year).

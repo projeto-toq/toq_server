@@ -43,6 +43,8 @@ import (
 //	@Param        maxRent             query   number  false  "Maximum rent price" example(8000)
 //	@Param        minLandSize         query   number  false  "Minimum land size in square meters" example(120.5)
 //	@Param        maxLandSize         query   number  false  "Maximum land size in square meters" example(500.75)
+//	@Param        minSuites           query   int     false  "Minimum suite count (from feature 'Suites')" example(2)
+//	@Param        maxSuites           query   int     false  "Maximum suite count (from feature 'Suites')" example(4)
 //	@Param        includeAllVersions  query   bool    false  "Include all versions (active + draft). Default: false (active only)" example(false)
 //	@Success      200                 {object}  dto.ListListingsResponse         "Paginated list of listings with metadata"
 //	@Failure      400                 {object}  dto.ErrorResponse                "Invalid request parameters (malformed sortBy, sortOrder, or filter values)"
@@ -142,6 +144,21 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 		return
 	}
 
+	minSuites, err := parseOptionalNonNegativeInt(req.MinSuites)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("minSuites", err.Error()))
+		return
+	}
+	maxSuites, err := parseOptionalNonNegativeInt(req.MaxSuites)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("maxSuites", err.Error()))
+		return
+	}
+	if minSuites != nil && maxSuites != nil && *minSuites > *maxSuites {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("minSuites", "minSuites cannot be greater than maxSuites"))
+		return
+	}
+
 	// Extract authenticated user info for permission filtering
 	userInfo, infoErr := coreutils.GetUserInfoFromGinContext(c)
 	if infoErr != nil {
@@ -168,6 +185,8 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 		MaxRentPrice:       maxRent,
 		MinLandSize:        minLand,
 		MaxLandSize:        maxLand,
+		MinSuites:          minSuites,
+		MaxSuites:          maxSuites,
 		IncludeAllVersions: req.IncludeAllVersions,
 		RequesterUserID:    userInfo.ID,
 		RequesterRoleSlug:  userInfo.RoleSlug,
@@ -293,6 +312,22 @@ func parseOptionalFloat64(raw string) (*float64, error) {
 	value, err := strconv.ParseFloat(trimmed, 64)
 	if err != nil {
 		return nil, fmt.Errorf("invalid decimal value")
+	}
+	return &value, nil
+}
+
+// parseOptionalNonNegativeInt parses optional integer (>= 0) from string
+func parseOptionalNonNegativeInt(raw string) (*int, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return nil, nil
+	}
+	value, err := strconv.Atoi(trimmed)
+	if err != nil {
+		return nil, fmt.Errorf("invalid integer value")
+	}
+	if value < 0 {
+		return nil, fmt.Errorf("value cannot be negative")
 	}
 	return &value, nil
 }

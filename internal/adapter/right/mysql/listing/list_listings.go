@@ -11,11 +11,18 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
+const suitesCountSubquery = `(
+	SELECT COALESCE(SUM(f.qty), 0)
+	FROM features f
+	INNER JOIN base_features bf ON bf.id = f.feature_id
+	WHERE f.listing_version_id = lv.id
+	  AND bf.feature = 'Suites'
+)`
+
 // ListListings retrieves a filtered, sorted, and paginated list of listing versions
 //
 // This function executes a complex SQL query with multiple optional filters and dynamic sorting.
 // By default, only active versions are returned (versions linked via listing_identities.active_version_id).
-// Set includeAllVersions=true in filter to retrieve all versions regardless of active status.
 //
 // Query Structure:
 //   - Base: SELECT from listing_versions JOIN listing_identities
@@ -144,6 +151,16 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	if filter.MaxLandSize != nil {
 		conditions = append(conditions, "COALESCE(lv.land_size, 0) <= ?")
 		args = append(args, *filter.MaxLandSize)
+	}
+
+	// Optional filter: suite count derived from features
+	if filter.MinSuites != nil {
+		conditions = append(conditions, fmt.Sprintf("%s >= ?", suitesCountSubquery))
+		args = append(args, *filter.MinSuites)
+	}
+	if filter.MaxSuites != nil {
+		conditions = append(conditions, fmt.Sprintf("%s <= ?", suitesCountSubquery))
+		args = append(args, *filter.MaxSuites)
 	}
 
 	// Construct WHERE clause (all conditions AND-ed)

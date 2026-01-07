@@ -81,6 +81,8 @@ type ListingEntity struct {
 	StoreHasMezzanine          sql.NullInt16
 	StoreMezzanineArea         sql.NullFloat64
 	WarehouseAdditionalFloors  []EntityWarehouseAdditionalFloor
+	CreatedAt                  sql.NullTime
+	PriceUpdatedAt             sql.NullTime
 }
 
 func (e *ListingEntity) ToString(entity sql.NullString) string {

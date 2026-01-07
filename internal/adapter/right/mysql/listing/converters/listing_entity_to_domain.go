@@ -295,6 +295,16 @@ func ListingEntityToDomain(e listingentity.ListingEntity) (listing listingmodel.
 		listing.UnsetStoreMezzanineArea()
 	}
 	listing.SetWarehouseAdditionalFloors(e.WarehouseAdditionalFloorsToDomain())
+	if e.CreatedAt.Valid {
+		listing.SetCreatedAt(e.CreatedAt.Time)
+	} else {
+		listing.UnsetCreatedAt()
+	}
+	if e.PriceUpdatedAt.Valid {
+		listing.SetPriceUpdatedAt(e.PriceUpdatedAt.Time)
+	} else {
+		listing.UnsetPriceUpdatedAt()
+	}
 
 	return
 }
