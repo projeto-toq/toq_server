@@ -6,29 +6,12 @@
 
 ## 🎯 Problema / Solicitação
 
-O endpoint de consulta de detalhe de uma visita do listing `/visits/detail` tem no swagger a seguinte resposta de exemplo para o status HTTP 200:
+O endpoint de listagem de listings `GET /listings`, segundo a regra de negócios deve ter:
+1) Filtro por endereço, tipo de imóvel, tipo de transaçao, faixa de preço (min e max), qtd de suites, uso do imovel (residencial, comercial), se aceita permuta, se aceita financiamento, área cosntriuída (min e max), apenas novos (criados nas últimas X horas), apenas os vendidos, apenas com alteração de preço nas últimas x horas.
+2) ordenação pelos mesmos campos
+3) paginação (limit e offset)
 
-```json
-{
-  "createdAt": "2025-01-09T12:00:00Z",
-  "firstOwnerActionAt": "2025-01-10T14:05:00Z",
-  "id": 456,
-  "listingIdentityId": 123,
-  "listingVersion": 1,
-  "notes": "string",
-  "ownerUserId": 10,
-  "rejectionReason": "string",
-  "requesterUserId": 5,
-  "scheduledEnd": "2025-01-10T14:30:00Z",
-  "scheduledStart": "2025-01-10T14:00:00Z",
-  "source": "APP",
-  "status": "PENDING",
-  "updatedAt": "2025-01-09T12:15:00Z"
-}
-```
-Sendo que deveria:
-1) Retornar Título, Descrição e Endereço do linting associado à visita
-2) Não deveria retornar os campos `createdAt`, `updatedAt` que não existem na base de dados, confirme em `scripts/db_creation.sql`
+Creio que o modelo de dados não está preparado para suportar o filtro de alteração de preço nas últimas X horas, confirme em `scripts/db_creation.sql`. Caso seja necessário inclua no modelo de dados o campo `priceUpdatedAt` do tipo timestamp na versão do listing.
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema

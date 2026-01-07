@@ -9377,6 +9377,7 @@ paths:
       parameters:
       - description: Listing identity identifier
         example: 3241
+        format: int64
         in: query
         name: listingIdentityId
         required: true
@@ -9444,6 +9445,7 @@ paths:
         range.
       parameters:
       - description: Listing identity identifier
+        format: int64
         in: query
         name: listingIdentityId
         required: true
@@ -9549,6 +9551,7 @@ paths:
       parameters:
       - description: Listing identity identifier
         example: 3241
+        format: int64
         in: query
         name: listingIdentityId
         required: true
@@ -9748,6 +9751,7 @@ paths:
         description: Listing identity identifiers
         in: query
         items:
+          format: int64
           type: integer
         name: listingIdentityIds
         type: array

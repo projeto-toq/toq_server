@@ -8395,6 +8395,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "format": "int64",
                         "example": 3241,
                         "description": "Listing identity identifier",
                         "name": "listingIdentityId",
@@ -8495,6 +8496,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "format": "int64",
                         "description": "Listing identity identifier",
                         "name": "listingIdentityId",
                         "in": "query",
@@ -8589,6 +8591,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "format": "int64",
                         "example": 3241,
                         "description": "Listing identity identifier",
                         "name": "listingIdentityId",
@@ -8955,7 +8958,8 @@
                     {
                         "type": "array",
                         "items": {
-                            "type": "integer"
+                            "type": "integer",
+                            "format": "int64"
                         },
                         "collectionFormat": "multi",
                         "description": "Listing identity identifiers",
