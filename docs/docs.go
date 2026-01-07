@@ -5201,6 +5201,20 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "integer",
+                        "example": 2,
+                        "description": "Minimum suite count (from feature 'Suites')",
+                        "name": "minSuites",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 4,
+                        "description": "Maximum suite count (from feature 'Suites')",
+                        "name": "maxSuites",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
                         "example": false,
                         "description": "Include all versions (active + draft). Default: false (active only)",

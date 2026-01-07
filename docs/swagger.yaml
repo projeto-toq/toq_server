@@ -7237,6 +7237,16 @@ paths:
         in: query
         name: maxLandSize
         type: number
+      - description: Minimum suite count (from feature 'Suites')
+        example: 2
+        in: query
+        name: minSuites
+        type: integer
+      - description: Maximum suite count (from feature 'Suites')
+        example: 4
+        in: query
+        name: maxSuites
+        type: integer
       - description: 'Include all versions (active + draft). Default: false (active
           only)'
         example: false
