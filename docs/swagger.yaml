@@ -1979,6 +1979,36 @@ definitions:
       zipCode:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingSummaryDTO:
+    properties:
+      city:
+        example: São Paulo
+        type: string
+      complement:
+        example: apto 82
+        type: string
+      description:
+        example: Apartamento amplo com três suítes e vista livre.
+        type: string
+      neighborhood:
+        example: Moema
+        type: string
+      number:
+        example: "1234"
+        type: string
+      state:
+        example: SP
+        type: string
+      street:
+        example: Av. Ibirapuera
+        type: string
+      title:
+        example: Cobertura incrível em Moema
+        type: string
+      zipCode:
+        example: "04534011"
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse:
     properties:
       id:
@@ -3407,15 +3437,14 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse:
     properties:
-      createdAt:
-        example: "2025-01-09T12:00:00Z"
-        type: string
       firstOwnerActionAt:
         example: "2025-01-10T14:05:00Z"
         type: string
       id:
         example: 456
         type: integer
+      listing:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingSummaryDTO'
       listingIdentityId:
         example: 123
         type: integer
@@ -3443,9 +3472,6 @@ definitions:
         type: string
       status:
         example: PENDING
-        type: string
-      updatedAt:
-        example: "2025-01-09T12:15:00Z"
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO:

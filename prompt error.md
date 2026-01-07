@@ -6,102 +6,29 @@
 
 ## 🎯 Problema / Solicitação
 
-O endpoint de consulta de disponibilidades do listing `GET /schedules/listing/availability?listingIdentityId=2&rangeFrom=2026-01-03T08:00:00Z&rangeTo=2026-01-10T08:00:00Z&slotDurationMinute=60&page=1&limit=20` está retornando:
+O endpoint de consulta de detalhe de uma visita do listing `/visits/detail` tem no swagger a seguinte resposta de exemplo para o status HTTP 200:
 
 ```json
 {
-    "slots": [
-        {
-            "startsAt": "2026-01-03T07:59:00-03:00",
-            "endsAt": "2026-01-03T08:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T08:59:00-03:00",
-            "endsAt": "2026-01-03T09:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T09:59:00-03:00",
-            "endsAt": "2026-01-03T10:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T10:59:00-03:00",
-            "endsAt": "2026-01-03T11:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T11:59:00-03:00",
-            "endsAt": "2026-01-03T12:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T12:59:00-03:00",
-            "endsAt": "2026-01-03T13:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T13:59:00-03:00",
-            "endsAt": "2026-01-03T14:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T14:59:00-03:00",
-            "endsAt": "2026-01-03T15:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T15:59:00-03:00",
-            "endsAt": "2026-01-03T16:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T16:59:00-03:00",
-            "endsAt": "2026-01-03T17:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-03T17:59:00-03:00",
-            "endsAt": "2026-01-03T18:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T07:59:00-03:00",
-            "endsAt": "2026-01-04T08:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T08:59:00-03:00",
-            "endsAt": "2026-01-04T09:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T10:59:00-03:00",
-            "endsAt": "2026-01-04T11:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T11:59:00-03:00",
-            "endsAt": "2026-01-04T12:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T12:59:00-03:00",
-            "endsAt": "2026-01-04T13:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T13:59:00-03:00",
-            "endsAt": "2026-01-04T14:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T14:59:00-03:00",
-            "endsAt": "2026-01-04T15:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T15:59:00-03:00",
-            "endsAt": "2026-01-04T16:59:00-03:00"
-        },
-        {
-            "startsAt": "2026-01-04T16:59:00-03:00",
-            "endsAt": "2026-01-04T17:59:00-03:00"
-        }
-    ],
-    "pagination": {
-        "page": 1,
-        "limit": 20,
-        "total": 75,
-        "totalPages": 4
-    },
-    "timezone": "America/Sao_Paulo"
+  "createdAt": "2025-01-09T12:00:00Z",
+  "firstOwnerActionAt": "2025-01-10T14:05:00Z",
+  "id": 456,
+  "listingIdentityId": 123,
+  "listingVersion": 1,
+  "notes": "string",
+  "ownerUserId": 10,
+  "rejectionReason": "string",
+  "requesterUserId": 5,
+  "scheduledEnd": "2025-01-10T14:30:00Z",
+  "scheduledStart": "2025-01-10T14:00:00Z",
+  "source": "APP",
+  "status": "PENDING",
+  "updatedAt": "2025-01-09T12:15:00Z"
 }
 ```
-veja que sempre aparece no último minuto da hora (ex: 07:59, 08:59, 09:59). Isto está correto? Creio que o esperado seria 08:00, 09:00, 10:00, etc.
+Sendo que deveria:
+1) Retornar Título, Descrição e Endereço do linting associado à visita
+2) Não deveria retornar os campos `createdAt`, `updatedAt` que não existem na base de dados, confirme em `scripts/db_creation.sql`
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
@@ -148,16 +75,6 @@ Mostre organização final seguindo **Regra de Espelhamento (Seção 2.1 do guia
 
 ### 4. Ordem de Execução
 Etapas numeradas com dependências
-
-### 5. Checklist de Conformidade
-Valide contra **seções específicas do guia**:
-- [ ] Arquitetura hexagonal (Seção 1)
-- [ ] Regra de Espelhamento Port ↔ Adapter (Seção 2.1)
-- [ ] InstrumentedAdapter em repos (Seção 7.3)
-- [ ] Transações via globalService (Seção 7.1)
-- [ ] Tracing/Logging/Erros (Seções 5, 7, 9)
-- [ ] Documentação (Seção 8)
-- [ ] Sem anti-padrões (Seção 14)
 
 ---
 

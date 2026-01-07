@@ -13329,6 +13329,47 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingSummaryDTO": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "example": "São Paulo"
+                },
+                "complement": {
+                    "type": "string",
+                    "example": "apto 82"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Apartamento amplo com três suítes e vista livre."
+                },
+                "neighborhood": {
+                    "type": "string",
+                    "example": "Moema"
+                },
+                "number": {
+                    "type": "string",
+                    "example": "1234"
+                },
+                "state": {
+                    "type": "string",
+                    "example": "SP"
+                },
+                "street": {
+                    "type": "string",
+                    "example": "Av. Ibirapuera"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Cobertura incrível em Moema"
+                },
+                "zipCode": {
+                    "type": "string",
+                    "example": "04534011"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingVersionSummaryResponse": {
             "type": "object",
             "properties": {
@@ -15297,10 +15338,6 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string",
-                    "example": "2025-01-09T12:00:00Z"
-                },
                 "firstOwnerActionAt": {
                     "type": "string",
                     "example": "2025-01-10T14:05:00Z"
@@ -15308,6 +15345,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer",
                     "example": 456
+                },
+                "listing": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingSummaryDTO"
                 },
                 "listingIdentityId": {
                     "type": "integer",
@@ -15346,10 +15386,6 @@ const docTemplate = `{
                 "status": {
                     "type": "string",
                     "example": "PENDING"
-                },
-                "updatedAt": {
-                    "type": "string",
-                    "example": "2025-01-09T12:15:00Z"
                 }
             }
         },

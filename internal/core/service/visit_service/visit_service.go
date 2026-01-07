@@ -11,6 +11,12 @@ import (
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 )
 
+// VisitDetailOutput aggregates the visit entity with the related listing snapshot.
+type VisitDetailOutput struct {
+	Visit   listingmodel.VisitInterface
+	Listing listingmodel.ListingInterface
+}
+
 // Service exposes visit orchestration operations.
 type Service interface {
 	CreateVisit(ctx context.Context, input CreateVisitInput) (listingmodel.VisitInterface, error)
@@ -19,7 +25,7 @@ type Service interface {
 	CancelVisit(ctx context.Context, visitID int64, reason string) (listingmodel.VisitInterface, error)
 	CompleteVisit(ctx context.Context, visitID int64, ownerNotes string) (listingmodel.VisitInterface, error)
 	MarkNoShow(ctx context.Context, visitID int64, ownerNotes string) (listingmodel.VisitInterface, error)
-	GetVisit(ctx context.Context, visitID int64) (listingmodel.VisitInterface, error)
+	GetVisit(ctx context.Context, visitID int64) (VisitDetailOutput, error)
 	ListVisits(ctx context.Context, filter listingmodel.VisitListFilter) (listingmodel.VisitListResult, error)
 }
 

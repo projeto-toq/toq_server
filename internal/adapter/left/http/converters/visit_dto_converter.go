@@ -71,14 +71,33 @@ func VisitDomainToResponse(visit listingmodel.VisitInterface) dto.VisitResponse 
 		response.FirstOwnerActionAt = &formatted
 	}
 
-	if !visit.CreatedAt().IsZero() {
-		response.CreatedAt = visit.CreatedAt().Format(time.RFC3339)
+	return response
+}
+
+// VisitDetailToResponse enriches the visit response with the related listing snapshot.
+func VisitDetailToResponse(detail visitservice.VisitDetailOutput) dto.VisitResponse {
+	response := VisitDomainToResponse(detail.Visit)
+	listing := detail.Listing
+	if listing == nil {
+		return response
 	}
 
-	if !visit.UpdatedAt().IsZero() {
-		response.UpdatedAt = visit.UpdatedAt().Format(time.RFC3339)
+	summary := dto.ListingSummaryDTO{
+		Title:        strings.TrimSpace(listing.Title()),
+		Description:  strings.TrimSpace(listing.Description()),
+		ZipCode:      listing.ZipCode(),
+		Street:       listing.Street(),
+		Number:       listing.Number(),
+		Neighborhood: listing.Neighborhood(),
+		City:         listing.City(),
+		State:        listing.State(),
 	}
 
+	if complement := strings.TrimSpace(listing.Complement()); complement != "" {
+		summary.Complement = complement
+	}
+
+	response.ListingSummary = &summary
 	return response
 }
 

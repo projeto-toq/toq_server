@@ -40,11 +40,11 @@ func (h *VisitHandler) GetVisit(c *gin.Context) {
 	}
 
 	ctx := coreutils.ContextWithLogger(baseCtx)
-	visit, svcErr := h.visitService.GetVisit(ctx, req.VisitID)
+	detail, svcErr := h.visitService.GetVisit(ctx, req.VisitID)
 	if svcErr != nil {
 		httperrors.SendHTTPErrorObj(c, svcErr)
 		return
 	}
 
-	c.JSON(http.StatusOK, converters.VisitDomainToResponse(visit))
+	c.JSON(http.StatusOK, converters.VisitDetailToResponse(detail))
 }
