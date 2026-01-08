@@ -17,6 +17,14 @@ type VisitDetailOutput struct {
 	Listing listingmodel.ListingInterface
 }
 
+// VisitListOutput mirrors VisitDetailOutput with pagination metadata for list endpoints.
+type VisitListOutput struct {
+	Items []VisitDetailOutput
+	Total int64
+	Page  int
+	Limit int
+}
+
 // Service exposes visit orchestration operations.
 type Service interface {
 	CreateVisit(ctx context.Context, input CreateVisitInput) (listingmodel.VisitInterface, error)
@@ -26,7 +34,7 @@ type Service interface {
 	CompleteVisit(ctx context.Context, visitID int64, ownerNotes string) (listingmodel.VisitInterface, error)
 	MarkNoShow(ctx context.Context, visitID int64, ownerNotes string) (listingmodel.VisitInterface, error)
 	GetVisit(ctx context.Context, visitID int64) (VisitDetailOutput, error)
-	ListVisits(ctx context.Context, filter listingmodel.VisitListFilter) (listingmodel.VisitListResult, error)
+	ListVisits(ctx context.Context, filter listingmodel.VisitListFilter) (VisitListOutput, error)
 }
 
 // NewService wires the visit service dependencies.

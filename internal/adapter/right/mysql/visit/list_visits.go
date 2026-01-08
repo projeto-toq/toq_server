@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/converters"
+	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/entities"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -66,24 +67,24 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	conditions := make([]string, 0)
 	args := make([]any, 0)
 
-	scheduledStartExpr := "CAST(CONCAT(scheduled_date, ' ', scheduled_time_start) AS DATETIME)"
-	scheduledEndExpr := "CAST(CONCAT(scheduled_date, ' ', scheduled_time_end) AS DATETIME)"
+	scheduledStartExpr := "CAST(CONCAT(lv.scheduled_date, ' ', lv.scheduled_time_start) AS DATETIME)"
+	scheduledEndExpr := "CAST(CONCAT(lv.scheduled_date, ' ', lv.scheduled_time_end) AS DATETIME)"
 
 	// Filter by listing identity (exact match)
 	if filter.ListingIdentityID != nil {
-		conditions = append(conditions, "listing_identity_id = ?")
+		conditions = append(conditions, "lv.listing_identity_id = ?")
 		args = append(args, *filter.ListingIdentityID)
 	}
 
 	// Filter by owner user (exact match)
 	if filter.OwnerUserID != nil {
-		conditions = append(conditions, "listing_identity_id IN (SELECT id FROM listing_identities WHERE user_id = ?)")
+		conditions = append(conditions, "li.user_id = ?")
 		args = append(args, *filter.OwnerUserID)
 	}
 
 	// Filter by requester user (exact match)
 	if filter.RequesterUserID != nil {
-		conditions = append(conditions, "user_id = ?")
+		conditions = append(conditions, "lv.user_id = ?")
 		args = append(args, *filter.RequesterUserID)
 	}
 
@@ -94,7 +95,7 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 			placeholders[i] = "?"
 			args = append(args, string(status))
 		}
-		conditions = append(conditions, fmt.Sprintf("status IN (%s)", strings.Join(placeholders, ",")))
+		conditions = append(conditions, fmt.Sprintf("lv.status IN (%s)", strings.Join(placeholders, ",")))
 	}
 
 	// Filter by time range (visits ending after 'from')
@@ -116,7 +117,7 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	}
 
 	// Execute COUNT query first for total records (pagination metadata)
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM listing_visits WHERE %s", where)
+	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM listing_visits lv JOIN listing_identities li ON li.id = lv.listing_identity_id WHERE %s", where)
 	var total int64
 	countRow := a.QueryRowContext(ctx, tx, "list_visits_count", countQuery, args...)
 	if err = countRow.Scan(&total); err != nil {
@@ -129,33 +130,43 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	limit, offset := defaultPagination(filter.Limit, filter.Page, visitsMaxPageSize)
 
 	// Execute main SELECT query with pagination
-	// Note: ORDER BY reconstructed scheduled_start ensures chronological listing
 	query := fmt.Sprintf(`
 		SELECT 
-			id,
-			listing_identity_id,
-			listing_version,
-			user_id,
-			(SELECT user_id FROM listing_identities li WHERE li.id = listing_visits.listing_identity_id LIMIT 1) AS owner_user_id,
+			lv.id,
+			lv.listing_identity_id,
+			lv.listing_version,
+			lv.user_id,
+			li.user_id AS owner_user_id,
 			%s AS scheduled_start,
 			%s AS scheduled_end,
-			status,
-			source,
-			notes,
-			rejection_reason,
-			first_owner_action_at,
-			requested_at
-		FROM listing_visits
+			lv.status,
+			lv.source,
+			lv.notes,
+			lv.rejection_reason,
+			lv.first_owner_action_at,
+			lv.requested_at,
+			active.id AS listing_id,
+			active.version AS listing_version_number,
+			active.zip_code,
+			active.street,
+			active.number,
+			active.complement,
+			active.neighborhood,
+			active.city,
+			active.state,
+			active.title,
+			active.description
+		FROM listing_visits lv
+		JOIN listing_identities li ON li.id = lv.listing_identity_id
+		LEFT JOIN listing_versions active ON active.id = li.active_version_id AND active.deleted = 0
 		WHERE %s
 		ORDER BY %s ASC
 		LIMIT ? OFFSET ?
 	`, scheduledStartExpr, scheduledEndExpr, where, scheduledStartExpr)
 
-	// Append limit and offset to args (after filter args)
 	params := append(make([]any, 0, len(args)+2), args...)
 	params = append(params, limit, offset)
 
-	// Execute query using instrumented adapter
 	rows, err := a.QueryContext(ctx, tx, "list_visits", query, params...)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
@@ -164,20 +175,110 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	}
 	defer rows.Close()
 
-	// Iterate through result set and convert each row to domain model
-	visits := make([]listingmodel.VisitInterface, 0)
+	visits := make([]listingmodel.VisitWithListing, 0)
 	for rows.Next() {
-		visitEntity, scanErr := scanVisitEntity(rows)
-		if scanErr != nil {
-			utils.SetSpanError(ctx, scanErr)
-			logger.Error("mysql.visit.list.scan_error", "err", scanErr)
-			return listingmodel.VisitListResult{}, fmt.Errorf("scan visit: %w", scanErr)
+		var visitEntity entities.VisitEntity
+		var listingID sql.NullInt64
+		var listingVersion sql.NullInt64
+		var listingZip sql.NullString
+		var listingStreet sql.NullString
+		var listingNumber sql.NullString
+		var listingComplement sql.NullString
+		var listingNeighborhood sql.NullString
+		var listingCity sql.NullString
+		var listingState sql.NullString
+		var listingTitle sql.NullString
+		var listingDescription sql.NullString
+
+		if err = rows.Scan(
+			&visitEntity.ID,
+			&visitEntity.ListingIdentityID,
+			&visitEntity.ListingVersion,
+			&visitEntity.RequesterUserID,
+			&visitEntity.OwnerUserID,
+			&visitEntity.ScheduledStart,
+			&visitEntity.ScheduledEnd,
+			&visitEntity.Status,
+			&visitEntity.Source,
+			&visitEntity.Notes,
+			&visitEntity.RejectionReason,
+			&visitEntity.FirstOwnerActionAt,
+			&visitEntity.RequestedAt,
+			&listingID,
+			&listingVersion,
+			&listingZip,
+			&listingStreet,
+			&listingNumber,
+			&listingComplement,
+			&listingNeighborhood,
+			&listingCity,
+			&listingState,
+			&listingTitle,
+			&listingDescription,
+		); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("mysql.visit.list.scan_error", "err", err)
+			return listingmodel.VisitListResult{}, fmt.Errorf("scan visit: %w", err)
 		}
-		// Convert entity to domain model and append to results
-		visits = append(visits, converters.ToVisitModel(visitEntity))
+
+		if !listingID.Valid || !listingVersion.Valid {
+			errMissing := fmt.Errorf("listing version not found for listing_identity_id=%d", visitEntity.ListingIdentityID)
+			utils.SetSpanError(ctx, errMissing)
+			logger.Error("mysql.visit.list.missing_listing_version", "listing_identity_id", visitEntity.ListingIdentityID)
+			return listingmodel.VisitListResult{}, errMissing
+		}
+
+		requiredSnapshotFields := []struct {
+			valid bool
+			name  string
+		}{
+			{listingZip.Valid, "zip_code"},
+			{listingStreet.Valid, "street"},
+			{listingNeighborhood.Valid, "neighborhood"},
+			{listingCity.Valid, "city"},
+			{listingState.Valid, "state"},
+		}
+
+		for _, field := range requiredSnapshotFields {
+			if field.valid {
+				continue
+			}
+			errMissing := fmt.Errorf("listing snapshot missing %s for listing_identity_id=%d", field.name, visitEntity.ListingIdentityID)
+			utils.SetSpanError(ctx, errMissing)
+			logger.Error("mysql.visit.list.missing_listing_field", "listing_identity_id", visitEntity.ListingIdentityID, "field", field.name)
+			return listingmodel.VisitListResult{}, errMissing
+		}
+
+		visitModel := converters.ToVisitModel(visitEntity)
+		listingModel := listingmodel.NewListing()
+		listingModel.SetID(listingID.Int64)
+		listingModel.SetListingIdentityID(visitEntity.ListingIdentityID)
+		listingModel.SetVersion(uint8(listingVersion.Int64))
+		listingModel.SetZipCode(listingZip.String)
+		listingModel.SetStreet(listingStreet.String)
+		if listingNumber.Valid {
+			listingModel.SetNumber(listingNumber.String)
+		}
+		if listingComplement.Valid && strings.TrimSpace(listingComplement.String) != "" {
+			listingModel.SetComplement(strings.TrimSpace(listingComplement.String))
+		}
+		listingModel.SetNeighborhood(listingNeighborhood.String)
+		listingModel.SetCity(listingCity.String)
+		listingModel.SetState(listingState.String)
+		if listingTitle.Valid {
+			listingModel.SetTitle(listingTitle.String)
+		} else {
+			listingModel.UnsetTitle()
+		}
+		if listingDescription.Valid {
+			listingModel.SetDescription(listingDescription.String)
+		} else {
+			listingModel.UnsetDescription()
+		}
+
+		visits = append(visits, listingmodel.VisitWithListing{Visit: visitModel, Listing: listingModel})
 	}
 
-	// Check for iteration errors (connection issues, context cancellation)
 	if err = rows.Err(); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("mysql.visit.list.rows_error", "err", err)

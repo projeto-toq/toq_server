@@ -14,8 +14,14 @@ type VisitListFilter struct {
 	Limit             int
 }
 
-// VisitListResult holds a paginated visit collection.
+// VisitWithListing aggregates a visit and its active listing snapshot.
+type VisitWithListing struct {
+	Visit   VisitInterface
+	Listing ListingInterface
+}
+
+// VisitListResult holds a paginated visit collection with listing snapshots attached.
 type VisitListResult struct {
-	Visits []VisitInterface
+	Visits []VisitWithListing
 	Total  int64
 }

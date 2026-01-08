@@ -59,5 +59,5 @@ func (h *VisitHandler) ListVisitsOwner(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, converters.VisitListToResponse(result, filter.Page, filter.Limit))
+	c.JSON(http.StatusOK, converters.VisitListDetailToResponse(result))
 }

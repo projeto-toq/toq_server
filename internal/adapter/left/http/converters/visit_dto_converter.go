@@ -101,8 +101,10 @@ func VisitDetailToResponse(detail visitservice.VisitDetailOutput) dto.VisitRespo
 	return response
 }
 
-// VisitListToResponse builds a paginated response DTO.
-func VisitListToResponse(result listingmodel.VisitListResult, page, limit int) dto.VisitListResponse {
+// VisitListDetailToResponse builds a paginated response DTO using hydrated listing snapshots.
+func VisitListDetailToResponse(output visitservice.VisitListOutput) dto.VisitListResponse {
+	page := output.Page
+	limit := output.Limit
 	if page <= 0 {
 		page = 1
 	}
@@ -110,9 +112,9 @@ func VisitListToResponse(result listingmodel.VisitListResult, page, limit int) d
 		limit = 20
 	}
 
-	items := make([]dto.VisitResponse, 0, len(result.Visits))
-	for _, visit := range result.Visits {
-		items = append(items, VisitDomainToResponse(visit))
+	items := make([]dto.VisitResponse, 0, len(output.Items))
+	for _, detail := range output.Items {
+		items = append(items, VisitDetailToResponse(detail))
 	}
 
 	return dto.VisitListResponse{
@@ -120,8 +122,8 @@ func VisitListToResponse(result listingmodel.VisitListResult, page, limit int) d
 		Pagination: dto.PaginationResponse{
 			Page:       page,
 			Limit:      limit,
-			Total:      result.Total,
-			TotalPages: visitTotalPages(result.Total, limit),
+			Total:      output.Total,
+			TotalPages: visitTotalPages(output.Total, limit),
 		},
 	}
 }

@@ -6,12 +6,37 @@
 
 ## 🎯 Problema / Solicitação
 
-O endpoint de listagem de listings `GET /listings`, segundo a regra de negócios deve ter:
-1) Filtro por endereço, tipo de imóvel, tipo de transaçao, faixa de preço (min e max), qtd de suites, uso do imovel (residencial, comercial), se aceita permuta, se aceita financiamento, área cosntriuída (min e max), apenas novos (criados nas últimas X horas), apenas os vendidos, apenas com alteração de preço nas últimas x horas.
-2) ordenação pelos mesmos campos
-3) paginação (limit e offset)
+O endpoint de detalhes de visita do listing `POST /visits/detail` foi refatorado para responder com dados do listing, segundo abaixo:
+```json
+{
+  "firstOwnerActionAt": "2025-01-10T14:05:00Z",
+  "id": 456,
+  "listing": {
+    "city": "São Paulo",
+    "complement": "apto 82",
+    "description": "Apartamento amplo com três suítes e vista livre.",
+    "neighborhood": "Moema",
+    "number": "1234",
+    "state": "SP",
+    "street": "Av. Ibirapuera",
+    "title": "Cobertura incrível em Moema",
+    "zipCode": "04534011"
+  },
+  "listingIdentityId": 123,
+  "listingVersion": 1,
+  "notes": "string",
+  "ownerUserId": 10,
+  "rejectionReason": "string",
+  "requesterUserId": 5,
+  "scheduledEnd": "2025-01-10T14:30:00Z",
+  "scheduledStart": "2025-01-10T14:00:00Z",
+  "source": "APP",
+  "status": "PENDING"
+}
+```
+Ja os endpoints de `GET /visits/owner` e `GET /visits/realtor` estao com odoc swagger informando que a resposta contem os dados do endereço, mesma resposta de cima, porem na pratica não estao retornando.
 
-Creio que o modelo de dados não está preparado para suportar o filtro de alteração de preço nas últimas X horas, confirme em `scripts/db_creation.sql`. Caso seja necessário inclua no modelo de dados o campo `priceUpdatedAt` do tipo timestamp na versão do listing.
+Creio que compartilham o mesmo DTO mas o service não está hidratando a resposta para o handler.
 
 Assim:
 1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
