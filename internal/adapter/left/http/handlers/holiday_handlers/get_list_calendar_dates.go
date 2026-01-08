@@ -19,11 +19,11 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		 calendarId	query	int	true	"Calendar identifier" example(42)
-// @Param		 from	query	string	false	"Start date (RFC3339)" example("2025-12-01T00:00:00Z")
-// @Param		 to	query	string	false	"End date (RFC3339)" example("2026-01-10T23:59:59Z")
-// @Param		 page	query	int	false	"Page number" example(1)
-// @Param		 limit	query	int	false	"Page size" example(50)
+// @Param		 calendarId	query	int	true	"Calendar identifier" Extensions(x-example=42)
+// @Param		 from	query	string	false	"Start date (RFC3339)" Extensions(x-example="2025-12-01T00:00:00Z")
+// @Param		 to	query	string	false	"End date (RFC3339)" Extensions(x-example="2026-01-10T23:59:59Z")
+// @Param		 page	query	int	false	"Page number" Extensions(x-example=1)
+// @Param		 limit	query	int	false	"Page size" Extensions(x-example=50)
 // @Success	200	{object}	dto.HolidayCalendarDatesListResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

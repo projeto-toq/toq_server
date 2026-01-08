@@ -20,7 +20,7 @@ import (
 //	@Description	Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type, land_terrain_type, warehouse_sector.
 //	@Tags			Admin Listings
 //	@Produce		json
-//	@Param			category		query		string	true	"Catalog category (property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type, land_terrain_type, warehouse_sector)"	example(land_terrain_type)
+//	@Param			category		query		string	true	"Catalog category (property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type, land_terrain_type, warehouse_sector)"	Extensions(x-example=land_terrain_type)
 //	@Param			includeInactive	query		bool	false	"Include inactive values"	default(false)
 //	@Success		200	{object}	dto.ListingCatalogValuesResponse	"List of catalog values"
 //	@Failure		400	{object}	map[string]any						"Invalid category or request parameters"

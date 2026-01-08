@@ -15,8 +15,8 @@ import (
 //	@Summary	List role-permission associations
 //	@Tags		Admin Permissions
 //	@Produce	json
-//	@Param		page		query	int	false	"Page number" default(1) example(1)
-//	@Param		limit		query	int	false	"Page size" default(20) example(20)
+//	@Param		page		query	int	false	"Page number" default(1) Extensions(x-example=1)
+//	@Param		limit		query	int	false	"Page size" default(20) Extensions(x-example=20)
 //	@Param		roleId		query	int	false	"Filter by role ID"
 //	@Param		permissionId	query	int	false	"Filter by permission ID"
 //	@Param		granted		query	bool	false	"Filter by granted flag"

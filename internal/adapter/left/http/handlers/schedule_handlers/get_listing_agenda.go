@@ -18,11 +18,11 @@ import (
 // @Description	Returns all agenda entries for a specific listing owned by the authenticated user.
 // @Tags		Listing Schedules
 // @Produce	json
-// @Param	listingIdentityId	query	int64	true	"Listing identity identifier" example(3241)
-// @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)" example(2025-01-01T00:00:00Z)
-// @Param	rangeTo	query	string	false	"End of time range (RFC3339)" example(2025-01-07T23:59:59Z)
-// @Param	page	query	int	false	"Page number" example(1)
-// @Param	limit	query	int	false	"Items per page" example(20)
+// @Param	listingIdentityId	query	int64	true	"Listing identity identifier" Extensions(x-example=3241)
+// @Param	rangeFrom	query	string	false	"Start of time range (RFC3339)" Extensions(x-example=2025-01-01T00:00:00Z)
+// @Param	rangeTo	query	string	false	"End of time range (RFC3339)" Extensions(x-example=2025-01-07T23:59:59Z)
+// @Param	page	query	int	false	"Page number" Extensions(x-example=1)
+// @Param	limit	query	int	false	"Items per page" Extensions(x-example=20)
 // @Param	timezone	query	string	false	"Timezone identifier (IANA)" default(America/Sao_Paulo)
 // @Success	200	{object}	dto.ListingAgendaDetailResponse
 // @Failure	400	{object}	dto.ErrorResponse

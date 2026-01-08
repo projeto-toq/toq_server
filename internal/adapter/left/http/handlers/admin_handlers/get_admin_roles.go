@@ -16,15 +16,15 @@ import (
 //	@Summary      List roles with pagination
 //	@Tags         Admin Roles
 //	@Produce      json
-//	@Param        page          query  int    false "Page number" default(1) example(1)
-//	@Param        limit         query  int    false "Page size" default(20) example(20)
-//	@Param        name          query  string false "Filter by name (supports '*' wildcard)" example("*Manager*")
-//	@Param        slug          query  string false "Filter by slug (supports '*' wildcard)" example("*admin*")
-//	@Param        description   query  string false "Filter by description (supports '*' wildcard)" example("*acesso*")
-//	@Param        isSystemRole  query  bool   false "Filter by system role flag" example(true)
-//	@Param        isActive      query  bool   false "Filter by active flag" example(true)
-//	@Param        idFrom        query  int    false "Filter by role ID (from)" example(10)
-//	@Param        idTo          query  int    false "Filter by role ID (to)" example(200)
+//	@Param        page          query  int    false "Page number" default(1) Extensions(x-example=1)
+//	@Param        limit         query  int    false "Page size" default(20) Extensions(x-example=20)
+//	@Param        name          query  string false "Filter by name (supports '*' wildcard)" Extensions(x-example="*Manager*")
+//	@Param        slug          query  string false "Filter by slug (supports '*' wildcard)" Extensions(x-example="*admin*")
+//	@Param        description   query  string false "Filter by description (supports '*' wildcard)" Extensions(x-example="*acesso*")
+//	@Param        isSystemRole  query  bool   false "Filter by system role flag" Extensions(x-example=true)
+//	@Param        isActive      query  bool   false "Filter by active flag" Extensions(x-example=true)
+//	@Param        idFrom        query  int    false "Filter by role ID (from)" Extensions(x-example=10)
+//	@Param        idTo          query  int    false "Filter by role ID (to)" Extensions(x-example=200)
 //	@Success      200  {object}  dto.AdminListRolesResponse
 //	@Failure      400  {object}  map[string]any
 //	@Failure      401  {object}  map[string]any

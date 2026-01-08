@@ -19,10 +19,10 @@ import (
 //	@Description	Requires admin-level permissions.
 //	@Tags			Admin Permissions
 //	@Produce		json
-//	@Param			page			query		int		false	"Page number (1-indexed)"	minimum(1)	default(1)	example(1)
-//	@Param			limit			query		int		false	"Items per page"			minimum(1)	maximum(200)	default(50)	example(50)
-//	@Param			method			query		string	false	"Filter by HTTP method (case-insensitive)"	Enums(GET, POST, PUT, DELETE, PATCH)	example(GET)
-//	@Param			pathPattern		query		string	false	"Filter by path substring (case-insensitive)"	example(admin)
+//	@Param			page			query		int		false	"Page number (1-indexed)"	minimum(1)	default(1)	Extensions(x-example=1)
+//	@Param			limit			query		int		false	"Items per page"			minimum(1)	maximum(200)	default(50)	Extensions(x-example=50)
+//	@Param			method			query		string	false	"Filter by HTTP method (case-insensitive)"	Enums(GET, POST, PUT, DELETE, PATCH)	Extensions(x-example=GET)
+//	@Param			pathPattern		query		string	false	"Filter by path substring (case-insensitive)"	Extensions(x-example=admin)
 //	@Success		200				{object}	dto.AdminListRoutesResponse	"Paginated list of routes"
 //	@Failure		400				{object}	map[string]any				"Invalid query parameters"
 //	@Failure		401				{object}	map[string]any				"Unauthorized (missing or invalid token)"

@@ -46,7 +46,7 @@ import (
 //     @Accept			json
 //     @Produce		json
 //     @Security		BearerAuth
-//     @Param			Authorization	header	string						true	"Bearer token for authentication"	example(Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
+//     @Param			Authorization	header	string						true	"Bearer token for authentication"	Extensions(x-example=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
 //     @Param			request			body	dto.GetListingDetailRequest	true	"Listing identity identifier"
 //     @Success		200				{object}	dto.ListingDetailResponse	"Listing details successfully retrieved"
 //     @Failure		400				{object}	dto.ErrorResponse			"Invalid request format (missing listingIdentityId or invalid value)"

@@ -6,40 +6,31 @@
 
 ## 🎯 Problema / Solicitação
 
-O endpoint de detalhes de visita do listing `POST /visits/detail` foi refatorado para responder com dados do listing, segundo abaixo:
-```json
-{
-  "firstOwnerActionAt": "2025-01-10T14:05:00Z",
-  "id": 456,
-  "listing": {
-    "city": "São Paulo",
-    "complement": "apto 82",
-    "description": "Apartamento amplo com três suítes e vista livre.",
-    "neighborhood": "Moema",
-    "number": "1234",
-    "state": "SP",
-    "street": "Av. Ibirapuera",
-    "title": "Cobertura incrível em Moema",
-    "zipCode": "04534011"
-  },
-  "listingIdentityId": 123,
-  "listingVersion": 1,
-  "notes": "string",
-  "ownerUserId": 10,
-  "rejectionReason": "string",
-  "requesterUserId": 5,
-  "scheduledEnd": "2025-01-10T14:30:00Z",
-  "scheduledStart": "2025-01-10T14:00:00Z",
-  "source": "APP",
-  "status": "PENDING"
-}
-```
-Ja os endpoints de `GET /visits/owner` e `GET /visits/realtor` estao com odoc swagger informando que a resposta contem os dados do endereço, mesma resposta de cima, porem na pratica não estao retornando.
+Ao executar o comando `make swagger` no TOQ Server, o processo retorna múltiplos avisos relacionados à avaliação de constantes em pacotes externos, conforme o log abaixo:
+Generating Swagger...
+make swagger
+make[1]: Entering directory '/codigos/go_code/toq_server'
+/home/toq_admin/go/bin/swag init -g cmd/toq_server.go -o docs --parseDependency --parseInternal
+2026/01/08 10:19:10 Generate swagger docs....
+2026/01/08 10:19:10 Generate general API Info, search dir:./
+2026/01/08 10:19:10 warning: failed to get package name in dir: ./, error: execute go list command, exit status 1, stdout:, stderr:no Go files in /codigos/go_code/toq_server
+2026/01/08 10:19:17 warning: failed to evaluate const multiplier at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:33:2, strconv.ParseUint: parsing "47026247687942121848144207491837523525": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const multiplier at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:33:2, strconv.ParseUint: parsing "47026247687942121848144207491837523525": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const multiplier at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:33:2, strconv.ParseUint: parsing "47026247687942121848144207491837523525": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const increment at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:37:2, strconv.ParseUint: parsing "117397592171526113268558934119004209487": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const increment at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:37:2, strconv.ParseUint: parsing "117397592171526113268558934119004209487": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const increment at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:37:2, strconv.ParseUint: parsing "117397592171526113268558934119004209487": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const initializer at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:42:2, strconv.ParseUint: parsing "245720598905631564143578724636268694099": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const initializer at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:42:2, strconv.ParseUint: parsing "245720598905631564143578724636268694099": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const initializer at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:42:2, strconv.ParseUint: parsing "245720598905631564143578724636268694099": value out of range
+2026/01/08 10:19:17 warning: failed to evaluate const mProfCycleWrap at /usr/local/go/src/runtime/mprof.go:179:7, reflect: call of reflect.Value.Len on zero Value
 
-Creio que compartilham o mesmo DTO mas o service não está hidratando a resposta para o handler.
+alem disso, existem estas mensagens no browser do Swagger UI:
+{"messages":["attribute paths.'/admin/holidays/calendars'(get).[scope].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[state].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[city].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[search].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[onlyActive].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[page].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[limit].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[calendarId].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[from].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[to].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[page].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[limit].example is unexpected","attribute paths.'/admin/listing/catalog'(get).[category].example is unexpected","attribute paths.'/admin/permissions'(get).[page].example is unexpected","attribute paths.'/admin/permissions'(get).[limit].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[page].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[limit].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[method].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[pathPattern].example is unexpected","attribute paths.'/admin/role-permissions'(get).[page].example is unexpected","attribute paths.'/admin/role-permissions'(get).[limit].example is unexpected","attribute paths.'/admin/roles'(get).[page].example is unexpected","attribute paths.'/admin/roles'(get).[limit].example is unexpected","attribute paths.'/admin/roles'(get).[name].example is unexpected","attribute paths.'/admin/roles'(get).[slug].example is unexpected","attribute paths.'/admin/roles'(get).[description].example is unexpected","attribute paths.'/admin/roles'(get).[isSystemRole].example is unexpected","attribute paths.'/admin/roles'(get).[isActive].example is unexpected","attribute paths.'/admin/roles'(get).[idFrom].example is unexpected","attribute paths.'/admin/roles'(get).[idTo].example is unexpected","attribute paths.'/admin/users'(get).[page].example is unexpected","attribute paths.'/admin/users'(get).[limit].example is unexpected","attribute paths.'/admin/users'(get).[roleName].example is unexpected","attribute paths.'/admin/users'(get).[roleSlug].example is unexpected","attribute paths.'/admin/users'(get).[roleStatus].example is unexpected","attribute paths.'/admin/users'(get).[isSystemRole].example is unexpected","attribute paths.'/admin/users'(get).[fullName].example is unexpected","attribute paths.'/admin/users'(get).[cpf].example is unexpected","attribute paths.'/admin/users'(get).[email].example is unexpected","attribute paths.'/admin/users'(get).[phoneNumber].example is unexpected","attribute paths.'/admin/users'(get).[deleted].example is unexpected","attribute paths.'/admin/users'(get).[idFrom].example is unexpected","attribute paths.'/admin/users'(get).[idTo].example is unexpected","attribute paths.'/admin/users'(get).[bornAtFrom].example is unexpected","attribute paths.'/admin/users'(get).[bornAtTo].example is unexpected","attribute paths.'/admin/users'(get).[lastActivityFrom].example is unexpected","attribute paths.'/admin/users'(get).[lastActivityTo].example is unexpected","attribute paths.'/admin/users/creci/pending'(get).[page].example is unexpected","attribute paths.'/admin/users/creci/pending'(get).[limit].example is unexpected","attribute paths.'/listings'(get).[Authorization].example is unexpected","attribute paths.'/listings'(get).[page].example is unexpected","attribute paths.'/listings'(get).[limit].example is unexpected","attribute paths.'/listings'(get).[sortBy].example is unexpected","attribute paths.'/listings'(get).[sortOrder].example is unexpected","attribute paths.'/listings'(get).[status].example is unexpected","attribute paths.'/listings'(get).[code].example is unexpected","attribute paths.'/listings'(get).[title].example is unexpected","attribute paths.'/listings'(get).[userId].example is unexpected","attribute paths.'/listings'(get).[zipCode].example is unexpected","attribute paths.'/listings'(get).[city].example is unexpected","attribute paths.'/listings'(get).[neighborhood].example is unexpected","attribute paths.'/listings'(get).[minSell].example is unexpected","attribute paths.'/listings'(get).[maxSell].example is unexpected","attribute paths.'/listings'(get).[minRent].example is unexpected","attribute paths.'/listings'(get).[maxRent].example is unexpected","attribute paths.'/listings'(get).[minLandSize].example is unexpected","attribute paths.'/listings'(get).[maxLandSize].example is unexpected","attribute paths.'/listings'(get).[minSuites].example is unexpected","attribute paths.'/listings'(get).[maxSuites].example is unexpected","attribute paths.'/listings'(get).[includeAllVersions].example is unexpected","attribute paths.'/listings/detail'(post).[Authorization].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[from].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[to].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[period].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[listingIdentityId].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[timezone].example is unexpected","attribute paths.'/listings/versions'(post).[Authorization].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[rangeFrom].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[rangeTo].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[page].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[size].example is unexpected","attribute paths.'/schedules/listing'(get).[listingIdentityId].example is unexpected","attribute paths.'/schedules/listing'(get).[rangeFrom].example is unexpected","attribute paths.'/schedules/listing'(get).[rangeTo].example is unexpected","attribute paths.'/schedules/listing'(get).[page].example is unexpected","attribute paths.'/schedules/listing'(get).[limit].example is unexpected","attribute paths.'/schedules/listing/block'(get).[listingIdentityId].example is unexpected","attribute paths.'/schedules/listing/block'(get).[weekDays].example is unexpected","attribute paths.'/visits/owner'(get).[listingIdentityId].example is unexpected","attribute paths.'/visits/owner'(get).[from].example is unexpected","attribute paths.'/visits/owner'(get).[to].example is unexpected","attribute paths.'/visits/realtor'(get).[listingIdentityId].example is unexpected","attribute paths.'/visits/realtor'(get).[from].example is unexpected","attribute paths.'/visits/realtor'(get).[to].example is unexpected"],"schemaValidationMessages":[]}
+
 
 Assim:
-1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual e identifique a causa raiz do problema
+1. Analise o guia do projeto `docs/toq_server_go_guide.md`, o código atual as versões de swagger ui e plugin e identifique a causa raiz do problema
 2. Proponha um plano detalhado de refatoração com code skeletons para corrigir o problema, seguindo estritamente as regras de arquitetura do manual `docs/toq_server_go_guide.md` (observabilidade, erros, transações, etc).
 
 ---

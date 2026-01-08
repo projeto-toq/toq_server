@@ -17,10 +17,10 @@ import (
 // @Description  Lists time-off periods for the authenticated photographer within a date range.
 // @Tags         Photographer
 // @Produce      json
-// @Param        rangeFrom query string true "Range start (RFC3339)" example("2025-07-01T00:00:00Z")
-// @Param        rangeTo query string true "Range end (RFC3339)" example("2025-07-31T23:59:59Z")
-// @Param        page query int false "Page number" minimum(1) example(1)
-// @Param        size query int false "Items per page" minimum(1) example(20)
+// @Param        rangeFrom query string true "Range start (RFC3339)" Extensions(x-example="2025-07-01T00:00:00Z")
+// @Param        rangeTo query string true "Range end (RFC3339)" Extensions(x-example="2025-07-31T23:59:59Z")
+// @Param        page query int false "Page number" minimum(1) Extensions(x-example=1)
+// @Param        size query int false "Items per page" minimum(1) Extensions(x-example=20)
 // @Success      200 {object} dto.ListPhotographerTimeOffResponse
 // @Failure      400 {object} dto.ErrorResponse
 // @Failure      500 {object} dto.ErrorResponse

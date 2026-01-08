@@ -24,7 +24,7 @@ import (
 // @Accept      json
 // @Produce     json
 // @Security    BearerAuth
-// @Param       Authorization header string                           true  "Bearer token for authentication" example(Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
+// @Param       Authorization header string                           true  "Bearer token for authentication" Extensions(x-example=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
 // @Param       request       body   dto.ListListingVersionsRequest  true  "Listing identity ID and filter options"
 // @Success     200           {object} dto.ListListingVersionsResponse "List of versions with active flag"
 // @Failure     400           {object} dto.ErrorResponse               "Invalid request body or validation error"

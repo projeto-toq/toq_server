@@ -1,5 +1,6 @@
 GOPATH_BIN := $(shell go env GOPATH)/bin
 APP_MAIN := cmd/toq_server.go
+SWAG_MAIN := $(abspath $(APP_MAIN))
 BIN_DIR := bin
 BINARY := $(BIN_DIR)/toq_server
 COMPOSE := docker compose -f docker-compose.yml
@@ -50,7 +51,7 @@ $(SWAG):
 	go install github.com/swaggo/swag/cmd/swag@v1.16.6
 
 swagger: $(SWAG)
-	$(SWAG) init -g $(APP_MAIN) -o docs --parseDependency --parseInternal
+	cd cmd && $(SWAG) init -g toq_server.go -o ../docs --parseDependency --parseInternal --parseDepth 1
 
 reload-toq_server:
 	@echo "Stopping toq_server..."

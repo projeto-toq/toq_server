@@ -25,14 +25,14 @@ const (
 //	@Tags      Listing Photo Sessions
 //	@Accept    json
 //	@Produce   json
-//	@Param     from      query    string false "Start date filter (YYYY-MM-DD)" Format(date) example(2025-10-20)
-//	@Param     to        query    string false "End date filter (YYYY-MM-DD)" Format(date) example(2025-10-31)
-//	@Param     period    query    string false "Slot period" Enums(MORNING,AFTERNOON) example(MORNING)
+//	@Param     from      query    string false "Start date filter (YYYY-MM-DD)" Format(date) Extensions(x-example=2025-10-20)
+//	@Param     to        query    string false "End date filter (YYYY-MM-DD)" Format(date) Extensions(x-example=2025-10-31)
+//	@Param     period    query    string false "Slot period" Enums(MORNING,AFTERNOON) Extensions(x-example=MORNING)
 //	@Param     page      query    int    false "Page number" default(1)
 //	@Param     size      query    int    false "Page size" default(20)
 //	@Param     sort      query    string false "Sort order" Enums(start_asc,start_desc,photographer_asc,photographer_desc) default(start_asc)
-//	@Param     listingIdentityId query    int    true  "Listing identifier" example(1024)
-//	@Param     timezone  query    string true  "Listing timezone" example(America/Sao_Paulo)
+//	@Param     listingIdentityId query    int    true  "Listing identifier" Extensions(x-example=1024)
+//	@Param     timezone  query    string true  "Listing timezone" Extensions(x-example=America/Sao_Paulo)
 //	@Success   200 {object} dto.ListPhotographerSlotsResponse
 //	@Failure   400 {object} dto.ErrorResponse "Invalid filters"
 //	@Failure   401 {object} dto.ErrorResponse "Unauthorized"

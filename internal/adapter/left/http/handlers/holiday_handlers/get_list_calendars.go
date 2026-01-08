@@ -20,13 +20,13 @@ import (
 // @Tags		Admin Holidays
 // @Accept		json
 // @Produce	json
-// @Param		 scope	query	string	false	"Calendar scope (NATIONAL|STATE|CITY)" example("STATE")
-// @Param		 state	query	string	false	"State abbreviation" example("SP")
-// @Param		 city	query	string	false	"City name" example("Campinas")
-// @Param		 search	query	string	false	"Free text search" example("Christmas")
-// @Param		 onlyActive	query	bool	false	"Filter active calendars" example(true)
-// @Param		 page	query	int	false	"Page number" example(1)
-// @Param		 limit	query	int	false	"Page size" example(20)
+// @Param		 scope	query	string	false	"Calendar scope (NATIONAL|STATE|CITY)" Extensions(x-example="STATE")
+// @Param		 state	query	string	false	"State abbreviation" Extensions(x-example="SP")
+// @Param		 city	query	string	false	"City name" Extensions(x-example="Campinas")
+// @Param		 search	query	string	false	"Free text search" Extensions(x-example="Christmas")
+// @Param		 onlyActive	query	bool	false	"Filter active calendars" Extensions(x-example=true)
+// @Param		 page	query	int	false	"Page number" Extensions(x-example=1)
+// @Param		 limit	query	int	false	"Page size" Extensions(x-example=20)
 // @Success	200	{object}	dto.HolidayCalendarsListResponse
 // @Failure	400	{object}	dto.ErrorResponse
 // @Failure	401	{object}	dto.ErrorResponse

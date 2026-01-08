@@ -18,8 +18,8 @@ import (
 // @Description Returns the recurring blocking rules configured for a listing owned by the authenticated user.
 // @Tags        Listing Schedules
 // @Produce     json
-// @Param       listingIdentityId query int64  true  "Listing identity identifier" example(3241)
-// @Param       weekDays  query []string false "Weekdays filter" collectionFormat(multi) example(MONDAY)
+// @Param       listingIdentityId query int64  true  "Listing identity identifier" Extensions(x-example=3241)
+// @Param       weekDays  query []string false "Weekdays filter" collectionFormat(multi) Extensions(x-example=MONDAY)
 // @Success     200 {object} dto.ScheduleRulesResponse
 // @Failure     400 {object} dto.ErrorResponse
 // @Failure     401 {object} dto.ErrorResponse

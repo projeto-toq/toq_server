@@ -25,32 +25,32 @@ import (
 //	@Tags         Listings
 //	@Produce      json
 //	@Security     BearerAuth
-//	@Param        Authorization       header  string  true   "Bearer token for authentication" example(Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
-//	@Param        page                query   int     false  "Page number (1-indexed)" minimum(1) default(1) example(1)
-//	@Param        limit               query   int     false  "Items per page" minimum(1) maximum(100) default(20) example(20)
-//	@Param        sortBy              query   string  false  "Field to sort by" Enums(id, status) default(id) example(id)
-//	@Param        sortOrder           query   string  false  "Sort direction" Enums(asc, desc) default(desc) example(desc)
-//	@Param        status              query   string  false  "Filter by listing status (enum name or numeric)" example("PUBLISHED")
-//	@Param        code                query   int     false  "Filter by exact listing code" example(1024)
-//	@Param        title               query   string  false  "Filter by listing title/description (supports '*' wildcard)" example("*garden*")
-//	@Param        userId              query   int     false  "Filter by owner user ID (owners auto-filtered to their own listings)" example(55)
-//	@Param        zipCode             query   string  false  "Filter by zip code (digits only; supports '*' wildcard)" example("06543*")
-//	@Param        city                query   string  false  "Filter by city (supports '*' wildcard)" example("*Paulista*")
-//	@Param        neighborhood        query   string  false  "Filter by neighborhood (supports '*' wildcard)" example("*Centro*")
-//	@Param        minSell             query   number  false  "Minimum sell price" example(100000)
-//	@Param        maxSell             query   number  false  "Maximum sell price" example(900000)
-//	@Param        minRent             query   number  false  "Minimum rent price" example(1500)
-//	@Param        maxRent             query   number  false  "Maximum rent price" example(8000)
-//	@Param        minLandSize         query   number  false  "Minimum land size in square meters" example(120.5)
-//	@Param        maxLandSize         query   number  false  "Maximum land size in square meters" example(500.75)
-//	@Param        minSuites           query   int     false  "Minimum suite count (from feature 'Suites')" example(2)
-//	@Param        maxSuites           query   int     false  "Maximum suite count (from feature 'Suites')" example(4)
-//	@Param        includeAllVersions  query   bool    false  "Include all versions (active + draft). Default: false (active only)" example(false)
+//	@Param        Authorization       header  string  true   "Bearer token for authentication" Extensions(x-example=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
+//	@Param        page                query   int     false  "Page number (1-indexed)" minimum(1) default(1) Extensions(x-example=1)
+//	@Param        limit               query   int     false  "Items per page" minimum(1) maximum(100) default(20) Extensions(x-example=20)
+//	@Param        sortBy              query   string  false  "Field to sort by" Enums(id, status) default(id) Extensions(x-example=id)
+//	@Param        sortOrder           query   string  false  "Sort direction" Enums(asc, desc) default(desc) Extensions(x-example=desc)
+//	@Param        status              query   string  false  "Filter by listing status (enum name or numeric)" Extensions(x-example="PUBLISHED")
+//	@Param        code                query   int     false  "Filter by exact listing code" Extensions(x-example=1024)
+//	@Param        title               query   string  false  "Filter by listing title/description (supports '*' wildcard)" Extensions(x-example="*garden*")
+//	@Param        userId              query   int     false  "Filter by owner user ID (owners auto-filtered to their own listings)" Extensions(x-example=55)
+//	@Param        zipCode             query   string  false  "Filter by zip code (digits only; supports '*' wildcard)" Extensions(x-example="06543*")
+//	@Param        city                query   string  false  "Filter by city (supports '*' wildcard)" Extensions(x-example="*Paulista*")
+//	@Param        neighborhood        query   string  false  "Filter by neighborhood (supports '*' wildcard)" Extensions(x-example="*Centro*")
+//	@Param        minSell             query   number  false  "Minimum sell price" Extensions(x-example=100000)
+//	@Param        maxSell             query   number  false  "Maximum sell price" Extensions(x-example=900000)
+//	@Param        minRent             query   number  false  "Minimum rent price" Extensions(x-example=1500)
+//	@Param        maxRent             query   number  false  "Maximum rent price" Extensions(x-example=8000)
+//	@Param        minLandSize         query   number  false  "Minimum land size in square meters" Extensions(x-example=120.5)
+//	@Param        maxLandSize         query   number  false  "Maximum land size in square meters" Extensions(x-example=500.75)
+//	@Param        minSuites           query   int     false  "Minimum suite count (from feature 'Suites')" Extensions(x-example=2)
+//	@Param        maxSuites           query   int     false  "Maximum suite count (from feature 'Suites')" Extensions(x-example=4)
+//	@Param        includeAllVersions  query   bool    false  "Include all versions (active + draft). Default: false (active only)" Extensions(x-example=false)
 //	@Success      200                 {object}  dto.ListListingsResponse         "Paginated list of listings with metadata"
 //	@Failure      400                 {object}  dto.ErrorResponse                "Invalid request parameters (malformed sortBy, sortOrder, or filter values)"
 //	@Failure      401                 {object}  dto.ErrorResponse                "Unauthorized (missing or invalid token)"
 //	@Failure      403                 {object}  dto.ErrorResponse                "Forbidden (user lacks permission to access this resource)"
-//	@Failure      422                 {object}  dto.ErrorResponse                "Validation failed (invalid enum values, range errors)" example({"code":422,"message":"Validation failed","details":{"field":"sortBy","error":"Invalid sort field"}})
+//	@Failure      422                 {object}  dto.ErrorResponse                "Validation failed (invalid enum values, range errors)" Extensions(x-example={"code":422,"message":"Validation failed","details":{"field":"sortBy","error":"Invalid sort field"}})
 //	@Failure      500                 {object}  dto.ErrorResponse                "Internal server error"
 //	@Router       /listings [get]
 func (lh *ListingHandler) ListListings(c *gin.Context) {

@@ -16,8 +16,8 @@ import (
 //	@Summary	List permissions with pagination
 //	@Tags		Admin Permissions
 //	@Produce	json
-//	@Param		page		query	int	false	"Page number" default(1) example(1)
-//	@Param		limit		query	int	false	"Page size" default(20) example(20)
+//	@Param		page		query	int	false	"Page number" default(1) Extensions(x-example=1)
+//	@Param		limit		query	int	false	"Page size" default(20) Extensions(x-example=20)
 //	@Param		name		query	string	false	"Filter by name (supports '*' wildcard)"
 //	@Param		action		query	string	false	"Filter by action (supports '*' wildcard)"
 //	@Param		isActive	query	bool	false	"Filter by active flag"

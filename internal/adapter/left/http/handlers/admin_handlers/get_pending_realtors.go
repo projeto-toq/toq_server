@@ -16,8 +16,8 @@ import (
 //	@Description  Returns id, nickname, fullName, nationalID, creciNumber, creciValidity, creciState
 //	@Tags         Admin Users
 //	@Produce      json
-//	@Param        page   query  int  false  "Page number" default(1) example(1)
-//	@Param        limit  query  int  false  "Page size" default(20) example(20)
+//	@Param        page   query  int  false  "Page number" default(1) Extensions(x-example=1)
+//	@Param        limit  query  int  false  "Page size" default(20) Extensions(x-example=20)
 //	@Success      200  {object}  dto.AdminGetPendingRealtorsResponse
 //	@Failure      400  {object}  map[string]any
 //	@Failure      401  {object}  map[string]any

@@ -17,11 +17,11 @@ import (
 // @Tags        Visits
 // @Produce     json
 // @Security    BearerAuth
-// @Param       listingIdentityId query int false "Listing identity filter" example(123)
+// @Param       listingIdentityId query int false "Listing identity filter" Extensions(x-example=123)
 // @Param       status            query []string false "Statuses" collectionFormat(multi)
 // @Param       type              query []string false "Visit types" collectionFormat(multi)
-// @Param       from              query string false "Start date/time (RFC3339)" example("2025-01-01T00:00:00Z")
-// @Param       to                query string false "End date/time (RFC3339)" example("2025-01-31T23:59:59Z")
+// @Param       from              query string false "Start date/time (RFC3339)" Extensions(x-example="2025-01-01T00:00:00Z")
+// @Param       to                query string false "End date/time (RFC3339)" Extensions(x-example="2025-01-31T23:59:59Z")
 // @Param       page              query int false "Page" default(1)
 // @Param       limit             query int false "Page size" default(20)
 // @Success     200 {object} dto.VisitListResponse
