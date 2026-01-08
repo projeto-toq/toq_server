@@ -6,27 +6,66 @@
 
 ## 🎯 Problema / Solicitação
 
-Ao executar o comando `make swagger` no TOQ Server, o processo retorna múltiplos avisos relacionados à avaliação de constantes em pacotes externos, conforme o log abaixo:
-Generating Swagger...
-make swagger
-make[1]: Entering directory '/codigos/go_code/toq_server'
-/home/toq_admin/go/bin/swag init -g cmd/toq_server.go -o docs --parseDependency --parseInternal
-2026/01/08 10:19:10 Generate swagger docs....
-2026/01/08 10:19:10 Generate general API Info, search dir:./
-2026/01/08 10:19:10 warning: failed to get package name in dir: ./, error: execute go list command, exit status 1, stdout:, stderr:no Go files in /codigos/go_code/toq_server
-2026/01/08 10:19:17 warning: failed to evaluate const multiplier at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:33:2, strconv.ParseUint: parsing "47026247687942121848144207491837523525": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const multiplier at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:33:2, strconv.ParseUint: parsing "47026247687942121848144207491837523525": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const multiplier at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:33:2, strconv.ParseUint: parsing "47026247687942121848144207491837523525": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const increment at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:37:2, strconv.ParseUint: parsing "117397592171526113268558934119004209487": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const increment at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:37:2, strconv.ParseUint: parsing "117397592171526113268558934119004209487": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const increment at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:37:2, strconv.ParseUint: parsing "117397592171526113268558934119004209487": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const initializer at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:42:2, strconv.ParseUint: parsing "245720598905631564143578724636268694099": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const initializer at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:42:2, strconv.ParseUint: parsing "245720598905631564143578724636268694099": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const initializer at /home/toq_admin/go/pkg/mod/golang.org/x/exp@v0.0.0-20240525044651-4c93da0ed11d/rand/rng.go:42:2, strconv.ParseUint: parsing "245720598905631564143578724636268694099": value out of range
-2026/01/08 10:19:17 warning: failed to evaluate const mProfCycleWrap at /usr/local/go/src/runtime/mprof.go:179:7, reflect: call of reflect.Value.Len on zero Value
-
-alem disso, existem estas mensagens no browser do Swagger UI:
-{"messages":["attribute paths.'/admin/holidays/calendars'(get).[scope].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[state].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[city].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[search].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[onlyActive].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[page].example is unexpected","attribute paths.'/admin/holidays/calendars'(get).[limit].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[calendarId].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[from].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[to].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[page].example is unexpected","attribute paths.'/admin/holidays/dates'(get).[limit].example is unexpected","attribute paths.'/admin/listing/catalog'(get).[category].example is unexpected","attribute paths.'/admin/permissions'(get).[page].example is unexpected","attribute paths.'/admin/permissions'(get).[limit].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[page].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[limit].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[method].example is unexpected","attribute paths.'/admin/permissions/routes'(get).[pathPattern].example is unexpected","attribute paths.'/admin/role-permissions'(get).[page].example is unexpected","attribute paths.'/admin/role-permissions'(get).[limit].example is unexpected","attribute paths.'/admin/roles'(get).[page].example is unexpected","attribute paths.'/admin/roles'(get).[limit].example is unexpected","attribute paths.'/admin/roles'(get).[name].example is unexpected","attribute paths.'/admin/roles'(get).[slug].example is unexpected","attribute paths.'/admin/roles'(get).[description].example is unexpected","attribute paths.'/admin/roles'(get).[isSystemRole].example is unexpected","attribute paths.'/admin/roles'(get).[isActive].example is unexpected","attribute paths.'/admin/roles'(get).[idFrom].example is unexpected","attribute paths.'/admin/roles'(get).[idTo].example is unexpected","attribute paths.'/admin/users'(get).[page].example is unexpected","attribute paths.'/admin/users'(get).[limit].example is unexpected","attribute paths.'/admin/users'(get).[roleName].example is unexpected","attribute paths.'/admin/users'(get).[roleSlug].example is unexpected","attribute paths.'/admin/users'(get).[roleStatus].example is unexpected","attribute paths.'/admin/users'(get).[isSystemRole].example is unexpected","attribute paths.'/admin/users'(get).[fullName].example is unexpected","attribute paths.'/admin/users'(get).[cpf].example is unexpected","attribute paths.'/admin/users'(get).[email].example is unexpected","attribute paths.'/admin/users'(get).[phoneNumber].example is unexpected","attribute paths.'/admin/users'(get).[deleted].example is unexpected","attribute paths.'/admin/users'(get).[idFrom].example is unexpected","attribute paths.'/admin/users'(get).[idTo].example is unexpected","attribute paths.'/admin/users'(get).[bornAtFrom].example is unexpected","attribute paths.'/admin/users'(get).[bornAtTo].example is unexpected","attribute paths.'/admin/users'(get).[lastActivityFrom].example is unexpected","attribute paths.'/admin/users'(get).[lastActivityTo].example is unexpected","attribute paths.'/admin/users/creci/pending'(get).[page].example is unexpected","attribute paths.'/admin/users/creci/pending'(get).[limit].example is unexpected","attribute paths.'/listings'(get).[Authorization].example is unexpected","attribute paths.'/listings'(get).[page].example is unexpected","attribute paths.'/listings'(get).[limit].example is unexpected","attribute paths.'/listings'(get).[sortBy].example is unexpected","attribute paths.'/listings'(get).[sortOrder].example is unexpected","attribute paths.'/listings'(get).[status].example is unexpected","attribute paths.'/listings'(get).[code].example is unexpected","attribute paths.'/listings'(get).[title].example is unexpected","attribute paths.'/listings'(get).[userId].example is unexpected","attribute paths.'/listings'(get).[zipCode].example is unexpected","attribute paths.'/listings'(get).[city].example is unexpected","attribute paths.'/listings'(get).[neighborhood].example is unexpected","attribute paths.'/listings'(get).[minSell].example is unexpected","attribute paths.'/listings'(get).[maxSell].example is unexpected","attribute paths.'/listings'(get).[minRent].example is unexpected","attribute paths.'/listings'(get).[maxRent].example is unexpected","attribute paths.'/listings'(get).[minLandSize].example is unexpected","attribute paths.'/listings'(get).[maxLandSize].example is unexpected","attribute paths.'/listings'(get).[minSuites].example is unexpected","attribute paths.'/listings'(get).[maxSuites].example is unexpected","attribute paths.'/listings'(get).[includeAllVersions].example is unexpected","attribute paths.'/listings/detail'(post).[Authorization].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[from].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[to].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[period].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[listingIdentityId].example is unexpected","attribute paths.'/listings/photo-session/slots'(get).[timezone].example is unexpected","attribute paths.'/listings/versions'(post).[Authorization].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[rangeFrom].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[rangeTo].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[page].example is unexpected","attribute paths.'/photographer/agenda/time-off'(get).[size].example is unexpected","attribute paths.'/schedules/listing'(get).[listingIdentityId].example is unexpected","attribute paths.'/schedules/listing'(get).[rangeFrom].example is unexpected","attribute paths.'/schedules/listing'(get).[rangeTo].example is unexpected","attribute paths.'/schedules/listing'(get).[page].example is unexpected","attribute paths.'/schedules/listing'(get).[limit].example is unexpected","attribute paths.'/schedules/listing/block'(get).[listingIdentityId].example is unexpected","attribute paths.'/schedules/listing/block'(get).[weekDays].example is unexpected","attribute paths.'/visits/owner'(get).[listingIdentityId].example is unexpected","attribute paths.'/visits/owner'(get).[from].example is unexpected","attribute paths.'/visits/owner'(get).[to].example is unexpected","attribute paths.'/visits/realtor'(get).[listingIdentityId].example is unexpected","attribute paths.'/visits/realtor'(get).[from].example is unexpected","attribute paths.'/visits/realtor'(get).[to].example is unexpected"],"schemaValidationMessages":[]}
+O sistema de propostas de um lisitng, implmentado por `package proposalmodel`, `package proposalservice`, `package proposalrepository`, `package mysqlproposaladapter` e `package proposalhandlers`, possui os esndpoints:
+- `GET /proposals/owner` e `GET /proposals/realtor` que hoje possuem a seguinte resposta:
+```json
+{
+  "items": [
+    {
+      "acceptedAt": "string",
+      "cancelledAt": "string",
+      "documentsCount": 0,
+      "id": 0,
+      "listingIdentityId": 0,
+      "proposalText": "string",
+      "rejectedAt": "string",
+      "rejectionReason": "string",
+      "status": "string"
+    }
+  ],
+  "total": 0
+}
+```
+é necessário que ambas passem a retornar o documento PDF da proposta:
+```json
+  "documents": [
+    {
+      "base64Payload": "string",
+      "fileName": "string",
+      "fileSizeBytes": 0,
+      "id": 0,
+      "mimeType": "string"
+    }
+  ]
+```
+, como é feito pelo `POST /proposals/detail` cuja resposta é:
+```json
+{
+  "documents": [
+    {
+      "base64Payload": "string",
+      "fileName": "string",
+      "fileSizeBytes": 0,
+      "id": 0,
+      "mimeType": "string"
+    }
+  ],
+  "proposal": {
+    "acceptedAt": "string",
+    "cancelledAt": "string",
+    "documentsCount": 0,
+    "id": 0,
+    "listingIdentityId": 0,
+    "proposalText": "string",
+    "rejectedAt": "string",
+    "rejectionReason": "string",
+    "status": "string"
+  }
+}
+```
+Adicionalmente, os 3 endpoints `POST /proposals/detail`, `GET /proposals/owner` passem a retornar também o realtor que criou a proposta com os seguintes dados:
+name, nickname, quanto tempo usa a toq (em meses) e quantidade de propostas criadas na plataforma.
+Os campo quantos meses usa a toq e quantidade de propostas criadas na plataforma não possuem campos específicos na base de dados. Sugira o memlor método para obter estas informações, seja por queries ou por alteraçÃo na base de dados. O modelo atual está em `scripts/db_creation.sql`, entretanto apenas apresnete as alteraçoes necessárias que serão feitas pelo DBA.
 
 
 Assim:

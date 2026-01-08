@@ -12,8 +12,8 @@ import (
 )
 
 // ListOwnerProposals lists proposals received by the owner.
-// @Summary     List owner proposals
-// @Description Owners can see all proposals received across listings with the same filters as realtors, scoped to identities they own.
+// @Summary     List owner proposals with attachments
+// @Description Owners can see all proposals received across listings with embedded PDF documents (base64) and the realtor profile summary for each item.
 // @Tags        Proposals
 // @Security    BearerAuth
 // @Produce     json
@@ -21,7 +21,7 @@ import (
 // @Param       listingIdentityId query int false "Listing identity"
 // @Param       page query int false "Page number"
 // @Param       pageSize query int false "Page size"
-// @Success     200 {object} dto.ListProposalsResponse
+// @Success     200 {object} dto.ListProposalsResponse "Each item includes documents[].base64Payload and realtor metadata"
 // @Failure     400,401,500 {object} dto.ErrorResponse
 // @Router      /proposals/owner [get]
 func (h *ProposalHandler) ListOwnerProposals(c *gin.Context) {

@@ -51,9 +51,16 @@ type ListFilter struct {
 	PageSize  int
 }
 
+// ListItem aggregates the proposal metadata, documents and realtor info for list endpoints.
+type ListItem struct {
+	Proposal  proposalmodel.ProposalInterface
+	Documents []proposalmodel.ProposalDocumentInterface
+	Realtor   proposalmodel.RealtorSummary
+}
+
 // ListResult is returned to handlers before DTO serialization.
 type ListResult struct {
-	Items []proposalmodel.ProposalInterface
+	Items []ListItem
 	Total int64
 }
 
@@ -67,4 +74,5 @@ type DetailInput struct {
 type DetailResult struct {
 	Proposal  proposalmodel.ProposalInterface
 	Documents []proposalmodel.ProposalDocumentInterface
+	Realtor   proposalmodel.RealtorSummary
 }

@@ -52,12 +52,18 @@ func (s *proposalService) GetProposalDetail(ctx context.Context, input DetailInp
 	documents, err := s.proposalRepo.ListDocuments(ctx, tx, proposal.ID(), true)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return DetailResult{Proposal: proposal, Documents: nil}, nil
+			documents = nil
+		} else {
+			utils.SetSpanError(ctx, err)
+			logger.Error("proposal.detail.documents_error", "err", err, "proposal_id", input.ProposalID)
+			return DetailResult{}, derrors.Infra("failed to list proposal documents", err)
 		}
-		utils.SetSpanError(ctx, err)
-		logger.Error("proposal.detail.documents_error", "err", err, "proposal_id", input.ProposalID)
-		return DetailResult{}, derrors.Infra("failed to list proposal documents", err)
 	}
 
-	return DetailResult{Proposal: proposal, Documents: documents}, nil
+	realtorSummary, err := s.loadSingleRealtorSummary(ctx, tx, proposal.RealtorID())
+	if err != nil {
+		return DetailResult{}, err
+	}
+
+	return DetailResult{Proposal: proposal, Documents: documents, Realtor: realtorSummary}, nil
 }

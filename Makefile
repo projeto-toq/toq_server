@@ -51,7 +51,7 @@ $(SWAG):
 	go install github.com/swaggo/swag/cmd/swag@v1.16.6
 
 swagger: $(SWAG)
-	cd cmd && $(SWAG) init -g toq_server.go -o ../docs --parseDependency --parseInternal --parseDepth 1
+	$(SWAG) init -g $(APP_MAIN) -o docs --parseDependency --parseInternal
 
 reload-toq_server:
 	@echo "Stopping toq_server..."

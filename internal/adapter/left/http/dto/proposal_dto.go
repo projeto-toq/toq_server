@@ -54,15 +54,17 @@ type GetProposalDetailRequest struct {
 
 // ProposalResponse summarizes proposal information for list views.
 type ProposalResponse struct {
-	ID                int64      `json:"id"`
-	ListingIdentityID int64      `json:"listingIdentityId"`
-	Status            string     `json:"status"`
-	ProposalText      string     `json:"proposalText"`
-	RejectionReason   *string    `json:"rejectionReason,omitempty"`
-	AcceptedAt        *time.Time `json:"acceptedAt,omitempty"`
-	RejectedAt        *time.Time `json:"rejectedAt,omitempty"`
-	CancelledAt       *time.Time `json:"cancelledAt,omitempty"`
-	DocumentsCount    int        `json:"documentsCount"`
+	ID                int64                      `json:"id"`
+	ListingIdentityID int64                      `json:"listingIdentityId"`
+	Status            string                     `json:"status"`
+	ProposalText      string                     `json:"proposalText"`
+	RejectionReason   *string                    `json:"rejectionReason,omitempty"`
+	AcceptedAt        *time.Time                 `json:"acceptedAt,omitempty"`
+	RejectedAt        *time.Time                 `json:"rejectedAt,omitempty"`
+	CancelledAt       *time.Time                 `json:"cancelledAt,omitempty"`
+	DocumentsCount    int                        `json:"documentsCount"`
+	Documents         []ProposalDocumentResponse `json:"documents"`
+	Realtor           ProposalRealtorResponse    `json:"realtor"`
 }
 
 // ProposalDocumentResponse exposes metadata and optional base64 payload.
@@ -74,10 +76,19 @@ type ProposalDocumentResponse struct {
 	Base64Payload string `json:"base64Payload,omitempty"`
 }
 
+// ProposalRealtorResponse describes the realtor that created the proposal.
+type ProposalRealtorResponse struct {
+	Name             string `json:"name"`
+	Nickname         string `json:"nickname,omitempty"`
+	UsageMonths      int    `json:"usageMonths"`
+	ProposalsCreated int64  `json:"proposalsCreated"`
+}
+
 // ProposalDetailResponse aggregates summary + documents and owner metadata.
 type ProposalDetailResponse struct {
 	Proposal  ProposalResponse           `json:"proposal"`
 	Documents []ProposalDocumentResponse `json:"documents"`
+	Realtor   ProposalRealtorResponse    `json:"realtor"`
 }
 
 // ListProposalsResponse is returned by both realtor/owner endpoints.

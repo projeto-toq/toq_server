@@ -180,7 +180,46 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 		return ListResult{}, derrors.Infra("failed to list proposals", err)
 	}
 
-	return ListResult{Items: repoResult.Items, Total: repoResult.Total}, nil
+	proposalIDs := make([]int64, 0, len(repoResult.Items))
+	realtorIDs := make([]int64, 0, len(repoResult.Items))
+	realtorSet := make(map[int64]struct{}, len(repoResult.Items))
+	for _, proposal := range repoResult.Items {
+		if proposal == nil {
+			continue
+		}
+		proposalIDs = append(proposalIDs, proposal.ID())
+		realtorID := proposal.RealtorID()
+		if realtorID > 0 {
+			if _, exists := realtorSet[realtorID]; !exists {
+				realtorSet[realtorID] = struct{}{}
+				realtorIDs = append(realtorIDs, realtorID)
+			}
+		}
+	}
+
+	documentsByProposal, err := s.loadDocumentsByProposals(ctx, tx, proposalIDs)
+	if err != nil {
+		return ListResult{}, err
+	}
+
+	realtorSummaries, err := s.loadRealtorSummaryMap(ctx, tx, realtorIDs)
+	if err != nil {
+		return ListResult{}, err
+	}
+
+	items := make([]ListItem, 0, len(repoResult.Items))
+	for _, proposal := range repoResult.Items {
+		if proposal == nil {
+			continue
+		}
+		items = append(items, ListItem{
+			Proposal:  proposal,
+			Documents: documentsByProposal[proposal.ID()],
+			Realtor:   s.getRealtorSummaryOrDefault(proposal.RealtorID(), realtorSummaries),
+		})
+	}
+
+	return ListResult{Items: items, Total: repoResult.Total}, nil
 }
 
 func (s *proposalService) buildRepositoryFilter(scope proposalmodel.ActorScope, filter ListFilter) (proposalmodel.ListFilter, error) {
@@ -252,6 +291,74 @@ func (s *proposalService) notifyProposalStatusChange(ctx context.Context, propos
 		"status":            proposal.Status().String(),
 	}
 	s.notifyUserDevices(ctx, userID, subject, body, data)
+}
+
+func (s *proposalService) loadDocumentsByProposals(ctx context.Context, tx *sql.Tx, proposalIDs []int64) (map[int64][]proposalmodel.ProposalDocumentInterface, error) {
+	if len(proposalIDs) == 0 {
+		return map[int64][]proposalmodel.ProposalDocumentInterface{}, nil
+	}
+
+	documents, err := s.proposalRepo.ListDocumentsByProposalIDs(ctx, tx, proposalIDs, true)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("proposal.list.documents_error", "err", err)
+		return nil, derrors.Infra("failed to load proposal documents", err)
+	}
+	if documents == nil {
+		documents = make(map[int64][]proposalmodel.ProposalDocumentInterface)
+	}
+	return documents, nil
+}
+
+func (s *proposalService) loadRealtorSummaryMap(ctx context.Context, tx *sql.Tx, realtorIDs []int64) (map[int64]proposalmodel.RealtorSummary, error) {
+	if len(realtorIDs) == 0 {
+		return map[int64]proposalmodel.RealtorSummary{}, nil
+	}
+
+	summaries, err := s.proposalRepo.ListRealtorSummaries(ctx, tx, realtorIDs)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("proposal.realtor.summary_error", "err", err)
+		return nil, derrors.Infra("failed to load realtor summaries", err)
+	}
+
+	result := make(map[int64]proposalmodel.RealtorSummary, len(summaries))
+	for _, summary := range summaries {
+		if summary == nil {
+			continue
+		}
+		result[summary.ID()] = summary
+	}
+	return result, nil
+}
+
+func (s *proposalService) loadSingleRealtorSummary(ctx context.Context, tx *sql.Tx, realtorID int64) (proposalmodel.RealtorSummary, error) {
+	if realtorID <= 0 {
+		return nil, nil
+	}
+	result, err := s.loadRealtorSummaryMap(ctx, tx, []int64{realtorID})
+	if err != nil {
+		return nil, err
+	}
+	return s.getRealtorSummaryOrDefault(realtorID, result), nil
+}
+
+func (s *proposalService) getRealtorSummaryOrDefault(realtorID int64, cache map[int64]proposalmodel.RealtorSummary) proposalmodel.RealtorSummary {
+	if cache != nil {
+		if summary, ok := cache[realtorID]; ok && summary != nil {
+			return summary
+		}
+	}
+	if realtorID <= 0 {
+		return nil
+	}
+	return s.blankRealtorSummary(realtorID)
+}
+
+func (s *proposalService) blankRealtorSummary(realtorID int64) proposalmodel.RealtorSummary {
+	summary := proposalmodel.NewRealtorSummary()
+	summary.SetID(realtorID)
+	return summary
 }
 
 func (s *proposalService) notifyUserDevices(ctx context.Context, userID int64, subject, body string, data map[string]string) {

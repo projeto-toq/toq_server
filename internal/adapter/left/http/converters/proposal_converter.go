@@ -167,8 +167,14 @@ func ProposalDomainToResponse(proposal proposalmodel.ProposalInterface) dto.Prop
 // ProposalListToResponse builds a response for list endpoints.
 func ProposalListToResponse(result proposalservice.ListResult) dto.ListProposalsResponse {
 	items := make([]dto.ProposalResponse, 0, len(result.Items))
-	for _, proposal := range result.Items {
-		items = append(items, ProposalDomainToResponse(proposal))
+	for _, item := range result.Items {
+		if item.Proposal == nil {
+			continue
+		}
+		response := ProposalDomainToResponse(item.Proposal)
+		response.Documents = proposalDocumentsToResponse(item.Documents)
+		response.Realtor = proposalRealtorToResponse(item.Realtor)
+		items = append(items, response)
 	}
 
 	return dto.ListProposalsResponse{
@@ -179,29 +185,17 @@ func ProposalListToResponse(result proposalservice.ListResult) dto.ListProposals
 
 // ProposalDetailToResponse aggregates proposal info and documents.
 func ProposalDetailToResponse(detail proposalservice.DetailResult) dto.ProposalDetailResponse {
-	resp := dto.ProposalDetailResponse{
-		Proposal:  ProposalDomainToResponse(detail.Proposal),
-		Documents: make([]dto.ProposalDocumentResponse, 0, len(detail.Documents)),
-	}
+	proposalDTO := ProposalDomainToResponse(detail.Proposal)
+	proposalDTO.Realtor = proposalRealtorToResponse(detail.Realtor)
+	proposalDTO.Documents = proposalDocumentsToResponse(detail.Documents)
 
-	for _, doc := range detail.Documents {
-		if doc == nil {
-			continue
-		}
-		payload := ""
-		if data := doc.FileData(); len(data) > 0 {
-			payload = base64.StdEncoding.EncodeToString(data)
-		}
-		resp.Documents = append(resp.Documents, dto.ProposalDocumentResponse{
-			ID:            doc.ID(),
-			FileName:      doc.FileName(),
-			MimeType:      doc.MimeType(),
-			FileSizeBytes: doc.FileSizeBytes(),
-			Base64Payload: payload,
-		})
-	}
+	documents := proposalDocumentsToResponse(detail.Documents)
 
-	return resp
+	return dto.ProposalDetailResponse{
+		Proposal:  proposalDTO,
+		Documents: documents,
+		Realtor:   proposalDTO.Realtor,
+	}
 }
 
 func decodeDocumentUpload(doc *dto.ProposalDocumentUpload) (*proposalservice.DocumentPayload, error) {
@@ -250,6 +244,50 @@ func convertStatuses(values []string) ([]proposalmodel.Status, error) {
 		}
 	}
 	return statuses, nil
+}
+
+func proposalDocumentsToResponse(documents []proposalmodel.ProposalDocumentInterface) []dto.ProposalDocumentResponse {
+	if len(documents) == 0 {
+		return nil
+	}
+	result := make([]dto.ProposalDocumentResponse, 0, len(documents))
+	for _, doc := range documents {
+		if doc == nil {
+			continue
+		}
+		payload := ""
+		if data := doc.FileData(); len(data) > 0 {
+			payload = base64.StdEncoding.EncodeToString(data)
+		}
+		result = append(result, dto.ProposalDocumentResponse{
+			ID:            doc.ID(),
+			FileName:      doc.FileName(),
+			MimeType:      doc.MimeType(),
+			FileSizeBytes: doc.FileSizeBytes(),
+			Base64Payload: payload,
+		})
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return result
+}
+
+func proposalRealtorToResponse(summary proposalmodel.RealtorSummary) dto.ProposalRealtorResponse {
+	if summary == nil {
+		return dto.ProposalRealtorResponse{}
+	}
+	nickname := summary.Nickname()
+	value := ""
+	if nickname.Valid {
+		value = nickname.String
+	}
+	return dto.ProposalRealtorResponse{
+		Name:             summary.Name(),
+		Nickname:         value,
+		UsageMonths:      summary.UsageMonths(),
+		ProposalsCreated: summary.ProposalsCreated(),
+	}
 }
 
 func timePtrFromNull(v sql.NullTime) *time.Time {
