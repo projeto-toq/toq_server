@@ -51,6 +51,7 @@ import (
 	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
 	mysqlholidayadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday"
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
+	mysqllistingfavoriteadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing_favorite"
 	mysqlmediaprocessingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/media_processing"
 	mysqlownermetricsadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/owner_metrics"
 	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
@@ -265,6 +266,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Listing Repository
 	listingRepo := mysqllistingadapter.NewListingAdapter(database, metrics)
 
+	// Listing Favorite Repository
+	listingFavoriteRepo := mysqllistingfavoriteadapter.NewListingFavoriteAdapter(database, metrics)
+
 	// Owner Metrics Repository
 	ownerMetricsRepo := mysqlownermetricsadapter.NewOwnerMetricsAdapter(database, metrics)
 
@@ -302,6 +306,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 		Global:           globalRepo,
 		PropertyCoverage: propertyCoverageRepo,
 		Listing:          listingRepo,
+		ListingFavorite:  listingFavoriteRepo,
 		OwnerMetrics:     ownerMetricsRepo,
 		Proposal:         proposalRepo,
 		MediaProcessing:  mediaProcessingRepo,

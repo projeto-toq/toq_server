@@ -31,6 +31,7 @@ import (
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
+	listingfavoriterepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_favorite_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
@@ -77,6 +78,7 @@ type RepositoryAdapters struct {
 	Global           globalrepoport.GlobalRepoPortInterface
 	PropertyCoverage propertycoveragerepository.RepositoryInterface
 	Listing          listingrepoport.ListingRepoPortInterface
+	ListingFavorite  listingfavoriterepository.FavoriteRepoPortInterface
 	OwnerMetrics     ownermetricsrepository.Repository
 	Proposal         proposalrepository.Repository
 	MediaProcessing  mediaprocessingrepository.RepositoryInterface

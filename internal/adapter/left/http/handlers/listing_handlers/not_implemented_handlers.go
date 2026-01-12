@@ -91,12 +91,6 @@ func (lh *ListingHandler) AddListingView(c *gin.Context) {
 	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "AddListingView service method not implemented yet")
 }
 
-// GetListingFavorites handles getting favorites for a listing
-// Service method not implemented yet
-func (lh *ListingHandler) GetListingFavorites(c *gin.Context) {
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "GetListingFavorites service method not implemented yet")
-}
-
 // AddListingFavorite handles adding a favorite to a listing
 // Service method not implemented yet
 func (lh *ListingHandler) AddListingFavorite(c *gin.Context) {
@@ -107,12 +101,6 @@ func (lh *ListingHandler) AddListingFavorite(c *gin.Context) {
 // Service method not implemented yet
 func (lh *ListingHandler) SearchListing(c *gin.Context) {
 	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "SearchListing service method not implemented yet")
-}
-
-// GetFavoriteListings handles getting favorite listings
-// Service method not implemented yet
-func (lh *ListingHandler) GetFavoriteListings(c *gin.Context) {
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "GetFavoriteListings service method not implemented yet")
 }
 
 // GetListingStatus handles getting listing status
@@ -155,18 +143,6 @@ func (lh *ListingHandler) CopyListing(c *gin.Context) {
 // Service method not implemented yet
 func (lh *ListingHandler) ShareListing(c *gin.Context) {
 	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "ShareListing service method not implemented yet")
-}
-
-// AddFavoriteListing handles adding a listing to favorites
-// Service method not implemented yet
-func (lh *ListingHandler) AddFavoriteListing(c *gin.Context) {
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "AddFavoriteListing service method not implemented yet")
-}
-
-// RemoveFavoriteListing handles removing a listing from favorites
-// Service method not implemented yet
-func (lh *ListingHandler) RemoveFavoriteListing(c *gin.Context) {
-	httperrors.SendHTTPError(c, http.StatusNotImplemented, "NOT_IMPLEMENTED", "RemoveFavoriteListing service method not implemented yet")
 }
 
 // RequestVisit handles requesting a visit

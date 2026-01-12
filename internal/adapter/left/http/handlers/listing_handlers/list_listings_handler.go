@@ -391,6 +391,8 @@ func toListingResponse(item listingservices.ListListingsItem) dto.ListingRespons
 		Number:            listing.Number(),
 		Complex:           complexValue,
 		UserID:            listing.UserID(),
+		FavoritesCount:    item.FavoritesCount,
+		IsFavorite:        item.IsFavorite,
 	}
 }
 

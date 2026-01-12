@@ -304,7 +304,9 @@ func RegisterListingRoutes(
 		listings.GET("/catalog", listingHandler.ListCatalogValues)                                           // ListCatalogValues
 
 		// Favorites (Realtor side)
-		listings.GET("/favorites", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetFavoriteListings
+		listings.GET("/favorites", listingHandler.GetFavoriteListings)
+		listings.POST("/favorites", listingHandler.AddFavoriteListing)
+		listings.DELETE("/favorites", listingHandler.RemoveFavoriteListing)
 
 		// Photo session scheduling
 		listings.GET("/photo-session/slots", listingHandler.ListPhotographerSlots)

@@ -56,6 +56,8 @@ type ListingDetailOutput struct {
 	Guarantees        []GuaranteeDetail
 	PhotoSessionID    *uint64
 	Performance       ListingPerformanceMetrics
+	FavoritesCount    int64
+	IsFavorite        bool
 }
 
 // ListingOwnerDetail exposes owner profile metadata enriched with engagement metrics.
@@ -224,8 +226,23 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	}
 	output.OwnerDetail = ownerDetail
 
-	// TODO(listing-metrics): Populate listing performance once analytics counters are available.
-	output.Performance = ListingPerformanceMetrics{}
+	// Populate favorites engagement metrics and requester flag
+	favCounts, favErr := ls.favoriteRepo.CountByListingIdentities(ctx, tx, []int64{listingIdentityId})
+	if favErr != nil {
+		utils.SetSpanError(ctx, favErr)
+		logger.Error("listing.detail.fav_count_error", "err", favErr, "listing_identity_id", listingIdentityId)
+		return output, utils.InternalError("")
+	}
+
+	output.Performance = ListingPerformanceMetrics{Favorites: favCounts[listingIdentityId]}
+	output.FavoritesCount = favCounts[listingIdentityId]
+
+	if favFlags, flagErr := ls.favoriteRepo.GetUserFlags(ctx, tx, []int64{listingIdentityId}, userID); flagErr == nil {
+		output.IsFavorite = favFlags[listingIdentityId]
+	} else {
+		utils.SetSpanError(ctx, flagErr)
+		logger.Warn("listing.detail.fav_flags_error", "err", flagErr, "listing_identity_id", listingIdentityId)
+	}
 
 	// Fetch draft version (if exists) for metadata
 	// Note: Avoid fetching all versions; only draft is needed

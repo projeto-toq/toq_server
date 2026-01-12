@@ -5,6 +5,7 @@ import (
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
+	listingfavoriterepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_favorite_repository"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
@@ -20,6 +21,7 @@ type listingService struct {
 	photoSessionSvc   photosessionservices.PhotoSessionServiceInterface
 	userRepository    userrepository.UserRepoPortInterface
 	ownerMetricsRepo  ownermetricsrepository.Repository
+	favoriteRepo      listingfavoriterepository.FavoriteRepoPortInterface
 	propertyCoverage  propertycoverageservice.PropertyCoverageServiceInterface
 	gsi               globalservice.GlobalServiceInterface
 	gcs               storageport.CloudStoragePortInterface
@@ -35,6 +37,7 @@ func NewListingService(
 	gsi globalservice.GlobalServiceInterface,
 	gcs storageport.CloudStoragePortInterface,
 	ss scheduleservices.ScheduleServiceInterface,
+	fr listingfavoriterepository.FavoriteRepoPortInterface,
 
 ) ListingServiceInterface {
 	return &listingService{
@@ -42,6 +45,7 @@ func NewListingService(
 		photoSessionSvc:   ps,
 		userRepository:    ur,
 		ownerMetricsRepo:  om,
+		favoriteRepo:      fr,
 		propertyCoverage:  pcs,
 		gsi:               gsi,
 		gcs:               gcs,
@@ -80,4 +84,7 @@ type ListingServiceInterface interface {
 	ReservePhotoSession(ctx context.Context, input ReservePhotoSessionInput) (ReservePhotoSessionOutput, error)
 	CancelPhotoSession(ctx context.Context, input CancelPhotoSessionInput) error
 	GetListingDetail(ctx context.Context, listingIdentityId int64) (ListingDetailOutput, error)
+	AddFavoriteListing(ctx context.Context, listingIdentityID int64) error
+	RemoveFavoriteListing(ctx context.Context, listingIdentityID int64) error
+	ListFavoriteListings(ctx context.Context, page, limit int) (ListFavoriteListingsOutput, error)
 }

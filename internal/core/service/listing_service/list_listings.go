@@ -66,7 +66,9 @@ type ListListingsOutput struct {
 // Currently contains only the listing entity, but designed for future extension
 // (e.g., favorite status, offer counts, etc.).
 type ListListingsItem struct {
-	Listing listingmodel.ListingInterface // Listing domain entity
+	Listing        listingmodel.ListingInterface // Listing domain entity
+	FavoritesCount int64                         // Total favorites for this listing identity
+	IsFavorite     bool                          // Whether requester has favorited this listing
 }
 
 // ListListings returns listings filtered, sorted, and paginated for admin panel or owner consumption.
@@ -183,11 +185,47 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		return ListListingsOutput{}, utils.InternalError("")
 	}
 
+	identityIDs := make([]int64, 0, len(result.Records))
+	seen := make(map[int64]struct{}, len(result.Records))
+	for _, record := range result.Records {
+		if id := record.Listing.IdentityID(); id > 0 {
+			if _, ok := seen[id]; !ok {
+				seen[id] = struct{}{}
+				identityIDs = append(identityIDs, id)
+			}
+		}
+	}
+
+	favoriteCounts := make(map[int64]int64)
+	if len(identityIDs) > 0 {
+		countMap, countErr := ls.favoriteRepo.CountByListingIdentities(ctx, tx, identityIDs)
+		if countErr != nil {
+			utils.SetSpanError(ctx, countErr)
+			logger.Error("listing.list.fav_count_error", "err", countErr)
+			return ListListingsOutput{}, utils.InternalError("")
+		}
+		favoriteCounts = countMap
+	}
+
+	userFlags := make(map[int64]bool)
+	if len(identityIDs) > 0 && input.RequesterUserID > 0 {
+		flags, flagErr := ls.favoriteRepo.GetUserFlags(ctx, tx, identityIDs, input.RequesterUserID)
+		if flagErr != nil {
+			utils.SetSpanError(ctx, flagErr)
+			logger.Error("listing.list.fav_flags_error", "err", flagErr)
+			return ListListingsOutput{}, utils.InternalError("")
+		}
+		userFlags = flags
+	}
+
 	// Convert repository records to service output items
 	items := make([]ListListingsItem, 0, len(result.Records))
 	for _, record := range result.Records {
+		identityID := record.Listing.IdentityID()
 		items = append(items, ListListingsItem{
-			Listing: record.Listing,
+			Listing:        record.Listing,
+			FavoritesCount: favoriteCounts[identityID],
+			IsFavorite:     userFlags[identityID],
 		})
 	}
 

@@ -439,6 +439,10 @@ func (c *config) InitListingHandler() {
 		slog.Error("repositoryAdapters.OwnerMetrics is nil")
 		return
 	}
+	if c.repositoryAdapters.ListingFavorite == nil {
+		slog.Error("repositoryAdapters.ListingFavorite is nil")
+		return
+	}
 	c.listingService = listingservices.NewListingService(
 		c.repositoryAdapters.Listing,
 		c.photoSessionService,
@@ -448,6 +452,7 @@ func (c *config) InitListingHandler() {
 		c.globalService,
 		c.cloudStorage,
 		c.scheduleService,
+		c.repositoryAdapters.ListingFavorite,
 	)
 	// HTTP handler initialization is done during HTTP server setup
 }

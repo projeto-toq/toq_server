@@ -211,6 +211,9 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 		Favorites: detail.Performance.Favorites,
 	}
 
+	resp.FavoritesCount = detail.FavoritesCount
+	resp.IsFavorite = detail.IsFavorite
+
 	if draftVersion, ok := listing.DraftVersion(); ok && draftVersion != nil {
 		if draftID := draftVersion.ID(); draftID > 0 {
 			resp.DraftVersionID = &draftID

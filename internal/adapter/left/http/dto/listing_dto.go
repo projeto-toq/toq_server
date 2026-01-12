@@ -298,6 +298,17 @@ type GetListingDetailRequest struct {
 	ListingIdentityID int64 `json:"listingIdentityId" binding:"required,min=1" example:"1024"`
 }
 
+// FavoriteListingRequest represents the payload to add or remove a favorite.
+type FavoriteListingRequest struct {
+	ListingIdentityID int64 `json:"listingIdentityId" binding:"required,min=1"`
+}
+
+// ListFavoriteListingsRequest captures pagination for favorites listing endpoint.
+type ListFavoriteListingsRequest struct {
+	Page  int `form:"page,default=1" binding:"min=1"`
+	Limit int `form:"limit,default=20" binding:"min=1,max=100"`
+}
+
 // CatalogItemResponse padroniza valores de catálogo retornados pelo endpoint de detalhes de listing.
 type CatalogItemResponse struct {
 	NumericValue uint8  `json:"numericValue"`
@@ -417,6 +428,8 @@ type ListingDetailResponse struct {
 	PhotoSessionID             *uint64                           `json:"photoSessionId,omitempty"`
 	Deleted                    bool                              `json:"deleted"`
 	PerformanceMetrics         ListingPerformanceMetricsResponse `json:"performanceMetrics"`
+	FavoritesCount             int64                             `json:"favoritesCount"`
+	IsFavorite                 bool                              `json:"isFavorite"`
 	CompletionForecast         string                            `json:"completionForecast,omitempty" example:"2026-06"`
 	LandBlock                  string                            `json:"landBlock,omitempty" example:"A"`
 	LandLot                    string                            `json:"landLot,omitempty" example:"15"`
@@ -867,6 +880,8 @@ type ListingResponse struct {
 	Complex           string  `json:"complex,omitempty"`
 	UserID            int64   `json:"userId"`
 	ComplexID         string  `json:"complexId,omitempty"`
+	FavoritesCount    int64   `json:"favoritesCount"`
+	IsFavorite        bool    `json:"isFavorite"`
 }
 
 // AddListingPhotosRequest represents request for adding photos to a listing

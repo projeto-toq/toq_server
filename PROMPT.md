@@ -1,34 +1,21 @@
-Segundo a regra de negócios o realtor e o owner devem ter acesso a informações especificas durante o processo de proposta a um lisiting. Além do que já existe hoje, temos os seguintes requisitos:
+Segundo a regra de negócios o realtor deve poder favoritar listings.
 
+Assim deveria haver um endpoint para:
+- adicionar um listing aos favoritos - `POST /listings/favorites/add` com o body contendo o `listingIdentityId`
+- remover um listing dos favoritos - `POST /listings/favorites/remove` com o body contendo o `listingIdentityId`
+- listar os listings favoritos - `GET /listings/favorites` deve retornar a lista de listings favoritos do realtor autenticado. A respsota deve ser semelhante a do endpoint `GET /listings`, mas contendo apenas os listings favoritados pelo realtor.
 
-### Lista de Imóveis (BUSCAR)
-**Endpoint:** `GET /listings`
+O modelo de dados não está preparado para isso, então será necessário criar uma nova tabela com os campos adequados.
 
-- Dados de endereço do imóvel
-	zip_code                string
-	street                  string
-	number                  string
-	complement              string
-	complex                 string
-	neighborhood            string
-	city                    string
-	state                   string
-  do modelo type listingVersion struct de listing_domain
-  Devem fazer parte do filter e order para a busca de listings
----
+O endpoint `POST /listings/detail` tem como parte de sua resposta os dados de performande do listinfg
+ "performanceMetrics": {
+    "favorites": 0,
+    "shares": 0,
+    "views": 0
+  },
+Entretanto favorites não está sendo hidratado na resposta. É necessário corrigir isso para que o campo `favorites` retorne a quantidade correta de vezes que o listing foi favoritado por qualquer realtor.
 
-### Detalhes do Imóvel
-**Endpoint:** `POST /listings/detail`
-
-- **Dados do Proprietário:**
-  - Nome do proprietário - campo `full_name` da entidade User
-  - Foto - URL assinada para download da foto do proprietário (usar `userService.GetPhotoDownloadURL`)
-  - Há quanto tempo tem cadastro na TOQ - calcular meses desde `created_at` da entidade User
-  - Tempos médios de resposta - buscar de `ProposalAverageSeconds() sql.NullInt64` e `VisitAverageSeconds() sql.NullInt64` de `/codigos/go_code/toq_server/internal/core/model/user_model/owner_response_metrics.go`
-- **Métricas do Imóvel:**
-  - Número de compartilhamentos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
-  - Número de Visualizações - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
-  - Número de Favoritos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
-
+Os endpoints `POST /listings/detail` e `GET /listings` deve ter um campo adicional na resposta chamado `favorite` booleano que indica se o realtor autenticado favoritou ou não o listing em questão.
 
 Analise o código atual e proponha o plano conforme o `AGENTS.md`.
+
