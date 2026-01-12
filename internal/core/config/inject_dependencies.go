@@ -306,6 +306,11 @@ func (c *config) InitVisitService() {
 		return
 	}
 
+	if c.repositoryAdapters.OwnerMetrics == nil {
+		slog.Error("repositoryAdapters.OwnerMetrics is nil")
+		return
+	}
+
 	if c.globalService == nil {
 		slog.Error("globalService is nil")
 		return
@@ -322,6 +327,7 @@ func (c *config) InitVisitService() {
 		c.repositoryAdapters.Visit,
 		c.repositoryAdapters.Listing,
 		c.repositoryAdapters.Schedule,
+		c.repositoryAdapters.OwnerMetrics,
 		c.scheduleService,
 		serviceConfig,
 	)
@@ -454,6 +460,11 @@ func (c *config) InitProposalService() {
 		return
 	}
 
+	if c.repositoryAdapters.OwnerMetrics == nil {
+		slog.Error("repositoryAdapters.OwnerMetrics is nil")
+		return
+	}
+
 	if c.globalService == nil {
 		slog.Error("globalService is nil")
 		return
@@ -462,6 +473,7 @@ func (c *config) InitProposalService() {
 	c.proposalService = proposalservice.New(
 		c.repositoryAdapters.Proposal,
 		c.repositoryAdapters.Listing,
+		c.repositoryAdapters.OwnerMetrics,
 		c.globalService,
 	)
 }

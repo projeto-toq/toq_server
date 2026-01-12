@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	proposalmodel "github.com/projeto-toq/toq_server/internal/core/model/proposal_model"
+	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -395,6 +397,41 @@ func (s *proposalService) notifyUserDevices(ctx context.Context, userID int64, s
 			logger.Error("proposal.notifications.send_error", "err", err, "user_id", userID)
 		}
 	}
+}
+
+func (s *proposalService) recordOwnerProposalResponse(ctx context.Context, tx *sql.Tx, proposal proposalmodel.ProposalInterface, actionTime time.Time) error {
+	if proposal == nil || proposal.OwnerID() <= 0 {
+		return nil
+	}
+	if s.ownerMetrics == nil {
+		return derrors.Infra("owner metrics repository unavailable", fmt.Errorf("owner metrics repository is nil"))
+	}
+	if current := proposal.FirstOwnerActionAt(); current.Valid {
+		return nil
+	}
+
+	proposal.SetFirstOwnerActionAt(sql.NullTime{Valid: true, Time: actionTime})
+	createdAt := proposal.CreatedAt()
+	if createdAt.IsZero() {
+		createdAt = actionTime
+	}
+	delta := actionTime.Sub(createdAt)
+	if delta < 0 {
+		delta = 0
+	}
+	const maxDelta = 24 * time.Hour * 365
+	if delta > maxDelta {
+		delta = maxDelta
+	}
+	input := ownermetricsrepository.ProposalResponseInput{
+		OwnerID:      proposal.OwnerID(),
+		DeltaSeconds: int64(delta / time.Second),
+		RespondedAt:  actionTime,
+	}
+	if err := s.ownerMetrics.UpsertProposalResponse(ctx, tx, input); err != nil {
+		return derrors.Infra("failed to persist owner proposal metrics", err)
+	}
+	return nil
 }
 
 func cloneData(data map[string]string) map[string]string {

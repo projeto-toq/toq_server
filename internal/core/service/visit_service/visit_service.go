@@ -5,6 +5,7 @@ import (
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	schedulerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/schedule_repository"
 	visitrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/visit_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
@@ -38,11 +39,12 @@ type Service interface {
 }
 
 // NewService wires the visit service dependencies.
-func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface, scheduleSvc scheduleservices.ScheduleServiceInterface, config Config) Service {
+func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface, ownerMetricsRepo ownermetricsrepository.Repository, scheduleSvc scheduleservices.ScheduleServiceInterface, config Config) Service {
 	return &visitService{
 		globalService: gs,
 		visitRepo:     visitRepo,
 		listingRepo:   listingRepo,
+		ownerMetrics:  ownerMetricsRepo,
 		scheduleRepo:  scheduleRepo,
 		scheduleSvc:   scheduleSvc,
 		config:        config,
@@ -53,6 +55,7 @@ type visitService struct {
 	globalService globalservice.GlobalServiceInterface
 	visitRepo     visitrepository.VisitRepositoryInterface
 	listingRepo   listingrepository.ListingRepoPortInterface
+	ownerMetrics  ownermetricsrepository.Repository
 	scheduleRepo  schedulerepository.ScheduleRepositoryInterface
 	scheduleSvc   scheduleservices.ScheduleServiceInterface
 	config        Config

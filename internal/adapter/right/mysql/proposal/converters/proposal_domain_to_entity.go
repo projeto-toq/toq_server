@@ -18,11 +18,13 @@ func ToProposalEntity(model proposalmodel.ProposalInterface) entities.ProposalEn
 			String: model.ProposalText(),
 			Valid:  model.ProposalText() != "",
 		},
-		RejectionReason: model.RejectionReason(),
-		Status:          string(model.Status()),
-		AcceptedAt:      model.AcceptedAt(),
-		RejectedAt:      model.RejectedAt(),
-		CancelledAt:     model.CancelledAt(),
+		RejectionReason:  model.RejectionReason(),
+		Status:           string(model.Status()),
+		AcceptedAt:       model.AcceptedAt(),
+		RejectedAt:       model.RejectedAt(),
+		CancelledAt:      model.CancelledAt(),
+		CreatedAt:        model.CreatedAt(),
+		FirstOwnerAction: model.FirstOwnerActionAt(),
 	}
 }
 

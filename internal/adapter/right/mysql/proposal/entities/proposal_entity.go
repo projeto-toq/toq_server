@@ -1,6 +1,9 @@
 package entities
 
-import "database/sql"
+import (
+	"database/sql"
+	"time"
+)
 
 // ProposalEntity mirrors the proposals table schema for persistence operations.
 type ProposalEntity struct {
@@ -16,4 +19,6 @@ type ProposalEntity struct {
 	CancelledAt       sql.NullTime
 	Deleted           bool
 	DocumentsCount    sql.NullInt64
+	CreatedAt         time.Time
+	FirstOwnerAction  sql.NullTime
 }

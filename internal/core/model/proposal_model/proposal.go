@@ -1,6 +1,9 @@
 package proposalmodel
 
-import "database/sql"
+import (
+	"database/sql"
+	"time"
+)
 
 // ProposalInterface models the attributes used by the new proposal flows.
 type ProposalInterface interface {
@@ -26,20 +29,26 @@ type ProposalInterface interface {
 	SetCancelledAt(sql.NullTime)
 	DocumentsCount() int
 	SetDocumentsCount(int)
+	CreatedAt() time.Time
+	SetCreatedAt(time.Time)
+	FirstOwnerActionAt() sql.NullTime
+	SetFirstOwnerActionAt(sql.NullTime)
 }
 
 type proposal struct {
-	id                int64
-	listingIdentityID int64
-	realtorID         int64
-	ownerID           int64
-	proposalText      string
-	rejectionReason   sql.NullString
-	status            Status
-	acceptedAt        sql.NullTime
-	rejectedAt        sql.NullTime
-	cancelledAt       sql.NullTime
-	documentsCount    int
+	id                 int64
+	listingIdentityID  int64
+	realtorID          int64
+	ownerID            int64
+	proposalText       string
+	rejectionReason    sql.NullString
+	status             Status
+	acceptedAt         sql.NullTime
+	rejectedAt         sql.NullTime
+	cancelledAt        sql.NullTime
+	documentsCount     int
+	createdAt          time.Time
+	firstOwnerActionAt sql.NullTime
 }
 
 // NewProposal instantiates an empty proposal domain object.
@@ -88,4 +97,12 @@ func (p *proposal) SetCancelledAt(ts sql.NullTime) {
 func (p *proposal) DocumentsCount() int { return p.documentsCount }
 func (p *proposal) SetDocumentsCount(count int) {
 	p.documentsCount = count
+}
+func (p *proposal) CreatedAt() time.Time { return p.createdAt }
+func (p *proposal) SetCreatedAt(ts time.Time) {
+	p.createdAt = ts
+}
+func (p *proposal) FirstOwnerActionAt() sql.NullTime { return p.firstOwnerActionAt }
+func (p *proposal) SetFirstOwnerActionAt(ts sql.NullTime) {
+	p.firstOwnerActionAt = ts
 }

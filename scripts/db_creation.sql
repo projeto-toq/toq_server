@@ -119,6 +119,8 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`proposals` (
   `rejected_at` DATETIME NULL,
   `cancelled_at` DATETIME NULL,
   `deleted` TINYINT NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `first_owner_action_at` DATETIME NULL,
   PRIMARY KEY (`id`),
   INDEX `idx_proposals_realtor` (`realtor_id` ASC, `status` ASC) INVISIBLE,
   INDEX `idx_proposals_owner` (`owner_id` ASC, `status` ASC) INVISIBLE,
@@ -152,9 +154,6 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_identities` (
   `user_id` INT UNSIGNED NOT NULL,
   `code` MEDIUMINT NOT NULL,
   `active_version_id` INT UNSIGNED NULL,
-  `owner_avg_response_time_seconds` INT UNSIGNED NULL,
-  `owner_total_visits_responded` INT UNSIGNED NOT NULL DEFAULT 0,
-  `owner_last_response_at` DATETIME NULL,
   `has_pending_proposal` TINYINT NOT NULL DEFAULT 0,
   `has_accepted_proposal` TINYINT NOT NULL DEFAULT 0,
   `accepted_proposal_id` INT UNSIGNED NULL,
@@ -1061,6 +1060,30 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`proposal_documents` (
   CONSTRAINT `fk_proposal_documents_proposal`
     FOREIGN KEY (`proposal_id`)
     REFERENCES `toq_db`.`proposals` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`owner_response_metrics`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`owner_response_metrics` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`owner_response_metrics` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `visit_avg_response_time_seconds` INT UNSIGNED NULL,
+  `visit_total_responses` INT UNSIGNED NOT NULL DEFAULT 0,
+  `visit_last_response_at` DATETIME NULL,
+  `proposal_avg_response_time_seconds` INT UNSIGNED NOT NULL,
+  `proposal_total_responses` INT UNSIGNED NOT NULL DEFAULT 0,
+  `proposal_last_response_at` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_owner_metrics_user_idx` (`user_id` ASC) VISIBLE,
+  CONSTRAINT `fk_owner_metrics_user`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `toq_db`.`users` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

@@ -5,6 +5,7 @@ import (
 
 	proposalmodel "github.com/projeto-toq/toq_server/internal/core/model/proposal_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	proposalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/proposal_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 )
@@ -24,6 +25,7 @@ type Service interface {
 type proposalService struct {
 	proposalRepo proposalrepository.Repository
 	listingRepo  listingrepository.ListingRepoPortInterface
+	ownerMetrics ownermetricsrepository.Repository
 	globalSvc    globalservice.GlobalServiceInterface
 	notifier     globalservice.UnifiedNotificationService
 	maxDocBytes  int64
@@ -35,6 +37,7 @@ const defaultMaxDocBytes = 1_000_000
 func New(
 	proposalRepo proposalrepository.Repository,
 	listingRepo listingrepository.ListingRepoPortInterface,
+	ownerMetrics ownermetricsrepository.Repository,
 	globalSvc globalservice.GlobalServiceInterface,
 ) Service {
 	var notifier globalservice.UnifiedNotificationService
@@ -45,6 +48,7 @@ func New(
 	return &proposalService{
 		proposalRepo: proposalRepo,
 		listingRepo:  listingRepo,
+		ownerMetrics: ownerMetrics,
 		globalSvc:    globalSvc,
 		notifier:     notifier,
 		maxDocBytes:  defaultMaxDocBytes,

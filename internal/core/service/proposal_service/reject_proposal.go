@@ -65,6 +65,11 @@ func (s *proposalService) RejectProposal(ctx context.Context, input StatusChange
 	}
 
 	now := time.Now().UTC()
+	if err = s.recordOwnerProposalResponse(ctx, tx, proposal, now); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("proposal.reject.owner_metrics_error", "proposal_id", input.ProposalID, "err", err)
+		return nil, err
+	}
 	proposal.SetStatus(proposalmodel.StatusRefused)
 	proposal.SetRejectedAt(sql.NullTime{Valid: true, Time: now})
 	proposal.SetAcceptedAt(sql.NullTime{})

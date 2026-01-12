@@ -31,7 +31,9 @@ func (a *ProposalAdapter) fetchProposal(ctx context.Context, tx *sql.Tx, proposa
         p.status,
         p.accepted_at,
         p.rejected_at,
-        p.cancelled_at,
+	p.cancelled_at,
+	p.first_owner_action_at,
+	p.created_at,
         p.deleted,
         (
             SELECT COUNT(1)
@@ -58,6 +60,8 @@ func (a *ProposalAdapter) fetchProposal(ctx context.Context, tx *sql.Tx, proposa
 		&entity.AcceptedAt,
 		&entity.RejectedAt,
 		&entity.CancelledAt,
+		&entity.FirstOwnerAction,
+		&entity.CreatedAt,
 		&entity.Deleted,
 		&entity.DocumentsCount,
 	); scanErr != nil {

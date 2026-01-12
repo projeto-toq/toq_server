@@ -21,8 +21,8 @@ func (a *ProposalAdapter) UpdateProposalStatus(ctx context.Context, tx *sql.Tx, 
 	logger := utils.LoggerFromContext(ctx)
 
 	query := `UPDATE proposals
-	        SET status = ?, rejection_reason = ?, accepted_at = ?, rejected_at = ?, cancelled_at = ?
-        WHERE id = ? AND status = ? AND deleted = 0`
+	        SET status = ?, rejection_reason = ?, accepted_at = ?, rejected_at = ?, cancelled_at = ?, first_owner_action_at = ?
+	    WHERE id = ? AND status = ? AND deleted = 0`
 
 	result, execErr := a.ExecContext(ctx, tx, "update_proposal_status", query,
 		proposal.Status(),
@@ -30,6 +30,7 @@ func (a *ProposalAdapter) UpdateProposalStatus(ctx context.Context, tx *sql.Tx, 
 		proposal.AcceptedAt(),
 		proposal.RejectedAt(),
 		proposal.CancelledAt(),
+		proposal.FirstOwnerActionAt(),
 		proposal.ID(),
 		expected,
 	)

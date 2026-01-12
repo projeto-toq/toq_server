@@ -6,6 +6,7 @@ import (
 	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -16,6 +17,11 @@ func (s *visitService) recordOwnerResponseMetrics(ctx context.Context, tx *sql.T
 	}
 
 	if _, ok := visit.FirstOwnerActionAt(); ok {
+		return nil
+	}
+
+	ownerID := visit.OwnerUserID()
+	if ownerID <= 0 {
 		return nil
 	}
 
@@ -36,9 +42,14 @@ func (s *visitService) recordOwnerResponseMetrics(ctx context.Context, tx *sql.T
 	}
 
 	deltaSeconds := int64(delta / time.Second)
-	if err := s.listingRepo.UpdateOwnerResponseStats(ctx, tx, visit.ListingIdentityID(), deltaSeconds, actionTime); err != nil {
+	input := ownermetricsrepository.VisitResponseInput{
+		OwnerID:      ownerID,
+		DeltaSeconds: deltaSeconds,
+		RespondedAt:  actionTime,
+	}
+	if err := s.ownerMetrics.UpsertVisitResponse(ctx, tx, input); err != nil {
 		if err == sql.ErrNoRows {
-			return utils.NotFoundError("ListingIdentity")
+			return utils.NotFoundError("Owner")
 		}
 		return err
 	}

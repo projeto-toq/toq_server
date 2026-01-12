@@ -37,6 +37,8 @@ func (a *ProposalAdapter) ListProposals(ctx context.Context, tx *sql.Tx, filter 
 		p.accepted_at,
 		p.rejected_at,
 		p.cancelled_at,
+		p.first_owner_action_at,
+		p.created_at,
 		p.deleted,
 		COALESCE(d.documents_count, 0) AS documents_count
 	FROM proposals p
@@ -71,6 +73,8 @@ func (a *ProposalAdapter) ListProposals(ctx context.Context, tx *sql.Tx, filter 
 			&entity.AcceptedAt,
 			&entity.RejectedAt,
 			&entity.CancelledAt,
+			&entity.FirstOwnerAction,
+			&entity.CreatedAt,
 			&entity.Deleted,
 			&entity.DocumentsCount,
 		); scanErr != nil {

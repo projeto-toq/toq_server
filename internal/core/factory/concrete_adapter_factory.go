@@ -52,6 +52,7 @@ import (
 	mysqlholidayadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/holiday"
 	mysqllistingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing"
 	mysqlmediaprocessingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/media_processing"
+	mysqlownermetricsadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/owner_metrics"
 	mysqlpermissionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/permission"
 	mysqlphotosessionadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/photo_session"
 	mysqlpropertycoverageadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/property_coverage"
@@ -264,6 +265,9 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	// Listing Repository
 	listingRepo := mysqllistingadapter.NewListingAdapter(database, metrics)
 
+	// Owner Metrics Repository
+	ownerMetricsRepo := mysqlownermetricsadapter.NewOwnerMetricsAdapter(database, metrics)
+
 	// Proposal Repository
 	proposalRepo := mysqlproposaladapter.NewProposalAdapter(database, metrics)
 
@@ -298,6 +302,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 		Global:           globalRepo,
 		PropertyCoverage: propertyCoverageRepo,
 		Listing:          listingRepo,
+		OwnerMetrics:     ownerMetricsRepo,
 		Proposal:         proposalRepo,
 		MediaProcessing:  mediaProcessingRepo,
 		Holiday:          holidayRepo,

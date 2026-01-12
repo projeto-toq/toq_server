@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
@@ -69,6 +70,7 @@ func (s *proposalService) CreateProposal(ctx context.Context, input CreatePropos
 	proposal.SetOwnerID(identity.UserID)
 	proposal.SetProposalText(strings.TrimSpace(input.ProposalText))
 	proposal.SetStatus(proposalmodel.StatusPending)
+	proposal.SetCreatedAt(time.Now().UTC())
 
 	if err = s.proposalRepo.CreateProposal(ctx, tx, proposal); err != nil {
 		utils.SetSpanError(ctx, err)

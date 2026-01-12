@@ -21,6 +21,8 @@ func ToProposalModel(entity entities.ProposalEntity) proposalmodel.ProposalInter
 	if entity.DocumentsCount.Valid {
 		model.SetDocumentsCount(int(entity.DocumentsCount.Int64))
 	}
+	model.SetCreatedAt(entity.CreatedAt)
+	model.SetFirstOwnerActionAt(entity.FirstOwnerAction)
 	return model
 }
 

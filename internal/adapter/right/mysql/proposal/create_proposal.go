@@ -33,8 +33,10 @@ func (a *ProposalAdapter) CreateProposal(ctx context.Context, tx *sql.Tx, propos
 		accepted_at,
 		rejected_at,
 		cancelled_at,
+		first_owner_action_at,
+		created_at,
 		deleted
-	) VALUES (?,?,?,?,?,?,?,?,?,0)`
+	) VALUES (?,?,?,?,?,?,?,?,?,?,?,0)`
 
 	result, execErr := a.ExecContext(ctx, tx, "insert_proposal", query,
 		entity.ListingIdentityID,
@@ -46,6 +48,8 @@ func (a *ProposalAdapter) CreateProposal(ctx context.Context, tx *sql.Tx, propos
 		entity.AcceptedAt,
 		entity.RejectedAt,
 		entity.CancelledAt,
+		entity.FirstOwnerAction,
+		entity.CreatedAt,
 	)
 	if execErr != nil {
 		utils.SetSpanError(ctx, execErr)
