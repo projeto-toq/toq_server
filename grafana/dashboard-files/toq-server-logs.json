@@ -209,7 +209,7 @@
                         "uid": "loki"
                     },
                     "editorMode": "code",
-                    "expr": "sum by(level) (rate({job=~\".*toq_server.*\", service_name=~\"$service\"} [$__rate_interval]))",
+                    "expr": "sum by(level) (rate({job=~\".*toq_server.*\", service_name=~\"$service\"} [$__interval]))",
                     "legendFormat": "{{level}}",
                     "queryType": "range",
                     "refId": "A"

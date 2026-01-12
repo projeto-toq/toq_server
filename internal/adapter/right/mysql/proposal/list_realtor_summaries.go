@@ -12,7 +12,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// ListRealtorSummaries returns aggregated realtor information for the provided IDs.
+// ListRealtorSummaries returns aggregated realtor information for the provided IDs, including proposal counts and the number of accepted proposals.
 func (a *ProposalAdapter) ListRealtorSummaries(
 	ctx context.Context,
 	tx *sql.Tx,
@@ -43,10 +43,14 @@ func (a *ProposalAdapter) ListRealtorSummaries(
 		u.full_name,
 		u.nick_name,
 		TIMESTAMPDIFF(MONTH, COALESCE(u.created_at, u.last_activity_at), UTC_TIMESTAMP()) AS usage_months,
-		COALESCE(stats.total_proposals, 0) AS proposals_count
+		COALESCE(stats.total_proposals, 0) AS proposals_count,
+		COALESCE(stats.accepted_proposals, 0) AS accepted_proposals
 	FROM users u
 	LEFT JOIN (
-		SELECT realtor_id, COUNT(*) AS total_proposals
+		SELECT
+			realtor_id,
+			COUNT(*) AS total_proposals,
+			SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) AS accepted_proposals
 		FROM proposals
 		WHERE deleted = 0
 		GROUP BY realtor_id
@@ -71,6 +75,7 @@ func (a *ProposalAdapter) ListRealtorSummaries(
 			&entity.NickName,
 			&entity.UsageMonths,
 			&entity.ProposalsCount,
+			&entity.AcceptedProposals,
 		); scanErr != nil {
 			utils.SetSpanError(ctx, scanErr)
 			logger.Error("mysql.proposal.realtor_summary.scan_error", "err", scanErr)

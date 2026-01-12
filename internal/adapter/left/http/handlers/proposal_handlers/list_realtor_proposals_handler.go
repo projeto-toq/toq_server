@@ -13,7 +13,7 @@ import (
 
 // ListRealtorProposals returns paginated history filtered by realtor context.
 // @Summary     List realtor proposals with attachments
-// @Description Returns paginated proposals created by the authenticated realtor, embedding each proposal PDF (base64) and the realtor profile metrics for auditing.
+// @Description Returns paginated proposals created by the authenticated realtor, embedding each proposal PDF (base64), surface timeline fields (createdAt/receivedAt/respondedAt) and echoes the realtor profile metrics for auditing.
 // @Tags        Proposals
 // @Security    BearerAuth
 // @Produce     json
@@ -21,7 +21,7 @@ import (
 // @Param       listingIdentityId query int false "Listing identity"
 // @Param       page query int false "Page number" default(1)
 // @Param       pageSize query int false "Page size" default(20)
-// @Success     200 {object} dto.ListProposalsResponse "Each item includes documents[].base64Payload and realtor metadata"
+// @Success     200 {object} dto.ListProposalsResponse "Items include documents[].base64Payload plus proposal timeline and realtor.photoUrl"
 // @Failure     400,401,500 {object} dto.ErrorResponse
 // @Router      /proposals/realtor [get]
 func (h *ProposalHandler) ListRealtorProposals(c *gin.Context) {

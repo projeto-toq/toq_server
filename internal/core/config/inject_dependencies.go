@@ -471,11 +471,16 @@ func (c *config) InitProposalService() {
 		return
 	}
 
+	if c.userService == nil {
+		slog.Warn("userService is nil; proposal realtor photo URLs will be skipped")
+	}
+
 	c.proposalService = proposalservice.New(
 		c.repositoryAdapters.Proposal,
 		c.repositoryAdapters.Listing,
 		c.repositoryAdapters.OwnerMetrics,
 		c.globalService,
+		c.userService,
 	)
 }
 

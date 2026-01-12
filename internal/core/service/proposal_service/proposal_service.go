@@ -8,6 +8,7 @@ import (
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	proposalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/proposal_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
+	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 )
 
 // Service exposes the orchestration required by handlers.
@@ -28,6 +29,7 @@ type proposalService struct {
 	ownerMetrics ownermetricsrepository.Repository
 	globalSvc    globalservice.GlobalServiceInterface
 	notifier     globalservice.UnifiedNotificationService
+	userService  userservices.UserServiceInterface
 	maxDocBytes  int64
 }
 
@@ -39,6 +41,7 @@ func New(
 	listingRepo listingrepository.ListingRepoPortInterface,
 	ownerMetrics ownermetricsrepository.Repository,
 	globalSvc globalservice.GlobalServiceInterface,
+	userService userservices.UserServiceInterface,
 ) Service {
 	var notifier globalservice.UnifiedNotificationService
 	if globalSvc != nil {
@@ -51,6 +54,7 @@ func New(
 		ownerMetrics: ownerMetrics,
 		globalSvc:    globalSvc,
 		notifier:     notifier,
+		userService:  userService,
 		maxDocBytes:  defaultMaxDocBytes,
 	}
 }

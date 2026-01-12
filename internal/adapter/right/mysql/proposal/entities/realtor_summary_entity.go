@@ -9,4 +9,6 @@ type RealtorSummaryEntity struct {
 	NickName       sql.NullString
 	UsageMonths    sql.NullInt64
 	ProposalsCount sql.NullInt64
+	// AcceptedProposals aggregates SUM(status = 'accepted') from the proposals table for each realtor.
+	AcceptedProposals sql.NullInt64
 }

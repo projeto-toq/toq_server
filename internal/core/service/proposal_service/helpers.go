@@ -11,12 +11,16 @@ import (
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
 	proposalmodel "github.com/projeto-toq/toq_server/internal/core/model/proposal_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-const pdfMimeType = "application/pdf"
+const (
+	pdfMimeType         = "application/pdf"
+	realtorPhotoVariant = "small"
+)
 
 func (s *proposalService) validateCreateInput(input CreateProposalInput) error {
 	if input.ListingIdentityID <= 0 {
@@ -208,6 +212,7 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 	if err != nil {
 		return ListResult{}, err
 	}
+	s.enrichRealtorSummaries(ctx, realtorSummaries)
 
 	items := make([]ListItem, 0, len(repoResult.Items))
 	for _, proposal := range repoResult.Items {
@@ -343,6 +348,42 @@ func (s *proposalService) loadSingleRealtorSummary(ctx context.Context, tx *sql.
 		return nil, err
 	}
 	return s.getRealtorSummaryOrDefault(realtorID, result), nil
+}
+
+// enrichRealtorSummaries hydrates realtor summaries with signed photo URLs when possible.
+func (s *proposalService) enrichRealtorSummaries(ctx context.Context, cache map[int64]proposalmodel.RealtorSummary) {
+	if len(cache) == 0 || s.userService == nil {
+		return
+	}
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	for realtorID, summary := range cache {
+		if summary == nil || realtorID <= 0 {
+			continue
+		}
+		if summary.PhotoURL() != "" {
+			continue
+		}
+		photoURL, err := s.generateRealtorPhotoURL(ctx, realtorID)
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Debug("proposal.realtor.photo_url_error", "realtor_id", realtorID, "err", err)
+			continue
+		}
+		summary.SetPhotoURL(photoURL)
+	}
+}
+
+// generateRealtorPhotoURL impersonates the realtor user and requests a signed download URL.
+func (s *proposalService) generateRealtorPhotoURL(ctx context.Context, userID int64) (string, error) {
+	if s.userService == nil || userID <= 0 {
+		return "", nil
+	}
+
+	impersonatedCtx := utils.SetUserInContext(ctx, usermodel.UserInfos{ID: userID})
+	return s.userService.GetPhotoDownloadURL(impersonatedCtx, realtorPhotoVariant)
 }
 
 func (s *proposalService) getRealtorSummaryOrDefault(realtorID int64, cache map[int64]proposalmodel.RealtorSummary) proposalmodel.RealtorSummary {

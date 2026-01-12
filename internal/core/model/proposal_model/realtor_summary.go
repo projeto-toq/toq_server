@@ -2,7 +2,7 @@ package proposalmodel
 
 import "database/sql"
 
-// RealtorSummary represents aggregated metadata about the realtor that authored a proposal.
+// RealtorSummary represents aggregated metadata about the realtor that authored a proposal, including account age, accepted proposal counts and signed photo URLs.
 type RealtorSummary interface {
 	ID() int64
 	SetID(int64)
@@ -14,14 +14,20 @@ type RealtorSummary interface {
 	SetUsageMonths(int)
 	ProposalsCreated() int64
 	SetProposalsCreated(int64)
+	AcceptedProposals() int64
+	SetAcceptedProposals(int64)
+	PhotoURL() string
+	SetPhotoURL(string)
 }
 
 type realtorSummary struct {
-	id               int64
-	name             string
-	nickname         sql.NullString
-	usageMonths      int
-	proposalsCreated int64
+	id                int64
+	name              string
+	nickname          sql.NullString
+	usageMonths       int
+	proposalsCreated  int64
+	acceptedProposals int64
+	photoURL          string
 }
 
 // NewRealtorSummary instantiates an empty realtor summary object.
@@ -48,3 +54,11 @@ func (r *realtorSummary) SetUsageMonths(months int) { r.usageMonths = months }
 func (r *realtorSummary) ProposalsCreated() int64 { return r.proposalsCreated }
 
 func (r *realtorSummary) SetProposalsCreated(total int64) { r.proposalsCreated = total }
+
+func (r *realtorSummary) AcceptedProposals() int64 { return r.acceptedProposals }
+
+func (r *realtorSummary) SetAcceptedProposals(total int64) { r.acceptedProposals = total }
+
+func (r *realtorSummary) PhotoURL() string { return r.photoURL }
+
+func (r *realtorSummary) SetPhotoURL(url string) { r.photoURL = url }

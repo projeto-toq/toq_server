@@ -52,19 +52,25 @@ type GetProposalDetailRequest struct {
 	ProposalID int64 `json:"proposalId" binding:"required,min=1"`
 }
 
-// ProposalResponse summarizes proposal information for list views.
+// ProposalResponse summarizes proposal information for list views, including realtor enrichment and timeline metadata.
 type ProposalResponse struct {
-	ID                int64                      `json:"id"`
-	ListingIdentityID int64                      `json:"listingIdentityId"`
-	Status            string                     `json:"status"`
-	ProposalText      string                     `json:"proposalText"`
-	RejectionReason   *string                    `json:"rejectionReason,omitempty"`
-	AcceptedAt        *time.Time                 `json:"acceptedAt,omitempty"`
-	RejectedAt        *time.Time                 `json:"rejectedAt,omitempty"`
-	CancelledAt       *time.Time                 `json:"cancelledAt,omitempty"`
-	DocumentsCount    int                        `json:"documentsCount"`
-	Documents         []ProposalDocumentResponse `json:"documents"`
-	Realtor           ProposalRealtorResponse    `json:"realtor"`
+	ID                int64      `json:"id"`
+	ListingIdentityID int64      `json:"listingIdentityId"`
+	Status            string     `json:"status"`
+	ProposalText      string     `json:"proposalText"`
+	RejectionReason   *string    `json:"rejectionReason,omitempty"`
+	AcceptedAt        *time.Time `json:"acceptedAt,omitempty"`
+	RejectedAt        *time.Time `json:"rejectedAt,omitempty"`
+	CancelledAt       *time.Time `json:"cancelledAt,omitempty"`
+	// CreatedAt reflects when the realtor submitted the proposal.
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	// ReceivedAt mirrors the first owner action timestamp, signaling that the owner viewed the proposal.
+	ReceivedAt *time.Time `json:"receivedAt,omitempty"`
+	// RespondedAt is the earliest timestamp among accepted/rejected/cancelled transitions.
+	RespondedAt    *time.Time                 `json:"respondedAt,omitempty"`
+	DocumentsCount int                        `json:"documentsCount"`
+	Documents      []ProposalDocumentResponse `json:"documents"`
+	Realtor        ProposalRealtorResponse    `json:"realtor"`
 }
 
 // ProposalDocumentResponse exposes metadata and optional base64 payload.
@@ -76,12 +82,18 @@ type ProposalDocumentResponse struct {
 	Base64Payload string `json:"base64Payload,omitempty"`
 }
 
-// ProposalRealtorResponse describes the realtor that created the proposal.
+// ProposalRealtorResponse describes enriched realtor metadata exposed to owners and realtors.
 type ProposalRealtorResponse struct {
-	Name             string `json:"name"`
-	Nickname         string `json:"nickname,omitempty"`
-	UsageMonths      int    `json:"usageMonths"`
-	ProposalsCreated int64  `json:"proposalsCreated"`
+	Name     string `json:"name"`
+	Nickname string `json:"nickname,omitempty"`
+	// AccountAgeMonths represents how long (in months) the realtor has been active in TOQ.
+	AccountAgeMonths int `json:"accountAgeMonths"`
+	// ProposalsCreated is the lifetime counter of proposals authored.
+	ProposalsCreated int64 `json:"proposalsCreated"`
+	// AcceptedProposals tracks how many proposals from this realtor owners accepted.
+	AcceptedProposals int64 `json:"acceptedProposals"`
+	// PhotoURL is a signed download URL pointing to the realtor avatar variant consumed by the clients.
+	PhotoURL string `json:"photoUrl,omitempty"`
 }
 
 // ProposalDetailResponse aggregates summary + documents and owner metadata.

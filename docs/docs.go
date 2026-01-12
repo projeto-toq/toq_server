@@ -7988,7 +7988,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Provides proposal metadata, realtor profile summary and the binary (base64) of any PDF attachments for authorized actors.",
+                "description": "Provides proposal metadata (including createdAt/receivedAt/respondedAt), realtor profile summary with acceptedProposals/photoUrl and the binary (base64) of any PDF attachments for authorized actors.",
                 "consumes": [
                     "application/json"
                 ],
@@ -8012,7 +8012,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Includes documents[].base64Payload and realtor metadata",
+                        "description": "Includes documents[].base64Payload, realtor.photoUrl and proposal timeline",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDetailResponse"
                         }
@@ -8057,7 +8057,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Owners can see all proposals received across listings with embedded PDF documents (base64) and the realtor profile summary for each item.",
+                "description": "Owners can see all proposals received across listings with embedded PDF documents (base64), realtor metrics (accountAgeMonths, acceptedProposals, photoUrl) and the timeline fields createdAt/receivedAt/respondedAt.",
                 "produces": [
                     "application/json"
                 ],
@@ -8097,7 +8097,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Each item includes documents[].base64Payload and realtor metadata",
+                        "description": "Items include documents[].base64Payload, realtor.photoUrl and proposal timeline timestamps",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse"
                         }
@@ -8130,7 +8130,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns paginated proposals created by the authenticated realtor, embedding each proposal PDF (base64) and the realtor profile metrics for auditing.",
+                "description": "Returns paginated proposals created by the authenticated realtor, embedding each proposal PDF (base64), surface timeline fields (createdAt/receivedAt/respondedAt) and echoes the realtor profile metrics for auditing.",
                 "produces": [
                     "application/json"
                 ],
@@ -8172,7 +8172,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Each item includes documents[].base64Payload and realtor metadata",
+                        "description": "Items include documents[].base64Payload plus proposal timeline and realtor.photoUrl",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse"
                         }
@@ -13862,16 +13862,26 @@ const docTemplate = `{
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalRealtorResponse": {
             "type": "object",
             "properties": {
+                "acceptedProposals": {
+                    "description": "AcceptedProposals tracks how many proposals from this realtor owners accepted.",
+                    "type": "integer"
+                },
+                "accountAgeMonths": {
+                    "description": "AccountAgeMonths represents how long (in months) the realtor has been active in TOQ.",
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
                 "nickname": {
                     "type": "string"
                 },
-                "proposalsCreated": {
-                    "type": "integer"
+                "photoUrl": {
+                    "description": "PhotoURL is a signed download URL pointing to the realtor avatar variant consumed by the clients.",
+                    "type": "string"
                 },
-                "usageMonths": {
+                "proposalsCreated": {
+                    "description": "ProposalsCreated is the lifetime counter of proposals authored.",
                     "type": "integer"
                 }
             }
@@ -13883,6 +13893,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "cancelledAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "description": "CreatedAt reflects when the realtor submitted the proposal.",
                     "type": "string"
                 },
                 "documents": {
@@ -13906,10 +13920,18 @@ const docTemplate = `{
                 "realtor": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalRealtorResponse"
                 },
+                "receivedAt": {
+                    "description": "ReceivedAt mirrors the first owner action timestamp, signaling that the owner viewed the proposal.",
+                    "type": "string"
+                },
                 "rejectedAt": {
                     "type": "string"
                 },
                 "rejectionReason": {
+                    "type": "string"
+                },
+                "respondedAt": {
+                    "description": "RespondedAt is the earliest timestamp among accepted/rejected/cancelled transitions.",
                     "type": "string"
                 },
                 "status": {

@@ -17,5 +17,8 @@ func ToRealtorSummaryModel(entity entities.RealtorSummaryEntity) proposalmodel.R
 	if entity.ProposalsCount.Valid {
 		summary.SetProposalsCreated(entity.ProposalsCount.Int64)
 	}
+	if entity.AcceptedProposals.Valid {
+		summary.SetAcceptedProposals(entity.AcceptedProposals.Int64)
+	}
 	return summary
 }

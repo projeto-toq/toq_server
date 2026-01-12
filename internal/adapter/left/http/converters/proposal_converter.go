@@ -160,6 +160,17 @@ func ProposalDomainToResponse(proposal proposalmodel.ProposalInterface) dto.Prop
 	if ptr := timePtrFromNull(proposal.CancelledAt()); ptr != nil {
 		response.CancelledAt = ptr
 	}
+	if ptr := timePtr(proposal.CreatedAt()); ptr != nil {
+		response.CreatedAt = ptr
+	}
+	if ptr := timePtrFromNull(proposal.FirstOwnerActionAt()); ptr != nil {
+		response.ReceivedAt = ptr
+	}
+	response.RespondedAt = firstNonNilTimePtr(
+		timePtrFromNull(proposal.AcceptedAt()),
+		timePtrFromNull(proposal.RejectedAt()),
+		timePtrFromNull(proposal.CancelledAt()),
+	)
 
 	return response
 }
@@ -283,10 +294,12 @@ func proposalRealtorToResponse(summary proposalmodel.RealtorSummary) dto.Proposa
 		value = nickname.String
 	}
 	return dto.ProposalRealtorResponse{
-		Name:             summary.Name(),
-		Nickname:         value,
-		UsageMonths:      summary.UsageMonths(),
-		ProposalsCreated: summary.ProposalsCreated(),
+		Name:              summary.Name(),
+		Nickname:          value,
+		AccountAgeMonths:  summary.UsageMonths(),
+		ProposalsCreated:  summary.ProposalsCreated(),
+		AcceptedProposals: summary.AcceptedProposals(),
+		PhotoURL:          summary.PhotoURL(),
 	}
 }
 
@@ -296,6 +309,23 @@ func timePtrFromNull(v sql.NullTime) *time.Time {
 	}
 	ts := v.Time
 	return &ts
+}
+
+func timePtr(ts time.Time) *time.Time {
+	if ts.IsZero() {
+		return nil
+	}
+	value := ts
+	return &value
+}
+
+func firstNonNilTimePtr(values ...*time.Time) *time.Time {
+	for _, v := range values {
+		if v != nil {
+			return v
+		}
+	}
+	return nil
 }
 
 func ptrInt64(value int64) *int64 {
