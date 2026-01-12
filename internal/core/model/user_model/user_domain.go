@@ -26,6 +26,7 @@ type user struct {
 	password       string
 	optStatus      bool
 	lastActivityAt time.Time
+	createdAt      time.Time
 	deleted        bool
 	deviceTokens   []DeviceToken
 
@@ -198,6 +199,14 @@ func (u *user) GetLastActivityAt() time.Time {
 
 func (u *user) SetLastActivityAt(lastActivityAt time.Time) {
 	u.lastActivityAt = lastActivityAt
+}
+
+func (u *user) GetCreatedAt() time.Time {
+	return u.createdAt
+}
+
+func (u *user) SetCreatedAt(createdAt time.Time) {
+	u.createdAt = createdAt
 }
 
 func (u *user) IsDeleted() bool {

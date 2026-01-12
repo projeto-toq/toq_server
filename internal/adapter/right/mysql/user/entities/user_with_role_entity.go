@@ -100,6 +100,10 @@ type UserWithRoleEntity struct {
 	// PermanentlyBlocked indicates if user is permanently blocked (users.permanently_blocked, TINYINT(1), NOT NULL)
 	PermanentlyBlocked bool
 
+	// CreatedAt represents when the user account was created (users.created_at, DATETIME, NOT NULL)
+	// Downstream services use it to compute account age (“member since”)
+	CreatedAt time.Time
+
 	// ==================== UserRole fields (from user_roles table) ====================
 	// All nullable because user might not have active role (LEFT JOIN)
 

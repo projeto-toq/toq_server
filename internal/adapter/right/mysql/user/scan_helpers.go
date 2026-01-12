@@ -30,7 +30,7 @@ import (
 //
 // Column Order (MUST match query SELECT order exactly):
 //
-//	Columns 1-23: User fields (users table)
+//	Columns 1-24: User fields (users table)
 //	1. u.id (INT UNSIGNED, NOT NULL)
 //	2. u.full_name (VARCHAR, NOT NULL)
 //	3. u.nick_name (VARCHAR, nullable)
@@ -54,22 +54,23 @@ import (
 //	21. u.deleted (TINYINT, NOT NULL)
 //	22. u.blocked_until (DATETIME, nullable)
 //	23. u.permanently_blocked (TINYINT, NOT NULL)
+//	24. u.created_at (DATETIME, NOT NULL)
 //
-//	Columns 24-29: UserRole fields (user_roles table, ALL nullable due to LEFT JOIN)
-//	24. ur.id (INT, nullable)
-//	25. ur.user_id (INT, nullable)
-//	26. ur.role_id (INT, nullable)
-//	27. ur.is_active (TINYINT, nullable)
-//	28. ur.status (TINYINT, nullable)
-//	29. ur.expires_at (TIMESTAMP, nullable)
+//	Columns 25-30: UserRole fields (user_roles table, ALL nullable due to LEFT JOIN)
+//	25. ur.id (INT, nullable)
+//	26. ur.user_id (INT, nullable)
+//	27. ur.role_id (INT, nullable)
+//	28. ur.is_active (TINYINT, nullable)
+//	29. ur.status (TINYINT, nullable)
+//	30. ur.expires_at (TIMESTAMP, nullable)
 //
-//	Columns 30-35: Role fields (roles table, ALL nullable due to LEFT JOIN)
-//	30. r.id (INT, nullable)
-//	31. r.slug (VARCHAR, nullable)
-//	32. r.name (VARCHAR, nullable)
-//	33. r.description (TEXT, nullable)
-//	34. r.is_system_role (TINYINT, nullable)
-//	35. r.is_active (TINYINT, nullable)
+//	Columns 31-36: Role fields (roles table, ALL nullable due to LEFT JOIN)
+//	31. r.id (INT, nullable)
+//	32. r.slug (VARCHAR, nullable)
+//	33. r.name (VARCHAR, nullable)
+//	34. r.description (TEXT, nullable)
+//	35. r.is_system_role (TINYINT, nullable)
+//	36. r.is_active (TINYINT, nullable)
 //
 // NULL Handling:
 //   - User fields: Uses sql.Null* types for optional fields (nick_name, creci_*, complement, etc.)
@@ -91,6 +92,7 @@ import (
 //	    u.blocked_until, u.permanently_blocked,
 //	    ur.id, ur.user_id, ur.role_id, ur.is_active, ur.status, ur.expires_at,
 //	    r.id, r.slug, r.name, r.description, r.is_system_role, r.is_active
+//	    u.created_at,
 //	FROM users u
 //	LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = 1
 //	LEFT JOIN roles r ON r.id = ur.role_id
@@ -106,10 +108,10 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 	for rows.Next() {
 		var entity userentity.UserWithRoleEntity
 
-		// Scan all 35 columns from JOIN query
+		// Scan all 36 columns from JOIN query
 		// Order MUST match SELECT clause in get_user_by_*.go queries
 		err := rows.Scan(
-			// User fields (23 columns from users table)
+			// User fields (24 columns from users table)
 			&entity.UserID,             // 1. u.id
 			&entity.FullName,           // 2. u.full_name
 			&entity.NickName,           // 3. u.nick_name (nullable)
@@ -133,22 +135,23 @@ func scanUserWithRoleEntities(rows *sql.Rows) ([]userentity.UserWithRoleEntity, 
 			&entity.Deleted,            // 21. u.deleted
 			&entity.BlockedUntil,       // 22. u.blocked_until (nullable)
 			&entity.PermanentlyBlocked, // 23. u.permanently_blocked
+			&entity.CreatedAt,          // 24. u.created_at
 
 			// UserRole fields (6 columns from user_roles table, ALL nullable)
-			&entity.UserRoleID,        // 24. ur.id
-			&entity.UserRoleUserID,    // 25. ur.user_id
-			&entity.UserRoleRoleID,    // 26. ur.role_id
-			&entity.UserRoleIsActive,  // 27. ur.is_active
-			&entity.UserRoleStatus,    // 28. ur.status
-			&entity.UserRoleExpiresAt, // 29. ur.expires_at
+			&entity.UserRoleID,        // 25. ur.id
+			&entity.UserRoleUserID,    // 26. ur.user_id
+			&entity.UserRoleRoleID,    // 27. ur.role_id
+			&entity.UserRoleIsActive,  // 28. ur.is_active
+			&entity.UserRoleStatus,    // 29. ur.status
+			&entity.UserRoleExpiresAt, // 30. ur.expires_at
 
 			// Role fields (6 columns from roles table, ALL nullable)
-			&entity.RoleID,           // 30. r.id
-			&entity.RoleSlug,         // 31. r.slug
-			&entity.RoleName,         // 32. r.name
-			&entity.RoleDescription,  // 33. r.description
-			&entity.RoleIsSystemRole, // 34. r.is_system_role
-			&entity.RoleIsActive,     // 35. r.is_active
+			&entity.RoleID,           // 31. r.id
+			&entity.RoleSlug,         // 32. r.slug
+			&entity.RoleName,         // 33. r.name
+			&entity.RoleDescription,  // 34. r.description
+			&entity.RoleIsSystemRole, // 35. r.is_system_role
+			&entity.RoleIsActive,     // 36. r.is_active
 		)
 
 		if err != nil {

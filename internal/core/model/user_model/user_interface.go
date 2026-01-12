@@ -48,6 +48,8 @@ type UserInterface interface {
 	SetOptStatus(bool)
 	GetLastActivityAt() time.Time
 	SetLastActivityAt(time.Time)
+	GetCreatedAt() time.Time
+	SetCreatedAt(time.Time)
 	IsDeleted() bool
 	SetDeleted(bool)
 

@@ -1,6 +1,7 @@
 package listinghandlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,8 +9,12 @@ import (
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
+
+const ownerDetailPhotoVariant = "medium"
 
 // GetListing retrieves comprehensive details of a listing by its identity ID
 //
@@ -90,7 +95,31 @@ func (lh *ListingHandler) GetListing(c *gin.Context) {
 		return
 	}
 
+	// Enrich owner metadata with photo URL before serialization
+	lh.attachOwnerPhoto(ctx, &detail)
+
 	// Convert service output to DTO response
 	response := converters.ListingDetailToDTO(detail)
 	c.JSON(http.StatusOK, response)
+}
+
+// attachOwnerPhoto enriches ListingDetailOutput with owner photo download URL using userService impersonation.
+func (lh *ListingHandler) attachOwnerPhoto(ctx context.Context, detail *listingservices.ListingDetailOutput) {
+	if detail == nil || detail.OwnerDetail == nil || lh.userService == nil {
+		return
+	}
+	ownerID := detail.OwnerDetail.ID
+	if ownerID <= 0 {
+		return
+	}
+
+	impersonatedCtx := coreutils.SetUserInContext(ctx, usermodel.UserInfos{ID: ownerID})
+	photoURL, err := lh.userService.GetPhotoDownloadURL(impersonatedCtx, ownerDetailPhotoVariant)
+	if err != nil {
+		logger := coreutils.LoggerFromContext(ctx)
+		logger.Debug("listing.detail.owner_photo_error", "owner_id", ownerID, "err", err)
+		return
+	}
+
+	detail.OwnerDetail.PhotoURL = photoURL
 }

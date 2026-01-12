@@ -43,6 +43,9 @@
 - apagar uma media do bucket tem que apagar de raw e de processed
 - necessário goroutine de limpeza dos logs do S3
 - tempo de respsota do owner deve estar nas consulta e detalhe do listing
+  - Número de compartilhamentos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
+  - Número de Visualizações - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
+  - Número de Favoritos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
 
 
 

@@ -133,6 +133,9 @@ type ListListingsFilter struct {
 	City               string
 	State              string
 	Neighborhood       string
+	Number             string
+	Complement         string
+	Complex            string
 	Address            string
 	UserID             *int64
 	PropertyTypes      []globalmodel.PropertyType

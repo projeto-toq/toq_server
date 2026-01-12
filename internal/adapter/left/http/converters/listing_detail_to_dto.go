@@ -201,6 +201,16 @@ func ListingDetailToDTO(detail listingservices.ListingDetailOutput) dto.ListingD
 		})
 	}
 
+	if ownerInfo := buildOwnerInfo(detail.OwnerDetail); ownerInfo != nil {
+		resp.OwnerInfo = ownerInfo
+	}
+
+	resp.PerformanceMetrics = dto.ListingPerformanceMetricsResponse{
+		Shares:    detail.Performance.Shares,
+		Views:     detail.Performance.Views,
+		Favorites: detail.Performance.Favorites,
+	}
+
 	if draftVersion, ok := listing.DraftVersion(); ok && draftVersion != nil {
 		if draftID := draftVersion.ID(); draftID > 0 {
 			resp.DraftVersionID = &draftID
@@ -241,5 +251,36 @@ func catalogDetailToDTOWithFallback(detail *listingservices.CatalogValueDetail, 
 
 	return dto.CatalogItemResponse{
 		NumericValue: fallback,
+	}
+}
+
+// buildOwnerInfo converts service owner detail into the DTO response, preserving nullable metrics.
+func buildOwnerInfo(detail *listingservices.ListingOwnerDetail) *dto.ListingOwnerInfoResponse {
+	if detail == nil {
+		return nil
+	}
+
+	fullName := strings.TrimSpace(detail.FullName)
+	photoURL := strings.TrimSpace(detail.PhotoURL)
+
+	var visitAvg *int64
+	if detail.Metrics.VisitAverageSeconds.Valid {
+		value := detail.Metrics.VisitAverageSeconds.Int64
+		visitAvg = &value
+	}
+
+	var proposalAvg *int64
+	if detail.Metrics.ProposalAverageSeconds.Valid {
+		value := detail.Metrics.ProposalAverageSeconds.Int64
+		proposalAvg = &value
+	}
+
+	return &dto.ListingOwnerInfoResponse{
+		ID:                     detail.ID,
+		FullName:               fullName,
+		PhotoURL:               photoURL,
+		MemberSinceMonths:      detail.MemberSinceMonths,
+		VisitAverageSeconds:    visitAvg,
+		ProposalAverageSeconds: proposalAvg,
 	}
 }

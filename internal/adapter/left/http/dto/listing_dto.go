@@ -22,7 +22,7 @@ import (
 //   - code: Exact listing code match
 //   - title: Wildcard search on title/description (supports '*')
 //   - userId: Owner filter (auto-enforced for owner role)
-//   - Location: zipCode, city, neighborhood (wildcards supported)
+//   - Location: zipCode, city, neighborhood, street, number, complement, complex, state (wildcards supported)
 //   - Price ranges: minSell/maxSell, minRent/maxRent
 //   - Size range: minLandSize/maxLandSize
 //
@@ -41,10 +41,10 @@ type ListListingsRequest struct {
 	Limit int `form:"limit,default=20" binding:"min=1,max=100" example:"20"`
 
 	// SortBy specifies the field to order results by
-	// Allowed values: id, status
+	// Allowed values: id, status, zipCode, city, neighborhood, street, number, state, complex
 	// Default: id (creation order proxy - higher ID = newer listing)
 	// Example: "id"
-	SortBy string `form:"sortBy,default=id" binding:"omitempty,oneof=id status" example:"id"`
+	SortBy string `form:"sortBy,default=id" binding:"omitempty,oneof=id status zipCode city neighborhood street number state complex" example:"id"`
 
 	// SortOrder specifies the sort direction
 	// Allowed values: asc (ascending), desc (descending)
@@ -92,6 +92,26 @@ type ListListingsRequest struct {
 	// Case-insensitive
 	// Example: "*Centro*"
 	Neighborhood string `form:"neighborhood,omitempty" example:"*Centro*"`
+
+	// Street filters by street name (supports wildcard)
+	// Example: "*Paulista*"
+	Street string `form:"street,omitempty" example:"*Paulista*"`
+
+	// Number filters by address number (allows wildcard for ranges and "S/N" cases)
+	// Example: "12*"
+	Number string `form:"number,omitempty" example:"12*"`
+
+	// Complement filters by address complement (apartment, block, etc.)
+	// Example: "*Bloco B*"
+	Complement string `form:"complement,omitempty" example:"*Bloco B*"`
+
+	// Complex filters by condominium/complex name (supports wildcard)
+	// Example: "*Residencial Atlântico*"
+	Complex string `form:"complex,omitempty" example:"*Residencial Atlântico*"`
+
+	// State filters by Brazilian state (UF). Accepts wildcard but recommended to use exact 2-letter code
+	// Example: "SP"
+	State string `form:"state,omitempty" example:"SP"`
 
 	// MinSellPrice filters listings with sell price >= this value
 	// Optional - used with maxSell to define price range
@@ -326,6 +346,23 @@ type ListingGuaranteeResponse struct {
 	Guarantee        CatalogItemResponse `json:"guarantee"`
 }
 
+// ListingOwnerInfoResponse expõe dados do proprietário e seus tempos de resposta.
+type ListingOwnerInfoResponse struct {
+	ID                     int64  `json:"id"`
+	FullName               string `json:"fullName"`
+	PhotoURL               string `json:"photoUrl,omitempty"`
+	MemberSinceMonths      int    `json:"memberSinceMonths"`
+	VisitAverageSeconds    *int64 `json:"visitAverageSeconds,omitempty"`
+	ProposalAverageSeconds *int64 `json:"proposalAverageSeconds,omitempty"`
+}
+
+// ListingPerformanceMetricsResponse agrega métricas de engajamento do imóvel.
+type ListingPerformanceMetricsResponse struct {
+	Shares    int64 `json:"shares"`
+	Views     int64 `json:"views"`
+	Favorites int64 `json:"favorites"`
+}
+
 // ListingDetailResponse agrega todos os campos do listing.
 type ListingDetailResponse struct {
 	ID                         int64                             `json:"id"`
@@ -348,6 +385,7 @@ type ListingDetailResponse struct {
 	Title                      string                            `json:"title"`
 	PropertyType               *ListingPropertyTypeResponse      `json:"propertyType,omitempty"`
 	Owner                      *CatalogItemResponse              `json:"owner,omitempty"`
+	OwnerInfo                  *ListingOwnerInfoResponse         `json:"ownerInfo,omitempty"`
 	Features                   []ListingFeatureResponse          `json:"features,omitempty"`
 	LandSize                   float64                           `json:"landSize"`
 	Corner                     bool                              `json:"corner"`
@@ -378,6 +416,7 @@ type ListingDetailResponse struct {
 	Accompanying               *CatalogItemResponse              `json:"accompanying,omitempty"`
 	PhotoSessionID             *uint64                           `json:"photoSessionId,omitempty"`
 	Deleted                    bool                              `json:"deleted"`
+	PerformanceMetrics         ListingPerformanceMetricsResponse `json:"performanceMetrics"`
 	CompletionForecast         string                            `json:"completionForecast,omitempty" example:"2026-06"`
 	LandBlock                  string                            `json:"landBlock,omitempty" example:"A"`
 	LandLot                    string                            `json:"landLot,omitempty" example:"15"`

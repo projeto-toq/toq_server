@@ -105,6 +105,12 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		args = append(args, filter.ZipCode)
 	}
 
+	// Optional filter: wildcard street search
+	if filter.Street != "" {
+		conditions = append(conditions, "COALESCE(lv.street, '') LIKE ?")
+		args = append(args, filter.Street)
+	}
+
 	// Optional filter: wildcard city search
 	if filter.City != "" {
 		conditions = append(conditions, "lv.city LIKE ?")
@@ -115,6 +121,30 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	if filter.Neighborhood != "" {
 		conditions = append(conditions, "lv.neighborhood LIKE ?")
 		args = append(args, filter.Neighborhood)
+	}
+
+	// Optional filter: wildcard state search
+	if filter.State != "" {
+		conditions = append(conditions, "lv.state LIKE ?")
+		args = append(args, filter.State)
+	}
+
+	// Optional filter: wildcard number search
+	if filter.Number != "" {
+		conditions = append(conditions, "COALESCE(lv.number, '') LIKE ?")
+		args = append(args, filter.Number)
+	}
+
+	// Optional filter: wildcard complement search
+	if filter.Complement != "" {
+		conditions = append(conditions, "COALESCE(lv.complement, '') LIKE ?")
+		args = append(args, filter.Complement)
+	}
+
+	// Optional filter: wildcard complex search
+	if filter.Complex != "" {
+		conditions = append(conditions, "COALESCE(lv.complex, '') LIKE ?")
+		args = append(args, filter.Complex)
 	}
 
 	// Optional filter: owner user ID
@@ -250,8 +280,15 @@ INNER JOIN listing_identities li ON li.id = lv.listing_identity_id`, listingSele
 func buildOrderByClause(sortBy, sortOrder string) string {
 	// Map sortBy input to actual column names (validate against whitelist)
 	columnMap := map[string]string{
-		"id":     "lv.id",
-		"status": "lv.status",
+		"id":           "lv.id",
+		"status":       "lv.status",
+		"zipcode":      "lv.zip_code",
+		"city":         "lv.city",
+		"neighborhood": "lv.neighborhood",
+		"street":       "lv.street",
+		"number":       "lv.number",
+		"state":        "lv.state",
+		"complex":      "lv.complex",
 	}
 
 	column, ok := columnMap[strings.ToLower(sortBy)]

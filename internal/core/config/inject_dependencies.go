@@ -431,10 +431,19 @@ func (c *config) InitListingHandler() {
 		slog.Error("propertyCoverageService is nil")
 		return
 	}
+	if c.repositoryAdapters == nil {
+		slog.Error("repositoryAdapters is nil")
+		return
+	}
+	if c.repositoryAdapters.OwnerMetrics == nil {
+		slog.Error("repositoryAdapters.OwnerMetrics is nil")
+		return
+	}
 	c.listingService = listingservices.NewListingService(
 		c.repositoryAdapters.Listing,
 		c.photoSessionService,
 		c.repositoryAdapters.User,
+		c.repositoryAdapters.OwnerMetrics,
 		c.propertyCoverageService,
 		c.globalService,
 		c.cloudStorage,

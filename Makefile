@@ -56,6 +56,8 @@ swagger: $(SWAG)
 reload-toq_server:
 	@echo "Stopping toq_server..."
 	-kill $$(ps aux | grep 'bin/toq_server' | grep -v grep | awk '{print $$2}') || true
+	@echo "Resetting toq_server log..."
+	rm -f /codigos/go_code/toq_server/logs/toq_server.log
 	@echo "Building..."
 	$(MAKE) build-bin
 	@echo "Generating Swagger..."

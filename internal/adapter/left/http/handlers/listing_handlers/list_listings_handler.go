@@ -28,7 +28,7 @@ import (
 //	@Param        Authorization       header  string  true   "Bearer token for authentication" Extensions(x-example=Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...)
 //	@Param        page                query   int     false  "Page number (1-indexed)" minimum(1) default(1) Extensions(x-example=1)
 //	@Param        limit               query   int     false  "Items per page" minimum(1) maximum(100) default(20) Extensions(x-example=20)
-//	@Param        sortBy              query   string  false  "Field to sort by" Enums(id, status) default(id) Extensions(x-example=id)
+//	@Param        sortBy              query   string  false  "Field to sort by" Enums(id, status, zipCode, city, neighborhood, street, number, state, complex) default(id) Extensions(x-example=id)
 //	@Param        sortOrder           query   string  false  "Sort direction" Enums(asc, desc) default(desc) Extensions(x-example=desc)
 //	@Param        status              query   string  false  "Filter by listing status (enum name or numeric)" Extensions(x-example="PUBLISHED")
 //	@Param        code                query   int     false  "Filter by exact listing code" Extensions(x-example=1024)
@@ -37,6 +37,11 @@ import (
 //	@Param        zipCode             query   string  false  "Filter by zip code (digits only; supports '*' wildcard)" Extensions(x-example="06543*")
 //	@Param        city                query   string  false  "Filter by city (supports '*' wildcard)" Extensions(x-example="*Paulista*")
 //	@Param        neighborhood        query   string  false  "Filter by neighborhood (supports '*' wildcard)" Extensions(x-example="*Centro*")
+//	@Param        street              query   string  false  "Filter by street (supports '*' wildcard)" Extensions(x-example="*Paulista*")
+//	@Param        number              query   string  false  "Filter by address number (supports '*' wildcard and S/N)" Extensions(x-example="12*")
+//	@Param        complement          query   string  false  "Filter by complement (supports '*' wildcard)" Extensions(x-example="*Bloco B*")
+//	@Param        complex             query   string  false  "Filter by complex/condominium name (supports '*' wildcard)" Extensions(x-example="*Residencial Atlântico*")
+//	@Param        state               query   string  false  "Filter by state (UF); accepts wildcard but prefer exact two-letter code" Extensions(x-example="SP")
 //	@Param        minSell             query   number  false  "Minimum sell price" Extensions(x-example=100000)
 //	@Param        maxSell             query   number  false  "Maximum sell price" Extensions(x-example=900000)
 //	@Param        minRent             query   number  false  "Minimum rent price" Extensions(x-example=1500)
@@ -176,8 +181,13 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 		Code:               codePtr,
 		Title:              strings.TrimSpace(req.Title),
 		ZipCode:            strings.TrimSpace(req.ZipCode),
+		Street:             strings.TrimSpace(req.Street),
 		City:               strings.TrimSpace(req.City),
 		Neighborhood:       strings.TrimSpace(req.Neighborhood),
+		Number:             strings.TrimSpace(req.Number),
+		Complement:         strings.TrimSpace(req.Complement),
+		Complex:            strings.TrimSpace(req.Complex),
+		State:              strings.TrimSpace(req.State),
 		UserID:             userIDPtr,
 		MinSellPrice:       minSell,
 		MaxSellPrice:       maxSell,
@@ -230,15 +240,22 @@ func parseSortBy(raw string) (string, error) {
 	}
 
 	allowed := map[string]string{
-		"id":     "id",
-		"status": "status",
+		"id":           "id",
+		"status":       "status",
+		"zipcode":      "zipCode",
+		"city":         "city",
+		"neighborhood": "neighborhood",
+		"street":       "street",
+		"number":       "number",
+		"state":        "state",
+		"complex":      "complex",
 	}
 
 	if normalized, ok := allowed[trimmed]; ok {
 		return normalized, nil
 	}
 
-	return "", fmt.Errorf("invalid sort field (allowed: id, status)")
+	return "", fmt.Errorf("invalid sort field (allowed: id, status, zipCode, city, neighborhood, street, number, state, complex)")
 }
 
 // parseSortOrder validates and normalizes sortOrder query parameter

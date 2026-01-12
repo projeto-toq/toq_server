@@ -69,6 +69,7 @@ func UserWithRoleEntityToDomain(entity userentity.UserWithRoleEntity) (usermodel
 		Deleted:            entity.Deleted,
 		BlockedUntil:       entity.BlockedUntil,
 		PermanentlyBlocked: entity.PermanentlyBlocked,
+		CreatedAt:          entity.CreatedAt,
 	}
 
 	user := UserEntityToDomain(userEntity)

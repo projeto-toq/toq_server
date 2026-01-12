@@ -359,6 +359,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	listingHandlerPort := listinghandlers.NewListingHandlerAdapter(
 		listingService,
 		globalService,
+		userService,
 	)
 
 	listingHandler, ok := listingHandlerPort.(*listinghandlers.ListingHandler)

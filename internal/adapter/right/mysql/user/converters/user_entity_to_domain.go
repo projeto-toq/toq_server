@@ -43,6 +43,7 @@ func UserEntityToDomain(entity userentity.UserEntity) usermodel.UserInterface {
 	user.SetPassword(entity.Password)
 	user.SetOptStatus(entity.OptStatus)
 	user.SetLastActivityAt(entity.LastActivityAt)
+	user.SetCreatedAt(entity.CreatedAt)
 	user.SetDeleted(entity.Deleted)
 
 	// Map optional fields (NULL in schema) - check Valid before accessing

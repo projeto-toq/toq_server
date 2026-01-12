@@ -5088,7 +5088,14 @@ const docTemplate = `{
                     {
                         "enum": [
                             "id",
-                            "status"
+                            "status",
+                            "zipCode",
+                            "city",
+                            "neighborhood",
+                            "street",
+                            "number",
+                            "state",
+                            "complex"
                         ],
                         "type": "string",
                         "default": "id",
@@ -5156,6 +5163,41 @@ const docTemplate = `{
                         "x-example": "\"*Centro*\"",
                         "description": "Filter by neighborhood (supports '*' wildcard)",
                         "name": "neighborhood",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "x-example": "\"*Paulista*\"",
+                        "description": "Filter by street (supports '*' wildcard)",
+                        "name": "street",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "x-example": "\"12*\"",
+                        "description": "Filter by address number (supports '*' wildcard and S/N)",
+                        "name": "number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "x-example": "\"*Bloco B*\"",
+                        "description": "Filter by complement (supports '*' wildcard)",
+                        "name": "complement",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "x-example": "\"*Residencial Atlântico*\"",
+                        "description": "Filter by complex/condominium name (supports '*' wildcard)",
+                        "name": "complex",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "x-example": "\"SP\"",
+                        "description": "Filter by state (UF); accepts wildcard but prefer exact two-letter code",
+                        "name": "state",
                         "in": "query"
                     },
                     {
@@ -13060,6 +13102,12 @@ const docTemplate = `{
                 "owner": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse"
                 },
+                "ownerInfo": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingOwnerInfoResponse"
+                },
+                "performanceMetrics": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPerformanceMetricsResponse"
+                },
                 "photoSessionId": {
                     "type": "integer"
                 },
@@ -13276,6 +13324,43 @@ const docTemplate = `{
                 "newStatus": {
                     "type": "string",
                     "example": "PENDING_ADMIN_REVIEW"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingOwnerInfoResponse": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "memberSinceMonths": {
+                    "type": "integer"
+                },
+                "photoUrl": {
+                    "type": "string"
+                },
+                "proposalAverageSeconds": {
+                    "type": "integer"
+                },
+                "visitAverageSeconds": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPerformanceMetricsResponse": {
+            "type": "object",
+            "properties": {
+                "favorites": {
+                    "type": "integer"
+                },
+                "shares": {
+                    "type": "integer"
+                },
+                "views": {
+                    "type": "integer"
                 }
             }
         },

@@ -145,4 +145,8 @@ type UserEntity struct {
 	// Only admin can set/unset this flag
 	// Example: User found committing fraud → permanently_blocked = 1
 	PermanentlyBlocked bool
+
+	// CreatedAt stores when the user record was inserted (NOT NULL, DATETIME, DEFAULT CURRENT_TIMESTAMP)
+	// Used for account age calculations (member-since) and auditing flows
+	CreatedAt time.Time
 }

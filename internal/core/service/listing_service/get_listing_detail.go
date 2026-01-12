@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -40,6 +42,7 @@ type GuaranteeDetail struct {
 type ListingDetailOutput struct {
 	Listing           listingmodel.ListingInterface
 	Features          []FeatureDetail
+	OwnerDetail       *ListingOwnerDetail
 	Owner             *CatalogValueDetail
 	Delivered         *CatalogValueDetail
 	WhoLives          *CatalogValueDetail
@@ -52,6 +55,30 @@ type ListingDetailOutput struct {
 	FinancingBlockers []FinancingBlockerDetail
 	Guarantees        []GuaranteeDetail
 	PhotoSessionID    *uint64
+	Performance       ListingPerformanceMetrics
+}
+
+// ListingOwnerDetail exposes owner profile metadata enriched with engagement metrics.
+type ListingOwnerDetail struct {
+	ID                int64
+	FullName          string
+	MemberSinceMonths int
+	PhotoURL          string
+	Metrics           OwnerEngagementMetrics
+}
+
+// OwnerEngagementMetrics contains response KPI placeholders sourced from owner metrics repository.
+type OwnerEngagementMetrics struct {
+	VisitAverageSeconds    sql.NullInt64
+	ProposalAverageSeconds sql.NullInt64
+}
+
+// ListingPerformanceMetrics describes property engagement metrics (shares, views, favorites).
+// TODO(listing-metrics): Populate these counters once the analytics provider is connected.
+type ListingPerformanceMetrics struct {
+	Shares    int64
+	Views     int64
+	Favorites int64
 }
 
 // GetListingDetail retrieves comprehensive details of a listing by its identity ID
@@ -191,6 +218,15 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	listing.SetUUID(identity.UUID)
 	listing.SetActiveVersionID(activeVersionID)
 
+	ownerDetail, ownerErr := ls.buildOwnerDetail(ctx, tx, identity.UserID)
+	if ownerErr != nil {
+		return output, ownerErr
+	}
+	output.OwnerDetail = ownerDetail
+
+	// TODO(listing-metrics): Populate listing performance once analytics counters are available.
+	output.Performance = ListingPerformanceMetrics{}
+
 	// Fetch draft version (if exists) for metadata
 	// Note: Avoid fetching all versions; only draft is needed
 	draftVersion, draftErr := ls.listingRepository.GetDraftVersionByListingIdentityID(ctx, tx, listingIdentityId)
@@ -267,11 +303,11 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	}
 
 	// Enrich catalog values with slug and label for frontend display
-	ownerDetail, derr := ls.fetchCatalogValueDetail(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, uint8(listing.Owner()), cache)
+	ownerCatalogDetail, derr := ls.fetchCatalogValueDetail(ctx, tx, listingmodel.CatalogCategoryPropertyOwner, uint8(listing.Owner()), cache)
 	if derr != nil {
 		return output, derr
 	}
-	output.Owner = ownerDetail
+	output.Owner = ownerCatalogDetail
 
 	deliveredDetail, derr := ls.fetchCatalogValueDetail(ctx, tx, listingmodel.CatalogCategoryPropertyDelivered, uint8(listing.Delivered()), cache)
 	if derr != nil {
@@ -348,6 +384,46 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	}
 
 	return output, nil
+}
+
+// buildOwnerDetail fetches owner profile and response metrics, computing member since months.
+func (ls *listingService) buildOwnerDetail(ctx context.Context, tx *sql.Tx, ownerID int64) (*ListingOwnerDetail, error) {
+	owner, err := ls.userRepository.GetUserByID(ctx, tx, ownerID)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		logger := utils.LoggerFromContext(ctx)
+		if errors.Is(err, sql.ErrNoRows) {
+			logger.Error("listing.detail.owner_not_found", "owner_id", ownerID, "err", err)
+		} else {
+			logger.Error("listing.detail.owner_fetch_error", "owner_id", ownerID, "err", err)
+		}
+		return nil, utils.InternalError("")
+	}
+
+	metrics, metricsErr := ls.ownerMetricsRepo.GetByOwnerID(ctx, tx, ownerID)
+	switch {
+	case metricsErr == nil:
+		// OK
+	case errors.Is(metricsErr, sql.ErrNoRows):
+		metrics = usermodel.NewOwnerResponseMetrics()
+	default:
+		utils.SetSpanError(ctx, metricsErr)
+		logger := utils.LoggerFromContext(ctx)
+		logger.Warn("listing.detail.owner_metrics_error", "owner_id", ownerID, "err", metricsErr)
+		metrics = usermodel.NewOwnerResponseMetrics()
+	}
+
+	memberSinceMonths := monthsSince(owner.GetCreatedAt(), time.Now().UTC())
+
+	return &ListingOwnerDetail{
+		ID:                owner.GetID(),
+		FullName:          owner.GetFullName(),
+		MemberSinceMonths: memberSinceMonths,
+		Metrics: OwnerEngagementMetrics{
+			VisitAverageSeconds:    metrics.VisitAverageSeconds(),
+			ProposalAverageSeconds: metrics.ProposalAverageSeconds(),
+		},
+	}, nil
 }
 
 // fetchCatalogValueDetail retrieves and caches catalog value metadata

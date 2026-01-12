@@ -47,6 +47,7 @@ func UserDomainToEntity(domain usermodel.UserInterface) (entity userentity.UserE
 	entity.Password = domain.GetPassword()
 	entity.OptStatus = domain.IsOptStatus()
 	entity.LastActivityAt = domain.GetLastActivityAt()
+	entity.CreatedAt = domain.GetCreatedAt()
 	entity.Deleted = domain.IsDeleted()
 
 	// Map optional fields - convert to sql.Null* with Valid based on value presence

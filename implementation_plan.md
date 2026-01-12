@@ -1,145 +1,161 @@
-# Plano de Implementação — Marketplace de Propostas
+# Plano de Implementação — Extensões Listings
 
-## 1. Contexto e Objetivo
-Este plano descreve com nível máximo de detalhes as alterações necessárias para atender aos novos requisitos de negócio:
-- **Lista de Propostas (owner)**: exibir nome, foto assinada, tempo de cadastro na TOQ e quantidade de propostas aceitas do corretor.
-- **Detalhes da Proposta (owner/realtor)**: expor datas de criação, recebimento e resposta da proposta.
+## 1. Diagnóstico
+- **Documentação**: Regras arquiteturais confirmadas em `docs/toq_server_go_guide.md`; esquema `users` avaliado em `scripts/db_creation.sql` (campo `created_at` disponível para cálculo de tempo de cadastro). Requisitos descritos em `PROMPT.md`.
+- **GET /listings**: `ListListingsRequest`/handler/service/repositório apenas filtram/ordenam por `zip_code`, `city`, `neighborhood`. Faltam `street`, `number`, `complement`, `complex`, `state` e ordenação por campos de endereço.
+- **POST /listings/detail**: Handler [`get_listing.go`](internal/adapter/left/http/handlers/listing_handlers/get_listing.go), serviço [`get_listing_detail.go`](internal/core/service/listing_service/get_listing_detail.go) e conversor [`listing_detail_to_dto.go`](internal/adapter/left/http/converters/listing_detail_to_dto.go) não retornam dados do proprietário nem placeholders de métricas do imóvel.
+- **Dependências**: `listingService` já injeta `userRepository`, mas não consome `owner_metrics`. Handler de listings não recebe `userService`, inviabilizando `GetPhotoDownloadURL`. Domínio `UserInterface` não expõe `CreatedAt`, logo não há cálculo de “tempo de cadastro”.
 
-O plano segue estritamente o guia `docs/toq_server_go_guide.md`, preservando a Regra de Espelhamento e os padrões de documentação (Godoc + Swagger). Nenhum código deve ser implementado antes da aprovação formal registrada em `prompt_approvall.md`.
-
-## 2. Diagnóstico
-### 2.1 Arquitetura atual
-- **Handlers/DTOs**: [internal/adapter/left/http/handlers/proposal_handlers](internal/adapter/left/http/handlers/proposal_handlers) já oferecem `/proposals/realtor`, `/proposals/owner` e `/proposals/detail`, porém os DTOs não incluem timeline e os dados do corretor são limitados.
-- **Serviço**: [internal/core/service/proposal_service](internal/core/service/proposal_service) centraliza a orquestração, mas não depende de `userService`, o que impede gerar URLs assinadas.
-- **Repositório MySQL**: [internal/adapter/right/mysql/proposal](internal/adapter/right/mysql/proposal) calcula `usage_months` e `total_proposals`, porém não retorna contagem de propostas aceitas nem fornece fotos assinadas (depende do serviço).
-- **Modelo**: [internal/core/model/proposal_model](internal/core/model/proposal_model) não expõe campos para `AcceptedProposals`/`PhotoURL` em `RealtorSummary`, tampouco getters que facilitem timeline.
-
-### 2.2 Lacunas identificadas
-1. **Dados do Corretor**:
-   - Falta do campo `AcceptedProposals` na query agregada (`list_realtor_summaries.go`).
-   - Ausência de URL assinada (`userService.GetPhotoDownloadURL`).
-2. **Timeline**:
-   - DTO `ProposalResponse` não possui `createdAt`, `receivedAt` (primeira ação do owner) e `respondedAt` (timestamp final associado ao status).
-3. **Injeção de dependência**:
-   - `proposalService` precisa receber `userservices.UserServiceInterface` para reutilizar a lógica de assinatura já disponível.
-4. **Conversões**:
-   - `converters.ProposalDomainToResponse` precisa mapear novos campos (timeline + enriquecimento do corretor).
-
-### 2.3 Impactos e riscos
-- **Mudança de contrato HTTP**: novos campos serão adicionados às respostas JSON; é necessário atualizar as anotações Swagger nos handlers existentes para garantir documentação consistente.
-- **Desempenho**: geração de URLs assinadas para cada corretor exige cuidado (usar cache em memória do loop e reutilizar contextos com `utils.SetUserInContext`).
-- **Telemetria**: chamadas para `userService.GetPhotoDownloadURL` já seguem o padrão de tracing via service.
-- **DBA**: nenhuma mudança de schema; apenas consultas enriquecidas.
-
-## 3. Escopo Técnico Detalhado
-### 3.1 Domínio (`internal/core/model/proposal_model/realtor_summary.go`)
-- Adicionar métodos `AcceptedProposals() int64`, `SetAcceptedProposals(int64)`, `PhotoURL() string`, `SetPhotoURL(string)` na interface e implementação.
-- Atualizar comentários para explicar os novos campos (contagem de aceites e URL assinada).
-
-### 3.2 Entidade SQL (`internal/adapter/right/mysql/proposal/entities/realtor_summary_entity.go`)
-- Incluir `AcceptedProposals sql.NullInt64` com comentário explicando que a origem é `SUM(status='accepted')`.
-
-### 3.3 Repositório (`internal/adapter/right/mysql/proposal/list_realtor_summaries.go`)
-- Ajustar SELECT para calcular `accepted_proposals`:
-  ```sql
-  SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) AS accepted_proposals
-  ```
-- Atualizar `rows.Scan` para preencher o novo campo.
-- Garantir que a subquery continue evitando `SELECT *` e mantenha índices funcionais (`realtor_id`, `status`).
-
-### 3.4 Conversor (`internal/adapter/right/mysql/proposal/converters/realtor_summary_entity_to_domain.go`)
-- Mapear `entity.AcceptedProposals` para `summary.SetAcceptedProposals()`.
-
-### 3.5 Serviço (`internal/core/service/proposal_service`)
-1. **Estrutura e construtor**
-   - Adicionar `userService userservices.UserServiceInterface` ao struct.
-   - Atualizar `New` para receber `userService` e armazenar; manter backward compatibility para testes (permitir `nil`).
-2. **Helpers** (`helpers.go`)
-   - Criar `enrichRealtorSummaries(ctx context.Context, cache map[int64]proposalmodel.RealtorSummary) error`:
-     - Ignorar se `userService` for `nil`.
-     - Iterar sobre o mapa; se `PhotoURL` vazio, gerar contexto impersonado com `utils.SetUserInContext(ctx, usermodel.UserInfos{ID: realtorID})` e chamar `userService.GetPhotoDownloadURL(..., "small")`.
-     - Em caso de erro, logar em nível `Debug` e seguir (não bloquear a lista).
-   - Criar `generateRealtorPhotoURL(ctx context.Context, userID int64) (string, error)` encapsulando a lógica acima para facilitar testes.
-3. **listProposals**
-   - Após `loadRealtorSummaryMap`, chamar `enrichRealtorSummaries` antes de montar `ListItem`.
-   - Garantir que `ContextWithLogger` é reutilizado para logs dentro do helper.
-
-### 3.6 DTOs e Conversores HTTP
-1. **DTO** (`internal/adapter/left/http/dto/proposal_dto.go`)
-   - Expandir `ProposalResponse` com campos opcionais `CreatedAt`, `ReceivedAt`, `RespondedAt` (`*time.Time`).
-   - Atualizar `ProposalRealtorResponse` para incluir `AccountAgeMonths`, `AcceptedProposals` e `PhotoURL` (todos com comentários + tags `example`).
-2. **Converter** (`internal/adapter/left/http/converters/proposal_converter.go`)
-   - `ProposalDomainToResponse`: popular novos timestamps usando `proposal.CreatedAt()`, `proposal.FirstOwnerActionAt()` e os `NullTime` de status.
-   - `proposalRealtorToResponse`: preencher novos campos a partir de `RealtorSummary`.
-   - Adicionar helpers internos `firstNonNilTimePtr` e `nullableTimePtr` se necessário, mantendo a regra “uma função pública por arquivo”.
-
-### 3.7 Serviço → DTO: timeline
-- **Data de criação**: `proposal.CreatedAt()`.
-- **Data de recebimento**: `proposal.FirstOwnerActionAt()` (caso `Valid=false`, campo omitido).
-- **Data de resposta**: primeiro timestamp válido em `accepted_at`, `rejected_at` ou `cancelled_at`.
-
-### 3.8 Injeção de Dependências (`internal/core/config/inject_dependencies.go`)
-- Atualizar chamada para `proposalservice.New` adicionando `c.userService`.
-- Garantir que `InitProposalService` valida `userService != nil` (log `Warn` se nil, mas permitir continuar – apenas ficamos sem foto assinada em ambientes de teste).
-
-### 3.9 Swagger / Documentação
-- Handlers existentes devem receber comentários extras nas respostas para documentar os novos campos, por exemplo:
-  ```go
-  // @Success 200 {object} dto.ListProposalsResponse "Items now include realtor.photoUrl and timeline timestamps"
-  ```
-- Após implementação, executar `make swagger` para regenerar `docs/swagger.*` (feito somente após aprovação).
-
-## 4. Estrutura Final Esperada
+## 2. Code Skeletons
+```go
+// internal/adapter/left/http/handlers/listing_handlers/list_listings_handler.go
+sortBy, err := parseSortBy(req.SortBy) // aceitar novos campos
+input := listingservices.ListListingsInput{
+    Street:  strings.TrimSpace(req.Street),
+    Number:  strings.TrimSpace(req.Number),
+    // ...
+}
 ```
-internal/core/model/proposal_model/
-  realtor_summary.go          # novos getters/setters + comentários
-internal/adapter/right/mysql/proposal/entities/
-  realtor_summary_entity.go   # campo AcceptedProposals
-internal/adapter/right/mysql/proposal/
-  list_realtor_summaries.go   # query com accepted count
-  converters/realtor_summary_entity_to_domain.go
-internal/core/service/proposal_service/
-  proposal_service.go         # userService injection
-  helpers.go                  # enrichment helpers
-internal/adapter/left/http/dto/proposal_dto.go
-internal/adapter/left/http/converters/proposal_converter.go
+
+```go
+// internal/core/port/right/repository/listing_repository/listing_repository_interface.go
+type ListListingsFilter struct {
+    Street, Number, Complement, Complex, State string
+    // existentes…
+}
+```
+
+```go
+// internal/adapter/right/mysql/listing/list_listings.go
+if filter.Street != "" {
+    conditions = append(conditions, "lv.street LIKE ?")
+    args = append(args, filter.Street)
+}
+// idem para number/complement/complex/state
+columnMap := map[string]string{
+    "street": "lv.street",
+    "number": "lv.number",
+    // ...
+}
+```
+
+```go
+// internal/core/model/user_model/user_domain.go
+type user struct {
+    // ...
+    createdAt time.Time
+}
+func (u *user) GetCreatedAt() time.Time { return u.createdAt }
+func (u *user) SetCreatedAt(t time.Time) { u.createdAt = t }
+```
+
+```go
+// internal/adapter/right/mysql/user/get_user_by_id.go
+query := `SELECT u.id, ..., u.permanently_blocked, u.created_at, ...`
+```
+
+```go
+// internal/core/service/listing_service/listing_service.go
+type listingService struct {
+    listingRepository listingrepository.ListingRepoPortInterface
+    ownerMetricsRepo  ownermetricsrepository.Repository
+    // ...
+}
+```
+
+```go
+// internal/core/service/listing_service/get_listing_detail.go
+owner, err := ls.userRepository.GetUserByID(ctx, tx, identity.UserID)
+metrics, _ := ls.ownerMetricsRepo.GetByOwnerID(ctx, tx, owner.GetID())
+memberMonths := monthsSince(owner.GetCreatedAt(), time.Now().UTC())
+output.OwnerDetail = &OwnerDetail{
+    FullName: owner.GetFullName(),
+    MemberSinceMonths: memberMonths,
+    Metrics: metrics,
+}
+```
+
+```go
+// internal/adapter/left/http/handlers/listing_handlers/listing_handlers.go
+type ListingHandler struct {
+    listingService listingservice.ListingServiceInterface
+    globalService  globalservice.GlobalServiceInterface
+    userService    userservices.UserServiceInterface
+}
+```
+
+```go
+// internal/adapter/left/http/handlers/listing_handlers/get_listing.go
+photoURL, err := lh.userService.GetPhotoDownloadURL(ctx, "medium")
+if err == nil {
+    detail.OwnerDetail.PhotoURL = photoURL
+}
+```
+
+```go
+// internal/adapter/left/http/dto/listing_dto.go
+type ListingOwnerInfoResponse struct {
+    FullName          string `json:"fullName"`
+    PhotoURL          string `json:"photoUrl,omitempty"`
+    MemberSinceMonths int    `json:"memberSinceMonths"`
+    VisitAverageSeconds    *int64 `json:"visitAverageSeconds,omitempty"`
+    ProposalAverageSeconds *int64 `json:"proposalAverageSeconds,omitempty"`
+}
+
+type ListingPerformanceMetricsResponse struct {
+    Shares    int64 `json:"shares"`
+    Views     int64 `json:"views"`
+    Favorites int64 `json:"favorites"`
+}
+```
+
+```go
+// internal/adapter/left/http/converters/listing_detail_to_dto.go
+if detail.OwnerDetail != nil {
+    resp.OwnerInfo = &dto.ListingOwnerInfoResponse{ /* mapear campos */ }
+}
+resp.PerformanceMetrics = dto.ListingPerformanceMetricsResponse{
+    Shares: detail.Performance.Shares,
+    Views: detail.Performance.Views,
+    Favorites: detail.Performance.Favorites,
+    // TODO: service populates later
+}
+```
+
+```go
+// internal/core/service/listing_service/helpers.go
+func monthsSince(start, now time.Time) int {
+    // cálculo seguro evitando negativos
+}
+```
+
+## 3. Estrutura de Diretórios Afetada
+```
+internal/adapter/left/http/dto/listing_dto.go
+internal/adapter/left/http/handlers/listing_handlers/
+internal/adapter/left/http/converters/listing_detail_to_dto.go
+internal/adapter/right/mysql/listing/list_listings.go
+internal/adapter/right/mysql/user/{get_*,scan_helpers.go,entities,converters}
+internal/core/model/user_model/{user_domain.go,user_interface.go}
+internal/core/service/listing_service/{listing_service.go,list_listings.go,get_listing_detail.go,helpers.go}
+internal/core/port/right/repository/listing_repository/listing_repository_interface.go
 internal/core/config/inject_dependencies.go
+internal/core/factory/concrete_adapter_factory.go
 ```
 
-## 5. Sequenciamento das Atividades
-1. **Atualizar Domínio e DTOs**
-   - Modificar `RealtorSummary` e `ProposalResponse`.
-   - RODAR `go test ./internal/core/model/...` para garantir compilação.
-2. **Ajustar Repositório**
-   - Editar entidade, query e converter.
-   - Validar com testes unitários específicos do adapter, se existentes.
-3. **Modificar Serviço**
-   - Introduzir `userService` e helpers.
-   - Assegurar que `listProposals` chama o enrichment.
-   - Atualizar mocks (se houver) para refletir a nova dependência.
-4. **Atualizar Conversores HTTP**
-   - Popular timeline e novos campos do corretor.
-   - Revisar os handlers para garantir que a documentação mencione os campos.
-5. **Injeção de Dependência**
-   - Ajustar `InitProposalService` e `proposalservice.New`.
-   - Executar `go build ./cmd/...` para garantir wiring correto.
-6. **Swagger** (após aprovação + codificação)
-   - `make swagger` e commit do diff gerado.
+## 4. Ordem de Execução
+1. **Modelo de Usuário** — adicionar `CreatedAt` ao domínio/interface/entidades/conversores e incluir a coluna em todas as queries/scanners `GetUserBy*`.
+2. **Injeção de Dependências** — atualizar `listingService` (novo campo `ownerMetricsRepo`), `NewListingService`, `InitListingHandler`, `InitListingHandlerAdapter` e factory para repassar `userService` e repositório.
+3. **GET /listings** — estender DTO/form bindings, parsing e validações para campos de endereço + sortBy; propagar para `ListListingsInput`, port e adapter SQL (filtros + ORDER BY).
+4. **POST /listings/detail (service)** — carregar dados do proprietário e métricas (`owner_metrics`), calcular `MemberSince`, criar helper `monthsSince`, preparar estrutura `OwnerDetail` e placeholders de métricas do imóvel.
+5. **POST /listings/detail (handler/DTO)** — obter `photoUrl` via `userService`, atualizar converter/DTO para expor `ownerInfo` e `performanceMetrics` com `TODO` indicando preenchimento futuro pelo serviço.
+6. **Validação/Docs** — revisar comentários Swagger/Godoc nos pontos alterados e executar `make test`/`make lint` (se aplicável) garantindo aderência ao guia.
 
-## 6. Validações e Testes Recomendados
-- **Unitários**: serviços de proposta (`list_proposals`, `enrichRealtorSummaries`), converter DTO.
-- **Integração**: endpoint `/api/v2/proposals/owner` e `/api/v2/proposals/detail` via testes de rota (se existir suíte).
-- **Manuais**:
-  1. Criar uma proposta via `/proposals`.
-  2. Listar como owner e verificar:
-     - `realtor.photoUrl` preenchido quando o corretor possui foto.
-     - `realtor.acceptedProposals` refletindo histórico.
-     - `proposal.createdAt`, `receivedAt`, `respondedAt` consistentes.
-  3. Aceitar a proposta e revalidar timeline.
-
-## 7. Comunicação e Aprovação
-- Submeter este plano para aprovação em `prompt_approvall.md` antes de qualquer alteração de código.
-- Após aprovação, seguir estritamente a ordem sequencial e documentar cada etapa no PR com referência a este arquivo.
-
----
-Este documento foi gerado por GitHub Copilot (GPT-5.1-Codex) em 12/01/2026 para orientar times presentes e futuros na implementação segura dos novos requisitos do fluxo de propostas.
+## 5. Status de Execução
+- [x] **Fase 1 — Modelo de Usuário**: `CreatedAt` propagado para domínio, interface, entidades SQL, conversores e queries `GetUserBy*`/scanner.
+- [x] **Fase 2 — Injeção de Dependências**: `listingService` agora injeta `ownerMetricsRepo`; config valida repositório e factory/handler recebem `userService`.
+- [x] **Fase 3 — GET /listings**: DTO, handler, serviço e MySQL adapter aceitam filtros/sort por street/number/complement/complex/state e zip/city/neighborhood ordenáveis.
+- [x] **Fase 4 — Serviço POST /listings/detail**: Service enriquece response com `OwnerDetail` (nome, tempo de cadastro calculado via `monthsSince`, métricas de SLA) e inicializa placeholders de `PerformanceMetrics`.
+- [x] **Fase 5 — Handler/DTO POST /listings/detail**: Handler consome `userService` para gerar `ownerPhoto` impersonando o proprietário, DTO/conversor expõem `ownerInfo` (incluindo métricas SLA em ponteiro) e `performanceMetrics` placeholders.
+- [x] **Fase 6 — Validação/Docs**: Ajustados comentários Godoc/Swagger dos novos helpers e DTOs; `make lint` executado com sucesso garantindo conformidade das fases anteriores.
+``

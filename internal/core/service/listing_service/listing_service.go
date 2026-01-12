@@ -6,6 +6,7 @@ import (
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
@@ -18,6 +19,7 @@ type listingService struct {
 	listingRepository listingrepository.ListingRepoPortInterface
 	photoSessionSvc   photosessionservices.PhotoSessionServiceInterface
 	userRepository    userrepository.UserRepoPortInterface
+	ownerMetricsRepo  ownermetricsrepository.Repository
 	propertyCoverage  propertycoverageservice.PropertyCoverageServiceInterface
 	gsi               globalservice.GlobalServiceInterface
 	gcs               storageport.CloudStoragePortInterface
@@ -28,6 +30,7 @@ func NewListingService(
 	lr listingrepository.ListingRepoPortInterface,
 	ps photosessionservices.PhotoSessionServiceInterface,
 	ur userrepository.UserRepoPortInterface,
+	om ownermetricsrepository.Repository,
 	pcs propertycoverageservice.PropertyCoverageServiceInterface,
 	gsi globalservice.GlobalServiceInterface,
 	gcs storageport.CloudStoragePortInterface,
@@ -38,6 +41,7 @@ func NewListingService(
 		listingRepository: lr,
 		photoSessionSvc:   ps,
 		userRepository:    ur,
+		ownerMetricsRepo:  om,
 		propertyCoverage:  pcs,
 		gsi:               gsi,
 		gcs:               gcs,
