@@ -6,13 +6,56 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/converters"
-	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/entities"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-const visitsMaxPageSize = 50
+const (
+	visitsMaxPageSize          = 50
+	visitWithListingSelectBase = `
+	SELECT 
+		lv.id,
+		lv.listing_identity_id,
+		lv.listing_version,
+		lv.user_id,
+		li.user_id AS owner_user_id,
+		%s AS scheduled_start,
+		%s AS scheduled_end,
+		lv.status,
+		lv.source,
+		lv.notes,
+		lv.rejection_reason,
+		lv.first_owner_action_at,
+		lv.requested_at,
+		active.id AS listing_id,
+		active.version AS listing_version_number,
+		active.zip_code,
+		active.street,
+		active.number,
+		active.complement,
+		active.neighborhood,
+		active.city,
+		active.state,
+		active.title,
+		active.description,
+		owner.full_name AS owner_full_name,
+		owner.created_at AS owner_created_at,
+		orm.visit_avg_response_time_seconds,
+		realtor.full_name AS realtor_full_name,
+		realtor.created_at AS realtor_created_at,
+		COALESCE(rv.total_visits, 0) AS realtor_total_visits
+	FROM listing_visits lv
+	JOIN listing_identities li ON li.id = lv.listing_identity_id
+	JOIN users owner ON owner.id = li.user_id
+	JOIN users realtor ON realtor.id = lv.user_id
+	LEFT JOIN owner_response_metrics orm ON orm.user_id = li.user_id
+	LEFT JOIN (
+		SELECT user_id, COUNT(*) AS total_visits
+		FROM listing_visits
+		GROUP BY user_id
+	) rv ON rv.user_id = lv.user_id
+	LEFT JOIN listing_versions active ON active.id = li.active_version_id AND active.deleted = 0`
+)
 
 // ListVisits retrieves a paginated and filtered list of visits from listing_visits table.
 // Returns a result set with total count and matching visit records.
@@ -130,39 +173,13 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 	limit, offset := defaultPagination(filter.Limit, filter.Page, visitsMaxPageSize)
 
 	// Execute main SELECT query with pagination
+	baseSelect := fmt.Sprintf(visitWithListingSelectBase, scheduledStartExpr, scheduledEndExpr)
 	query := fmt.Sprintf(`
-		SELECT 
-			lv.id,
-			lv.listing_identity_id,
-			lv.listing_version,
-			lv.user_id,
-			li.user_id AS owner_user_id,
-			%s AS scheduled_start,
-			%s AS scheduled_end,
-			lv.status,
-			lv.source,
-			lv.notes,
-			lv.rejection_reason,
-			lv.first_owner_action_at,
-			lv.requested_at,
-			active.id AS listing_id,
-			active.version AS listing_version_number,
-			active.zip_code,
-			active.street,
-			active.number,
-			active.complement,
-			active.neighborhood,
-			active.city,
-			active.state,
-			active.title,
-			active.description
-		FROM listing_visits lv
-		JOIN listing_identities li ON li.id = lv.listing_identity_id
-		LEFT JOIN listing_versions active ON active.id = li.active_version_id AND active.deleted = 0
+		%s
 		WHERE %s
 		ORDER BY %s ASC
 		LIMIT ? OFFSET ?
-	`, scheduledStartExpr, scheduledEndExpr, where, scheduledStartExpr)
+	`, baseSelect, where, scheduledStartExpr)
 
 	params := append(make([]any, 0, len(args)+2), args...)
 	params = append(params, limit, offset)
@@ -177,106 +194,13 @@ func (a *VisitAdapter) ListVisits(ctx context.Context, tx *sql.Tx, filter listin
 
 	visits := make([]listingmodel.VisitWithListing, 0)
 	for rows.Next() {
-		var visitEntity entities.VisitEntity
-		var listingID sql.NullInt64
-		var listingVersion sql.NullInt64
-		var listingZip sql.NullString
-		var listingStreet sql.NullString
-		var listingNumber sql.NullString
-		var listingComplement sql.NullString
-		var listingNeighborhood sql.NullString
-		var listingCity sql.NullString
-		var listingState sql.NullString
-		var listingTitle sql.NullString
-		var listingDescription sql.NullString
-
-		if err = rows.Scan(
-			&visitEntity.ID,
-			&visitEntity.ListingIdentityID,
-			&visitEntity.ListingVersion,
-			&visitEntity.RequesterUserID,
-			&visitEntity.OwnerUserID,
-			&visitEntity.ScheduledStart,
-			&visitEntity.ScheduledEnd,
-			&visitEntity.Status,
-			&visitEntity.Source,
-			&visitEntity.Notes,
-			&visitEntity.RejectionReason,
-			&visitEntity.FirstOwnerActionAt,
-			&visitEntity.RequestedAt,
-			&listingID,
-			&listingVersion,
-			&listingZip,
-			&listingStreet,
-			&listingNumber,
-			&listingComplement,
-			&listingNeighborhood,
-			&listingCity,
-			&listingState,
-			&listingTitle,
-			&listingDescription,
-		); err != nil {
-			utils.SetSpanError(ctx, err)
-			logger.Error("mysql.visit.list.scan_error", "err", err)
-			return listingmodel.VisitListResult{}, fmt.Errorf("scan visit: %w", err)
+		entry, scanErr := scanVisitWithListingRow(rows)
+		if scanErr != nil {
+			utils.SetSpanError(ctx, scanErr)
+			logger.Error("mysql.visit.list.scan_error", "err", scanErr)
+			return listingmodel.VisitListResult{}, fmt.Errorf("scan visit: %w", scanErr)
 		}
-
-		if !listingID.Valid || !listingVersion.Valid {
-			errMissing := fmt.Errorf("listing version not found for listing_identity_id=%d", visitEntity.ListingIdentityID)
-			utils.SetSpanError(ctx, errMissing)
-			logger.Error("mysql.visit.list.missing_listing_version", "listing_identity_id", visitEntity.ListingIdentityID)
-			return listingmodel.VisitListResult{}, errMissing
-		}
-
-		requiredSnapshotFields := []struct {
-			valid bool
-			name  string
-		}{
-			{listingZip.Valid, "zip_code"},
-			{listingStreet.Valid, "street"},
-			{listingNeighborhood.Valid, "neighborhood"},
-			{listingCity.Valid, "city"},
-			{listingState.Valid, "state"},
-		}
-
-		for _, field := range requiredSnapshotFields {
-			if field.valid {
-				continue
-			}
-			errMissing := fmt.Errorf("listing snapshot missing %s for listing_identity_id=%d", field.name, visitEntity.ListingIdentityID)
-			utils.SetSpanError(ctx, errMissing)
-			logger.Error("mysql.visit.list.missing_listing_field", "listing_identity_id", visitEntity.ListingIdentityID, "field", field.name)
-			return listingmodel.VisitListResult{}, errMissing
-		}
-
-		visitModel := converters.ToVisitModel(visitEntity)
-		listingModel := listingmodel.NewListing()
-		listingModel.SetID(listingID.Int64)
-		listingModel.SetListingIdentityID(visitEntity.ListingIdentityID)
-		listingModel.SetVersion(uint8(listingVersion.Int64))
-		listingModel.SetZipCode(listingZip.String)
-		listingModel.SetStreet(listingStreet.String)
-		if listingNumber.Valid {
-			listingModel.SetNumber(listingNumber.String)
-		}
-		if listingComplement.Valid && strings.TrimSpace(listingComplement.String) != "" {
-			listingModel.SetComplement(strings.TrimSpace(listingComplement.String))
-		}
-		listingModel.SetNeighborhood(listingNeighborhood.String)
-		listingModel.SetCity(listingCity.String)
-		listingModel.SetState(listingState.String)
-		if listingTitle.Valid {
-			listingModel.SetTitle(listingTitle.String)
-		} else {
-			listingModel.UnsetTitle()
-		}
-		if listingDescription.Valid {
-			listingModel.SetDescription(listingDescription.String)
-		} else {
-			listingModel.UnsetDescription()
-		}
-
-		visits = append(visits, listingmodel.VisitWithListing{Visit: visitModel, Listing: listingModel})
+		visits = append(visits, entry)
 	}
 
 	if err = rows.Err(); err != nil {

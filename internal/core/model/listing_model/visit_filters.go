@@ -18,6 +18,8 @@ type VisitListFilter struct {
 type VisitWithListing struct {
 	Visit   VisitInterface
 	Listing ListingInterface
+	Owner   VisitParticipantSnapshot
+	Realtor VisitParticipantSnapshot
 }
 
 // VisitListResult holds a paginated visit collection with listing snapshots attached.

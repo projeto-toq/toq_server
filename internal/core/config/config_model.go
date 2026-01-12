@@ -214,6 +214,9 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.Permission == nil {
 		slog.Error("repositories.Permission is nil")
 	}
+	if repositories.OwnerMetrics == nil {
+		slog.Error("repositories.OwnerMetrics is nil")
+	}
 
 	// Criar uma cópia dos repositórios para evitar problemas com ponteiros
 	c.repositoryAdapters = &factory.RepositoryAdapters{
@@ -228,6 +231,7 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 		PhotoSession:     repositories.PhotoSession,
 		Session:          repositories.Session,
 		Permission:       repositories.Permission,
+		OwnerMetrics:     repositories.OwnerMetrics,
 		MediaProcessing:  repositories.MediaProcessing,
 	}
 
@@ -260,12 +264,12 @@ func (c *config) initializeServices() {
 	c.InitPermissionHandler()
 	c.InitHolidayService()
 	c.InitScheduleService()
-	c.InitVisitService()
 	c.InitPhotoSessionService()
 	c.InitPropertyCoverageService()
 	c.InitListingHandler()
-	c.InitProposalService()
 	c.InitUserHandler()
+	c.InitVisitService()
+	c.InitProposalService()
 
 	slog.Info("All services initialized successfully")
 }

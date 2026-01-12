@@ -24,6 +24,10 @@ type VisitRepositoryInterface interface {
 	// GetVisitByID retrieves a visit by primary key; returns sql.ErrNoRows if absent.
 	GetVisitByID(ctx context.Context, tx *sql.Tx, id int64) (listingmodel.VisitInterface, error)
 
+	// GetVisitWithListingByID fetches a visit alongside its listing snapshot and participant metadata.
+	// Returns sql.ErrNoRows when not found.
+	GetVisitWithListingByID(ctx context.Context, tx *sql.Tx, id int64) (listingmodel.VisitWithListing, error)
+
 	// ListVisits lists visits with filtering/pagination and hydrates the active listing snapshot for each row.
 	ListVisits(ctx context.Context, tx *sql.Tx, filter listingmodel.VisitListFilter) (listingmodel.VisitListResult, error)
 }

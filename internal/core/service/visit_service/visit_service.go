@@ -2,6 +2,7 @@ package visitservice
 
 import (
 	"context"
+	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -10,12 +11,24 @@ import (
 	visitrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/visit_repository"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
+	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 )
 
-// VisitDetailOutput aggregates the visit entity with the related listing snapshot.
+// VisitDetailOutput aggregates the visit entity with related listing snapshot and participant metadata.
 type VisitDetailOutput struct {
-	Visit   listingmodel.VisitInterface
-	Listing listingmodel.ListingInterface
+	Visit      listingmodel.VisitInterface
+	Listing    listingmodel.ListingInterface
+	Owner      listingmodel.VisitParticipantSnapshot
+	Realtor    listingmodel.VisitParticipantSnapshot
+	Timeline   VisitTimeline
+	LiveStatus string
+}
+
+// VisitTimeline represents key timestamps for the visit lifecycle.
+type VisitTimeline struct {
+	CreatedAt   time.Time
+	ReceivedAt  time.Time
+	RespondedAt *time.Time
 }
 
 // VisitListOutput mirrors VisitDetailOutput with pagination metadata for list endpoints.
@@ -39,7 +52,7 @@ type Service interface {
 }
 
 // NewService wires the visit service dependencies.
-func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface, ownerMetricsRepo ownermetricsrepository.Repository, scheduleSvc scheduleservices.ScheduleServiceInterface, config Config) Service {
+func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitrepository.VisitRepositoryInterface, listingRepo listingrepository.ListingRepoPortInterface, scheduleRepo schedulerepository.ScheduleRepositoryInterface, ownerMetricsRepo ownermetricsrepository.Repository, scheduleSvc scheduleservices.ScheduleServiceInterface, userService userservices.UserServiceInterface, config Config) Service {
 	return &visitService{
 		globalService: gs,
 		visitRepo:     visitRepo,
@@ -47,6 +60,7 @@ func NewService(gs globalservice.GlobalServiceInterface, visitRepo visitreposito
 		ownerMetrics:  ownerMetricsRepo,
 		scheduleRepo:  scheduleRepo,
 		scheduleSvc:   scheduleSvc,
+		userService:   userService,
 		config:        config,
 	}
 }
@@ -58,5 +72,6 @@ type visitService struct {
 	ownerMetrics  ownermetricsrepository.Repository
 	scheduleRepo  schedulerepository.ScheduleRepositoryInterface
 	scheduleSvc   scheduleservices.ScheduleServiceInterface
+	userService   userservices.UserServiceInterface
 	config        Config
 }

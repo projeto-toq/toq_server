@@ -3454,6 +3454,48 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitOwnerDTO:
+    properties:
+      avgResponseHours:
+        example: 4.5
+        type: number
+      fullName:
+        example: Maria Souza
+        type: string
+      memberSince:
+        example: "2021-05-10T12:00:00Z"
+        type: string
+      memberSinceDays:
+        example: 980
+        type: integer
+      photoUrl:
+        example: https://signed.cdn/photos/owner.jpg
+        type: string
+      userId:
+        example: 10
+        type: integer
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitRealtorDTO:
+    properties:
+      fullName:
+        example: João Corretor
+        type: string
+      memberSince:
+        example: "2022-02-01T09:30:00Z"
+        type: string
+      memberSinceDays:
+        example: 600
+        type: integer
+      photoUrl:
+        example: https://signed.cdn/photos/realtor.jpg
+        type: string
+      userId:
+        example: 5
+        type: integer
+      visitsPerformed:
+        example: 37
+        type: integer
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse:
     properties:
       firstOwnerActionAt:
@@ -3470,11 +3512,18 @@ definitions:
       listingVersion:
         example: 1
         type: integer
+      liveStatus:
+        example: AO_VIVO
+        type: string
       notes:
         type: string
+      owner:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitOwnerDTO'
       ownerUserId:
         example: 10
         type: integer
+      realtor:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitRealtorDTO'
       rejectionReason:
         type: string
       requesterUserId:
@@ -3491,6 +3540,20 @@ definitions:
         type: string
       status:
         example: PENDING
+        type: string
+      timeline:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitTimelineDTO'
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitTimelineDTO:
+    properties:
+      createdAt:
+        example: "2025-01-05T12:00:00Z"
+        type: string
+      receivedAt:
+        example: "2025-01-05T12:05:00Z"
+        type: string
+      respondedAt:
+        example: "2025-01-05T13:15:00Z"
         type: string
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.WarehouseAdditionalFloorDTO:

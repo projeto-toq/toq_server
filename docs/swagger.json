@@ -15375,6 +15375,64 @@
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitOwnerDTO": {
+            "type": "object",
+            "properties": {
+                "avgResponseHours": {
+                    "type": "number",
+                    "example": 4.5
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "Maria Souza"
+                },
+                "memberSince": {
+                    "type": "string",
+                    "example": "2021-05-10T12:00:00Z"
+                },
+                "memberSinceDays": {
+                    "type": "integer",
+                    "example": 980
+                },
+                "photoUrl": {
+                    "type": "string",
+                    "example": "https://signed.cdn/photos/owner.jpg"
+                },
+                "userId": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitRealtorDTO": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string",
+                    "example": "João Corretor"
+                },
+                "memberSince": {
+                    "type": "string",
+                    "example": "2022-02-01T09:30:00Z"
+                },
+                "memberSinceDays": {
+                    "type": "integer",
+                    "example": 600
+                },
+                "photoUrl": {
+                    "type": "string",
+                    "example": "https://signed.cdn/photos/realtor.jpg"
+                },
+                "userId": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "visitsPerformed": {
+                    "type": "integer",
+                    "example": 37
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitResponse": {
             "type": "object",
             "properties": {
@@ -15397,12 +15455,22 @@
                     "type": "integer",
                     "example": 1
                 },
+                "liveStatus": {
+                    "type": "string",
+                    "example": "AO_VIVO"
+                },
                 "notes": {
                     "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitOwnerDTO"
                 },
                 "ownerUserId": {
                     "type": "integer",
                     "example": 10
+                },
+                "realtor": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitRealtorDTO"
                 },
                 "rejectionReason": {
                     "type": "string"
@@ -15426,6 +15494,26 @@
                 "status": {
                     "type": "string",
                     "example": "PENDING"
+                },
+                "timeline": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitTimelineDTO"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.VisitTimelineDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2025-01-05T12:00:00Z"
+                },
+                "receivedAt": {
+                    "type": "string",
+                    "example": "2025-01-05T12:05:00Z"
+                },
+                "respondedAt": {
+                    "type": "string",
+                    "example": "2025-01-05T13:15:00Z"
                 }
             }
         },

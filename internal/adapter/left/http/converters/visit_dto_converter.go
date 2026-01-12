@@ -79,6 +79,10 @@ func VisitDetailToResponse(detail visitservice.VisitDetailOutput) dto.VisitRespo
 	response := VisitDomainToResponse(detail.Visit)
 	listing := detail.Listing
 	if listing == nil {
+		response.Owner = ownerParticipantToDTO(detail.Owner)
+		response.Realtor = realtorParticipantToDTO(detail.Realtor)
+		response.Timeline = buildTimelineDTO(detail.Timeline)
+		response.LiveStatus = detail.LiveStatus
 		return response
 	}
 
@@ -98,6 +102,10 @@ func VisitDetailToResponse(detail visitservice.VisitDetailOutput) dto.VisitRespo
 	}
 
 	response.ListingSummary = &summary
+	response.Owner = ownerParticipantToDTO(detail.Owner)
+	response.Realtor = realtorParticipantToDTO(detail.Realtor)
+	response.Timeline = buildTimelineDTO(detail.Timeline)
+	response.LiveStatus = detail.LiveStatus
 	return response
 }
 
@@ -142,4 +150,74 @@ func visitTotalPages(total int64, limit int) int {
 	}
 
 	return int(pages)
+}
+
+func ownerParticipantToDTO(snapshot listingmodel.VisitParticipantSnapshot) dto.VisitOwnerDTO {
+	dtoOwner := dto.VisitOwnerDTO{
+		UserID:   snapshot.UserID,
+		FullName: snapshot.SanitizedName(),
+		PhotoURL: snapshot.PhotoURL,
+	}
+
+	if !snapshot.CreatedAt.IsZero() {
+		dtoOwner.MemberSince = snapshot.CreatedAt.UTC().Format(time.RFC3339)
+		dtoOwner.MemberSinceDays = daysSince(snapshot.CreatedAt)
+	}
+
+	if snapshot.HasAvgResponseSeconds() {
+		dtoOwner.AvgResponseHours = float64(snapshot.AvgResponseSecondsValue()) / 3600
+	}
+
+	return dtoOwner
+}
+
+func realtorParticipantToDTO(snapshot listingmodel.VisitParticipantSnapshot) dto.VisitRealtorDTO {
+	dtoRealtor := dto.VisitRealtorDTO{
+		UserID:   snapshot.UserID,
+		FullName: snapshot.SanitizedName(),
+		PhotoURL: snapshot.PhotoURL,
+	}
+
+	if !snapshot.CreatedAt.IsZero() {
+		dtoRealtor.MemberSince = snapshot.CreatedAt.UTC().Format(time.RFC3339)
+		dtoRealtor.MemberSinceDays = daysSince(snapshot.CreatedAt)
+	}
+
+	dtoRealtor.VisitsPerformed = snapshot.TotalVisitsValue()
+
+	return dtoRealtor
+}
+
+func buildTimelineDTO(timeline visitservice.VisitTimeline) dto.VisitTimelineDTO {
+	created := timeline.CreatedAt
+	if created.IsZero() {
+		created = time.Time{}
+	}
+	received := timeline.ReceivedAt
+	if received.IsZero() {
+		received = timeline.CreatedAt
+	}
+
+	dtoTimeline := dto.VisitTimelineDTO{
+		CreatedAt:  created.UTC().Format(time.RFC3339),
+		ReceivedAt: received.UTC().Format(time.RFC3339),
+	}
+
+	if timeline.RespondedAt != nil {
+		value := timeline.RespondedAt.UTC().Format(time.RFC3339)
+		dtoTimeline.RespondedAt = &value
+	}
+
+	return dtoTimeline
+}
+
+func daysSince(ts time.Time) int {
+	if ts.IsZero() {
+		return 0
+	}
+	delta := time.Since(ts)
+	if delta < 0 {
+		return 0
+	}
+	return int(delta.Hours() / 24)
 }

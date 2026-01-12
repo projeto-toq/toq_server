@@ -2,6 +2,7 @@ package visitservice
 
 import (
 	"context"
+	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -40,9 +41,19 @@ func (s *visitService) ListVisits(ctx context.Context, filter listingmodel.Visit
 		return VisitListOutput{}, err
 	}
 
+	currentTime := time.Now().UTC()
 	items := make([]VisitDetailOutput, 0, len(result.Visits))
 	for _, entry := range result.Visits {
-		items = append(items, VisitDetailOutput{Visit: entry.Visit, Listing: entry.Listing})
+		decoratedOwner := s.decorateParticipantSnapshot(ctx, entry.Owner)
+		decoratedRealtor := s.decorateParticipantSnapshot(ctx, entry.Realtor)
+		items = append(items, VisitDetailOutput{
+			Visit:      entry.Visit,
+			Listing:    entry.Listing,
+			Owner:      decoratedOwner,
+			Realtor:    decoratedRealtor,
+			Timeline:   buildVisitTimeline(entry.Visit),
+			LiveStatus: computeLiveStatus(entry.Visit, currentTime),
+		})
 	}
 
 	return VisitListOutput{

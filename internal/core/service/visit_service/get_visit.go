@@ -3,6 +3,7 @@ package visitservice
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -30,7 +31,7 @@ func (s *visitService) GetVisit(ctx context.Context, visitID int64) (VisitDetail
 		}
 	}()
 
-	visit, err := s.visitRepo.GetVisitByID(ctx, tx, visitID)
+	visitWithListing, err := s.visitRepo.GetVisitWithListingByID(ctx, tx, visitID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return VisitDetailOutput{}, utils.NotFoundError("Visit")
@@ -40,10 +41,15 @@ func (s *visitService) GetVisit(ctx context.Context, visitID int64) (VisitDetail
 		return VisitDetailOutput{}, utils.InternalError("")
 	}
 
-	listing, err := s.fetchListingVersionForVisit(ctx, tx, visit)
-	if err != nil {
-		return VisitDetailOutput{}, err
-	}
+	owner := s.decorateParticipantSnapshot(ctx, visitWithListing.Owner)
+	realtor := s.decorateParticipantSnapshot(ctx, visitWithListing.Realtor)
 
-	return VisitDetailOutput{Visit: visit, Listing: listing}, nil
+	return VisitDetailOutput{
+		Visit:      visitWithListing.Visit,
+		Listing:    visitWithListing.Listing,
+		Owner:      owner,
+		Realtor:    realtor,
+		Timeline:   buildVisitTimeline(visitWithListing.Visit),
+		LiveStatus: computeLiveStatus(visitWithListing.Visit, time.Now().UTC()),
+	}, nil
 }
