@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -142,7 +143,12 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	// Initialize tracing for distributed observability
 	ctx, spanEnd, err := utils.GenerateTracer(ctx)
 	if err != nil {
-		return output, utils.InternalError("")
+		ctx = utils.ContextWithLogger(ctx)
+		logger := utils.LoggerFromContext(ctx)
+		logger.Error("listing.detail.tracer_error", "stage", "tracer_init", "err", err)
+		return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to start tracer for listing detail", map[string]any{
+			"stage": "tracer_init",
+		})
 	}
 	defer spanEnd()
 
@@ -154,8 +160,10 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	tx, txErr := ls.gsi.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
-		logger.Error("listing.detail.tx_start_error", "err", txErr)
-		return output, utils.InternalError("")
+		logger.Error("listing.detail.tx_start_error", "stage", "tx_ro_start", "err", txErr)
+		return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to start read-only transaction", map[string]any{
+			"stage": "tx_ro_start",
+		})
 	}
 	defer func() {
 		// Always rollback read-only transactions (no side effects)
@@ -171,8 +179,11 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 		}
 		// Infrastructure error (500)
 		utils.SetSpanError(ctx, identityErr)
-		logger.Error("listing.detail.get_identity_error", "err", identityErr, "listing_identity_id", listingIdentityId)
-		return output, utils.InternalError("")
+		logger.Error("listing.detail.get_identity_error", "stage", "identity_lookup", "err", identityErr, "listing_identity_id", listingIdentityId)
+		return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to load listing identity", map[string]any{
+			"stage":             "identity_lookup",
+			"listingIdentityId": listingIdentityId,
+		})
 	}
 
 	// Validate ownership before returning sensitive data
@@ -194,8 +205,11 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	// Fetch active version via identity.active_version_id
 	if !identity.ActiveVersionID.Valid || identity.ActiveVersionID.Int64 == 0 {
 		// Edge case: identity exists but no active version (should not happen in production)
-		logger.Error("listing.detail.no_active_version", "listing_identity_id", listingIdentityId)
-		return output, utils.InternalError("")
+		logger.Error("listing.detail.no_active_version", "stage", "active_version_missing", "listing_identity_id", listingIdentityId)
+		return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Listing has no active version", map[string]any{
+			"stage":             "active_version_missing",
+			"listingIdentityId": listingIdentityId,
+		})
 	}
 
 	activeVersionID := identity.ActiveVersionID.Int64
@@ -206,13 +220,21 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	if repoErr != nil {
 		if errors.Is(repoErr, sql.ErrNoRows) {
 			// Active version referenced but not found (data integrity issue)
-			logger.Error("listing.detail.active_version_not_found", "listing_identity_id", listingIdentityId, "active_version_id", activeVersionID)
-			return output, utils.InternalError("")
+			logger.Error("listing.detail.active_version_not_found", "stage", "active_version_lookup", "listing_identity_id", listingIdentityId, "active_version_id", activeVersionID)
+			return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Active listing version not found", map[string]any{
+				"stage":             "active_version_lookup",
+				"listingIdentityId": listingIdentityId,
+				"activeVersionId":   activeVersionID,
+			})
 		}
 		// Infrastructure error
 		utils.SetSpanError(ctx, repoErr)
-		logger.Error("listing.detail.get_listing_error", "err", repoErr, "listing_identity_id", listingIdentityId, "active_version_id", activeVersionID)
-		return output, utils.InternalError("")
+		logger.Error("listing.detail.get_listing_error", "stage", "listing_version_fetch", "err", repoErr, "listing_identity_id", listingIdentityId, "active_version_id", activeVersionID)
+		return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to load listing version", map[string]any{
+			"stage":             "listing_version_fetch",
+			"listingIdentityId": listingIdentityId,
+			"activeVersionId":   activeVersionID,
+		})
 	}
 
 	// Set listing identity metadata (UUID, identity ID)
@@ -230,8 +252,11 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 	favCounts, favErr := ls.favoriteRepo.CountByListingIdentities(ctx, tx, []int64{listingIdentityId})
 	if favErr != nil {
 		utils.SetSpanError(ctx, favErr)
-		logger.Error("listing.detail.fav_count_error", "err", favErr, "listing_identity_id", listingIdentityId)
-		return output, utils.InternalError("")
+		logger.Error("listing.detail.fav_count_error", "stage", "favorites_count", "err", favErr, "listing_identity_id", listingIdentityId)
+		return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to load listing favorites", map[string]any{
+			"stage":             "favorites_count",
+			"listingIdentityId": listingIdentityId,
+		})
 	}
 
 	output.Performance = ListingPerformanceMetrics{Favorites: favCounts[listingIdentityId]}
@@ -291,7 +316,10 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 		if ferr != nil {
 			utils.SetSpanError(ctx, ferr)
 			logger.Error("listing.detail.get_features_metadata_error", "err", ferr, "listing_identity_id", listingIdentityId)
-			return output, utils.InternalError("")
+			return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to load feature metadata", map[string]any{
+				"stage":             "features_metadata",
+				"listingIdentityId": listingIdentityId,
+			})
 		}
 
 		featureDetails := make([]FeatureDetail, 0, len(listingFeatures))
@@ -410,11 +438,14 @@ func (ls *listingService) buildOwnerDetail(ctx context.Context, tx *sql.Tx, owne
 		utils.SetSpanError(ctx, err)
 		logger := utils.LoggerFromContext(ctx)
 		if errors.Is(err, sql.ErrNoRows) {
-			logger.Error("listing.detail.owner_not_found", "owner_id", ownerID, "err", err)
+			logger.Error("listing.detail.owner_not_found", "stage", "owner_lookup", "owner_id", ownerID, "err", err)
 		} else {
-			logger.Error("listing.detail.owner_fetch_error", "owner_id", ownerID, "err", err)
+			logger.Error("listing.detail.owner_fetch_error", "stage", "owner_lookup", "owner_id", ownerID, "err", err)
 		}
-		return nil, utils.InternalError("")
+		return nil, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to load owner information", map[string]any{
+			"stage":   "owner_lookup",
+			"ownerId": ownerID,
+		})
 	}
 
 	metrics, metricsErr := ls.ownerMetricsRepo.GetByOwnerID(ctx, tx, ownerID)
@@ -489,7 +520,13 @@ func (ls *listingService) fetchCatalogValueDetail(
 		}
 		// Infrastructure error
 		utils.SetSpanError(ctx, err)
-		return nil, utils.InternalError("")
+		logger := utils.LoggerFromContext(ctx)
+		logger.Error("listing.detail.catalog_error", "stage", "catalog_lookup", "category", category, "numeric", numeric, "err", err)
+		return nil, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to load catalog value", map[string]any{
+			"stage":    "catalog_lookup",
+			"category": category,
+			"numeric":  numeric,
+		})
 	}
 
 	// Cache result for future use in this request

@@ -1210,6 +1210,14 @@ definitions:
       message:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.FavoriteListingRequest:
+    properties:
+      listingIdentityId:
+        minimum: 1
+        type: integer
+    required:
+    - listingIdentityId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.GenerateDownloadURLsRequest:
     properties:
       listingIdentityId:
@@ -1728,6 +1736,8 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingExchangePlaceResponse'
         type: array
+      favoritesCount:
+        type: integer
       features:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingFeatureResponse'
@@ -1748,6 +1758,8 @@ definitions:
         type: integer
       installment:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CatalogItemResponse'
+      isFavorite:
+        type: boolean
       kmzFile:
         example: https://storage.exemplo.com/terrenos/lote15.kmz
         type: string
@@ -1984,8 +1996,12 @@ definitions:
         type: string
       draftVersionId:
         type: integer
+      favoritesCount:
+        type: integer
       id:
         type: integer
+      isFavorite:
+        type: boolean
       listingIdentityId:
         type: integer
       listingUuid:
@@ -7657,6 +7673,142 @@ paths:
       security:
       - BearerAuth: []
       summary: Get listing details by identity ID
+      tags:
+      - Listings
+  /listings/favorites:
+    delete:
+      consumes:
+      - application/json
+      description: Removes the favorite relation for the given listing identity. Operation
+        is idempotent.
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+        x-example: Bearer <token>
+      - description: Favorite request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.FavoriteListingRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Favorite removed
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Unfavorite a listing
+      tags:
+      - Listings
+    get:
+      description: Retrieves the user's favorites ordered by most recent favorite
+        action.
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+        x-example: Bearer <token>
+      - default: 1
+        description: Page number (default 1)
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page (default 20, max 100)
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Favorite listings
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListListingsResponse'
+        "400":
+          description: Invalid query params
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List favorite listings
+      tags:
+      - Listings
+    post:
+      consumes:
+      - application/json
+      description: Adds the given listing identity to the requester favorites. Only
+        published listings are accepted. Owners cannot favorite their own listings.
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+        x-example: Bearer <token>
+      - description: Favorite request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.FavoriteListingRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Favorite stored
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden (owner cannot favorite own listing)
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Favorite a published listing
       tags:
       - Listings
   /listings/features/base:
