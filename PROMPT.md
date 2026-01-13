@@ -13,4 +13,3 @@ na resposta do endpoint `GET /listings/detail`.
 Atualmente, não existe uma logica para o contador de visualizações, e portanto, não está sendo incrementado quando o realtor acessa os detalhes do imóvel.
 
 Analise o código proponha o plano conforme o `AGENTS.md`.
-

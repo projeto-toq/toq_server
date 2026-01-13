@@ -1113,6 +1113,26 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_favorites` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`listing_view_metrics`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`listing_view_metrics` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`listing_view_metrics` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `listing_identity_id` INT UNSIGNED NOT NULL,
+  `views` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `last_view_at` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_identity_idx` (`listing_identity_id` ASC) VISIBLE,
+  CONSTRAINT `fk_identity`
+    FOREIGN KEY (`listing_identity_id`)
+    REFERENCES `toq_db`.`listing_identities` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 -- begin attached script 'script'
 -- Desabilitar verificação de foreign keys durante o LOAD DATA
 SET FOREIGN_KEY_CHECKS = 0;

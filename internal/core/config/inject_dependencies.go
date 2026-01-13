@@ -443,6 +443,10 @@ func (c *config) InitListingHandler() {
 		slog.Error("repositoryAdapters.ListingFavorite is nil")
 		return
 	}
+	if c.repositoryAdapters.ListingView == nil {
+		slog.Error("repositoryAdapters.ListingView is nil")
+		return
+	}
 	c.listingService = listingservices.NewListingService(
 		c.repositoryAdapters.Listing,
 		c.photoSessionService,
@@ -453,6 +457,7 @@ func (c *config) InitListingHandler() {
 		c.cloudStorage,
 		c.scheduleService,
 		c.repositoryAdapters.ListingFavorite,
+		c.repositoryAdapters.ListingView,
 	)
 	// HTTP handler initialization is done during HTTP server setup
 }

@@ -7,6 +7,7 @@ import (
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
 	listingfavoriterepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_favorite_repository"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	listingviewrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_view_repository"
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
@@ -22,6 +23,7 @@ type listingService struct {
 	userRepository    userrepository.UserRepoPortInterface
 	ownerMetricsRepo  ownermetricsrepository.Repository
 	favoriteRepo      listingfavoriterepository.FavoriteRepoPortInterface
+	viewRepo          listingviewrepository.Repository
 	propertyCoverage  propertycoverageservice.PropertyCoverageServiceInterface
 	gsi               globalservice.GlobalServiceInterface
 	gcs               storageport.CloudStoragePortInterface
@@ -38,7 +40,7 @@ func NewListingService(
 	gcs storageport.CloudStoragePortInterface,
 	ss scheduleservices.ScheduleServiceInterface,
 	fr listingfavoriterepository.FavoriteRepoPortInterface,
-
+	vr listingviewrepository.Repository,
 ) ListingServiceInterface {
 	return &listingService{
 		listingRepository: lr,
@@ -46,6 +48,7 @@ func NewListingService(
 		userRepository:    ur,
 		ownerMetricsRepo:  om,
 		favoriteRepo:      fr,
+		viewRepo:          vr,
 		propertyCoverage:  pcs,
 		gsi:               gsi,
 		gcs:               gcs,

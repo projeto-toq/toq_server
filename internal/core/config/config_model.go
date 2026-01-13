@@ -220,6 +220,9 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	if repositories.ListingFavorite == nil {
 		slog.Error("repositories.ListingFavorite is nil")
 	}
+	if repositories.ListingView == nil {
+		slog.Error("repositories.ListingView is nil")
+	}
 
 	// Criar uma cópia dos repositórios para evitar problemas com ponteiros
 	c.repositoryAdapters = &factory.RepositoryAdapters{
@@ -228,6 +231,7 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 		PropertyCoverage: repositories.PropertyCoverage,
 		Listing:          repositories.Listing,
 		ListingFavorite:  repositories.ListingFavorite,
+		ListingView:      repositories.ListingView,
 		Proposal:         repositories.Proposal,
 		Holiday:          repositories.Holiday,
 		Schedule:         repositories.Schedule,

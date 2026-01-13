@@ -259,7 +259,17 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 		})
 	}
 
-	output.Performance = ListingPerformanceMetrics{Favorites: favCounts[listingIdentityId]}
+	viewsCount, viewsErr := ls.viewRepo.GetCount(ctx, tx, listingIdentityId)
+	if viewsErr != nil {
+		utils.SetSpanError(ctx, viewsErr)
+		logger.Error("listing.detail.views_count_error", "stage", "views_fetch", "err", viewsErr, "listing_identity_id", listingIdentityId)
+		return output, utils.NewHTTPErrorWithSource(http.StatusInternalServerError, "Failed to load listing views", map[string]any{
+			"stage":             "views_fetch",
+			"listingIdentityId": listingIdentityId,
+		})
+	}
+
+	output.Performance = ListingPerformanceMetrics{Favorites: favCounts[listingIdentityId], Views: viewsCount}
 	output.FavoritesCount = favCounts[listingIdentityId]
 
 	if favFlags, flagErr := ls.favoriteRepo.GetUserFlags(ctx, tx, []int64{listingIdentityId}, userID); flagErr == nil {
@@ -427,6 +437,12 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 		}
 		output.Guarantees = details
 	}
+
+	updatedViews, viewIncErr := ls.registerListingView(ctx, listingIdentityId)
+	if viewIncErr != nil {
+		return output, viewIncErr
+	}
+	output.Performance.Views = updatedViews
 
 	return output, nil
 }

@@ -33,6 +33,7 @@ import (
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
 	listingfavoriterepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_favorite_repository"
 	listingrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	listingviewrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_view_repository"
 	mediaprocessingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/media_processing_repository"
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	permissionrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/permission_repository"
@@ -79,6 +80,7 @@ type RepositoryAdapters struct {
 	PropertyCoverage propertycoveragerepository.RepositoryInterface
 	Listing          listingrepoport.ListingRepoPortInterface
 	ListingFavorite  listingfavoriterepository.FavoriteRepoPortInterface
+	ListingView      listingviewrepository.Repository
 	OwnerMetrics     ownermetricsrepository.Repository
 	Proposal         proposalrepository.Repository
 	MediaProcessing  mediaprocessingrepository.RepositoryInterface
