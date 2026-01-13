@@ -29,6 +29,7 @@ const (
 		lv.requested_at,
 		active.id AS listing_id,
 		active.version AS listing_version_number,
+		active.type AS listing_type,
 		active.zip_code,
 		active.street,
 		active.number,

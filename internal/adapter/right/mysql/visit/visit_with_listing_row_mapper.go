@@ -7,6 +7,7 @@ import (
 
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/converters"
 	"github.com/projeto-toq/toq_server/internal/adapter/right/mysql/visit/entities"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 )
 
@@ -15,6 +16,7 @@ func scanVisitWithListingRow(scanner rowScanner) (listingmodel.VisitWithListing,
 	var visitEntity entities.VisitEntity
 	var listingID sql.NullInt64
 	var listingVersion sql.NullInt64
+	var listingType sql.NullInt64
 	var listingZip sql.NullString
 	var listingStreet sql.NullString
 	var listingNumber sql.NullString
@@ -47,6 +49,7 @@ func scanVisitWithListingRow(scanner rowScanner) (listingmodel.VisitWithListing,
 		&visitEntity.RequestedAt,
 		&listingID,
 		&listingVersion,
+		&listingType,
 		&listingZip,
 		&listingStreet,
 		&listingNumber,
@@ -93,6 +96,9 @@ func scanVisitWithListingRow(scanner rowScanner) (listingmodel.VisitWithListing,
 	listingModel.SetID(listingID.Int64)
 	listingModel.SetListingIdentityID(visitEntity.ListingIdentityID)
 	listingModel.SetVersion(uint8(listingVersion.Int64))
+	if listingType.Valid {
+		listingModel.SetListingType(globalmodel.PropertyType(listingType.Int64))
+	}
 	listingModel.SetZipCode(listingZip.String)
 	listingModel.SetStreet(listingStreet.String)
 	if listingNumber.Valid {
