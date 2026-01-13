@@ -13604,6 +13604,12 @@ const docTemplate = `{
                 "activeVersionId": {
                     "type": "integer"
                 },
+                "city": {
+                    "type": "string"
+                },
+                "complement": {
+                    "type": "string"
+                },
                 "complex": {
                     "type": "string"
                 },
@@ -13631,6 +13637,9 @@ const docTemplate = `{
                 "listingUuid": {
                     "type": "string"
                 },
+                "neighborhood": {
+                    "type": "string"
+                },
                 "number": {
                     "type": "string"
                 },
@@ -13640,7 +13649,13 @@ const docTemplate = `{
                 "propertyType": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse"
                 },
+                "state": {
+                    "type": "string"
+                },
                 "status": {
+                    "type": "string"
+                },
+                "street": {
                     "type": "string"
                 },
                 "title": {

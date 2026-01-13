@@ -876,7 +876,12 @@ type ListingResponse struct {
 	Status            string                       `json:"status"`
 	PropertyType      *ListingPropertyTypeResponse `json:"propertyType,omitempty"`
 	ZipCode           string                       `json:"zipCode"`
+	Street            string                       `json:"street,omitempty"`
 	Number            string                       `json:"number"`
+	Complement        string                       `json:"complement,omitempty"`
+	Neighborhood      string                       `json:"neighborhood,omitempty"`
+	City              string                       `json:"city,omitempty"`
+	State             string                       `json:"state,omitempty"`
 	Complex           string                       `json:"complex,omitempty"`
 	UserID            int64                        `json:"userId"`
 	ComplexID         string                       `json:"complexId,omitempty"`
