@@ -68,7 +68,23 @@ otelcol.processor.attributes "enrich" {
   output {
     metrics = [otelcol.processor.batch.default.input]
     logs    = [otelcol.processor.attributes.log_labels.input]
-    traces  = [otelcol.processor.batch.default.input]
+    // Fan-out traces to spanmetrics (metrics generation) and directly to batch (Tempo export).
+    traces  = [otelcol.connector.spanmetrics.default.input, otelcol.processor.batch.default.input]
+  }
+}
+
+// Generate spanmetrics (call counts/latency histograms) for Prometheus using connector.
+otelcol.connector.spanmetrics "default" {
+  namespace  = "traces_spanmetrics"
+
+  histogram {
+    explicit {
+      buckets = ["1ms", "5ms", "10ms", "25ms", "50ms", "100ms", "250ms", "500ms", "1s", "2s", "5s"]
+    }
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.default.input]
   }
 }
 

@@ -46,13 +46,13 @@
                         "type": "tempo",
                         "uid": "tempo"
                     },
-                    "query": "{ .service.name = \"toq_server\" && .http.route =~ \"$operation\" && ($status_filter) && duration >= ${min_duration}ms && duration <= ${max_duration}ms }",
-                    "queryType": "traceql",
+                    "query": "{ service.name = \"toq_server\" && span.http.route =~ \"$operation\" && ($status_filter) && duration >= ${min_duration}ms && duration <= ${max_duration}ms }",
+                    "queryType": "traceqlSearch",
                     "refId": "A"
                 }
             ],
             "title": "Traces do Serviço",
-            "type": "traces"
+            "type": "table"
         },
         {
             "datasource": {
@@ -121,7 +121,7 @@
                         "type": "prometheus",
                         "uid": "prometheus"
                     },
-                    "expr": "sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$operation\", http_route!=\"\"}[$__rate_interval]))",
+                    "expr": "sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$operation\", http_route!~\"^$\"}[$__rate_interval]))",
                     "refId": "A"
                 }
             ],
@@ -245,7 +245,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "sum by(http_status_code) (rate(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_status_code!=\"\"}[$__rate_interval]))",
+                    "expr": "sum by(http_status_code) (rate(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_status_code!~\"^$\"}[$__rate_interval]))",
                     "legendFormat": "{{http_status_code}}",
                     "range": true,
                     "refId": "A"
@@ -343,7 +343,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "topk(10, clamp_min((histogram_quantile(0.95, sum by(http_route, le) (increase(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\", http_route=~\"$operation\"}[$__range]))) or on() vector(0)), 0) * 1000)",
+                    "expr": "topk(10, clamp_min((histogram_quantile(0.95, sum by(http_route, le) (increase(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!~\"^$\", http_route=~\"$operation\"}[$__range]))) or on() vector(0)), 0) * 1000)",
                     "format": "table",
                     "instant": true,
                     "legendFormat": "__auto",
@@ -420,7 +420,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "sum by(http_status_code) (increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code!=\"\"}[$__range]))",
+                    "expr": "sum by(http_status_code) (increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code!~\"^$\"}[$__range]))",
                     "legendFormat": "{{http_status_code}}",
                     "range": true,
                     "refId": "A"
@@ -515,7 +515,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "(sum(increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code=~\"5..\"}[$__range])) / sum(increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code!=\"\"}[$__range]))) * 100",
+                    "expr": "(sum(increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code=~\"5..\"}[$__range])) / sum(increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code!~\"^$\"}[$__range]))) * 100",
                     "legendFormat": "Taxa de Erro",
                     "range": true,
                     "refId": "A"
@@ -573,18 +573,6 @@
                             {
                                 "color": "green",
                                 "value": null
-                            },
-                            {
-                                "color": "yellow",
-                                "value": 100
-                            },
-                            {
-                                "color": "orange",
-                                "value": 500
-                            },
-                            {
-                                "color": "red",
-                                "value": 1000
                             }
                         ]
                     },
@@ -622,7 +610,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "clamp_min((histogram_quantile(0.50, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
+                    "expr": "clamp_min((histogram_quantile(0.50, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!~\"^$\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
                     "legendFormat": "p50",
                     "range": true,
                     "refId": "A"
@@ -633,7 +621,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "clamp_min((histogram_quantile(0.95, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
+                    "expr": "clamp_min((histogram_quantile(0.95, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!~\"^$\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
                     "hide": false,
                     "legendFormat": "p95",
                     "range": true,
@@ -645,7 +633,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "clamp_min((histogram_quantile(0.99, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
+                    "expr": "clamp_min((histogram_quantile(0.99, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!~\"^$\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
                     "hide": false,
                     "legendFormat": "p99",
                     "range": true,
@@ -716,7 +704,7 @@
                     "type": "prometheus",
                     "uid": "prometheus"
                 },
-                "definition": "label_values(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}, http_route)",
+                "definition": "label_values(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!~\"^$\"}, http_route)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Operação/Rota",
@@ -724,7 +712,7 @@
                 "name": "operation",
                 "options": [],
                 "query": {
-                    "query": "label_values(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}, http_route)",
+                    "query": "label_values(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!~\"^$\"}, http_route)",
                     "refId": "PrometheusVariableQueryEditor-VariableQuery"
                 },
                 "refresh": 1,
@@ -753,20 +741,20 @@
                     {
                         "selected": false,
                         "text": "Sucesso (2xx)",
-                        "value": ".http.status_code >= 200 && .http.status_code < 300"
+                        "value": "span.http.status_code >= 200 && span.http.status_code < 300"
                     },
                     {
                         "selected": false,
                         "text": "Erro (5xx)",
-                        "value": ".http.status_code >= 500 && .http.status_code < 600"
+                        "value": "span.http.status_code >= 500 && span.http.status_code < 600"
                     },
                     {
                         "selected": false,
                         "text": "Cliente (4xx)",
-                        "value": ".http.status_code >= 400 && .http.status_code < 500"
+                        "value": "span.http.status_code >= 400 && span.http.status_code < 500"
                     }
                 ],
-                "query": "Todos : true, Sucesso (2xx) : .http.status_code >= 200 && .http.status_code < 300, Erro (5xx) : .http.status_code >= 500 && .http.status_code < 600, Cliente (4xx) : .http.status_code >= 400 && .http.status_code < 500",
+                "query": "Todos : true, Sucesso (2xx) : span.http.status_code >= 200 && span.http.status_code < 300, Erro (5xx) : span.http.status_code >= 500 && span.http.status_code < 600, Cliente (4xx) : span.http.status_code >= 400 && span.http.status_code < 500",
                 "queryValue": "",
                 "skipUrlSync": false,
                 "type": "custom"
@@ -821,6 +809,6 @@
     "timezone": "",
     "title": "TOQ Server - Traces",
     "uid": "toq-traces",
-    "version": 5,
+    "version": 6,
     "weekStart": ""
 }
