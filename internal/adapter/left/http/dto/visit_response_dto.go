@@ -23,15 +23,17 @@ type VisitResponse struct {
 
 // ListingSummaryDTO carries the essential listing data returned with a visit detail response.
 type ListingSummaryDTO struct {
-	Title        string `json:"title" example:"Cobertura incrível em Moema"`
-	Description  string `json:"description" example:"Apartamento amplo com três suítes e vista livre."`
-	ZipCode      string `json:"zipCode" example:"04534011"`
-	Street       string `json:"street" example:"Av. Ibirapuera"`
-	Number       string `json:"number" example:"1234"`
-	Complement   string `json:"complement,omitempty" example:"apto 82"`
-	Neighborhood string `json:"neighborhood" example:"Moema"`
-	City         string `json:"city" example:"São Paulo"`
-	State        string `json:"state" example:"SP"`
+	ListingIdentityID int64                        `json:"listingIdentityId" example:"123"`
+	Title             string                       `json:"title" example:"Cobertura incrível em Moema"`
+	Description       string                       `json:"description" example:"Apartamento amplo com três suítes e vista livre."`
+	ZipCode           string                       `json:"zipCode" example:"04534011"`
+	Street            string                       `json:"street" example:"Av. Ibirapuera"`
+	Number            string                       `json:"number" example:"1234"`
+	Complement        string                       `json:"complement,omitempty" example:"apto 82"`
+	Neighborhood      string                       `json:"neighborhood" example:"Moema"`
+	City              string                       `json:"city" example:"São Paulo"`
+	State             string                       `json:"state" example:"SP"`
+	PropertyType      *ListingPropertyTypeResponse `json:"propertyType,omitempty"`
 }
 
 // VisitListResponse wraps paginated visit results.

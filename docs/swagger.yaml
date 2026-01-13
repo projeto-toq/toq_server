@@ -2011,7 +2011,7 @@ definitions:
       price:
         type: number
       propertyType:
-        type: integer
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse'
       status:
         type: string
       title:
@@ -2034,12 +2034,17 @@ definitions:
       description:
         example: Apartamento amplo com três suítes e vista livre.
         type: string
+      listingIdentityId:
+        example: 123
+        type: integer
       neighborhood:
         example: Moema
         type: string
       number:
         example: "1234"
         type: string
+      propertyType:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse'
       state:
         example: SP
         type: string
@@ -2420,6 +2425,8 @@ definitions:
         type: integer
       id:
         type: integer
+      listing:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingSummaryDTO'
       listingIdentityId:
         type: integer
       proposalText:

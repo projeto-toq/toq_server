@@ -13638,7 +13638,7 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "propertyType": {
-                    "type": "integer"
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse"
                 },
                 "status": {
                     "type": "string"
@@ -13672,6 +13672,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Apartamento amplo com três suítes e vista livre."
                 },
+                "listingIdentityId": {
+                    "type": "integer",
+                    "example": 123
+                },
                 "neighborhood": {
                     "type": "string",
                     "example": "Moema"
@@ -13679,6 +13683,9 @@ const docTemplate = `{
                 "number": {
                     "type": "string",
                     "example": "1234"
+                },
+                "propertyType": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingPropertyTypeResponse"
                 },
                 "state": {
                     "type": "string",
@@ -14221,6 +14228,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "listing": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingSummaryDTO"
                 },
                 "listingIdentityId": {
                     "type": "integer"

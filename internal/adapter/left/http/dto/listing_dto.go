@@ -864,24 +864,24 @@ type BaseFeature struct {
 
 // ListingResponse represents a listing in responses
 type ListingResponse struct {
-	ID                int64   `json:"id"`
-	ListingIdentityID int64   `json:"listingIdentityId"`
-	ListingUUID       string  `json:"listingUuid"`
-	ActiveVersionID   int64   `json:"activeVersionId"`
-	DraftVersionID    *int64  `json:"draftVersionId,omitempty"`
-	Version           uint8   `json:"version"`
-	Title             string  `json:"title"`
-	Description       string  `json:"description"`
-	Price             float64 `json:"price"`
-	Status            string  `json:"status"`
-	PropertyType      int     `json:"propertyType"`
-	ZipCode           string  `json:"zipCode"`
-	Number            string  `json:"number"`
-	Complex           string  `json:"complex,omitempty"`
-	UserID            int64   `json:"userId"`
-	ComplexID         string  `json:"complexId,omitempty"`
-	FavoritesCount    int64   `json:"favoritesCount"`
-	IsFavorite        bool    `json:"isFavorite"`
+	ID                int64                        `json:"id"`
+	ListingIdentityID int64                        `json:"listingIdentityId"`
+	ListingUUID       string                       `json:"listingUuid"`
+	ActiveVersionID   int64                        `json:"activeVersionId"`
+	DraftVersionID    *int64                       `json:"draftVersionId,omitempty"`
+	Version           uint8                        `json:"version"`
+	Title             string                       `json:"title"`
+	Description       string                       `json:"description"`
+	Price             float64                      `json:"price"`
+	Status            string                       `json:"status"`
+	PropertyType      *ListingPropertyTypeResponse `json:"propertyType,omitempty"`
+	ZipCode           string                       `json:"zipCode"`
+	Number            string                       `json:"number"`
+	Complex           string                       `json:"complex,omitempty"`
+	UserID            int64                        `json:"userId"`
+	ComplexID         string                       `json:"complexId,omitempty"`
+	FavoritesCount    int64                        `json:"favoritesCount"`
+	IsFavorite        bool                         `json:"isFavorite"`
 }
 
 // AddListingPhotosRequest represents request for adding photos to a listing

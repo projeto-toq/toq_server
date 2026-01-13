@@ -54,14 +54,15 @@ type GetProposalDetailRequest struct {
 
 // ProposalResponse summarizes proposal information for list views, including realtor enrichment and timeline metadata.
 type ProposalResponse struct {
-	ID                int64      `json:"id"`
-	ListingIdentityID int64      `json:"listingIdentityId"`
-	Status            string     `json:"status"`
-	ProposalText      string     `json:"proposalText"`
-	RejectionReason   *string    `json:"rejectionReason,omitempty"`
-	AcceptedAt        *time.Time `json:"acceptedAt,omitempty"`
-	RejectedAt        *time.Time `json:"rejectedAt,omitempty"`
-	CancelledAt       *time.Time `json:"cancelledAt,omitempty"`
+	ID                int64              `json:"id"`
+	ListingIdentityID int64              `json:"listingIdentityId"`
+	Listing           *ListingSummaryDTO `json:"listing,omitempty"`
+	Status            string             `json:"status"`
+	ProposalText      string             `json:"proposalText"`
+	RejectionReason   *string            `json:"rejectionReason,omitempty"`
+	AcceptedAt        *time.Time         `json:"acceptedAt,omitempty"`
+	RejectedAt        *time.Time         `json:"rejectedAt,omitempty"`
+	CancelledAt       *time.Time         `json:"cancelledAt,omitempty"`
 	// CreatedAt reflects when the realtor submitted the proposal.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	// ReceivedAt mirrors the first owner action timestamp, signaling that the owner viewed the proposal.

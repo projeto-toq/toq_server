@@ -87,14 +87,16 @@ func VisitDetailToResponse(detail visitservice.VisitDetailOutput) dto.VisitRespo
 	}
 
 	summary := dto.ListingSummaryDTO{
-		Title:        strings.TrimSpace(listing.Title()),
-		Description:  strings.TrimSpace(listing.Description()),
-		ZipCode:      listing.ZipCode(),
-		Street:       listing.Street(),
-		Number:       listing.Number(),
-		Neighborhood: listing.Neighborhood(),
-		City:         listing.City(),
-		State:        listing.State(),
+		ListingIdentityID: listing.IdentityID(),
+		Title:             strings.TrimSpace(listing.Title()),
+		Description:       strings.TrimSpace(listing.Description()),
+		ZipCode:           listing.ZipCode(),
+		Street:            listing.Street(),
+		Number:            listing.Number(),
+		Neighborhood:      listing.Neighborhood(),
+		City:              listing.City(),
+		State:             listing.State(),
+		PropertyType:      BuildListingPropertyTypeDTO(listing.ListingType()),
 	}
 
 	if complement := strings.TrimSpace(listing.Complement()); complement != "" {

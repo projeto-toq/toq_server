@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
@@ -85,7 +86,7 @@ func (lh *ListingHandler) GetListingByUserId(c *gin.Context) {
 			Description:       listing.Description(),
 			Price:             price,
 			Status:            listing.Status().String(),
-			PropertyType:      int(listing.ListingType()),
+			PropertyType:      converters.BuildListingPropertyTypeDTO(listing.ListingType()),
 			ZipCode:           listing.ZipCode(),
 			Number:            listing.Number(),
 			Complex:           complexValue,

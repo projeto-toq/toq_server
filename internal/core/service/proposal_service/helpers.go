@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	proposalmodel "github.com/projeto-toq/toq_server/internal/core/model/proposal_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
@@ -189,6 +190,8 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 	proposalIDs := make([]int64, 0, len(repoResult.Items))
 	realtorIDs := make([]int64, 0, len(repoResult.Items))
 	realtorSet := make(map[int64]struct{}, len(repoResult.Items))
+	listingIDs := make([]int64, 0, len(repoResult.Items))
+	listingSet := make(map[int64]struct{}, len(repoResult.Items))
 	for _, proposal := range repoResult.Items {
 		if proposal == nil {
 			continue
@@ -199,6 +202,13 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 			if _, exists := realtorSet[realtorID]; !exists {
 				realtorSet[realtorID] = struct{}{}
 				realtorIDs = append(realtorIDs, realtorID)
+			}
+		}
+		listingID := proposal.ListingIdentityID()
+		if listingID > 0 {
+			if _, exists := listingSet[listingID]; !exists {
+				listingSet[listingID] = struct{}{}
+				listingIDs = append(listingIDs, listingID)
 			}
 		}
 	}
@@ -214,6 +224,11 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 	}
 	s.enrichRealtorSummaries(ctx, realtorSummaries)
 
+	listingsByIdentity, err := s.loadListingsByIdentity(ctx, tx, listingIDs)
+	if err != nil {
+		return ListResult{}, err
+	}
+
 	items := make([]ListItem, 0, len(repoResult.Items))
 	for _, proposal := range repoResult.Items {
 		if proposal == nil {
@@ -223,10 +238,43 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 			Proposal:  proposal,
 			Documents: documentsByProposal[proposal.ID()],
 			Realtor:   s.getRealtorSummaryOrDefault(proposal.RealtorID(), realtorSummaries),
+			Listing:   listingsByIdentity[proposal.ListingIdentityID()],
 		})
 	}
 
 	return ListResult{Items: items, Total: repoResult.Total}, nil
+}
+
+func (s *proposalService) loadListingsByIdentity(ctx context.Context, tx *sql.Tx, listingIDs []int64) (map[int64]listingmodel.ListingInterface, error) {
+	result := make(map[int64]listingmodel.ListingInterface, len(listingIDs))
+
+	if len(listingIDs) == 0 {
+		return result, nil
+	}
+
+	logger := utils.LoggerFromContext(ctx)
+
+	for _, listingID := range listingIDs {
+		if listingID <= 0 {
+			continue
+		}
+
+		listing, err := s.listingRepo.GetActiveListingVersion(ctx, tx, listingID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				continue
+			}
+			utils.SetSpanError(ctx, err)
+			logger.Error("proposal.list.listing_error", "err", err, "listing_identity_id", listingID)
+			return nil, derrors.Infra("failed to load listing for proposal", err)
+		}
+
+		if listing != nil {
+			result[listingID] = listing
+		}
+	}
+
+	return result, nil
 }
 
 func (s *proposalService) buildRepositoryFilter(scope proposalmodel.ActorScope, filter ListFilter) (proposalmodel.ListFilter, error) {

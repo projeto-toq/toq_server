@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -386,7 +387,7 @@ func toListingResponse(item listingservices.ListListingsItem) dto.ListingRespons
 		Description:       strings.TrimSpace(listing.Description()),
 		Price:             price,
 		Status:            listing.Status().String(),
-		PropertyType:      int(listing.ListingType()),
+		PropertyType:      converters.BuildListingPropertyTypeDTO(listing.ListingType()),
 		ZipCode:           listing.ZipCode(),
 		Number:            listing.Number(),
 		Complex:           complexValue,
