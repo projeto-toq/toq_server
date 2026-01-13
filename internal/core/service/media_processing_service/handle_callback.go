@@ -86,11 +86,14 @@ func (s *mediaProcessingService) HandleProcessingCallback(ctx context.Context, i
 
 	if jobStatus.IsTerminal() {
 		payload := mediaprocessingmodel.MediaProcessingJobPayload{}
-		if (jobStatus == mediaprocessingmodel.MediaProcessingJobStatusSucceeded || jobStatus == mediaprocessingmodel.MediaProcessingJobStatusPartial) &&
-			job.Provider() == mediaprocessingmodel.MediaProcessingProviderStepFunctionsFinalization {
+		isSuccess := jobStatus == mediaprocessingmodel.MediaProcessingJobStatusSucceeded || jobStatus == mediaprocessingmodel.MediaProcessingJobStatusPartial
+		zipDataPresent := len(input.ZipBundles) > 0 || input.AssetsZipped > 0 || input.ZipSizeBytes > 0 || input.UnzippedSizeBytes > 0
+
+		if isSuccess && (job.Provider() == mediaprocessingmodel.MediaProcessingProviderStepFunctionsFinalization || zipDataPresent) {
 			job.ApplyFinalizationPayload(input.ZipBundles, input.AssetsZipped, input.ZipSizeBytes, input.UnzippedSizeBytes)
 			payload = job.Payload()
 		}
+
 		job.MarkCompleted(jobStatus, payload, s.nowUTC())
 
 		errorFragments := make([]string, 0, 4)

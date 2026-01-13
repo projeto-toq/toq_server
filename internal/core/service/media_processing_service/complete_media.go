@@ -76,7 +76,7 @@ func (s *mediaProcessingService) CompleteMedia(ctx context.Context, input dto.Co
 	}
 
 	// 4. Register ZIP Job
-	job := mediaprocessingmodel.NewMediaProcessingJob(uint64(input.ListingIdentityID), mediaprocessingmodel.MediaProcessingProviderStepFunctions)
+	job := mediaprocessingmodel.NewMediaProcessingJob(uint64(input.ListingIdentityID), mediaprocessingmodel.MediaProcessingProviderStepFunctionsFinalization)
 	jobID, err := s.repo.RegisterProcessingJob(ctx, tx, job)
 	if err != nil {
 		utils.SetSpanError(ctx, err)

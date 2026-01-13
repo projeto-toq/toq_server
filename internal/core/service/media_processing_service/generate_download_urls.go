@@ -46,6 +46,46 @@ func (s *mediaProcessingService) GenerateDownloadURLs(ctx context.Context, input
 
 	// For each request, verify asset exists and is processed, then generate URL
 	for _, req := range input.Requests {
+		// ZIP bundle: use the latest finalization bundle instead of listing assets
+		if req.AssetType == mediaprocessingmodel.MediaAssetTypeZip {
+			bundle, err := s.latestZipBundle(ctx, tx, input.ListingIdentityID)
+			if err != nil {
+				utils.SetSpanError(ctx, err)
+				logger.Error("service.media.generate_urls.zip_lookup_error",
+					"listing_id", input.ListingIdentityID,
+					"error", err,
+				)
+				continue
+			}
+
+			if bundle == nil || bundle.BundleKey == "" {
+				logger.Warn("service.media.generate_urls.zip_missing",
+					"listing_id", input.ListingIdentityID,
+				)
+				continue
+			}
+
+			signedURL, err := s.storage.GenerateDownloadURL(ctx, bundle.BundleKey)
+			if err != nil {
+				utils.SetSpanError(ctx, err)
+				logger.Error("service.media.generate_urls.zip_generate_failed",
+					"listing_id", input.ListingIdentityID,
+					"bundle_key", bundle.BundleKey,
+					"error", err,
+				)
+				continue
+			}
+
+			output.Urls = append(output.Urls, dto.DownloadURLOutput{
+				AssetType:  mediaprocessingmodel.MediaAssetTypeZip,
+				Sequence:   0,
+				Resolution: "zip",
+				Url:        signedURL.URL,
+				ExpiresIn:  int(signedURL.ExpiresIn.Seconds()),
+			})
+			continue
+		}
+
 		// 1. Find the specific asset
 		asset, err := s.repo.GetAsset(ctx, tx, uint64(input.ListingIdentityID), req.AssetType, req.Sequence)
 		if err != nil {
