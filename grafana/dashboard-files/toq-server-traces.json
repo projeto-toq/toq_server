@@ -46,12 +46,22 @@
                         "type": "tempo",
                         "uid": "tempo"
                     },
-                    "query": "{ service.name = \"toq_server\" && span.http.route =~ \"$operation\" && ($status_filter) && duration >= ${min_duration}ms && duration <= ${max_duration}ms }",
+                    "query": "{ resource.service.name = \"toq_server\" && span.http.route =~ \"^(?:$operation)$\" && ($status_filter) && duration >= ${min_duration}ms && duration <= ${max_duration}ms }",
                     "queryType": "traceqlSearch",
                     "refId": "A"
                 }
             ],
             "title": "Traces do Serviço",
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "Service": true
+                        }
+                    }
+                }
+            ],
             "type": "table"
         },
         {
@@ -716,7 +726,7 @@
                     "refId": "PrometheusVariableQueryEditor-VariableQuery"
                 },
                 "refresh": 1,
-                "regex": "",
+                "regex": "/^(.*)$/",
                 "skipUrlSync": false,
                 "sort": 0,
                 "type": "query"
