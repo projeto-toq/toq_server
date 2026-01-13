@@ -19,25 +19,12 @@
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
     "id": null,
-    "links": [
-        {
-            "asDropdown": false,
-            "icon": "external link",
-            "includeVars": true,
-            "keepTime": true,
-            "tags": [],
-            "targetBlank": false,
-            "title": "Ver Dashboard de Logs",
-            "tooltip": "Abrir dashboard de logs correlacionados",
-            "type": "link",
-            "url": "/d/toq-logs/toq-server-logs?orgId=1"
-        }
-    ],
+    "links": [],
     "panels": [
         {
             "datasource": {
                 "type": "tempo",
-                "uid": "tempo-http"
+                "uid": "tempo"
             },
             "description": "Lista de traces do serviço. Clique no Trace ID para ver detalhes completos ou acessar logs relacionados.",
             "fieldConfig": {
@@ -59,8 +46,8 @@
                         "type": "tempo",
                         "uid": "tempo"
                     },
-                    "query": "$trace_id",
-                    "queryType": "traceId",
+                    "query": "{ .service.name = \"toq_server\" && .http.route =~ \"$operation\" && ($status_filter) && duration >= ${min_duration}ms && duration <= ${max_duration}ms }",
+                    "queryType": "traceql",
                     "refId": "A"
                 }
             ],
@@ -69,8 +56,8 @@
         },
         {
             "datasource": {
-                "type": "tempo",
-                "uid": "tempo"
+                "type": "prometheus",
+                "uid": "prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -131,11 +118,10 @@
             "targets": [
                 {
                     "datasource": {
-                        "type": "tempo",
-                        "uid": "tempo"
+                        "type": "prometheus",
+                        "uid": "prometheus"
                     },
-                    "query": "{.service.name=\"$service\"}",
-                    "queryType": "traceql",
+                    "expr": "sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route=~\"$operation\", http_route!=\"\"}[$__rate_interval]))",
                     "refId": "A"
                 }
             ],
@@ -259,8 +245,8 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "sum by(status) (rate(http_requests_total{service=\"$service\"}[$__rate_interval]))",
-                    "legendFormat": "{{status}}",
+                    "expr": "sum by(http_status_code) (rate(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_status_code!=\"\"}[$__rate_interval]))",
+                    "legendFormat": "{{http_status_code}}",
                     "range": true,
                     "refId": "A"
                 }
@@ -357,7 +343,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "topk(10, histogram_quantile(0.95, sum by(path, le) (rate(http_request_duration_seconds_bucket{service=\"$service\"}[$__rate_interval]))) * 1000)",
+                    "expr": "topk(10, clamp_min((histogram_quantile(0.95, sum by(http_route, le) (increase(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\", http_route=~\"$operation\"}[$__range]))) or on() vector(0)), 0) * 1000)",
                     "format": "table",
                     "instant": true,
                     "legendFormat": "__auto",
@@ -374,7 +360,7 @@
                             "Time": true
                         },
                         "indexByName": {
-                            "path": 0,
+                            "http_route": 0,
                             "Value": 1
                         },
                         "renameByName": {}
@@ -385,20 +371,13 @@
         },
         {
             "datasource": {
-                "type": "tempo",
-                "uid": "tempo"
+                "type": "prometheus",
+                "uid": "prometheus"
             },
             "fieldConfig": {
                 "defaults": {
                     "color": {
                         "mode": "palette-classic"
-                    },
-                    "custom": {
-                        "hideFrom": {
-                            "tooltip": false,
-                            "viz": false,
-                            "legend": false
-                        }
                     },
                     "mappings": []
                 },
@@ -412,27 +391,43 @@
             },
             "id": 5,
             "options": {
-                "edges": {
-                    "mainStatUnit": "ms",
-                    "secondaryStatUnit": ""
+                "displayLabels": [
+                    "name",
+                    "percent"
+                ],
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "right",
+                    "showLegend": true
                 },
-                "nodes": {
-                    "mainStatUnit": ""
+                "pieType": "donut",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
                 }
             },
             "targets": [
                 {
                     "datasource": {
-                        "type": "tempo",
-                        "uid": "tempo"
+                        "type": "prometheus",
+                        "uid": "prometheus"
                     },
-                    "query": "{.service.name=\"$service\"}",
-                    "queryType": "serviceMap",
+                    "editorMode": "code",
+                    "expr": "sum by(http_status_code) (increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code!=\"\"}[$__range]))",
+                    "legendFormat": "{{http_status_code}}",
+                    "range": true,
                     "refId": "A"
                 }
             ],
-            "title": "Mapa de Serviços (Service Map)",
-            "type": "nodeGraph"
+            "title": "Distribuição por Status de Trace",
+            "type": "piechart"
         },
         {
             "datasource": {
@@ -520,7 +515,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "(sum(rate(http_requests_total{service=\"$service\", status=~\"5..\"}[$__rate_interval])) / sum(rate(http_requests_total{service=\"$service\"}[$__rate_interval]))) * 100",
+                    "expr": "(sum(increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code=~\"5..\"}[$__range])) / sum(increase(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_INTERNAL\", http_status_code!=\"\"}[$__range]))) * 100",
                     "legendFormat": "Taxa de Erro",
                     "range": true,
                     "refId": "A"
@@ -627,7 +622,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "histogram_quantile(0.50, sum by(le) (rate(http_request_duration_seconds_bucket{service=\"$service\"}[$__rate_interval]))) * 1000",
+                    "expr": "clamp_min((histogram_quantile(0.50, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
                     "legendFormat": "p50",
                     "range": true,
                     "refId": "A"
@@ -638,7 +633,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "histogram_quantile(0.95, sum by(le) (rate(http_request_duration_seconds_bucket{service=\"$service\"}[$__rate_interval]))) * 1000",
+                    "expr": "clamp_min((histogram_quantile(0.95, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
                     "hide": false,
                     "legendFormat": "p95",
                     "range": true,
@@ -650,7 +645,7 @@
                         "uid": "prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "histogram_quantile(0.99, sum by(le) (rate(http_request_duration_seconds_bucket{service=\"$service\"}[$__rate_interval]))) * 1000",
+                    "expr": "clamp_min((histogram_quantile(0.99, sum by(le) (rate(traces_spanmetrics_latency_bucket{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}[$__rate_interval]))) or on() vector(0)), 0) * 1000",
                     "hide": false,
                     "legendFormat": "p99",
                     "range": true,
@@ -672,36 +667,9 @@
         "list": [
             {
                 "current": {
-                    "selected": false,
-                    "text": "toq_server",
-                    "value": "toq_server"
-                },
-                "datasource": {
-                    "type": "prometheus",
-                    "uid": "prometheus"
-                },
-                "definition": "label_values(http_requests_total, service)",
-                "hide": 0,
-                "includeAll": false,
-                "label": "Serviço",
-                "multi": false,
-                "name": "service",
-                "options": [],
-                "query": {
-                    "query": "label_values(http_requests_total, service)",
-                    "refId": "PrometheusVariableQueryEditor-VariableQuery"
-                },
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 0,
-                "type": "query"
-            },
-            {
-                "current": {
-                    "selected": false,
-                    "text": "",
-                    "value": ""
+                    "selected": true,
+                    "text": ".*",
+                    "value": ".*"
                 },
                 "hide": 0,
                 "label": "Trace ID",
@@ -709,8 +677,8 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "",
-                        "value": ""
+                        "text": ".*",
+                        "value": ".*"
                     }
                 ],
                 "query": "",
@@ -748,7 +716,7 @@
                     "type": "prometheus",
                     "uid": "prometheus"
                 },
-                "definition": "label_values(http_requests_total{service=\"$service\"}, path)",
+                "definition": "label_values(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}, http_route)",
                 "hide": 0,
                 "includeAll": true,
                 "label": "Operação/Rota",
@@ -756,7 +724,7 @@
                 "name": "operation",
                 "options": [],
                 "query": {
-                    "query": "label_values(http_requests_total{service=\"$service\"}, path)",
+                    "query": "label_values(traces_spanmetrics_calls_total{service=\"toq_server\", span_kind=\"SPAN_KIND_SERVER\", http_route!=\"\"}, http_route)",
                     "refId": "PrometheusVariableQueryEditor-VariableQuery"
                 },
                 "refresh": 1,
@@ -769,7 +737,7 @@
                 "current": {
                     "selected": true,
                     "text": "Todos",
-                    "value": ".*"
+                    "value": "true"
                 },
                 "hide": 0,
                 "includeAll": false,
@@ -780,25 +748,25 @@
                     {
                         "selected": true,
                         "text": "Todos",
-                        "value": ".*"
+                        "value": "true"
                     },
                     {
                         "selected": false,
                         "text": "Sucesso (2xx)",
-                        "value": "2.."
+                        "value": ".http.status_code >= 200 && .http.status_code < 300"
                     },
                     {
                         "selected": false,
                         "text": "Erro (5xx)",
-                        "value": "5.."
+                        "value": ".http.status_code >= 500 && .http.status_code < 600"
                     },
                     {
                         "selected": false,
                         "text": "Cliente (4xx)",
-                        "value": "4.."
+                        "value": ".http.status_code >= 400 && .http.status_code < 500"
                     }
                 ],
-                "query": "Todos : .*, Sucesso (2xx) : 2.., Erro (5xx) : 5.., Cliente (4xx) : 4..",
+                "query": "Todos : true, Sucesso (2xx) : .http.status_code >= 200 && .http.status_code < 300, Erro (5xx) : .http.status_code >= 500 && .http.status_code < 600, Cliente (4xx) : .http.status_code >= 400 && .http.status_code < 500",
                 "queryValue": "",
                 "skipUrlSync": false,
                 "type": "custom"
@@ -826,8 +794,8 @@
             {
                 "current": {
                     "selected": false,
-                    "text": "",
-                    "value": ""
+                    "text": "31536000000",
+                    "value": "31536000000"
                 },
                 "hide": 0,
                 "label": "Duração Máxima (ms)",
@@ -835,8 +803,8 @@
                 "options": [
                     {
                         "selected": true,
-                        "text": "",
-                        "value": ""
+                        "text": "31536000000",
+                        "value": "31536000000"
                     }
                 ],
                 "query": "",
@@ -846,13 +814,13 @@
         ]
     },
     "time": {
-        "from": "now-15m",
+        "from": "now-6h",
         "to": "now"
     },
     "timepicker": {},
     "timezone": "",
     "title": "TOQ Server - Traces",
     "uid": "toq-traces",
-    "version": 2,
+    "version": 5,
     "weekStart": ""
 }

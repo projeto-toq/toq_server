@@ -11,6 +11,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
+	"go.opentelemetry.io/otel/trace"
 
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -69,7 +70,7 @@ func TelemetryMiddleware(metricsAdapter metricsport.MetricsPortInterface) gin.Ha
 
 		// Create tracer and span
 		tracer := otel.Tracer("toq_server")
-		ctx, span := tracer.Start(ctx, spanName)
+		ctx, span := tracer.Start(ctx, spanName, trace.WithSpanKind(trace.SpanKindServer))
 		ctx = utils.ContextWithLogger(ctx)
 
 		// Set OpenTelemetry HTTP semantic convention attributes

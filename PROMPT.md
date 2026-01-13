@@ -1,58 +1,8 @@
-O endpoint `GET /listings` tem como resposta:
-```json
-{
-  "data": [
-    {
-      "activeVersionId": 0,
-      "complex": "string",
-      "complexId": "string",
-      "description": "string",
-      "draftVersionId": 0,
-      "favoritesCount": 0,
-      "id": 0,
-      "isFavorite": true,
-      "listingIdentityId": 0,
-      "listingUuid": "string",
-      "number": "string",
-      "price": 0,
-      "propertyType": {
-        "code": 0,
-        "label": "string",
-        "propertyBit": 0
-      },
-      "status": "string",
-      "title": "string",
-      "userId": 0,
-      "version": 0,
-      "zipCode": "string"
-    }
-  ],
-  "pagination": {
-    "limit": 0,
-    "page": 0,
-    "total": 0,
-    "totalPages": 0
-  }
-}
-```
+O sistema de observabilidade é composto por grafana, prometheus, loki, tempo etc. todos rodando em containers docker com docker-compose.yml na raiz do projeto.
 
-É necessário que a respsota contenha a estrutura abaixo além dos campos já existentes, sem duplicações:
-```json
-      "city": "São Paulo",
-      "complement": "apto 82",
-      "description": "Apartamento amplo com três suítes e vista livre.",
-      "listingIdentityId": 123,
-      "neighborhood": "Moema",
-      "number": "1234",
-      "propertyType": {
-        "code": 0,
-        "label": "string",
-        "propertyBit": 0
-      },
-      "state": "SP",
-      "street": "Av. Ibirapuera",
-      "title": "Cobertura incrível em Moema",
-      "zipCode": "04534011"
-```
+No Grafana temos o dashboard `TOQ Server - Traces` que apresente os seguintes problemas:
+1. Painel `Traces do Servico`com No data found in response;
 
-Analise o código proponha o plano conforme o `AGENTS.md`.
+Outras equipes passram horas e muitas tentativas e erros e não corrrigiram o problema.
+
+Portanto busque todas as infromações que precisa, logs, dados reais das bases, configurações, manuais etc, para ter certeza da causa raiz e só então proponha o plano conforme o `AGENTS.md`.
