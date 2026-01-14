@@ -27,23 +27,14 @@
 - /listings/photo-session/slots? from + period >= hora atual
 
 - permitir hard delete de lisnting enquanto não for publicado removendo todos os agendamentos, fotos, propostas, visitas
-- após publicado, deve ser passado ao modeo de suspenso e entÃo soft delete
 - tem que haver uso de audit no login/bloqueio/desbloquio de usuário
 - audit está otimizado?
 - criar endpoint para que o proprietário possa fazer upload da planta da casa em construção de um listing, evitando assim o passo de fotos
 - Depois de selecionar dia/horário do fotógrafo, a tela mostra um card com o fotógrafo, porém sem foto de rosto e com poucos dados de identificação.
     Necessário popular endpoint de confirmação da sessão de fotos com dados/foto do fotógrado.
-
-- contar tempo do envio do pedido de visitas até aceite/recusa do proprietário.
-    Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis
-- Necessário criar um endpoint para apagar medias do bucket S3, para o caso de fotos enviadas que não serão usadas.
 - como serão limpos os dados de uploads/bactchs com erro de upload?
-- Sequence deve ser único apenas para cada tipo de media (photo vertical, photo horizontal, video vertical, video horizontal)
 - shared-secret do callback que está no env.yaml não está sendo usado
-- apagar uma media do bucket tem que apagar de raw e de processed
-- necessário goroutine de limpeza dos logs do S3
-
-  - Número de compartilhamentos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
+- Número de compartilhamentos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
 
 
 
@@ -51,3 +42,7 @@
  - O primeiro ao promover uma versão, ele tá usando a informação de id da entidade do imóvel e não listingIdentityId.==> está correto o código
  - ô recebendo 500 ao criar imóvel tipo predio -> trocar type de tinyint para int
  - incluir complex no endereço do listing
+ - necessário goroutine de limpeza dos logs do S3
+ - apagar uma media do bucket tem que apagar de raw e de processed
+- contar tempo do envio do pedido de visitas até aceite/recusa do proprietário.
+    Esta informação deve ser contabilizada pelo proprietário cobrindo todos os seus imoveis

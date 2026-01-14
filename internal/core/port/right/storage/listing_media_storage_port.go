@@ -14,6 +14,7 @@ type ListingMediaStoragePort interface {
 	GenerateDownloadURL(ctx context.Context, key string) (SignedURL, error)
 	ValidateObjectChecksum(ctx context.Context, bucketKey string, expectedChecksum string) (StorageObjectMetadata, error)
 	DeleteObject(ctx context.Context, bucketKey string) error
+	DeleteKeys(ctx context.Context, keys []string) error
 	DownloadFile(ctx context.Context, key string) ([]byte, error)
 	UploadFile(ctx context.Context, key string, content []byte, contentType string) error
 }

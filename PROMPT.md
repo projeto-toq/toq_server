@@ -1,5 +1,10 @@
-O Bucket S3 `toq-logs-staging` que recebe os logs de serviços AWS, não possei uma política de ciclo de vida configurada para gerenciar a retenção e exclusão dos logs antigos.
+Atualmente o processo de processamento de medias, confrome descrito em :
+- `/codigos/go_code/toq_server/docs/aws_media_processing_implementation_summary.md`
+- `/codigos/go_code/toq_server/docs/aws_media_processing_useful_commands.md`
+- `/codigos/go_code/toq_server/docs/media_processing_guide.md`
 
-Necessário que os logs com mais de uma semana sejam automaticamente excluídos para otimizar o uso do armazenamento e reduzir custos.
+Deveria, caso o usuário apague uma media através do endpoint `DELETE /listings/media/delete`, apagar a media do do diretório `raw` e do diretório `processed` do bucket S3.
 
-Busque todas as informações que precisa, para ter certeza da causa raiz, e só então proponha o plano conforme o `AGENTS.md`.
+Creio que isso não está acontecendo hoje.
+
+Busque todas as informações que precisa consultando as configurações reais da AWS e o código, não confiando na documentação, para ter certeza da causa raiz, e só então proponha o plano de correção.
