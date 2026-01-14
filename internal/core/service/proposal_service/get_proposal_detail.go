@@ -65,6 +65,11 @@ func (s *proposalService) GetProposalDetail(ctx context.Context, input DetailInp
 		return DetailResult{}, err
 	}
 
+	ownerSummary, err := s.loadSingleOwnerSummary(ctx, tx, proposal.OwnerID())
+	if err != nil {
+		return DetailResult{}, err
+	}
+
 	listing, listingErr := s.listingRepo.GetActiveListingVersion(ctx, tx, proposal.ListingIdentityID())
 	if listingErr != nil && !errors.Is(listingErr, sql.ErrNoRows) {
 		utils.SetSpanError(ctx, listingErr)
@@ -72,5 +77,5 @@ func (s *proposalService) GetProposalDetail(ctx context.Context, input DetailInp
 		return DetailResult{}, derrors.Infra("failed to load listing", listingErr)
 	}
 
-	return DetailResult{Proposal: proposal, Documents: documents, Realtor: realtorSummary, Listing: listing}, nil
+	return DetailResult{Proposal: proposal, Documents: documents, Realtor: realtorSummary, Owner: ownerSummary, Listing: listing}, nil
 }

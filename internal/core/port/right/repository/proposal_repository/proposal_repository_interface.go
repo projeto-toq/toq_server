@@ -19,4 +19,5 @@ type Repository interface {
 	ListDocuments(ctx context.Context, tx *sql.Tx, proposalID int64, includeBlob bool) ([]proposalmodel.ProposalDocumentInterface, error)
 	ListDocumentsByProposalIDs(ctx context.Context, tx *sql.Tx, proposalIDs []int64, includeBlob bool) (map[int64][]proposalmodel.ProposalDocumentInterface, error)
 	ListRealtorSummaries(ctx context.Context, tx *sql.Tx, realtorIDs []int64) ([]proposalmodel.RealtorSummary, error)
+	ListOwnerSummaries(ctx context.Context, tx *sql.Tx, ownerIDs []int64) ([]proposalmodel.OwnerSummary, error)
 }

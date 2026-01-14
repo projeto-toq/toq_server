@@ -8232,7 +8232,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Provides proposal metadata (including createdAt/receivedAt/respondedAt), realtor profile summary with acceptedProposals/photoUrl and the binary (base64) of any PDF attachments for authorized actors.",
+                "description": "Provides proposal metadata (including createdAt/receivedAt/respondedAt), realtor profile summary with acceptedProposals/photoUrl, owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds) and the binary (base64) of any PDF attachments for authorized actors.",
                 "consumes": [
                     "application/json"
                 ],
@@ -8256,7 +8256,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Includes documents[].base64Payload, realtor.photoUrl and proposal timeline",
+                        "description": "Includes documents[].base64Payload, realtor.photoUrl and owner.photoUrl plus engagement averages",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDetailResponse"
                         }
@@ -8301,7 +8301,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Owners can see all proposals received across listings with embedded PDF documents (base64), realtor metrics (accountAgeMonths, acceptedProposals, photoUrl) and the timeline fields createdAt/receivedAt/respondedAt.",
+                "description": "Owners can see all proposals received across listings with embedded PDF documents (base64), realtor metrics (accountAgeMonths, acceptedProposals, photoUrl) and the timeline fields createdAt/receivedAt/respondedAt. Each item also carries the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds).",
                 "produces": [
                     "application/json"
                 ],
@@ -8341,7 +8341,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Items include documents[].base64Payload, realtor.photoUrl and proposal timeline timestamps",
+                        "description": "Items include documents[].base64Payload, realtor.photoUrl and owner.photoUrl plus engagement averages",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse"
                         }
@@ -8374,7 +8374,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns paginated proposals created by the authenticated realtor, embedding each proposal PDF (base64), surface timeline fields (createdAt/receivedAt/respondedAt) and echoes the realtor profile metrics for auditing.",
+                "description": "Returns paginated proposals created by the authenticated realtor, embedding each proposal PDF (base64), timeline fields (createdAt/receivedAt/respondedAt), realtor profile metrics and the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds).",
                 "produces": [
                     "application/json"
                 ],
@@ -8416,7 +8416,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Items include documents[].base64Payload plus proposal timeline and realtor.photoUrl",
+                        "description": "Items include documents[].base64Payload, realtor.photoUrl and owner.photoUrl with engagement averages",
                         "schema": {
                             "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse"
                         }
@@ -14138,6 +14138,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDocumentResponse"
                     }
                 },
+                "owner": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalOwnerResponse"
+                },
                 "proposal": {
                     "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse"
                 },
@@ -14189,6 +14192,29 @@ const docTemplate = `{
                         "application/pdf"
                     ],
                     "example": "application/pdf"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalOwnerResponse": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "memberSinceMonths": {
+                    "type": "integer"
+                },
+                "photoUrl": {
+                    "type": "string"
+                },
+                "proposalAverageSeconds": {
+                    "type": "integer"
+                },
+                "visitAverageSeconds": {
+                    "type": "integer"
                 }
             }
         },
@@ -14249,6 +14275,9 @@ const docTemplate = `{
                 },
                 "listingIdentityId": {
                     "type": "integer"
+                },
+                "owner": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalOwnerResponse"
                 },
                 "proposalText": {
                     "type": "string"

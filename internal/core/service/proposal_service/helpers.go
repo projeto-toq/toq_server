@@ -190,6 +190,8 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 	proposalIDs := make([]int64, 0, len(repoResult.Items))
 	realtorIDs := make([]int64, 0, len(repoResult.Items))
 	realtorSet := make(map[int64]struct{}, len(repoResult.Items))
+	ownerIDs := make([]int64, 0, len(repoResult.Items))
+	ownerSet := make(map[int64]struct{}, len(repoResult.Items))
 	listingIDs := make([]int64, 0, len(repoResult.Items))
 	listingSet := make(map[int64]struct{}, len(repoResult.Items))
 	for _, proposal := range repoResult.Items {
@@ -202,6 +204,13 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 			if _, exists := realtorSet[realtorID]; !exists {
 				realtorSet[realtorID] = struct{}{}
 				realtorIDs = append(realtorIDs, realtorID)
+			}
+		}
+		ownerID := proposal.OwnerID()
+		if ownerID > 0 {
+			if _, exists := ownerSet[ownerID]; !exists {
+				ownerSet[ownerID] = struct{}{}
+				ownerIDs = append(ownerIDs, ownerID)
 			}
 		}
 		listingID := proposal.ListingIdentityID()
@@ -224,6 +233,12 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 	}
 	s.enrichRealtorSummaries(ctx, realtorSummaries)
 
+	ownerSummaries, err := s.loadOwnerSummaryMap(ctx, tx, ownerIDs)
+	if err != nil {
+		return ListResult{}, err
+	}
+	s.enrichOwnerSummaries(ctx, ownerSummaries)
+
 	listingsByIdentity, err := s.loadListingsByIdentity(ctx, tx, listingIDs)
 	if err != nil {
 		return ListResult{}, err
@@ -238,6 +253,7 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 			Proposal:  proposal,
 			Documents: documentsByProposal[proposal.ID()],
 			Realtor:   s.getRealtorSummaryOrDefault(proposal.RealtorID(), realtorSummaries),
+			Owner:     s.getOwnerSummaryOrDefault(proposal.OwnerID(), ownerSummaries),
 			Listing:   listingsByIdentity[proposal.ListingIdentityID()],
 		})
 	}
@@ -385,6 +401,83 @@ func (s *proposalService) loadRealtorSummaryMap(ctx context.Context, tx *sql.Tx,
 		result[summary.ID()] = summary
 	}
 	return result, nil
+}
+
+func (s *proposalService) loadOwnerSummaryMap(ctx context.Context, tx *sql.Tx, ownerIDs []int64) (map[int64]proposalmodel.OwnerSummary, error) {
+	if len(ownerIDs) == 0 {
+		return map[int64]proposalmodel.OwnerSummary{}, nil
+	}
+
+	summaries, err := s.proposalRepo.ListOwnerSummaries(ctx, tx, ownerIDs)
+	if err != nil {
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("proposal.owner.summary_error", "err", err)
+		return nil, derrors.Infra("failed to load owner summaries", err)
+	}
+
+	result := make(map[int64]proposalmodel.OwnerSummary, len(summaries))
+	for _, summary := range summaries {
+		if summary == nil {
+			continue
+		}
+		result[summary.ID()] = summary
+	}
+	return result, nil
+}
+
+func (s *proposalService) loadSingleOwnerSummary(ctx context.Context, tx *sql.Tx, ownerID int64) (proposalmodel.OwnerSummary, error) {
+	if ownerID <= 0 {
+		return nil, nil
+	}
+	result, err := s.loadOwnerSummaryMap(ctx, tx, []int64{ownerID})
+	if err != nil {
+		return nil, err
+	}
+	return s.getOwnerSummaryOrDefault(ownerID, result), nil
+}
+
+// enrichOwnerSummaries hydrates owner summaries with signed photo URLs when possible.
+func (s *proposalService) enrichOwnerSummaries(ctx context.Context, cache map[int64]proposalmodel.OwnerSummary) {
+	if len(cache) == 0 || s.userService == nil {
+		return
+	}
+
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
+
+	for ownerID, summary := range cache {
+		if summary == nil || ownerID <= 0 {
+			continue
+		}
+		if summary.PhotoURL() != "" {
+			continue
+		}
+		photoURL, err := s.generateRealtorPhotoURL(ctx, ownerID)
+		if err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Debug("proposal.owner.photo_url_error", "owner_id", ownerID, "err", err)
+			continue
+		}
+		summary.SetPhotoURL(photoURL)
+	}
+}
+
+func (s *proposalService) getOwnerSummaryOrDefault(ownerID int64, cache map[int64]proposalmodel.OwnerSummary) proposalmodel.OwnerSummary {
+	if cache != nil {
+		if summary, ok := cache[ownerID]; ok && summary != nil {
+			return summary
+		}
+	}
+	if ownerID <= 0 {
+		return nil
+	}
+	return s.blankOwnerSummary(ownerID)
+}
+
+func (s *proposalService) blankOwnerSummary(ownerID int64) proposalmodel.OwnerSummary {
+	summary := proposalmodel.NewOwnerSummary()
+	summary.SetID(ownerID)
+	return summary
 }
 
 func (s *proposalService) loadSingleRealtorSummary(ctx context.Context, tx *sql.Tx, realtorID int64) (proposalmodel.RealtorSummary, error) {

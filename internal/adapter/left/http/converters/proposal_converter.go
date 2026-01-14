@@ -186,6 +186,7 @@ func ProposalListToResponse(result proposalservice.ListResult) dto.ListProposals
 		response := ProposalDomainToResponse(item.Proposal)
 		response.Documents = proposalDocumentsToResponse(item.Documents)
 		response.Realtor = proposalRealtorToResponse(item.Realtor)
+		response.Owner = proposalOwnerToResponse(item.Owner)
 		response.Listing = listingSummaryFromDomain(item.Listing)
 		items = append(items, response)
 	}
@@ -200,6 +201,7 @@ func ProposalListToResponse(result proposalservice.ListResult) dto.ListProposals
 func ProposalDetailToResponse(detail proposalservice.DetailResult) dto.ProposalDetailResponse {
 	proposalDTO := ProposalDomainToResponse(detail.Proposal)
 	proposalDTO.Realtor = proposalRealtorToResponse(detail.Realtor)
+	proposalDTO.Owner = proposalOwnerToResponse(detail.Owner)
 	proposalDTO.Documents = proposalDocumentsToResponse(detail.Documents)
 	proposalDTO.Listing = listingSummaryFromDomain(detail.Listing)
 
@@ -209,6 +211,7 @@ func ProposalDetailToResponse(detail proposalservice.DetailResult) dto.ProposalD
 		Proposal:  proposalDTO,
 		Documents: documents,
 		Realtor:   proposalDTO.Realtor,
+		Owner:     proposalDTO.Owner,
 	}
 }
 
@@ -328,6 +331,33 @@ func proposalRealtorToResponse(summary proposalmodel.RealtorSummary) dto.Proposa
 		ProposalsCreated:  summary.ProposalsCreated(),
 		AcceptedProposals: summary.AcceptedProposals(),
 		PhotoURL:          summary.PhotoURL(),
+	}
+}
+
+func proposalOwnerToResponse(summary proposalmodel.OwnerSummary) dto.ProposalOwnerResponse {
+	if summary == nil {
+		return dto.ProposalOwnerResponse{}
+	}
+
+	var proposalAvg *int64
+	if summary.ProposalAvgSeconds().Valid {
+		v := summary.ProposalAvgSeconds().Int64
+		proposalAvg = &v
+	}
+
+	var visitAvg *int64
+	if summary.VisitAvgSeconds().Valid {
+		v := summary.VisitAvgSeconds().Int64
+		visitAvg = &v
+	}
+
+	return dto.ProposalOwnerResponse{
+		ID:                 summary.ID(),
+		FullName:           summary.FullName(),
+		MemberSinceMonths:  summary.MemberSinceMonths(),
+		PhotoURL:           summary.PhotoURL(),
+		ProposalAvgSeconds: proposalAvg,
+		VisitAvgSeconds:    visitAvg,
 	}
 }
 

@@ -2359,6 +2359,8 @@ definitions:
         items:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDocumentResponse'
         type: array
+      owner:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalOwnerResponse'
       proposal:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalResponse'
       realtor:
@@ -2395,6 +2397,21 @@ definitions:
     - base64Payload
     - fileName
     - mimeType
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalOwnerResponse:
+    properties:
+      fullName:
+        type: string
+      id:
+        type: integer
+      memberSinceMonths:
+        type: integer
+      photoUrl:
+        type: string
+      proposalAverageSeconds:
+        type: integer
+      visitAverageSeconds:
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalRealtorResponse:
     properties:
@@ -2439,6 +2456,8 @@ definitions:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingSummaryDTO'
       listingIdentityId:
         type: integer
+      owner:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalOwnerResponse'
       proposalText:
         type: string
       realtor:
@@ -9449,8 +9468,9 @@ paths:
       consumes:
       - application/json
       description: Provides proposal metadata (including createdAt/receivedAt/respondedAt),
-        realtor profile summary with acceptedProposals/photoUrl and the binary (base64)
-        of any PDF attachments for authorized actors.
+        realtor profile summary with acceptedProposals/photoUrl, owner summary (fullName,
+        memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds)
+        and the binary (base64) of any PDF attachments for authorized actors.
       parameters:
       - description: Proposal identifier
         in: body
@@ -9462,8 +9482,8 @@ paths:
       - application/json
       responses:
         "200":
-          description: Includes documents[].base64Payload, realtor.photoUrl and proposal
-            timeline
+          description: Includes documents[].base64Payload, realtor.photoUrl and owner.photoUrl
+            plus engagement averages
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDetailResponse'
         "400":
@@ -9495,7 +9515,9 @@ paths:
     get:
       description: Owners can see all proposals received across listings with embedded
         PDF documents (base64), realtor metrics (accountAgeMonths, acceptedProposals,
-        photoUrl) and the timeline fields createdAt/receivedAt/respondedAt.
+        photoUrl) and the timeline fields createdAt/receivedAt/respondedAt. Each item
+        also carries the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds,
+        visitAverageSeconds).
       parameters:
       - collectionFormat: csv
         description: Status filter
@@ -9521,7 +9543,7 @@ paths:
       responses:
         "200":
           description: Items include documents[].base64Payload, realtor.photoUrl and
-            proposal timeline timestamps
+            owner.photoUrl plus engagement averages
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse'
         "400":
@@ -9544,8 +9566,9 @@ paths:
   /proposals/realtor:
     get:
       description: Returns paginated proposals created by the authenticated realtor,
-        embedding each proposal PDF (base64), surface timeline fields (createdAt/receivedAt/respondedAt)
-        and echoes the realtor profile metrics for auditing.
+        embedding each proposal PDF (base64), timeline fields (createdAt/receivedAt/respondedAt),
+        realtor profile metrics and the owner summary (fullName, memberSinceMonths,
+        photoUrl, proposalAverageSeconds, visitAverageSeconds).
       parameters:
       - collectionFormat: multi
         description: Status filter
@@ -9572,8 +9595,8 @@ paths:
       - application/json
       responses:
         "200":
-          description: Items include documents[].base64Payload plus proposal timeline
-            and realtor.photoUrl
+          description: Items include documents[].base64Payload, realtor.photoUrl and
+            owner.photoUrl with engagement averages
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse'
         "400":

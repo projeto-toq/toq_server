@@ -72,6 +72,7 @@ type ProposalResponse struct {
 	DocumentsCount int                        `json:"documentsCount"`
 	Documents      []ProposalDocumentResponse `json:"documents"`
 	Realtor        ProposalRealtorResponse    `json:"realtor"`
+	Owner          ProposalOwnerResponse      `json:"owner"`
 }
 
 // ProposalDocumentResponse exposes metadata and optional base64 payload.
@@ -97,11 +98,22 @@ type ProposalRealtorResponse struct {
 	PhotoURL string `json:"photoUrl,omitempty"`
 }
 
+// ProposalOwnerResponse exposes owner profile metadata and engagement metrics.
+type ProposalOwnerResponse struct {
+	ID                 int64  `json:"id"`
+	FullName           string `json:"fullName"`
+	MemberSinceMonths  int    `json:"memberSinceMonths"`
+	PhotoURL           string `json:"photoUrl,omitempty"`
+	ProposalAvgSeconds *int64 `json:"proposalAverageSeconds,omitempty"`
+	VisitAvgSeconds    *int64 `json:"visitAverageSeconds,omitempty"`
+}
+
 // ProposalDetailResponse aggregates summary + documents and owner metadata.
 type ProposalDetailResponse struct {
 	Proposal  ProposalResponse           `json:"proposal"`
 	Documents []ProposalDocumentResponse `json:"documents"`
 	Realtor   ProposalRealtorResponse    `json:"realtor"`
+	Owner     ProposalOwnerResponse      `json:"owner"`
 }
 
 // ListProposalsResponse is returned by both realtor/owner endpoints.

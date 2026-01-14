@@ -57,6 +57,7 @@ type ListItem struct {
 	Proposal  proposalmodel.ProposalInterface
 	Documents []proposalmodel.ProposalDocumentInterface
 	Realtor   proposalmodel.RealtorSummary
+	Owner     proposalmodel.OwnerSummary
 	Listing   listingmodel.ListingInterface
 }
 
@@ -77,5 +78,6 @@ type DetailResult struct {
 	Proposal  proposalmodel.ProposalInterface
 	Documents []proposalmodel.ProposalDocumentInterface
 	Realtor   proposalmodel.RealtorSummary
+	Owner     proposalmodel.OwnerSummary
 	Listing   listingmodel.ListingInterface
 }
