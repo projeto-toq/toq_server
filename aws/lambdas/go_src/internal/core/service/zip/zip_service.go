@@ -76,16 +76,23 @@ func (s *ZipService) CreateZip(ctx context.Context, bucket string, sourceKeys []
 
 // cleanPath removes 'processed/' prefix and date segments to create a clean internal zip path
 func (s *ZipService) cleanPath(key string) string {
-	// Find where 'processed/' starts
-	idx := strings.Index(key, "processed/")
-	if idx != -1 {
-		// Take everything after 'processed/'
-		key = key[idx+len("processed/"):]
+	original := key
+	path := key
+
+	if parts := strings.SplitN(path, "/", 2); len(parts) == 2 {
+		path = parts[1]
 	}
+
+	path = strings.TrimPrefix(path, "processed/")
+	path = strings.TrimPrefix(path, "raw/")
 
 	// Remove date segment (YYYY-MM-DD/)
 	dateRegex := regexp.MustCompile(`\d{4}-\d{2}-\d{2}/`)
-	key = dateRegex.ReplaceAllString(key, "")
+	path = dateRegex.ReplaceAllString(path, "")
 
-	return key
+	if path == "" {
+		return original
+	}
+
+	return path
 }

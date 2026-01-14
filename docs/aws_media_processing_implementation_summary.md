@@ -133,8 +133,8 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
    - Corrige rotação baseada em EXIF automaticamente.
    - Gera tamanhos: `thumbnail` (200px), `small` (400px), `medium` (800px), `large` (1200px).
 3. **Zip (`listing-media-zip-staging`)**:
-   - Cria arquivo ZIP contendo todas as mídias processadas.
-   - Limpa estrutura de pastas interna (remove prefixos de sistema).
+  - Cria arquivo ZIP a partir das midias originais (`raw/*`), mantendo a saida em `processed/zip/`.
+  - Limpa estrutura de pastas interna (remove prefixos de sistema).
 4. **Consolidate (`listing-media-consolidate-staging`)**: Agrega resultados do processamento paralelo.
 5. **Callback Dispatch (`listing-media-callback-staging`, exposta como `listing-media-callback-dispatch-staging`)**: Envia webhook de volta ao backend com assinatura `X-Toq-Signature` e preserva `traceparent`.
 
@@ -154,7 +154,7 @@ As funções Lambda foram migradas para Go (1.25) utilizando Arquitetura Hexagon
 4. **FinalizeAndCallback** — envia a estrutura unificada para `listing-media-callback-dispatch-staging`, que chama o backend.
 
 ### 6.2 Finalização (`listing-media-finalization-sm-staging`)
-1. **CreateZipBundle** (`listing-media-zip-staging`) recebe `MediaFinalizationInput` com todos os `processedKey` e grava `/<listingIdentityId>/processed/zip/listing-media.zip`.
+1. **CreateZipBundle** (`listing-media-zip-staging`) recebe `MediaFinalizationInput` com `rawKey` dos assets e grava `/<listingIdentityId>/processed/zip/listing-media.zip`.
 2. **FinalizeAndCallback** — responde com `provider=STEP_FUNCTIONS_FINALIZATION`, `status=SUCCEEDED`, `zipBundles` e `assetsZipped`.
 3. **ReportFailure** — em caso de erro, envia `status=FINALIZATION_FAILED` e detalha o motivo no callback.
 

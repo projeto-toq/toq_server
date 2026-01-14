@@ -12,8 +12,13 @@ import (
 func buildFinalizationInput(ctx context.Context, jobID uint64, listingID uint64, assets []mediaprocessingmodel.MediaAsset) mediaprocessingmodel.MediaFinalizationInput {
 	jobAssets := make([]mediaprocessingmodel.JobAsset, 0, len(assets))
 	for _, asset := range assets {
+		rawKey := asset.S3KeyRaw()
+		if rawKey == "" {
+			rawKey = asset.S3KeyProcessed()
+		}
+
 		jobAssets = append(jobAssets, mediaprocessingmodel.JobAsset{
-			Key:  asset.S3KeyProcessed(),
+			Key:  rawKey,
 			Type: string(asset.AssetType()),
 		})
 	}

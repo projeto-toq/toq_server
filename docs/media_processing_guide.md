@@ -13,7 +13,7 @@
 4. **Pipeline AWS** – Step Functions `listing-media-processing-sm-staging` valida objetos, gera thumbnails (Lambda `listing-media-thumbnails-staging`), dispara MediaConvert para vídeos e consolida os resultados via Lambda `listing-media-consolidate-staging`.
 5. **Callback** – a Lambda `listing-media-callback-staging` envia `POST /api/v2/listings/media/callback` com assinatura `X-Toq-Signature`. O serviço `HandleProcessingCallback` atualiza assets individuais e o job.
 6. **Gestão** – o usuário pode listar, renomear (`POST /update`) ou excluir (`DELETE /delete`) assets `PROCESSED`/`FAILED` antes da finalização.
-7. **Finalização** – `POST /uploads/complete` confirma que todos os assets estão `PROCESSED`, altera o listing para `StatusPendingOwnerApproval`, registra novo job e dispara Step Functions `listing-media-finalization-sm-staging` (Lambda `listing-media-zip-staging`).
+7. **Finalização** – `POST /uploads/complete` confirma que todos os assets estão `PROCESSED` (com chaves `raw` e `processed` preenchidas), altera o listing para `StatusPendingOwnerApproval`, registra novo job e dispara Step Functions `listing-media-finalization-sm-staging` (Lambda `listing-media-zip-staging`) usando os arquivos originais para compor o ZIP.
 8. **Distribuição** – `POST /media/download` gera URLs GET assinadas (TTL default 3600s) para cada asset ou para o ZIP `/<listingIdentityId>/processed/zip/listing-media.zip`.
 9. **Aprovação do proprietário** – `POST /media/approve` permite que o owner aceite ou rejeite os materiais. Quando `LISTING_APPROVAL_ADMIN_REVIEW=true`, aprovações vão para `StatusPendingAdminReview`; caso contrário, avançam direto para `StatusReady`. Rejeições retornam o fluxo para `StatusRejectedByOwner`.
 
@@ -155,7 +155,7 @@ Body:
 ```json
 { "listingIdentityId": 123 }
 ```
-Valida que todos os assets retornados por `ListAssets` estão com `Status=PROCESSED` e `s3_key_processed` não vazio (`ensureAssetsReadyForFinalization`). Cria um job `STEP_FUNCTIONS_FINALIZATION`, chama `StartMediaFinalization`, atualiza `media_processing_jobs` com `external_id` e move o listing para `StatusPendingOwnerApproval`.
+Valida que todos os assets retornados por `ListAssets` estão com `Status=PROCESSED` e possuem `s3_key_raw` e `s3_key_processed` preenchidos (`ensureAssetsReadyForFinalization`). Cria um job `STEP_FUNCTIONS_FINALIZATION`, chama `StartMediaFinalization`, atualiza `media_processing_jobs` com `external_id` e move o listing para `StatusPendingOwnerApproval`.
 
 ### 4.8 `POST /listings/media/callback`
 - Header obrigatório: `X-Toq-Signature = hex(hmac_sha256(CALLBACK_SECRET, raw_body))`.
@@ -232,7 +232,7 @@ Estados:
 5. **ValidationFailed/ReportFailure** – mesmas Lambda de callback, com `status=VALIDATION_FAILED` ou `PROCESSING_FAILED`.
 
 ### 5.3 Finalização `listing-media-finalization-sm-staging`
-1. **CreateZipBundle** (`listing-media-zip-staging`) – recebe `MediaFinalizationInput` com todos os `S3KeyProcessed`; escreve `/<listingIdentityId>/processed/zip/listing-media.zip`.
+1. **CreateZipBundle** (`listing-media-zip-staging`) – recebe `MediaFinalizationInput` com `S3KeyRaw` dos assets; escreve `/<listingIdentityId>/processed/zip/listing-media.zip`.
 2. **FinalizeAndCallback** (`listing-media-callback-dispatch-staging`) – envia `status=SUCCEEDED`, `provider=STEP_FUNCTIONS_FINALIZATION`, `zipBundles` e `assetsZipped`.
 3. **ReportFailure** – envia `status=FINALIZATION_FAILED` para o backend.
 
@@ -241,7 +241,7 @@ Estados:
 | --- | --- |
 | `listing-media-validate-staging` | Confere existência dos objetos, checksum, constrói `traceparent`. |
 | `listing-media-thumbnails-staging` | Usa `disintegration/imaging` para gerar tamanhos `thumbnail/small/medium/large` e corrigir EXIF. |
-| `listing-media-zip-staging` | Consolida chaves processadas em um ZIP, garantindo nome `/<listingIdentityId>/processed/zip/listing-media.zip`. |
+| `listing-media-zip-staging` | Consolida os arquivos originais (`raw/*`) em um ZIP, garantindo nome `/<listingIdentityId>/processed/zip/listing-media.zip`. |
 | `listing-media-consolidate-staging` | Monta `outputs[]`, define `processedKey`/`thumbnailKey`, agrega erros por asset. |
 | `listing-media-callback-staging` | Recebe eventos (inclusive `body` vindo da Step Function) e faz POST para o backend com assinatura HMAC. |
 

@@ -23,6 +23,13 @@ func ensureAssetsReadyForFinalization(assets []mediaprocessingmodel.MediaAsset) 
 		case mediaprocessingmodel.MediaAssetStatusFailed:
 			return nil, derrors.Conflict("some assets failed processing, please remove or retry them")
 		case mediaprocessingmodel.MediaAssetStatusProcessed:
+			if asset.S3KeyRaw() == "" {
+				field := fmt.Sprintf("assetId:%d", asset.ID())
+				return nil, derrors.Conflict(
+					"processed assets are missing original keys",
+					derrors.WithDetails(map[string]any{"asset": field}),
+				)
+			}
 			if asset.S3KeyProcessed() == "" {
 				field := fmt.Sprintf("assetId:%d", asset.ID())
 				return nil, derrors.Conflict(
