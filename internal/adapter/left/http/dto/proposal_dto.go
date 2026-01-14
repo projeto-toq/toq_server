@@ -63,6 +63,8 @@ type ProposalResponse struct {
 	AcceptedAt        *time.Time         `json:"acceptedAt,omitempty"`
 	RejectedAt        *time.Time         `json:"rejectedAt,omitempty"`
 	CancelledAt       *time.Time         `json:"cancelledAt,omitempty"`
+	OwnerViewed       bool               `json:"ownerViewed"`
+	OwnerViewedAt     *time.Time         `json:"ownerViewedAt,omitempty"`
 	// CreatedAt reflects when the realtor submitted the proposal.
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
 	// ReceivedAt mirrors the first owner action timestamp, signaling that the owner viewed the proposal.

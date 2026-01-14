@@ -14,13 +14,13 @@ import (
 
 // GetProposalDetail returns proposal metadata plus documents (base64 encoded) to the owner or the realtor.
 // @Summary     Retrieve proposal detail with attachments
-// @Description Provides proposal metadata (including createdAt/receivedAt/respondedAt), realtor profile summary with acceptedProposals/photoUrl, owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds) and the binary (base64) of any PDF attachments for authorized actors.
+// @Description Provides proposal metadata (including createdAt/receivedAt/respondedAt), ownerViewed/ownerViewedAt (first view timestamp), realtor profile summary with acceptedProposals/photoUrl, owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds) and the binary (base64) of any PDF attachments for authorized actors.
 // @Tags        Proposals
 // @Security    BearerAuth
 // @Accept      json
 // @Produce     json
 // @Param       request body dto.GetProposalDetailRequest true "Proposal identifier"
-// @Success     200 {object} dto.ProposalDetailResponse "Includes documents[].base64Payload, realtor.photoUrl and owner.photoUrl plus engagement averages"
+// @Success     200 {object} dto.ProposalDetailResponse "Includes documents[].base64Payload, ownerViewed/ownerViewedAt, realtor.photoUrl and owner.photoUrl plus engagement averages"
 // @Failure     400,401,403,404,500 {object} dto.ErrorResponse
 // @Router      /proposals/detail [post]
 func (h *ProposalHandler) GetProposalDetail(c *gin.Context) {

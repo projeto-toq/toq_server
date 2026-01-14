@@ -3,6 +3,7 @@ package proposalrepository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	proposalmodel "github.com/projeto-toq/toq_server/internal/core/model/proposal_model"
 )
@@ -20,4 +21,5 @@ type Repository interface {
 	ListDocumentsByProposalIDs(ctx context.Context, tx *sql.Tx, proposalIDs []int64, includeBlob bool) (map[int64][]proposalmodel.ProposalDocumentInterface, error)
 	ListRealtorSummaries(ctx context.Context, tx *sql.Tx, realtorIDs []int64) ([]proposalmodel.RealtorSummary, error)
 	ListOwnerSummaries(ctx context.Context, tx *sql.Tx, ownerIDs []int64) ([]proposalmodel.OwnerSummary, error)
+	MarkOwnerFirstView(ctx context.Context, tx *sql.Tx, proposalID int64, ownerID int64, seenAt time.Time) error
 }

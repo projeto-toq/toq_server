@@ -13,7 +13,7 @@ import (
 
 // ListOwnerProposals lists proposals received by the owner.
 // @Summary     List owner proposals with attachments
-// @Description Owners can see all proposals received across listings with embedded PDF documents (base64), realtor metrics (accountAgeMonths, acceptedProposals, photoUrl) and the timeline fields createdAt/receivedAt/respondedAt. Each item also carries the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds).
+// @Description Owners can see all proposals received across listings with embedded PDF documents (base64), realtor metrics (accountAgeMonths, acceptedProposals, photoUrl) and the timeline fields createdAt/receivedAt/respondedAt. Each item also carries ownerViewed/ownerViewedAt (first view recorded on listing), plus the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds).
 // @Tags        Proposals
 // @Security    BearerAuth
 // @Produce     json
@@ -21,7 +21,7 @@ import (
 // @Param       listingIdentityId query int false "Listing identity"
 // @Param       page query int false "Page number"
 // @Param       pageSize query int false "Page size"
-// @Success     200 {object} dto.ListProposalsResponse "Items include documents[].base64Payload, realtor.photoUrl and owner.photoUrl plus engagement averages"
+// @Success     200 {object} dto.ListProposalsResponse "Items include documents[].base64Payload, ownerViewed/ownerViewedAt, realtor.photoUrl and owner.photoUrl plus engagement averages"
 // @Failure     400,401,500 {object} dto.ErrorResponse
 // @Router      /proposals/owner [get]
 func (h *ProposalHandler) ListOwnerProposals(c *gin.Context) {

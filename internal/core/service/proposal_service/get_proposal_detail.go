@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -27,13 +29,18 @@ func (s *proposalService) GetProposalDetail(ctx context.Context, input DetailInp
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	tx, txErr := s.globalSvc.StartReadOnlyTransaction(ctx)
+	tx, txErr := s.globalSvc.StartTransaction(ctx)
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
 		logger.Error("proposal.detail.tx_start_error", "err", txErr, "proposal_id", input.ProposalID)
-		return DetailResult{}, derrors.Infra("failed to start read-only transaction", txErr)
+		return DetailResult{}, derrors.Infra("failed to start transaction", txErr)
 	}
+
+	committed := false
 	defer func() {
+		if committed {
+			return
+		}
 		if rbErr := s.globalSvc.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
 			logger.Error("proposal.detail.tx_rollback_error", "err", rbErr)
@@ -47,6 +54,16 @@ func (s *proposalService) GetProposalDetail(ctx context.Context, input DetailInp
 
 	if !s.actorCanViewProposal(input.Actor, proposal) {
 		return DetailResult{}, derrors.Forbidden("actor cannot access this proposal")
+	}
+
+	if input.Actor.RoleSlug == permissionmodel.RoleSlugOwner && !proposal.FirstOwnerActionAt().Valid {
+		seenAt := time.Now().UTC()
+		if err := s.proposalRepo.MarkOwnerFirstView(ctx, tx, proposal.ID(), input.Actor.UserID, seenAt); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("proposal.detail.mark_first_view_error", "err", err, "proposal_id", input.ProposalID, "owner_id", input.Actor.UserID)
+			return DetailResult{}, derrors.Infra("failed to mark owner first view", err)
+		}
+		proposal.SetFirstOwnerActionAt(sql.NullTime{Valid: true, Time: seenAt})
 	}
 
 	documents, err := s.proposalRepo.ListDocuments(ctx, tx, proposal.ID(), true)
@@ -76,6 +93,13 @@ func (s *proposalService) GetProposalDetail(ctx context.Context, input DetailInp
 		logger.Error("proposal.detail.listing_error", "err", listingErr, "listing_identity_id", proposal.ListingIdentityID())
 		return DetailResult{}, derrors.Infra("failed to load listing", listingErr)
 	}
+
+	if err := s.globalSvc.CommitTransaction(ctx, tx); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("proposal.detail.tx_commit_error", "err", err, "proposal_id", proposal.ID())
+		return DetailResult{}, derrors.Infra("failed to commit proposal detail transaction", err)
+	}
+	committed = true
 
 	return DetailResult{Proposal: proposal, Documents: documents, Realtor: realtorSummary, Owner: ownerSummary, Listing: listing}, nil
 }

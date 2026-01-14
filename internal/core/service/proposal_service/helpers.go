@@ -167,13 +167,25 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 		return ListResult{}, err
 	}
 
-	tx, txErr := s.globalSvc.StartReadOnlyTransaction(ctx)
+	var tx *sql.Tx
+	var txErr error
+	readonly := scope != proposalmodel.ActorScopeOwner
+	if readonly {
+		tx, txErr = s.globalSvc.StartReadOnlyTransaction(ctx)
+	} else {
+		tx, txErr = s.globalSvc.StartTransaction(ctx)
+	}
 	if txErr != nil {
 		utils.SetSpanError(ctx, txErr)
 		logger.Error("proposal.list.tx_start_error", "err", txErr, "scope", scope)
-		return ListResult{}, derrors.Infra("failed to start read-only transaction", txErr)
+		return ListResult{}, derrors.Infra("failed to start transaction", txErr)
 	}
+
+	committed := false
 	defer func() {
+		if committed {
+			return
+		}
 		if rbErr := s.globalSvc.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
 			logger.Error("proposal.list.tx_rollback_error", "err", rbErr)
@@ -185,6 +197,12 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 		utils.SetSpanError(ctx, err)
 		logger.Error("proposal.list.repo_error", "err", err, "scope", scope)
 		return ListResult{}, derrors.Infra("failed to list proposals", err)
+	}
+
+	if scope == proposalmodel.ActorScopeOwner {
+		if err = s.markOwnerFirstViews(ctx, tx, repoResult.Items, filter.Actor.UserID); err != nil {
+			return ListResult{}, err
+		}
 	}
 
 	proposalIDs := make([]int64, 0, len(repoResult.Items))
@@ -258,8 +276,47 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 		})
 	}
 
-	return ListResult{Items: items, Total: repoResult.Total}, nil
+		if !readonly {
+			if err = s.globalSvc.CommitTransaction(ctx, tx); err != nil {
+				utils.SetSpanError(ctx, err)
+				logger.Error("proposal.list.tx_commit_error", "err", err, "scope", scope)
+				return ListResult{}, derrors.Infra("failed to commit proposal list", err)
+			}
+			committed = true
+		}
+
+		return ListResult{Items: items, Total: repoResult.Total}, nil
 }
+
+	func (s *proposalService) markOwnerFirstViews(ctx context.Context, tx *sql.Tx, proposals []proposalmodel.ProposalInterface, ownerID int64) error {
+		if len(proposals) == 0 || ownerID <= 0 {
+			return nil
+		}
+
+		logger := utils.LoggerFromContext(ctx)
+		seenAt := time.Now().UTC()
+
+		for _, proposal := range proposals {
+			if proposal == nil {
+				continue
+			}
+			if proposal.OwnerID() != ownerID {
+				continue
+			}
+			if proposal.FirstOwnerActionAt().Valid {
+				continue
+			}
+
+			if err := s.proposalRepo.MarkOwnerFirstView(ctx, tx, proposal.ID(), ownerID, seenAt); err != nil {
+				utils.SetSpanError(ctx, err)
+				logger.Error("proposal.list.mark_first_view_error", "err", err, "proposal_id", proposal.ID(), "owner_id", ownerID)
+				return derrors.Infra("failed to mark owner first view", err)
+			}
+			proposal.SetFirstOwnerActionAt(sql.NullTime{Valid: true, Time: seenAt})
+		}
+
+		return nil
+	}
 
 func (s *proposalService) loadListingsByIdentity(ctx context.Context, tx *sql.Tx, listingIDs []int64) (map[int64]listingmodel.ListingInterface, error) {
 	result := make(map[int64]listingmodel.ListingInterface, len(listingIDs))
@@ -588,11 +645,10 @@ func (s *proposalService) recordOwnerProposalResponse(ctx context.Context, tx *s
 	if s.ownerMetrics == nil {
 		return derrors.Infra("owner metrics repository unavailable", fmt.Errorf("owner metrics repository is nil"))
 	}
-	if current := proposal.FirstOwnerActionAt(); current.Valid {
-		return nil
-	}
 
-	proposal.SetFirstOwnerActionAt(sql.NullTime{Valid: true, Time: actionTime})
+	if current := proposal.FirstOwnerActionAt(); !current.Valid {
+		proposal.SetFirstOwnerActionAt(sql.NullTime{Valid: true, Time: actionTime})
+	}
 	createdAt := proposal.CreatedAt()
 	if createdAt.IsZero() {
 		createdAt = actionTime

@@ -166,6 +166,8 @@ func ProposalDomainToResponse(proposal proposalmodel.ProposalInterface) dto.Prop
 	}
 	if ptr := timePtrFromNull(proposal.FirstOwnerActionAt()); ptr != nil {
 		response.ReceivedAt = ptr
+		response.OwnerViewed = true
+		response.OwnerViewedAt = ptr
 	}
 	response.RespondedAt = firstNonNilTimePtr(
 		timePtrFromNull(proposal.AcceptedAt()),
