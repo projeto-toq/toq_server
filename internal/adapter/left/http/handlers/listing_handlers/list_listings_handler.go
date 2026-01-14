@@ -19,7 +19,8 @@ import (
 //
 //	@Summary      List active listing versions with filters and sorting
 //	@Description  Retrieves a paginated list of active listing versions (versions linked via listing_identities.active_version_id).
-//	              By default, only active versions are returned. Use includeAllVersions=true to retrieve all versions (active + draft).
+//	              Visibility rules: Owners are auto-scoped to their own listings; Realtors can see listings from any owner but
+//	              are forced to status PUBLISHED and active versions only. includeAllVersions=true is ignored for realtors.
 //	              Supports filtering by status, code, title, location (zipCode, city, neighborhood), owner (userId),
 //	              and price/size ranges. Results can be sorted by id (creation date proxy) or status.
 //	              Default sorting: id DESC (newest first).

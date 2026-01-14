@@ -9,6 +9,7 @@ import (
 	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -193,13 +194,23 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 		return output, uidErr
 	}
 
+	userInfo, infoErr := utils.GetUserInfoFromContext(ctx)
+	if infoErr != nil {
+		return output, infoErr
+	}
+	requiresPublishedForRealtor := false
+
 	if identity.UserID != userID {
-		// Requester is not the owner (audit trail + 403 Forbidden)
-		logger.Warn("unauthorized_detail_access_attempt",
-			"listing_identity_id", listingIdentityId,
-			"requester_user_id", userID,
-			"owner_user_id", identity.UserID)
-		return output, utils.AuthorizationError("not authorized to access this listing")
+		if userInfo.RoleSlug == permissionmodel.RoleSlugRealtor {
+			// Realtors may access details only for published listings; defer status check after load
+			requiresPublishedForRealtor = true
+		} else {
+			logger.Warn("unauthorized_detail_access_attempt",
+				"listing_identity_id", listingIdentityId,
+				"requester_user_id", userID,
+				"owner_user_id", identity.UserID)
+			return output, utils.AuthorizationError("not authorized to access this listing")
+		}
 	}
 
 	// Fetch active version via identity.active_version_id
@@ -235,6 +246,15 @@ func (ls *listingService) GetListingDetail(ctx context.Context, listingIdentityI
 			"listingIdentityId": listingIdentityId,
 			"activeVersionId":   activeVersionID,
 		})
+	}
+
+	if requiresPublishedForRealtor && listing.Status() != listingmodel.StatusPublished {
+		logger.Warn("listing.detail.realtor_non_published_denied",
+			"listing_identity_id", listingIdentityId,
+			"requester_user_id", userID,
+			"owner_user_id", identity.UserID,
+			"status", listing.Status())
+		return output, utils.AuthorizationError("not authorized to access this listing")
 	}
 
 	// Set listing identity metadata (UUID, identity ID)

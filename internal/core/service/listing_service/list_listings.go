@@ -111,10 +111,17 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 	logger := utils.LoggerFromContext(ctx)
 
 	// Security: Owners can only see their own listings (auto-enforce userID filter)
-	if input.RequesterRoleSlug == permissionmodel.RoleSlugOwner {
+	switch input.RequesterRoleSlug {
+	case permissionmodel.RoleSlugOwner:
 		ownerID := input.RequesterUserID
 		input.UserID = &ownerID
 		logger.Debug("listing.list.owner_scope_enforced", "user_id", ownerID)
+	case permissionmodel.RoleSlugRealtor:
+		published := listingmodel.StatusPublished
+		input.Status = &published
+		input.UserID = nil
+		input.IncludeAllVersions = false
+		logger.Debug("listing.list.realtor_scope_published_only", "user_id", input.RequesterUserID)
 	}
 
 	// Normalize pagination defaults

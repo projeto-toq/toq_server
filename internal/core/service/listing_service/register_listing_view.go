@@ -21,8 +21,11 @@ func (ls *listingService) registerListingView(ctx context.Context, listingIdenti
 		})
 	}
 
+	committed := false
 	defer func() {
-		_ = ls.gsi.RollbackTransaction(ctx, tx)
+		if !committed {
+			_ = ls.gsi.RollbackTransaction(ctx, tx)
+		}
 	}()
 
 	total, incErr := ls.viewRepo.IncrementAndGet(ctx, tx, listingIdentityID)
@@ -45,6 +48,7 @@ func (ls *listingService) registerListingView(ctx context.Context, listingIdenti
 			"listingIdentityId": listingIdentityID,
 		})
 	}
+	committed = true
 
 	return total, nil
 }

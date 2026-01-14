@@ -21,8 +21,9 @@ const ownerDetailPhotoVariant = "medium"
 // This handler returns the ACTIVE version of a listing (referenced by listing_identities.active_version_id).
 // If a draft version exists, its metadata is included in the response via draftVersionId field.
 //
-// The endpoint validates ownership before returning data: only the listing owner
-// (listing_identities.user_id == authenticated user_id) can access details.
+// Visibility rules:
+//   - Owners: can access only their own listings (listing_identities.user_id == authenticated user_id)
+//   - Realtors: can access listings from any owner only when the listing status is PUBLISHED
 //
 // Returned data includes:
 //   - All listing version fields (address, property type, transaction details, prices, etc.)
@@ -36,7 +37,7 @@ const ownerDetailPhotoVariant = "medium"
 //
 // Business Rules:
 //
-//   - Returns HTTP 403 Forbidden if requester is not the listing owner
+//   - Returns HTTP 403 Forbidden if requester is not the owner (when role is owner) or if realtor requests a non-published listing
 //
 //   - Returns HTTP 404 Not Found if listing identity does not exist
 //

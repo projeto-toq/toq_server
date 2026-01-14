@@ -276,47 +276,47 @@ func (s *proposalService) listProposals(ctx context.Context, scope proposalmodel
 		})
 	}
 
-		if !readonly {
-			if err = s.globalSvc.CommitTransaction(ctx, tx); err != nil {
-				utils.SetSpanError(ctx, err)
-				logger.Error("proposal.list.tx_commit_error", "err", err, "scope", scope)
-				return ListResult{}, derrors.Infra("failed to commit proposal list", err)
-			}
-			committed = true
+	if !readonly {
+		if err = s.globalSvc.CommitTransaction(ctx, tx); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("proposal.list.tx_commit_error", "err", err, "scope", scope)
+			return ListResult{}, derrors.Infra("failed to commit proposal list", err)
 		}
+		committed = true
+	}
 
-		return ListResult{Items: items, Total: repoResult.Total}, nil
+	return ListResult{Items: items, Total: repoResult.Total}, nil
 }
 
-	func (s *proposalService) markOwnerFirstViews(ctx context.Context, tx *sql.Tx, proposals []proposalmodel.ProposalInterface, ownerID int64) error {
-		if len(proposals) == 0 || ownerID <= 0 {
-			return nil
-		}
-
-		logger := utils.LoggerFromContext(ctx)
-		seenAt := time.Now().UTC()
-
-		for _, proposal := range proposals {
-			if proposal == nil {
-				continue
-			}
-			if proposal.OwnerID() != ownerID {
-				continue
-			}
-			if proposal.FirstOwnerActionAt().Valid {
-				continue
-			}
-
-			if err := s.proposalRepo.MarkOwnerFirstView(ctx, tx, proposal.ID(), ownerID, seenAt); err != nil {
-				utils.SetSpanError(ctx, err)
-				logger.Error("proposal.list.mark_first_view_error", "err", err, "proposal_id", proposal.ID(), "owner_id", ownerID)
-				return derrors.Infra("failed to mark owner first view", err)
-			}
-			proposal.SetFirstOwnerActionAt(sql.NullTime{Valid: true, Time: seenAt})
-		}
-
+func (s *proposalService) markOwnerFirstViews(ctx context.Context, tx *sql.Tx, proposals []proposalmodel.ProposalInterface, ownerID int64) error {
+	if len(proposals) == 0 || ownerID <= 0 {
 		return nil
 	}
+
+	logger := utils.LoggerFromContext(ctx)
+	seenAt := time.Now().UTC()
+
+	for _, proposal := range proposals {
+		if proposal == nil {
+			continue
+		}
+		if proposal.OwnerID() != ownerID {
+			continue
+		}
+		if proposal.FirstOwnerActionAt().Valid {
+			continue
+		}
+
+		if err := s.proposalRepo.MarkOwnerFirstView(ctx, tx, proposal.ID(), ownerID, seenAt); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("proposal.list.mark_first_view_error", "err", err, "proposal_id", proposal.ID(), "owner_id", ownerID)
+			return derrors.Infra("failed to mark owner first view", err)
+		}
+		proposal.SetFirstOwnerActionAt(sql.NullTime{Valid: true, Time: seenAt})
+	}
+
+	return nil
+}
 
 func (s *proposalService) loadListingsByIdentity(ctx context.Context, tx *sql.Tx, listingIDs []int64) (map[int64]listingmodel.ListingInterface, error) {
 	result := make(map[int64]listingmodel.ListingInterface, len(listingIDs))
