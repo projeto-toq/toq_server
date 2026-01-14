@@ -129,7 +129,7 @@ func buildVerticalClause(params propertycoveragerepository.ListManagedComplexesP
 	var builder strings.Builder
 	args := make([]any, 0)
 
-	builder.WriteString("SELECT 'VERTICAL' AS coverage_kind, vc.id, vc.name, vc.zip_code, vc.street, vc.number, vc.neighborhood, vc.city, vc.state, vc.reception_phone, vc.sector, vc.main_registration, vc.type FROM vertical_complexes vc WHERE 1=1")
+	builder.WriteString("SELECT 'VERTICAL' AS coverage_kind, vc.id, vc.name, vc.zip_code, vc.street, vc.number, vc.neighborhood, vc.city, vc.state, vc.reception_phone, vc.sector, vc.main_registration, vc.type AS property_types FROM vertical_complexes vc WHERE 1=1")
 	appendCommonFilters(&builder, &args, "vc", params)
 
 	if params.Name != "" {
@@ -149,7 +149,7 @@ func buildHorizontalClause(params propertycoveragerepository.ListManagedComplexe
 	var builder strings.Builder
 	args := make([]any, 0)
 
-	builder.WriteString("SELECT 'HORIZONTAL' AS coverage_kind, hc.id, hc.name, hc.zip_code, hc.street, hc.number, hc.neighborhood, hc.city, hc.state, hc.reception_phone, hc.sector, hc.main_registration, hc.type FROM horizontal_complexes hc WHERE 1=1")
+	builder.WriteString("SELECT 'HORIZONTAL' AS coverage_kind, hc.id, hc.name, hc.zip_code, hc.street, hc.number, hc.neighborhood, hc.city, hc.state, hc.reception_phone, hc.sector, hc.main_registration, hc.type AS property_types FROM horizontal_complexes hc WHERE 1=1")
 	appendCommonFilters(&builder, &args, "hc", params)
 
 	if params.Name != "" {
@@ -169,7 +169,7 @@ func buildStandaloneClause(params propertycoveragerepository.ListManagedComplexe
 	var builder strings.Builder
 	args := make([]any, 0)
 
-	builder.WriteString("SELECT 'STANDALONE' AS coverage_kind, nc.id, NULL AS name, nc.zip_code, NULL AS street, NULL AS number, nc.neighborhood, nc.city, nc.state, NULL AS reception_phone, nc.sector, NULL AS main_registration, nc.type FROM no_complex_zip_codes nc WHERE 1=1")
+	builder.WriteString("SELECT 'STANDALONE' AS coverage_kind, nc.id, NULL AS name, nc.zip_code, NULL AS street, NULL AS number, nc.neighborhood, nc.city, nc.state, NULL AS reception_phone, nc.sector, NULL AS main_registration, nc.type AS property_types FROM no_complex_zip_codes nc WHERE 1=1")
 	appendCommonFilters(&builder, &args, "nc", params)
 
 	return builder.String(), args

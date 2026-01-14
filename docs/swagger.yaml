@@ -2458,6 +2458,10 @@ definitions:
         type: integer
       owner:
         $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalOwnerResponse'
+      ownerViewed:
+        type: boolean
+      ownerViewedAt:
+        type: string
       proposalText:
         type: string
       realtor:
@@ -9468,9 +9472,10 @@ paths:
       consumes:
       - application/json
       description: Provides proposal metadata (including createdAt/receivedAt/respondedAt),
-        realtor profile summary with acceptedProposals/photoUrl, owner summary (fullName,
-        memberSinceMonths, photoUrl, proposalAverageSeconds, visitAverageSeconds)
-        and the binary (base64) of any PDF attachments for authorized actors.
+        ownerViewed/ownerViewedAt (first view timestamp), realtor profile summary
+        with acceptedProposals/photoUrl, owner summary (fullName, memberSinceMonths,
+        photoUrl, proposalAverageSeconds, visitAverageSeconds) and the binary (base64)
+        of any PDF attachments for authorized actors.
       parameters:
       - description: Proposal identifier
         in: body
@@ -9482,8 +9487,8 @@ paths:
       - application/json
       responses:
         "200":
-          description: Includes documents[].base64Payload, realtor.photoUrl and owner.photoUrl
-            plus engagement averages
+          description: Includes documents[].base64Payload, ownerViewed/ownerViewedAt,
+            realtor.photoUrl and owner.photoUrl plus engagement averages
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProposalDetailResponse'
         "400":
@@ -9516,7 +9521,8 @@ paths:
       description: Owners can see all proposals received across listings with embedded
         PDF documents (base64), realtor metrics (accountAgeMonths, acceptedProposals,
         photoUrl) and the timeline fields createdAt/receivedAt/respondedAt. Each item
-        also carries the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds,
+        also carries ownerViewed/ownerViewedAt (first view recorded on listing), plus
+        the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds,
         visitAverageSeconds).
       parameters:
       - collectionFormat: csv
@@ -9542,8 +9548,8 @@ paths:
       - application/json
       responses:
         "200":
-          description: Items include documents[].base64Payload, realtor.photoUrl and
-            owner.photoUrl plus engagement averages
+          description: Items include documents[].base64Payload, ownerViewed/ownerViewedAt,
+            realtor.photoUrl and owner.photoUrl plus engagement averages
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse'
         "400":
@@ -9567,8 +9573,9 @@ paths:
     get:
       description: Returns paginated proposals created by the authenticated realtor,
         embedding each proposal PDF (base64), timeline fields (createdAt/receivedAt/respondedAt),
-        realtor profile metrics and the owner summary (fullName, memberSinceMonths,
-        photoUrl, proposalAverageSeconds, visitAverageSeconds).
+        the boolean ownerViewed/ownerViewedAt (first owner view), realtor profile
+        metrics and the owner summary (fullName, memberSinceMonths, photoUrl, proposalAverageSeconds,
+        visitAverageSeconds).
       parameters:
       - collectionFormat: multi
         description: Status filter
@@ -9595,8 +9602,8 @@ paths:
       - application/json
       responses:
         "200":
-          description: Items include documents[].base64Payload, realtor.photoUrl and
-            owner.photoUrl with engagement averages
+          description: Items include documents[].base64Payload, ownerViewed/ownerViewedAt,
+            realtor.photoUrl and owner.photoUrl with engagement averages
           schema:
             $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListProposalsResponse'
         "400":
