@@ -18,6 +18,14 @@
 # Config directory
 /configs/
 
+# Terraform artifacts
+.terraform/
+aws/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+
 # Images directory
 /images/
 
