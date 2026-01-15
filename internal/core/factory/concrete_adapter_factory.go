@@ -336,6 +336,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 // CreateHTTPHandlers creates and returns all HTTP handlers
 func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	router *gin.Engine,
+	env *globalmodel.Environment,
 	userService userservice.UserServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 	listingService listingservice.ListingServiceInterface,
@@ -376,10 +377,21 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 
 	// Create listing handler using the adapter
 	// Note: MediaProcessingService may be nil if dependencies not available
+	listingHandlerConfig := listinghandlers.ListingHandlerConfig{
+		NewListingHoursThreshold:   env.Listings.NewListingHoursThreshold,
+		PriceChangedHoursThreshold: env.Listings.PriceChangedHoursThreshold,
+	}
+	if listingHandlerConfig.NewListingHoursThreshold <= 0 {
+		listingHandlerConfig.NewListingHoursThreshold = 72
+	}
+	if listingHandlerConfig.PriceChangedHoursThreshold <= 0 {
+		listingHandlerConfig.PriceChangedHoursThreshold = 48
+	}
 	listingHandlerPort := listinghandlers.NewListingHandlerAdapter(
 		listingService,
 		globalService,
 		userService,
+		listingHandlerConfig,
 	)
 
 	listingHandler, ok := listingHandlerPort.(*listinghandlers.ListingHandler)

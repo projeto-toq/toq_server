@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	listingconverters "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/listing/converters"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -151,6 +153,76 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	if filter.UserID != nil {
 		conditions = append(conditions, "lv.user_id = ?")
 		args = append(args, *filter.UserID)
+	}
+
+	if len(filter.PropertyTypes) > 0 {
+		placeholders := makePlaceholders(len(filter.PropertyTypes))
+		conditions = append(conditions, fmt.Sprintf("lv.type IN (%s)", placeholders))
+		for _, pt := range filter.PropertyTypes {
+			args = append(args, pt)
+		}
+	}
+
+	if len(filter.TransactionTypes) > 0 {
+		placeholders := makePlaceholders(len(filter.TransactionTypes))
+		conditions = append(conditions, fmt.Sprintf("lv.transaction IN (%s)", placeholders))
+		for _, tt := range filter.TransactionTypes {
+			args = append(args, tt)
+		}
+	}
+
+	switch filter.PropertyUse {
+	case listingrepository.PropertyUseResidential:
+		residentialTypes := []globalmodel.PropertyType{
+			globalmodel.Apartment,
+			globalmodel.House,
+			globalmodel.OffPlanHouse,
+			globalmodel.ResidencialLand,
+		}
+		placeholders := makePlaceholders(len(residentialTypes))
+		conditions = append(conditions, fmt.Sprintf("lv.type IN (%s)", placeholders))
+		for _, pt := range residentialTypes {
+			args = append(args, pt)
+		}
+	case listingrepository.PropertyUseCommercial:
+		commercialTypes := []globalmodel.PropertyType{
+			globalmodel.CommercialStore,
+			globalmodel.CommercialFloor,
+			globalmodel.Suite,
+			globalmodel.CommercialLand,
+			globalmodel.Warehouse,
+			globalmodel.Building,
+		}
+		placeholders := makePlaceholders(len(commercialTypes))
+		conditions = append(conditions, fmt.Sprintf("lv.type IN (%s)", placeholders))
+		for _, pt := range commercialTypes {
+			args = append(args, pt)
+		}
+	}
+
+	if filter.AcceptsExchange != nil {
+		conditions = append(conditions, "lv.exchange = ?")
+		args = append(args, boolToTinyInt(*filter.AcceptsExchange))
+	}
+
+	if filter.AcceptsFinancing != nil {
+		conditions = append(conditions, "lv.financing = ?")
+		args = append(args, boolToTinyInt(*filter.AcceptsFinancing))
+	}
+
+	if filter.OnlySold {
+		conditions = append(conditions, "lv.status = ?")
+		args = append(args, int(listingmodel.StatusClosed))
+	}
+
+	if filter.OnlyNewerThanHours != nil {
+		conditions = append(conditions, "TIMESTAMPDIFF(HOUR, lv.created_at, NOW()) <= ?")
+		args = append(args, *filter.OnlyNewerThanHours)
+	}
+
+	if filter.PriceUpdatedWithin != nil {
+		conditions = append(conditions, "lv.price_updated_at IS NOT NULL AND TIMESTAMPDIFF(HOUR, lv.price_updated_at, NOW()) <= ?")
+		args = append(args, *filter.PriceUpdatedWithin)
 	}
 
 	// Optional filter: sell price range
@@ -305,4 +377,18 @@ func buildOrderByClause(sortBy, sortOrder string) string {
 	}
 
 	return fmt.Sprintf("ORDER BY %s %s", column, direction)
+}
+
+func makePlaceholders(count int) string {
+	if count <= 0 {
+		return ""
+	}
+	return strings.TrimRight(strings.Repeat("?,", count), ",")
+}
+
+func boolToTinyInt(value bool) int {
+	if value {
+		return 1
+	}
+	return 0
 }

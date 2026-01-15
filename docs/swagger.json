@@ -5434,6 +5434,74 @@
                         "in": "query"
                     },
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "x-example": "[1,2]",
+                        "description": "Filter by property types (bitmask values)",
+                        "name": "propertyTypes",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "collectionFormat": "csv",
+                        "x-example": "[1,2]",
+                        "description": "Filter by transaction types (catalog numeric values)",
+                        "name": "transactionTypes",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "RESIDENTIAL",
+                            "COMMERCIAL"
+                        ],
+                        "type": "string",
+                        "x-example": "\"RESIDENTIAL\"",
+                        "description": "Filter by property use",
+                        "name": "propertyUse",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "x-example": "true",
+                        "description": "Filter listings that accept exchange",
+                        "name": "acceptsExchange",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "x-example": "true",
+                        "description": "Filter listings that accept financing",
+                        "name": "acceptsFinancing",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "x-example": "false",
+                        "description": "Return only sold listings",
+                        "name": "onlySold",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "x-example": "false",
+                        "description": "Return only listings created within configured recency window",
+                        "name": "onlyNewListings",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "x-example": "false",
+                        "description": "Return only listings with price updates within configured recency window",
+                        "name": "onlyPriceChanged",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
                         "x-example": "false",
                         "description": "Include all versions (active + draft). Default: false (active only)",
@@ -5629,7 +5697,7 @@
             }
         },
         "/listings/catalog": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []

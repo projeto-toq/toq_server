@@ -195,6 +195,10 @@ type Environment struct {
 		MinHoursAhead int `yaml:"min_hours_ahead"`
 		MaxDaysAhead  int `yaml:"max_days_ahead"`
 	} `yaml:"visits"`
+	Listings struct {
+		NewListingHoursThreshold   int `yaml:"new_listing_hours_threshold"`
+		PriceChangedHoursThreshold int `yaml:"price_changed_hours_threshold"`
+	} `yaml:"listings"`
 	Profiles map[string]ProfileOverrides `yaml:"profiles"`
 	// Health endpoints are now integrated into the main HTTP server
 	// No separate health configuration needed

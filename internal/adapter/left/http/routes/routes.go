@@ -307,7 +307,7 @@ func RegisterListingRoutes(
 		listings.GET("/search", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SearchListing
 		listings.POST("/options", listingHandler.PostOptions)                                                // PostOptions
 		listings.GET("/features/base", listingHandler.GetBaseFeatures)                                       // GetBaseFeatures
-		listings.GET("/catalog", listingHandler.ListCatalogValues)                                           // ListCatalogValues
+		listings.POST("/catalog", listingHandler.ListCatalogValues)                                          // ListCatalogValues
 
 		// Favorites (Realtor side)
 		listings.GET("/favorites", listingHandler.GetFavoriteListings)

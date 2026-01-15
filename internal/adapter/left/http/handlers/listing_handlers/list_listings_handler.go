@@ -10,7 +10,9 @@ import (
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/converters"
 	dto "github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -52,6 +54,14 @@ import (
 //	@Param        maxLandSize         query   number  false  "Maximum land size in square meters" Extensions(x-example=500.75)
 //	@Param        minSuites           query   int     false  "Minimum suite count (from feature 'Suites')" Extensions(x-example=2)
 //	@Param        maxSuites           query   int     false  "Maximum suite count (from feature 'Suites')" Extensions(x-example=4)
+//	@Param        propertyTypes       query   []int   false  "Filter by property types (bitmask values)" Extensions(x-example=[1,2])
+//	@Param        transactionTypes    query   []int   false  "Filter by transaction types (catalog numeric values)" Extensions(x-example=[1,2])
+//	@Param        propertyUse         query   string  false  "Filter by property use" Enums(RESIDENTIAL, COMMERCIAL) Extensions(x-example="RESIDENTIAL")
+//	@Param        acceptsExchange     query   bool    false  "Filter listings that accept exchange" Extensions(x-example=true)
+//	@Param        acceptsFinancing    query   bool    false  "Filter listings that accept financing" Extensions(x-example=true)
+//	@Param        onlySold            query   bool    false  "Return only sold listings" Extensions(x-example=false)
+//	@Param        onlyNewListings     query   bool    false  "Return only listings created within configured recency window" Extensions(x-example=false)
+//	@Param        onlyPriceChanged    query   bool    false  "Return only listings with price updates within configured recency window" Extensions(x-example=false)
 //	@Param        includeAllVersions  query   bool    false  "Include all versions (active + draft). Default: false (active only)" Extensions(x-example=false)
 //	@Success      200                 {object}  dto.ListListingsResponse         "Paginated list of listings with metadata"
 //	@Failure      400                 {object}  dto.ErrorResponse                "Invalid request parameters (malformed sortBy, sortOrder, or filter values)"
@@ -166,6 +176,27 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 		return
 	}
 
+	propertyTypes, err := parsePropertyTypes(req.PropertyTypes)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("propertyTypes", err.Error()))
+		return
+	}
+
+	transactionTypes, err := parseTransactionTypes(req.TransactionTypes)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("transactionTypes", err.Error()))
+		return
+	}
+
+	propertyUse, err := parsePropertyUse(req.PropertyUse)
+	if err != nil {
+		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("propertyUse", err.Error()))
+		return
+	}
+
+	newerThanHours := resolveRecencyWindow(req.OnlyNewListings, lh.config.NewListingHoursThreshold)
+	priceUpdatedWithin := resolveRecencyWindow(req.OnlyPriceChanged, lh.config.PriceChangedHoursThreshold)
+
 	// Extract authenticated user info for permission filtering
 	userInfo, infoErr := coreutils.GetUserInfoFromGinContext(c)
 	if infoErr != nil {
@@ -199,6 +230,14 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 		MaxLandSize:        maxLand,
 		MinSuites:          minSuites,
 		MaxSuites:          maxSuites,
+		PropertyTypes:      propertyTypes,
+		TransactionTypes:   transactionTypes,
+		PropertyUse:        propertyUse,
+		AcceptsExchange:    req.AcceptsExchange,
+		AcceptsFinancing:   req.AcceptsFinancing,
+		OnlySold:           req.OnlySold,
+		OnlyNewerThanHours: newerThanHours,
+		PriceUpdatedWithin: priceUpdatedWithin,
 		IncludeAllVersions: req.IncludeAllVersions,
 		RequesterUserID:    userInfo.ID,
 		RequesterRoleSlug:  userInfo.RoleSlug,
@@ -349,6 +388,56 @@ func parseOptionalNonNegativeInt(raw string) (*int, error) {
 		return nil, fmt.Errorf("value cannot be negative")
 	}
 	return &value, nil
+}
+
+func parsePropertyTypes(raw []uint16) ([]globalmodel.PropertyType, error) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
+	result := make([]globalmodel.PropertyType, 0, len(raw))
+	for _, v := range raw {
+		if v == 0 {
+			return nil, fmt.Errorf("property type must be greater than zero")
+		}
+		result = append(result, globalmodel.PropertyType(v))
+	}
+	return result, nil
+}
+
+func parseTransactionTypes(raw []uint8) ([]listingmodel.TransactionType, error) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
+	result := make([]listingmodel.TransactionType, 0, len(raw))
+	for _, v := range raw {
+		if v == 0 {
+			return nil, fmt.Errorf("transaction type must be greater than zero")
+		}
+		result = append(result, listingmodel.TransactionType(v))
+	}
+	return result, nil
+}
+
+func parsePropertyUse(raw string) (listingrepository.PropertyUseFilter, error) {
+	trimmed := strings.TrimSpace(strings.ToUpper(raw))
+	switch trimmed {
+	case "":
+		return listingrepository.PropertyUseUndefined, nil
+	case "RESIDENTIAL":
+		return listingrepository.PropertyUseResidential, nil
+	case "COMMERCIAL":
+		return listingrepository.PropertyUseCommercial, nil
+	default:
+		return listingrepository.PropertyUseUndefined, fmt.Errorf("invalid propertyUse (allowed: RESIDENTIAL, COMMERCIAL)")
+	}
+}
+
+func resolveRecencyWindow(enabled bool, hours int) *int {
+	if !enabled || hours <= 0 {
+		return nil
+	}
+	value := hours
+	return &value
 }
 
 // toListingResponse converts service item to DTO response

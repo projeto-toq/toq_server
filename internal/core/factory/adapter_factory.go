@@ -51,6 +51,7 @@ type AdapterFactory interface {
 	// CreateHTTPHandlers cria todos os handlers HTTP
 	CreateHTTPHandlers(
 		router *gin.Engine,
+		env *globalmodel.Environment,
 		userService userservices.UserServiceInterface,
 		globalService globalservice.GlobalServiceInterface,
 		listingService listingservices.ListingServiceInterface,

@@ -153,6 +153,39 @@ type ListListingsRequest struct {
 	// Example: 4
 	MaxSuites string `form:"maxSuites,omitempty" example:"4"`
 
+	// PropertyTypes filters by property type bitmask values (see global_model.PropertyType)
+	// Example: [1,2]
+	PropertyTypes []uint16 `form:"propertyTypes[]" example:"1"`
+
+	// TransactionTypes filters by transaction types (catalog numeric values)
+	// Example: [1,2]
+	TransactionTypes []uint8 `form:"transactionTypes[]" example:"1"`
+
+	// PropertyUse filters listings by use (residential/commercial)
+	// Allowed: RESIDENTIAL, COMMERCIAL
+	// Example: "RESIDENTIAL"
+	PropertyUse string `form:"propertyUse,omitempty" example:"RESIDENTIAL"`
+
+	// AcceptsExchange filters listings that accept property exchange
+	// Example: true
+	AcceptsExchange *bool `form:"acceptsExchange" example:"true"`
+
+	// AcceptsFinancing filters listings that accept financing
+	// Example: true
+	AcceptsFinancing *bool `form:"acceptsFinancing" example:"true"`
+
+	// OnlySold restricts results to sold listings
+	// Example: false
+	OnlySold bool `form:"onlySold" example:"false"`
+
+	// OnlyNewListings returns listings created within the configured recency window
+	// Example: false
+	OnlyNewListings bool `form:"onlyNewListings" example:"false"`
+
+	// OnlyPriceChanged returns listings with recent price updates within the configured window
+	// Example: false
+	OnlyPriceChanged bool `form:"onlyPriceChanged" example:"false"`
+
 	// IncludeAllVersions determines version filtering behavior
 	// false (default): Only active versions (linked via active_version_id)
 	// true: All versions (active + draft)

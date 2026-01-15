@@ -10,7 +10,7 @@ import (
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// ListCatalogValues handles GET /listings/catalog.
+// ListCatalogValues handles POST /listings/catalog.
 //
 //	@Summary	List active listing catalog values
 //	@Description	Available categories: property_owner, property_delivered, who_lives, transaction_type, installment_plan, financing_blocker, visit_type, accompanying_type, guarantee_type.
@@ -23,7 +23,7 @@ import (
 //	@Failure	401	{object}	map[string]any
 //	@Failure	403	{object}	map[string]any
 //	@Failure	500	{object}	map[string]any
-//	@Router		/listings/catalog [get]
+//	@Router		/listings/catalog [post]
 //	@Security	BearerAuth
 func (lh *ListingHandler) ListCatalogValues(c *gin.Context) {
 	ctx := coreutils.EnrichContextWithRequestInfo(c.Request.Context(), c)

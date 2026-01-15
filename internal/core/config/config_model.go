@@ -554,6 +554,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 	}
 	c.httpHandlers = c.adapterFactory.CreateHTTPHandlers(
 		c.ginRouter,
+		&c.env,
 		c.userService,
 		c.globalService,
 		c.listingService,

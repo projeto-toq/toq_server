@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
@@ -44,7 +45,15 @@ type ListListingsInput struct {
 	MaxLandSize        *float64                    // Optional maximum land size (sq meters)
 	MinSuites          *int                        // Optional minimum suite count (derived from features)
 	MaxSuites          *int                        // Optional maximum suite count (derived from features)
-	IncludeAllVersions bool                        // true: all versions; false: active only (default)
+	PropertyTypes      []globalmodel.PropertyType  // Optional property type filters
+	TransactionTypes   []listingmodel.TransactionType
+	PropertyUse        listingrepository.PropertyUseFilter
+	AcceptsExchange    *bool
+	AcceptsFinancing   *bool
+	OnlySold           bool
+	OnlyNewerThanHours *int
+	PriceUpdatedWithin *int
+	IncludeAllVersions bool // true: all versions; false: active only (default)
 
 	// Security context
 	RequesterUserID   int64                    // Authenticated user ID
@@ -181,6 +190,14 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		MaxLandSize:        input.MaxLandSize,
 		MinSuites:          input.MinSuites,
 		MaxSuites:          input.MaxSuites,
+		PropertyTypes:      input.PropertyTypes,
+		TransactionTypes:   input.TransactionTypes,
+		PropertyUse:        input.PropertyUse,
+		AcceptsExchange:    input.AcceptsExchange,
+		AcceptsFinancing:   input.AcceptsFinancing,
+		OnlySold:           input.OnlySold,
+		OnlyNewerThanHours: input.OnlyNewerThanHours,
+		PriceUpdatedWithin: input.PriceUpdatedWithin,
 		IncludeAllVersions: input.IncludeAllVersions,
 	}
 

@@ -12,6 +12,14 @@ type ListingHandler struct {
 	listingService listingservice.ListingServiceInterface
 	globalService  globalservice.GlobalServiceInterface
 	userService    userservices.UserServiceInterface
+	config         ListingHandlerConfig
+}
+
+// ListingHandlerConfig carries HTTP-level configuration for listing handlers.
+// Thresholds are resolved at bootstrap from environment values.
+type ListingHandlerConfig struct {
+	NewListingHoursThreshold   int
+	PriceChangedHoursThreshold int
 }
 
 // NewListingHandlerAdapter cria uma nova instância de ListingHandler
@@ -19,10 +27,12 @@ func NewListingHandlerAdapter(
 	listingService listingservice.ListingServiceInterface,
 	globalService globalservice.GlobalServiceInterface,
 	userService userservices.UserServiceInterface,
+	config ListingHandlerConfig,
 ) listinghandlerport.ListingHandlerPort {
 	return &ListingHandler{
 		listingService: listingService,
 		globalService:  globalService,
 		userService:    userService,
+		config:         config,
 	}
 }
