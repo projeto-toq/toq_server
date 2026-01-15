@@ -1,11 +1,15 @@
 package authhandlers
 
 import (
+	"context"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
+	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -37,6 +41,18 @@ func (ah *AuthHandler) RefreshToken(c *gin.Context) {
 		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request format")
 		return
 	}
+
+	// Enforce DeviceID header for binding continuity
+	deviceID := strings.TrimSpace(c.GetHeader("X-Device-Id"))
+	if deviceID == "" {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "DEVICE_ID_REQUIRED", "X-Device-Id header is required")
+		return
+	}
+	if _, parseErr := uuid.Parse(deviceID); parseErr != nil {
+		httperrors.SendHTTPError(c, http.StatusBadRequest, "INVALID_DEVICE_ID", "X-Device-Id must be a valid UUID")
+		return
+	}
+	ctx = context.WithValue(ctx, globalmodel.DeviceIDKey, deviceID)
 
 	// Call service
 	tokens, err := ah.userService.RefreshTokens(ctx, request.RefreshToken)

@@ -35,6 +35,7 @@
 - como serão limpos os dados de uploads/bactchs com erro de upload?
 - shared-secret do callback que está no env.yaml não está sendo usado
 - Número de compartilhamentos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
+- Mudar o JWT secret para variável de ambiente
 
 
 

@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -11,23 +12,22 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
-// AuthMiddleware handles JWT authentication
-func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc {
+// AuthMiddleware handles JWT authentication with strict validation and blocklist enforcement.
+func AuthMiddleware(activityTracker *goroutines.ActivityTracker, blocklist cacheport.TokenBlocklistPort) gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
 		path := c.Request.URL.Path
 
-		// Skip authentication for public endpoints
 		if !isAuthRequiredEndpoint(path) {
 			setRootUserContext(c)
 			c.Next()
 			return
 		}
 
-		// Extract Authorization header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Authorization header required"))
@@ -38,7 +38,6 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 			return
 		}
 
-		// Verify Bearer token format
 		tokenParts := strings.Split(authHeader, "Bearer ")
 		if len(tokenParts) < 2 || tokenParts[1] == "" {
 			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid authorization token format"))
@@ -49,10 +48,9 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 			return
 		}
 
-		token := tokenParts[1]
-		userInfo, err := validateAccessToken(token)
+		userInfo, jti, exp, err := validateAccessToken(c.Request.Context(), tokenParts[1], blocklist)
 		if err != nil {
-			httperrors.SendHTTPErrorObj(c, coreutils.AuthenticationError("Invalid access token"))
+			httperrors.SendHTTPErrorObj(c, err)
 			if mp := getMetricsAdapterFromGin(c); mp != nil {
 				mp.IncrementErrors("auth", "invalid_token")
 			}
@@ -60,10 +58,8 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 			return
 		}
 
-		// Set user context
-		setUserContext(c, userInfo)
+		setUserContext(c, userInfo, jti, exp)
 
-		// Track user activity
 		if activityTracker != nil {
 			activityTracker.TrackActivity(c.Request.Context(), userInfo.ID)
 		}
@@ -72,7 +68,6 @@ func AuthMiddleware(activityTracker *goroutines.ActivityTracker) gin.HandlerFunc
 	})
 }
 
-// Helper to get metrics adapter from Gin context (set by routes setup)
 func getMetricsAdapterFromGin(c *gin.Context) metricsport.MetricsPortInterface {
 	if val, ok := c.Get("metricsAdapter"); ok {
 		if mp, ok := val.(metricsport.MetricsPortInterface); ok {
@@ -82,7 +77,6 @@ func getMetricsAdapterFromGin(c *gin.Context) metricsport.MetricsPortInterface {
 	return nil
 }
 
-// setRootUserContext sets the root user context for public endpoints
 func setRootUserContext(c *gin.Context) {
 	infos := usermodel.UserInfos{
 		ID:         0,
@@ -90,7 +84,6 @@ func setRootUserContext(c *gin.Context) {
 		RoleSlug:   permissionmodel.RoleSlugRoot,
 	}
 
-	// Set context values for compatibility
 	ctx := context.WithValue(c.Request.Context(), globalmodel.TokenKey, infos)
 	ctx = context.WithValue(ctx, globalmodel.UserAgentKey, c.GetHeader("User-Agent"))
 	ctx = context.WithValue(ctx, globalmodel.ClientIPKey, c.ClientIP())
@@ -98,60 +91,90 @@ func setRootUserContext(c *gin.Context) {
 
 	c.Request = c.Request.WithContext(ctx)
 
-	// Set Gin context values
 	c.Set("userInfo", infos)
 	c.Set("userAgent", c.GetHeader("User-Agent"))
 	c.Set("clientIP", c.ClientIP())
 }
 
-// setUserContext sets the authenticated user context
-func setUserContext(c *gin.Context, userInfo usermodel.UserInfos) {
-	// Set context values for compatibility with existing service layer
+func setUserContext(c *gin.Context, userInfo usermodel.UserInfos, tokenJTI string, expiresAt time.Time) {
 	ctx := context.WithValue(c.Request.Context(), globalmodel.TokenKey, userInfo)
 	ctx = context.WithValue(ctx, globalmodel.UserAgentKey, c.GetHeader("User-Agent"))
 	ctx = context.WithValue(ctx, globalmodel.ClientIPKey, c.ClientIP())
+	if tokenJTI != "" {
+		ctx = context.WithValue(ctx, globalmodel.AccessTokenJTIKey, tokenJTI)
+	}
+	if !expiresAt.IsZero() {
+		ctx = context.WithValue(ctx, globalmodel.AccessTokenExpiresAtKey, expiresAt)
+	}
 	ctx = coreutils.ContextWithLogger(ctx)
 
 	c.Request = c.Request.WithContext(ctx)
 
-	// Set Gin context values for easy access in handlers
 	c.Set("userInfo", userInfo)
 	c.Set("userAgent", c.GetHeader("User-Agent"))
 	c.Set("clientIP", c.ClientIP())
+	if tokenJTI != "" {
+		c.Set("accessTokenJTI", tokenJTI)
+	}
 }
 
-// validateAccessToken validates the JWT token and extracts user information
-func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
-	claims := &jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		// Get secret from global configuration
+func validateAccessToken(ctx context.Context, tokenString string, blocklist cacheport.TokenBlocklistPort) (usermodel.UserInfos, string, time.Time, error) {
+	claims := jwt.MapClaims{}
+	parsed, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
 		return []byte(globalmodel.GetJWTSecret()), nil
 	})
 
-	if err != nil || !token.Valid {
-		return usermodel.UserInfos{}, err
+	if err != nil || parsed == nil || !parsed.Valid {
+		return usermodel.UserInfos{}, "", time.Time{}, coreutils.AuthenticationError("Invalid access token")
 	}
 
-	// Extract user information from new token structure
-	userInfoClaim, ok := (*claims)[string(globalmodel.TokenKey)]
+	typ, _ := claims["typ"].(string)
+	if typ != "access" {
+		return usermodel.UserInfos{}, "", time.Time{}, coreutils.AuthenticationError("Invalid access token type")
+	}
+
+	jti, _ := claims["jti"].(string)
+	if jti == "" {
+		return usermodel.UserInfos{}, "", time.Time{}, coreutils.AuthenticationError("Invalid access token")
+	}
+
+	expFloat, ok := claims["exp"].(float64)
 	if !ok {
-		return usermodel.UserInfos{}, jwt.NewValidationError("missing user info claim", jwt.ValidationErrorClaimsInvalid)
+		return usermodel.UserInfos{}, "", time.Time{}, coreutils.AuthenticationError("Invalid access token expiry")
+	}
+	expiresAt := time.Unix(int64(expFloat), 0)
+
+	if blocklist != nil {
+		blocked, blkErr := blocklist.Exists(ctx, jti)
+		if blkErr != nil {
+			return usermodel.UserInfos{}, "", time.Time{}, coreutils.InternalError("Failed to validate token")
+		}
+		if blocked {
+			return usermodel.UserInfos{}, "", time.Time{}, coreutils.AuthenticationError("Access token revoked")
+		}
 	}
 
-	// Parse UserInfos from claim
+	userInfoClaim, ok := claims[string(globalmodel.TokenKey)]
+	if !ok {
+		return usermodel.UserInfos{}, "", time.Time{}, jwt.NewValidationError("missing user info claim", jwt.ValidationErrorClaimsInvalid)
+	}
+
 	userInfoMap, ok := userInfoClaim.(map[string]interface{})
 	if !ok {
-		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user info format", jwt.ValidationErrorClaimsInvalid)
+		return usermodel.UserInfos{}, "", time.Time{}, jwt.NewValidationError("invalid user info format", jwt.ValidationErrorClaimsInvalid)
 	}
 
 	userID, ok := userInfoMap["ID"].(float64)
 	if !ok {
-		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user ID claim", jwt.ValidationErrorClaimsInvalid)
+		return usermodel.UserInfos{}, "", time.Time{}, jwt.NewValidationError("invalid user ID claim", jwt.ValidationErrorClaimsInvalid)
 	}
 
 	userRoleID, ok := userInfoMap["UserRoleID"].(float64)
 	if !ok {
-		return usermodel.UserInfos{}, jwt.NewValidationError("invalid user role ID claim", jwt.ValidationErrorClaimsInvalid)
+		return usermodel.UserInfos{}, "", time.Time{}, jwt.NewValidationError("invalid user role ID claim", jwt.ValidationErrorClaimsInvalid)
 	}
 
 	var roleSlug permissionmodel.RoleSlug
@@ -163,13 +186,9 @@ func validateAccessToken(tokenString string) (usermodel.UserInfos, error) {
 		ID:         int64(userID),
 		UserRoleID: int64(userRoleID),
 		RoleSlug:   roleSlug,
-	}, nil
+	}, jti, expiresAt, nil
 }
 
-// Nota: Não logamos detalhes de tokens inválidos aqui. Métricas e o middleware de logging de request
-// dão visibilidade adequada sem vazar metadados do JWT.
-
-// GetUserInfoFromContext extracts user info from Gin context
 func GetUserInfoFromContext(c *gin.Context) (usermodel.UserInfos, bool) {
 	userInfo, exists := c.Get("userInfo")
 	if !exists {

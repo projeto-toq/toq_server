@@ -16,6 +16,7 @@ import (
 	visithandlers "github.com/projeto-toq/toq_server/internal/adapter/left/http/handlers/visit_handlers"
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
 	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
@@ -68,9 +69,10 @@ type ExternalServiceAdapters struct {
 
 // StorageAdapters agrupa adapters de armazenamento
 type StorageAdapters struct {
-	Database  *mysqladapter.Database
-	Cache     cache.CacheInterface
-	CloseFunc func() error // Função para cleanup de recursos
+	Database       *mysqladapter.Database
+	Cache          cache.CacheInterface
+	TokenBlocklist cacheport.TokenBlocklistPort
+	CloseFunc      func() error // Função para cleanup de recursos
 }
 
 // RepositoryAdapters agrupa todos os repositórios MySQL

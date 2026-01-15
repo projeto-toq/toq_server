@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -53,6 +54,8 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken, d
 	trimmedDeviceToken := strings.TrimSpace(deviceToken)
 	trimmedRefreshToken := strings.TrimSpace(refreshToken)
 	trimmedDeviceID := strings.TrimSpace(deviceID)
+	tokenJTI, _ := ctx.Value(globalmodel.AccessTokenJTIKey).(string)
+	accessExp, _ := ctx.Value(globalmodel.AccessTokenExpiresAtKey).(time.Time)
 
 	if trimmedDeviceID != "" {
 		if _, parseErr := uuid.Parse(trimmedDeviceID); parseErr != nil {
@@ -81,6 +84,19 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken, d
 	err = us.signOut(ctx, tx, userID, trimmedDeviceToken, trimmedRefreshToken, trimmedDeviceID)
 	if err != nil {
 		return
+	}
+
+	if tokenJTI != "" && !accessExp.IsZero() && us.tokenBlocklist != nil {
+		now := time.Now().UTC()
+		ttlSeconds := int64(accessExp.Sub(now).Seconds())
+		if ttlSeconds < 0 {
+			ttlSeconds = 0
+		}
+		if errBlk := us.tokenBlocklist.Add(ctx, tokenJTI, ttlSeconds); errBlk != nil {
+			utils.SetSpanError(ctx, errBlk)
+			logger.Warn("auth.signout.blocklist_failed", "error", errBlk)
+			return utils.InternalError("Failed to revoke access token")
+		}
 	}
 
 	// Commit the transaction

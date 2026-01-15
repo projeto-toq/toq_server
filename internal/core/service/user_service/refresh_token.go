@@ -71,6 +71,12 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
+	deviceID, _ := ctx.Value(globalmodel.DeviceIDKey).(string)
+	if deviceID == "" {
+		logger.Warn("auth.refresh.device_id_missing")
+		return tokens, utils.BadRequest("X-Device-Id header is required")
+	}
+
 	userID, err := validateRefreshToken(refresh)
 	if err != nil {
 		// Erro 401 de token inválido
@@ -86,6 +92,13 @@ func (us *userService) refreshToken(ctx context.Context, tx *sql.Tx, refresh str
 		logger.Warn("auth.refresh.invalid_session", "error", sessErr, "refresh_hash_prefix", hash[:8])
 		// Captura origem ao criar o erro de domínio
 		return tokens, utils.WrapDomainErrorWithSource(utils.ErrRefreshSessionNotFound)
+	}
+
+	if sessDeviceID := session.GetDeviceID(); sessDeviceID != "" && sessDeviceID != deviceID {
+		_ = us.sessionRepo.RevokeSessionsByUserID(ctx, tx, session.GetUserID())
+		us.globalService.GetEventBus().Publish(events.SessionEvent{Type: events.SessionsRevoked, UserID: session.GetUserID(), DeviceID: session.GetDeviceID()})
+		logger.Warn("auth.refresh.device_mismatch", "user_id", session.GetUserID(), "session_device_id", sessDeviceID, "header_device_id", deviceID)
+		return tokens, utils.WrapDomainErrorWithSource(utils.ErrInvalidRefreshToken)
 	}
 
 	// Optional: detect reuse (rotated_at set means token already used)

@@ -18,6 +18,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/factory"
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
 	httpport "github.com/projeto-toq/toq_server/internal/core/port/left/http"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	swaggerFiles "github.com/swaggo/files"
@@ -32,6 +33,7 @@ func SetupRoutes(
 	permissionService permissionservice.PermissionServiceInterface,
 	metricsAdapter *factory.MetricsAdapter,
 	versionProvider httpport.APIVersionProvider,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	// Configurar middlewares globais na ordem correta
 	setupGlobalMiddlewares(router, metricsAdapter)
@@ -82,25 +84,25 @@ func SetupRoutes(
 	router.POST(base+"/listings/media/callback", mediaProcessingHandler.HandleProcessingCallback)
 
 	// Register user routes with dependencies
-	RegisterUserRoutes(v1, authHandler, userHandler, activityTracker, permissionService)
+	RegisterUserRoutes(v1, authHandler, userHandler, activityTracker, permissionService, tokenBlocklist)
 
 	// Register listing routes with dependencies
-	RegisterListingRoutes(v1, listingHandler, mediaProcessingHandler, activityTracker, permissionService)
+	RegisterListingRoutes(v1, listingHandler, mediaProcessingHandler, activityTracker, permissionService, tokenBlocklist)
 
 	// Register proposal routes (authenticated)
-	RegisterProposalRoutes(v1, proposalHandler, activityTracker, permissionService)
+	RegisterProposalRoutes(v1, proposalHandler, activityTracker, permissionService, tokenBlocklist)
 
 	// Register admin routes with dependencies
-	RegisterAdminRoutes(v1, adminHandler, holidayHandler, activityTracker, permissionService)
+	RegisterAdminRoutes(v1, adminHandler, holidayHandler, activityTracker, permissionService, tokenBlocklist)
 
 	// Register schedule routes (authenticated)
-	RegisterScheduleRoutes(v1, scheduleHandler, activityTracker, permissionService)
+	RegisterScheduleRoutes(v1, scheduleHandler, activityTracker, permissionService, tokenBlocklist)
 
 	// Register visit routes (authenticated)
-	RegisterVisitRoutes(v1, visitHandler, activityTracker, permissionService)
+	RegisterVisitRoutes(v1, visitHandler, activityTracker, permissionService, tokenBlocklist)
 
 	// Register photographer routes (authenticated)
-	RegisterPhotographerRoutes(v1, photoSessionHandler, activityTracker, permissionService)
+	RegisterPhotographerRoutes(v1, photoSessionHandler, activityTracker, permissionService, tokenBlocklist)
 }
 
 // setupGlobalMiddlewares configura middlewares aplicados a todas as rotas
@@ -144,6 +146,7 @@ func RegisterUserRoutes(
 	userHandler *userhandlers.UserHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	// Authentication routes (public - without auth middleware)
 	auth := router.Group("/auth")
@@ -176,7 +179,7 @@ func RegisterUserRoutes(
 
 	// User routes (authenticated)
 	user := router.Group("/user")
-	user.Use(middlewares.AuthMiddleware(activityTracker))
+	user.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	user.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetUserRoles
@@ -216,7 +219,7 @@ func RegisterUserRoutes(
 	// Agency routes (Agency only)
 	agency := router.Group("/agency")
 	// Apply security middlewares to authenticated routes
-	agency.Use(middlewares.AuthMiddleware(activityTracker))
+	agency.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	agency.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		agency.POST("/invite-realtor", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // InviteRealtor
@@ -228,7 +231,7 @@ func RegisterUserRoutes(
 	// Realtor routes (Realtor only)
 	realtor := router.Group("/realtor")
 	// Apply security middlewares to authenticated routes
-	realtor.Use(middlewares.AuthMiddleware(activityTracker))
+	realtor.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	realtor.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		realtor.POST("/creci/verify", userHandler.VerifyCreciDocuments)                                                 // VerifyCreciDocuments
@@ -246,9 +249,10 @@ func RegisterScheduleRoutes(
 	scheduleHandler *schedulehandlers.ScheduleHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	schedules := router.Group("/schedules")
-	schedules.Use(middlewares.AuthMiddleware(activityTracker))
+	schedules.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	schedules.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		schedules.GET("/owner/summary", scheduleHandler.GetOwnerSummary)
@@ -268,9 +272,10 @@ func RegisterVisitRoutes(
 	visitHandler *visithandlers.VisitHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	visits := router.Group("/visits")
-	visits.Use(middlewares.AuthMiddleware(activityTracker))
+	visits.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	visits.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		visits.POST("", visitHandler.CreateVisit)
@@ -288,11 +293,12 @@ func RegisterListingRoutes(
 	mediaProcessingHandler *mediaprocessinghandlers.MediaProcessingHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	// Main listing routes (all require authentication)
 	listings := router.Group("/listings")
 	// Apply security middlewares to authenticated routes
-	listings.Use(middlewares.AuthMiddleware(activityTracker))
+	listings.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	listings.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		// Basic CRUD
@@ -363,7 +369,7 @@ func RegisterListingRoutes(
 	// Offer management (all require authentication)
 	offers := router.Group("/offers")
 	// Apply security middlewares to authenticated routes
-	offers.Use(middlewares.AuthMiddleware(activityTracker))
+	offers.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	offers.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		offers.GET("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })              // GetAllOffers
@@ -377,7 +383,7 @@ func RegisterListingRoutes(
 	// Evaluation routes (all require authentication)
 	realtors := router.Group("/realtors")
 	// Apply security middlewares to authenticated routes
-	realtors.Use(middlewares.AuthMiddleware(activityTracker))
+	realtors.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	realtors.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		realtors.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateRealtor
@@ -385,7 +391,7 @@ func RegisterListingRoutes(
 
 	owners := router.Group("/owners")
 	// Apply security middlewares to authenticated routes
-	owners.Use(middlewares.AuthMiddleware(activityTracker))
+	owners.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	owners.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		owners.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateOwner
@@ -398,9 +404,10 @@ func RegisterProposalRoutes(
 	proposalHandler *proposalhandlers.ProposalHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	proposals := router.Group("/proposals")
-	proposals.Use(middlewares.AuthMiddleware(activityTracker))
+	proposals.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	proposals.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		proposals.POST("", proposalHandler.CreateProposal)
@@ -420,9 +427,10 @@ func RegisterPhotographerRoutes(
 	photoSessionHandler *photosessionhandlers.PhotoSessionHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	photographer := router.Group("/photographer")
-	photographer.Use(middlewares.AuthMiddleware(activityTracker))
+	photographer.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	photographer.Use(middlewares.PermissionMiddleware(permissionService))
 	{
 		agenda := photographer.Group("/agenda")
@@ -469,13 +477,21 @@ func RegisterAdminRoutes(
 	holidayHandler *holidayhandlers.HolidayHandler,
 	activityTracker *goroutines.ActivityTracker,
 	permissionService permissionservice.PermissionServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) {
 	admin := router.Group("/admin")
 	// Apply security middlewares: Auth and Admin permission check
-	admin.Use(middlewares.AuthMiddleware(activityTracker))
+	admin.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	admin.Use(middlewares.PermissionMiddleware(permissionService))
 
 	{
+		blocklistGroup := admin.Group("/blocklist")
+		{
+			blocklistGroup.GET("", adminHandler.ListBlocklist)
+			blocklistGroup.POST("", adminHandler.AddBlocklist)
+			blocklistGroup.DELETE("", adminHandler.DeleteBlocklist)
+		}
+
 		usersGroup := admin.Group("/users")
 		{
 			usersGroup.GET("", adminHandler.GetAdminUsers)

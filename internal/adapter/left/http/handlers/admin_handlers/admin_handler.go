@@ -2,6 +2,7 @@ package adminhandlers
 
 import (
 	"github.com/gin-gonic/gin"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservice "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
@@ -16,6 +17,7 @@ type AdminHandler struct {
 	listingService          listingservices.ListingServiceInterface
 	permissionService       permissionservice.PermissionServiceInterface
 	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface
+	tokenBlocklist          cacheport.TokenBlocklistPort
 	router                  *gin.Engine // Gin engine reference for route introspection
 }
 
@@ -40,6 +42,7 @@ func NewAdminHandlerAdapter(
 	listingService listingservices.ListingServiceInterface,
 	permissionService permissionservice.PermissionServiceInterface,
 	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 	router *gin.Engine,
 ) *AdminHandler {
 	return &AdminHandler{
@@ -47,6 +50,7 @@ func NewAdminHandlerAdapter(
 		listingService:          listingService,
 		permissionService:       permissionService,
 		propertyCoverageService: propertyCoverageService,
+		tokenBlocklist:          tokenBlocklist,
 		router:                  router, // Store router reference for route introspection
 	}
 }

@@ -50,6 +50,42 @@ definitions:
       message:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistAddRequest:
+    properties:
+      jti:
+        type: string
+      ttl:
+        description: seconds
+        minimum: 1
+        type: integer
+    required:
+    - jti
+    - ttl
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistDeleteRequest:
+    properties:
+      jti:
+        type: string
+    required:
+    - jti
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistItemResponse:
+    properties:
+      expiresAt:
+        description: Unix seconds
+        type: integer
+      jti:
+        type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistItemResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PaginationResponse'
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminCreateComplexRequest:
     properties:
       city:
@@ -3895,6 +3931,131 @@ info:
   title: TOQ Server API
   version: "2.0"
 paths:
+  /admin/blocklist:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Blocklist delete payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Remove an access-token JTI from the blocklist
+      tags:
+      - Admin Blocklist
+    get:
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 100
+        description: Page size (max 500)
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List access-token blocklist entries
+      tags:
+      - Admin Blocklist
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Blocklist add payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.AdminBlocklistAddRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Add an access-token JTI to the blocklist
+      tags:
+      - Admin Blocklist
   /admin/complexes:
     delete:
       consumes:

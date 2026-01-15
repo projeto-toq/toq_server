@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	mediaprocessingcallbackport "github.com/projeto-toq/toq_server/internal/core/port/right/functions/mediaprocessingcallback"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
@@ -64,6 +65,7 @@ type AdapterFactory interface {
 		metricsAdapter *MetricsAdapter,
 		callbackValidator mediaprocessingcallbackport.CallbackPortInterface,
 		hmacValidator *hmacauth.Validator,
+		tokenBlocklist cacheport.TokenBlocklistPort,
 	) HTTPHandlers
 }
 

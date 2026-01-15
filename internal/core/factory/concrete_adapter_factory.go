@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/projeto-toq/toq_server/internal/core/cache"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
 
 	// HTTP handlers
@@ -42,6 +43,7 @@ import (
 	awsstepfunctionsadapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws/step_functions"
 	s3adapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws_s3"
 	sqsmediaprocessingadapter "github.com/projeto-toq/toq_server/internal/adapter/right/aws_sqs/media_processing"
+	tokenblocklist "github.com/projeto-toq/toq_server/internal/adapter/right/redis/token_blocklist"
 	stepfunctionscallbackadapter "github.com/projeto-toq/toq_server/internal/adapter/right/step_functions"
 
 	// Storage adapters
@@ -236,6 +238,12 @@ func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env 
 		return StorageAdapters{}, fmt.Errorf("failed to create Redis cache: %w", err)
 	}
 
+	// Token blocklist adapter backed by the same Redis client
+	var tokenBlocklist cacheport.TokenBlocklistPort
+	if redisCache != nil && redisCache.GetRedisClient() != nil {
+		tokenBlocklist = tokenblocklist.NewAdapter(redisCache.GetRedisClient())
+	}
+
 	// Função de cleanup para fechar recursos
 	closeFunc := func() error {
 		if redisCache != nil {
@@ -247,9 +255,10 @@ func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env 
 	slog.Info("Successfully created all storage adapters")
 
 	return StorageAdapters{
-		Database:  database,
-		Cache:     redisCache,
-		CloseFunc: closeFunc,
+		Database:       database,
+		Cache:          redisCache,
+		TokenBlocklist: tokenBlocklist,
+		CloseFunc:      closeFunc,
 	}, nil
 }
 
@@ -341,6 +350,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 	metricsAdapter *MetricsAdapter,
 	callbackValidator mediaprocessingcallbackport.CallbackPortInterface,
 	hmacValidator *hmacauth.Validator,
+	tokenBlocklist cacheport.TokenBlocklistPort,
 ) HTTPHandlers {
 	slog.Info("Creating HTTP handlers")
 
@@ -419,6 +429,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		listingService,
 		permissionService,
 		propertyCoverageService,
+		tokenBlocklist,
 		router,
 	)
 

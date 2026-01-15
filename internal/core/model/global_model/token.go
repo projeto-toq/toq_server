@@ -20,6 +20,8 @@ const (
 	UserAgentKey               contextKey = "userAgent"
 	ClientIPKey                contextKey = "clientIP"
 	DeviceIDKey                contextKey = "deviceID"
+	AccessTokenJTIKey          contextKey = "accessTokenJTI"
+	AccessTokenExpiresAtKey    contextKey = "accessTokenExpiresAt"
 	SessionAbsoluteExpiryKey   contextKey = "sessionAbsoluteExpiry"
 	SessionRotationCounterKey  contextKey = "sessionRotationCounter"
 	MaxSessionRotationsDefault            = 10

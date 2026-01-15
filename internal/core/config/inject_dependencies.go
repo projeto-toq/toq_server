@@ -212,6 +212,7 @@ func (c *config) InitUserHandler() {
 		c.cnpj,
 		c.cloudStorage,
 		c.permissionService,
+		c.tokenBlocklist,
 		userCfg,
 	)
 	// HTTP handler initialization is done during HTTP server setup

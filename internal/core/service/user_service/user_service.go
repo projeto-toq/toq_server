@@ -8,6 +8,7 @@ import (
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
 
@@ -29,6 +30,7 @@ type userService struct {
 	photoSessionService photosessionservices.PhotoSessionServiceInterface
 	cpf                 cpfport.CPFPortInterface
 	cnpj                cnpjport.CNPJPortInterface
+	tokenBlocklist      cacheport.TokenBlocklistPort
 	// creci               creciport.CreciPortInterface
 	cloudStorageService storageport.CloudStoragePortInterface
 	permissionService   permissionservices.PermissionServiceInterface // NOVO
@@ -47,6 +49,7 @@ func NewUserService(
 	// creci creciport.CreciPortInterface, // Pode ser nil temporariamente
 	cloudStorage storageport.CloudStoragePortInterface,
 	permissionService permissionservices.PermissionServiceInterface, // NOVO
+	tokenBlocklist cacheport.TokenBlocklistPort,
 	cfg Config,
 
 ) UserServiceInterface {
@@ -59,6 +62,7 @@ func NewUserService(
 		photoSessionService: photoSessionService,
 		cpf:                 cpf,
 		cnpj:                cnpj,
+		tokenBlocklist:      tokenBlocklist,
 		// creci:               creci, // Pode ser nil
 		cloudStorageService: cloudStorage,
 		permissionService:   permissionService, // NOVO

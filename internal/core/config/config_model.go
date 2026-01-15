@@ -20,6 +20,7 @@ import (
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	httpport "github.com/projeto-toq/toq_server/internal/core/port/left/http"
+	cacheport "github.com/projeto-toq/toq_server/internal/core/port/right/cache"
 	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
 	cnpjport "github.com/projeto-toq/toq_server/internal/core/port/right/cnpj"
 	cpfport "github.com/projeto-toq/toq_server/internal/core/port/right/cpf"
@@ -55,6 +56,7 @@ type config struct {
 	httpHandlers            factory.HTTPHandlers
 	context                 context.Context
 	cache                   cache.CacheInterface
+	tokenBlocklist          cacheport.TokenBlocklistPort
 	activityTracker         *goroutines.ActivityTracker
 	tempBlockCleaner        *goroutines.TempBlockCleanerWorker
 	sessionService          sessionservice.Service
@@ -173,6 +175,7 @@ func (c *config) GetHTTPHandlers() *factory.HTTPHandlers {
 func (c *config) assignStorageAdapters(storage factory.StorageAdapters) {
 	c.database = storage.Database
 	c.cache = storage.Cache
+	c.tokenBlocklist = storage.TokenBlocklist
 	c.db = storage.Database.DB
 }
 
@@ -565,6 +568,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.metricsAdapter,
 		callbackValidator,
 		c.hmacValidator,
+		c.tokenBlocklist,
 	)
 
 	// Configurar rotas
@@ -575,6 +579,7 @@ func (c *config) SetupHTTPHandlersAndRoutes() {
 		c.permissionService,
 		c.metricsAdapter,
 		c, // Passa o config como APIVersionProvider
+		c.tokenBlocklist,
 	)
 }
 
