@@ -24,7 +24,7 @@ id;name;action;description;is_active
 23;"HTTP Get all listing options";"POST:/api/v2/listings/options";"Permite obter opções de listing baseadas em endereço";1
 24;"HTTP Start new Listing";"POST:/api/v2/listings";"Permite iniciar o processo de criação de um novo listing";1
 25;"HTTP Update a Listing";"PUT:/api/v2/listings";"Permite atualizar um listing específico em draft";1
-26;"HTTP Get Listing Catalog";"GET:/api/v2/listings/catalog";"Permite consultar valores de catálogo de listings";1
+26;"HTTP Get Listing Catalog";"POST:/api/v2/listings/catalog";"Permite consultar valores de catálogo de listings";1
 27;"HTTP Admin Get Listing Catalog";"GET:/api/v2/admin/listing/catalog";"Permite listar valores de catálogo de listings no painel admin";1
 28;"HTTP Admin Create Listing Catalog";"POST:/api/v2/admin/listing/catalog";"Permite criar novos valores no catálogo de listings";1
 29;"HTTP Admin Update Listing Catalog";"PUT:/api/v2/admin/listing/catalog";"Permite atualizar valores do catálogo de listings";1

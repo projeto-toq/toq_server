@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -36,7 +37,7 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 			warehouse_sector = ?, warehouse_has_primary_cabin = ?, warehouse_cabin_kva = ?,
 			warehouse_ground_floor = ?, warehouse_floor_resistance = ?, warehouse_zoning = ?,
 			warehouse_has_office_area = ?, warehouse_office_area = ?, store_has_mezzanine = ?,
-			store_mezzanine_area = ?
+			store_mezzanine_area = ?, price_updated_at = ?
 		WHERE id = ? AND deleted = 0
 	`
 
@@ -49,6 +50,7 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 	var warehouseManufacturingArea, warehouseSector, warehouseHasPrimaryCabin, warehouseCabinKva interface{}
 	var warehouseGroundFloor, warehouseFloorResistance, warehouseZoning interface{}
 	var warehouseHasOfficeArea, warehouseOfficeArea, storeHasMezzanine, storeMezzanineArea interface{}
+	var priceUpdatedAt interface{}
 
 	// Required string fields - always set
 	street := version.Street()
@@ -227,6 +229,12 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 		storeMezzanineArea = version.StoreMezzanineArea()
 	}
 
+	if listingWithPrice, ok := version.(listingmodel.ListingInterface); ok {
+		priceUpdatedAt = listingWithPrice.PriceUpdatedAt()
+	} else {
+		priceUpdatedAt = time.Now().UTC()
+	}
+
 	_, execErr := la.ExecContext(ctx, tx, "update", query,
 		uint8(version.Status()), title, version.ZipCode(), street, version.Number(), complement, complexValue,
 		neighborhood, city, state, uint16(version.ListingType()), owner, landSize,
@@ -241,7 +249,7 @@ func (la *ListingAdapter) UpdateListingVersion(ctx context.Context, tx *sql.Tx, 
 		warehouseSector, warehouseHasPrimaryCabin, warehouseCabinKva,
 		warehouseGroundFloor, warehouseFloorResistance, warehouseZoning,
 		warehouseHasOfficeArea, warehouseOfficeArea, storeHasMezzanine,
-		storeMezzanineArea,
+		storeMezzanineArea, priceUpdatedAt,
 		version.ID(),
 	)
 

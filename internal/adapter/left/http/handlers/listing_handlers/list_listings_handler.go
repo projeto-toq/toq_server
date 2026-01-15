@@ -54,8 +54,8 @@ import (
 //	@Param        maxLandSize         query   number  false  "Maximum land size in square meters" Extensions(x-example=500.75)
 //	@Param        minSuites           query   int     false  "Minimum suite count (from feature 'Suites')" Extensions(x-example=2)
 //	@Param        maxSuites           query   int     false  "Maximum suite count (from feature 'Suites')" Extensions(x-example=4)
-//	@Param        propertyTypes       query   []int   false  "Filter by property types (bitmask values)" Extensions(x-example=[1,2])
-//	@Param        transactionTypes    query   []int   false  "Filter by transaction types (catalog numeric values)" Extensions(x-example=[1,2])
+//	@Param        propertyTypes       query   []string   false  "Filter by property types (numeric codes or slugs: apartment, house, warehouse, land, building, store, floor, suite, offplanhouse)" Extensions(x-example=["apartment","house"])
+//	@Param        transactionTypes    query   []string   false  "Filter by transaction types (numeric codes or slugs: sale, rent, both)" Extensions(x-example=["rent"])
 //	@Param        propertyUse         query   string  false  "Filter by property use" Enums(RESIDENTIAL, COMMERCIAL) Extensions(x-example="RESIDENTIAL")
 //	@Param        acceptsExchange     query   bool    false  "Filter listings that accept exchange" Extensions(x-example=true)
 //	@Param        acceptsFinancing    query   bool    false  "Filter listings that accept financing" Extensions(x-example=true)
@@ -176,13 +176,13 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 		return
 	}
 
-	propertyTypes, err := parsePropertyTypes(req.PropertyTypes)
+	propertyTypes, err := parsePropertyTypes(req.PropertyTypes, req.PropertyTypesRaw)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("propertyTypes", err.Error()))
 		return
 	}
 
-	transactionTypes, err := parseTransactionTypes(req.TransactionTypes)
+	transactionTypes, err := parseTransactionTypes(req.TransactionTypes, req.TransactionTypesRaw)
 	if err != nil {
 		httperrors.SendHTTPErrorObj(c, coreutils.ValidationError("transactionTypes", err.Error()))
 		return
@@ -390,32 +390,119 @@ func parseOptionalNonNegativeInt(raw string) (*int, error) {
 	return &value, nil
 }
 
-func parsePropertyTypes(raw []uint16) ([]globalmodel.PropertyType, error) {
-	if len(raw) == 0 {
+func parsePropertyTypes(slices ...[]string) ([]globalmodel.PropertyType, error) {
+	values := flattenStrings(slices...)
+	if len(values) == 0 {
 		return nil, nil
 	}
-	result := make([]globalmodel.PropertyType, 0, len(raw))
-	for _, v := range raw {
-		if v == 0 {
-			return nil, fmt.Errorf("property type must be greater than zero")
+
+	mapping := map[string]globalmodel.PropertyType{
+		"apartment":         globalmodel.Apartment,
+		"apartamento":       globalmodel.Apartment,
+		"apto":              globalmodel.Apartment,
+		"house":             globalmodel.House,
+		"casa":              globalmodel.House,
+		"offplanhouse":      globalmodel.OffPlanHouse,
+		"casa_na_planta":    globalmodel.OffPlanHouse,
+		"land":              globalmodel.ResidencialLand,
+		"residentialland":   globalmodel.ResidencialLand,
+		"terreno":           globalmodel.ResidencialLand,
+		"commercialland":    globalmodel.CommercialLand,
+		"terreno_comercial": globalmodel.CommercialLand,
+		"warehouse":         globalmodel.Warehouse,
+		"galpao":            globalmodel.Warehouse,
+		"building":          globalmodel.Building,
+		"predio":            globalmodel.Building,
+		"store":             globalmodel.CommercialStore,
+		"loja":              globalmodel.CommercialStore,
+		"floor":             globalmodel.CommercialFloor,
+		"sala":              globalmodel.CommercialFloor,
+		"suite":             globalmodel.Suite,
+		"conjunto":          globalmodel.Suite,
+	}
+
+	result := make([]globalmodel.PropertyType, 0, len(values))
+	for _, raw := range values {
+		trimmed := strings.TrimSpace(strings.ToLower(raw))
+		if trimmed == "" {
+			continue
 		}
-		result = append(result, globalmodel.PropertyType(v))
+
+		if mapped, ok := mapping[trimmed]; ok {
+			result = append(result, mapped)
+			continue
+		}
+
+		if num, err := strconv.ParseUint(trimmed, 10, 16); err == nil {
+			if num == 0 {
+				return nil, fmt.Errorf("property type must be greater than zero")
+			}
+			result = append(result, globalmodel.PropertyType(num))
+			continue
+		}
+
+		return nil, fmt.Errorf("invalid property type '%s' (use numeric code or known slug)", raw)
+	}
+
+	if len(result) == 0 {
+		return nil, nil
 	}
 	return result, nil
 }
 
-func parseTransactionTypes(raw []uint8) ([]listingmodel.TransactionType, error) {
-	if len(raw) == 0 {
+func parseTransactionTypes(slices ...[]string) ([]listingmodel.TransactionType, error) {
+	values := flattenStrings(slices...)
+	if len(values) == 0 {
 		return nil, nil
 	}
-	result := make([]listingmodel.TransactionType, 0, len(raw))
-	for _, v := range raw {
-		if v == 0 {
-			return nil, fmt.Errorf("transaction type must be greater than zero")
+
+	mapping := map[string]listingmodel.TransactionType{
+		"sale":    listingmodel.TransactionType(1),
+		"venda":   listingmodel.TransactionType(1),
+		"rent":    listingmodel.TransactionType(2),
+		"aluguel": listingmodel.TransactionType(2),
+		"both":    listingmodel.TransactionType(3),
+		"ambos":   listingmodel.TransactionType(3),
+	}
+
+	result := make([]listingmodel.TransactionType, 0, len(values))
+	for _, raw := range values {
+		trimmed := strings.TrimSpace(strings.ToLower(raw))
+		if trimmed == "" {
+			continue
 		}
-		result = append(result, listingmodel.TransactionType(v))
+
+		if mapped, ok := mapping[trimmed]; ok {
+			result = append(result, mapped)
+			continue
+		}
+
+		if num, err := strconv.ParseUint(trimmed, 10, 8); err == nil {
+			if num == 0 {
+				return nil, fmt.Errorf("transaction type must be greater than zero")
+			}
+			result = append(result, listingmodel.TransactionType(num))
+			continue
+		}
+
+		return nil, fmt.Errorf("invalid transaction type '%s' (use numeric code or slugs sale|rent|both)", raw)
+	}
+
+	if len(result) == 0 {
+		return nil, nil
 	}
 	return result, nil
+}
+
+func flattenStrings(slices ...[]string) []string {
+	var out []string
+	for _, s := range slices {
+		if len(s) == 0 {
+			continue
+		}
+		out = append(out, s...)
+	}
+	return out
 }
 
 func parsePropertyUse(raw string) (listingrepository.PropertyUseFilter, error) {

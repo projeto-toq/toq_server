@@ -1,20 +1,4 @@
-# Filtros de Busca de Imóveis e Correções de API
-
-## Correções Necessárias
-
-## Endpoint `/listings/catalog`
-
-**Problema:** O endpoint está fora do padrão REST. Atualmente usa o método `GET` com dados sendo passados via body da requisição.
-
-- **Mobile:** Funciona sem problemas
-- **Web:** Não aceita body em requisições GET (comportamento padrão de navegadores)
-
-**Solução Recomendada:** O endpoint deve ser alterado para usar **POST** ao invés de GET, permitindo o envio de filtros no body da requisição.
----
-
-## Filtros de Busca de Imóveis
-
-O endpoint `GET /listings` deve incluir, além dos filtros já existentes, os seguintes filtros adicionais:
+Filtros de Busca de Imóveis via endpoint `GET /listings` teve a inclusão destes novos filtros:
 
 ### Filtros Básicos
 
@@ -33,5 +17,11 @@ O endpoint `GET /listings` deve incluir, além dos filtros já existentes, os se
 | **Apenas imóveis novos** | Filtra somente imóveis recém-cadastrados |
 | **Apenas com alteração de preço** | Filtra imóveis que tiveram mudança de preço recente |
 | **Apenas imóveis vendidos** | Filtra imóveis já vendidos |
+
+
+entretano os filtros estão com funcionamento incorreto:
+- TransactionType: pesquisei apenas ALUGUEL e retornou imóvel que está apenas para VENDA;
+- onlyPriceChanged: pesquisei e retornou a lista mesmo sem o valor ter sido alterado;
+- Tipo de imóvel: pesquisei pelo tipo de imóvel apartamento e foram retornados todos os que estavam publicados, inclusive do tipo Casa;
 
 Busque todas as informações que precisa consultando o código e as configurações reais, não confiando na documentação, para ter certeza da situação, e só então proponha o plano de correção.

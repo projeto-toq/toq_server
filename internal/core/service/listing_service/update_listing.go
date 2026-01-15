@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -116,6 +117,8 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	if existing.Status() != listingmodel.StatusDraft {
 		return utils.ConflictError("listing cannot be updated unless in draft status")
 	}
+
+	priceSnapshot := capturePriceSnapshot(existing)
 
 	if input.Complex.IsPresent() {
 		if input.Complex.IsNull() {
@@ -656,6 +659,13 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		}
 	}
 
+	if detectPriceChange(priceSnapshot, existing) {
+		existing.SetPriceUpdatedAt(time.Now().UTC())
+	} else if priceSnapshot.hasPriceUpdatedAt {
+		// Preserve previous value to avoid overwriting with zero
+		existing.SetPriceUpdatedAt(priceSnapshot.priceUpdatedAt)
+	}
+
 	// Update satellite tables
 	if input.Features.IsPresent() {
 		err = ls.listingRepository.UpdateFeatures(ctx, tx, existing.ID(), existing.Features())
@@ -716,4 +726,46 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 	}
 
 	return
+}
+
+type priceState struct {
+	hasSellNet        bool
+	sellNet           float64
+	hasRentNet        bool
+	rentNet           float64
+	hasPriceUpdatedAt bool
+	priceUpdatedAt    time.Time
+}
+
+func capturePriceSnapshot(listing listingmodel.ListingInterface) priceState {
+	return priceState{
+		hasSellNet:        listing.HasSellNet(),
+		sellNet:           listing.SellNet(),
+		hasRentNet:        listing.HasRentNet(),
+		rentNet:           listing.RentNet(),
+		hasPriceUpdatedAt: listing.HasPriceUpdatedAt(),
+		priceUpdatedAt:    listing.PriceUpdatedAt(),
+	}
+}
+
+func detectPriceChange(original priceState, listing listingmodel.ListingInterface) bool {
+	newHasSell := listing.HasSellNet()
+	newHasRent := listing.HasRentNet()
+	newSell := listing.SellNet()
+	newRent := listing.RentNet()
+
+	if original.hasSellNet != newHasSell {
+		return true
+	}
+	if original.hasRentNet != newHasRent {
+		return true
+	}
+	if original.hasSellNet && newHasSell && original.sellNet != newSell {
+		return true
+	}
+	if original.hasRentNet && newHasRent && original.rentNet != newRent {
+		return true
+	}
+
+	return false
 }

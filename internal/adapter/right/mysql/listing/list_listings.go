@@ -163,10 +163,11 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		}
 	}
 
-	if len(filter.TransactionTypes) > 0 {
-		placeholders := makePlaceholders(len(filter.TransactionTypes))
+	effectiveTransactionTypes := normalizeTransactionTypes(filter.TransactionTypes)
+	if len(effectiveTransactionTypes) > 0 {
+		placeholders := makePlaceholders(len(effectiveTransactionTypes))
 		conditions = append(conditions, fmt.Sprintf("lv.transaction IN (%s)", placeholders))
-		for _, tt := range filter.TransactionTypes {
+		for _, tt := range effectiveTransactionTypes {
 			args = append(args, tt)
 		}
 	}
@@ -221,7 +222,11 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 	}
 
 	if filter.PriceUpdatedWithin != nil {
-		conditions = append(conditions, "lv.price_updated_at IS NOT NULL AND TIMESTAMPDIFF(HOUR, lv.price_updated_at, NOW()) <= ?")
+		conditions = append(conditions,
+			"lv.price_updated_at IS NOT NULL",
+			"lv.price_updated_at > lv.created_at",
+			"TIMESTAMPDIFF(HOUR, lv.price_updated_at, NOW()) <= ?",
+		)
 		args = append(args, *filter.PriceUpdatedWithin)
 	}
 
@@ -391,4 +396,45 @@ func boolToTinyInt(value bool) int {
 		return 1
 	}
 	return 0
+}
+
+// normalizeTransactionTypes expands sale/rent filters to include listings marked as both.
+// Rules:
+// - sale => sale + both
+// - rent => rent + both
+// - sale + rent => sale + rent + both
+// - both (alone) => both only
+func normalizeTransactionTypes(requested []listingmodel.TransactionType) []listingmodel.TransactionType {
+	if len(requested) == 0 {
+		return nil
+	}
+
+	hasSale := false
+	hasRent := false
+	hasBoth := false
+
+	for _, t := range requested {
+		switch t {
+		case listingmodel.TransactionType(1):
+			hasSale = true
+		case listingmodel.TransactionType(2):
+			hasRent = true
+		case listingmodel.TransactionType(3):
+			hasBoth = true
+		}
+	}
+
+	result := make([]listingmodel.TransactionType, 0, 3)
+	switch {
+	case hasSale && hasRent:
+		result = append(result, listingmodel.TransactionType(1), listingmodel.TransactionType(2), listingmodel.TransactionType(3))
+	case hasSale && !hasRent:
+		result = append(result, listingmodel.TransactionType(1), listingmodel.TransactionType(3))
+	case hasRent && !hasSale:
+		result = append(result, listingmodel.TransactionType(2), listingmodel.TransactionType(3))
+	case !hasSale && !hasRent && hasBoth:
+		result = append(result, listingmodel.TransactionType(3))
+	}
+
+	return result
 }

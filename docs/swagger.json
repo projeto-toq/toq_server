@@ -5436,22 +5436,22 @@
                     {
                         "type": "array",
                         "items": {
-                            "type": "integer"
+                            "type": "string"
                         },
                         "collectionFormat": "csv",
-                        "x-example": "[1,2]",
-                        "description": "Filter by property types (bitmask values)",
+                        "x-example": "[\"apartment\",\"house\"]",
+                        "description": "Filter by property types (numeric codes or slugs: apartment, house, warehouse, land, building, store, floor, suite, offplanhouse)",
                         "name": "propertyTypes",
                         "in": "query"
                     },
                     {
                         "type": "array",
                         "items": {
-                            "type": "integer"
+                            "type": "string"
                         },
                         "collectionFormat": "csv",
-                        "x-example": "[1,2]",
-                        "description": "Filter by transaction types (catalog numeric values)",
+                        "x-example": "[\"rent\"]",
+                        "description": "Filter by transaction types (numeric codes or slugs: sale, rent, both)",
                         "name": "transactionTypes",
                         "in": "query"
                     },

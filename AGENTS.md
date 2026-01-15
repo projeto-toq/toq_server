@@ -18,7 +18,7 @@ Sempre leia totalmente estes documentos antes de propor qualquer solução:
 
 ## Processo de Aprovação
 1. **Análise + Plano**: Sempre entregar diagnóstico completo, plano detalhado e skeletons antes de qualquer modificação.
-2. **Execução após aprovação**: Após o usuário confrimar a aprovação conforme `/codigos/go_code/toq_server/prompt_approvall.md`, executar diretamente o plano aprovado, sem repetir análises ou revalidar requisitos. Qualquer dúvida nova deve ser tratada como mudança de escopo antes da edição.
+2. **Execução após aprovação**: Após o usuário confirmar a aprovação, siga as instruções em  `/codigos/go_code/toq_server/approvall_instructions.md`. Qualquer dúvida nova deve ser tratada como mudança de escopo antes da edição.
 
 ## ✅ Consultas na Fase de Planejamento
 1. **Levantamento completo**: Durante a análise, consultar todos os arquivos citados no prompt ou necessários para cobrir o fluxo impactado (handlers, services, repositories, DTOs, entities, converters, docs, etc.).

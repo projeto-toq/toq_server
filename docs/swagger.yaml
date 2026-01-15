@@ -7630,21 +7630,23 @@ paths:
         type: integer
         x-example: "4"
       - collectionFormat: csv
-        description: Filter by property types (bitmask values)
+        description: 'Filter by property types (numeric codes or slugs: apartment,
+          house, warehouse, land, building, store, floor, suite, offplanhouse)'
         in: query
         items:
-          type: integer
+          type: string
         name: propertyTypes
         type: array
-        x-example: '[1,2]'
+        x-example: '["apartment","house"]'
       - collectionFormat: csv
-        description: Filter by transaction types (catalog numeric values)
+        description: 'Filter by transaction types (numeric codes or slugs: sale, rent,
+          both)'
         in: query
         items:
-          type: integer
+          type: string
         name: transactionTypes
         type: array
-        x-example: '[1,2]'
+        x-example: '["rent"]'
       - description: Filter by property use
         enum:
         - RESIDENTIAL

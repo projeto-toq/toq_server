@@ -153,13 +153,24 @@ type ListListingsRequest struct {
 	// Example: 4
 	MaxSuites string `form:"maxSuites,omitempty" example:"4"`
 
-	// PropertyTypes filters by property type bitmask values (see global_model.PropertyType)
-	// Example: [1,2]
-	PropertyTypes []uint16 `form:"propertyTypes[]" example:"1"`
+	// PropertyTypes filters by property type using numeric codes or slugs (case-insensitive)
+	// Accepted numeric codes follow global_model.PropertyType bitmask (1=apartment,16=house,...)
+	// Accepted slugs examples: apartment, house, land, warehouse, building, store, floor, suite, offplanhouse
+	// Example (IDs): propertyTypes=1&propertyTypes=16
+	// Example (slugs): propertyTypes=apartment&propertyTypes=house
+	PropertyTypes []string `form:"propertyTypes[]" example:"apartment"`
 
-	// TransactionTypes filters by transaction types (catalog numeric values)
-	// Example: [1,2]
-	TransactionTypes []uint8 `form:"transactionTypes[]" example:"1"`
+	// PropertyTypesRaw captures propertyTypes without [] to support clients not using bracket notation
+	// Same semantics as PropertyTypes
+	PropertyTypesRaw []string `form:"propertyTypes" example:"house"`
+
+	// TransactionTypes filters by transaction types (catalog numeric values or slugs: sale,rent,both)
+	// Example (IDs): transactionTypes=1&transactionTypes=2 | Example (slugs): transactionTypes=sale
+	TransactionTypes []string `form:"transactionTypes[]" example:"sale"`
+
+	// TransactionTypesRaw captures transactionTypes without [] to support clients not using bracket notation
+	// Same semantics as TransactionTypes
+	TransactionTypesRaw []string `form:"transactionTypes" example:"rent"`
 
 	// PropertyUse filters listings by use (residential/commercial)
 	// Allowed: RESIDENTIAL, COMMERCIAL
