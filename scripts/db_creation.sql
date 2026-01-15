@@ -516,7 +516,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`sessions` (
   INDEX `idx_sessions_user_active` (`user_id` ASC, `revoked` ASC, `expires_at` ASC) INVISIBLE,
   INDEX `idx_sessions_expires_at` (`expires_at` ASC) INVISIBLE,
   INDEX `idx_sessions_revoked` (`revoked` ASC) INVISIBLE,
-  INDEX `idx_sessions_token_jti` (`token_jti` ASC) VISIBLE,
+  INDEX `idx_sessions_token_jti_active` (`token_jti` ASC, `revoked` ASC, `expires_at` ASC) VISIBLE,
   CONSTRAINT `fk_sessions_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `toq_db`.`users` (`id`)
