@@ -46,4 +46,7 @@ type SessionRepoPortInterface interface {
 	// DeleteExpiredSessions removes any session whose expires_at is past now or whose absolute_expires_at is past now.
 	// Intended for maintenance jobs; returns affected rows count.
 	DeleteExpiredSessions(ctx context.Context, tx *sql.Tx, limit int) (int64, error)
+
+	// DeleteExpiredSessionsBefore removes sessions whose effective expiry is before cutoff (absolute or sliding), capped by limit.
+	DeleteExpiredSessionsBefore(ctx context.Context, tx *sql.Tx, cutoff time.Time, limit int) (int64, error)
 }

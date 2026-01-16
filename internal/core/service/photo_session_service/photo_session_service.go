@@ -35,6 +35,9 @@ type PhotoSessionServiceInterface interface {
 	GetServiceArea(ctx context.Context, input ServiceAreaDetailInput) (ServiceAreaResult, error)
 	UpdateServiceArea(ctx context.Context, input UpdateServiceAreaInput) (ServiceAreaResult, error)
 	DeleteServiceArea(ctx context.Context, input DeleteServiceAreaInput) error
+	// Retention helpers
+	CleanOldBookings(ctx context.Context, cutoff time.Time, limit int) (int64, error)
+	CleanOldAgendaEntries(ctx context.Context, cutoff time.Time, limit int) (int64, error)
 }
 
 type photoSessionService struct {

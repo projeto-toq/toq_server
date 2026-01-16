@@ -126,6 +126,8 @@ type UserRepoPortInterface interface {
 
 	// RemoveDeviceTokensByDeviceID bulk-deletes tokens for user+device; tx optional; 0 rows is success.
 	RemoveDeviceTokensByDeviceID(ctx context.Context, tx *sql.Tx, userID int64, deviceID string) error
+	// DeleteDeviceTokensOlderThan removes tokens whose last update is older than cutoff; tx optional; returns rows deleted.
+	DeleteDeviceTokensOlderThan(ctx context.Context, tx *sql.Tx, cutoff time.Time, limit int) (int64, error)
 
 	// ListDeviceTokensByUserID returns device_tokens for user; tx optional; empty slice when none.
 	ListDeviceTokensByUserID(ctx context.Context, tx *sql.Tx, userID int64) ([]usermodel.DeviceToken, error)

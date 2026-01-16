@@ -69,4 +69,9 @@ type PhotoSessionRepositoryInterface interface {
 	UpdateServiceArea(ctx context.Context, tx *sql.Tx, area photosessionmodel.PhotographerServiceAreaInterface) error
 	// DeleteServiceArea removes a service area; tx optional; sql.ErrNoRows when id not found.
 	DeleteServiceArea(ctx context.Context, tx *sql.Tx, areaID uint64) error
+
+	// DeleteOldBookings removes bookings in terminal statuses whose ends_at is older than cutoff; returns rows deleted.
+	DeleteOldBookings(ctx context.Context, tx *sql.Tx, cutoff time.Time, limit int) (int64, error)
+	// DeleteOldAgendaEntries removes agenda entries whose ends_at is older than cutoff and are not referenced by bookings; returns rows deleted.
+	DeleteOldAgendaEntries(ctx context.Context, tx *sql.Tx, cutoff time.Time, limit int) (int64, error)
 }

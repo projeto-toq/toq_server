@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_versions` (
   `buildable` DECIMAL(6,2) NULL DEFAULT NULL,
   `delivered` TINYINT UNSIGNED NULL DEFAULT NULL,
   `who_lives` TINYINT UNSIGNED NULL DEFAULT NULL,
-  `description` VARCHAR(255) NULL DEFAULT NULL,
+  `description` TEXT NULL DEFAULT NULL,
   `transaction` TINYINT UNSIGNED NULL DEFAULT NULL,
   `sell_net` DECIMAL(12,2) NULL DEFAULT NULL,
   `rent_net` DECIMAL(9,2) NULL DEFAULT NULL,
@@ -510,6 +510,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`sessions` (
   `rotation_counter` INT UNSIGNED NOT NULL DEFAULT 0,
   `last_refresh_at` DATETIME(6) NULL,
   `revoked` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `effective_expires_at` DATETIME GENERATED ALWAYS AS ((COALESCE(absolute_expires_at, expires_at))) STORED,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `refresh_hash_UNIQUE` (`refresh_hash` ASC) VISIBLE,
   INDEX `fk_sessions_user_idx` (`user_id` ASC) INVISIBLE,
@@ -517,6 +518,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`sessions` (
   INDEX `idx_sessions_expires_at` (`expires_at` ASC) INVISIBLE,
   INDEX `idx_sessions_revoked` (`revoked` ASC) INVISIBLE,
   INDEX `idx_sessions_token_jti_active` (`token_jti` ASC, `revoked` ASC, `expires_at` ASC) VISIBLE,
+  INDEX `idx_sessions_eff_exp` (`effective_expires_at` ASC) VISIBLE,
   CONSTRAINT `fk_sessions_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `toq_db`.`users` (`id`)
@@ -536,8 +538,11 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`device_tokens` (
   `device_token` VARCHAR(255) NOT NULL,
   `device_id` VARCHAR(100) NULL,
   `platform` VARCHAR(45) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `fk_device_tokens_user_idx` (`user_id` ASC) VISIBLE,
+  INDEX `idx_device_tokens_updated_at` (`updated_at` ASC) VISIBLE,
   CONSTRAINT `fk_device_tokens_user`
     FOREIGN KEY (`user_id`)
     REFERENCES `toq_db`.`users` (`id`)
@@ -748,6 +753,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`holiday_calendar_dates` (
   PRIMARY KEY (`id`),
   INDEX `fk_calendar_date_idx` (`calendar_id` ASC) VISIBLE,
   UNIQUE INDEX `uq_calendar_date` (`calendar_id` ASC, `holiday_date` ASC) VISIBLE,
+  INDEX `idx_holiday_dates_date` (`holiday_date` ASC) VISIBLE,
   CONSTRAINT `fk_calendar_date`
     FOREIGN KEY (`calendar_id`)
     REFERENCES `toq_db`.`holiday_calendars` (`id`)
@@ -775,6 +781,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_agenda_entries` (
   PRIMARY KEY (`id`),
   INDEX `idx_agenda_range` (`photographer_user_id` ASC, `starts_at` ASC, `ends_at` ASC) INVISIBLE,
   INDEX `idx_source` (`source` ASC, `source_id` ASC) VISIBLE,
+  INDEX `idx_agenda_ends_type` (`ends_at` ASC, `entry_type` ASC) VISIBLE,
   CONSTRAINT `fk_photographer_user_id_user_1`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
@@ -803,6 +810,7 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`photographer_photo_session_bookings` (
   UNIQUE INDEX `uk_booking_entry` (`agenda_entry_id` ASC) VISIBLE,
   INDEX `ix_photographer_user_id_idx` (`photographer_user_id` ASC) VISIBLE,
   INDEX `fk_listing_id_idx` (`listing_identity_id` ASC) VISIBLE,
+  INDEX `idx_booking_ends_status` (`ends_at` ASC, `status` ASC) VISIBLE,
   CONSTRAINT `fk_photographer_user_id_user_2`
     FOREIGN KEY (`photographer_user_id`)
     REFERENCES `toq_db`.`users` (`id`)
@@ -1032,8 +1040,11 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`media_processing_jobs` (
   `completed_at` TIMESTAMP NULL,
   `last_error` TEXT NULL,
   `callback_body` TEXT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `idx_media_job_identity` (`listing_identity_id` ASC) INVISIBLE,
+  INDEX `idx_media_jobs_created` (`created_at` ASC) INVISIBLE,
+  INDEX `idx_media_jobs_completed` (`completed_at` ASC) VISIBLE,
   CONSTRAINT `fk_media_jobs_identity`
     FOREIGN KEY (`listing_identity_id`)
     REFERENCES `toq_db`.`listing_identities` (`id`)

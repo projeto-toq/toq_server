@@ -199,6 +199,33 @@ type Environment struct {
 		NewListingHoursThreshold   int `yaml:"new_listing_hours_threshold"`
 		PriceChangedHoursThreshold int `yaml:"price_changed_hours_threshold"`
 	} `yaml:"listings"`
+	Retention struct {
+		DeviceTokens struct {
+			MaxAgeDays             int `yaml:"max_age_days"`
+			CleanupIntervalMinutes int `yaml:"cleanup_interval_minutes"`
+			BatchSize              int `yaml:"batch_size"`
+		} `yaml:"device_tokens"`
+		Sessions struct {
+			MaxAgeDays             int `yaml:"max_age_days"`
+			CleanupIntervalMinutes int `yaml:"cleanup_interval_minutes"`
+			BatchSize              int `yaml:"batch_size"`
+		} `yaml:"sessions"`
+		HolidayCalendarDates struct {
+			MaxAgeDays             int `yaml:"max_age_days"`
+			CleanupIntervalMinutes int `yaml:"cleanup_interval_minutes"`
+			BatchSize              int `yaml:"batch_size"`
+		} `yaml:"holiday_calendar_dates"`
+		MediaProcessingJobs struct {
+			MaxAgeDays             int `yaml:"max_age_days"`
+			CleanupIntervalMinutes int `yaml:"cleanup_interval_minutes"`
+			BatchSize              int `yaml:"batch_size"`
+		} `yaml:"media_processing_jobs"`
+		PhotoSessions struct {
+			MaxAgeDays             int `yaml:"max_age_days"`
+			CleanupIntervalMinutes int `yaml:"cleanup_interval_minutes"`
+			BatchSize              int `yaml:"batch_size"`
+		} `yaml:"photo_sessions"`
+	} `yaml:"retention"`
 	Profiles map[string]ProfileOverrides `yaml:"profiles"`
 	// Health endpoints are now integrated into the main HTTP server
 	// No separate health configuration needed

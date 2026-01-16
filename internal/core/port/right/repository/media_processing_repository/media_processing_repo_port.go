@@ -26,6 +26,8 @@ type RepositoryInterface interface {
 	UpdateProcessingJob(ctx context.Context, tx *sql.Tx, job mediaprocessingmodel.MediaProcessingJob) error
 	GetLatestFinalizationJob(ctx context.Context, tx *sql.Tx, listingIdentityID uint64) (mediaprocessingmodel.MediaProcessingJob, error)
 	ListStuckJobs(ctx context.Context, tx *sql.Tx, status mediaprocessingmodel.MediaProcessingJobStatus, startedBefore time.Time) ([]mediaprocessingmodel.MediaProcessingJob, error)
+	// DeleteOldJobs removes terminal jobs older than cutoff, capped by limit; returns rows deleted.
+	DeleteOldJobs(ctx context.Context, tx *sql.Tx, cutoff time.Time, limit int) (int64, error)
 }
 
 // Pagination define opções de paginação para repositórios.

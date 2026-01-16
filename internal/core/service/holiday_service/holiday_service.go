@@ -2,6 +2,7 @@ package holidayservices
 
 import (
 	"context"
+	"time"
 
 	holidaymodel "github.com/projeto-toq/toq_server/internal/core/model/holiday_model"
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
@@ -19,6 +20,8 @@ type HolidayServiceInterface interface {
 	GetCalendarDateByID(ctx context.Context, id uint64, timezone string) (holidaymodel.CalendarDateInterface, error)
 	DeleteCalendarDate(ctx context.Context, id uint64) error
 	ListCalendarDates(ctx context.Context, filter holidaymodel.CalendarDatesFilter) (holidaymodel.CalendarDatesResult, error)
+	// CleanOldCalendarDates deletes non-recurrent dates older than cutoff to enforce retention.
+	CleanOldCalendarDates(ctx context.Context, cutoff time.Time, limit int) (int64, error)
 }
 
 type holidayService struct {

@@ -3,6 +3,7 @@ package holidayrepository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	holidaymodel "github.com/projeto-toq/toq_server/internal/core/model/holiday_model"
 )
@@ -18,4 +19,6 @@ type HolidayRepositoryInterface interface {
 	GetCalendarDateByID(ctx context.Context, tx *sql.Tx, id uint64) (holidaymodel.CalendarDateInterface, error)
 	DeleteCalendarDate(ctx context.Context, tx *sql.Tx, id uint64) error
 	ListCalendarDates(ctx context.Context, tx *sql.Tx, filter holidaymodel.CalendarDatesFilter) (holidaymodel.CalendarDatesResult, error)
+	// DeleteOldCalendarDates removes non-recurrent dates older than cutoff; returns rows deleted.
+	DeleteOldCalendarDates(ctx context.Context, tx *sql.Tx, cutoff time.Time, limit int) (int64, error)
 }

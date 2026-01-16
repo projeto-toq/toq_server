@@ -164,6 +164,9 @@ type UserServiceInterface interface {
 	ClearUserBlockedUntil(ctx context.Context, tx *sql.Tx, userID int64) error
 	GetUsersWithExpiredBlock(ctx context.Context, tx *sql.Tx) ([]usermodel.UserInterface, error)
 	SetUserPermanentlyBlocked(ctx context.Context, tx *sql.Tx, userID int64, blocked bool) error
+
+	// Maintenance
+	PurgeStaleDeviceTokens(ctx context.Context, maxAge time.Duration, limit int) (int64, error)
 }
 
 // CreciDocumentDownloadURLs encapsula as URLs assinadas geradas pelo serviço para os documentos CRECI

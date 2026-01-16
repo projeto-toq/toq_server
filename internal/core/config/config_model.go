@@ -337,15 +337,48 @@ func (c *config) InitializeGoRoutines() {
 	// Start session cleaner using service (if session repo and global service are set)
 	if c.repositoryAdapters != nil && c.repositoryAdapters.Session != nil && c.globalService != nil {
 		c.sessionService = sessionservice.New(c.repositoryAdapters.Session, c.globalService)
-		intervalSecs := c.env.AUTH.SessionCleanerIntervalSeconds
-		if intervalSecs <= 0 {
-			intervalSecs = 60
+		interval := time.Duration(c.env.Retention.Sessions.CleanupIntervalMinutes) * time.Minute
+		if interval <= 0 {
+			intervalSeconds := c.env.AUTH.SessionCleanerIntervalSeconds
+			if intervalSeconds <= 0 {
+				intervalSeconds = 60
+			}
+			interval = time.Duration(intervalSeconds) * time.Second
+		}
+		maxAge := time.Duration(c.env.Retention.Sessions.MaxAgeDays) * 24 * time.Hour
+		if maxAge <= 0 {
+			maxAge = 7 * 24 * time.Hour
+		}
+		batchSize := c.env.Retention.Sessions.BatchSize
+		if batchSize <= 0 {
+			batchSize = 500
 		}
 		c.wg.Add(1)
-		go goroutines.SessionCleaner(c.sessionService, c.wg, coreutils.ContextWithLogger(baseCtx), time.Duration(intervalSecs)*time.Second)
-		logger.Info("Session cleaner worker started", "interval_seconds", intervalSecs)
+		go goroutines.SessionCleaner(c.sessionService, c.wg, coreutils.ContextWithLogger(baseCtx), interval, maxAge, batchSize)
+		logger.Info("Session cleaner worker started", "interval", interval, "max_age", maxAge, "batch_size", batchSize)
 	} else {
 		logger.Warn("Session cleaner prerequisites not met; skipping start")
+	}
+
+	// Start device token cleaner
+	if c.userService != nil {
+		interval := time.Duration(c.env.Retention.DeviceTokens.CleanupIntervalMinutes) * time.Minute
+		if interval <= 0 {
+			interval = time.Hour
+		}
+		maxAge := time.Duration(c.env.Retention.DeviceTokens.MaxAgeDays) * 24 * time.Hour
+		if maxAge <= 0 {
+			maxAge = 90 * 24 * time.Hour
+		}
+		batchSize := c.env.Retention.DeviceTokens.BatchSize
+		if batchSize <= 0 {
+			batchSize = 500
+		}
+		c.wg.Add(1)
+		go goroutines.DeviceTokenCleaner(c.userService, c.wg, coreutils.ContextWithLogger(baseCtx), interval, maxAge, batchSize)
+		logger.Info("Device token cleaner worker started", "interval", interval, "max_age", maxAge, "batch_size", batchSize)
+	} else {
+		logger.Warn("Device token cleaner prerequisites not met; skipping start")
 	}
 
 	// Start validation cleaner if user repository and global service are set
@@ -363,6 +396,27 @@ func (c *config) InitializeGoRoutines() {
 		logger.Info("Validation cleaner worker started", "interval_seconds", intervalSecs)
 	} else {
 		logger.Warn("Validation cleaner prerequisites not met; skipping start")
+	}
+
+	// Start holiday calendar cleaner
+	if c.holidayService != nil {
+		interval := time.Duration(c.env.Retention.HolidayCalendarDates.CleanupIntervalMinutes) * time.Minute
+		if interval <= 0 {
+			interval = 12 * time.Hour
+		}
+		maxAge := time.Duration(c.env.Retention.HolidayCalendarDates.MaxAgeDays) * 24 * time.Hour
+		if maxAge <= 0 {
+			maxAge = 365 * 24 * time.Hour
+		}
+		batchSize := c.env.Retention.HolidayCalendarDates.BatchSize
+		if batchSize <= 0 {
+			batchSize = 500
+		}
+		c.wg.Add(1)
+		go goroutines.HolidayCalendarCleaner(c.holidayService, c.wg, coreutils.ContextWithLogger(baseCtx), interval, maxAge, batchSize)
+		logger.Info("Holiday calendar cleaner worker started", "interval", interval, "max_age", maxAge, "batch_size", batchSize)
+	} else {
+		logger.Warn("Holiday calendar cleaner prerequisites not met; skipping start")
 	}
 
 	// Start media processing reconciler to prevent stuck jobs
@@ -384,6 +438,48 @@ func (c *config) InitializeGoRoutines() {
 		logger.Info("Media processing reconciler started", "timeout_minutes", timeoutMinutes)
 	} else {
 		logger.Warn("Media processing service unavailable; skipping reconciler worker")
+	}
+
+	// Start media processing retention cleaner
+	if c.mediaProcessingService != nil {
+		interval := time.Duration(c.env.Retention.MediaProcessingJobs.CleanupIntervalMinutes) * time.Minute
+		if interval <= 0 {
+			interval = 2 * time.Hour
+		}
+		maxAge := time.Duration(c.env.Retention.MediaProcessingJobs.MaxAgeDays) * 24 * time.Hour
+		if maxAge <= 0 {
+			maxAge = 90 * 24 * time.Hour
+		}
+		batchSize := c.env.Retention.MediaProcessingJobs.BatchSize
+		if batchSize <= 0 {
+			batchSize = 500
+		}
+		c.wg.Add(1)
+		go goroutines.MediaProcessingCleaner(c.mediaProcessingService, c.wg, coreutils.ContextWithLogger(baseCtx), interval, maxAge, batchSize)
+		logger.Info("Media processing cleaner worker started", "interval", interval, "max_age", maxAge, "batch_size", batchSize)
+	} else {
+		logger.Warn("Media processing cleaner prerequisites not met; skipping start")
+	}
+
+	// Start photo session retention cleaner
+	if c.photoSessionService != nil {
+		interval := time.Duration(c.env.Retention.PhotoSessions.CleanupIntervalMinutes) * time.Minute
+		if interval <= 0 {
+			interval = 12 * time.Hour
+		}
+		maxAge := time.Duration(c.env.Retention.PhotoSessions.MaxAgeDays) * 24 * time.Hour
+		if maxAge <= 0 {
+			maxAge = 365 * 24 * time.Hour
+		}
+		batchSize := c.env.Retention.PhotoSessions.BatchSize
+		if batchSize <= 0 {
+			batchSize = 500
+		}
+		c.wg.Add(1)
+		go goroutines.PhotoSessionCleaner(c.photoSessionService, c.wg, coreutils.ContextWithLogger(baseCtx), interval, maxAge, batchSize)
+		logger.Info("Photo session cleaner worker started", "interval", interval, "max_age", maxAge, "batch_size", batchSize)
+	} else {
+		logger.Warn("Photo session cleaner prerequisites not met; skipping start")
 	}
 
 }

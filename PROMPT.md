@@ -1,13 +1,11 @@
-O sistema de agendamento de sessão de fotos do Listing, descrita em `/codigos/go_code/toq_server/docs/photo_session_flow.md`, necessita 2 refatorações:
+É necessário que existam rotinas de limpeza para
+    `toq_db.device_tokens` sugira uma política de retenção, configurável em env.yaml
+    `toq_db.sessions` sugeira uma política de retenção, configurável em env.yaml
+    `toq_db.holiday_calendar_dates` anteriores a 1 anos, configurável em env.yaml
+    `toq_db.media_processing_jobs`sugira uma política de retenção, configurável em env.yaml
+    `toq_db.photographer_agenda_entries`anteriores a 1 anos, configurável em env.yaml
+    `toq_db.photographer_photo_session_bookings` anteriores a 1 anos, configurável em env.yaml
 
-1) A busca de slots disponíveis de fotógrafo, via endpoint `GET /listings/photo-session/slots` permite apenas escolher dia e período (manhã/tarde), sem definir um horário fixo, o que gera imprecisão na agenda.
-    1.2) Cliente solicitou alterar o tempo padrão de sessão de fotos para 2 horas, que deve ser por uma variável de env.yaml, e pode ser em qualquer horário do dia.
-    1.3) A busca por slots deve retornar todos os horários disponíveis em blocos de 2 horas, dentro da disponibilidade do fotografo.
-
-2) Endpoint: `POST /api/v2/listings/photo-session/reserve` para Reserva de um slot pelo Owner, tem como resposta poucos dados de identificação.
-    2.1) Necessário popular endpoint com dados/foto do fotógrafo.
-
-3) Atualize o documento `docs/photo_session_flow.md` para refletir as mudanças feitas no código.
-
+Talvez já existam go routines de limpeza em `/codigos/go_code/toq_server/internal/core/go_routines` para alguns desses itens, ou talvez existam partes do código que já façam isso, mas é necessário revisar todo o código e as configurações atuais para garantir que todas essas tabelas tenham rotinas de limpeza adequadas, com políticas de retenção configuráveis via env.yaml.
 
 Busque todas as informações que precisa consultando o código e as configurações reais, não confiando na documentação, para ter certeza da situação, e só então proponha o plano de correção.
