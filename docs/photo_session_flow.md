@@ -3,52 +3,77 @@
 ## Visão Geral
 Este documento descreve o fluxo ponta-a-ponta das sessões de fotos, contemplando proprietários, fotógrafos e serviços de suporte. O objetivo é alinhar responsabilidades, efeitos colaterais e integrações relacionadas ao agendamento, confirmação e manutenção da agenda de fotógrafos.
 
+## Configuração de Aprovação (feature flag)
+- Flag em `configs/env.yaml`: `photo_session.require_photographer_approval` (default: `false`).
+- Slot fixa configurável em `configs/env.yaml`: `photo_session.slot_duration_minutes` (padrão: 120 minutos / 2h). O endpoint aceita `durationMinutes`, mas deve igualar o valor configurado.
+- **Modo automático** (`false`): a reserva já cria booking em `ACCEPTED` e o anúncio vai direto para `StatusPhotosScheduled`. O fotógrafo **não pode** aceitar/recusar depois; ele só pode marcar como `DONE`.
+- **Modo manual** (`true`): a reserva cria booking em `PENDING_APPROVAL` e o anúncio fica em `StatusPendingPhotoConfirmation`. O fotógrafo pode aceitar (`ACCEPTED`) ou recusar (`REJECTED`).
+- Notificações:
+  - Reserva: SMS para o fotógrafo sempre. FCM para o proprietário **apenas no modo automático** (sessão já confirmada).
+  - Atualizações do fotógrafo (ACCEPTED/REJECTED/DONE): FCM para o proprietário; ACCEPTED/REJECTED só existem no modo manual, DONE sempre permitido.
+
 ## Sequência Completa
 1. **Consulta de slots disponíveis**
-   - O proprietário (via app ou portal) requisita os slots de um fotógrafo para um período específico.
-   - O serviço `ListPhotographerSlots` retorna janelas disponíveis, horários já reservados e bloqueios existentes (feriados, time off, etc.).
+  - Endpoint: `GET /api/v2/listings/photo-session/slots` (owner).
+  - O proprietário (via app ou portal) requisita os slots de um fotógrafo dentro da janela comercial configurada, sem filtro de período (manhã/tarde/noite).
+  - O serviço `ListPhotographerSlots` retorna blocos contínuos de duração fixa (120 minutos por padrão), horários já reservados e bloqueios existentes (feriados, time off, etc.), apenas a partir de 4 horas no futuro (lead time para reação do fotógrafo).
+  - Parâmetros chave: `from/to` (datas), `timezone` (obrigatório), `durationMinutes` (opcional, deve casar com configuração), ordenação `start_asc|start_desc|photographer_asc|photographer_desc|date_asc|date_desc`.
 
 2. **Reserva de um slot**
-   - O proprietário seleciona um slot e chama `ReservePhotoSession`.
+  - Endpoint: `POST /api/v2/listings/photo-session/reserve` (owner).
+  - O proprietário seleciona um slot e chama `ReservePhotoSession`.
    - Validações:
-     - O anúncio deve pertencer ao proprietário e estar elegível (`StatusPendingPhotoScheduling` ou estados que permitem reserva).
-     - O slot precisa estar com status `AVAILABLE` e dentro da janela futura.
-   - A reserva realiza as ações abaixo em uma transação:
-     - Gera token de reserva com expiração baseada em `reservationHoldTTL`.
-     - Atualiza o slot para `RESERVED` e cria booking em `PENDING_APPROVAL`.
-     - Altera o anúncio para `StatusPendingAvailabilityConfirm`.
-     - Envia SMS automático ao fotógrafo com data e faixa horária agendada.
+     - O anúncio deve pertencer ao proprietário e estar elegível (`StatusPendingPhotoScheduling`, `StatusPendingPhotoConfirmation`, `StatusPhotosScheduled`).
+     - O slot precisa estar disponível e no futuro.
+   - A reserva (transacional) cria um bloqueio de agenda e booking:
+     - Booking status definido pelo modo de aprovação:
+       - Modo automático (`require_photographer_approval=false`): `ACCEPTED` (pré-aprovado).
+       - Modo manual (`require_photographer_approval=true`): `PENDING_APPROVAL`.
+     - Atualiza o anúncio para:
+       - Modo automático: `StatusPhotosScheduled` (já confirmado).
+       - Modo manual: `StatusPendingPhotoConfirmation` (aguardando resposta do fotógrafo).
+      - Envia SMS ao fotógrafo com data/faixa horária.
+      - Retorna dados do fotógrafo associado ao slot (`id`, `fullName`, `phoneNumber`, `photoUrl`).
+     - Envia FCM ao proprietário **apenas no modo automático** informando confirmação imediata.
 
 3. **Visualização da agenda**
-   - O fotógrafo consulta `ListAgenda` para ver sua agenda consolidada:
-     - Slots em qualquer status (AVAILABLE, RESERVED, BOOKED, BLOCKED).
-     - Entradas oriundas de feriados e time off.
-     - A sessão recém-reservada aparece como `RESERVED` (booking pendente de aprovação).
+  - Endpoint: `GET /api/v2/photographer/agenda` (photographer).
+  - O fotógrafo consulta `ListAgenda` para ver sua agenda consolidada:
+     - Entradas de foto (booking) aparecem como bloqueios com status de booking correspondente.
+     - Entradas oriundas de feriados e time off também são retornadas.
+     - Em modo manual, reservas novas aparecem como `PENDING_APPROVAL`; em modo automático já aparecem como `ACCEPTED`.
 
-4. **Ações do fotógrafo**
-   - O fotógrafo consulta sua agenda via `ListAgenda` e pode atualizar o status da sessão via `UpdateSessionStatus`:
-     - **Aceitar sessão (ACCEPTED)**: atualiza booking para `ACCEPTED`, slot para `BOOKED` e anúncio para `StatusPhotosScheduled`. Envia notificação FCM ao proprietário informando a aceitação.
-     - **Recusar sessão (REJECTED)**: altera booking para `REJECTED`, libera slot para `AVAILABLE` e retorna anúncio para `StatusPendingPhotoScheduling`. Envia notificação FCM ao proprietário informando a recusa.
-     - **Marcar como concluída (DONE)**: atualiza booking para `DONE`, altera anúncio para `StatusPendingPhotoProcessing` (aguardando upload/edição das fotos). Envia notificação FCM ao proprietário informando a conclusão da sessão.
-   - **Bloquear dia (Time Off)**: uso do fluxo `CreateTimeOff`, que gera intervalo bloqueado, reexecuta o ensure e remove slots futuros conflitantes.
-   - **Excluir bloqueio**: via `DeleteTimeOff`, reabre a agenda para aquele intervalo.
-   - **Visualizar feriados**: agenda in-line apresenta marcações de feriados vindas do serviço de feriados.
+4. **Ações do fotógrafo (UpdateSessionStatus)**
+  - Endpoint: `POST /api/v2/photographer/sessions/status` (photographer).
+   - Sempre permitido: **Marcar como concluída (DONE)** → booking `DONE`; anúncio vai para `StatusPendingPhotoProcessing`; FCM ao proprietário.
+   - Apenas no modo manual (`require_photographer_approval=true`):
+     - **Aceitar (ACCEPTED)**: booking `ACCEPTED`; anúncio `StatusPhotosScheduled`; FCM ao proprietário.
+     - **Recusar (REJECTED)**: booking `REJECTED`; anúncio `StatusPendingPhotoScheduling`; FCM ao proprietário.
+   - Em modo automático (`require_photographer_approval=false`): ACCEPTED/REJECTED são bloqueados (erro 400); usar somente DONE após realizar a sessão.
+  - **Bloquear dia (Time Off)**: `POST /api/v2/photographer/agenda/time-off` cria bloqueio e reaplica ensure para remover slots futuros conflitantes.
+  - **Atualizar bloqueio**: `PUT /api/v2/photographer/agenda/time-off` ajusta intervalo/razão e reexecuta ensure.
+  - **Excluir bloqueio**: `DELETE /api/v2/photographer/agenda/time-off` reabre a agenda no intervalo.
+   - **Visualizar feriados**: retornados como entradas `BLOCKED` na agenda.
 
 5. **Cancelamentos**
-   - **Pelo proprietário**: `CancelPhotoSession` aceita bookings em `PENDING_APPROVAL`, `ACCEPTED` ou `ACTIVE`.
-     - Atualiza booking para `CANCELLED`.
-     - Libera slot (`AVAILABLE`).
-     - Regride anúncio para `StatusPendingPhotoScheduling` (ou `StatusPendingAvailabilityConfirm` dependendo do estado anterior).
-     - Dispara SMS informando o cancelamento ao fotógrafo.
-   - **Pelo fotógrafo**: recusa antes da confirmação via `UpdateSessionStatus` com status `REJECTED` (mesma lógica do passo 4).
+  - Endpoint (owner): `POST /api/v2/listings/photo-session/cancel`.
+  - **Pelo proprietário**: `CancelPhotoSession` aceita bookings em `PENDING_APPROVAL`, `ACCEPTED` ou `ACTIVE`.
+     - Atualiza booking para `CANCELLED` e remove a entry da agenda.
+     - Regride anúncio para `StatusPendingPhotoScheduling` (independente do modo).
+     - Dispara SMS ao fotógrafo informando o cancelamento.
+   - **Pelo fotógrafo**: somente via recusa (`REJECTED`) quando em modo manual.
 
 ## Opções do Fotógrafo
-- **Aceitar sessão (ACCEPTED)**: compromisso formal, slot `BOOKED`, anúncio `StatusPhotosScheduled`, notificação FCM ao proprietário.
-- **Recusar sessão (REJECTED)**: slot volta para `AVAILABLE`; anúncio em `StatusPendingPhotoScheduling`, notificação FCM ao proprietário.
-- **Marcar como concluída (DONE)**: sessão finalizada, anúncio em `StatusPendingPhotoProcessing`, notificação FCM ao proprietário.
-- **Bloquear dia/horário (Time Off)**: remove slots futuros dentro do intervalo e evita novas reservas.
-- **Visualizar feriados**: feriados são marcados como `BLOCKED` na agenda, com os labels correspondentes.
-- **Rever agenda consolidada**: `ListAgenda` mistura slots, feriados e time off com agrupamentos por dia/período.
+- **Modo manual (require_photographer_approval=true)**:
+  - Aceitar (`ACCEPTED`): anúncio → `StatusPhotosScheduled`; FCM proprietário.
+  - Recusar (`REJECTED`): anúncio → `StatusPendingPhotoScheduling`; FCM proprietário.
+  - Concluir (`DONE`): anúncio → `StatusPendingPhotoProcessing`; FCM proprietário.
+- **Modo automático (require_photographer_approval=false)**:
+  - Aceitar/Recusar: bloqueados (erro 400). Booking já nasce `ACCEPTED`.
+  - Concluir (`DONE`): permitido; anúncio → `StatusPendingPhotoProcessing`; FCM proprietário.
+- **Bloquear dia/horário (Time Off)**: remove slots futuros conflitantes e evita novas reservas.
+- **Visualizar feriados**: retornam como entradas `BLOCKED` na agenda.
+- **Agenda consolidada**: `ListAgenda` retorna bookings + bloqueios (feriados/time off) com paginação e ordenação.
 
 ## Manutenção do Horizonte de 3 Meses
 - **Horizon padrão**: 3 meses (`defaultHorizonMonths`).
@@ -70,11 +95,17 @@ Este documento descreve o fluxo ponta-a-ponta das sessões de fotos, contempland
   - Notificação unificada para disparo de SMS/FCM.
 
 ## Estados do Anúncio (Resumo)
-- `StatusPendingPhotoScheduling`: aguardando agendamento.
-- `StatusPendingAvailabilityConfirm`: reserva criada, aguardando fotógrafo.
-- `StatusPhotosScheduled`: sessão aceita/confirmada pelo fotógrafo.
-- `StatusPendingPhotoProcessing`: sessão finalizada, aguardando upload/edição das fotos.
-- Retornos ou cancelamentos regridem conforme regras descritas acima.
+- `StatusPendingPhotoScheduling`: aguardando agendamento (ponto de partida e destino após recusa/cancelamento).
+- `StatusPendingPhotoConfirmation`: reserva criada no modo manual, aguardando fotógrafo.
+- `StatusPhotosScheduled`: sessão confirmada (modo automático direto na reserva ou após ACCEPTED no modo manual).
+- `StatusPendingPhotoProcessing`: sessão concluída (DONE), aguardando upload/edição.
+
+## Estados do Booking (Resumo)
+- Reserva: `ACCEPTED` (auto) ou `PENDING_APPROVAL` (manual).
+- Aceite (manual): `ACCEPTED`.
+- Recusa (manual): `REJECTED`.
+- Conclusão: `DONE`.
+- Cancelamento (owner): `CANCELLED` (apaga entrada de agenda).
 
 ## Checklist de Validação
 - Anúncio pertence ao usuário que solicita.

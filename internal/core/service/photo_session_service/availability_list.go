@@ -51,6 +51,8 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 	}
 
 	now := s.now().In(loc)
+	reactionLeadTime := 4 * time.Hour // buffer para que o fotógrafo tenha tempo de reagir
+	earliestStart := now.Add(reactionLeadTime)
 	var rangeStart time.Time
 	if input.From != nil {
 		rangeStart = input.From.In(loc)
@@ -67,12 +69,10 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 		return ListAvailabilityOutput{}, derrors.Validation("to must be after from", nil)
 	}
 
-	slotDuration := time.Duration(s.cfg.SlotDurationMinutes) * time.Minute
-	if slotDuration <= 0 {
-		slotDuration = 4 * time.Hour
+	slotDuration := deriveSlotDuration(input.DurationMinutes, s.cfg.SlotDurationMinutes)
+	if slotDuration < 0 {
+		return ListAvailabilityOutput{}, derrors.Validation("durationMinutes must match configured slot duration", map[string]any{"expected": s.cfg.SlotDurationMinutes})
 	}
-
-	filterPeriod := input.Period
 
 	tx, txErr := s.globalService.StartReadOnlyTransaction(ctx)
 	if txErr != nil {
@@ -139,15 +139,12 @@ func (s *photoSessionService) ListAvailability(ctx context.Context, input ListAv
 
 		workingRanges := buildWorkingRanges(rangeStart, rangeEnd, loc, workdayStart, workdayEnd)
 		freeRanges := applyBlockingEntries(workingRanges, entries, loc)
-		freeRanges = prunePastRanges(freeRanges, now)
+		freeRanges = prunePastRanges(freeRanges, earliestStart)
 
 		for _, free := range freeRanges {
 			slots := splitIntoSlots(free, slotDuration)
 			for _, slot := range slots {
 				period := determineSlotPeriod(slot.start)
-				if filterPeriod != nil && period != *filterPeriod {
-					continue
-				}
 				id := encodeSlotID(photographerID, slot.start.UTC())
 				availability = append(availability, AvailabilitySlot{
 					SlotID:         id,

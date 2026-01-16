@@ -8,6 +8,7 @@ import (
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	storagemodel "github.com/projeto-toq/toq_server/internal/core/model/storage_model"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -101,7 +102,7 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 		return output, reserveErr
 	}
 
-	photographerPhone := ""
+	photographerSummary := PhotographerSummary{}
 	if reserveOutput.PhotographerID != 0 && ls.userRepository != nil {
 		tx, txErr = ls.gsi.StartReadOnlyTransaction(ctx)
 		if txErr != nil {
@@ -109,7 +110,7 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 			logger.Error("listing.photo_session.reserve.photographer_ro_tx_error", "err", txErr)
 			return output, utils.InternalError("")
 		}
-		phone, fetchErr := ls.fetchPhotographerPhone(ctx, tx, reserveOutput.PhotographerID)
+		summary, fetchErr := ls.fetchPhotographerProfile(ctx, tx, reserveOutput.PhotographerID)
 		if rbErr := ls.gsi.RollbackTransaction(ctx, tx); rbErr != nil {
 			utils.SetSpanError(ctx, rbErr)
 			logger.Error("listing.photo_session.reserve.photographer_ro_rollback_error", "err", rbErr)
@@ -119,22 +120,52 @@ func (ls *listingService) ReservePhotoSession(ctx context.Context, input Reserve
 			logger.Error("listing.photo_session.reserve.get_photographer_error", "err", fetchErr, "photographer_id", reserveOutput.PhotographerID)
 			return output, utils.InternalError("")
 		}
-		photographerPhone = phone
+		photographerSummary = summary
 	}
 
 	logger.Info("listing.photo_session.reserve.success", "listing_identity_id", input.ListingIdentityID, "listing_version_id", listing.ID(), "slot_id", input.SlotID, "booking_id", reserveOutput.PhotoSessionID, "user_id", userID)
 
-	ls.sendPhotographerReservationSMS(ctx, photographerPhone, reserveOutput.SlotStart, reserveOutput.SlotEnd, listing.Code())
+	ls.sendPhotographerReservationSMS(ctx, photographerSummary.PhoneNumber, reserveOutput.SlotStart, reserveOutput.SlotEnd, listing.Code())
 
 	return ReservePhotoSessionOutput{
 		SlotID:         reserveOutput.SlotID,
 		SlotStart:      reserveOutput.SlotStart,
 		SlotEnd:        reserveOutput.SlotEnd,
 		PhotoSessionID: reserveOutput.PhotoSessionID,
-		PhotographerID: reserveOutput.PhotographerID,
+		Photographer:   photographerSummary,
 	}, nil
 }
 
+func (ls *listingService) fetchPhotographerProfile(ctx context.Context, tx *sql.Tx, photographerID uint64) (PhotographerSummary, error) {
+	if photographerID == 0 || ls.userRepository == nil {
+		return PhotographerSummary{}, nil
+	}
+
+	photographer, err := ls.userRepository.GetUserByID(ctx, tx, int64(photographerID))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return PhotographerSummary{}, nil
+		}
+		return PhotographerSummary{}, err
+	}
+
+	phone := strings.TrimSpace(photographer.GetPhoneNumber())
+	photoURL := ""
+	if ls.gcs != nil {
+		if url, genErr := ls.gcs.GeneratePhotoDownloadURL(int64(photographerID), storagemodel.PhotoMedium); genErr == nil {
+			photoURL = url
+		}
+	}
+
+	return PhotographerSummary{
+		ID:          photographerID,
+		FullName:    photographer.GetFullName(),
+		PhoneNumber: phone,
+		PhotoURL:    photoURL,
+	}, nil
+}
+
+// fetchPhotographerPhone retorna apenas o telefone para cenários que não precisam do perfil completo.
 func (ls *listingService) fetchPhotographerPhone(ctx context.Context, tx *sql.Tx, photographerID uint64) (string, error) {
 	if photographerID == 0 || ls.userRepository == nil {
 		return "", nil

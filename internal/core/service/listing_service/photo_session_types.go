@@ -17,7 +17,7 @@ const (
 type ListPhotographerSlotsInput struct {
 	From              *time.Time
 	To                *time.Time
-	Period            *photosessionmodel.SlotPeriod
+	DurationMinutes   int
 	Page              int
 	Size              int
 	Sort              string
@@ -45,7 +45,15 @@ type ReservePhotoSessionOutput struct {
 	SlotStart      time.Time
 	SlotEnd        time.Time
 	PhotoSessionID uint64
-	PhotographerID uint64
+	Photographer   PhotographerSummary
+}
+
+// PhotographerSummary aggregates minimal photographer info returned to clients.
+type PhotographerSummary struct {
+	ID          uint64
+	FullName    string
+	PhoneNumber string
+	PhotoURL    string
 }
 
 // CancelPhotoSessionInput identifies a scheduled photo session to cancel.

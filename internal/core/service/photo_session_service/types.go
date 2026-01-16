@@ -158,7 +158,7 @@ type ListAvailabilityInput struct {
 	Page              int
 	Size              int
 	Sort              string
-	Period            *photosessionmodel.SlotPeriod
+	DurationMinutes   int
 	Location          *time.Location
 	ListingIdentityID int64
 }

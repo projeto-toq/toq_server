@@ -2276,6 +2276,21 @@ definitions:
       totalPages:
         type: integer
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerResponse:
+    properties:
+      fullName:
+        example: Maria Souza
+        type: string
+      id:
+        example: 45
+        type: integer
+      phoneNumber:
+        example: "+5511999999999"
+        type: string
+      photoUrl:
+        example: https://.../photo/medium.jpg
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaDeleteRequest:
     properties:
       serviceAreaId:
@@ -2343,6 +2358,9 @@ definitions:
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerSlotResponse:
     properties:
+      durationMinutes:
+        example: 120
+        type: integer
       photographerUserId:
         example: 45
         type: integer
@@ -2772,6 +2790,8 @@ definitions:
       photoSessionId:
         example: 3003
         type: integer
+      photographer:
+        $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerResponse'
       slotEnd:
         example: "2025-10-24T10:00:00Z"
         type: string
@@ -8662,14 +8682,13 @@ paths:
         name: to
         type: string
         x-example: "2025-10-31"
-      - description: Slot period
-        enum:
-        - MORNING
-        - AFTERNOON
+      - description: Slot duration in minutes (defaults to configured duration)
         in: query
-        name: period
-        type: string
-        x-example: MORNING
+        maximum: 240
+        minimum: 30
+        name: durationMinutes
+        type: integer
+        x-example: "120"
       - default: 1
         description: Page number
         in: query
@@ -8687,6 +8706,8 @@ paths:
         - start_desc
         - photographer_asc
         - photographer_desc
+        - date_asc
+        - date_desc
         in: query
         name: sort
         type: string

@@ -1033,10 +1033,11 @@ type ListingCatalogRestoreRequest struct {
 }
 
 // ListPhotographerSlotsRequest define filtros e paginação para consulta de slots.
+// Period filter was removed; slots follow the configured business window and duration.
 type ListPhotographerSlotsRequest struct {
 	From              string `form:"from" binding:"omitempty" example:"2025-10-20"`
 	To                string `form:"to" binding:"omitempty" example:"2025-10-31"`
-	Period            string `form:"period" binding:"omitempty,oneof=MORNING AFTERNOON" example:"MORNING"`
+	DurationMinutes   int    `form:"durationMinutes" binding:"omitempty,min=30,max=240" example:"120"`
 	Page              int    `form:"page,default=1" binding:"min=1"`
 	Size              int    `form:"size,default=20" binding:"min=1,max=100"`
 	Sort              string `form:"sort,default=start_asc" binding:"omitempty,oneof=start_asc start_desc photographer_asc photographer_desc date_asc date_desc"`
@@ -1050,6 +1051,7 @@ type PhotographerSlotResponse struct {
 	PhotographerUserID uint64  `json:"photographerUserId" example:"45"`
 	SlotStart          string  `json:"slotStart" example:"2025-10-25T09:00:00Z"`
 	SlotEnd            string  `json:"slotEnd" example:"2025-10-25T10:00:00Z"`
+	DurationMinutes    int     `json:"durationMinutes" example:"120"`
 	Status             string  `json:"status" example:"AVAILABLE"`
 	ReservedUntil      *string `json:"reservedUntil,omitempty" example:"2025-10-24T12:00:00Z"`
 }
@@ -1066,12 +1068,21 @@ type ReservePhotoSessionRequest struct {
 	SlotID            uint64 `json:"slotId" binding:"required" example:"2002"`
 }
 
+// PhotographerResponse representa dados básicos do fotógrafo retornados em reservas.
+type PhotographerResponse struct {
+	ID          uint64 `json:"id" example:"45"`
+	FullName    string `json:"fullName" example:"Maria Souza"`
+	PhoneNumber string `json:"phoneNumber,omitempty" example:"+5511999999999"`
+	PhotoURL    string `json:"photoUrl,omitempty" example:"https://.../photo/medium.jpg"`
+}
+
 // ReservePhotoSessionResponse retorna dados da reserva temporária.
 type ReservePhotoSessionResponse struct {
-	SlotID         uint64 `json:"slotId" example:"2002"`
-	SlotStart      string `json:"slotStart" example:"2025-10-24T09:00:00Z"`
-	SlotEnd        string `json:"slotEnd" example:"2025-10-24T10:00:00Z"`
-	PhotoSessionID uint64 `json:"photoSessionId" example:"3003"`
+	SlotID         uint64               `json:"slotId" example:"2002"`
+	SlotStart      string               `json:"slotStart" example:"2025-10-24T09:00:00Z"`
+	SlotEnd        string               `json:"slotEnd" example:"2025-10-24T10:00:00Z"`
+	PhotoSessionID uint64               `json:"photoSessionId" example:"3003"`
+	Photographer   PhotographerResponse `json:"photographer"`
 }
 
 // ConfirmPhotoSessionRequest representa o payload para confirmar a sessão de fotos.

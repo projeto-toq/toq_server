@@ -108,7 +108,7 @@ func (ls *listingService) ListPhotographerSlots(ctx context.Context, input ListP
 	availabilityInput := photosessionservices.ListAvailabilityInput{
 		From:              input.From,
 		To:                input.To,
-		Period:            input.Period,
+		DurationMinutes:   input.DurationMinutes,
 		Page:              page,
 		Size:              size,
 		Sort:              sortKey,

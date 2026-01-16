@@ -6955,14 +6955,12 @@
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            "MORNING",
-                            "AFTERNOON"
-                        ],
-                        "type": "string",
-                        "x-example": "MORNING",
-                        "description": "Slot period",
-                        "name": "period",
+                        "maximum": 240,
+                        "minimum": 30,
+                        "type": "integer",
+                        "x-example": "120",
+                        "description": "Slot duration in minutes (defaults to configured duration)",
+                        "name": "durationMinutes",
                         "in": "query"
                     },
                     {
@@ -6984,7 +6982,9 @@
                             "start_asc",
                             "start_desc",
                             "photographer_asc",
-                            "photographer_desc"
+                            "photographer_desc",
+                            "date_asc",
+                            "date_desc"
                         ],
                         "type": "string",
                         "default": "start_asc",
@@ -14252,6 +14252,27 @@
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerResponse": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string",
+                    "example": "Maria Souza"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 45
+                },
+                "phoneNumber": {
+                    "type": "string",
+                    "example": "+5511999999999"
+                },
+                "photoUrl": {
+                    "type": "string",
+                    "example": "https://.../photo/medium.jpg"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerServiceAreaDeleteRequest": {
             "type": "object",
             "required": [
@@ -14349,6 +14370,10 @@
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerSlotResponse": {
             "type": "object",
             "properties": {
+                "durationMinutes": {
+                    "type": "integer",
+                    "example": 120
+                },
                 "photographerUserId": {
                     "type": "integer",
                     "example": 45
@@ -14890,6 +14915,9 @@
                 "photoSessionId": {
                     "type": "integer",
                     "example": 3003
+                },
+                "photographer": {
+                    "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PhotographerResponse"
                 },
                 "slotEnd": {
                     "type": "string",

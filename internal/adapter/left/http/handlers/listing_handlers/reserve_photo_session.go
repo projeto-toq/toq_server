@@ -69,5 +69,11 @@ func (lh *ListingHandler) ReservePhotoSession(c *gin.Context) {
 		SlotStart:      output.SlotStart.UTC().Format(time.RFC3339),
 		SlotEnd:        output.SlotEnd.UTC().Format(time.RFC3339),
 		PhotoSessionID: output.PhotoSessionID,
+		Photographer: dto.PhotographerResponse{
+			ID:          output.Photographer.ID,
+			FullName:    output.Photographer.FullName,
+			PhoneNumber: output.Photographer.PhoneNumber,
+			PhotoURL:    output.Photographer.PhotoURL,
+		},
 	})
 }

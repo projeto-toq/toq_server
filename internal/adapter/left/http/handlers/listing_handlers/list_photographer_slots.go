@@ -9,7 +9,6 @@ import (
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/dto"
 	httperrors "github.com/projeto-toq/toq_server/internal/adapter/left/http/http_errors"
 	"github.com/projeto-toq/toq_server/internal/adapter/left/http/middlewares"
-	photosessionmodel "github.com/projeto-toq/toq_server/internal/core/model/photo_session_model"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	coreutils "github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -27,10 +26,10 @@ const (
 //	@Produce   json
 //	@Param     from      query    string false "Start date filter (YYYY-MM-DD)" Format(date) Extensions(x-example=2025-10-20)
 //	@Param     to        query    string false "End date filter (YYYY-MM-DD)" Format(date) Extensions(x-example=2025-10-31)
-//	@Param     period    query    string false "Slot period" Enums(MORNING,AFTERNOON) Extensions(x-example=MORNING)
+//	@Param     durationMinutes query int    false "Slot duration in minutes (defaults to configured duration)" minimum(30) maximum(240) Extensions(x-example=120)
 //	@Param     page      query    int    false "Page number" default(1)
 //	@Param     size      query    int    false "Page size" default(20)
-//	@Param     sort      query    string false "Sort order" Enums(start_asc,start_desc,photographer_asc,photographer_desc) default(start_asc)
+//	@Param     sort      query    string false "Sort order" Enums(start_asc,start_desc,photographer_asc,photographer_desc,date_asc,date_desc) default(start_asc)
 //	@Param     listingIdentityId query    int    true  "Listing identifier" Extensions(x-example=1024)
 //	@Param     timezone  query    string true  "Listing timezone" Extensions(x-example=America/Sao_Paulo)
 //	@Success   200 {object} dto.ListPhotographerSlotsResponse
@@ -94,16 +93,10 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 		toPtr = &local
 	}
 
-	var periodPtr *photosessionmodel.SlotPeriod
-	if request.Period != "" {
-		period := photosessionmodel.SlotPeriod(request.Period)
-		periodPtr = &period
-	}
-
 	input := listingservices.ListPhotographerSlotsInput{
 		From:              fromPtr,
 		To:                toPtr,
-		Period:            periodPtr,
+		DurationMinutes:   request.DurationMinutes,
 		Page:              request.Page,
 		Size:              request.Size,
 		Sort:              strings.TrimSpace(request.Sort),
@@ -131,6 +124,7 @@ func (lh *ListingHandler) ListPhotographerSlots(c *gin.Context) {
 			SlotStart:          slot.SlotStart().UTC().Format(time.RFC3339),
 			SlotEnd:            slot.SlotEnd().UTC().Format(time.RFC3339),
 			Status:             string(slot.Status()),
+			DurationMinutes:    int(slot.SlotEnd().Sub(slot.SlotStart()).Minutes()),
 			ReservedUntil:      reservedUntil,
 		})
 	}

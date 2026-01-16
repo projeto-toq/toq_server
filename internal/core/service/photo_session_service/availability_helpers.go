@@ -185,3 +185,18 @@ func sortAvailabilitySlots(slots []AvailabilitySlot, sortKey string) {
 		})
 	}
 }
+
+func deriveSlotDuration(requested, configured int) time.Duration {
+	base := configured
+	if base <= 0 {
+		base = 120
+	}
+	if requested > 0 {
+		if requested != base {
+			// Enforce single duration to keep slotID encoding (photographer+start) consistent.
+			return time.Duration(-1)
+		}
+		base = requested
+	}
+	return time.Duration(base) * time.Minute
+}
