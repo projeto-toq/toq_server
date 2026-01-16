@@ -6,6 +6,7 @@ import "github.com/gin-gonic/gin"
 type ListingHandlerPort interface {
 	// Listing management
 	ListListings(c *gin.Context)
+	ListComplexes(c *gin.Context)
 	StartListing(c *gin.Context)
 	CreateDraftVersion(c *gin.Context)
 	SearchListing(c *gin.Context)

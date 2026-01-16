@@ -1,0 +1,1529 @@
+./
+├── AGENTS.md
+├── Dockerfile
+├── Makefile
+├── PROMPT.md
+├── README.md
+├── alloy
+│   └── config.alloy
+├── approvall_instructions.md
+├── aws
+│   ├── README.md
+│   ├── lambdas
+│   │   ├── bin
+│   │   │   ├── callback.zip
+│   │   │   ├── consolidate.zip
+│   │   │   ├── ffmpeg-layer.zip
+│   │   │   ├── thumbnails.zip
+│   │   │   ├── validate.zip
+│   │   │   ├── video_thumbnails.zip
+│   │   │   └── zip.zip
+│   │   ├── ffmpeg
+│   │   │   ├── README.md
+│   │   │   └── bin
+│   │   │       └── ffmpeg
+│   │   └── go_src
+│   │       ├── cmd
+│   │       │   ├── callback
+│   │       │   │   └── main.go
+│   │       │   ├── consolidate
+│   │       │   │   └── main.go
+│   │       │   ├── thumbnails
+│   │       │   │   └── main.go
+│   │       │   ├── validate
+│   │       │   │   ├── main.go
+│   │       │   │   └── validate
+│   │       │   ├── video_thumbnails
+│   │       │   │   └── main.go
+│   │       │   └── zip
+│   │       │       └── main.go
+│   │       ├── go.mod
+│   │       ├── go.sum
+│   │       └── internal
+│   │           ├── adapter
+│   │           │   ├── left
+│   │           │   │   └── lambda
+│   │           │   │       ├── thumbnails
+│   │           │   │       │   └── handler.go
+│   │           │   │       ├── validate
+│   │           │   │       │   └── handler.go
+│   │           │   │       ├── video_thumbnails
+│   │           │   │       │   └── handler.go
+│   │           │   │       └── zip
+│   │           │   │           └── handler.go
+│   │           │   └── right
+│   │           │       ├── s3
+│   │           │       │   └── s3_adapter.go
+│   │           │       └── step_functions
+│   │           │           └── sfn_adapter.go
+│   │           └── core
+│   │               ├── port
+│   │               │   ├── storage_port.go
+│   │               │   └── workflow_port.go
+│   │               └── service
+│   │                   ├── consolidate
+│   │                   │   └── asset_mapper.go
+│   │                   ├── image_processing
+│   │                   │   ├── orientation.go
+│   │                   │   └── thumbnail_service.go
+│   │                   ├── validate
+│   │                   │   └── validate_service.go
+│   │                   ├── video_processing
+│   │                   │   └── video_thumbnail_service.go
+│   │                   └── zip
+│   │                       └── zip_service.go
+│   ├── main.tf
+│   ├── modules
+│   │   ├── iam_role
+│   │   │   └── main.tf
+│   │   ├── kms_key
+│   │   │   └── main.tf
+│   │   ├── lambda_function
+│   │   │   └── main.tf
+│   │   ├── s3_bucket_basic
+│   │   │   └── main.tf
+│   │   ├── s3_bucket_logs
+│   │   │   └── main.tf
+│   │   ├── s3_bucket_media
+│   │   │   └── main.tf
+│   │   ├── sqs_queue
+│   │   │   └── main.tf
+│   │   └── stepfunctions
+│   │       └── main.tf
+│   ├── step_functions
+│   │   ├── media_finalization_pipeline.json
+│   │   ├── media_processing_pipeline.json
+│   │   └── updated_policy.json
+│   └── variables.tf
+├── bin
+│   └── toq_server
+├── cmd
+│   └── toq_server.go
+├── configs
+│   ├── aws_credentials
+│   ├── env.yaml
+│   ├── fcm_admin.json
+│   ├── mysql-exporter.cnf
+│   └── security
+│       └── csp_policy.json
+├── data
+│   ├── base_features.csv
+│   ├── base_holiday_calendar_dates.csv
+│   ├── base_holiday_calendars.csv
+│   ├── base_permission_roles.csv
+│   ├── base_permissions.csv
+│   ├── base_role_permissions.csv
+│   ├── base_user_roles.csv
+│   ├── comodidades.csv
+│   ├── horizontal_complex_zip_codes.csv
+│   ├── horizontal_complexes.csv
+│   ├── listing_catalog_values.csv
+│   ├── no_complex_zip_code.csv
+│   ├── vertical_complex_sizes.csv
+│   ├── vertical_complex_towers.csv
+│   └── vertical_complexes.csv
+├── debug
+│   ├── event-1764327342449.json
+│   ├── event-1764327343189.json
+│   └── sqs-body-1764327342843.json
+├── deploy
+│   └── nginx
+│       ├── README.md
+│       ├── api.conf
+│       └── snippets
+│           ├── cors-headers.conf
+│           ├── csp-enforce.conf
+│           ├── csp-report-only.conf
+│           ├── proxy-headers.conf
+│           ├── security-headers.conf
+│           └── ssl-params.conf
+├── docker-compose.yml
+├── docs
+│   ├── aws_media_processing_implementation_summary.md
+│   ├── aws_media_processing_useful_commands.md
+│   ├── docs.go
+│   ├── duplicity_criteria.md
+│   ├── listing_validation_rules.md
+│   ├── media_processing_guide.md
+│   ├── nginx_config.md
+│   ├── observability
+│   │   └── sre_guide.md
+│   ├── pendencias internas.md
+│   ├── photo_session_flow.md
+│   ├── procedimento_de_criação_de_novo_anuncio.md
+│   ├── project_tree_full.txt
+│   ├── proposals_implementation_plan.md
+│   ├── swagger.json
+│   ├── swagger.yaml
+│   └── toq_server_go_guide.md
+├── go.mod
+├── go.sum
+├── grafana
+│   ├── dashboard-files
+│   │   ├── toq-server-app-overview.json
+│   │   ├── toq-server-infra-overview.json
+│   │   ├── toq-server-logs.json
+│   │   └── toq-server-traces.json
+│   ├── dashboards
+│   │   └── dashboards.yml
+│   └── datasources
+│       ├── loki.yml
+│       ├── prometheus.yml
+│       └── tempo.yml
+├── internal
+│   ├── adapter
+│   │   ├── left
+│   │   │   └── http
+│   │   │       ├── converters
+│   │   │       │   ├── complex_converters.go
+│   │   │       │   ├── holiday_converters.go
+│   │   │       │   ├── listing_catalog.go
+│   │   │       │   ├── listing_detail_to_dto.go
+│   │   │       │   ├── listing_update_to_input.go
+│   │   │       │   ├── listing_versions_to_dto.go
+│   │   │       │   ├── photographer_time_off_converters.go
+│   │   │       │   ├── property_type_converter.go
+│   │   │       │   ├── proposal_converter.go
+│   │   │       │   ├── schedule_converters.go
+│   │   │       │   ├── user_to_dto.go
+│   │   │       │   └── visit_dto_converter.go
+│   │   │       ├── dto
+│   │   │       │   ├── admin_blocklist_dto.go
+│   │   │       │   ├── admin_dto.go
+│   │   │       │   ├── auth_validation_dto.go
+│   │   │       │   ├── common_dto.go
+│   │   │       │   ├── complex_dto.go
+│   │   │       │   ├── holiday_dto.go
+│   │   │       │   ├── listing_dto.go
+│   │   │       │   ├── media_processing_callback_dto.go
+│   │   │       │   ├── photographer_dto.go
+│   │   │       │   ├── proposal_dto.go
+│   │   │       │   ├── schedule_dto.go
+│   │   │       │   ├── user_dto.go
+│   │   │       │   ├── visit_detail_request_dto.go
+│   │   │       │   ├── visit_request_dto.go
+│   │   │       │   └── visit_response_dto.go
+│   │   │       ├── handlers
+│   │   │       │   ├── admin_handlers
+│   │   │       │   │   ├── admin_handler.go
+│   │   │       │   │   ├── blocklist.go
+│   │   │       │   │   ├── delete_admin_complex.go
+│   │   │       │   │   ├── delete_admin_complex_size.go
+│   │   │       │   │   ├── delete_admin_complex_tower.go
+│   │   │       │   │   ├── delete_admin_complex_zip_code.go
+│   │   │       │   │   ├── delete_admin_permission.go
+│   │   │       │   │   ├── delete_admin_role.go
+│   │   │       │   │   ├── delete_admin_role_permission.go
+│   │   │       │   │   ├── delete_admin_system_user.go
+│   │   │       │   │   ├── delete_listing_catalog_value.go
+│   │   │       │   │   ├── get_admin_complex_sizes.go
+│   │   │       │   │   ├── get_admin_complex_towers.go
+│   │   │       │   │   ├── get_admin_complex_zip_codes.go
+│   │   │       │   │   ├── get_admin_complexes.go
+│   │   │       │   │   ├── get_admin_permissions.go
+│   │   │       │   │   ├── get_admin_role_permissions.go
+│   │   │       │   │   ├── get_admin_roles.go
+│   │   │       │   │   ├── get_admin_routes.go
+│   │   │       │   │   ├── get_admin_users.go
+│   │   │       │   │   ├── get_pending_realtors.go
+│   │   │       │   │   ├── helpers.go
+│   │   │       │   │   ├── list_listing_catalog_values.go
+│   │   │       │   │   ├── post_admin_approve_user.go
+│   │   │       │   │   ├── post_admin_create_complex.go
+│   │   │       │   │   ├── post_admin_create_complex_size.go
+│   │   │       │   │   ├── post_admin_create_complex_tower.go
+│   │   │       │   │   ├── post_admin_create_complex_zip_code.go
+│   │   │       │   │   ├── post_admin_create_permission.go
+│   │   │       │   │   ├── post_admin_create_role.go
+│   │   │       │   │   ├── post_admin_create_role_permission.go
+│   │   │       │   │   ├── post_admin_create_system_user.go
+│   │   │       │   │   ├── post_admin_creci_download_url.go
+│   │   │       │   │   ├── post_admin_get_complex_detail.go
+│   │   │       │   │   ├── post_admin_get_complex_size_detail.go
+│   │   │       │   │   ├── post_admin_get_complex_tower_detail.go
+│   │   │       │   │   ├── post_admin_get_complex_zip_code_detail.go
+│   │   │       │   │   ├── post_admin_get_listing_catalog_detail.go
+│   │   │       │   │   ├── post_admin_get_permission_detail.go
+│   │   │       │   │   ├── post_admin_get_role_detail.go
+│   │   │       │   │   ├── post_admin_get_role_permission_detail.go
+│   │   │       │   │   ├── post_admin_get_user.go
+│   │   │       │   │   ├── post_admin_restore_role.go
+│   │   │       │   │   ├── post_listing_catalog_restore_value.go
+│   │   │       │   │   ├── post_listing_catalog_value.go
+│   │   │       │   │   ├── put_admin_update_complex.go
+│   │   │       │   │   ├── put_admin_update_complex_size.go
+│   │   │       │   │   ├── put_admin_update_complex_tower.go
+│   │   │       │   │   ├── put_admin_update_complex_zip_code.go
+│   │   │       │   │   ├── put_admin_update_permission.go
+│   │   │       │   │   ├── put_admin_update_role.go
+│   │   │       │   │   ├── put_admin_update_role_permission.go
+│   │   │       │   │   ├── put_admin_update_system_user.go
+│   │   │       │   │   └── put_listing_catalog_value.go
+│   │   │       │   ├── auth_handlers
+│   │   │       │   │   ├── auth_handler.go
+│   │   │       │   │   ├── confirm_password_change.go
+│   │   │       │   │   ├── create_agency.go
+│   │   │       │   │   ├── create_owner.go
+│   │   │       │   │   ├── create_realtor.go
+│   │   │       │   │   ├── refresh_token.go
+│   │   │       │   │   ├── request_password_change.go
+│   │   │       │   │   ├── signin.go
+│   │   │       │   │   └── validate_identity.go
+│   │   │       │   ├── holiday_handlers
+│   │   │       │   │   ├── delete_calendar_date.go
+│   │   │       │   │   ├── get_list_calendar_dates.go
+│   │   │       │   │   ├── get_list_calendars.go
+│   │   │       │   │   ├── helpers.go
+│   │   │       │   │   ├── holiday_handler.go
+│   │   │       │   │   ├── post_create_calendar.go
+│   │   │       │   │   ├── post_create_calendar_date.go
+│   │   │       │   │   ├── post_get_calendar_date_detail.go
+│   │   │       │   │   ├── post_get_calendar_detail.go
+│   │   │       │   │   ├── put_update_calendar.go
+│   │   │       │   │   └── put_update_calendar_date.go
+│   │   │       │   ├── listing_handlers
+│   │   │       │   │   ├── add_favorite_listing.go
+│   │   │       │   │   ├── cancel_photo_session.go
+│   │   │       │   │   ├── change_listing_status.go
+│   │   │       │   │   ├── converters
+│   │   │       │   │   │   └── media_processing_converters.go
+│   │   │       │   │   ├── create_draft_version_handler.go
+│   │   │       │   │   ├── create_listing_handler.go
+│   │   │       │   │   ├── delete_listing.go
+│   │   │       │   │   ├── discard_draft_version.go
+│   │   │       │   │   ├── get_base_features.go
+│   │   │       │   │   ├── get_favorite_listings.go
+│   │   │       │   │   ├── get_listing.go
+│   │   │       │   │   ├── get_listing_by_user_id.go
+│   │   │       │   │   ├── list_catalog_values.go
+│   │   │       │   │   ├── list_listing_versions.go
+│   │   │       │   │   ├── list_listings_handler.go
+│   │   │       │   │   ├── list_photographer_slots.go
+│   │   │       │   │   ├── listing_handlers.go
+│   │   │       │   │   ├── not_implemented_handlers.go
+│   │   │       │   │   ├── post_options.go
+│   │   │       │   │   ├── promote_listing_version.go
+│   │   │       │   │   ├── remove_favorite_listing.go
+│   │   │       │   │   ├── reserve_photo_session.go
+│   │   │       │   │   └── update_listing.go
+│   │   │       │   ├── media_processing_handlers
+│   │   │       │   │   ├── approve_listing_media.go
+│   │   │       │   │   ├── complete_media.go
+│   │   │       │   │   ├── delete_media.go
+│   │   │       │   │   ├── generate_download_urls.go
+│   │   │       │   │   ├── handle_processing_callback.go
+│   │   │       │   │   ├── handle_processing_callback_converter.go
+│   │   │       │   │   ├── list_media.go
+│   │   │       │   │   ├── media_processing_handler.go
+│   │   │       │   │   ├── process_media.go
+│   │   │       │   │   ├── request_upload_urls.go
+│   │   │       │   │   └── update_media.go
+│   │   │       │   ├── metrics_handler.go
+│   │   │       │   ├── photo_session_handlers
+│   │   │       │   │   ├── delete_time_off.go
+│   │   │       │   │   ├── list_agenda_handler.go
+│   │   │       │   │   ├── list_agenda_time_off.go
+│   │   │       │   │   ├── photo_session_handler.go
+│   │   │       │   │   ├── post_agenda_time_off_detail.go
+│   │   │       │   │   ├── post_create_time_off.go
+│   │   │       │   │   ├── put_agenda_time_off.go
+│   │   │       │   │   ├── service_area_create.go
+│   │   │       │   │   ├── service_area_delete.go
+│   │   │       │   │   ├── service_area_detail.go
+│   │   │       │   │   ├── service_area_list.go
+│   │   │       │   │   ├── service_area_update.go
+│   │   │       │   │   └── update_status.go
+│   │   │       │   ├── proposal_handlers
+│   │   │       │   │   ├── accept_proposal_handler.go
+│   │   │       │   │   ├── cancel_proposal_handler.go
+│   │   │       │   │   ├── create_proposal_handler.go
+│   │   │       │   │   ├── get_proposal_detail_handler.go
+│   │   │       │   │   ├── list_owner_proposals_handler.go
+│   │   │       │   │   ├── list_realtor_proposals_handler.go
+│   │   │       │   │   ├── proposal_handler.go
+│   │   │       │   │   ├── reject_proposal_handler.go
+│   │   │       │   │   └── update_proposal_handler.go
+│   │   │       │   ├── schedule_handlers
+│   │   │       │   │   ├── delete_block_rule.go
+│   │   │       │   │   ├── get_listing_agenda.go
+│   │   │       │   │   ├── get_listing_availability.go
+│   │   │       │   │   ├── get_listing_block_rules.go
+│   │   │       │   │   ├── get_owner_summary.go
+│   │   │       │   │   ├── helpers.go
+│   │   │       │   │   ├── post_create_block_rule.go
+│   │   │       │   │   ├── post_finish_listing_agenda.go
+│   │   │       │   │   ├── put_update_block_rule.go
+│   │   │       │   │   └── schedule_handler.go
+│   │   │       │   ├── user_handlers
+│   │   │       │   │   ├── accept_invitation.go
+│   │   │       │   │   ├── add_alternative_user_role.go
+│   │   │       │   │   ├── confirm_email_change.go
+│   │   │       │   │   ├── confirm_phone_change.go
+│   │   │       │   │   ├── delete_account.go
+│   │   │       │   │   ├── delete_agency_of_realtor.go
+│   │   │       │   │   ├── delete_realtor_by_id.go
+│   │   │       │   │   ├── get_agency_of_realtor.go
+│   │   │       │   │   ├── get_profile.go
+│   │   │       │   │   ├── get_realtor_by_id.go
+│   │   │       │   │   ├── get_realtors_by_agency.go
+│   │   │       │   │   ├── get_user_roles.go
+│   │   │       │   │   ├── get_user_status.go
+│   │   │       │   │   ├── go_home.go
+│   │   │       │   │   ├── invite_realtor.go
+│   │   │       │   │   ├── post_creci_upload_url.go
+│   │   │       │   │   ├── post_photo_download_url.go
+│   │   │       │   │   ├── post_photo_upload_url.go
+│   │   │       │   │   ├── reject_invitation.go
+│   │   │       │   │   ├── request_email_change.go
+│   │   │       │   │   ├── request_phone_change.go
+│   │   │       │   │   ├── resend_email_change_code.go
+│   │   │       │   │   ├── resend_phone_change_code.go
+│   │   │       │   │   ├── signout.go
+│   │   │       │   │   ├── switch_user_role.go
+│   │   │       │   │   ├── update_opt_status.go
+│   │   │       │   │   ├── update_profile.go
+│   │   │       │   │   ├── user_handler.go
+│   │   │       │   │   └── verify_creci_documents.go
+│   │   │       │   └── visit_handlers
+│   │   │       │       ├── create_visit_handler.go
+│   │   │       │       ├── get_visit_handler.go
+│   │   │       │       ├── helpers.go
+│   │   │       │       ├── list_owner_handler.go
+│   │   │       │       ├── list_realtor_handler.go
+│   │   │       │       ├── update_status_handler.go
+│   │   │       │       └── visit_handler.go
+│   │   │       ├── http_errors
+│   │   │       │   └── http_errors.go
+│   │   │       ├── middlewares
+│   │   │       │   ├── auth_middleware.go
+│   │   │       │   ├── common.go
+│   │   │       │   ├── cors_middleware.go
+│   │   │       │   ├── device_context_middleware.go
+│   │   │       │   ├── error_recovery_middleware.go
+│   │   │       │   ├── metrics_middleware.go
+│   │   │       │   ├── permission_middleware.go
+│   │   │       │   ├── request_id_middleware.go
+│   │   │       │   ├── require_device_id_middleware.go
+│   │   │       │   ├── structured_logging_middleware.go
+│   │   │       │   └── telemetry_middleware.go
+│   │   │       ├── routes
+│   │   │       │   └── routes.go
+│   │   │       └── utils
+│   │   │           ├── binding_error_mapper.go
+│   │   │           └── date_validation.go
+│   │   └── right
+│   │       ├── aws
+│   │       │   └── step_functions
+│   │       │       ├── start_media_finalization.go
+│   │       │       └── step_functions_adapter.go
+│   │       ├── aws_s3
+│   │       │   ├── cloud_storage_implementation.go
+│   │       │   ├── constants.go
+│   │       │   ├── create_user_folder.go
+│   │       │   ├── delete_bucket_object.go
+│   │       │   ├── delete_keys.go
+│   │       │   ├── delete_user_folder.go
+│   │       │   ├── list_bucket_objects.go
+│   │       │   ├── listing_media_storage.go
+│   │       │   ├── object_exists.go
+│   │       │   ├── s3_adapter.go
+│   │       │   └── signed_url.go
+│   │       ├── aws_sqs
+│   │       │   └── media_processing
+│   │       │       ├── acknowledge_job.go
+│   │       │       ├── enqueue_job.go
+│   │       │       └── queue_adapter.go
+│   │       ├── cep
+│   │       │   ├── cep_adapter.go
+│   │       │   ├── cep_converter.go
+│   │       │   └── cep_validation_adapter.go
+│   │       ├── cnpj
+│   │       │   ├── cnpj_adapter.go
+│   │       │   ├── cnpj_converter.go
+│   │       │   └── cnpj_validation_adapter.go
+│   │       ├── cpf
+│   │       │   ├── cpf_adapter.go
+│   │       │   ├── cpf_converter.go
+│   │       │   └── cpf_validation_adapter.go
+│   │       ├── email
+│   │       │   ├── email_adapter.go
+│   │       │   └── send_email.go
+│   │       ├── fcm
+│   │       │   ├── fcm_adapter.go
+│   │       │   ├── send_multiple_messages.go
+│   │       │   └── send_single_message.go
+│   │       ├── mysql
+│   │       │   ├── global
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── audit_domain_to_entity.go
+│   │       │   │   │   └── audit_entity_to_domain.go
+│   │       │   │   ├── create_audit.go
+│   │       │   │   ├── entities
+│   │       │   │   │   └── audit_entity.go
+│   │       │   │   ├── get_configuration.go
+│   │       │   │   ├── global_adapter.go
+│   │       │   │   ├── rows_helpers.go
+│   │       │   │   └── transactions.go
+│   │       │   ├── holiday
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── calendar.go
+│   │       │   │   │   └── date.go
+│   │       │   │   ├── create_calendar.go
+│   │       │   │   ├── create_calendar_date.go
+│   │       │   │   ├── delete_calendar_date.go
+│   │       │   │   ├── entity
+│   │       │   │   │   ├── calendar_entity.go
+│   │       │   │   │   └── date_entity.go
+│   │       │   │   ├── get_calendar_by_id.go
+│   │       │   │   ├── get_calendar_date_by_id.go
+│   │       │   │   ├── holiday_adapter.go
+│   │       │   │   ├── list_calendar_dates.go
+│   │       │   │   ├── list_calendars.go
+│   │       │   │   ├── pagination.go
+│   │       │   │   ├── update_calendar.go
+│   │       │   │   └── update_calendar_date.go
+│   │       │   ├── instrumentation.go
+│   │       │   ├── listing
+│   │       │   │   ├── check_active_listing_exists.go
+│   │       │   │   ├── check_duplicity.go
+│   │       │   │   ├── clone_listing_version_satellites.go
+│   │       │   │   ├── converters
+│   │       │   │   │   └── listing_entity_to_domain.go
+│   │       │   │   ├── create_exchange_place.go
+│   │       │   │   ├── create_feature.go
+│   │       │   │   ├── create_financing_blocker.go
+│   │       │   │   ├── create_guarantee.go
+│   │       │   │   ├── create_listing_identity.go
+│   │       │   │   ├── create_listing_version.go
+│   │       │   │   ├── create_warehouse_additional_floor.go
+│   │       │   │   ├── delete_listing_exchange_places.go
+│   │       │   │   ├── delete_listing_features.go
+│   │       │   │   ├── delete_listing_financing_blokers.go
+│   │       │   │   ├── delete_listing_guarantees.go
+│   │       │   │   ├── delete_listing_warehouse_additional_floors.go
+│   │       │   │   ├── entity
+│   │       │   │   │   ├── base_feature_entity.go
+│   │       │   │   │   ├── exchange_place_entity.go
+│   │       │   │   │   ├── features_entity.go
+│   │       │   │   │   ├── financing_blocker_entity.go
+│   │       │   │   │   ├── guarantee_entity.go
+│   │       │   │   │   ├── listing_entity.go
+│   │       │   │   │   └── warehouse_additional_floor_entity.go
+│   │       │   │   ├── get_active_listing_version.go
+│   │       │   │   ├── get_base_features.go
+│   │       │   │   ├── get_base_features_by_ids.go
+│   │       │   │   ├── get_draft_version_by_listing_identity_id.go
+│   │       │   │   ├── get_entity_exchange_places_by_listing.go
+│   │       │   │   ├── get_entity_fetures_by_listing.go
+│   │       │   │   ├── get_entity_financing_blockers_by_listing.go
+│   │       │   │   ├── get_entity_guarantees_by_listing.go
+│   │       │   │   ├── get_entity_warehouse_additional_floors_by_listing.go
+│   │       │   │   ├── get_listing_by_query.go
+│   │       │   │   ├── get_listing_code.go
+│   │       │   │   ├── get_listing_for_end_update.go
+│   │       │   │   ├── get_listing_identity_by_id.go
+│   │       │   │   ├── get_listing_identity_by_uuid.go
+│   │       │   │   ├── get_listing_version_by_address.go
+│   │       │   │   ├── get_listing_version_by_id.go
+│   │       │   │   ├── get_listing_version_by_identity_and_number.go
+│   │       │   │   ├── get_previous_active_version_status.go
+│   │       │   │   ├── list_listing_versions.go
+│   │       │   │   ├── list_listings.go
+│   │       │   │   ├── listing_adapter.go
+│   │       │   │   ├── listing_catalog.go
+│   │       │   │   ├── set_listing_active_version.go
+│   │       │   │   ├── update_exchange_places.go
+│   │       │   │   ├── update_features.go
+│   │       │   │   ├── update_financing_blockers.go
+│   │       │   │   ├── update_guarantees.go
+│   │       │   │   ├── update_listing_status.go
+│   │       │   │   ├── update_listing_version.go
+│   │       │   │   ├── update_proposal_flags.go
+│   │       │   │   └── update_warehouse_additional_floors.go
+│   │       │   ├── listing_favorite
+│   │       │   │   ├── add_favorite.go
+│   │       │   │   ├── converters
+│   │       │   │   │   └── favorite_entity_to_domain.go
+│   │       │   │   ├── count_by_listing_ids.go
+│   │       │   │   ├── entities
+│   │       │   │   │   └── favorite_entity.go
+│   │       │   │   ├── get_user_flags.go
+│   │       │   │   ├── list_by_user.go
+│   │       │   │   ├── listing_favorite_adapter.go
+│   │       │   │   └── remove_favorite.go
+│   │       │   ├── listing_view
+│   │       │   │   ├── entities
+│   │       │   │   │   └── listing_view_metric_entity.go
+│   │       │   │   ├── get_view_count.go
+│   │       │   │   ├── increment_view.go
+│   │       │   │   └── listing_view_adapter.go
+│   │       │   ├── media_processing
+│   │       │   │   ├── bulk_update_asset_status.go
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── asset_domain_to_entity.go
+│   │       │   │   │   ├── asset_entity_to_domain.go
+│   │       │   │   │   ├── helpers.go
+│   │       │   │   │   ├── job_domain_to_entity.go
+│   │       │   │   │   ├── job_entity_to_domain.go
+│   │       │   │   │   └── types.go
+│   │       │   │   ├── count_assets.go
+│   │       │   │   ├── delete_asset.go
+│   │       │   │   ├── entities
+│   │       │   │   │   ├── asset_entity.go
+│   │       │   │   │   └── job_entity.go
+│   │       │   │   ├── get_asset.go
+│   │       │   │   ├── get_asset_by_id.go
+│   │       │   │   ├── get_asset_by_raw_key.go
+│   │       │   │   ├── get_asset_by_sequence.go
+│   │       │   │   ├── get_latest_finalization_job.go
+│   │       │   │   ├── get_processing_job_by_id.go
+│   │       │   │   ├── list_assets.go
+│   │       │   │   ├── list_stuck_jobs.go
+│   │       │   │   ├── media_processing_adapter.go
+│   │       │   │   ├── register_processing_job.go
+│   │       │   │   ├── update_processing_job.go
+│   │       │   │   └── upsert_asset.go
+│   │       │   ├── mysql_adapter.go
+│   │       │   ├── owner_metrics
+│   │       │   │   ├── converters
+│   │       │   │   │   └── owner_metrics_entity_to_domain.go
+│   │       │   │   ├── entities
+│   │       │   │   │   └── owner_metrics_entity.go
+│   │       │   │   ├── get_owner_metrics.go
+│   │       │   │   ├── owner_metrics_adapter.go
+│   │       │   │   ├── upsert_proposal_response.go
+│   │       │   │   └── upsert_visit_response.go
+│   │       │   ├── permission
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── permission_domain_to_entity.go
+│   │       │   │   │   ├── permission_entity_to_domain.go
+│   │       │   │   │   ├── role_domain_to_entity.go
+│   │       │   │   │   ├── role_entity_to_domain.go
+│   │       │   │   │   ├── role_permission_domain_to_entity.go
+│   │       │   │   │   └── role_permission_entity_to_domain.go
+│   │       │   │   ├── create_permission.go
+│   │       │   │   ├── create_role.go
+│   │       │   │   ├── create_role_permission.go
+│   │       │   │   ├── delete_permission.go
+│   │       │   │   ├── delete_role.go
+│   │       │   │   ├── delete_role_permission.go
+│   │       │   │   ├── entities
+│   │       │   │   │   ├── permission_entity.go
+│   │       │   │   │   ├── role_entity.go
+│   │       │   │   │   └── role_permission_entity.go
+│   │       │   │   ├── get_active_user_ids_by_role_id.go
+│   │       │   │   ├── get_all_permissions.go
+│   │       │   │   ├── get_all_roles.go
+│   │       │   │   ├── get_granted_permissions_by_role_id.go
+│   │       │   │   ├── get_permission_by_action.go
+│   │       │   │   ├── get_permission_by_id.go
+│   │       │   │   ├── get_permission_by_name.go
+│   │       │   │   ├── get_role_by_id.go
+│   │       │   │   ├── get_role_by_slug.go
+│   │       │   │   ├── get_role_ids_by_permission_id.go
+│   │       │   │   ├── get_role_permission_by_id.go
+│   │       │   │   ├── get_role_permission_by_role_id_and_permission_id.go
+│   │       │   │   ├── get_role_permissions_by_role_id.go
+│   │       │   │   ├── get_user_permissions.go
+│   │       │   │   ├── has_user_permission.go
+│   │       │   │   ├── list_permissions.go
+│   │       │   │   ├── list_role_permissions.go
+│   │       │   │   ├── list_roles.go
+│   │       │   │   ├── permission_adapter.go
+│   │       │   │   ├── rows_helpers.go
+│   │       │   │   ├── update_permission.go
+│   │       │   │   ├── update_role.go
+│   │       │   │   └── update_role_permission.go
+│   │       │   ├── photo_session
+│   │       │   │   ├── agenda_create_entries.go
+│   │       │   │   ├── agenda_delete_entries.go
+│   │       │   │   ├── agenda_delete_entry.go
+│   │       │   │   ├── agenda_find_blocking.go
+│   │       │   │   ├── agenda_get_entry.go
+│   │       │   │   ├── agenda_get_entry_for_update.go
+│   │       │   │   ├── agenda_list_entries.go
+│   │       │   │   ├── agenda_list_photographers.go
+│   │       │   │   ├── agenda_update_entry.go
+│   │       │   │   ├── agenda_update_source.go
+│   │       │   │   ├── booking_create.go
+│   │       │   │   ├── booking_find_by_agenda_entry.go
+│   │       │   │   ├── booking_get.go
+│   │       │   │   ├── booking_get_by_listing.go
+│   │       │   │   ├── booking_get_for_update.go
+│   │       │   │   ├── booking_update.go
+│   │       │   │   ├── booking_update_status.go
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── agenda_entry.go
+│   │       │   │   │   ├── booking.go
+│   │       │   │   │   └── service_area.go
+│   │       │   │   ├── create_service_area.go
+│   │       │   │   ├── delete_service_area.go
+│   │       │   │   ├── entity
+│   │       │   │   │   ├── agenda_entry.go
+│   │       │   │   │   ├── booking.go
+│   │       │   │   │   └── service_area.go
+│   │       │   │   ├── get_service_area_by_id.go
+│   │       │   │   ├── list_photographer_ids_by_location.go
+│   │       │   │   ├── list_service_areas.go
+│   │       │   │   ├── list_service_areas_by_photographer.go
+│   │       │   │   ├── photo_session_adapter.go
+│   │       │   │   └── update_service_area.go
+│   │       │   ├── property_coverage
+│   │       │   │   ├── admin_helpers.go
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── admin_converters.go
+│   │       │   │   │   ├── domain_to_entity.go
+│   │       │   │   │   ├── horizontal_entity_to_domain.go
+│   │       │   │   │   ├── no_complex_entity_to_domain.go
+│   │       │   │   │   └── vertical_entity_to_domain.go
+│   │       │   │   ├── create_horizontal_complex_zip_code.go
+│   │       │   │   ├── create_managed_complex.go
+│   │       │   │   ├── create_vertical_complex_size.go
+│   │       │   │   ├── create_vertical_complex_tower.go
+│   │       │   │   ├── delete_horizontal_complex_zip_code.go
+│   │       │   │   ├── delete_managed_complex.go
+│   │       │   │   ├── delete_vertical_complex_size.go
+│   │       │   │   ├── delete_vertical_complex_tower.go
+│   │       │   │   ├── entities
+│   │       │   │   │   ├── admin_entities.go
+│   │       │   │   │   ├── horizontal_coverage_entity.go
+│   │       │   │   │   ├── no_complex_coverage_entity.go
+│   │       │   │   │   └── vertical_coverage_entity.go
+│   │       │   │   ├── get_horizontal_complex_by_zip.go
+│   │       │   │   ├── get_horizontal_complex_zip_code.go
+│   │       │   │   ├── get_horizontal_coverage.go
+│   │       │   │   ├── get_managed_complex.go
+│   │       │   │   ├── get_no_complex_coverage.go
+│   │       │   │   ├── get_vertical_complex_by_zip_number.go
+│   │       │   │   ├── get_vertical_complex_size.go
+│   │       │   │   ├── get_vertical_complex_tower.go
+│   │       │   │   ├── get_vertical_coverage.go
+│   │       │   │   ├── list_horizontal_complex_zip_codes.go
+│   │       │   │   ├── list_managed_complexes.go
+│   │       │   │   ├── list_vertical_complex_sizes.go
+│   │       │   │   ├── list_vertical_complex_towers.go
+│   │       │   │   ├── property_coverage_adapter.go
+│   │       │   │   ├── update_horizontal_complex_zip_code.go
+│   │       │   │   ├── update_managed_complex.go
+│   │       │   │   ├── update_vertical_complex_size.go
+│   │       │   │   ├── update_vertical_complex_tower.go
+│   │       │   │   └── value_helpers.go
+│   │       │   ├── proposal
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── owner_summary_entity_to_domain.go
+│   │       │   │   │   ├── proposal_domain_to_entity.go
+│   │       │   │   │   ├── proposal_entity_to_domain.go
+│   │       │   │   │   └── realtor_summary_entity_to_domain.go
+│   │       │   │   ├── create_document.go
+│   │       │   │   ├── create_proposal.go
+│   │       │   │   ├── entities
+│   │       │   │   │   ├── owner_summary_entity.go
+│   │       │   │   │   ├── proposal_document_entity.go
+│   │       │   │   │   ├── proposal_entity.go
+│   │       │   │   │   └── realtor_summary_entity.go
+│   │       │   │   ├── fetch_proposal.go
+│   │       │   │   ├── get_proposal_by_id.go
+│   │       │   │   ├── get_proposal_by_id_for_update.go
+│   │       │   │   ├── list_documents.go
+│   │       │   │   ├── list_documents_by_ids.go
+│   │       │   │   ├── list_owner_summaries.go
+│   │       │   │   ├── list_proposals.go
+│   │       │   │   ├── list_realtor_summaries.go
+│   │       │   │   ├── mark_owner_first_view.go
+│   │       │   │   ├── proposal_adapter.go
+│   │       │   │   ├── update_proposal_status.go
+│   │       │   │   └── update_proposal_text.go
+│   │       │   ├── schedule
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── agenda.go
+│   │       │   │   │   ├── entry.go
+│   │       │   │   │   └── rule.go
+│   │       │   │   ├── delete_entry.go
+│   │       │   │   ├── delete_rule.go
+│   │       │   │   ├── delete_rules.go
+│   │       │   │   ├── entities
+│   │       │   │   │   ├── agenda_entity.go
+│   │       │   │   │   ├── entry_entity.go
+│   │       │   │   │   └── rule_entity.go
+│   │       │   │   ├── get_agenda_by_listing.go
+│   │       │   │   ├── get_availability_data.go
+│   │       │   │   ├── get_entry_by_id.go
+│   │       │   │   ├── get_entry_by_visit_id.go
+│   │       │   │   ├── get_rule_by_id.go
+│   │       │   │   ├── insert_agenda.go
+│   │       │   │   ├── insert_entry.go
+│   │       │   │   ├── insert_rules.go
+│   │       │   │   ├── list_agenda_entries.go
+│   │       │   │   ├── list_block_rules.go
+│   │       │   │   ├── list_entries_between.go
+│   │       │   │   ├── list_owner_summary.go
+│   │       │   │   ├── list_rules.go
+│   │       │   │   ├── pagination.go
+│   │       │   │   ├── schedule_adapter.go
+│   │       │   │   ├── update_entry.go
+│   │       │   │   └── update_rule.go
+│   │       │   ├── session
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── session_domain_to_entity.go
+│   │       │   │   │   └── session_entity_to_domain.go
+│   │       │   │   ├── create_session.go
+│   │       │   │   ├── delete_expired_sessions.go
+│   │       │   │   ├── delete_sessions_by_user_id.go
+│   │       │   │   ├── entities
+│   │       │   │   │   └── session_entity.go
+│   │       │   │   ├── get_active_session_by_refresh_hash.go
+│   │       │   │   ├── get_active_sessions_by_user_id.go
+│   │       │   │   ├── get_session_by_id.go
+│   │       │   │   ├── mark_session_rotated.go
+│   │       │   │   ├── revoke_session.go
+│   │       │   │   ├── revoke_sessions_by_user_id.go
+│   │       │   │   ├── session_adapter.go
+│   │       │   │   ├── session_row_mapper.go
+│   │       │   │   └── update_session_rotation.go
+│   │       │   ├── sql_executor.go
+│   │       │   ├── user
+│   │       │   │   ├── activate_user_role.go
+│   │       │   │   ├── add_device_token.go
+│   │       │   │   ├── batch_update_user_last_activity.go
+│   │       │   │   ├── clear_user_blocked_until.go
+│   │       │   │   ├── converters
+│   │       │   │   │   ├── agency_invite_domain_to_entity.go
+│   │       │   │   │   ├── agency_invite_entity_to_domain.go
+│   │       │   │   │   ├── device_token_entity_to_vo.go
+│   │       │   │   │   ├── user_domain_to_entity.go
+│   │       │   │   │   ├── user_entity_to_domain.go
+│   │       │   │   │   ├── user_role_domain_to_entity.go
+│   │       │   │   │   ├── user_role_entity_to_domain.go
+│   │       │   │   │   ├── user_validation_domain_to_entity.go
+│   │       │   │   │   ├── user_validation_entity_to_domain.go
+│   │       │   │   │   ├── user_with_role_entity_to_domain.go
+│   │       │   │   │   ├── wrong_signin_domain_to_entity.go
+│   │       │   │   │   └── wrong_signin_entity_to_domain.go
+│   │       │   │   ├── create_agency_invite.go
+│   │       │   │   ├── create_agency_relationship.go
+│   │       │   │   ├── create_user.go
+│   │       │   │   ├── create_user_role.go
+│   │       │   │   ├── deactivate_all_user_roles.go
+│   │       │   │   ├── delete_agency_realtor_relation.go
+│   │       │   │   ├── delete_expired_validations.go
+│   │       │   │   ├── delete_invite.go
+│   │       │   │   ├── delete_user_role.go
+│   │       │   │   ├── delete_user_roles_by_userid.go
+│   │       │   │   ├── delete_validation.go
+│   │       │   │   ├── delete_wrong_signin_by_userid.go
+│   │       │   │   ├── entities
+│   │       │   │   │   ├── agency_invite_entity.go
+│   │       │   │   │   ├── device_token_entity.go
+│   │       │   │   │   ├── realtors_agency_entity.go
+│   │       │   │   │   ├── user_entity.go
+│   │       │   │   │   ├── user_role_entity.go
+│   │       │   │   │   ├── user_validation_entity.go
+│   │       │   │   │   ├── user_with_role_entity.go
+│   │       │   │   │   └── wrong_signin_entity.go
+│   │       │   │   ├── exists_email_for_another_user.go
+│   │       │   │   ├── exists_phone_for_another_user.go
+│   │       │   │   ├── get_active_user_role_by_user_id.go
+│   │       │   │   ├── get_agency_of_realtor.go
+│   │       │   │   ├── get_invite_by_phone_number.go
+│   │       │   │   ├── get_realtors_by_agency.go
+│   │       │   │   ├── get_user_by_id.go
+│   │       │   │   ├── get_user_by_nationalid.go
+│   │       │   │   ├── get_user_by_phone_number.go
+│   │       │   │   ├── get_user_role_by_user_id_and_role_id.go
+│   │       │   │   ├── get_user_roles_by_user_id.go
+│   │       │   │   ├── get_user_validations.go
+│   │       │   │   ├── get_users_by_role_and_status.go
+│   │       │   │   ├── get_users_with_expired_block.go
+│   │       │   │   ├── get_wrong_signin_by_userid.go
+│   │       │   │   ├── has_user_duplicate.go
+│   │       │   │   ├── list_all_users.go
+│   │       │   │   ├── list_device_token_strings_by_opted_in_users.go
+│   │       │   │   ├── list_device_token_strings_by_user_if_opted_in.go
+│   │       │   │   ├── list_device_tokens_by_user.go
+│   │       │   │   ├── list_users.go
+│   │       │   │   ├── remove_all_device_tokens.go
+│   │       │   │   ├── remove_device_token.go
+│   │       │   │   ├── remove_device_tokens_by_device_id.go
+│   │       │   │   ├── reset_wrong_signin_attempts.go
+│   │       │   │   ├── rows_helpers.go
+│   │       │   │   ├── scan_helpers.go
+│   │       │   │   ├── set_user_blocked_until.go
+│   │       │   │   ├── set_user_permanently_blocked.go
+│   │       │   │   ├── update_agency_invite_by_id.go
+│   │       │   │   ├── update_user_by_id.go
+│   │       │   │   ├── update_user_last_activity.go
+│   │       │   │   ├── update_user_password_by_id.go
+│   │       │   │   ├── update_user_role.go
+│   │       │   │   ├── update_user_role_status.go
+│   │       │   │   ├── update_user_role_status_tx.go
+│   │       │   │   ├── update_user_validations.go
+│   │       │   │   ├── update_wrong_signin.go
+│   │       │   │   └── user_adapter.go
+│   │       │   └── visit
+│   │       │       ├── converters
+│   │       │       │   ├── visit_domain_to_entity.go
+│   │       │       │   └── visit_entity_to_domain.go
+│   │       │       ├── entities
+│   │       │       │   └── visit_entity.go
+│   │       │       ├── get_visit_by_id.go
+│   │       │       ├── get_visit_with_listing.go
+│   │       │       ├── insert_visit.go
+│   │       │       ├── list_visits.go
+│   │       │       ├── pagination.go
+│   │       │       ├── update_visit.go
+│   │       │       ├── visit_adapter.go
+│   │       │       ├── visit_row_mapper.go
+│   │       │       └── visit_with_listing_row_mapper.go
+│   │       ├── prometheus
+│   │       │   └── prometheus_adapter.go
+│   │       ├── redis
+│   │       │   └── token_blocklist
+│   │       │       ├── add.go
+│   │       │       ├── count.go
+│   │       │       ├── delete.go
+│   │       │       ├── exists.go
+│   │       │       ├── list.go
+│   │       │       └── token_blocklist_adapter.go
+│   │       ├── sms
+│   │       │   ├── send_sms.go
+│   │       │   └── sms_adapter.go
+│   │       └── step_functions
+│   │           └── media_processing_callback_adapter.go
+│   └── core
+│       ├── cache
+│       │   ├── cache_interface.go
+│       │   └── redis_cache.go
+│       ├── config
+│       │   ├── api_version.go
+│       │   ├── bootstrap.go
+│       │   ├── config_getters.go
+│       │   ├── config_model.go
+│       │   ├── errors.go
+│       │   ├── inject_dependencies.go
+│       │   ├── lifecycle.go
+│       │   ├── phase_01_context.go
+│       │   ├── phase_02_config.go
+│       │   ├── phase_03_infrastructure.go
+│       │   ├── phase_04_dependencies.go
+│       │   ├── phase_05_services.go
+│       │   ├── phase_06_handlers.go
+│       │   ├── phase_07_workers.go
+│       │   ├── phase_08_startup.go
+│       │   ├── telemetry.go
+│       │   └── types.go
+│       ├── derrors
+│       │   ├── errors.go
+│       │   ├── kinds.go
+│       │   └── sentinels.go
+│       ├── domain
+│       │   └── dto
+│       │       ├── media_dto.go
+│       │       └── media_output_dto.go
+│       ├── events
+│       │   ├── bus.go
+│       │   ├── metrics.go
+│       │   └── types.go
+│       ├── factory
+│       │   ├── adapter_factory.go
+│       │   ├── concrete_adapter_factory.go
+│       │   ├── types.go
+│       │   └── validation.go
+│       ├── go_routines
+│       │   ├── activity_tracker.go
+│       │   ├── media_processing_reconciler.go
+│       │   ├── session_cleaner_worker.go
+│       │   ├── temp_block_cleaner_worker.go
+│       │   └── validation_cleaner_worker.go
+│       ├── model
+│       │   ├── cep_model
+│       │   │   ├── cep_domain.go
+│       │   │   └── cep_interface.go
+│       │   ├── cnpj_model
+│       │   │   ├── cnpj_domain.go
+│       │   │   └── cnpj_interface.go
+│       │   ├── cpf_model
+│       │   │   ├── cpf_domain.go
+│       │   │   └── cpf_interface.go
+│       │   ├── global_model
+│       │   │   ├── audit_domain.go
+│       │   │   ├── audit_interface.go
+│       │   │   ├── environment.go
+│       │   │   ├── global_constants.go
+│       │   │   ├── logging_runtime.go
+│       │   │   ├── notification.go
+│       │   │   ├── runtime_environment.go
+│       │   │   └── token.go
+│       │   ├── holiday_model
+│       │   │   ├── calendar_domain.go
+│       │   │   ├── calendar_interface.go
+│       │   │   ├── date_domain.go
+│       │   │   ├── date_interface.go
+│       │   │   ├── enums.go
+│       │   │   └── filters.go
+│       │   ├── listing_model
+│       │   │   ├── base_feature_domain.go
+│       │   │   ├── base_feature_interface.go
+│       │   │   ├── catalog_value.go
+│       │   │   ├── constants.go
+│       │   │   ├── exchange_place_domain.go
+│       │   │   ├── exchange_place_interface.go
+│       │   │   ├── feature_domain.go
+│       │   │   ├── feature_interface.go
+│       │   │   ├── financing_blocker_domain.go
+│       │   │   ├── financing_blocker_interface.go
+│       │   │   ├── guarantee_domain.go
+│       │   │   ├── guarantee_interface.go
+│       │   │   ├── listing_domain.go
+│       │   │   ├── listing_interface.go
+│       │   │   ├── offer_domain.go
+│       │   │   ├── offer_interface.go
+│       │   │   ├── property_options_result.go
+│       │   │   ├── property_type_option.go
+│       │   │   ├── status_registry.go
+│       │   │   ├── types.go
+│       │   │   ├── visit_domain.go
+│       │   │   ├── visit_filters.go
+│       │   │   ├── visit_interface.go
+│       │   │   ├── visit_participant_snapshot.go
+│       │   │   ├── visit_status.go
+│       │   │   ├── warehouse_additional_floor_domain.go
+│       │   │   └── warehouse_additional_floor_interface.go
+│       │   ├── media_processing_model
+│       │   │   ├── enums.go
+│       │   │   ├── finalization_input.go
+│       │   │   ├── media_asset.go
+│       │   │   ├── media_batch.go
+│       │   │   └── media_job.go
+│       │   ├── permission_model
+│       │   │   ├── constants.go
+│       │   │   ├── permission_context.go
+│       │   │   ├── permission_domain.go
+│       │   │   ├── permission_interface.go
+│       │   │   ├── role_domain.go
+│       │   │   ├── role_interface.go
+│       │   │   ├── role_permission_domain.go
+│       │   │   └── role_permission_interface.go
+│       │   ├── photo_session_model
+│       │   │   ├── agenda_entry_domain.go
+│       │   │   ├── agenda_entry_interface.go
+│       │   │   ├── booking_domain.go
+│       │   │   ├── booking_interface.go
+│       │   │   ├── constants.go
+│       │   │   ├── default_availability_domain.go
+│       │   │   ├── default_availability_interface.go
+│       │   │   ├── filter.go
+│       │   │   ├── photographer_service_area_domain.go
+│       │   │   ├── photographer_service_area_interface.go
+│       │   │   ├── service_area_filter.go
+│       │   │   ├── slot_domain.go
+│       │   │   ├── slot_interface.go
+│       │   │   ├── time_off_domain.go
+│       │   │   └── time_off_interface.go
+│       │   ├── property_coverage_model
+│       │   │   ├── admin_complex_domain.go
+│       │   │   ├── admin_complex_interface.go
+│       │   │   ├── coverage_domain.go
+│       │   │   ├── coverage_interface.go
+│       │   │   ├── coverage_kind.go
+│       │   │   ├── sector.go
+│       │   │   └── source.go
+│       │   ├── proposal_model
+│       │   │   ├── document.go
+│       │   │   ├── filter.go
+│       │   │   ├── owner_summary.go
+│       │   │   ├── proposal.go
+│       │   │   ├── realtor_summary.go
+│       │   │   ├── stats.go
+│       │   │   └── status.go
+│       │   ├── schedule_model
+│       │   │   ├── agenda_domain.go
+│       │   │   ├── agenda_interface.go
+│       │   │   ├── entry_domain.go
+│       │   │   ├── entry_interface.go
+│       │   │   ├── enums.go
+│       │   │   ├── filters.go
+│       │   │   ├── rule_domain.go
+│       │   │   └── rule_interface.go
+│       │   ├── session_model
+│       │   │   └── session_domain.go
+│       │   ├── storage_model
+│       │   │   ├── storage_constants.go
+│       │   │   └── storage_types.go
+│       │   └── user_model
+│       │       ├── constants.go
+│       │       ├── device_token_value_object.go
+│       │       ├── invite_domain.go
+│       │       ├── invite_interface.go
+│       │       ├── owner_response_metrics.go
+│       │       ├── realtors_agency_domain.go
+│       │       ├── realtors_agency_interface.go
+│       │       ├── security_event.go
+│       │       ├── signin_errors.go
+│       │       ├── token_domain.go
+│       │       ├── user_domain.go
+│       │       ├── user_interface.go
+│       │       ├── user_role_domain.go
+│       │       ├── user_role_interface.go
+│       │       ├── validation_domain.go
+│       │       ├── validation_interface.go
+│       │       ├── wrong_signin_domain.go
+│       │       └── wrong_signin_interface.go
+│       ├── port
+│       │   ├── left
+│       │   │   └── http
+│       │   │       ├── authhandler
+│       │   │       │   └── auth_handler_port.go
+│       │   │       ├── complexhandler
+│       │   │       │   └── complex_handler_port.go
+│       │   │       ├── holidayhandler
+│       │   │       │   └── holiday_handler_port.go
+│       │   │       ├── listinghandler
+│       │   │       │   └── listing_handler_port.go
+│       │   │       ├── mediaprocessinghandler
+│       │   │       │   └── media_processing_handler_port.go
+│       │   │       ├── proposalhandler
+│       │   │       │   └── proposal_handler_port.go
+│       │   │       ├── schedulehandler
+│       │   │       │   └── schedule_handler_port.go
+│       │   │       ├── userhandler
+│       │   │       │   └── user_handler_port.go
+│       │   │       ├── versioning.go
+│       │   │       └── visithandler
+│       │   │           └── visit_handler_port.go
+│       │   └── right
+│       │       ├── cache
+│       │       │   └── token_blocklist_port.go
+│       │       ├── cep
+│       │       │   ├── cep_port.go
+│       │       │   └── errors.go
+│       │       ├── cnpj
+│       │       │   ├── cnpj_port.go
+│       │       │   └── errors.go
+│       │       ├── cpf
+│       │       │   ├── cpf_port.go
+│       │       │   └── errors.go
+│       │       ├── email
+│       │       │   └── email_port.go
+│       │       ├── fcm
+│       │       │   └── fcm_port.go
+│       │       ├── functions
+│       │       │   └── mediaprocessingcallback
+│       │       │       └── callback_port.go
+│       │       ├── metrics
+│       │       │   └── metrics_port_interface.go
+│       │       ├── queue
+│       │       │   └── mediaprocessingqueue
+│       │       │       └── media_processing_queue_port.go
+│       │       ├── repository
+│       │       │   ├── global_repository
+│       │       │   │   └── global_repository_interface.go
+│       │       │   ├── holiday_repository
+│       │       │   │   └── holiday_repository_interface.go
+│       │       │   ├── listing_favorite_repository
+│       │       │   │   └── listing_favorite_repository.go
+│       │       │   ├── listing_repository
+│       │       │   │   └── listing_repository_interface.go
+│       │       │   ├── listing_view_repository
+│       │       │   │   └── listing_view_repository.go
+│       │       │   ├── media_processing_repository
+│       │       │   │   └── media_processing_repo_port.go
+│       │       │   ├── owner_metrics_repository
+│       │       │   │   └── owner_metrics_repository_interface.go
+│       │       │   ├── permission_repository
+│       │       │   │   └── permission_repository_interface.go
+│       │       │   ├── photo_session_repository
+│       │       │   │   └── photo_session_repository_interface.go
+│       │       │   ├── property_coverage_repository
+│       │       │   │   └── property_coverage_repo_port.go
+│       │       │   ├── proposal_repository
+│       │       │   │   └── proposal_repository_interface.go
+│       │       │   ├── schedule_repository
+│       │       │   │   └── schedule_repository_interface.go
+│       │       │   ├── session_repository
+│       │       │   │   └── session_repo_port.go
+│       │       │   ├── user_repository
+│       │       │   │   └── user_repository_interface.go
+│       │       │   └── visit_repository
+│       │       │       └── visit_repository_interface.go
+│       │       ├── sms
+│       │       │   └── sms_port.go
+│       │       ├── storage
+│       │       │   ├── cloud_storage_port.go
+│       │       │   └── listing_media_storage_port.go
+│       │       └── workflow
+│       │           ├── errors.go
+│       │           └── workflow_port.go
+│       ├── service
+│       │   ├── global_service
+│       │   │   ├── create_audit.go
+│       │   │   ├── get_cep.go
+│       │   │   ├── get_configuration.go
+│       │   │   ├── get_unified_notification_service.go
+│       │   │   ├── get_user_id_from_context.go
+│       │   │   ├── global_service.go
+│       │   │   ├── notification_service.go
+│       │   │   ├── session_notification_subscriber.go
+│       │   │   └── transactions.go
+│       │   ├── holiday_service
+│       │   │   ├── create_calendar.go
+│       │   │   ├── create_calendar_date.go
+│       │   │   ├── delete_calendar_date.go
+│       │   │   ├── get_calendar.go
+│       │   │   ├── get_calendar_date.go
+│       │   │   ├── helpers.go
+│       │   │   ├── holiday_service.go
+│       │   │   ├── list_calendar_dates.go
+│       │   │   ├── list_calendars.go
+│       │   │   ├── models.go
+│       │   │   ├── update_calendar.go
+│       │   │   └── update_calendar_date.go
+│       │   ├── listing_service
+│       │   │   ├── add_favorite_listing.go
+│       │   │   ├── approve_offer.go
+│       │   │   ├── approve_visit.go
+│       │   │   ├── cancel_offer.go
+│       │   │   ├── cancel_photo_session.go
+│       │   │   ├── cancel_visit.go
+│       │   │   ├── change_listing_status.go
+│       │   │   ├── change_listing_status_input.go
+│       │   │   ├── create_catalog_value.go
+│       │   │   ├── create_draft_version.go
+│       │   │   ├── create_listing.go
+│       │   │   ├── decode_property_types.go
+│       │   │   ├── delete_catalog_value.go
+│       │   │   ├── delete_listing.go
+│       │   │   ├── discard_draft_version.go
+│       │   │   ├── discard_draft_version_input.go
+│       │   │   ├── end_update_listing.go
+│       │   │   ├── end_update_listing_input.go
+│       │   │   ├── ensure_catalog_value.go
+│       │   │   ├── get_all_listings_by_user.go
+│       │   │   ├── get_all_offers_by_user.go
+│       │   │   ├── get_all_visits_by_user.go
+│       │   │   ├── get_base_features.go
+│       │   │   ├── get_catalog_value_detail.go
+│       │   │   ├── get_listing_detail.go
+│       │   │   ├── get_options.go
+│       │   │   ├── helpers.go
+│       │   │   ├── list_catalog_values.go
+│       │   │   ├── list_favorite_listings.go
+│       │   │   ├── list_listing_versions.go
+│       │   │   ├── list_listing_versions_input.go
+│       │   │   ├── list_listings.go
+│       │   │   ├── list_photographer_slots.go
+│       │   │   ├── listing_catalog_inputs.go
+│       │   │   ├── listing_service.go
+│       │   │   ├── notifications.go
+│       │   │   ├── photo_session_types.go
+│       │   │   ├── promote_listing_version.go
+│       │   │   ├── promote_listing_version_input.go
+│       │   │   ├── register_listing_view.go
+│       │   │   ├── reject_offer.go
+│       │   │   ├── reject_visit.go
+│       │   │   ├── remove_favorite_listing.go
+│       │   │   ├── reserve_photo_session.go
+│       │   │   ├── restore_catalog_value.go
+│       │   │   ├── update_catalog_value.go
+│       │   │   ├── update_listing.go
+│       │   │   └── update_listing_input.go
+│       │   ├── media_processing_service
+│       │   │   ├── apply_processing_result.go
+│       │   │   ├── build_finalization_input.go
+│       │   │   ├── complete_media.go
+│       │   │   ├── delete_media.go
+│       │   │   ├── generate_download_urls.go
+│       │   │   ├── handle_callback.go
+│       │   │   ├── handle_owner_media_approval.go
+│       │   │   ├── list_media.go
+│       │   │   ├── manage_media.go
+│       │   │   ├── media_processing_service.go
+│       │   │   ├── notify_owner_media_ready.go
+│       │   │   ├── process_media.go
+│       │   │   ├── reconcile_stuck_jobs.go
+│       │   │   ├── request_upload_urls.go
+│       │   │   ├── types.go
+│       │   │   └── validate_processed_assets.go
+│       │   ├── permission_service
+│       │   │   ├── create_permission.go
+│       │   │   ├── create_role.go
+│       │   │   ├── create_role_permission.go
+│       │   │   ├── delete_permission.go
+│       │   │   ├── delete_role_permission.go
+│       │   │   ├── get_permission.go
+│       │   │   ├── get_role_by_id.go
+│       │   │   ├── get_role_by_slug.go
+│       │   │   ├── get_role_permission.go
+│       │   │   ├── get_role_permissions.go
+│       │   │   ├── get_user_permissions.go
+│       │   │   ├── grant_permission_to_role.go
+│       │   │   ├── has_http_permission.go
+│       │   │   ├── has_permission.go
+│       │   │   ├── invalidate_user_cache.go
+│       │   │   ├── list_permissions.go
+│       │   │   ├── list_role_permissions.go
+│       │   │   ├── list_roles.go
+│       │   │   ├── metrics_helpers.go
+│       │   │   ├── permission_crud_models.go
+│       │   │   ├── permission_service.go
+│       │   │   ├── refresh_user_permissions.go
+│       │   │   ├── revoke_permission_from_role.go
+│       │   │   ├── update_permission.go
+│       │   │   └── update_role_permission.go
+│       │   ├── photo_session_service
+│       │   │   ├── agenda_enrichment.go
+│       │   │   ├── agenda_list.go
+│       │   │   ├── availability_helpers.go
+│       │   │   ├── availability_list.go
+│       │   │   ├── config.go
+│       │   │   ├── constants.go
+│       │   │   ├── ensure_agenda.go
+│       │   │   ├── get_active_booking_by_listing.go
+│       │   │   ├── helpers.go
+│       │   │   ├── photo_session_service.go
+│       │   │   ├── service_area_create.go
+│       │   │   ├── service_area_delete.go
+│       │   │   ├── service_area_detail.go
+│       │   │   ├── service_area_helpers.go
+│       │   │   ├── service_area_list.go
+│       │   │   ├── service_area_update.go
+│       │   │   ├── session_cancel.go
+│       │   │   ├── session_confirm.go
+│       │   │   ├── session_reserve.go
+│       │   │   ├── session_update_status.go
+│       │   │   ├── time_off_create.go
+│       │   │   ├── time_off_delete.go
+│       │   │   ├── time_off_detail.go
+│       │   │   ├── time_off_list.go
+│       │   │   ├── time_off_update.go
+│       │   │   └── types.go
+│       │   ├── property_coverage_service
+│       │   │   ├── builder.go
+│       │   │   ├── create_complex.go
+│       │   │   ├── create_complex_size.go
+│       │   │   ├── create_complex_tower.go
+│       │   │   ├── create_complex_zip_code.go
+│       │   │   ├── delete_complex.go
+│       │   │   ├── delete_complex_size.go
+│       │   │   ├── delete_complex_tower.go
+│       │   │   ├── delete_complex_zip_code.go
+│       │   │   ├── get_complex_by_address.go
+│       │   │   ├── get_complex_detail.go
+│       │   │   ├── get_complex_size_detail.go
+│       │   │   ├── get_complex_tower_detail.go
+│       │   │   ├── get_complex_zip_code_detail.go
+│       │   │   ├── list_complex_sizes.go
+│       │   │   ├── list_complex_towers.go
+│       │   │   ├── list_complex_zip_codes.go
+│       │   │   ├── list_complexes.go
+│       │   │   ├── models.go
+│       │   │   ├── property_coverage_service.go
+│       │   │   ├── resolve_property_types.go
+│       │   │   ├── resolve_property_types_test.go
+│       │   │   ├── update_complex.go
+│       │   │   ├── update_complex_size.go
+│       │   │   ├── update_complex_tower.go
+│       │   │   ├── update_complex_zip_code.go
+│       │   │   └── validators.go
+│       │   ├── proposal_service
+│       │   │   ├── accept_proposal.go
+│       │   │   ├── cancel_proposal.go
+│       │   │   ├── create_proposal.go
+│       │   │   ├── get_proposal_detail.go
+│       │   │   ├── helpers.go
+│       │   │   ├── list_owner_proposals.go
+│       │   │   ├── list_realtor_proposals.go
+│       │   │   ├── proposal_service.go
+│       │   │   ├── reject_proposal.go
+│       │   │   ├── types.go
+│       │   │   └── update_proposal.go
+│       │   ├── schedule_service
+│       │   │   ├── availability_engine.go
+│       │   │   ├── availability_normalization.go
+│       │   │   ├── check_slot_availability.go
+│       │   │   ├── check_visit_conflict.go
+│       │   │   ├── config.go
+│       │   │   ├── create_block_entry.go
+│       │   │   ├── create_default_agenda.go
+│       │   │   ├── create_visit_entry.go
+│       │   │   ├── delete_block_entry.go
+│       │   │   ├── delete_visit_entry.go
+│       │   │   ├── finish_listing_agenda.go
+│       │   │   ├── get_agenda.go
+│       │   │   ├── get_availability.go
+│       │   │   ├── helpers.go
+│       │   │   ├── list_agenda_entries.go
+│       │   │   ├── list_block_rules.go
+│       │   │   ├── list_owner_summary.go
+│       │   │   ├── models.go
+│       │   │   ├── rules.go
+│       │   │   ├── schedule_service.go
+│       │   │   ├── update_block_entry.go
+│       │   │   └── update_visit_entry_type.go
+│       │   ├── session_service
+│       │   │   ├── clean_expired_sessions.go
+│       │   │   ├── metrics.go
+│       │   │   ├── service.go
+│       │   │   └── service_impl.go
+│       │   ├── user_service
+│       │   │   ├── accept_invitation.go
+│       │   │   ├── add_alternative_role.go
+│       │   │   ├── approve_creci_manual.go
+│       │   │   ├── assign_role_to_user.go
+│       │   │   ├── batch_update_last_activity.go
+│       │   │   ├── block_user_due_to_failed_attempts.go
+│       │   │   ├── clean_agency_pending.go
+│       │   │   ├── clean_owner_pending.go
+│       │   │   ├── clean_realtor_pending.go
+│       │   │   ├── clear_user_blocked_until.go
+│       │   │   ├── config.go
+│       │   │   ├── confirm_email_change.go
+│       │   │   ├── confirm_password_change.go
+│       │   │   ├── confirm_phone_change.go
+│       │   │   ├── create_access_token.go
+│       │   │   ├── create_agency.go
+│       │   │   ├── create_owner.go
+│       │   │   ├── create_realtor.go
+│       │   │   ├── create_refresh_token.go
+│       │   │   ├── create_system_user.go
+│       │   │   ├── create_tokens.go
+│       │   │   ├── create_user_folder.go
+│       │   │   ├── create_validation.go
+│       │   │   ├── delete_account.go
+│       │   │   ├── delete_agency_of_realtor.go
+│       │   │   ├── delete_realtor_of_agency.go
+│       │   │   ├── delete_system_user.go
+│       │   │   ├── delete_user_folder.go
+│       │   │   ├── device_context.go
+│       │   │   ├── get_active_role_status.go
+│       │   │   ├── get_active_user_role.go
+│       │   │   ├── get_agency_of_realtor.go
+│       │   │   ├── get_all_users.go
+│       │   │   ├── get_creci_download_urls.go
+│       │   │   ├── get_creci_upload_url.go
+│       │   │   ├── get_crecis_to_validate_by_status.go
+│       │   │   ├── get_photo_download_url.go
+│       │   │   ├── get_photo_upload_url.go
+│       │   │   ├── get_profile.go
+│       │   │   ├── get_realtors_by_agency.go
+│       │   │   ├── get_token_expiration.go
+│       │   │   ├── get_user_by_id.go
+│       │   │   ├── get_user_roles.go
+│       │   │   ├── get_users.go
+│       │   │   ├── get_users_with_expired_block.go
+│       │   │   ├── home.go
+│       │   │   ├── invite_realtor.go
+│       │   │   ├── list_pending_realtors.go
+│       │   │   ├── password_services.go
+│       │   │   ├── process_failed_signin_attempt.go
+│       │   │   ├── push_optin.go
+│       │   │   ├── push_optout.go
+│       │   │   ├── random_generator_service.go
+│       │   │   ├── refresh_token.go
+│       │   │   ├── reject_invitation.go
+│       │   │   ├── remove_role_from_user.go
+│       │   │   ├── request_email_change.go
+│       │   │   ├── request_password_change.go
+│       │   │   ├── request_phone_change.go
+│       │   │   ├── resend_email_change_code.go
+│       │   │   ├── resend_phone_change_code.go
+│       │   │   ├── send_account_locked_notification.go
+│       │   │   ├── set_user_blocked_until.go
+│       │   │   ├── set_user_permanently_blocked.go
+│       │   │   ├── signin.go
+│       │   │   ├── signout.go
+│       │   │   ├── switch_active_role.go
+│       │   │   ├── switch_user_role.go
+│       │   │   ├── system_user_email.go
+│       │   │   ├── system_user_helpers.go
+│       │   │   ├── system_user_types.go
+│       │   │   ├── update_opt_status.go
+│       │   │   ├── update_profile.go
+│       │   │   ├── update_system_user.go
+│       │   │   ├── update_userValidation_by_role.go
+│       │   │   ├── update_user_status.go
+│       │   │   ├── user_service.go
+│       │   │   ├── user_status_orchestrator.go
+│       │   │   ├── validate_external.go
+│       │   │   ├── validate_refresh_token.go
+│       │   │   ├── validate_user_data.go
+│       │   │   └── verify_creci_documents.go
+│       │   ├── validation_service
+│       │   │   ├── clean_expired_validations.go
+│       │   │   ├── metrics.go
+│       │   │   ├── service.go
+│       │   │   └── service_impl.go
+│       │   └── visit_service
+│       │       ├── approve_visit.go
+│       │       ├── cancel_visit.go
+│       │       ├── complete_visit.go
+│       │       ├── config.go
+│       │       ├── create_visit.go
+│       │       ├── get_visit.go
+│       │       ├── helpers.go
+│       │       ├── list_visits.go
+│       │       ├── no_show_visit.go
+│       │       ├── notify_visit_events.go
+│       │       ├── participant_enrichment.go
+│       │       ├── reject_visit.go
+│       │       ├── response_metrics.go
+│       │       ├── validate_window.go
+│       │       └── visit_service.go
+│       ├── templates
+│       │   ├── email_account_locked.html
+│       │   ├── email_reset_password.html
+│       │   ├── email_verification.html
+│       │   ├── email_welcome_system_user.html
+│       │   ├── media_owner_templates.go
+│       │   ├── push_media_owner_approval.json
+│       │   ├── push_visit_owner_request.json
+│       │   ├── push_visit_owner_status.json
+│       │   ├── push_visit_realtor_status.json
+│       │   └── visit_templates.go
+│       └── utils
+│           ├── context_utils.go
+│           ├── contextual_logger.go
+│           ├── converters
+│           │   ├── strings_convertions.go
+│           │   └── time_to_sqlnulltime.go
+│           ├── date_validators.go
+│           ├── generate_tracer.go
+│           ├── hmacauth
+│           │   └── validator.go
+│           ├── http_errors.go
+│           ├── json_numbers.go
+│           ├── optional.go
+│           ├── paths
+│           │   └── paths.go
+│           ├── repository_errors.go
+│           ├── request_context.go
+│           ├── search_utils.go
+│           ├── storage_validation.go
+│           ├── timezone.go
+│           └── validators
+│               └── string_validation.go
+├── logs
+│   └── toq_server.log
+├── loki-config.yaml
+├── nohup.out
+├── prometheus.yml
+├── scripts
+│   ├── README.md
+│   ├── atz_complex.sql
+│   ├── atz_permissions.sql
+│   ├── build_lambdas.sh
+│   ├── certbot-deploy-hook.sh
+│   ├── check-certificate-expiry.sh
+│   ├── db_creation.sql
+│   ├── deploy_lambdas.sh
+│   ├── grant_privileges.sql
+│   ├── holidays.sql
+│   ├── renew-certificate-manual.sh
+│   └── systemd
+│       ├── certificate-check.service
+│       └── certificate-check.timer
+├── tempo
+│   └── tempo-config.yaml
+├── toq v2.mwb
+└── toq v2.mwb.bak
+
+234 directories, 1293 files

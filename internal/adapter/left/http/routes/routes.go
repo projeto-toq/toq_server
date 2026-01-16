@@ -301,6 +301,9 @@ func RegisterListingRoutes(
 	listings.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	listings.Use(middlewares.PermissionMiddleware(permissionService))
 	{
+		// Complexes (public listing context)
+		listings.GET("/complexes", listingHandler.ListComplexes)
+
 		// Basic CRUD
 		listings.GET("", listingHandler.ListListings)                                                        // ListListings with filters, sorting, and pagination
 		listings.POST("", listingHandler.StartListing)                                                       // StartListing

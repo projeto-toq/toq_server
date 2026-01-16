@@ -136,3 +136,4 @@ id;name;action;description;is_active
 135;"HTTP Realtor List Proposals";"GET:/api/v2/proposals/realtor";"Permite ao Realtor listar suas propostas com filtros e paginação";1
 136;"HTTP Owner List Proposals";"GET:/api/v2/proposals/owner";"Permite ao Owner listar propostas recebidas com filtros e paginação";1
 137;"HTTP Owner Reject Proposal";"POST:/api/v2/proposals/reject";"Permite ao Owner rejeitar uma proposta para um listing";1
+138;"HTTP Get Complexes";"GET:/api/v2/listings/complexes";"Permite listar complexos para fluxos públicos de listings";1

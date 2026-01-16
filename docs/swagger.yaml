@@ -1726,6 +1726,13 @@ definitions:
           $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingCatalogValueResponse'
         type: array
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingComplexItemResponse:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingDetailResponse:
     properties:
       accompanying:
@@ -7874,6 +7881,29 @@ paths:
       security:
       - BearerAuth: []
       summary: List active listing catalog values
+      tags:
+      - Listings
+  /listings/complexes:
+    get:
+      description: Returns every managed complex with only id and name fields. Standalone
+        coverage is excluded.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of complexes
+          schema:
+            items:
+              $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ListingComplexItemResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all complexes (vertical and horizontal)
       tags:
       - Listings
   /listings/detail:

@@ -237,3 +237,9 @@ type AdminListComplexZipCodesResponse struct {
 type AdminGetComplexZipCodeDetailRequest struct {
 	ID int64 `json:"id" binding:"required,min=1"`
 }
+
+// ListingComplexItemResponse is a minimal payload for public listing flows.
+type ListingComplexItemResponse struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}

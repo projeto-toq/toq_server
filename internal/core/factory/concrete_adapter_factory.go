@@ -391,6 +391,7 @@ func (factory *ConcreteAdapterFactory) CreateHTTPHandlers(
 		listingService,
 		globalService,
 		userService,
+		propertyCoverageService,
 		listingHandlerConfig,
 	)
 

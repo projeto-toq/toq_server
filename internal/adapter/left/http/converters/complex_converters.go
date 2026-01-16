@@ -86,3 +86,15 @@ func ToComplexZipCodeResponse(zip propertycoveragemodel.HorizontalComplexZipCode
 		ZipCode:   zip.ZipCode(),
 	}
 }
+
+// ToListingComplexItems converts managed complexes to a minimal list payload.
+func ToListingComplexItems(entities []propertycoveragemodel.ManagedComplexInterface) []dto.ListingComplexItemResponse {
+	responses := make([]dto.ListingComplexItemResponse, 0, len(entities))
+	for _, entity := range entities {
+		responses = append(responses, dto.ListingComplexItemResponse{
+			ID:   entity.ID(),
+			Name: entity.Name(),
+		})
+	}
+	return responses
+}

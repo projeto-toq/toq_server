@@ -12,6 +12,7 @@ import (
 type PropertyCoverageServiceInterface interface {
 	ResolvePropertyTypes(ctx context.Context, input propertycoveragemodel.ResolvePropertyTypesInput) (propertycoveragemodel.ResolvePropertyTypesOutput, error)
 	ListComplexes(ctx context.Context, input ListComplexesInput) ([]propertycoveragemodel.ManagedComplexInterface, error)
+	ListPublicComplexes(ctx context.Context) ([]propertycoveragemodel.ManagedComplexInterface, error)
 	GetComplexDetail(ctx context.Context, input GetComplexDetailInput) (propertycoveragemodel.ManagedComplexInterface, error)
 	CreateComplex(ctx context.Context, input CreateComplexInput) (propertycoveragemodel.ManagedComplexInterface, error)
 	UpdateComplex(ctx context.Context, input UpdateComplexInput) (propertycoveragemodel.ManagedComplexInterface, error)
