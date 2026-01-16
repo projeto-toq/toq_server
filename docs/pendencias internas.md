@@ -18,9 +18,7 @@
 
 - permitir hard delete de lisnting enquanto não for publicado removendo todos os agendamentos, fotos, propostas, visitas
 - criar endpoint para que o proprietário possa fazer upload da planta da casa em construção de um listing, evitando assim o passo de fotos
-- como serão limpos os dados de uploads/bactchs com erro de upload?
 - shared-secret do callback que está no env.yaml não está sendo usado
 - Número de compartilhamentos - Criar o DTO para a resposta e deixar para ser populado pelo service em outra refatoração com comentário TODO
 - Mudar o JWT secret para variável de ambiente
 - Admin Blocklist tem que ter endpoint que associe user a JTI do token para bloquear imediatamente
-- Ao ter 2 user_roles sempre volta o login para realtor

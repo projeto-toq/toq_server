@@ -31,6 +31,7 @@ var listingStatusDescriptors = []ListingStatusDescriptor{
 	{Status: StatusExpired, Slug: "EXPIRED", AllowsDraftClone: false},
 	{Status: StatusArchived, Slug: "ARCHIVED", AllowsDraftClone: false},
 	{Status: StatusNeedsRevision, Slug: "NEEDS_REVISION", AllowsDraftClone: false},
+	{Status: StatusPendingPlanLoading, Slug: "PENDING_PLAN_LOADING", AllowsDraftClone: true},
 }
 
 var (

@@ -35,6 +35,8 @@ const (
 	StatusArchived
 	// 16 StatusNeedsRevision: Anúncio reprovado e aguardando ajustes antes de retornar ao fluxo de criação.
 	StatusNeedsRevision
+	// 17 StatusPendingPlanLoading: Anúncio de obra aguardando upload de plantas/renders de projeto.
+	StatusPendingPlanLoading
 )
 
 func (s ListingStatus) String() string {
