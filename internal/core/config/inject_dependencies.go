@@ -133,17 +133,12 @@ func (c *config) InitGlobalService() {
 		metrics = c.metricsAdapter.Prometheus
 	}
 
-	// Debug: verificar se os adapters estão nil
-	if c.repositoryAdapters == nil {
-		slog.Error("repositoryAdapters is nil")
-		return
-	}
-	if c.repositoryAdapters.Audit == nil {
-		slog.Error("repositoryAdapters.Audit is nil")
-		return
-	}
 	if c.repositoryAdapters.Global == nil {
 		slog.Error("repositoryAdapters.Global is nil")
+		return
+	}
+	if c.repositoryAdapters.User == nil {
+		slog.Error("repositoryAdapters.User is nil")
 		return
 	}
 	if c.cep == nil {
@@ -162,17 +157,6 @@ func (c *config) InitGlobalService() {
 		slog.Error("sms adapter is nil")
 		return
 	}
-	if c.cloudStorage == nil {
-		slog.Error("cloudStorage adapter is nil")
-		return
-	}
-	if c.repositoryAdapters.User == nil {
-		slog.Error("repositoryAdapters.User is nil")
-		return
-	}
-
-	// Audit service (used by GlobalService compatibility and future direct consumers)
-	c.auditService = auditservice.NewAuditService(c.repositoryAdapters.Audit)
 
 	c.globalService = globalservice.NewGlobalService(
 		c.repositoryAdapters.Global,
@@ -181,7 +165,6 @@ func (c *config) InitGlobalService() {
 		c.firebaseCloudMessaging,
 		c.email,
 		c.sms,
-		c.auditService,
 		metrics,
 	)
 
@@ -195,6 +178,13 @@ func (c *config) InitGlobalService() {
 	if c.globalService != nil {
 		_ = c.globalService.StartSessionEventSubscriber() // ignore unsubscribe for now (lifecycle handles full shutdown)
 	}
+
+	// Audit service (consumido diretamente pelos domínios após migração)
+	if c.repositoryAdapters.Audit == nil {
+		slog.Error("repositoryAdapters.Audit is nil")
+		return
+	}
+	c.auditService = auditservice.NewAuditService(c.repositoryAdapters.Audit)
 }
 
 func (c *config) InitUserHandler() {
@@ -215,6 +205,7 @@ func (c *config) InitUserHandler() {
 		c.repositoryAdapters.User,
 		c.repositoryAdapters.Session,
 		c.globalService,
+		c.auditService,
 		c.listingService,
 		c.photoSessionService,
 		c.cpf,
@@ -289,6 +280,7 @@ func (c *config) InitScheduleService() {
 		c.repositoryAdapters.Schedule,
 		c.repositoryAdapters.Listing,
 		c.globalService,
+		c.auditService,
 		serviceConfig,
 	)
 }
@@ -468,6 +460,7 @@ func (c *config) InitListingHandler() {
 		c.scheduleService,
 		c.repositoryAdapters.ListingFavorite,
 		c.repositoryAdapters.ListingView,
+		c.auditService,
 	)
 	// HTTP handler initialization is done during HTTP server setup
 }
@@ -510,6 +503,7 @@ func (c *config) InitProposalService() {
 		c.repositoryAdapters.OwnerMetrics,
 		c.globalService,
 		c.userService,
+		c.auditService,
 	)
 }
 

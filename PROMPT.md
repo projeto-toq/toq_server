@@ -1,7 +1,5 @@
-O sistema de auditoria de das atividades de usuário foi pensado através de `/codigos/go_code/toq_server/internal/core/service/global_service/create_audit.go`.
+O sistema de auditoria em `/codigos/go_code/toq_server/internal/core/service/audit_service` foi recem refatorado e foi mantida uma fachada de compatibilidade em GlobalService.CreateAudit chamando internamente AuditService.RecordChange (preenchendo TargetType, TargetID, Operation, Actor a partir do contexto). Assim, os call sites legados não pararam imediatamente.
 
-Entretanto com as constantes refatorações e mudanças de escopo, é possível que algumas operações críticas não estejam sendo auditadas corretamente.
+Agora é necessário migrar cada chamada para auditService.RecordChange com metadata completa.
 
-Adicionamente existe dúvidas se o processo atual é robusto e eficiente para poder tracasr, por exemplo o ciclo de vida de um anuncio, as atividades de um usuários etc.
-
-Busque todas as informações que precisa consultando o código e as configurações reais, não confiando na documentação, para ter certeza da situação, e apresente o estado atual da auditoria e quais melhorias são possíveis. Este é o momento de repensar todo o sistema de auditoria, se necessário.
+Busque todas as informações que precisa consultando o código e as configurações reais, não confiando na documentação, para ter certeza da situação, e crie um plano para implementar essa migração de forma segura e eficiente, minimizando riscos de bugs ou falhas no sistema.

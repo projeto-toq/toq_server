@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -90,7 +92,24 @@ func (ls *listingService) ChangeListingStatus(ctx context.Context, input ChangeL
 		return output, utils.InternalError("")
 	}
 
-	if auditErr := ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Listing status changed by owner"); auditErr != nil {
+	version := int64(activeVersion.Version())
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		input.RequesterUserID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetListingIdentity, ID: identity.ID, Version: &version},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"listing_identity_id": identity.ID,
+			"listing_version_id":  activeVersion.ID(),
+			"version":             activeVersion.Version(),
+			"status_from":         previousStatus.String(),
+			"status_to":           targetStatus.String(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+			"action":              string(input.Action),
+		},
+	)
+
+	if auditErr := ls.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
 		logger.Error("listing.change_status.audit_error", "err", auditErr, "listing_identity_id", input.ListingIdentityID)
 		return output, auditErr

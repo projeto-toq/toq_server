@@ -44,6 +44,10 @@ const (
 	TargetMediaAsset      TargetType = "media_assets"
 	TargetListingAgenda   TargetType = "listing_agendas"
 	TargetSession         TargetType = "sessions"
+	TargetUser            TargetType = "users"
+	TargetUserRole        TargetType = "user_roles"
+	TargetAgencyInvite    TargetType = "agency_invites"
+	TargetRealtorAgency   TargetType = "realtors_agency"
 )
 
 // AuditActor identifies who performed the action.

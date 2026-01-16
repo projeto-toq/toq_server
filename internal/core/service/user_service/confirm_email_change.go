@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -68,6 +69,8 @@ func (us *userService) ConfirmEmailChange(ctx context.Context, code string) (err
 }
 
 func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userID int64, code string) (err error) {
+	ctx = utils.ContextWithLogger(ctx)
+	logger := utils.LoggerFromContext(ctx)
 
 	now := time.Now()
 
@@ -107,17 +110,19 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 	if err != nil {
 		return
 	}
+	oldEmail := user.GetEmail()
+	newEmail := userValidation.GetNewEmail()
 
 	// Verificar se o novo e-mail já está sendo utilizado por outro usuário
-	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, userValidation.GetNewEmail(), userID); verr != nil {
+	if exist, verr := us.repo.ExistsEmailForAnotherUser(ctx, tx, newEmail, userID); verr != nil {
 		utils.SetSpanError(ctx, verr)
-		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "exists_email_for_another_user", "err", verr)
+		logger.Error("user.confirm_email_change.stage_error", "stage", "exists_email_for_another_user", "err", verr)
 		return utils.InternalError("Failed to check email uniqueness")
 	} else if exist {
 		return utils.ErrEmailAlreadyInUse
 	}
 
-	user.SetEmail(userValidation.GetNewEmail())
+	user.SetEmail(newEmail)
 
 	//update the user validation
 	userValidation.SetNewEmail("")
@@ -130,7 +135,7 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 		// Validation was loaded successfully above in the same transaction
 		// Any error here is infrastructure failure
 		utils.SetSpanError(ctx, err)
-		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "update_validations", "err", err)
+		logger.Error("user.confirm_email_change.stage_error", "stage", "update_validations", "err", err)
 		return utils.InternalError("Failed to update validations")
 	}
 
@@ -141,16 +146,27 @@ func (us *userService) confirmEmailChange(ctx context.Context, tx *sql.Tx, userI
 		if !errors.Is(err, sql.ErrNoRows) {
 			// Real infrastructure error
 			utils.SetSpanError(ctx, err)
-			utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "update_user", "err", err)
+			logger.Error("user.confirm_email_change.stage_error", "stage", "update_user", "err", err)
 			return utils.InternalError("Failed to update user")
 		}
 		// No changes needed = success, continue
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "email do usuário alterado")
-	if err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID},
+		auditmodel.OperationUpdate,
+		map[string]any{
+			"field":   "email",
+			"from":    oldEmail,
+			"to":      newEmail,
+			"user_id": userID,
+		},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
-		utils.LoggerFromContext(ctx).Error("user.confirm_email_change.stage_error", "stage", "audit", "err", err)
+		logger.Error("user.confirm_email_change.stage_error", "stage", "audit", "err", err)
 		return utils.InternalError("Failed to create audit")
 	}
 	return

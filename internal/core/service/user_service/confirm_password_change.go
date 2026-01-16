@@ -6,10 +6,11 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 
 	"errors"
 
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -138,8 +139,17 @@ func (us *userService) confirmPasswordChange(ctx context.Context, tx *sql.Tx, na
 		return utils.InternalError("Failed to update user password")
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Alterada a senha do usuário")
-	if err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		user.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: user.GetID()},
+		auditmodel.OperationPasswordReset,
+		map[string]any{
+			"flow":                 "code",
+			"wrong_signin_cleared": true,
+		},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.confirm_password_change.stage_error", "stage", "audit", "err", err)
 		return utils.InternalError("Failed to create audit")

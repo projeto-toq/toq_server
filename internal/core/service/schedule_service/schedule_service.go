@@ -8,6 +8,7 @@ import (
 	schedulemodel "github.com/projeto-toq/toq_server/internal/core/model/schedule_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	schedulerepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/schedule_repository"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 )
 
@@ -39,6 +40,7 @@ type scheduleService struct {
 	scheduleRepo           schedulerepository.ScheduleRepositoryInterface
 	listingRepo            listingrepository.ListingRepoPortInterface
 	globalService          globalservice.GlobalServiceInterface
+	auditService           auditservice.AuditServiceInterface
 	defaultBlockRuleRanges []RuleTimeRange
 	config                 Config
 }
@@ -48,6 +50,7 @@ func NewScheduleService(
 	scheduleRepo schedulerepository.ScheduleRepositoryInterface,
 	listingRepo listingrepository.ListingRepoPortInterface,
 	globalService globalservice.GlobalServiceInterface,
+	auditService auditservice.AuditServiceInterface,
 	config Config,
 ) ScheduleServiceInterface {
 	// return buildScheduleService(scheduleRepo, listingRepo, globalService, config)
@@ -56,6 +59,7 @@ func NewScheduleService(
 		scheduleRepo:           scheduleRepo,
 		listingRepo:            listingRepo,
 		globalService:          globalService,
+		auditService:           auditService,
 		defaultBlockRuleRanges: config.DefaultBlockRuleRanges,
 		config:                 config,
 	}

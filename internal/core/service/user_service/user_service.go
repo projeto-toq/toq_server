@@ -16,6 +16,7 @@ import (
 	sessionrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/session_repository"
 	userrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
 	permissionservices "github.com/projeto-toq/toq_server/internal/core/service/permission_service"
@@ -26,6 +27,7 @@ type userService struct {
 	repo                userrepoport.UserRepoPortInterface
 	sessionRepo         sessionrepoport.SessionRepoPortInterface
 	globalService       globalservice.GlobalServiceInterface
+	auditService        auditservice.AuditServiceInterface
 	listingService      listingservices.ListingServiceInterface
 	photoSessionService photosessionservices.PhotoSessionServiceInterface
 	cpf                 cpfport.CPFPortInterface
@@ -42,6 +44,7 @@ func NewUserService(
 	ur userrepoport.UserRepoPortInterface,
 	sr sessionrepoport.SessionRepoPortInterface,
 	gsi globalservice.GlobalServiceInterface,
+	as auditservice.AuditServiceInterface,
 	listingService listingservices.ListingServiceInterface,
 	photoSessionService photosessionservices.PhotoSessionServiceInterface,
 	cpf cpfport.CPFPortInterface,
@@ -58,6 +61,7 @@ func NewUserService(
 		repo:                ur,
 		sessionRepo:         sr,
 		globalService:       gsi,
+		auditService:        as,
 		listingService:      listingService,
 		photoSessionService: photoSessionService,
 		cpf:                 cpf,

@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -67,7 +68,14 @@ func (us *userService) pushOptIn(ctx context.Context, tx *sql.Tx, userID int64) 
 		return
 	}
 
-	if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário aceitou receber notificações"); err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID},
+		auditmodel.OperationUpdate,
+		map[string]any{"opt_status": true, "trigger": "push_optin"},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("user.push_optin.audit_error", "error", err, "user_id", userID)
 		return

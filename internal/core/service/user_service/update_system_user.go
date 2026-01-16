@@ -5,8 +5,9 @@ import (
 	"strings"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -108,6 +109,10 @@ func (us *userService) UpdateSystemUser(ctx context.Context, input UpdateSystemU
 		return SystemUserResult{}, opErr
 	}
 
+	prevFullName := existing.GetFullName()
+	prevEmail := existing.GetEmail()
+	prevPhone := existing.GetPhoneNumber()
+
 	existing.SetFullName(fullName)
 	existing.SetNickName(firstToken(fullName))
 	existing.SetEmail(email)
@@ -120,7 +125,29 @@ func (us *userService) UpdateSystemUser(ctx context.Context, input UpdateSystemU
 		return SystemUserResult{}, opErr
 	}
 
-	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Atualizado usuário do sistema via painel admin", existing.GetID()); auditErr != nil {
+	changes := map[string]any{}
+	if prevFullName != fullName {
+		changes["full_name"] = map[string]string{"from": prevFullName, "to": fullName}
+	}
+	if prevEmail != email {
+		changes["email"] = map[string]string{"from": prevEmail, "to": email}
+	}
+	if prevPhone != normalizedPhone {
+		changes["phone"] = map[string]string{"from": prevPhone, "to": normalizedPhone}
+	}
+
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		existing.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: existing.GetID()},
+		auditmodel.OperationUpdate,
+		map[string]any{
+			"action":  "system_user_updated",
+			"changes": changes,
+			"role":    permissionmodel.RoleSlug(activeRole.GetRole().GetSlug()),
+		},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
 		logger.Error("admin.users.update.audit_failed", "user_id", input.UserID, "error", auditErr)
 		opErr = utils.InternalError("")

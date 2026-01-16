@@ -6,9 +6,11 @@ import (
 	"strings"
 	"time"
 
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -126,7 +128,7 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 		Status:   &targetStatus,
 	}
 
-	_, err = us.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil, options)
+	userRole, err := us.AssignRoleToUserWithTx(ctx, tx, userID, role.GetID(), nil, options)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("user.add_alternative_role.permission_assign_role_error", "user_id", userID, "role_id", role.GetID(), "err", err)
@@ -144,18 +146,41 @@ func (us *userService) addAlternativeRole(ctx context.Context, tx *sql.Tx, userI
 	}
 
 	if creciWasSaved {
-		err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Atualizado CRECI para role alternativo")
-		if err != nil {
-			utils.SetSpanError(ctx, err)
-			utils.LoggerFromContext(ctx).Error("user.add_alternative_role.audit_user_creci_error", "table", string(globalmodel.TableUsers), "err", err)
+		auditCreci := auditservice.BuildRecordFromContext(
+			ctx,
+			userID,
+			auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID},
+			auditmodel.OperationUpdate,
+			map[string]any{
+				"action":         "creci_updated_for_alternative_role",
+				"role_slug":      roleSlug,
+				"creci_number":   user.GetCreciNumber(),
+				"creci_state":    user.GetCreciState(),
+				"creci_validity": user.GetCreciValidity(),
+			},
+		)
+		if auditErr := us.auditService.RecordChange(ctx, tx, auditCreci); auditErr != nil {
+			utils.SetSpanError(ctx, auditErr)
+			utils.LoggerFromContext(ctx).Error("user.add_alternative_role.audit_user_creci_error", "table", string(auditmodel.TargetUser), "err", auditErr)
 			return utils.InternalError("Failed to create audit record")
 		}
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Criado papel alternativo")
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		utils.LoggerFromContext(ctx).Error("user.add_alternative_role.audit_create_error", "table", string(globalmodel.TableUserRoles), "err", err)
+	auditRole := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUserRole, ID: userRole.GetID()},
+		auditmodel.OperationCreate,
+		map[string]any{
+			"action":        "alternative_role_created",
+			"role_slug":     roleSlug,
+			"target_status": targetStatus,
+			"is_active":     isActive,
+		},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, auditRole); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		utils.LoggerFromContext(ctx).Error("user.add_alternative_role.audit_create_error", "table", string(auditmodel.TargetUserRole), "err", auditErr)
 		return utils.InternalError("Failed to create audit record")
 	}
 

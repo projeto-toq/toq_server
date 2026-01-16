@@ -3,13 +3,9 @@ package globalrepository
 import (
 	"context"
 	"database/sql"
-
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 )
 
 type GlobalRepoPortInterface interface {
-	CreateAudit(ctx context.Context, tx *sql.Tx, audit globalmodel.AuditInterface) (err error)
-
 	GetConfiguration(ctx context.Context, tx *sql.Tx) (configuration map[string]string, err error)
 
 	// Transaction related methods

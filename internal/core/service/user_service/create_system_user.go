@@ -7,9 +7,11 @@ import (
 	"github.com/google/uuid"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
@@ -210,7 +212,22 @@ func (us *userService) CreateSystemUser(ctx context.Context, input CreateSystemU
 		return SystemUserResult{}, opErr
 	}
 
-	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Criado usuário do sistema via painel admin", newUser.GetID()); auditErr != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		newUser.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: newUser.GetID()},
+		auditmodel.OperationCreate,
+		map[string]any{
+			"role_slug":          role.GetSlug(),
+			"origin":             "admin_panel",
+			"is_system":          true,
+			"phone":              normalizedPhone,
+			"cpf":                cpfDigits,
+			"zip_code":           newUser.GetZipCode(),
+			"has_custom_address": customZipCode != "",
+		},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
 		logger.Error("admin.users.create.audit_failed", "user_id", newUser.GetID(), "error", auditErr)
 		opErr = utils.InternalError("")

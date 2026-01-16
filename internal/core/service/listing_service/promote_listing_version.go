@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -141,7 +143,25 @@ func (ls *listingService) PromoteListingVersion(ctx context.Context, input Promo
 		return utils.InternalError("")
 	}
 
-	if auditErr := ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Versão de anúncio promovida"); auditErr != nil {
+	version := int64(snapshot.Version)
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetListingIdentity, ID: snapshot.ListingID, Version: &version},
+		auditmodel.OperationPromote,
+		map[string]any{
+			"listing_identity_id": snapshot.ListingID,
+			"listing_version_id":  listingVersionID,
+			"version":             snapshot.Version,
+			"status_from":         listingmodel.StatusDraft.String(),
+			"status_to":           targetStatus.String(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+		},
+	)
+
+	if auditErr := ls.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		logger.Error("listing.promote.audit_error", "err", auditErr, "listing_identity_id", snapshot.ListingID, "listing_version_id", listingVersionID)
 		return auditErr
 	}
 

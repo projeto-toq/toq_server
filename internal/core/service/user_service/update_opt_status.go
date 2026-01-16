@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -67,12 +68,14 @@ func (us *userService) updateOptStatus(ctx context.Context, tx *sql.Tx, userID i
 	}
 
 	// Transição para opt-out: remover tokens antes de persistir
+	tokensRemoved := false
 	if !opt {
 		if err = us.repo.RemoveAllDeviceTokensByUserID(ctx, tx, userID); err != nil {
 			utils.LoggerFromContext(ctx).Warn("user.update_opt_status.device_tokens_delete_failed", "user_id", userID, "error", err)
 			return
 		}
 		utils.LoggerFromContext(ctx).Info("user.update_opt_status.device_tokens_deleted", "user_id", userID)
+		tokensRemoved = true
 	}
 
 	// Atualiza status e persiste
@@ -83,19 +86,22 @@ func (us *userService) updateOptStatus(ctx context.Context, tx *sql.Tx, userID i
 		return
 	}
 
-	// Auditoria conforme novo estado
-	if opt {
-		if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário aceitou receber notificações"); err != nil {
-			utils.SetSpanError(ctx, err)
-			utils.LoggerFromContext(ctx).Error("user.update_opt_status.audit_error", "error", err, "user_id", userID, "opt", opt)
-			return
-		}
-	} else {
-		if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário rejeitou receber notificações"); err != nil {
-			utils.SetSpanError(ctx, err)
-			utils.LoggerFromContext(ctx).Error("user.update_opt_status.audit_error", "error", err, "user_id", userID, "opt", opt)
-			return
-		}
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID},
+		auditmodel.OperationUpdate,
+		map[string]any{
+			"opt_status":            opt,
+			"device_tokens_removed": tokensRemoved,
+			"trigger":               "update_opt_status",
+			"idempotent_before":     user.IsOptStatus(),
+		},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
+		utils.SetSpanError(ctx, err)
+		utils.LoggerFromContext(ctx).Error("user.update_opt_status.audit_error", "error", err, "user_id", userID, "opt", opt)
+		return
 	}
 	return
 }

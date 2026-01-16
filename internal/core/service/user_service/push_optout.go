@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -70,8 +71,14 @@ func (us *userService) pushOptOut(ctx context.Context, tx *sql.Tx, userID int64)
 		utils.LoggerFromContext(ctx).Error("user.push_optout.update_user_error", "error", err, "user_id", userID)
 		return
 	}
-
-	if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário rejeitou receber notificações"); err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID},
+		auditmodel.OperationUpdate,
+		map[string]any{"opt_status": false, "device_tokens_removed": true, "trigger": "push_optout"},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
 		utils.LoggerFromContext(ctx).Error("user.push_optout.audit_error", "error", err, "user_id", userID)
 		return

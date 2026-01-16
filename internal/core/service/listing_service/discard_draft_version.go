@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -107,7 +109,26 @@ func (ls *listingService) DiscardDraftVersion(ctx context.Context, input Discard
 		return utils.InternalError("")
 	}
 
-	if auditErr := ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Versão de anúncio descartada"); auditErr != nil {
+	version := int64(draft.Version())
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetListingIdentity, ID: draft.IdentityID(), Version: &version},
+		auditmodel.OperationDiscard,
+		map[string]any{
+			"listing_identity_id": draft.IdentityID(),
+			"listing_version_id":  draft.ID(),
+			"version":             draft.Version(),
+			"status_from":         draft.Status().String(),
+			"status_to":           draft.Status().String(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+			"deleted":             draft.Deleted(),
+		},
+	)
+
+	if auditErr := ls.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		logger.Error("listing.discard.audit_error", "err", auditErr, "listing_identity_id", draft.IdentityID(), "listing_version_id", draft.ID())
 		return auditErr
 	}
 

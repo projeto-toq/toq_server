@@ -78,7 +78,7 @@ type StorageAdapters struct {
 
 // RepositoryAdapters agrupa todos os repositórios MySQL
 type RepositoryAdapters struct {
-	Audit           auditrepository.Repository
+	Audit            auditrepository.Repository
 	User             userrepoport.UserRepoPortInterface
 	Global           globalrepoport.GlobalRepoPortInterface
 	PropertyCoverage propertycoveragerepository.RepositoryInterface

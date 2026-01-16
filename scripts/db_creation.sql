@@ -71,23 +71,6 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `toq_db`.`audit`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `toq_db`.`audit` ;
-
-CREATE TABLE IF NOT EXISTS `toq_db`.`audit` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `executed_at` TIMESTAMP(6) NOT NULL,
-  `executed_by` INT UNSIGNED NOT NULL,
-  `table_name` VARCHAR(150) NOT NULL,
-  `table_id` INT UNSIGNED NOT NULL,
-  `action` VARCHAR(150) NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
 -- Table `toq_db`.`configuration`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `toq_db`.`configuration` ;

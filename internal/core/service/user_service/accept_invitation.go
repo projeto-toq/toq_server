@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -53,7 +54,7 @@ func (us *userService) AcceptInvitation(ctx context.Context, userID int64) (err 
 	return
 }
 
-func (us *userService) acceptInvitation(ctx context.Context, tx *sql.Tx, userID int64) (invitationID int64, err error) {
+func (us *userService) acceptInvitation(ctx context.Context, tx *sql.Tx, userID int64) (relationshipID int64, err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 	//recover the realtor
@@ -84,7 +85,7 @@ func (us *userService) acceptInvitation(ctx context.Context, tx *sql.Tx, userID 
 	}
 
 	//create the agency <-> realtor relationship
-	invitationID, err = us.repo.CreateAgencyRelationship(ctx, tx, agency, realtor)
+	relationshipID, err = us.repo.CreateAgencyRelationship(ctx, tx, agency, realtor)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.accept_invitation.repo_create_agency_relationship_error", "agency_id", agency.GetID(), "realtor_id", realtor.GetID(), "err", err)
@@ -150,10 +151,24 @@ func (us *userService) acceptInvitation(ctx context.Context, tx *sql.Tx, userID 
 		// No changes needed = success, continue
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableAgencyInvites, "Convite para relacionamento com imobiliária aceito")
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.accept_invitation.audit_create_error", "table", string(globalmodel.TableAgencyInvites), "err", err)
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		realtor.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetAgencyInvite, ID: invite.GetID()},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"action":          "invite_accepted",
+			"agency_id":       agency.GetID(),
+			"realtor_id":      realtor.GetID(),
+			"phone":           realtor.GetPhoneNumber(),
+			"status_from":     "pending",
+			"status_to":       "accepted",
+			"relationship_id": relationshipID,
+		},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		logger.Error("user.accept_invitation.audit_create_error", "invite_id", invite.GetID(), "err", auditErr)
 		return 0, utils.InternalError("Failed to create audit record")
 	}
 

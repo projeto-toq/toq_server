@@ -6,8 +6,10 @@ import (
 	"errors"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -97,7 +99,21 @@ func (us *userService) applyStatusTransitionAfterContactChange(ctx context.Conte
 		logger.Error("user.status_transition.stage_error", "stage", "update_role_status", "error", err)
 		return 0, false, err // infra
 	}
-	if err := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Atualização de status após alteração de contato"); err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUserRole, ID: active.GetID()},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"role_slug":            string(roleSlug),
+			"status_from":          from.String(),
+			"status_to":            to.String(),
+			"email_pending":        emailPending,
+			"phone_pending":        phonePending,
+			"email_just_confirmed": emailJustConfirmed,
+		},
+	)
+	if err := us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.status_transition.stage_error", "stage", "audit", "error", err)
 		return 0, false, err // infra

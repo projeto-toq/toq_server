@@ -454,13 +454,14 @@
 │   │       │   ├── send_multiple_messages.go
 │   │       │   └── send_single_message.go
 │   │       ├── mysql
-│   │       │   ├── global
+│   │       │   ├── audit
+│   │       │   │   ├── audit_adapter.go
 │   │       │   │   ├── converters
-│   │       │   │   │   ├── audit_domain_to_entity.go
-│   │       │   │   │   └── audit_entity_to_domain.go
-│   │       │   │   ├── create_audit.go
-│   │       │   │   ├── entities
-│   │       │   │   │   └── audit_entity.go
+│   │       │   │   │   └── event_domain_to_entity.go
+│   │       │   │   ├── create_event.go
+│   │       │   │   └── entities
+│   │       │   │       └── audit_event_entity.go
+│   │       │   ├── global
 │   │       │   │   ├── get_configuration.go
 │   │       │   │   ├── global_adapter.go
 │   │       │   │   ├── rows_helpers.go
@@ -946,6 +947,9 @@
 │       │   ├── temp_block_cleaner_worker.go
 │       │   └── validation_cleaner_worker.go
 │       ├── model
+│       │   ├── audit_model
+│       │   │   ├── audit_event.go
+│       │   │   └── audit_event_domain.go
 │       │   ├── cep_model
 │       │   │   ├── cep_domain.go
 │       │   │   └── cep_interface.go
@@ -956,8 +960,6 @@
 │       │   │   ├── cpf_domain.go
 │       │   │   └── cpf_interface.go
 │       │   ├── global_model
-│       │   │   ├── audit_domain.go
-│       │   │   ├── audit_interface.go
 │       │   │   ├── environment.go
 │       │   │   ├── global_constants.go
 │       │   │   ├── logging_runtime.go
@@ -1126,6 +1128,8 @@
 │       │       │   └── mediaprocessingqueue
 │       │       │       └── media_processing_queue_port.go
 │       │       ├── repository
+│       │       │   ├── audit_repository
+│       │       │   │   └── audit_repository_interface.go
 │       │       │   ├── global_repository
 │       │       │   │   └── global_repository_interface.go
 │       │       │   ├── holiday_repository
@@ -1165,8 +1169,13 @@
 │       │           ├── errors.go
 │       │           └── workflow_port.go
 │       ├── service
+│       │   ├── audit_service
+│       │   │   ├── audit_service.go
+│       │   │   ├── builder.go
+│       │   │   ├── record_builder.go
+│       │   │   ├── record_change.go
+│       │   │   └── validate_input.go
 │       │   ├── global_service
-│       │   │   ├── create_audit.go
 │       │   │   ├── get_cep.go
 │       │   │   ├── get_configuration.go
 │       │   │   ├── get_unified_notification_service.go
@@ -1525,6 +1534,7 @@
 │   └── toq_server.log
 ├── loki-config.yaml
 ├── nohup.out
+├── plan.md
 ├── prometheus.yml
 ├── scripts
 │   ├── README.md
@@ -1546,4 +1556,4 @@
 ├── toq v2.mwb
 └── toq v2.mwb.bak
 
-234 directories, 1313 files
+238 directories, 1319 files

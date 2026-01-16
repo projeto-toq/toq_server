@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
@@ -135,9 +137,23 @@ func (us *userService) inviteRealtor(ctx context.Context, tx *sql.Tx, phoneNumbe
 			return err
 		}
 
-		err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableRealtorAgency,
-			fmt.Sprintf("Atualizado o convite de relacionamento com o Corretor %s", realtor.GetNickName()))
-		if err != nil {
+		realtorName := phoneNumber
+		if realtor != nil {
+			realtorName = realtor.GetNickName()
+		}
+		auditRecord := auditservice.BuildRecordFromContext(
+			ctx,
+			agency.GetID(),
+			auditmodel.AuditTarget{Type: auditmodel.TargetAgencyInvite, ID: invite.GetID()},
+			auditmodel.OperationUpdate,
+			map[string]any{
+				"agency_id":    agency.GetID(),
+				"phone":        phoneNumber,
+				"realtor_name": realtorName,
+				"action":       "invite_updated",
+			},
+		)
+		if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 			return
 		}
 	case !isOnPlataform && !isInvited:
@@ -304,9 +320,24 @@ func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx
 		}
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableRealtorAgency,
-		fmt.Sprintf("Criado o convite de relacionamento com o Corretor %s", realtor.GetNickName()))
-	if err != nil {
+	realtorID := int64(0)
+	if realtor != nil {
+		realtorID = realtor.GetID()
+	}
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		agency.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetAgencyInvite, ID: 0},
+		auditmodel.OperationCreate,
+		map[string]any{
+			"agency_id":  agency.GetID(),
+			"realtor_id": realtorID,
+			"phone":      phoneNumber,
+			"push_sent":  push,
+			"action":     "invite_created",
+		},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.invite_realtor.audit_error", "error", err)
 		return

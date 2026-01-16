@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -131,11 +132,24 @@ func (us *userService) rejectInvitation(ctx context.Context, tx *sql.Tx, userID 
 		// No changes needed = success, continue
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableAgencyInvites, "Convite para relacionamento com imobiliária rejeitado")
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.reject_invitation.audit_error", "error", err)
-		return
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		realtor.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetAgencyInvite, ID: invite.GetID()},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"action":      "invite_rejected",
+			"agency_id":   agency.GetID(),
+			"realtor_id":  realtor.GetID(),
+			"phone":       realtor.GetPhoneNumber(),
+			"status_from": "pending",
+			"status_to":   "rejected",
+		},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		logger.Error("user.reject_invitation.audit_error", "error", auditErr)
+		return auditErr
 	}
 
 	return

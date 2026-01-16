@@ -7,9 +7,10 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -124,6 +125,7 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 		// GetUserByIDWithTx já retorna DomainError
 		return err
 	}
+	oldPhone := user.GetPhoneNumber()
 
 	// Uniqueness check before setting
 	if exist, verr := us.repo.ExistsPhoneForAnotherUser(ctx, tx, userValidation.GetNewPhone(), userID); verr != nil {
@@ -133,7 +135,8 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 	} else if exist {
 		return derrors.ErrPhoneAlreadyInUse
 	}
-	user.SetPhoneNumber(userValidation.GetNewPhone())
+	newPhone := userValidation.GetNewPhone()
+	user.SetPhoneNumber(newPhone)
 
 	//update the user validation
 	userValidation.SetNewPhone("")
@@ -166,8 +169,19 @@ func (us *userService) confirmPhoneChange(ctx context.Context, tx *sql.Tx, userI
 		// No changes needed = success, continue
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Alterada o telefone do usuário")
-	if err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID},
+		auditmodel.OperationUpdate,
+		map[string]any{
+			"field":   "phone",
+			"from":    oldPhone,
+			"to":      newPhone,
+			"user_id": userID,
+		},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.confirm_phone_change.stage_error", "stage", "audit", "err", err)
 		return derrors.Infra("Failed to create audit", err)

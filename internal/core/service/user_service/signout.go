@@ -11,7 +11,9 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -160,8 +162,23 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 				metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "device", "success").Inc()
 			}
 		}
-		// Audit
-		_ = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Logout (single device)")
+		// Audit (best-effort, não bloqueia signout)
+		auditRecord := auditservice.BuildRecordFromContext(
+			ctx,
+			userID,
+			auditmodel.AuditTarget{Type: auditmodel.TargetSession, ID: 0},
+			auditmodel.OperationAuthSignout,
+			map[string]any{
+				"mode":                    mode,
+				"device_id":               targetDeviceID,
+				"refresh_token_present":   refreshToken != "",
+				"device_token_present":    deviceToken != "",
+				"session_revocation_mode": "single",
+			},
+		)
+		if errAudit := us.auditService.RecordChange(ctx, tx, auditRecord); errAudit != nil {
+			logger.Warn("auth.signout.audit_error", "error", errAudit, "mode", mode)
+		}
 	} else {
 		// Global: revoke all sessions
 		if us.sessionRepo != nil {
@@ -180,7 +197,20 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		} else {
 			metricSignoutDeviceTokensRemoved.WithLabelValues(mode, "all", "success").Inc()
 		}
-		_ = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Logout (global)")
+		auditRecord := auditservice.BuildRecordFromContext(
+			ctx,
+			userID,
+			auditmodel.AuditTarget{Type: auditmodel.TargetSession, ID: 0},
+			auditmodel.OperationAuthSignout,
+			map[string]any{
+				"mode":                    mode,
+				"session_revocation_mode": "global",
+				"device_tokens_removed":   true,
+			},
+		)
+		if errAudit := us.auditService.RecordChange(ctx, tx, auditRecord); errAudit != nil {
+			logger.Warn("auth.signout.audit_error", "error", errAudit, "mode", mode)
+		}
 	}
 	return
 }

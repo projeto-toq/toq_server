@@ -5,8 +5,9 @@ import (
 	"time"
 
 	derrors "github.com/projeto-toq/toq_server/internal/core/derrors"
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -111,9 +112,34 @@ func (us *userService) DeleteSystemUser(ctx context.Context, input DeleteSystemU
 		return opErr
 	}
 
-	if auditErr := us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "System user deleted (data and role history preserved for audit)", existing.GetID()); auditErr != nil {
+	deleteAudit := auditservice.BuildRecordFromContext(
+		ctx,
+		existing.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: existing.GetID()},
+		auditmodel.OperationDelete,
+		map[string]any{"requested_by": "admin"},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, deleteAudit); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
 		logger.Error("admin.users.delete.audit_failed", "user_id", existing.GetID(), "error", auditErr)
+		opErr = utils.InternalError("")
+		return opErr
+	}
+
+	rolesAudit := auditservice.BuildRecordFromContext(
+		ctx,
+		existing.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUserRole, ID: activeRole.GetID()},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"action":    "deactivate_all",
+			"role_slug": string(roleSlug),
+			"user_id":   existing.GetID(),
+		},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, rolesAudit); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		logger.Error("admin.users.delete.audit_roles_failed", "user_id", existing.GetID(), "error", auditErr)
 		opErr = utils.InternalError("")
 		return opErr
 	}

@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -100,8 +102,14 @@ func (us *userService) createRealtor(ctx context.Context, tx *sql.Tx, realtor us
 		return
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Criado novo usuário com papel de Corretor", realtor.GetID())
-	if err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		realtor.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: realtor.GetID()},
+		auditmodel.OperationCreate,
+		map[string]any{"role_slug": string(permissionmodel.RoleSlugRealtor), "origin": "realtor_signup"},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		return nil, err
 	}
 	return realtor, nil

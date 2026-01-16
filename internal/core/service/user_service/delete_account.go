@@ -6,9 +6,10 @@ import (
 	"errors"
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -153,8 +154,14 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 		// No changes needed = success, continue
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Conta apagada por solicitação do usuário (dados preservados para auditoria)")
-	if err != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		user.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: user.GetID()},
+		auditmodel.OperationDelete,
+		map[string]any{"requested_by": "self"},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.delete_account.audit_users_error", "error", err, "user_id", user.GetID())
 		return
@@ -167,8 +174,19 @@ func (us *userService) deleteAccount(ctx context.Context, tx *sql.Tx, user userm
 		return tokens, publishSessionsEvent, utils.InternalError("Failed to deactivate user roles")
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUserRoles, "Desativados todos os papéis do usuário (is_active=0), pois a conta foi apagada")
-	if err != nil {
+	auditRoles := auditservice.BuildRecordFromContext(
+		ctx,
+		user.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetUserRole, ID: activeRole.GetID()},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"action":      "deactivate_all",
+			"role_slug":   string(permissionmodel.RoleSlug(activeRole.GetRole().GetSlug())),
+			"user_id":     user.GetID(),
+			"active_role": activeRole.GetID(),
+		},
+	)
+	if err = us.auditService.RecordChange(ctx, tx, auditRoles); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.delete_account.audit_user_roles_error", "error", err, "user_id", user.GetID())
 		return

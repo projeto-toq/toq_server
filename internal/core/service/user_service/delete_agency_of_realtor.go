@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -93,12 +94,22 @@ func (us *userService) deleteAgencyOfRealtor(ctx context.Context, tx *sql.Tx, re
 		return
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableRealtorAgency,
-		fmt.Sprintf("Apagado o relacionamento com a Imobiliária %s", agency.GetNickName()))
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		utils.LoggerFromContext(ctx).Error("user.delete_agency_of_realtor.audit_error", "error", err, "realtor_id", realtor.GetID(), "agency_id", agency.GetID())
-		return
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		realtor.GetID(),
+		auditmodel.AuditTarget{Type: auditmodel.TargetRealtorAgency, ID: 0},
+		auditmodel.OperationDelete,
+		map[string]any{
+			"action":      "realtor_left_agency",
+			"agency_id":   agency.GetID(),
+			"realtor_id":  realtor.GetID(),
+			"agency_name": agency.GetNickName(),
+		},
+	)
+	if auditErr := us.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		utils.LoggerFromContext(ctx).Error("user.delete_agency_of_realtor.audit_error", "error", auditErr, "realtor_id", realtor.GetID(), "agency_id", agency.GetID())
+		return auditErr
 	}
 
 	return

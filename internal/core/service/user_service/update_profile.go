@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -79,6 +80,8 @@ func (us *userService) updateProfile(
 ) (err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+	updatedFields := make([]string, 0)
+	changes := make(map[string]any)
 
 	// Carrega o usuário antes de aplicar alterações
 	current, err := us.repo.GetUserByID(ctx, tx, in.UserID)
@@ -94,6 +97,8 @@ func (us *userService) updateProfile(
 	// Aplica somente os campos permitidos se fornecidos
 	if in.NickName != nil {
 		current.SetNickName(*in.NickName)
+		updatedFields = append(updatedFields, "nick_name")
+		changes["nick_name"] = *in.NickName
 	}
 	if in.BornAt != nil {
 		// valida formato de data YYYY-MM-DD
@@ -103,39 +108,57 @@ func (us *userService) updateProfile(
 			return utils.ValidationError("born_at", "Invalid date format, expected YYYY-MM-DD")
 		}
 		current.SetBornAt(bornAt)
+		updatedFields = append(updatedFields, "born_at")
+		changes["born_at"] = bornAt.Format("2006-01-02")
 	}
 	if in.ZipCode != nil {
 		zipCandidate := strings.TrimSpace(*in.ZipCode)
 		if zipCandidate == "" {
 			current.SetZipCode("")
+			updatedFields = append(updatedFields, "zip_code")
+			changes["zip_code"] = ""
 		} else {
 			normalizedZip, zipErr := validators.NormalizeCEP(zipCandidate)
 			if zipErr != nil {
 				return utils.ValidationError("zipCode", "Zip code must contain exactly 8 digits without separators.")
 			}
 			current.SetZipCode(normalizedZip)
+			updatedFields = append(updatedFields, "zip_code")
+			changes["zip_code"] = normalizedZip
 		}
 	}
 	if in.Street != nil {
 		current.SetStreet(*in.Street)
+		updatedFields = append(updatedFields, "street")
+		changes["street"] = *in.Street
 	}
 	if in.Number != nil {
 		current.SetNumber(*in.Number)
+		updatedFields = append(updatedFields, "number")
+		changes["number"] = *in.Number
 	}
 	if in.Complement != nil {
 		current.SetComplement(*in.Complement)
+		updatedFields = append(updatedFields, "complement")
+		changes["complement"] = *in.Complement
 	}
 	if in.Neighborhood != nil {
 		current.SetNeighborhood(*in.Neighborhood)
+		updatedFields = append(updatedFields, "neighborhood")
+		changes["neighborhood"] = *in.Neighborhood
 	}
 	if in.City != nil {
 		current.SetCity(*in.City)
+		updatedFields = append(updatedFields, "city")
+		changes["city"] = *in.City
 	}
 	if in.State != nil {
 		if len(*in.State) != 2 {
 			return utils.ValidationError("state", "State must be 2 letters")
 		}
 		current.SetState(*in.State)
+		updatedFields = append(updatedFields, "state")
+		changes["state"] = *in.State
 	}
 
 	err = us.repo.UpdateUserByID(ctx, tx, current)
@@ -151,11 +174,22 @@ func (us *userService) updateProfile(
 		// No changes needed = success, continue
 	}
 
-	err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "Usuário atualizou o perfil")
-	if err != nil {
-		utils.SetSpanError(ctx, err)
-		logger.Error("user.update_profile.audit_error", "error", err, "user_id", in.UserID)
-		return utils.InternalError("Failed to create audit entry")
+	if len(updatedFields) > 0 {
+		auditRecord := auditservice.BuildRecordFromContext(
+			ctx,
+			in.UserID,
+			auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: in.UserID},
+			auditmodel.OperationUpdate,
+			map[string]any{
+				"updated_fields": updatedFields,
+				"changes":        changes,
+			},
+		)
+		if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
+			utils.SetSpanError(ctx, err)
+			logger.Error("user.update_profile.audit_error", "error", err, "user_id", in.UserID)
+			return utils.InternalError("Failed to create audit entry")
+		}
 	}
 
 	return

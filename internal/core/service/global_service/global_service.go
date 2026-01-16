@@ -7,7 +7,6 @@ import (
 
 	"github.com/projeto-toq/toq_server/internal/core/events"
 	cepmodel "github.com/projeto-toq/toq_server/internal/core/model/cep_model"
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	cepport "github.com/projeto-toq/toq_server/internal/core/port/right/cep"
 	emailport "github.com/projeto-toq/toq_server/internal/core/port/right/email"
 	fcmport "github.com/projeto-toq/toq_server/internal/core/port/right/fcm"
@@ -15,7 +14,6 @@ import (
 	globalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
-	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -24,7 +22,6 @@ import (
 type globalService struct {
 	globalRepo           globalrepository.GlobalRepoPortInterface
 	userRepo             userrepository.UserRepoPortInterface
-	auditService         auditservice.AuditServiceInterface
 	cep                  cepport.CEPPortInterface
 	firebaseCloudMessage fcmport.FCMPortInterface
 	email                emailport.EmailPortInterface
@@ -42,14 +39,12 @@ func NewGlobalService(
 	firebaseCloudMessage fcmport.FCMPortInterface,
 	email emailport.EmailPortInterface,
 	sms smsport.SMSPortInterface,
-	auditService auditservice.AuditServiceInterface,
 	// optional metrics (can be nil in tests or minimal setups)
 	metrics metricsport.MetricsPortInterface,
 ) GlobalServiceInterface {
 	return &globalService{
 		globalRepo:           globalRepo,
 		userRepo:             userRepo,
-		auditService:         auditService,
 		cep:                  cep,
 		firebaseCloudMessage: firebaseCloudMessage,
 		email:                email,
@@ -62,8 +57,6 @@ func NewGlobalService(
 // GlobalServiceInterface centralizes helpers required by multiple services (transactions,
 // configuration cache, notification fan-out, session events, etc.).
 type GlobalServiceInterface interface {
-	CreateAudit(ctx context.Context, tx *sql.Tx, table globalmodel.TableName, action string, executedBY ...int64) (err error)
-
 	GetConfiguration(ctx context.Context) (configuration map[string]string, err error)
 
 	// Unified notification service accessor

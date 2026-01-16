@@ -8,8 +8,10 @@ import (
 	"strings"
 	"time"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
 )
@@ -720,9 +722,27 @@ func (ls *listingService) updateListing(ctx context.Context, tx *sql.Tx, input U
 		return utils.InternalError("Failed to update listing")
 	}
 
-	err = ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio atualizado")
-	if err != nil {
-		return err
+	version := int64(existing.Version())
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetListingIdentity, ID: identity.ID, Version: &version},
+		auditmodel.OperationUpdate,
+		map[string]any{
+			"listing_identity_id": identity.ID,
+			"listing_version_id":  existing.ID(),
+			"version":             existing.Version(),
+			"status_from":         existing.Status().String(),
+			"status_to":           existing.Status().String(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+			"price_changed":       detectPriceChange(priceSnapshot, existing),
+		},
+	)
+
+	if err = ls.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.update.audit_error", "err", err, "listing_identity_id", identity.ID, "listing_version_id", existing.ID())
+		return utils.InternalError("Failed to record listing audit")
 	}
 
 	return

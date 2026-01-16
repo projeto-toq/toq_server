@@ -319,7 +319,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
-		Audit:           auditRepo,
+		Audit:            auditRepo,
 		User:             userRepo,
 		Global:           globalRepo,
 		PropertyCoverage: propertyCoverageRepo,

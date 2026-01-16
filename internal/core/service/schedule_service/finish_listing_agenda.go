@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"errors"
 
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -109,9 +111,26 @@ func (s *scheduleService) FinishListingAgenda(ctx context.Context, input FinishL
 		return utils.InternalError("")
 	}
 
-	if auditErr := s.globalService.CreateAudit(ctx, tx, globalmodel.TableListings, "Agenda finalizada (schedule.finish)", input.ActorID); auditErr != nil {
+	agendaID := int64(agenda.ID())
+
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		input.ActorID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetListingAgenda, ID: agendaID},
+		auditmodel.OperationAgendaFinish,
+		map[string]any{
+			"listing_identity_id": input.ListingIdentityID,
+			"listing_version_id":  activeVersion.ID(),
+			"agenda_id":           agendaID,
+			"status_from":         listingmodel.StatusPendingAvailability.String(),
+			"status_to":           listingmodel.StatusPendingPhotoScheduling.String(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+		},
+	)
+
+	if auditErr := s.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
 		utils.SetSpanError(ctx, auditErr)
-		logger.Error("schedule.finish_listing_agenda.audit_error", "err", auditErr, "listing_identity_id", input.ListingIdentityID)
+		logger.Error("schedule.finish_listing_agenda.audit_error", "err", auditErr, "listing_identity_id", input.ListingIdentityID, "agenda_id", agendaID)
 		return auditErr
 	}
 

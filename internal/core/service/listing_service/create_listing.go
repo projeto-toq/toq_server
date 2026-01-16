@@ -9,9 +9,12 @@ import (
 
 	"github.com/google/uuid"
 
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	propertycoveragemodel "github.com/projeto-toq/toq_server/internal/core/model/property_coverage_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 	validators "github.com/projeto-toq/toq_server/internal/core/utils/validators"
@@ -226,9 +229,27 @@ func (ls *listingService) createListing(ctx context.Context, tx *sql.Tx, input C
 		return nil, utils.InternalError("")
 	}
 
-	err = ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio criado")
-	if err != nil {
-		return
+	version := int64(listing.Version())
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetListingIdentity, ID: listing.IdentityID(), Version: &version},
+		auditmodel.OperationCreate,
+		map[string]any{
+			"listing_identity_id": listing.IdentityID(),
+			"listing_version_id":  listing.ActiveVersionID(),
+			"version":             listing.Version(),
+			"status_from":         "",
+			"status_to":           listing.ActiveVersion().Status().String(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+			"code":                listing.Code(),
+		},
+	)
+
+	if err = ls.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("listing.create.audit_error", "err", err, "listing_identity_id", listing.IdentityID(), "listing_version_id", listing.ActiveVersionID())
+		return listing, utils.InternalError("")
 	}
 
 	return

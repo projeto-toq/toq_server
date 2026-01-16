@@ -9,10 +9,11 @@ import (
 	"time"
 
 	"github.com/projeto-toq/toq_server/internal/core/derrors"
-	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	proposalmodel "github.com/projeto-toq/toq_server/internal/core/model/proposal_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
 
@@ -63,6 +64,7 @@ func (s *proposalService) RejectProposal(ctx context.Context, input StatusChange
 	if proposal.Status() != proposalmodel.StatusPending {
 		return nil, derrors.Conflict("only pending proposals can be rejected", nil)
 	}
+	prevStatus := string(proposal.Status())
 
 	now := time.Now().UTC()
 	if err = s.recordOwnerProposalResponse(ctx, tx, proposal, now); err != nil {
@@ -96,9 +98,27 @@ func (s *proposalService) RejectProposal(ctx context.Context, input StatusChange
 		return nil, derrors.Infra("failed to update listing proposal flags", err)
 	}
 
-	auditMsg := fmt.Sprintf("proposal_rejected:%d", proposal.ID())
-	if err = s.globalSvc.CreateAudit(ctx, tx, globalmodel.TableProposals, auditMsg, input.Actor.UserID); err != nil {
-		return nil, err
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		input.Actor.UserID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetProposal, ID: proposal.ID()},
+		auditmodel.OperationProposalReject,
+		map[string]any{
+			"proposal_id":         proposal.ID(),
+			"listing_identity_id": proposal.ListingIdentityID(),
+			"owner_id":            proposal.OwnerID(),
+			"realtor_id":          proposal.RealtorID(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+			"status_from":         prevStatus,
+			"status_to":           string(proposal.Status()),
+			"reason":              reason,
+		},
+	)
+
+	if err = s.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
+		utils.SetSpanError(ctx, err)
+		logger.Error("proposal.reject.audit_error", "err", err, "proposal_id", proposal.ID())
+		return nil, derrors.Infra("failed to record proposal audit", err)
 	}
 
 	if err = s.globalSvc.CommitTransaction(ctx, tx); err != nil {

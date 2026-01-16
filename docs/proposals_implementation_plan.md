@@ -14,7 +14,7 @@
   - Quebra intencional de compatibilidade na camada de repositório/serviço (novas assinaturas com `*sql.Tx`, filtros simplificados e remoção de favoritos/estatísticas).
   - Novos endpoints HTTP `/api/v2/proposals/*`, DTOs e documentação Swagger regenerada.
   - Ajustes de schema em `proposals`, `proposal_documents` e `listing_identities`, além de novos índices por status/atores.
-  - Integração com UnifiedNotificationService para todos os eventos (envio/cancelamento/aceite/recusa) e auditoria via `globalService.CreateAudit`.
+  - Integração com UnifiedNotificationService para todos os eventos (envio/cancelamento/aceite/recusa) e auditoria via `auditService.RecordChange` (actor/target/correlation).
 - **Melhorias possíveis:**
   - Simplificação de payloads (apenas texto + PDF opcional) reduzindo superfície de dados sensíveis.
   - Atualização única das flags de listing dentro da mesma transação para manter consistência eventual.
@@ -716,7 +716,14 @@ func (s *proposalService) CreateProposal(ctx context.Context, input CreatePropos
   }); err != nil {
     return nil, derrors.Infra("failed to set listing flags", err)
   }
-  if err = s.globalSvc.CreateAudit(ctx, tx, globalmodel.TableProposals, fmt.Sprintf("proposal_created:%d", proposal.ID())); err != nil {
+  auditRecord := auditservice.BuildRecordFromContext(
+    ctx,
+    proposal.RealtorID(),
+    auditmodel.AuditTarget{Type: auditmodel.TargetProposal, ID: proposal.ID()},
+    auditmodel.OperationCreate,
+    map[string]any{"listingIdentityId": proposal.ListingIdentityID()},
+  )
+  if err = s.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
     return nil, err
   }
   if err = s.globalSvc.CommitTransaction(ctx, tx); err != nil {

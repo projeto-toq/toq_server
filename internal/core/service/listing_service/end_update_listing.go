@@ -9,9 +9,12 @@ import (
 
 	"github.com/google/uuid"
 
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
+	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	scheduleservices "github.com/projeto-toq/toq_server/internal/core/service/schedule_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -140,11 +143,29 @@ func (ls *listingService) EndUpdateListing(ctx context.Context, input EndUpdateL
 		return utils.InternalError("")
 	}
 
-	if auditErr := ls.gsi.CreateAudit(ctx, tx, globalmodel.TableListings, "Anúncio finalizado (end-update)"); auditErr != nil {
+	timezone := resolveListingTimezone(snapshot)
+	version := int64(snapshot.Version)
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetListingIdentity, ID: identity.ID, Version: &version},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"listing_identity_id": identity.ID,
+			"listing_version_id":  listingVersionID,
+			"version":             snapshot.Version,
+			"status_from":         listingmodel.StatusDraft.String(),
+			"status_to":           listingmodel.StatusPendingAvailability.String(),
+			"actor_role":          string(permissionmodel.RoleSlugOwner),
+			"timezone":            timezone,
+		},
+	)
+
+	if auditErr := ls.auditService.RecordChange(ctx, tx, auditRecord); auditErr != nil {
+		utils.SetSpanError(ctx, auditErr)
+		logger.Error("listing.end_update.audit_error", "err", auditErr, "listing_uuid", listingUUID, "listing_identity_id", identity.ID, "listing_version_id", listingVersionID)
 		return auditErr
 	}
-
-	timezone := resolveListingTimezone(snapshot)
 	agendaInput := scheduleservices.CreateDefaultAgendaInput{
 		ListingIdentityID: identity.ID,
 		OwnerID:           userID,

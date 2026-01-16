@@ -7,6 +7,7 @@ import (
 	listingrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_repository"
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	proposalrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/proposal_repository"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	userservices "github.com/projeto-toq/toq_server/internal/core/service/user_service"
 )
@@ -30,6 +31,7 @@ type proposalService struct {
 	globalSvc    globalservice.GlobalServiceInterface
 	notifier     globalservice.UnifiedNotificationService
 	userService  userservices.UserServiceInterface
+	auditService auditservice.AuditServiceInterface
 	maxDocBytes  int64
 }
 
@@ -42,6 +44,7 @@ func New(
 	ownerMetrics ownermetricsrepository.Repository,
 	globalSvc globalservice.GlobalServiceInterface,
 	userService userservices.UserServiceInterface,
+	auditService auditservice.AuditServiceInterface,
 ) Service {
 	var notifier globalservice.UnifiedNotificationService
 	if globalSvc != nil {
@@ -55,6 +58,7 @@ func New(
 		globalSvc:    globalSvc,
 		notifier:     notifier,
 		userService:  userService,
+		auditService: auditService,
 		maxDocBytes:  defaultMaxDocBytes,
 	}
 }

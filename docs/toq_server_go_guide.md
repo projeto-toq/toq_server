@@ -280,6 +280,7 @@ Observação: o projeto suporta erros de domínio via `derrors` (novo) e tipos `
 - cada método público do service terá seu próprio arquivo em internal/core/service/<service_name>/<method_name>.go
 - Inicie transação via serviço global (`s.globalService.StartTransaction
 - Inicie tracer no topo; trate domínio vs infraestrutura; marque spans em erros de infra; não serialize HTTP.
+- Auditoria: toda operação que altera estado DEVE registrar auditoria via `auditService.RecordChange` usando `auditservice.BuildRecordFromContext` para preencher ator/target/version/correlation; nunca chame adapter diretamente.
 - Se houver necessidade de um helper com funções simples e pontuais, comun a várias funções públicas, crie um método privado helper.go. Se for função mais complexa crie um metodo privado.
 
 ```go
@@ -772,7 +773,7 @@ type CreateUserRequest struct {
 //  4. Assigns initial role and permissions
 //  5. Creates validation records for email/phone
 //  6. Initializes user storage folder in cloud
-//  7. Logs audit trail
+//  7. Records audit event via auditService.RecordChange (actor/target/correlation)
 //
 // The operation is transactional: if any step fails, all changes are rolled back.
 //
@@ -801,7 +802,7 @@ type CreateUserRequest struct {
 //   - Creates user_roles record
 //   - Creates user_validations record (email and phone unverified)
 //   - Creates cloud storage folder at /users/{user_id}/
-//   - Logs audit entry
+//   - Records audit entry via auditService.RecordChange
 //
 // Example:
 //   user := usermodel.NewUser()
@@ -889,11 +890,18 @@ func (us *userService) CreateUser(ctx context.Context, user usermodel.UserInterf
         return nil, derrors.Infra("Failed to create user folder", err)
     }
 
-    // Register audit trail for creation
-    if err = us.globalService.CreateAudit(ctx, tx, globalmodel.TableUsers, "User account created", user.GetID()); err != nil {
-        logger.Error("user.create_user.create_audit_error", "user_id", user.GetID(), "err", err)
+    // Register audit trail for creation using the audit service
+    auditRecord := auditservice.BuildRecordFromContext(
+        ctx,
+        user.GetID(),
+        auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: user.GetID()},
+        auditmodel.OperationCreate,
+        map[string]any{"resource": "user"},
+    )
+    if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
+        logger.Error("user.create_user.audit_record_error", "user_id", user.GetID(), "err", err)
         utils.SetSpanError(ctx, err)
-        return nil, derrors.Infra("Failed to create audit record", err)
+        return nil, derrors.Infra("Failed to record audit event", err)
     }
 
     // Commit transaction (all DB operations successful)

@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	permissionmodel "github.com/projeto-toq/toq_server/internal/core/model/permission_model"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
 )
@@ -59,6 +60,7 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 
 	// Update status on active role of realtor
 	roleSlug := permissionmodel.RoleSlug(activeRole.GetRole().GetSlug())
+	statusFrom := activeRole.GetStatus()
 	if err = us.repo.UpdateUserRoleStatus(ctx, tx, userID, roleSlug, target); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return utils.NotFoundError("Active role to update")
@@ -68,7 +70,19 @@ func (us *userService) ApproveCreciManual(ctx context.Context, userID int64, tar
 		return utils.InternalError("Failed to update user role status")
 	}
 
-	if aerr := us.globalService.CreateAudit(ctx, tx, "user_roles", fmt.Sprintf("Admin manual review: set status to %s", target.String())); aerr != nil {
+	auditRecord := auditservice.BuildRecordFromContext(
+		ctx,
+		userID,
+		auditmodel.AuditTarget{Type: auditmodel.TargetUserRole, ID: activeRole.GetID()},
+		auditmodel.OperationStatusChange,
+		map[string]any{
+			"role_slug":   string(roleSlug),
+			"status_from": statusFrom.String(),
+			"status_to":   target.String(),
+			"reason":      "manual_review",
+		},
+	)
+	if aerr := us.auditService.RecordChange(ctx, tx, auditRecord); aerr != nil {
 		utils.SetSpanError(ctx, aerr)
 		logger.Error("admin.approve_creci.audit_error", "error", aerr)
 		return utils.InternalError("Failed to write audit log")

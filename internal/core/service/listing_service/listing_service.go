@@ -11,6 +11,7 @@ import (
 	ownermetricsrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/owner_metrics_repository"
 	userrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/user_repository"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	photosessionservices "github.com/projeto-toq/toq_server/internal/core/service/photo_session_service"
 	propertycoverageservice "github.com/projeto-toq/toq_server/internal/core/service/property_coverage_service"
@@ -28,6 +29,7 @@ type listingService struct {
 	gsi               globalservice.GlobalServiceInterface
 	gcs               storageport.CloudStoragePortInterface
 	scheduleService   scheduleservices.ScheduleServiceInterface
+	auditService      auditservice.AuditServiceInterface
 }
 
 func NewListingService(
@@ -41,6 +43,7 @@ func NewListingService(
 	ss scheduleservices.ScheduleServiceInterface,
 	fr listingfavoriterepository.FavoriteRepoPortInterface,
 	vr listingviewrepository.Repository,
+	as auditservice.AuditServiceInterface,
 ) ListingServiceInterface {
 	return &listingService{
 		listingRepository: lr,
@@ -53,6 +56,7 @@ func NewListingService(
 		gsi:               gsi,
 		gcs:               gcs,
 		scheduleService:   ss,
+		auditService:      as,
 	}
 }
 
