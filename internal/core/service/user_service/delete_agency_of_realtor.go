@@ -97,7 +97,7 @@ func (us *userService) deleteAgencyOfRealtor(ctx context.Context, tx *sql.Tx, re
 	auditRecord := auditservice.BuildRecordFromContext(
 		ctx,
 		realtor.GetID(),
-		auditmodel.AuditTarget{Type: auditmodel.TargetRealtorAgency, ID: 0},
+		auditmodel.AuditTarget{Type: auditmodel.TargetRealtorAgency, ID: realtor.GetID()},
 		auditmodel.OperationDelete,
 		map[string]any{
 			"action":      "realtor_left_agency",

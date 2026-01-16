@@ -113,6 +113,8 @@ func (us *userService) SignOut(ctx context.Context, deviceToken, refreshToken, d
 func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, deviceToken, refreshToken, deviceID string) (err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+	auditTarget := auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID}
+	sessionID := int64(0)
 	// Determine single-session vs global logout
 	single := refreshToken != "" || deviceToken != "" || deviceID != ""
 	mode := "global"
@@ -142,6 +144,8 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 				if session.GetDeviceID() != "" {
 					targetDeviceID = session.GetDeviceID()
 				}
+				sessionID = session.GetID()
+				auditTarget = auditmodel.AuditTarget{Type: auditmodel.TargetSession, ID: sessionID}
 			}
 		}
 		// Remove device tokens
@@ -166,7 +170,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		auditRecord := auditservice.BuildRecordFromContext(
 			ctx,
 			userID,
-			auditmodel.AuditTarget{Type: auditmodel.TargetSession, ID: 0},
+			auditTarget,
 			auditmodel.OperationAuthSignout,
 			map[string]any{
 				"mode":                    mode,
@@ -174,6 +178,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 				"refresh_token_present":   refreshToken != "",
 				"device_token_present":    deviceToken != "",
 				"session_revocation_mode": "single",
+				"session_id":              sessionID,
 			},
 		)
 		if errAudit := us.auditService.RecordChange(ctx, tx, auditRecord); errAudit != nil {
@@ -200,7 +205,7 @@ func (us *userService) signOut(ctx context.Context, tx *sql.Tx, userID int64, de
 		auditRecord := auditservice.BuildRecordFromContext(
 			ctx,
 			userID,
-			auditmodel.AuditTarget{Type: auditmodel.TargetSession, ID: 0},
+			auditmodel.AuditTarget{Type: auditmodel.TargetUser, ID: userID},
 			auditmodel.OperationAuthSignout,
 			map[string]any{
 				"mode":                    mode,

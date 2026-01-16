@@ -277,11 +277,23 @@ func (us *userService) sendSMStoNewRealtor(ctx context.Context, phoneNumber stri
 func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx, agency usermodel.UserInterface, phoneNumber string, realtor usermodel.UserInterface, push bool) (err error) {
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
+	agencyID := agency.GetID()
 	err = us.repo.CreateAgencyInvite(ctx, tx, agency, phoneNumber)
 	if err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("user.invite_realtor.create_invite_error", "error", err)
 		return
+	}
+	// Restore agency ID in case repository mutated it
+	if agency.GetID() != agencyID {
+		agency.SetID(agencyID)
+	}
+
+	invite, invErr := us.repo.GetInviteByPhoneNumber(ctx, tx, phoneNumber)
+	if invErr != nil {
+		utils.SetSpanError(ctx, invErr)
+		logger.Error("user.invite_realtor.read_invite_after_create_error", "error", invErr, "phone", phoneNumber)
+		return utils.InternalError("Failed to load created invite")
 	}
 	// Converter RoleInterface para RoleSlug
 	roleSlug := permissionmodel.RoleSlug(realtor.GetActiveRole().GetRole().GetSlug())
@@ -324,10 +336,14 @@ func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx
 	if realtor != nil {
 		realtorID = realtor.GetID()
 	}
+	inviteID := agencyID
+	if invite != nil && invite.GetID() > 0 {
+		inviteID = invite.GetID()
+	}
 	auditRecord := auditservice.BuildRecordFromContext(
 		ctx,
 		agency.GetID(),
-		auditmodel.AuditTarget{Type: auditmodel.TargetAgencyInvite, ID: 0},
+		auditmodel.AuditTarget{Type: auditmodel.TargetAgencyInvite, ID: inviteID},
 		auditmodel.OperationCreate,
 		map[string]any{
 			"agency_id":  agency.GetID(),
@@ -335,6 +351,7 @@ func (us *userService) createAgencyInviteByPhone(ctx context.Context, tx *sql.Tx
 			"phone":      phoneNumber,
 			"push_sent":  push,
 			"action":     "invite_created",
+			"invite_id":  inviteID,
 		},
 	)
 	if err = us.auditService.RecordChange(ctx, tx, auditRecord); err != nil {
