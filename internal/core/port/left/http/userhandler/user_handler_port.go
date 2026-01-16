@@ -11,8 +11,6 @@ type UserHandlerPort interface {
 	GetProfile(c *gin.Context)
 	UpdateProfile(c *gin.Context)
 	DeleteAccount(c *gin.Context)
-	GetUserRoles(c *gin.Context)
-	GoHome(c *gin.Context)
 	UpdateOptStatus(c *gin.Context)
 	PostPhotoUploadURL(c *gin.Context)
 	PostPhotoDownloadURL(c *gin.Context)
@@ -30,17 +28,7 @@ type UserHandlerPort interface {
 	AddAlternativeUserRole(c *gin.Context)
 	SwitchUserRole(c *gin.Context)
 
-	// Agency handlers
-	InviteRealtor(c *gin.Context)
-	GetRealtorsByAgency(c *gin.Context)
-	GetRealtorByID(c *gin.Context)
-	DeleteRealtorByID(c *gin.Context)
-
 	// Realtor handlers
 	VerifyCreciDocuments(c *gin.Context)
 	PostCreciUploadURL(c *gin.Context)
-	AcceptInvitation(c *gin.Context)
-	RejectInvitation(c *gin.Context)
-	GetAgencyOfRealtor(c *gin.Context)
-	DeleteAgencyOfRealtor(c *gin.Context)
 }

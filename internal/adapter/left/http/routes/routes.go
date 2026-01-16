@@ -182,9 +182,7 @@ func RegisterUserRoutes(
 	user.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	user.Use(middlewares.PermissionMiddleware(permissionService))
 	{
-		user.GET("/roles", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetUserRoles
-		user.GET("/home", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GoHome
-		user.PUT("/opt-status", userHandler.UpdateOptStatus)                                            // UpdateOptStatus
+		user.PUT("/opt-status", userHandler.UpdateOptStatus) // UpdateOptStatus
 
 		// SignOut (authenticated endpoint)
 		user.POST("/signout", userHandler.SignOut) // SignOut
@@ -216,30 +214,14 @@ func RegisterUserRoutes(
 		user.DELETE("/account", userHandler.DeleteAccount)
 	}
 
-	// Agency routes (Agency only)
-	agency := router.Group("/agency")
-	// Apply security middlewares to authenticated routes
-	agency.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
-	agency.Use(middlewares.PermissionMiddleware(permissionService))
-	{
-		agency.POST("/invite-realtor", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // InviteRealtor
-		agency.GET("/realtors", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })        // GetRealtorsByAgency
-		agency.GET("/realtors/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // GetRealtorByID
-		agency.DELETE("/realtors/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // DeleteRealtorByID
-	}
-
 	// Realtor routes (Realtor only)
 	realtor := router.Group("/realtor")
 	// Apply security middlewares to authenticated routes
 	realtor.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
 	realtor.Use(middlewares.PermissionMiddleware(permissionService))
 	{
-		realtor.POST("/creci/verify", userHandler.VerifyCreciDocuments)                                                 // VerifyCreciDocuments
-		realtor.POST("/creci/upload-url", userHandler.PostCreciUploadURL)                                               // PostCreciUploadURL
-		realtor.POST("/invitation/accept", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // AcceptInvitation
-		realtor.POST("/invitation/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RejectInvitation
-		realtor.GET("/agency", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })             // GetAgencyOfRealtor
-		realtor.DELETE("/agency", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // DeleteAgencyOfRealtor
+		realtor.POST("/creci/verify", userHandler.VerifyCreciDocuments)   // VerifyCreciDocuments
+		realtor.POST("/creci/upload-url", userHandler.PostCreciUploadURL) // PostCreciUploadURL
 	}
 }
 
@@ -304,13 +286,12 @@ func RegisterListingRoutes(
 		// Complexes (public listing context)
 		listings.GET("/complexes", listingHandler.ListComplexes)
 
-		// Basic CRUD
-		listings.GET("", listingHandler.ListListings)                                                        // ListListings with filters, sorting, and pagination
-		listings.POST("", listingHandler.StartListing)                                                       // StartListing
-		listings.GET("/search", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // SearchListing
-		listings.POST("/options", listingHandler.PostOptions)                                                // PostOptions
-		listings.GET("/features/base", listingHandler.GetBaseFeatures)                                       // GetBaseFeatures
-		listings.POST("/catalog", listingHandler.ListCatalogValues)                                          // ListCatalogValues
+		// Basic CRUD and options
+		listings.GET("", listingHandler.ListListings)                  // ListListings with filters, sorting, and pagination
+		listings.POST("", listingHandler.StartListing)                 // StartListing
+		listings.POST("/options", listingHandler.PostOptions)          // PostOptions
+		listings.GET("/features/base", listingHandler.GetBaseFeatures) // GetBaseFeatures
+		listings.POST("/catalog", listingHandler.ListCatalogValues)    // ListCatalogValues
 
 		// Favorites (Realtor side)
 		listings.GET("/favorites", listingHandler.GetFavoriteListings)
@@ -339,65 +320,13 @@ func RegisterListingRoutes(
 		}
 
 		// Individual listing operations
-		listings.POST("/detail", listingHandler.GetListing)                                                  // GetListing
-		listings.GET("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // GetListing
-		listings.PUT("", listingHandler.UpdateListing)                                                       // UpdateListing
-		listings.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // DeleteListing
-		listings.POST("/versions/draft", listingHandler.CreateDraftVersion)                                  // CreateDraftVersion
+		listings.POST("/detail", listingHandler.GetListing)                 // GetListing
+		listings.PUT("", listingHandler.UpdateListing)                      // UpdateListing
+		listings.POST("/versions/draft", listingHandler.CreateDraftVersion) // CreateDraftVersion
 		listings.POST("/versions/promote", listingHandler.PromoteListingVersion)
 		listings.POST("/versions/discard", listingHandler.DiscardDraftVersion)
 		listings.POST("/versions", listingHandler.ListListingVersions)
 		listings.POST("/status", listingHandler.ChangeListingStatus)
-		listings.GET("/:id/status", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // GetListingStatus
-
-		// Owner operations
-		listings.POST("/:id/approve", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ApproveListing
-		listings.POST("/:id/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // RejectListing
-		listings.POST("/:id/copy", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // CopyListing
-
-		// Realtor operations
-		listings.POST("/:id/share", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })      // ShareListing
-		listings.POST("/:id/favorite", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })   // AddFavoriteListing
-		listings.DELETE("/:id/favorite", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RemoveFavoriteListing
-
-		// Visit requests
-		listings.POST("/:id/visit/request", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // RequestVisit
-		listings.GET("/:id/visits", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })         // GetVisits
-
-		// Offers
-		listings.POST("/:id/offers", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // CreateOffer
-		listings.GET("/:id/offers", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // GetOffers
-	}
-
-	// Offer management (all require authentication)
-	offers := router.Group("/offers")
-	// Apply security middlewares to authenticated routes
-	offers.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
-	offers.Use(middlewares.PermissionMiddleware(permissionService))
-	{
-		offers.GET("", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })              // GetAllOffers
-		offers.PUT("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })          // UpdateOffer
-		offers.DELETE("/:id", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })       // CancelOffer
-		offers.POST("/:id/send", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })    // SendOffer
-		offers.POST("/:id/approve", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // ApproveOffer
-		offers.POST("/:id/reject", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) })  // RejectOffer
-	}
-
-	// Evaluation routes (all require authentication)
-	realtors := router.Group("/realtors")
-	// Apply security middlewares to authenticated routes
-	realtors.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
-	realtors.Use(middlewares.PermissionMiddleware(permissionService))
-	{
-		realtors.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateRealtor
-	}
-
-	owners := router.Group("/owners")
-	// Apply security middlewares to authenticated routes
-	owners.Use(middlewares.AuthMiddleware(activityTracker, tokenBlocklist))
-	owners.Use(middlewares.PermissionMiddleware(permissionService))
-	{
-		owners.POST("/:id/evaluate", func(c *gin.Context) { c.JSON(501, gin.H{"error": "Not implemented yet"}) }) // EvaluateOwner
 	}
 }
 
