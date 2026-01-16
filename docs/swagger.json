@@ -7043,6 +7043,222 @@
                 }
             }
         },
+        "/listings/project-media": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a specific project asset (PROJECT_DOC/PROJECT_RENDER) for a listing in project upload flow.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Delete project media asset",
+                "parameters": [
+                    {
+                        "description": "Delete payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_adapter_left_http_handlers_media_processing_handlers.deleteProjectMediaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Asset deleted",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Asset not found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/project-media/complete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Confirms project media uploads for a listing in StatusPendingPlanLoading and triggers finalization.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Complete project media upload",
+                "parameters": [
+                    {
+                        "description": "Completion payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteProjectMediaRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Project media completed",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing not found or invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/listings/project-media/uploads": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generates signed PUT URLs for OffPlanHouse project assets (PROJECT_DOC/PROJECT_RENDER) while the listing is in StatusPendingPlanLoading. Enforces payload validation and returns upload instructions with required headers.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Listings Media"
+                ],
+                "summary": "Request project media upload URLs",
+                "parameters": [
+                    {
+                        "description": "Project media manifest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Signed URLs issued",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request payload",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Listing not found or invalid status",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Open batch exists",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/listings/status": {
             "post": {
                 "security": [
@@ -12283,6 +12499,20 @@
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteProjectMediaRequest": {
+            "type": "object",
+            "required": [
+                "listingIdentityId"
+            ],
+            "properties": {
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing to finalize project media\nMust be greater than zero\nExample: 1024",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1024
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse": {
             "type": "object",
             "properties": {
@@ -12701,17 +12931,28 @@
             "properties": {
                 "assetType": {
                     "type": "string",
+                    "enum": [
+                        "PHOTO_VERTICAL",
+                        "PHOTO_HORIZONTAL",
+                        "VIDEO_VERTICAL",
+                        "VIDEO_HORIZONTAL",
+                        "THUMBNAIL",
+                        "ZIP",
+                        "PROJECT_DOC",
+                        "PROJECT_RENDER"
+                    ],
                     "example": "PHOTO_VERTICAL"
                 },
                 "resolution": {
-                    "description": "Resolution options: thumbnail, small, medium, large, original",
+                    "description": "Resolution options: thumbnail, small, medium, large, original, zip (zip is only valid when assetType=ZIP and ignores sequence)",
                     "type": "string",
                     "enum": [
                         "thumbnail",
                         "small",
                         "medium",
                         "large",
-                        "original"
+                        "original",
+                        "zip"
                     ],
                     "example": "medium"
                 },
@@ -14420,6 +14661,67 @@
                 }
             }
         },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProjectUploadFileRequest": {
+            "type": "object",
+            "required": [
+                "assetType",
+                "bytes",
+                "checksum",
+                "contentType",
+                "filename",
+                "sequence"
+            ],
+            "properties": {
+                "assetType": {
+                    "description": "AssetType must be PROJECT_DOC (PDF) or PROJECT_RENDER (image)\nExample: \"PROJECT_DOC\"",
+                    "type": "string",
+                    "enum": [
+                        "PROJECT_DOC",
+                        "PROJECT_RENDER"
+                    ],
+                    "example": "PROJECT_DOC"
+                },
+                "bytes": {
+                    "description": "Bytes represents the file size\nMust be greater than zero and respect service limits\nExample: 1048576",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1048576
+                },
+                "checksum": {
+                    "description": "Checksum is the SHA-256 hash of the file content (hex-encoded)\nExample: \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"",
+                    "type": "string",
+                    "example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                "contentType": {
+                    "description": "ContentType is the MIME type of the file\nAllowed examples: application/pdf, image/jpeg, image/png",
+                    "type": "string",
+                    "example": "application/pdf"
+                },
+                "filename": {
+                    "description": "Filename is the original client filename\nExample: \"plantas_andar_1.pdf\"",
+                    "type": "string",
+                    "example": "plantas_andar_1.pdf"
+                },
+                "metadata": {
+                    "description": "Metadata carries optional key-value pairs for future processing hints",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "sequence": {
+                    "description": "Sequence determines the order of the asset within its type\nMust be positive and unique per asset type\nExample: 1",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                },
+                "title": {
+                    "description": "Title is an optional caption for the asset\nExample: \"Planta pavimento térreo\"",
+                    "type": "string",
+                    "example": "Planta pavimento térreo"
+                }
+            }
+        },
         "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionRequest": {
             "type": "object",
             "required": [
@@ -14723,6 +15025,51 @@
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsRequest": {
+            "type": "object",
+            "required": [
+                "files",
+                "listingIdentityId"
+            ],
+            "properties": {
+                "files": {
+                    "description": "Files enumerates every project asset to upload\nMust contain at least one file and only project asset types",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProjectUploadFileRequest"
+                    }
+                },
+                "listingIdentityId": {
+                    "description": "ListingIdentityID identifies the listing receiving the project media\nMust correspond to a listing in StatusPendingPlanLoading\nExample: 1024",
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1024
+                }
+            }
+        },
+        "github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsResponse": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "description": "Files contains upload instructions for each project asset",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadInstructionResponse"
+                    }
+                },
+                "listingIdentityId": {
+                    "description": "ListingIdentityID confirms the listing receiving the uploads",
+                    "type": "integer",
+                    "example": 1024
+                },
+                "uploadUrlTtlSeconds": {
+                    "description": "UploadURLTTLSeconds indicates how long the signed URLs remain valid\nExample: 900 (15 minutes)",
+                    "type": "integer",
+                    "example": 900
                 }
             }
         },
@@ -16549,6 +16896,30 @@
         },
         "github_com_projeto-toq_toq_server_internal_core_utils.Optional-string": {
             "type": "object"
+        },
+        "internal_adapter_left_http_handlers_media_processing_handlers.deleteProjectMediaRequest": {
+            "type": "object",
+            "required": [
+                "assetType",
+                "listingIdentityId",
+                "sequence"
+            ],
+            "properties": {
+                "assetType": {
+                    "type": "string",
+                    "example": "PROJECT_DOC"
+                },
+                "listingIdentityId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1024
+                },
+                "sequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                }
+            }
         }
     },
     "securityDefinitions": {

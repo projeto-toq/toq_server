@@ -20,6 +20,7 @@ import (
 // MediaProcessingServiceInterface exposes orchestration helpers for listing media batches.
 type MediaProcessingServiceInterface interface {
 	RequestUploadURLs(ctx context.Context, input dto.RequestUploadURLsInput) (dto.RequestUploadURLsOutput, error)
+	RequestProjectUploadURLs(ctx context.Context, input dto.RequestUploadURLsInput) (dto.RequestUploadURLsOutput, error)
 	ProcessMedia(ctx context.Context, input dto.ProcessMediaInput) error
 	ReconcileStuckJobs(ctx context.Context, timeout time.Duration) error
 	CleanOldJobs(ctx context.Context, cutoff time.Time, limit int) (int64, error)
@@ -32,6 +33,7 @@ type MediaProcessingServiceInterface interface {
 	UpdateMedia(ctx context.Context, input dto.UpdateMediaInput) error
 	DeleteMedia(ctx context.Context, input dto.DeleteMediaInput) error
 	CompleteMedia(ctx context.Context, input dto.CompleteMediaInput) error
+	CompleteProjectMedia(ctx context.Context, input dto.CompleteMediaInput) error
 	HandleOwnerMediaApproval(ctx context.Context, input dto.ListingMediaApprovalInput) (dto.ListingMediaApprovalOutput, error)
 
 	// Legacy/Internal

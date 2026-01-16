@@ -1434,7 +1434,7 @@ type RetryMediaBatchResponse struct {
 // ListMediaRequest define filtros e paginação para consulta de mídias.
 type ListMediaRequest struct {
 	ListingIdentityID uint64 `form:"listingIdentityId" binding:"required,min=1"`
-	AssetType         string `form:"assetType,omitempty"`
+	AssetType         string `form:"assetType,omitempty" binding:"omitempty,oneof=PHOTO_VERTICAL PHOTO_HORIZONTAL VIDEO_VERTICAL VIDEO_HORIZONTAL THUMBNAIL ZIP PROJECT_DOC PROJECT_RENDER"`
 	Sequence          *uint8 `form:"sequence,omitempty"`
 
 	// Paginação e Ordenação
@@ -1496,10 +1496,10 @@ type GenerateDownloadURLsRequest struct {
 
 // DownloadRequestItem combina a chave do asset com a resolução desejada.
 type DownloadRequestItem struct {
-	AssetType string `json:"assetType" binding:"required" example:"PHOTO_VERTICAL"`
+	AssetType string `json:"assetType" binding:"required,oneof=PHOTO_VERTICAL PHOTO_HORIZONTAL VIDEO_VERTICAL VIDEO_HORIZONTAL THUMBNAIL ZIP PROJECT_DOC PROJECT_RENDER" enums:"PHOTO_VERTICAL,PHOTO_HORIZONTAL,VIDEO_VERTICAL,VIDEO_HORIZONTAL,THUMBNAIL,ZIP,PROJECT_DOC,PROJECT_RENDER" example:"PHOTO_VERTICAL"`
 	Sequence  uint8  `json:"sequence" binding:"required" example:"1"`
-	// Resolution options: thumbnail, small, medium, large, original
-	Resolution string `json:"resolution" binding:"required,oneof=thumbnail small medium large original" enums:"thumbnail,small,medium,large,original" example:"medium"`
+	// Resolution options: thumbnail, small, medium, large, original, zip (zip is only valid when assetType=ZIP and ignores sequence)
+	Resolution string `json:"resolution" binding:"required,oneof=thumbnail small medium large original zip" enums:"thumbnail,small,medium,large,original,zip" example:"medium"`
 }
 
 // GenerateDownloadURLsResponse retorna as URLs geradas.

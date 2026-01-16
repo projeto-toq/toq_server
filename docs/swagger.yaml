@@ -927,6 +927,19 @@ definitions:
         example: READY
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteProjectMediaRequest:
+    properties:
+      listingIdentityId:
+        description: |-
+          ListingIdentityID identifies the listing to finalize project media
+          Must be greater than zero
+          Example: 1024
+        example: 1024
+        minimum: 1
+        type: integer
+    required:
+    - listingIdentityId
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ComplexResponse:
     properties:
       city:
@@ -1204,16 +1217,27 @@ definitions:
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.DownloadRequestItem:
     properties:
       assetType:
+        enum:
+        - PHOTO_VERTICAL
+        - PHOTO_HORIZONTAL
+        - VIDEO_VERTICAL
+        - VIDEO_HORIZONTAL
+        - THUMBNAIL
+        - ZIP
+        - PROJECT_DOC
+        - PROJECT_RENDER
         example: PHOTO_VERTICAL
         type: string
       resolution:
-        description: 'Resolution options: thumbnail, small, medium, large, original'
+        description: 'Resolution options: thumbnail, small, medium, large, original,
+          zip (zip is only valid when assetType=ZIP and ignores sequence)'
         enum:
         - thumbnail
         - small
         - medium
         - large
         - original
+        - zip
         example: medium
         type: string
       sequence:
@@ -2393,6 +2417,71 @@ definitions:
       timezone:
         type: string
     type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProjectUploadFileRequest:
+    properties:
+      assetType:
+        description: |-
+          AssetType must be PROJECT_DOC (PDF) or PROJECT_RENDER (image)
+          Example: "PROJECT_DOC"
+        enum:
+        - PROJECT_DOC
+        - PROJECT_RENDER
+        example: PROJECT_DOC
+        type: string
+      bytes:
+        description: |-
+          Bytes represents the file size
+          Must be greater than zero and respect service limits
+          Example: 1048576
+        example: 1048576
+        minimum: 1
+        type: integer
+      checksum:
+        description: |-
+          Checksum is the SHA-256 hash of the file content (hex-encoded)
+          Example: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        example: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        type: string
+      contentType:
+        description: |-
+          ContentType is the MIME type of the file
+          Allowed examples: application/pdf, image/jpeg, image/png
+        example: application/pdf
+        type: string
+      filename:
+        description: |-
+          Filename is the original client filename
+          Example: "plantas_andar_1.pdf"
+        example: plantas_andar_1.pdf
+        type: string
+      metadata:
+        additionalProperties:
+          type: string
+        description: Metadata carries optional key-value pairs for future processing
+          hints
+        type: object
+      sequence:
+        description: |-
+          Sequence determines the order of the asset within its type
+          Must be positive and unique per asset type
+          Example: 1
+        example: 1
+        minimum: 1
+        type: integer
+      title:
+        description: |-
+          Title is an optional caption for the asset
+          Example: "Planta pavimento térreo"
+        example: Planta pavimento térreo
+        type: string
+    required:
+    - assetType
+    - bytes
+    - checksum
+    - contentType
+    - filename
+    - sequence
+    type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.PromoteListingVersionRequest:
     properties:
       listingIdentityId:
@@ -2603,6 +2692,46 @@ definitions:
     properties:
       message:
         type: string
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsRequest:
+    properties:
+      files:
+        description: |-
+          Files enumerates every project asset to upload
+          Must contain at least one file and only project asset types
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ProjectUploadFileRequest'
+        minItems: 1
+        type: array
+      listingIdentityId:
+        description: |-
+          ListingIdentityID identifies the listing receiving the project media
+          Must correspond to a listing in StatusPendingPlanLoading
+          Example: 1024
+        example: 1024
+        minimum: 1
+        type: integer
+    required:
+    - files
+    - listingIdentityId
+    type: object
+  github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsResponse:
+    properties:
+      files:
+        description: Files contains upload instructions for each project asset
+        items:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadInstructionResponse'
+        type: array
+      listingIdentityId:
+        description: ListingIdentityID confirms the listing receiving the uploads
+        example: 1024
+        type: integer
+      uploadUrlTtlSeconds:
+        description: |-
+          UploadURLTTLSeconds indicates how long the signed URLs remain valid
+          Example: 900 (15 minutes)
+        example: 900
+        type: integer
     type: object
   github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestUploadFileRequest:
     properties:
@@ -3940,6 +4069,24 @@ definitions:
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-bool:
     type: object
   github_com_projeto-toq_toq_server_internal_core_utils.Optional-string:
+    type: object
+  internal_adapter_left_http_handlers_media_processing_handlers.deleteProjectMediaRequest:
+    properties:
+      assetType:
+        example: PROJECT_DOC
+        type: string
+      listingIdentityId:
+        example: 1024
+        minimum: 1
+        type: integer
+      sequence:
+        example: 1
+        minimum: 1
+        type: integer
+    required:
+    - assetType
+    - listingIdentityId
+    - sequence
     type: object
 externalDocs:
   description: OpenAPI
@@ -8751,6 +8898,148 @@ paths:
       summary: List available photographer slots
       tags:
       - Listing Photo Sessions
+  /listings/project-media:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific project asset (PROJECT_DOC/PROJECT_RENDER) for
+        a listing in project upload flow.
+      parameters:
+      - description: Delete payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_adapter_left_http_handlers_media_processing_handlers.deleteProjectMediaRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Asset deleted
+          schema:
+            type: string
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Asset not found
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete project media asset
+      tags:
+      - Listings Media
+  /listings/project-media/complete:
+    post:
+      consumes:
+      - application/json
+      description: Confirms project media uploads for a listing in StatusPendingPlanLoading
+        and triggers finalization.
+      parameters:
+      - description: Completion payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.CompleteProjectMediaRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Project media completed
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found or invalid status
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Complete project media upload
+      tags:
+      - Listings Media
+  /listings/project-media/uploads:
+    post:
+      consumes:
+      - application/json
+      description: Generates signed PUT URLs for OffPlanHouse project assets (PROJECT_DOC/PROJECT_RENDER)
+        while the listing is in StatusPendingPlanLoading. Enforces payload validation
+        and returns upload instructions with required headers.
+      parameters:
+      - description: Project media manifest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Signed URLs issued
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.RequestProjectUploadURLsResponse'
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "404":
+          description: Listing not found or invalid status
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "409":
+          description: Open batch exists
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_projeto-toq_toq_server_internal_adapter_left_http_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Request project media upload URLs
+      tags:
+      - Listings Media
   /listings/status:
     post:
       consumes:
