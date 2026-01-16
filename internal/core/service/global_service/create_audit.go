@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	auditmodel "github.com/projeto-toq/toq_server/internal/core/model/audit_model"
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	usermodel "github.com/projeto-toq/toq_server/internal/core/model/user_model"
 	"github.com/projeto-toq/toq_server/internal/core/utils"
@@ -24,22 +25,54 @@ func (gs *globalService) CreateAudit(ctx context.Context, tx *sql.Tx, table glob
 	ctx = utils.ContextWithLogger(ctx)
 	logger := utils.LoggerFromContext(ctx)
 
-	audit := globalmodel.NewAudit()
+	if gs.auditService == nil {
+		logger.Error("global.audit.audit_service_nil")
+		return utils.InternalError("Audit service not configured")
+	}
+
+	actorID := int64(0)
 	if len(executedBY) > 0 {
-		audit.SetExecutedBy(executedBY[0])
+		actorID = executedBY[0]
 	} else if v := ctx.Value(globalmodel.TokenKey); v != nil {
 		if infos, ok := v.(usermodel.UserInfos); ok {
-			audit.SetExecutedBy(infos.ID)
+			actorID = infos.ID
 		}
 	}
-	audit.SetExecutedAt(time.Now().UTC())
-	audit.SetTableName(table)
-	audit.SetAction(action)
 
-	if err := gs.globalRepo.CreateAudit(ctx, tx, audit); err != nil {
+	record := auditmodel.RecordInput{
+		Actor: auditmodel.AuditActor{ID: actorID},
+		Target: auditmodel.AuditTarget{
+			Type: mapTableToTarget(table),
+			ID:   0, // legacy calls do not provide the specific entity ID
+		},
+		Operation: auditmodel.OperationUpdate,
+		Metadata: map[string]any{
+			"legacy_action": action,
+			"table":         table.String(),
+		},
+		OccurredAt: time.Now().UTC(),
+	}
+
+	if err := gs.auditService.RecordChange(ctx, tx, record); err != nil {
 		utils.SetSpanError(ctx, err)
 		logger.Error("global.audit.persist_error", "err", err, "table", table, "action", action)
-		return utils.InternalError("Failed to persist audit record")
+		return err
 	}
+
 	return nil
+}
+
+func mapTableToTarget(table globalmodel.TableName) auditmodel.TargetType {
+	switch table {
+	case globalmodel.TableUsers:
+		return auditmodel.TargetType("users")
+	case globalmodel.TableListings:
+		return auditmodel.TargetListingIdentity
+	case globalmodel.TableProposals:
+		return auditmodel.TargetProposal
+	case globalmodel.TableRealtorAgency:
+		return auditmodel.TargetType("realtors_agency")
+	default:
+		return auditmodel.TargetType(table.String())
+	}
 }

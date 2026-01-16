@@ -29,6 +29,7 @@ import (
 	mediaprocessingcallbackport "github.com/projeto-toq/toq_server/internal/core/port/right/functions/mediaprocessingcallback"
 	smsport "github.com/projeto-toq/toq_server/internal/core/port/right/sms"
 	storageport "github.com/projeto-toq/toq_server/internal/core/port/right/storage"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
@@ -73,6 +74,7 @@ type config struct {
 	propertyCoverageService propertycoverageservice.PropertyCoverageServiceInterface
 	mediaProcessingService  mediaprocessingservice.MediaProcessingServiceInterface
 	visitService            visitservice.Service
+	auditService            auditservice.AuditServiceInterface
 	metricsAdapter          *factory.MetricsAdapter
 	cep                     cepport.CEPPortInterface
 	cpf                     cpfport.CPFPortInterface
@@ -184,6 +186,9 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 	slog.Info("Assigning repository adapters")
 
 	// Log para debug
+	if repositories.Audit == nil {
+		slog.Error("repositories.Audit is nil")
+	}
 	if repositories.User == nil {
 		slog.Error("repositories.User is nil")
 	}
@@ -229,6 +234,7 @@ func (c *config) assignRepositoryAdapters(repositories factory.RepositoryAdapter
 
 	// Criar uma cópia dos repositórios para evitar problemas com ponteiros
 	c.repositoryAdapters = &factory.RepositoryAdapters{
+		Audit:            repositories.Audit,
 		User:             repositories.User,
 		Global:           repositories.Global,
 		PropertyCoverage: repositories.PropertyCoverage,

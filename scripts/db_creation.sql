@@ -1144,6 +1144,33 @@ CREATE TABLE IF NOT EXISTS `toq_db`.`listing_view_metrics` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `toq_db`.`audit_events`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toq_db`.`audit_events` ;
+
+CREATE TABLE IF NOT EXISTS `toq_db`.`audit_events` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `occurred_at` DATETIME(6) NOT NULL,
+  `actor_id` INT UNSIGNED NOT NULL,
+  `actor_role` VARCHAR(64) NULL,
+  `actor_device_id` VARCHAR(100) NULL,
+  `actor_ip` VARCHAR(64) NULL,
+  `actor_user_agent` VARCHAR(255) NULL,
+  `target_type` VARCHAR(64) NOT NULL,
+  `target_id` INT UNSIGNED NOT NULL,
+  `target_version` INT UNSIGNED NOT NULL,
+  `operation` VARCHAR(64) NOT NULL,
+  `metadata` JSON NULL,
+  `request_id` VARCHAR(64) NULL,
+  `trace_id` VARCHAR(64) NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_target_time` (`target_type` ASC, `target_id` ASC, `occurred_at` ASC) INVISIBLE,
+  INDEX `idx_request` (`request_id` ASC) INVISIBLE,
+  INDEX `idx_trace` (`trace_id` ASC) VISIBLE)
+ENGINE = InnoDB;
+
 -- begin attached script 'script'
 -- Desabilitar verificação de foreign keys durante o LOAD DATA
 SET FOREIGN_KEY_CHECKS = 0;

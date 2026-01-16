@@ -30,6 +30,7 @@ import (
 	workflowport "github.com/projeto-toq/toq_server/internal/core/port/right/workflow"
 
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	auditrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/audit_repository"
 	globalrepoport "github.com/projeto-toq/toq_server/internal/core/port/right/repository/global_repository"
 	holidayrepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/holiday_repository"
 	listingfavoriterepository "github.com/projeto-toq/toq_server/internal/core/port/right/repository/listing_favorite_repository"
@@ -77,6 +78,7 @@ type StorageAdapters struct {
 
 // RepositoryAdapters agrupa todos os repositórios MySQL
 type RepositoryAdapters struct {
+	Audit           auditrepository.Repository
 	User             userrepoport.UserRepoPortInterface
 	Global           globalrepoport.GlobalRepoPortInterface
 	PropertyCoverage propertycoveragerepository.RepositoryInterface

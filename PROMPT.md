@@ -1,11 +1,7 @@
-É necessário que existam rotinas de limpeza para
-    `toq_db.device_tokens` sugira uma política de retenção, configurável em env.yaml
-    `toq_db.sessions` sugeira uma política de retenção, configurável em env.yaml
-    `toq_db.holiday_calendar_dates` anteriores a 1 anos, configurável em env.yaml
-    `toq_db.media_processing_jobs`sugira uma política de retenção, configurável em env.yaml
-    `toq_db.photographer_agenda_entries`anteriores a 1 anos, configurável em env.yaml
-    `toq_db.photographer_photo_session_bookings` anteriores a 1 anos, configurável em env.yaml
+O sistema de auditoria de das atividades de usuário foi pensado através de `/codigos/go_code/toq_server/internal/core/service/global_service/create_audit.go`.
 
-Talvez já existam go routines de limpeza em `/codigos/go_code/toq_server/internal/core/go_routines` para alguns desses itens, ou talvez existam partes do código que já façam isso, mas é necessário revisar todo o código e as configurações atuais para garantir que todas essas tabelas tenham rotinas de limpeza adequadas, com políticas de retenção configuráveis via env.yaml.
+Entretanto com as constantes refatorações e mudanças de escopo, é possível que algumas operações críticas não estejam sendo auditadas corretamente.
 
-Busque todas as informações que precisa consultando o código e as configurações reais, não confiando na documentação, para ter certeza da situação, e só então proponha o plano de correção.
+Adicionamente existe dúvidas se o processo atual é robusto e eficiente para poder tracasr, por exemplo o ciclo de vida de um anuncio, as atividades de um usuários etc.
+
+Busque todas as informações que precisa consultando o código e as configurações reais, não confiando na documentação, para ter certeza da situação, e apresente o estado atual da auditoria e quais melhorias são possíveis. Este é o momento de repensar todo o sistema de auditoria, se necessário.

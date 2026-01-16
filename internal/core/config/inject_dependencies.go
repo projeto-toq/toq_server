@@ -8,6 +8,7 @@ import (
 	"github.com/projeto-toq/toq_server/internal/core/factory"
 	goroutines "github.com/projeto-toq/toq_server/internal/core/go_routines"
 	metricsport "github.com/projeto-toq/toq_server/internal/core/port/right/metrics"
+	auditservice "github.com/projeto-toq/toq_server/internal/core/service/audit_service"
 	globalservice "github.com/projeto-toq/toq_server/internal/core/service/global_service"
 	holidayservices "github.com/projeto-toq/toq_server/internal/core/service/holiday_service"
 	listingservices "github.com/projeto-toq/toq_server/internal/core/service/listing_service"
@@ -137,6 +138,10 @@ func (c *config) InitGlobalService() {
 		slog.Error("repositoryAdapters is nil")
 		return
 	}
+	if c.repositoryAdapters.Audit == nil {
+		slog.Error("repositoryAdapters.Audit is nil")
+		return
+	}
 	if c.repositoryAdapters.Global == nil {
 		slog.Error("repositoryAdapters.Global is nil")
 		return
@@ -166,6 +171,9 @@ func (c *config) InitGlobalService() {
 		return
 	}
 
+	// Audit service (used by GlobalService compatibility and future direct consumers)
+	c.auditService = auditservice.NewAuditService(c.repositoryAdapters.Audit)
+
 	c.globalService = globalservice.NewGlobalService(
 		c.repositoryAdapters.Global,
 		c.repositoryAdapters.User,
@@ -173,6 +181,7 @@ func (c *config) InitGlobalService() {
 		c.firebaseCloudMessaging,
 		c.email,
 		c.sms,
+		c.auditService,
 		metrics,
 	)
 

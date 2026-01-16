@@ -48,6 +48,7 @@ import (
 
 	// Storage adapters
 	mysqladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql"
+	mysqlauditadapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/audit"
 
 	// Repository adapters
 	mysqlglobaladapter "github.com/projeto-toq/toq_server/internal/adapter/right/mysql/global"
@@ -267,6 +268,9 @@ func (f *ConcreteAdapterFactory) CreateStorageAdapters(ctx context.Context, env 
 func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter.Database, metrics metricsport.MetricsPortInterface) (RepositoryAdapters, error) {
 	slog.Info("Creating repository adapters")
 
+	// Audit Repository
+	auditRepo := mysqlauditadapter.NewAuditAdapter(database, metrics)
+
 	// User Repository (with device token management integrated)
 	userRepo := mysqluseradapter.NewUserAdapter(database, metrics)
 
@@ -315,6 +319,7 @@ func (f *ConcreteAdapterFactory) CreateRepositoryAdapters(database *mysqladapter
 	slog.Info("Successfully created all repository adapters")
 
 	return RepositoryAdapters{
+		Audit:           auditRepo,
 		User:             userRepo,
 		Global:           globalRepo,
 		PropertyCoverage: propertyCoverageRepo,
