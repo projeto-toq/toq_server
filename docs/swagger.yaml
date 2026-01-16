@@ -7550,52 +7550,17 @@ paths:
         name: title
         type: string
         x-example: '"*garden*"'
+      - description: Wildcard search over full address (zip, city, neighborhood, street,
+          number, complement, state) using '*'
+        in: query
+        name: address
+        type: string
+        x-example: '"06543001 Alameda Rio Negro 500 Alphaville Barueri SP"'
       - description: Filter by owner user ID (owners auto-filtered to their own listings)
         in: query
         name: userId
         type: integer
         x-example: "55"
-      - description: Filter by zip code (digits only; supports '*' wildcard)
-        in: query
-        name: zipCode
-        type: string
-        x-example: '"06543*"'
-      - description: Filter by city (supports '*' wildcard)
-        in: query
-        name: city
-        type: string
-        x-example: '"*Paulista*"'
-      - description: Filter by neighborhood (supports '*' wildcard)
-        in: query
-        name: neighborhood
-        type: string
-        x-example: '"*Centro*"'
-      - description: Filter by street (supports '*' wildcard)
-        in: query
-        name: street
-        type: string
-        x-example: '"*Paulista*"'
-      - description: Filter by address number (supports '*' wildcard and S/N)
-        in: query
-        name: number
-        type: string
-        x-example: '"12*"'
-      - description: Filter by complement (supports '*' wildcard)
-        in: query
-        name: complement
-        type: string
-        x-example: '"*Bloco B*"'
-      - description: Filter by complex/condominium name (supports '*' wildcard)
-        in: query
-        name: complex
-        type: string
-        x-example: '"*Residencial Atlântico*"'
-      - description: Filter by state (UF); accepts wildcard but prefer exact two-letter
-          code
-        in: query
-        name: state
-        type: string
-        x-example: '"SP"'
       - description: Minimum sell price
         in: query
         name: minSell

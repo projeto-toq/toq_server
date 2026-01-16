@@ -8,12 +8,12 @@ import (
 
 // ListListingsRequest captures filters, pagination, and sorting for listing search
 //
-// This DTO is used to retrieve paginated, filtered, and sorted lists of active listing versions.
+// This DTO is used to retrieve paginated, filtered, and sorted lists of listing versions.
 // By default, only versions linked as active_version_id in listing_identities are returned.
 // Set includeAllVersions=true to retrieve all versions regardless of active status.
 //
 // Sorting:
-//   - sortBy: Field to order results by (id, status)
+//   - sortBy: Field to order results by (id, status, zipcode, city, neighborhood, street, number, state, complex)
 //   - sortOrder: Direction (asc or desc)
 //   - Default: id DESC (newest listings first)
 //
@@ -21,8 +21,8 @@ import (
 //   - status: Listing lifecycle status (e.g., PUBLISHED, DRAFT, UNDER_OFFER)
 //   - code: Exact listing code match
 //   - title: Wildcard search on title/description (supports '*')
+//   - address: Wildcard search over the concatenated full address (zipCode, city, neighborhood, street, number, complement, state)
 //   - userId: Owner filter (auto-enforced for owner role)
-//   - Location: zipCode, city, neighborhood, street, number, complement, complex, state (wildcards supported)
 //   - Price ranges: minSell/maxSell, minRent/maxRent
 //   - Size range: minLandSize/maxLandSize
 //
@@ -39,6 +39,12 @@ type ListListingsRequest struct {
 	// Minimum: 1, Maximum: 100, Default: 20
 	// Example: 20
 	Limit int `form:"limit,default=20" binding:"min=1,max=100" example:"20"`
+
+	// Address is a single-field wildcard search over the full address
+	// The search concatenates zipCode, city, neighborhood, street, number, complement, and state
+	// Supports '*' wildcard; internally converted to SQL LIKE with '%'
+	// Example: "06543001 Alameda Rio Negro 500 Alphaville Barueri SP"
+	Address string `form:"address,omitempty" example:"06543001 Alameda Rio Negro 500 Alphaville Barueri SP"`
 
 	// SortBy specifies the field to order results by
 	// Allowed values: id, status, zipCode, city, neighborhood, street, number, state, complex
@@ -75,43 +81,6 @@ type ListListingsRequest struct {
 	// Optional for admin/realtor roles
 	// Example: 55
 	UserID string `form:"userId,omitempty" example:"55"`
-
-	// ZipCode filters by Brazilian postal code (CEP)
-	// Digits only, supports '*' wildcard
-	// Example: "06543*"
-	ZipCode string `form:"zipCode,omitempty" example:"06543*"`
-
-	// City filters by city name
-	// Supports '*' wildcard for partial match
-	// Case-insensitive
-	// Example: "*Paulista*"
-	City string `form:"city,omitempty" example:"*Paulista*"`
-
-	// Neighborhood filters by neighborhood name
-	// Supports '*' wildcard for partial match
-	// Case-insensitive
-	// Example: "*Centro*"
-	Neighborhood string `form:"neighborhood,omitempty" example:"*Centro*"`
-
-	// Street filters by street name (supports wildcard)
-	// Example: "*Paulista*"
-	Street string `form:"street,omitempty" example:"*Paulista*"`
-
-	// Number filters by address number (allows wildcard for ranges and "S/N" cases)
-	// Example: "12*"
-	Number string `form:"number,omitempty" example:"12*"`
-
-	// Complement filters by address complement (apartment, block, etc.)
-	// Example: "*Bloco B*"
-	Complement string `form:"complement,omitempty" example:"*Bloco B*"`
-
-	// Complex filters by condominium/complex name (supports wildcard)
-	// Example: "*Residencial Atlântico*"
-	Complex string `form:"complex,omitempty" example:"*Residencial Atlântico*"`
-
-	// State filters by Brazilian state (UF). Accepts wildcard but recommended to use exact 2-letter code
-	// Example: "SP"
-	State string `form:"state,omitempty" example:"SP"`
 
 	// MinSellPrice filters listings with sell price >= this value
 	// Optional - used with maxSell to define price range

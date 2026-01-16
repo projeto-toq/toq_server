@@ -128,14 +128,6 @@ type ListListingsFilter struct {
 	Status             *listingmodel.ListingStatus
 	Code               *uint32
 	Title              string
-	ZipCode            string
-	Street             string
-	City               string
-	State              string
-	Neighborhood       string
-	Number             string
-	Complement         string
-	Complex            string
 	Address            string
 	UserID             *int64
 	PropertyTypes      []globalmodel.PropertyType

@@ -21,11 +21,15 @@ import (
 //
 //	@Summary      List active listing versions with filters and sorting
 //	@Description  Retrieves a paginated list of active listing versions (versions linked via listing_identities.active_version_id).
-//	              Visibility rules: Owners are auto-scoped to their own listings; Realtors can see listings from any owner but
-//	              are forced to status PUBLISHED and active versions only. includeAllVersions=true is ignored for realtors.
-//	              Supports filtering by status, code, title, location (zipCode, city, neighborhood), owner (userId),
-//	              and price/size ranges. Results can be sorted by id (creation date proxy) or status.
-//	              Default sorting: id DESC (newest first).
+//	             Visibility rules: Owners are auto-scoped to their own listings; Realtors can see listings from any owner but
+//	             are forced to status PUBLISHED and active versions only. includeAllVersions=true is ignored for realtors.
+//	             Supports filtering by status, code, title, full address (single field), owner (userId), and price/size ranges.
+//	             Address search examples (wildcard '*' is converted to SQL LIKE '%'):
+//	               - address=Alameda Rio Negro 500 SP (partial match anywhere)
+//	               - address=06543* (CEP prefix)
+//	               - address=*Barueri*SP* (multi-fragment match)
+//	               - address=Rua%Floriano (preserves existing '%')
+//	             Results can be sorted by id (creation date proxy) or status. Default sorting: id DESC (newest first).
 //	@Tags         Listings
 //	@Produce      json
 //	@Security     BearerAuth
@@ -37,15 +41,8 @@ import (
 //	@Param        status              query   string  false  "Filter by listing status (enum name or numeric)" Extensions(x-example="PUBLISHED")
 //	@Param        code                query   int     false  "Filter by exact listing code" Extensions(x-example=1024)
 //	@Param        title               query   string  false  "Filter by listing title/description (supports '*' wildcard)" Extensions(x-example="*garden*")
+//	@Param        address             query   string  false  "Wildcard search over full address (zip, city, neighborhood, street, number, complement, state) using '*'" Extensions(x-example="06543001 Alameda Rio Negro 500 Alphaville Barueri SP")
 //	@Param        userId              query   int     false  "Filter by owner user ID (owners auto-filtered to their own listings)" Extensions(x-example=55)
-//	@Param        zipCode             query   string  false  "Filter by zip code (digits only; supports '*' wildcard)" Extensions(x-example="06543*")
-//	@Param        city                query   string  false  "Filter by city (supports '*' wildcard)" Extensions(x-example="*Paulista*")
-//	@Param        neighborhood        query   string  false  "Filter by neighborhood (supports '*' wildcard)" Extensions(x-example="*Centro*")
-//	@Param        street              query   string  false  "Filter by street (supports '*' wildcard)" Extensions(x-example="*Paulista*")
-//	@Param        number              query   string  false  "Filter by address number (supports '*' wildcard and S/N)" Extensions(x-example="12*")
-//	@Param        complement          query   string  false  "Filter by complement (supports '*' wildcard)" Extensions(x-example="*Bloco B*")
-//	@Param        complex             query   string  false  "Filter by complex/condominium name (supports '*' wildcard)" Extensions(x-example="*Residencial Atlântico*")
-//	@Param        state               query   string  false  "Filter by state (UF); accepts wildcard but prefer exact two-letter code" Extensions(x-example="SP")
 //	@Param        minSell             query   number  false  "Minimum sell price" Extensions(x-example=100000)
 //	@Param        maxSell             query   number  false  "Maximum sell price" Extensions(x-example=900000)
 //	@Param        minRent             query   number  false  "Minimum rent price" Extensions(x-example=1500)
@@ -197,6 +194,8 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 	newerThanHours := resolveRecencyWindow(req.OnlyNewListings, lh.config.NewListingHoursThreshold)
 	priceUpdatedWithin := resolveRecencyWindow(req.OnlyPriceChanged, lh.config.PriceChangedHoursThreshold)
 
+	addressPattern := coreutils.NormalizeSearchPattern(strings.TrimSpace(req.Address))
+
 	// Extract authenticated user info for permission filtering
 	userInfo, infoErr := coreutils.GetUserInfoFromGinContext(c)
 	if infoErr != nil {
@@ -213,14 +212,7 @@ func (lh *ListingHandler) ListListings(c *gin.Context) {
 		Status:             statusPtr,
 		Code:               codePtr,
 		Title:              strings.TrimSpace(req.Title),
-		ZipCode:            strings.TrimSpace(req.ZipCode),
-		Street:             strings.TrimSpace(req.Street),
-		City:               strings.TrimSpace(req.City),
-		Neighborhood:       strings.TrimSpace(req.Neighborhood),
-		Number:             strings.TrimSpace(req.Number),
-		Complement:         strings.TrimSpace(req.Complement),
-		Complex:            strings.TrimSpace(req.Complex),
-		State:              strings.TrimSpace(req.State),
+		Address:            addressPattern,
 		UserID:             userIDPtr,
 		MinSellPrice:       minSell,
 		MaxSellPrice:       maxSell,

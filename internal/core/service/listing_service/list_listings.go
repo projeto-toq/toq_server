@@ -2,7 +2,6 @@ package listingservices
 
 import (
 	"context"
-	"strings"
 
 	globalmodel "github.com/projeto-toq/toq_server/internal/core/model/global_model"
 	listingmodel "github.com/projeto-toq/toq_server/internal/core/model/listing_model"
@@ -28,14 +27,7 @@ type ListListingsInput struct {
 	Status             *listingmodel.ListingStatus // Optional listing status filter
 	Code               *uint32                     // Optional exact code filter
 	Title              string                      // Optional wildcard title/description search
-	ZipCode            string                      // Optional wildcard zip code filter
-	Street             string                      // Optional wildcard street filter
-	City               string                      // Optional wildcard city filter
-	Number             string                      // Optional wildcard number filter
-	Complement         string                      // Optional wildcard complement filter
-	Complex            string                      // Optional wildcard complex filter
-	Neighborhood       string                      // Optional wildcard neighborhood filter
-	State              string                      // Optional wildcard state filter
+	Address            string                      // Optional wildcard full address search (concatenated fields)
 	UserID             *int64                      // Optional owner user ID filter
 	MinSellPrice       *float64                    // Optional minimum sell price
 	MaxSellPrice       *float64                    // Optional maximum sell price
@@ -161,9 +153,6 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		_ = ls.gsi.RollbackTransaction(ctx, tx)
 	}()
 
-	// Sanitize zipCode filter (remove non-numeric/wildcard characters)
-	zipFilter := sanitizeZipFilter(input.ZipCode)
-
 	// Build repository filter with all parameters
 	repoFilter := listingrepository.ListListingsFilter{
 		Page:               input.Page,
@@ -173,14 +162,7 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		Status:             input.Status,
 		Code:               input.Code,
 		Title:              utils.NormalizeSearchPattern(input.Title),
-		ZipCode:            utils.NormalizeSearchPattern(zipFilter),
-		Street:             utils.NormalizeSearchPattern(input.Street),
-		City:               utils.NormalizeSearchPattern(input.City),
-		Number:             utils.NormalizeSearchPattern(input.Number),
-		Complement:         utils.NormalizeSearchPattern(input.Complement),
-		Complex:            utils.NormalizeSearchPattern(input.Complex),
-		Neighborhood:       utils.NormalizeSearchPattern(input.Neighborhood),
-		State:              utils.NormalizeSearchPattern(input.State),
+		Address:            utils.NormalizeSearchPattern(input.Address),
 		UserID:             input.UserID,
 		MinSellPrice:       input.MinSellPrice,
 		MaxSellPrice:       input.MaxSellPrice,
@@ -259,25 +241,4 @@ func (ls *listingService) ListListings(ctx context.Context, input ListListingsIn
 		Page:  repoFilter.Page,
 		Limit: repoFilter.Limit,
 	}, nil
-}
-
-// sanitizeZipFilter removes non-numeric characters from zip code filter (except wildcards)
-//
-// Allows only digits, '*', and '%' for SQL LIKE pattern matching.
-// Returns empty string if input is blank or contains only invalid characters.
-func sanitizeZipFilter(raw string) string {
-	trimmed := strings.TrimSpace(raw)
-	if trimmed == "" {
-		return ""
-	}
-	var builder strings.Builder
-	for _, r := range trimmed {
-		switch {
-		case r >= '0' && r <= '9':
-			builder.WriteRune(r)
-		case r == '*', r == '%':
-			builder.WriteRune(r)
-		}
-	}
-	return builder.String()
 }

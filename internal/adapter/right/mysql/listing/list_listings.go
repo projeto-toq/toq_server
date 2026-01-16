@@ -101,52 +101,10 @@ func (la *ListingAdapter) ListListings(ctx context.Context, tx *sql.Tx, filter l
 		args = append(args, filter.Title, filter.Title)
 	}
 
-	// Optional filter: wildcard zip code search
-	if filter.ZipCode != "" {
-		conditions = append(conditions, "lv.zip_code LIKE ?")
-		args = append(args, filter.ZipCode)
-	}
-
-	// Optional filter: wildcard street search
-	if filter.Street != "" {
-		conditions = append(conditions, "COALESCE(lv.street, '') LIKE ?")
-		args = append(args, filter.Street)
-	}
-
-	// Optional filter: wildcard city search
-	if filter.City != "" {
-		conditions = append(conditions, "lv.city LIKE ?")
-		args = append(args, filter.City)
-	}
-
-	// Optional filter: wildcard neighborhood search
-	if filter.Neighborhood != "" {
-		conditions = append(conditions, "lv.neighborhood LIKE ?")
-		args = append(args, filter.Neighborhood)
-	}
-
-	// Optional filter: wildcard state search
-	if filter.State != "" {
-		conditions = append(conditions, "lv.state LIKE ?")
-		args = append(args, filter.State)
-	}
-
-	// Optional filter: wildcard number search
-	if filter.Number != "" {
-		conditions = append(conditions, "COALESCE(lv.number, '') LIKE ?")
-		args = append(args, filter.Number)
-	}
-
-	// Optional filter: wildcard complement search
-	if filter.Complement != "" {
-		conditions = append(conditions, "COALESCE(lv.complement, '') LIKE ?")
-		args = append(args, filter.Complement)
-	}
-
-	// Optional filter: wildcard complex search
-	if filter.Complex != "" {
-		conditions = append(conditions, "COALESCE(lv.complex, '') LIKE ?")
-		args = append(args, filter.Complex)
+	// Optional filter: wildcard full address search (concatenated fields without spaces)
+	if filter.Address != "" {
+		conditions = append(conditions, "LOWER(REPLACE(CONCAT_WS(' ', COALESCE(lv.zip_code,''), COALESCE(lv.city,''), COALESCE(lv.neighborhood,''), COALESCE(lv.street,''), COALESCE(lv.number,''), COALESCE(lv.complement,''), COALESCE(lv.state,'')), ' ', '')) LIKE LOWER(REPLACE(?, ' ', ''))")
+		args = append(args, filter.Address)
 	}
 
 	// Optional filter: owner user ID

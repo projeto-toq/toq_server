@@ -5315,66 +5315,17 @@
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "x-example": "\"06543001 Alameda Rio Negro 500 Alphaville Barueri SP\"",
+                        "description": "Wildcard search over full address (zip, city, neighborhood, street, number, complement, state) using '*'",
+                        "name": "address",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "x-example": "55",
                         "description": "Filter by owner user ID (owners auto-filtered to their own listings)",
                         "name": "userId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"06543*\"",
-                        "description": "Filter by zip code (digits only; supports '*' wildcard)",
-                        "name": "zipCode",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"*Paulista*\"",
-                        "description": "Filter by city (supports '*' wildcard)",
-                        "name": "city",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"*Centro*\"",
-                        "description": "Filter by neighborhood (supports '*' wildcard)",
-                        "name": "neighborhood",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"*Paulista*\"",
-                        "description": "Filter by street (supports '*' wildcard)",
-                        "name": "street",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"12*\"",
-                        "description": "Filter by address number (supports '*' wildcard and S/N)",
-                        "name": "number",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"*Bloco B*\"",
-                        "description": "Filter by complement (supports '*' wildcard)",
-                        "name": "complement",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"*Residencial Atlântico*\"",
-                        "description": "Filter by complex/condominium name (supports '*' wildcard)",
-                        "name": "complex",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "x-example": "\"SP\"",
-                        "description": "Filter by state (UF); accepts wildcard but prefer exact two-letter code",
-                        "name": "state",
                         "in": "query"
                     },
                     {
